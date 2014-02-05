@@ -17,13 +17,13 @@
 #include "content/public/browser/android/compositor.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-class SkBitmap;
 struct ANativeWindow;
 
 namespace cc {
 class InputHandlerClient;
 class Layer;
 class LayerTreeHost;
+class ScopedUIResource;
 }
 
 namespace content {
@@ -58,13 +58,18 @@ class CONTENT_EXPORT CompositorImpl
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void Composite() OVERRIDE;
-  virtual cc::UIResourceId GenerateUIResource(const SkBitmap& bitmap,
-                                              bool is_transient) OVERRIDE;
-  virtual cc::UIResourceId GenerateCompressedUIResource(const gfx::Size& size,
-                                                        void* pixels,
-                                                        bool is_transient)
-      OVERRIDE;
+  virtual cc::UIResourceId GenerateUIResource(
+      const cc::UIResourceBitmap& bitmap) OVERRIDE;
   virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
+  virtual GLuint GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual GLuint GenerateCompressedTexture(
+      gfx::Size& size, int data_size, void* data) OVERRIDE;
+  virtual void DeleteTexture(GLuint texture_id) OVERRIDE;
+  virtual bool CopyTextureToBitmap(GLuint texture_id,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual bool CopyTextureToBitmap(GLuint texture_id,
+                                   const gfx::Rect& sub_rect,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE;
 
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
@@ -93,9 +98,9 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnLostResources() OVERRIDE;
 
  private:
-  cc::UIResourceId GenerateUIResourceFromUIResourceBitmap(
-      const cc::UIResourceBitmap& bitmap,
-      bool is_transient);
+  GLuint BuildBasicTexture();
+  GLenum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
+  GLenum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
 
   scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
@@ -110,8 +115,8 @@ class CONTENT_EXPORT CompositorImpl
 
   scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;
 
-  typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::UIResourceClient>
-      UIResourceMap;
+  typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::ScopedUIResource>
+        UIResourceMap;
   UIResourceMap ui_resource_map_;
 
   gfx::NativeWindow root_window_;

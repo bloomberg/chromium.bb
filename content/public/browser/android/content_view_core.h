@@ -12,8 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 
-class SkBitmap;
-
 namespace cc {
 class Layer;
 }
@@ -50,15 +48,9 @@ class CONTENT_EXPORT ContentViewCore {
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
-
-  // Request a scaled content readback.  The result is passed through the
-  // callback.  The boolean parameter indicates whether the readback was a
-  // success or not.  The content is passed through the SkBitmap parameter.
-  // |out_size| is returned with the size of the content.
-  virtual void GetScaledContentBitmap(
+  virtual unsigned int GetScaledContentTexture(
       float scale,
-      gfx::Size* out_size,
-      const base::Callback<void(bool, const SkBitmap&)>& result_callback) = 0;
+      gfx::Size* out_size) = 0;
   virtual float GetDpiScale() const = 0;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) = 0;
