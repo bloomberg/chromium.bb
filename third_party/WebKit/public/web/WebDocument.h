@@ -57,7 +57,7 @@ class WebDocumentType;
 class WebElement;
 class WebFormElement;
 class WebFrame;
-class WebNodeCollection;
+class WebElementCollection;
 class WebNodeList;
 class WebString;
 class WebURL;
@@ -107,7 +107,7 @@ public:
     BLINK_EXPORT WebElement body() const;
     BLINK_EXPORT WebElement head();
     BLINK_EXPORT WebString title() const;
-    BLINK_EXPORT WebNodeCollection all();
+    BLINK_EXPORT WebElementCollection all();
     BLINK_EXPORT void forms(WebVector<WebFormElement>&) const;
     BLINK_EXPORT void images(WebVector<WebElement>&);
     BLINK_EXPORT WebURL completeURL(const WebString&) const;

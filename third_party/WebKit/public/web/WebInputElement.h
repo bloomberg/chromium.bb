@@ -39,7 +39,7 @@ namespace WebCore { class HTMLInputElement; }
 
 namespace blink {
 
-    class WebNodeCollection;
+    class WebElementCollection;
 
     // Provides readonly access to some properties of a DOM input element node.
     class WebInputElement : public WebFormControlElement {
@@ -92,7 +92,7 @@ namespace blink {
         BLINK_EXPORT bool isChecked() const;
         BLINK_EXPORT bool isMultiple() const;
 
-        BLINK_EXPORT WebNodeCollection dataListOptions() const;
+        BLINK_EXPORT WebElementCollection dataListOptions() const;
 
         // Return the localized value for this input type.
         BLINK_EXPORT WebString localizeValue(const WebString&) const;

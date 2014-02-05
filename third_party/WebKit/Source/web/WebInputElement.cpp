@@ -33,7 +33,7 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "WebNodeCollection.h"
+#include "WebElementCollection.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
@@ -167,13 +167,13 @@ bool WebInputElement::isMultiple() const
     return constUnwrap<HTMLInputElement>()->multiple();
 }
 
-WebNodeCollection WebInputElement::dataListOptions() const
+WebElementCollection WebInputElement::dataListOptions() const
 {
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
         if (HTMLDataListElement* dataList = toHTMLDataListElement(constUnwrap<HTMLInputElement>()->list()))
-            return WebNodeCollection(dataList->options());
+            return WebElementCollection(dataList->options());
     }
-    return WebNodeCollection();
+    return WebElementCollection();
 }
 
 WebString WebInputElement::localizeValue(const WebString& proposedValue) const

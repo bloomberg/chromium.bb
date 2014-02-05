@@ -53,8 +53,8 @@ public:
     }
 
     // We have null checks in the following methods because WebNodeList does not have a isNull() method
-    // and callers need to be moved to WebNodeCollection and need to handle null using
-    // WebNodeCollection::isNull().
+    // and callers need to be moved to WebElementCollection and need to handle null using
+    // WebElementCollection::isNull().
     virtual unsigned length() const OVERRIDE { return m_collection ? m_collection->length() : 0; }
     virtual Node* item(unsigned index) const OVERRIDE { return m_collection ? m_collection->item(index) : 0; }
 
@@ -67,7 +67,7 @@ private:
     RefPtr<HTMLCollection> m_collection;
 };
 
-WebNodeList::WebNodeList(const WebNodeCollection& n)
+WebNodeList::WebNodeList(const WebElementCollection& n)
     : m_private(0)
 {
     assign(NodeListWithInternalCollection::create(n.m_private).leakRef());

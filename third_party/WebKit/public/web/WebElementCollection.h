@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,14 +29,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNodeCollection_h
-#define WebNodeCollection_h
+#ifndef WebElementCollection_h
+#define WebElementCollection_h
 
-#include "WebElementCollection.h"
+#include "../platform/WebCommon.h"
+
+namespace WebCore { class HTMLCollection; }
+#if BLINK_IMPLEMENTATION
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
 
 namespace blink {
+class WebElement;
 
-typedef WebElementCollection WebNodeCollection;
+// Provides readonly access to some properties of a DOM node.
+class WebElementCollection {
+public:
+    ~WebElementCollection() { reset(); }
+
+    WebElementCollection() : m_private(0), m_current(0) { }
+    WebElementCollection(const WebElementCollection& n) : m_private(0) { assign(n); }
+    WebElementCollection& operator=(const WebElementCollection& n)
+    {
+        assign(n);
+        return *this;
+    }
+
+    bool isNull() const { return !m_private; }
+
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebElementCollection&);
+
+    BLINK_EXPORT unsigned length() const;
+    BLINK_EXPORT WebElement nextItem() const;
+    BLINK_EXPORT WebElement firstItem() const;
+
+#if BLINK_IMPLEMENTATION
+    WebElementCollection(const WTF::PassRefPtr<WebCore::HTMLCollection>&);
+#endif
+
+private:
+    void assign(WebCore::HTMLCollection*);
+    WebCore::HTMLCollection* m_private;
+    mutable unsigned m_current;
+
+    friend class WebNodeList;
+};
 
 } // namespace blink
 

@@ -37,8 +37,8 @@
 #include "WebDOMEventListener.h"
 #include "WebDocument.h"
 #include "WebElement.h"
+#include "WebElementCollection.h"
 #include "WebFrameImpl.h"
-#include "WebNodeCollection.h"
 #include "WebNodeList.h"
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"
@@ -192,11 +192,11 @@ void WebNode::simulateClick()
     m_private->dispatchSimulatedClick(0);
 }
 
-WebNodeCollection WebNode::getElementsByTagName(const WebString& tag) const
+WebElementCollection WebNode::getElementsByTagName(const WebString& tag) const
 {
     if (m_private->isContainerNode())
-        return WebNodeCollection(toContainerNode(m_private.get())->getElementsByTagName(tag));
-    return WebNodeCollection();
+        return WebElementCollection(toContainerNode(m_private.get())->getElementsByTagName(tag));
+    return WebElementCollection();
 }
 
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const

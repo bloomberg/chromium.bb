@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +30,10 @@
  */
 
 #include "config.h"
-#include "WebNodeCollection.h"
+#include "WebElementCollection.h"
 
 #include "WebElement.h"
-#include "core/dom/Node.h"
+#include "core/dom/Element.h"
 #include "core/html/HTMLCollection.h"
 #include "wtf/PassRefPtr.h"
 
@@ -40,12 +41,12 @@ using namespace WebCore;
 
 namespace blink {
 
-void WebNodeCollection::reset()
+void WebElementCollection::reset()
 {
     assign(0);
 }
 
-void WebNodeCollection::assign(const WebNodeCollection& other)
+void WebElementCollection::assign(const WebElementCollection& other)
 {
     HTMLCollection* p = const_cast<HTMLCollection*>(other.m_private);
     if (p)
@@ -53,12 +54,12 @@ void WebNodeCollection::assign(const WebNodeCollection& other)
     assign(p);
 }
 
-WebNodeCollection::WebNodeCollection(const PassRefPtr<HTMLCollection>& col)
+WebElementCollection::WebElementCollection(const PassRefPtr<HTMLCollection>& col)
     : m_private(static_cast<HTMLCollection*>(col.leakRef()))
 {
 }
 
-void WebNodeCollection::assign(HTMLCollection* p)
+void WebElementCollection::assign(HTMLCollection* p)
 {
     // p is already ref'd for us by the caller
     if (m_private)
@@ -66,12 +67,12 @@ void WebNodeCollection::assign(HTMLCollection* p)
     m_private = p;
 }
 
-unsigned WebNodeCollection::length() const
+unsigned WebElementCollection::length() const
 {
     return m_private->length();
 }
 
-WebElement WebNodeCollection::nextItem() const
+WebElement WebElementCollection::nextItem() const
 {
     Element* element = m_private->item(m_current);
     if (element)
@@ -79,7 +80,7 @@ WebElement WebNodeCollection::nextItem() const
     return WebElement(element);
 }
 
-WebElement WebNodeCollection::firstItem() const
+WebElement WebElementCollection::firstItem() const
 {
     m_current = 0;
     return nextItem();

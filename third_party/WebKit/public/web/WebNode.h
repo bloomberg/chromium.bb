@@ -44,8 +44,8 @@ class WebDOMEventListener;
 class WebDOMEventListenerPrivate;
 class WebDocument;
 class WebElement;
+class WebElementCollection;
 class WebFrame;
-class WebNodeCollection;
 class WebNodeList;
 class WebPluginContainer;
 
@@ -114,7 +114,7 @@ public:
     BLINK_EXPORT void addEventListener(const WebString& eventType, WebDOMEventListener* listener, bool useCapture);
     BLINK_EXPORT bool dispatchEvent(const WebDOMEvent&);
     BLINK_EXPORT void simulateClick();
-    BLINK_EXPORT WebNodeCollection getElementsByTagName(const WebString&) const;
+    BLINK_EXPORT WebElementCollection getElementsByTagName(const WebString&) const;
     BLINK_EXPORT WebElement querySelector(const WebString&, WebExceptionCode&) const;
     BLINK_EXPORT WebElement rootEditableElement() const;
     BLINK_EXPORT bool focused() const;

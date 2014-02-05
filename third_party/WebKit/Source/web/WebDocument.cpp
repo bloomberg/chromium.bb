@@ -35,9 +35,9 @@
 #include "WebDOMEvent.h"
 #include "WebDocumentType.h"
 #include "WebElement.h"
+#include "WebElementCollection.h"
 #include "WebFormElement.h"
 #include "WebFrameImpl.h"
-#include "WebNodeCollection.h"
 #include "WebNodeList.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
@@ -152,9 +152,9 @@ WebString WebDocument::title() const
     return WebString(constUnwrap<Document>()->title());
 }
 
-WebNodeCollection WebDocument::all()
+WebElementCollection WebDocument::all()
 {
-    return WebNodeCollection(unwrap<Document>()->all());
+    return WebElementCollection(unwrap<Document>()->all());
 }
 
 void WebDocument::images(WebVector<WebElement>& results)
