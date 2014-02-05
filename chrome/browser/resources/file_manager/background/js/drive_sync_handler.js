@@ -109,22 +109,24 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(statusList) {
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
   this.queue_.run(function(callback) {
-    if (!this.items_[status.fileUrl]) {
-      webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
-        var item = new ProgressCenterItem();
-        item.id =
-            DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
-        item.type = ProgressItemType.SYNC;
-        item.quiet = true;
-        item.message = strf('SYNC_FILE_NAME', entry.name);
-        item.cancelCallback = this.requestCancel_.bind(this, entry);
-        this.items_[status.fileUrl] = item;
-        callback();
-      }.bind(this), function(error) {
-        console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
-        callback();
-      });
+    if (this.items_[status.fileUrl]) {
+      callback();
+      return;
     }
+    webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
+      var item = new ProgressCenterItem();
+      item.id =
+          DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
+      item.type = ProgressItemType.SYNC;
+      item.quiet = true;
+      item.message = strf('SYNC_FILE_NAME', entry.name);
+      item.cancelCallback = this.requestCancel_.bind(this, entry);
+      this.items_[status.fileUrl] = item;
+      callback();
+    }.bind(this), function(error) {
+      console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
+      callback();
+    });
   }.bind(this));
   this.queue_.run(function(callback) {
     var item = this.items_[status.fileUrl];
