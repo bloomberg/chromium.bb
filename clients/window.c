@@ -2925,7 +2925,8 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		its.it_value.tv_sec = 0;
 		its.it_value.tv_nsec = 0;
 		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
-	} else if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+	} else if (state == WL_KEYBOARD_KEY_STATE_PRESSED &&
+		   xkb_keymap_key_repeats(input->xkb.keymap, code)) {
 		input->repeat_sym = sym;
 		input->repeat_key = key;
 		input->repeat_time = time;
