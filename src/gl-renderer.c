@@ -50,18 +50,29 @@ struct gl_shader {
 
 #define BUFFER_DAMAGE_COUNT 2
 
+enum gl_border_status {
+	BORDER_STATUS_CLEAN = 0,
+	BORDER_TOP_DIRTY = 1 << GL_RENDERER_BORDER_TOP,
+	BORDER_LEFT_DIRTY = 1 << GL_RENDERER_BORDER_LEFT,
+	BORDER_RIGHT_DIRTY = 1 << GL_RENDERER_BORDER_RIGHT,
+	BORDER_BOTTOM_DIRTY = 1 << GL_RENDERER_BORDER_BOTTOM,
+	BORDER_ALL_DIRTY = 0xf,
+	BORDER_SIZE_CHANGED = 0x10
+};
+
 struct gl_border_image {
 	GLuint tex;
 	int32_t width, height;
 	int32_t tex_width;
-	int dirty;
 	void *data;
 };
 
 struct gl_output_state {
 	EGLSurface egl_surface;
 	pixman_region32_t buffer_damage[BUFFER_DAMAGE_COUNT];
+	enum gl_border_status border_damage[BUFFER_DAMAGE_COUNT];
 	struct gl_border_image borders[4];
+	enum gl_border_status border_status;
 };
 
 enum buffer_type {
@@ -597,9 +608,12 @@ repaint_views(struct weston_output *output, pixman_region32_t *damage)
 }
 
 static void
-draw_output_border_texture(struct gl_border_image *img, int32_t x, int32_t y,
+draw_output_border_texture(struct gl_output_state *go,
+			   enum gl_renderer_border_side side,
+			   int32_t x, int32_t y,
 			   int32_t width, int32_t height)
 {
+	struct gl_border_image *img = &go->borders[side];
 	static GLushort indices [] = { 0, 1, 3, 3, 1, 2 };
 
 	if (!img->data) {
@@ -627,7 +641,7 @@ draw_output_border_texture(struct gl_border_image *img, int32_t x, int32_t y,
 		glBindTexture(GL_TEXTURE_2D, img->tex);
 	}
 
-	if (img->dirty) {
+	if (go->border_status & (1 << side)) {
 #ifdef GL_EXT_unpack_subimage
 		glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
@@ -636,7 +650,6 @@ draw_output_border_texture(struct gl_border_image *img, int32_t x, int32_t y,
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     img->tex_width, img->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, img->data);
-		img->dirty = 0;
 	}
 
 	GLfloat texcoord[] = {
@@ -665,7 +678,8 @@ draw_output_border_texture(struct gl_border_image *img, int32_t x, int32_t y,
 }
 
 static void
-draw_output_border(struct weston_output *output)
+draw_output_borders(struct weston_output *output,
+		    enum gl_border_status border_status)
 {
 	struct gl_output_state *go = get_output_state(output);
 	struct gl_renderer *gr = get_renderer(output->compositor);
@@ -673,6 +687,9 @@ draw_output_border(struct weston_output *output)
 	struct gl_border_image *top, *bottom, *left, *right;
 	struct weston_matrix matrix;
 	int full_width, full_height;
+
+	if (border_status == BORDER_STATUS_CLEAN)
+		return; /* Clean. Nothing to do. */
 
 	top = &go->borders[GL_RENDERER_BORDER_TOP];
 	bottom = &go->borders[GL_RENDERER_BORDER_BOTTOM];
@@ -696,23 +713,27 @@ draw_output_border(struct weston_output *output)
 	glUniform1f(shader->alpha_uniform, 1);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_output_border_texture(top,
-				   0, 0,
-				   full_width, top->height);
-	draw_output_border_texture(left,
-				   0, top->height,
-				   left->width, output->current_mode->height);
-	draw_output_border_texture(right,
-				   full_width - right->width, top->height,
-				   right->width, output->current_mode->height);
-	draw_output_border_texture(bottom,
-				   0, full_height - bottom->height,
-				   full_width, bottom->height);
+	if (border_status & BORDER_TOP_DIRTY)
+		draw_output_border_texture(go, GL_RENDERER_BORDER_TOP,
+					   0, 0,
+					   full_width, top->height);
+	if (border_status & BORDER_LEFT_DIRTY)
+		draw_output_border_texture(go, GL_RENDERER_BORDER_LEFT,
+					   0, top->height,
+					   left->width, output->current_mode->height);
+	if (border_status & BORDER_RIGHT_DIRTY)
+		draw_output_border_texture(go, GL_RENDERER_BORDER_RIGHT,
+					   full_width - right->width, top->height,
+					   right->width, output->current_mode->height);
+	if (border_status & BORDER_BOTTOM_DIRTY)
+		draw_output_border_texture(go, GL_RENDERER_BORDER_BOTTOM,
+					   0, full_height - bottom->height,
+					   full_width, bottom->height);
 }
 
 static void
-output_get_buffer_damage(struct weston_output *output,
-			 pixman_region32_t *buffer_damage)
+output_get_damage(struct weston_output *output,
+		  pixman_region32_t *buffer_damage, uint32_t *border_damage)
 {
 	struct gl_output_state *go = get_output_state(output);
 	struct gl_renderer *gr = get_renderer(output->compositor);
@@ -729,17 +750,31 @@ output_get_buffer_damage(struct weston_output *output,
 		}
 	}
 
-	if (buffer_age == 0 || buffer_age - 1 > BUFFER_DAMAGE_COUNT)
+	if (buffer_age == 0 || buffer_age - 1 > BUFFER_DAMAGE_COUNT) {
 		pixman_region32_copy(buffer_damage, &output->region);
-	else
+		*border_damage = BORDER_ALL_DIRTY;
+	} else {
 		for (i = 0; i < buffer_age - 1; i++)
-			pixman_region32_union(buffer_damage, buffer_damage,
-					      &go->buffer_damage[i]);
+			*border_damage |= go->border_damage[i];
+
+		if (*border_damage & BORDER_SIZE_CHANGED) {
+			/* If we've had a resize, we have to do a full
+			 * repaint. */
+			*border_damage |= BORDER_ALL_DIRTY;
+			pixman_region32_copy(buffer_damage, &output->region);
+		} else {
+			for (i = 0; i < buffer_age - 1; i++)
+				pixman_region32_union(buffer_damage,
+						      buffer_damage,
+						      &go->buffer_damage[i]);
+		}
+	}
 }
 
 static void
 output_rotate_damage(struct weston_output *output,
-		     pixman_region32_t *output_damage)
+		     pixman_region32_t *output_damage,
+		     enum gl_border_status border_status)
 {
 	struct gl_output_state *go = get_output_state(output);
 	struct gl_renderer *gr = get_renderer(output->compositor);
@@ -748,10 +783,13 @@ output_rotate_damage(struct weston_output *output,
 	if (!gr->has_egl_buffer_age)
 		return;
 
-	for (i = BUFFER_DAMAGE_COUNT - 1; i >= 1; i--)
+	for (i = BUFFER_DAMAGE_COUNT - 1; i >= 1; i--) {
+		go->border_damage[i] = go->border_damage[i - 1];
 		pixman_region32_copy(&go->buffer_damage[i],
 				     &go->buffer_damage[i - 1]);
+	}
 
+	go->border_damage[0] = border_status;
 	pixman_region32_copy(&go->buffer_damage[0], output_damage);
 }
 
@@ -765,6 +803,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	EGLBoolean ret;
 	static int errored;
 	pixman_region32_t buffer_damage, total_damage;
+	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
 
 	/* Calculate the viewport */
 	glViewport(go->borders[GL_RENDERER_BORDER_LEFT].width,
@@ -792,17 +831,18 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_init(&total_damage);
 	pixman_region32_init(&buffer_damage);
 
-	output_get_buffer_damage(output, &buffer_damage);
-	output_rotate_damage(output, output_damage);
+	output_get_damage(output, &buffer_damage, &border_damage);
+	output_rotate_damage(output, output_damage, go->border_status);
 
 	pixman_region32_union(&total_damage, &buffer_damage, output_damage);
+	border_damage |= go->border_status;
 
 	repaint_views(output, &total_damage);
 
 	pixman_region32_fini(&total_damage);
 	pixman_region32_fini(&buffer_damage);
 
-	draw_output_border(output);
+	draw_output_borders(output, border_damage);
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
@@ -814,6 +854,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 		gl_renderer_print_egl_error_state();
 	}
 
+	go->border_status = BORDER_STATUS_CLEAN;
 }
 
 static int
@@ -1527,11 +1568,22 @@ gl_renderer_output_set_border(struct weston_output *output,
 {
 	struct gl_output_state *go = get_output_state(output);
 
+	if (go->borders[side].width != width ||
+	    go->borders[side].height != height)
+		/* In this case, we have to blow everything and do a full
+		 * repaint. */
+		go->border_status |= BORDER_SIZE_CHANGED | BORDER_ALL_DIRTY;
+
+	if (data == NULL) {
+		width = 0;
+		height = 0;
+	}
+
 	go->borders[side].width = width;
 	go->borders[side].height = height;
 	go->borders[side].tex_width = tex_width;
 	go->borders[side].data = data;
-	go->borders[side].dirty = 1;
+	go->border_status |= 1 << side;
 }
 
 static int
