@@ -530,23 +530,6 @@ def LogcatDump(options):
   RunCmd(['cat', logcat_file])
 
 
-def RunStackToolSteps(options):
-  """Run stack tool steps.
-
-  Stack tool is run for logcat dump, optionally for ASAN.
-  """
-  bb_annotations.PrintNamedStep('Run stack tool with logcat dump')
-  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
-  RunCmd([os.path.join(CHROME_SRC_DIR, 'third_party', 'android_platform',
-          'development', 'scripts', 'stack'),
-          '--more-info', logcat_file])
-  if options.asan_symbolize:
-    bb_annotations.PrintNamedStep('Run stack tool for ASAN')
-    RunCmd([
-        os.path.join(CHROME_SRC_DIR, 'build', 'android', 'asan_symbolize.py'),
-        '-l', logcat_file])
-
-
 def GenerateTestReport(options):
   bb_annotations.PrintNamedStep('test_report')
   for report in glob.glob(
@@ -583,8 +566,6 @@ def MainTestWrapper(options):
   finally:
     # Run all post test steps
     LogcatDump(options)
-    if not options.disable_stack_tool:
-      RunStackToolSteps(options)
     GenerateTestReport(options)
     # KillHostHeartbeat() has logic to check if heartbeat process is running,
     # and kills only if it finds the process is running on the host.
@@ -621,10 +602,7 @@ def GetDeviceStepsOptParser():
   parser.add_option(
       '--logcat-dump-output',
       help='The logcat dump output will be "tee"-ed into this file')
-  parser.add_option('--disable-stack-tool',  action='store_true',
-      help='Do not run stack tool.')
-  parser.add_option('--asan-symbolize',  action='store_true',
-      help='Run stack tool for ASAN')
+
   return parser
 
 
