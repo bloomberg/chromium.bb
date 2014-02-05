@@ -8,6 +8,10 @@
 #include "cc/output/compositor_frame.h"
 #include "ui/gfx/rect.h"
 
+namespace blink {
+class WebInputEvent;
+}
+
 namespace IPC {
 class Message;
 }
@@ -94,6 +98,7 @@ class CrossProcessFrameConnector {
       const FrameHostMsg_CompositorFrameSwappedACK_Params& params);
   void OnReclaimCompositorResources(
       const FrameHostMsg_ReclaimCompositorResources_Params& params);
+  void OnForwardInputEvent(const blink::WebInputEvent* event);
 
   // The RenderFrameHost that routes messages to the parent frame's renderer
   // process.

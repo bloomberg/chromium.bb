@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "content/common/frame_param.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
@@ -223,6 +224,12 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
 
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ReclaimCompositorResources,
                     FrameHostMsg_ReclaimCompositorResources_Params /* params */)
+
+// Forwards an input event to a child.
+// TODO(nick): Temporary bridge, revisit once the browser process can route
+// input directly to subframes. http://crbug.com/339659
+IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
+                    IPC::WebInputEventPointer /* event */)
 
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler. Expects a SwapOut_ACK message when

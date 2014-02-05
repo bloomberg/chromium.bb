@@ -1629,6 +1629,10 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
+void RenderFrameImpl::forwardInputEvent(const blink::WebInputEvent* event) {
+  Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
+}
+
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
   observers_.AddObserver(observer);
 }

@@ -6,9 +6,11 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
@@ -16,7 +18,7 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameHostImpl* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
       view_(NULL) {
-    frame_proxy_in_parent_renderer->set_cross_process_frame_connector(this);
+  frame_proxy_in_parent_renderer->set_cross_process_frame_connector(this);
 }
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
@@ -34,6 +36,7 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
                         OnCompositorFrameSwappedACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -118,6 +121,38 @@ void CrossProcessFrameConnector::OnReclaimCompositorResources(
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
   return child_frame_rect_;
+}
+
+void CrossProcessFrameConnector::OnForwardInputEvent(
+    const blink::WebInputEvent* event) {
+  if (!view_)
+    return;
+
+  RenderWidgetHostImpl* child_widget =
+      RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* parent_widget =
+      frame_proxy_in_parent_renderer_->render_view_host();
+
+  if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
+    if (!parent_widget->GetLastKeyboardEvent())
+      return;
+    NativeWebKeyboardEvent keyboard_event(
+        *parent_widget->GetLastKeyboardEvent());
+    child_widget->ForwardKeyboardEvent(keyboard_event);
+    return;
+  }
+
+  if (blink::WebInputEvent::isMouseEventType(event->type)) {
+    child_widget->ForwardMouseEvent(
+        *static_cast<const blink::WebMouseEvent*>(event));
+    return;
+  }
+
+  if (event->type == blink::WebInputEvent::MouseWheel) {
+    child_widget->ForwardWheelEvent(
+        *static_cast<const blink::WebMouseWheelEvent*>(event));
+    return;
+  }
 }
 
 }  // namespace content

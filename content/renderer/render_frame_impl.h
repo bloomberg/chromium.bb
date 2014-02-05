@@ -26,6 +26,7 @@ struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
 
 namespace blink {
+class WebInputEvent;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
@@ -326,6 +327,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool allowWebGL(blink::WebFrame* frame, bool default_value);
   virtual void didLoseWebGLContext(blink::WebFrame* frame,
                                    int arb_robustness_status_code);
+  virtual void forwardInputEvent(const blink::WebInputEvent* event);
 
   // TODO(jam): move this to WebFrameClient
   virtual void showContextMenu(const blink::WebContextMenuData& data);
