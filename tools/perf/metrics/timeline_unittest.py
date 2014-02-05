@@ -91,6 +91,27 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     metric.AddResults(tab, results)
     return results
 
+  def GetActionRange(self, start, end):
+    action_range = bounds.Bounds()
+    action_range.AddValue(start)
+    action_range.AddValue(end)
+    return action_range
+
+  def testResults(self):
+    model = model_module.TimelineModel()
+    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
+    renderer_main.name = 'CrRendererMain'
+
+    metric = timeline.ThreadTimesTimelineMetric()
+    metric._action_ranges = [self.GetActionRange(1, 2)]
+    metric.details_to_report = timeline.ReportMainThreadOnly
+    results = self.GetResultsForModel(metric, model)
+
+    # Test that all result thread categories exist
+    for name in timeline.TimelineThreadCategories.values():
+      results.GetPageSpecificValueNamed(timeline.ThreadTimeResultName(name))
+      results.GetPageSpecificValueNamed(timeline.ThreadCpuTimeResultName(name))
+
   def testBasic(self):
     model = model_module.TimelineModel()
     renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
@@ -99,9 +120,9 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     # Create two frame swaps (Results times should be divided by two)
     cc_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
     cc_main.name = 'Compositor'
-    cc_main.BeginSlice('cc_cat', timeline.CompositorFrameTraceName, 10, 10)
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10)
     cc_main.EndSlice(11, 11)
-    cc_main.BeginSlice('cc_cat', timeline.CompositorFrameTraceName, 12, 12)
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 12, 12)
     cc_main.EndSlice(13, 13)
 
     # [      X       ]   [ Z ]
@@ -114,20 +135,11 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     renderer_main.BeginSlice('cat1', 'Z', 33, 21)
     model.FinalizeImport()
 
-    # Exclude Z using an action-range.
-    action_range = bounds.Bounds()
-    action_range.AddValue(10)
-    action_range.AddValue(30)
-
+    # Exclude 'Z' using an action-range.
     metric = timeline.ThreadTimesTimelineMetric()
-    metric._action_ranges = [action_range]
-    metric.details_to_report = timeline.MainThread
+    metric._action_ranges = [self.GetActionRange(10, 30)]
+    metric.details_to_report = timeline.ReportMainThreadOnly
     results = self.GetResultsForModel(metric, model)
-
-    # Test that all categories exist
-    for name in timeline.TimelineThreadCategories.values():
-      results.GetPageSpecificValueNamed(timeline.ThreadTimeResultName(name))
-      results.GetPageSpecificValueNamed(timeline.ThreadCpuTimeResultName(name))
 
     # Test a couple specific results.
     assert_results = {
@@ -135,6 +147,41 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
       timeline.ThreadDetailResultName('renderer_main','cat1') : 9.5,
       timeline.ThreadDetailResultName('renderer_main','cat2') : 0.5,
       timeline.ThreadDetailResultName('renderer_main','idle') : 0
+    }
+    for name, value in assert_results.iteritems():
+      results.AssertHasPageSpecificScalarValue(name, 'ms', value)
+
+  def testOverheadIsRemoved(self):
+    model = model_module.TimelineModel()
+    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
+    renderer_main.name = 'CrRendererMain'
+
+    # Create one frame swap.
+    cc_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
+    cc_main.name = 'Compositor'
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10)
+    cc_main.EndSlice(11, 11)
+
+    # [      X       ]
+    #    [Overhead]
+    overhead_category = timeline.OverheadTraceCategory
+    overhead_name = timeline.OverheadTraceName
+    renderer_main.BeginSlice('cat1', 'X', 10, 0)
+    renderer_main.BeginSlice(overhead_category, overhead_name, 15, 5)
+    renderer_main.EndSlice(16, 6)
+    renderer_main.EndSlice(30, 10)
+    model.FinalizeImport()
+
+    # Include everything in an action-range.
+    metric = timeline.ThreadTimesTimelineMetric()
+    metric._action_ranges = [self.GetActionRange(10, 30)]
+    metric.details_to_report = timeline.ReportMainThreadOnly
+    results = self.GetResultsForModel(metric, model)
+
+    # Test a couple specific results.
+    assert_results = {
+      timeline.ThreadTimeResultName('renderer_main') : 19,
+      timeline.ThreadCpuTimeResultName('renderer_main') : 9.0,
     }
     for name, value in assert_results.iteritems():
       results.AssertHasPageSpecificScalarValue(name, 'ms', value)

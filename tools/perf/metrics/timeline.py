@@ -11,10 +11,12 @@ from telemetry.page import page_measurement
 TRACING_MODE = 'tracing-mode'
 TIMELINE_MODE = 'timeline-mode'
 
+
 class MissingFramesError(page_measurement.MeasurementFailure):
   def __init__(self):
     super(MissingFramesError, self).__init__(
         'No frames found in trace. Unable to normalize results.')
+
 
 class TimelineMetric(Metric):
   def __init__(self, mode):
@@ -79,6 +81,7 @@ class TimelineMetric(Metric):
   def AddResults(self, tab, results):
     return
 
+
 class LoadTimesTimelineMetric(TimelineMetric):
   def __init__(self, mode):
     super(LoadTimesTimelineMetric, self).__init__(mode)
@@ -140,8 +143,8 @@ TimelineThreadCategories =  {
   "Chrome_InProcGpuThread": "GPU",
   "CrGpuMain"             : "GPU",
   "AsyncTransferThread"   : "GPU_transfer",
-  "CrBrowserMain"         : "browser_main",
-  "Browser Compositor"    : "browser_compositor",
+  "CrBrowserMain"         : "browser",
+  "Browser Compositor"    : "browser",
   "CrRendererMain"        : "renderer_main",
   "Compositor"            : "renderer_compositor",
   "IOThread"              : "IO",
@@ -151,29 +154,44 @@ TimelineThreadCategories =  {
   "DummyThreadName3"      : "total_all"
 }
 
-MatchBySubString = ["IOThread", "CompositorRasterWorker"]
+_MatchBySubString = ["IOThread", "CompositorRasterWorker"]
 
 AllThreads = TimelineThreadCategories.values()
 NoThreads = []
-FastPathThreads = ["GPU",
-                   "browser_main",
-                   "browser_compositor",
-                   "renderer_compositor",
-                   "IO"]
-MainThread = ["renderer_main"]
-FastPathResults = AllThreads
-FastPathDetails = NoThreads
-SilkResults = ["renderer_main", "total_all"]
-SilkDetails = MainThread
+FastPathThreads = ["GPU", "renderer_compositor", "browser", "IO"]
+
+ReportMainThreadOnly = ["renderer_main"]
+ReportFastPathResults = AllThreads
+ReportFastPathDetails = NoThreads
+ReportSilkResults = ["renderer_main", "total_all"]
+ReportSilkDetails = ["renderer_main"]
 
 # TODO(epenner): Thread names above are likely fairly stable but trace names
-# could change. We should formalize this trace to keep this robust.
-CompositorFrameTraceName = "::SwapBuffers"
+# could change. We should formalize these traces to keep this robust.
+OverheadTraceCategory = "trace_event_overhead"
+OverheadTraceName = "overhead"
+FrameTraceName = "::SwapBuffers"
+FrameTraceThreadName = "renderer_compositor"
+
+
+def ClockOverheadForEvent(event):
+  if (event.category == OverheadTraceCategory and
+      event.name == OverheadTraceName):
+    return event.duration
+  else:
+    return 0
+
+def CpuOverheadForEvent(event):
+  if (event.category == OverheadTraceCategory and
+      event.thread_duration):
+    return event.thread_duration
+  else:
+    return 0
 
 def ThreadCategoryName(thread_name):
   thread_category = "other"
   for substring, category in TimelineThreadCategories.iteritems():
-    if substring in MatchBySubString and substring in thread_name:
+    if substring in _MatchBySubString and substring in thread_name:
       thread_category = category
   if thread_name in TimelineThreadCategories:
     thread_category = TimelineThreadCategories[thread_name]
@@ -188,6 +206,7 @@ def ThreadCpuTimeResultName(thread_category):
 def ThreadDetailResultName(thread_category, detail):
   return "thread_" + thread_category + "|" + detail
 
+
 class ResultsForThread(object):
   def __init__(self, model, action_ranges, name):
     self.model = model
@@ -198,11 +217,14 @@ class ResultsForThread(object):
 
   @property
   def clock_time(self):
-    return sum([x.duration for x in self.toplevel_slices])
+    clock_duration = sum([x.duration for x in self.toplevel_slices])
+    clock_overhead = sum([ClockOverheadForEvent(x) for x in self.all_slices])
+    return clock_duration - clock_overhead
 
   @property
   def cpu_time(self):
-    res = 0
+    cpu_duration = 0
+    cpu_overhead = sum([CpuOverheadForEvent(x) for x in self.all_slices])
     for x in self.toplevel_slices:
       # Only report thread-duration if we have it for all events.
       #
@@ -213,10 +235,10 @@ class ResultsForThread(object):
         else:
           return 0
       else:
-        res += x.thread_duration
-    return res
+        cpu_duration += x.thread_duration
+    return cpu_duration - cpu_overhead
 
-  def ActionSlices(self, slices):
+  def SlicesInActions(self, slices):
     slices_in_actions = []
     for event in slices:
       for action_range in self.action_ranges:
@@ -226,8 +248,8 @@ class ResultsForThread(object):
     return slices_in_actions
 
   def AppendThreadSlices(self, thread):
-    self.all_slices.extend(self.ActionSlices(thread.all_slices))
-    self.toplevel_slices.extend(self.ActionSlices(thread.toplevel_slices))
+    self.all_slices.extend(self.SlicesInActions(thread.all_slices))
+    self.toplevel_slices.extend(self.SlicesInActions(thread.toplevel_slices))
 
   def AddResults(self, num_frames, results):
     clock_report_name = ThreadTimeResultName(self.name)
@@ -254,6 +276,7 @@ class ResultsForThread(object):
     idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
     results.Add(ThreadDetailResultName(self.name, "idle"),
                 'ms', idle_time_result)
+
 
 class ThreadTimesTimelineMetric(TimelineMetric):
   def __init__(self):
@@ -293,9 +316,9 @@ class ThreadTimesTimelineMetric(TimelineMetric):
       if ThreadCategoryName(thread.name) in FastPathThreads:
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 
-    # Calculate the number of frames from the CC thread.
-    cc_slices = thread_category_results['renderer_compositor'].all_slices
-    num_frames = self.CountSlices(cc_slices, CompositorFrameTraceName)
+    # Calculate the number of frames.
+    frame_slices = thread_category_results[FrameTraceThreadName].all_slices
+    num_frames = self.CountSlices(frame_slices, FrameTraceName)
 
     # Report the desired results and details.
     for thread_results in thread_category_results.values():
