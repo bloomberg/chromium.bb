@@ -403,6 +403,10 @@ void OmniboxViewViews::OnBlur() {
   SelectRange(gfx::Range(0));
 }
 
+base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
+  return SanitizeTextForPaste(Textfield::GetSelectionClipboardText());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, OmniboxView implementation:
 

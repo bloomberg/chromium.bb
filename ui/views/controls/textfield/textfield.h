@@ -283,6 +283,9 @@ class VIEWS_EXPORT Textfield : public View,
    // Returns the TextfieldModel's text/cursor/selection rendering model.
    gfx::RenderText* GetRenderText() const;
 
+  // Get the text from the selection clipboard.
+  virtual base::string16 GetSelectionClipboardText() const;
+
  private:
   friend class TextfieldTest;
   friend class TouchSelectionControllerImplTest;

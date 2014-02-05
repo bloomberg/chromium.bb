@@ -65,6 +65,7 @@ class OmniboxViewViews
       const ui::KeyEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual base::string16 GetSelectionClipboardText() const OVERRIDE;
 
   // OmniboxView:
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;

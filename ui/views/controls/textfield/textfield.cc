@@ -1264,6 +1264,13 @@ gfx::RenderText* Textfield::GetRenderText() const {
   return model_->render_text();
 }
 
+base::string16 Textfield::GetSelectionClipboardText() const {
+  base::string16 selection_clipboard_text;
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::CLIPBOARD_TYPE_SELECTION, &selection_clipboard_text);
+  return selection_clipboard_text;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
@@ -1475,9 +1482,7 @@ void Textfield::UpdateSelectionClipboard() const {
 void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
   DCHECK(event.IsOnlyMiddleMouseButton());
   DCHECK(!read_only());
-  base::string16 selection_clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::CLIPBOARD_TYPE_SELECTION, &selection_clipboard_text);
+  base::string16 selection_clipboard_text = GetSelectionClipboardText();
   if (!selection_clipboard_text.empty()) {
     OnBeforeUserAction();
     gfx::Range range = GetSelectionModel().selection();
