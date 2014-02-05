@@ -512,8 +512,8 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   manager()->OnPasswordFormsParsed(observed);
 }
 
-TEST_F(PasswordManagerTest, FormNotSavedAutocompleteOff) {
-  // Test password form with non-generated password will not be saved if
+TEST_F(PasswordManagerTest, FormSavedWithAutocompleteOff) {
+  // Test password form with non-generated password will be saved even if
   // autocomplete=off.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
@@ -529,15 +529,19 @@ TEST_F(PasswordManagerTest, FormNotSavedAutocompleteOff) {
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
 
-  // Password form should not be saved.
+  // Password form should be saved.
+  scoped_ptr<PasswordFormManager> form_to_save;
   EXPECT_CALL(delegate_,
-              AddSavePasswordInfoBarIfPermitted(_)).Times(Exactly(0));
+              AddSavePasswordInfoBarIfPermitted(_)).Times(Exactly(1))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form))).Times(Exactly(0));
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
   manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+
+  ASSERT_TRUE(form_to_save.get());
 }
 
 TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
