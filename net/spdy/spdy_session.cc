@@ -2211,7 +2211,8 @@ void SpdySession::DeleteExpiredPushedStreams() {
     LogAbandonedActiveStream(active_it, ERR_INVALID_SPDY_STREAM);
     // CloseActiveStreamIterator() will remove the stream from
     // |unclaimed_pushed_streams_|.
-    CloseActiveStreamIterator(active_it, ERR_INVALID_SPDY_STREAM);
+    ResetStreamIterator(
+        active_it, RST_STREAM_REFUSED_STREAM, "Stream not claimed.");
   }
 
   next_unclaimed_push_stream_sweep_time_ = time_func_() +

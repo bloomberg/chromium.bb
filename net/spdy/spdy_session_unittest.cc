@@ -886,43 +886,50 @@ TEST_P(SpdySessionTest, PingAndWriteLoop) {
 
 TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   session_deps_.host_resolver->set_synchronous_mode(true);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   session_deps_.time_func = TheNearFuture;
 
-  CreateNetworkSession();
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
 
+  scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+  scoped_ptr<SpdyFrame> push_a_body(
+      spdy_util_.ConstructSpdyBodyFrame(2, false));
+  scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 4, 1, "http://www.google.com/b.dat"));
+  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4)};
+  MockRead reads[] = {
+      CreateMockRead(*push_a, 1), CreateMockRead(*push_a_body, 2),
+      CreateMockRead(*push_b, 3), MockRead(ASYNC, 0, 5),  // EOF
+  };
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
   base::WeakPtr<SpdySession> session =
-      CreateFakeSpdySession(spdy_session_pool_, key_);
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
 
-  session->buffered_spdy_framer_.reset(
-      new BufferedSpdyFramer(spdy_util_.spdy_version(), false));
+  // Process the principal request, and the first push stream request & body.
+  GURL url("http://www.google.com");
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
 
-  // Create the associated stream and add to active streams.
-  scoped_ptr<SpdyHeaderBlock> request_headers(
-      spdy_util_.ConstructGetHeaderBlock("http://www.google.com/"));
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
 
-  scoped_ptr<SpdyStream> stream(new SpdyStream(SPDY_REQUEST_RESPONSE_STREAM,
-                                               session,
-                                               GURL(),
-                                               DEFAULT_PRIORITY,
-                                               kSpdyStreamInitialWindowSize,
-                                               kSpdyStreamInitialWindowSize,
-                                               session->net_log_));
-  stream->SendRequestHeaders(request_headers.Pass(), NO_MORE_DATA_TO_SEND);
-  SpdyStream* stream_ptr = stream.get();
-  session->InsertCreatedStream(stream.Pass());
-  stream = session->ActivateCreatedStream(stream_ptr);
-  session->InsertActivatedStream(stream.Pass());
-
-  SpdyHeaderBlock headers;
-  spdy_util_.AddUrlToHeaderBlock("http://www.google.com/a.dat", &headers);
-
-  // OnSynStream() expects |in_io_loop_| to be true.
-  session->in_io_loop_ = true;
-  session->OnSynStream(2, 1, 0, true, false, headers);
-  session->in_io_loop_ = false;
+  data.RunFor(3);
 
   // Verify that there is one unclaimed push stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
@@ -931,19 +938,36 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
           GURL("http://www.google.com/a.dat"));
   EXPECT_TRUE(session->unclaimed_pushed_streams_.end() != iter);
 
-  // Shift time to expire the push stream.
-  g_time_delta = base::TimeDelta::FromSeconds(301);
+  if (session->flow_control_state_ ==
+      SpdySession::FLOW_CONTROL_STREAM_AND_SESSION) {
+    // Unclaimed push body consumed bytes from the session window.
+    EXPECT_EQ(kSpdySessionInitialWindowSize - kUploadDataSize,
+              session->session_recv_window_size_);
+    EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+  }
 
-  spdy_util_.AddUrlToHeaderBlock("http://www.google.com/b.dat", &headers);
-  session->in_io_loop_ = true;
-  session->OnSynStream(4, 1, 0, true, false, headers);
-  session->in_io_loop_ = false;
+  // Shift time to expire the push stream. Read the second SYN_STREAM,
+  // and verify a RST_STREAM was written.
+  g_time_delta = base::TimeDelta::FromSeconds(301);
+  data.RunFor(2);
 
   // Verify that the second pushed stream evicted the first pushed stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
   iter = session->unclaimed_pushed_streams_.find(
       GURL("http://www.google.com/b.dat"));
   EXPECT_TRUE(session->unclaimed_pushed_streams_.end() != iter);
+
+  if (session->flow_control_state_ ==
+      SpdySession::FLOW_CONTROL_STREAM_AND_SESSION) {
+    // Verify that the session window reclaimed the evicted stream body.
+    EXPECT_EQ(kSpdySessionInitialWindowSize,
+              session->session_recv_window_size_);
+    EXPECT_EQ(kUploadDataSize, session->session_unacked_recv_window_bytes_);
+  }
+
+  // Read and process EOF.
+  data.RunFor(1);
+  EXPECT_TRUE(session == NULL);
 }
 
 TEST_P(SpdySessionTest, FailedPing) {
