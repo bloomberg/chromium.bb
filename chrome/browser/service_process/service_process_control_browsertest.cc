@@ -132,15 +132,9 @@ class RealServiceProcessControlBrowserTest
   }
 };
 
-#if defined(OS_MACOSX)
-// Does not work on MACOSX.
-#define MAYBE_LaunchAndIPC DISABLED_LaunchAndIPC
-#else
-#define MAYBE_LaunchAndIPC LaunchAndIPC
-#endif
-
+// TODO(vitalybuka): Fix crbug.com/340563
 IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
-                       MAYBE_LaunchAndIPC) {
+                       DISABLED_LaunchAndIPC) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.

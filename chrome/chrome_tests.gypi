@@ -1797,9 +1797,6 @@
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
-          'dependencies': [
-            'chrome',  # for service_process_control_browsertest.cc
-          ],
         }, { # chromeos==1
           'sources!': [
             '../apps/load_and_launch_browsertest.cc',
