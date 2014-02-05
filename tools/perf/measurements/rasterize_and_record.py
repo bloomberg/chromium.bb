@@ -111,7 +111,9 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
                         for marker in timeline_markers ]
     renderer_process = timeline.GetRendererProcessFromTab(tab)
-    stats = rendering_stats.RenderingStats(renderer_process, timeline_ranges)
+
+    stats = rendering_stats.RenderingStats(
+        renderer_process, timeline.browser_process, timeline_ranges)
 
     results.Add('rasterize_time', 'ms', max(FlattenList(stats.rasterize_times)))
     results.Add('record_time', 'ms', max(FlattenList(stats.record_times)))

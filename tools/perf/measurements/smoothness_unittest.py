@@ -40,3 +40,17 @@ class SmoothnessUnitTest(
     mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
     self.assertEquals(len(mostly_smooth), 1)
     self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+
+    mean_mouse_wheel_latency = results.FindAllPageSpecificValuesNamed(
+        'mean_mouse_wheel_latency')
+    if mean_mouse_wheel_latency:
+      self.assertEquals(len(mean_mouse_wheel_latency), 1)
+      self.assertGreater(
+          mean_mouse_wheel_latency[0].GetRepresentativeNumber(), 0)
+
+    mean_touch_scroll_latency = results.FindAllPageSpecificValuesNamed(
+        'mean_touch_scroll_latency')
+    if mean_touch_scroll_latency:
+      self.assertEquals(len(mean_touch_scroll_latency), 1)
+      self.assertGreater(
+          mean_touch_scroll_latency[0].GetRepresentativeNumber(), 0)

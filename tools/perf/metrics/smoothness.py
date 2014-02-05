@@ -66,7 +66,7 @@ class SmoothnessMetric(Metric):
 
     renderer_process = timeline_model.GetRendererProcessFromTab(tab)
     self._stats = rendering_stats.RenderingStats(
-        renderer_process, timeline_ranges)
+        renderer_process, timeline_model.browser_process, timeline_ranges)
 
     if not self._stats.frame_times:
       raise NotEnoughFramesError()
@@ -78,6 +78,20 @@ class SmoothnessMetric(Metric):
     self._stats = stats
 
   def AddResults(self, tab, results):
+    if self._stats.mouse_wheel_scroll_latency:
+      mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
+          self._stats.mouse_wheel_scroll_latency,
+          len(self._stats.mouse_wheel_scroll_latency))
+      results.Add('mean_mouse_wheel_scroll_latency', 'ms',
+                  round(mean_mouse_wheel_scroll_latency, 3))
+
+    if self._stats.touch_scroll_latency:
+      mean_touch_scroll_latency = statistics.ArithmeticMean(
+          self._stats.touch_scroll_latency,
+          len(self._stats.touch_scroll_latency))
+      results.Add('mean_touch_scroll_latency', 'ms',
+                  round(mean_touch_scroll_latency, 3))
+
     # List of raw frame times.
     frame_times = FlattenList(self._stats.frame_times)
     results.Add('frame_times', 'ms', frame_times)

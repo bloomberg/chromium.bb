@@ -5,9 +5,14 @@
 import random
 import unittest
 
+from metrics.rendering_stats import UI_COMP_NAME, BEGIN_COMP_NAME, END_COMP_NAME
+from metrics.rendering_stats import GetScrollInputLatencyEvents
+from metrics.rendering_stats import ComputeMouseWheelScrollLatency
+from metrics.rendering_stats import ComputeTouchScrollLatency
 from metrics.rendering_stats import RenderingStats
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model
+import telemetry.core.timeline.async_slice as tracing_async_slice
 
 
 class MockTimer(object):
@@ -51,6 +56,13 @@ class ReferenceRenderingStats(object):
     self.rasterize_times.append([])
     self.rasterized_pixel_counts.append([])
 
+class ReferenceInputLatencyStats(object):
+  """ Stores expected data for comparison with actual input latency stats """
+  def __init__(self):
+    self.mouse_wheel_scroll_latency = []
+    self.touch_scroll_latency = []
+    self.mouse_wheel_scroll_events = []
+    self.touch_scroll_events = []
 
 def AddMainThreadRenderingStats(mock_timer, thread, first_frame,
                                 ref_stats = None):
@@ -128,6 +140,58 @@ def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
   ref_stats.rasterized_pixel_counts[-1].append(data['rasterized_pixel_count'])
 
 
+def AddInputLatencyStats(mock_timer, input_type, start_thread, end_thread,
+                         ref_latency_stats = None):
+  """ Adds a random input latency stats event.
+
+  input_type: The input type for which the latency slice is generated.
+  start_thread: The start thread on which the async slice is added.
+  end_thread: The end thread on which the async slice is ended.
+  ref_latency_stats: A ReferenceInputLatencyStats object for expected values.
+  """
+
+  mock_timer.Advance()
+  ui_comp_time = mock_timer.Get() * 1000.0
+  mock_timer.Advance()
+  begin_comp_time = mock_timer.Get() * 1000.0
+  mock_timer.Advance(10, 20)
+  end_comp_time = mock_timer.Get() * 1000.0
+
+  data = { UI_COMP_NAME: {'time': ui_comp_time},
+           BEGIN_COMP_NAME: {'time': begin_comp_time},
+           END_COMP_NAME: {'time': end_comp_time} }
+
+  timestamp = mock_timer.Get()
+
+  async_slice = tracing_async_slice.AsyncSlice(
+      'benchmark', 'InputLatency', timestamp)
+
+  async_sub_slice = tracing_async_slice.AsyncSlice(
+      'benchmark', 'InputLatency', timestamp)
+  async_sub_slice.args = {'data': data, 'step': input_type}
+  async_sub_slice.parent_slice = async_slice
+  async_sub_slice.start_thread = start_thread
+  async_sub_slice.end_thread = end_thread
+
+  async_slice.sub_slices.append(async_sub_slice)
+  async_slice.start_thread = start_thread
+  async_slice.end_thread = end_thread
+  start_thread.AddAsyncSlice(async_slice)
+
+  if not ref_latency_stats:
+    return
+
+  if input_type == 'MouseWheel':
+    ref_latency_stats.mouse_wheel_scroll_events.append(async_sub_slice)
+    ref_latency_stats.mouse_wheel_scroll_latency.append(
+        (data[END_COMP_NAME]['time'] - data[BEGIN_COMP_NAME]['time']) / 1000.0)
+
+
+  if input_type == 'GestureScrollUpdate':
+    ref_latency_stats.touch_scroll_events.append(async_sub_slice)
+    ref_latency_stats.touch_scroll_latency.append(
+        (data[END_COMP_NAME]['time'] - data[UI_COMP_NAME]['time']) / 1000.0)
+
 class RenderingStatsUnitTest(unittest.TestCase):
   def testFromTimeline(self):
     timeline = model.TimelineModel()
@@ -195,7 +259,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
         ['ActionA', 'ActionB', 'ActionA'])
     timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
                         for marker in timeline_markers ]
-    stats = RenderingStats(renderer, timeline_ranges)
+    stats = RenderingStats(renderer, browser, timeline_ranges)
 
     # Compare rendering stats to reference.
     self.assertEquals(stats.frame_timestamps, ref_stats.frame_timestamps)
@@ -209,3 +273,78 @@ class RenderingStatsUnitTest(unittest.TestCase):
     self.assertEquals(stats.record_times, ref_stats.record_times)
     self.assertEquals(stats.recorded_pixel_counts,
                       ref_stats.recorded_pixel_counts)
+
+  def testScrollLatencyFromTimeline(self):
+    timeline = model.TimelineModel()
+
+    # Create a browser process and a renderer process.
+    browser = timeline.GetOrCreateProcess(pid = 1)
+    browser_main = browser.GetOrCreateThread(tid = 11)
+    renderer = timeline.GetOrCreateProcess(pid = 2)
+    renderer_main = renderer.GetOrCreateThread(tid = 21)
+
+    timer = MockTimer()
+    ref_latency_stats = ReferenceInputLatencyStats()
+
+    # Create 10 input latency stats events for Action A.
+    timer.Advance()
+    renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
+    for _ in xrange(0, 10):
+      AddInputLatencyStats(timer, 'MouseWheel', browser_main,
+                           renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                           renderer_main, ref_latency_stats)
+    renderer_main.EndSlice(timer.Get())
+
+    # Create 5 input latency stats events not within any action.
+    for _ in xrange(0, 5):
+      AddInputLatencyStats(timer, 'MouseWheel', browser_main,
+                           renderer_main, None)
+      AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                           renderer_main, None)
+
+    # Create 10 input latency stats events for Action B.
+    timer.Advance()
+    renderer_main.BeginSlice('webkit.console', 'ActionB', timer.Get(), '')
+    for _ in xrange(0, 10):
+      AddInputLatencyStats(timer, 'MouseWheel', browser_main,
+                           renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                           renderer_main, ref_latency_stats)
+    renderer_main.EndSlice(timer.Get())
+
+    # Create 10 input latency stats events for Action A.
+    timer.Advance()
+    renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
+    for _ in xrange(0, 10):
+      AddInputLatencyStats(timer, 'MouseWheel', browser_main,
+                                  renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                                  renderer_main, ref_latency_stats)
+    renderer_main.EndSlice(timer.Get())
+
+    browser_main.FinalizeImport()
+    renderer_main.FinalizeImport()
+
+    mouse_wheel_scroll_events = []
+    touch_scroll_events = []
+
+    timeline_markers = timeline.FindTimelineMarkers(
+        ['ActionA', 'ActionB', 'ActionA'])
+    for timeline_range in [ timeline_bounds.Bounds.CreateFromEvent(marker)
+                            for marker in timeline_markers ]:
+      if timeline_range.is_empty:
+        continue
+      tmp_mouse_events, tmp_touch_events = GetScrollInputLatencyEvents(
+          browser, timeline_range)
+      mouse_wheel_scroll_events.extend(tmp_mouse_events)
+      touch_scroll_events.extend(tmp_touch_events)
+
+    self.assertEquals(mouse_wheel_scroll_events,
+                      ref_latency_stats.mouse_wheel_scroll_events)
+    self.assertEquals(touch_scroll_events,
+                      ref_latency_stats.touch_scroll_events)
+    self.assertEquals(ComputeMouseWheelScrollLatency(mouse_wheel_scroll_events),
+                      ref_latency_stats.mouse_wheel_scroll_latency)
+    self.assertEquals(ComputeTouchScrollLatency(touch_scroll_events),
+                      ref_latency_stats.touch_scroll_latency)
