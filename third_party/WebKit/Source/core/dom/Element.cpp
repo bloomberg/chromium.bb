@@ -264,9 +264,7 @@ bool Element::rendererIsFocusable() const
     // FIXME: These asserts should be in Node::isFocusable, but there are some
     // callsites like Document::setFocusedElement that would currently fail on
     // them. See crbug.com/251163
-    if (renderer()) {
-        ASSERT(!renderer()->needsLayout());
-    } else {
+    if (!renderer()) {
         // We can't just use needsStyleRecalc() because if the node is in a
         // display:none tree it might say it needs style recalc but the whole
         // document is actually up to date.

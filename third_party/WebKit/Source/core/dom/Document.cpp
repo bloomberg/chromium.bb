@@ -344,36 +344,6 @@ static void printNavigationErrorMessage(const Frame& frame, const KURL& activeUR
 
 uint64_t Document::s_globalTreeVersion = 0;
 
-// This class should be passed only to Document::postTask.
-class CheckFocusedElementTask FINAL : public ExecutionContextTask {
-public:
-    static PassOwnPtr<CheckFocusedElementTask> create()
-    {
-        return adoptPtr(new CheckFocusedElementTask());
-    }
-    virtual ~CheckFocusedElementTask() { }
-
-private:
-    CheckFocusedElementTask() { }
-    virtual void performTask(ExecutionContext* context) OVERRIDE
-    {
-        ASSERT(context->isDocument());
-        Document* document = toDocument(context);
-        document->didRunCheckFocusedElementTask();
-        Element* element = document->focusedElement();
-        if (!element)
-            return;
-        if (document->childNeedsStyleRecalc()) {
-            document->setNeedsFocusedElementCheck();
-            return;
-        }
-        if (element->renderer() && element->renderer()->needsLayout())
-            return;
-        if (!element->isFocusable())
-            document->setFocusedElement(0);
-    }
-};
-
 // This class doesn't work with non-Document ExecutionContext.
 class AutofocusTask FINAL : public ExecutionContextTask {
 public:
@@ -445,8 +415,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_paginatedForScreen(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_didPostCheckFocusedElementTask(false)
     , m_hasAutofocused(false)
+    , m_clearFocusedElementTimer(this, &Document::clearFocusedElementTimerFired)
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
@@ -1809,6 +1779,9 @@ void Document::recalcStyle(StyleRecalcChange change)
     // to check if any other elements ended up under the mouse pointer due to re-layout.
     if (hoverNode() && !hoverNode()->renderer() && frame())
         frame()->eventHandler().dispatchFakeMouseMoveEventSoon();
+
+    if (m_focusedElement && !m_focusedElement->isFocusable())
+        clearFocusedElementSoon();
 }
 
 void Document::updateStyleIfNeeded()
@@ -1866,17 +1839,22 @@ void Document::updateLayout()
 
     if (isActive() && frameView)
         frameView->partialLayout().reset();
-
-    setNeedsFocusedElementCheck();
 }
 
 void Document::setNeedsFocusedElementCheck()
 {
-    // FIXME: Using a Task doesn't look a good idea.
-    if (!m_focusedElement || m_didPostCheckFocusedElementTask)
-        return;
-    m_taskRunner->postTask(CheckFocusedElementTask::create());
-    m_didPostCheckFocusedElementTask = true;
+    setNeedsStyleRecalc(LocalStyleChange);
+}
+
+void Document::clearFocusedElementSoon()
+{
+    if (!m_clearFocusedElementTimer.isActive())
+        m_clearFocusedElementTimer.startOneShot(0);
+}
+
+void Document::clearFocusedElementTimerFired(Timer<Document>*)
+{
+    setFocusedElement(0);
 }
 
 void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
@@ -3389,6 +3367,8 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 
 bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, FocusDirection direction)
 {
+    m_clearFocusedElementTimer.stop();
+
     RefPtr<Element> newFocusedElement = prpNewFocusedElement;
 
     // Make sure newFocusedNode is actually in this document

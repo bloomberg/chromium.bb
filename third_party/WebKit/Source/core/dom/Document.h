@@ -630,7 +630,6 @@ public:
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
     void setNeedsFocusedElementCheck();
-    void didRunCheckFocusedElementTask() { m_didPostCheckFocusedElementTask = false; }
     void setAutofocusElement(Element*);
     Element* autofocusElement() const { return m_autofocusElement.get(); }
 
@@ -1127,6 +1126,9 @@ private:
 
     void didAssociateFormControlsTimerFired(Timer<Document>*);
 
+    void clearFocusedElementSoon();
+    void clearFocusedElementTimerFired(Timer<Document>*);
+
     void processHttpEquivDefaultStyle(const AtomicString& content);
     void processHttpEquivRefresh(const AtomicString& content);
     void processHttpEquivSetCookie(const AtomicString& content);
@@ -1180,8 +1182,8 @@ private:
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
-    bool m_didPostCheckFocusedElementTask;
     bool m_hasAutofocused;
+    Timer<Document> m_clearFocusedElementTimer;
     RefPtr<Element> m_autofocusElement;
     RefPtr<Element> m_focusedElement;
     RefPtr<Node> m_hoverNode;
