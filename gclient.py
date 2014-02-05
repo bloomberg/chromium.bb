@@ -60,7 +60,7 @@
 #   the same as normal hooks, except that they run before the DEPS are
 #   processed. Pre-DEPS run with "sync" and "revert" unless the --noprehooks
 #   flag is used.
-# 
+#
 # Specifying a target OS
 #   An optional key named "target_os" may be added to a gclient file to specify
 #   one or more additional operating systems that should be considered when
@@ -1860,6 +1860,9 @@ class OptionParser(optparse.OptionParser):
         format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
     if options.config_filename and options.spec:
       self.error('Cannot specifiy both --gclientfile and --spec')
+    if (options.config_filename and
+        options.config_filename != os.path.basename(options.config_filename)):
+      self.error('--gclientfile target must be a filename, not a path')
     if not options.config_filename:
       options.config_filename = self.gclientfile_default
     options.entries_filename = options.config_filename + '_entries'
