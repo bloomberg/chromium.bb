@@ -22,24 +22,16 @@ namespace chromeos {
 
 namespace {
 
-// TODO(armansito): Add bindings for these to service_constants.h
-// (crbug.com/256889)
-const char kShillErrorFailure[] = "org.chromium.flimflam.Error.Failure";
-const char kShillErrorNotSupported[] =
-    "org.chromium.flimflam.Error.NotSupported";
-
 std::string GetErrorNameForShillError(const std::string& shill_error_name) {
-  // TODO(armansito): Use the new SIM error names once the ones below get
-  // deprecated (crbug.com/256855)
-  if (shill_error_name == kShillErrorFailure)
+  if (shill_error_name == shill::kErrorResultFailure)
     return NetworkDeviceHandler::kErrorFailure;
-  if (shill_error_name == kShillErrorNotSupported)
+  if (shill_error_name == shill::kErrorResultNotSupported)
     return NetworkDeviceHandler::kErrorNotSupported;
-  if (shill_error_name == shill::kErrorIncorrectPinMsg)
+  if (shill_error_name == shill::kErrorResultIncorrectPin)
     return NetworkDeviceHandler::kErrorIncorrectPin;
-  if (shill_error_name == shill::kErrorPinBlockedMsg)
+  if (shill_error_name == shill::kErrorResultPinBlocked)
     return NetworkDeviceHandler::kErrorPinBlocked;
-  if (shill_error_name == shill::kErrorPinRequiredMsg)
+  if (shill_error_name == shill::kErrorResultPinRequired)
     return NetworkDeviceHandler::kErrorPinRequired;
   return NetworkDeviceHandler::kErrorUnknown;
 }
