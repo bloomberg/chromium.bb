@@ -14,9 +14,15 @@ PrinterBasicInfo::~PrinterBasicInfo() {}
 
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
     : color_changeable(false),
-      duplex_capable(false),
       color_default(false),
-      duplex_default(UNKNOWN_DUPLEX_MODE) {}
+#if defined (OS_WIN)
+      collate_capable(false),
+      collate_default(false),
+      copies_capable(false),
+#endif
+      duplex_capable(false),
+      duplex_default(UNKNOWN_DUPLEX_MODE) {
+}
 
 PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() {}
 

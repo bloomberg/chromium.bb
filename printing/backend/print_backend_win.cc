@@ -17,6 +17,7 @@
 #include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
 
+namespace printing {
 
 namespace {
 
@@ -33,9 +34,114 @@ HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
   return hr;
 }
 
-}  // namespace
+template <class T>
+void GetDeviceCapabilityArray(const wchar_t* printer,
+                              const wchar_t* port,
+                              WORD id,
+                              std::vector<T>* result) {
+  int count = DeviceCapabilities(printer, port, id, NULL, NULL);
+  if (count <= 0)
+    return;
+  result->resize(count);
+  CHECK_EQ(count,
+           DeviceCapabilities(printer, port, id,
+                              reinterpret_cast<LPTSTR>(result->data()), NULL));
+}
 
-namespace printing {
+void LoadPaper(const wchar_t* printer,
+               const wchar_t* port,
+               const DEVMODE* devmode,
+               PrinterSemanticCapsAndDefaults* caps) {
+  static const size_t kToUm = 100;  // Windows uses 0.1mm.
+  static const size_t kMaxPaperName = 64;
+
+  struct PaperName {
+    wchar_t chars[kMaxPaperName];
+  };
+
+  // Paper
+  std::vector<PaperName> names;
+  GetDeviceCapabilityArray(printer, port, DC_PAPERNAMES, &names);
+
+  std::vector<POINT> sizes;
+  GetDeviceCapabilityArray(printer, port, DC_PAPERSIZE, &sizes);
+
+  std::vector<WORD> ids;
+  GetDeviceCapabilityArray(printer, port, DC_PAPERS, &ids);
+
+  DCHECK_EQ(ids.size(), sizes.size());
+  DCHECK_EQ(names.size(), sizes.size());
+
+  if (ids.size() != sizes.size())
+    ids.clear();
+  if (names.size() != sizes.size())
+    names.clear();
+
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    PrinterSemanticCapsAndDefaults::Paper paper;
+    paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
+    if (!names.empty()) {
+      paper.name.assign(&names[i].chars, &names[i].chars + kMaxPaperName);
+      // Trim trailing zeros.
+      paper.name = paper.name.c_str();
+    }
+    caps->papers.push_back(paper);
+  }
+
+  if (devmode) {
+    short default_id = 0;
+    gfx::Size default_size;
+
+    if ((devmode->dmFields & DM_PAPERSIZE) == DM_PAPERSIZE)
+      default_id = devmode->dmPaperSize;
+    if ((devmode->dmFields & DM_PAPERWIDTH) == DM_PAPERWIDTH)
+      default_size.set_width(devmode->dmPaperWidth * kToUm);
+    if ((devmode->dmFields & DM_PAPERLENGTH) == DM_PAPERLENGTH)
+      default_size.set_height(devmode->dmPaperLength * kToUm);
+
+    if (default_size.IsEmpty()) {
+      for (size_t i = 0; i < ids.size(); ++i) {
+        if (ids[i] == default_id) {
+          PrinterSemanticCapsAndDefaults::Paper paper;
+          paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
+          if (!names.empty()) {
+            paper.name.assign(&names[i].chars, &names[i].chars + kMaxPaperName);
+            // Trim trailing zeros.
+            paper.name = paper.name.c_str();
+          }
+          caps->default_paper = paper;
+          break;
+        }
+      }
+    } else {
+      caps->default_paper.size_um = default_size;
+    }
+  }
+}
+
+void LoadDpi(const wchar_t* printer,
+             const wchar_t* port,
+             const DEVMODE* devmode,
+             PrinterSemanticCapsAndDefaults* caps) {
+  std::vector<POINT> dpis;
+  GetDeviceCapabilityArray(printer, port, DC_ENUMRESOLUTIONS, &dpis);
+
+  for (size_t i = 0; i < dpis.size() ; ++i)
+    caps->dpis.push_back(gfx::Size(dpis[i].x, dpis[i].y));
+
+  if (devmode) {
+    if ((devmode->dmFields & DM_PRINTQUALITY) == DM_PRINTQUALITY &&
+        devmode->dmPrintQuality > 0) {
+      caps->default_dpi.SetSize(devmode->dmPrintQuality,
+                                devmode->dmPrintQuality);
+      if ((devmode->dmFields & DM_YRESOLUTION) == DM_PRINTQUALITY) {
+        caps->default_dpi.set_height(devmode->dmYResolution);
+      }
+    }
+  }
+}
+
+}  // namespace
 
 class PrintBackendWin : public PrintBackend {
  public:
@@ -108,29 +214,14 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   }
 
   PrinterInfo5 info_5;
-  if (!info_5.Init(printer_handle)) {
+  if (!info_5.Init(printer_handle))
     return false;
-  }
-  DCHECK_EQ(info_5.get()->pPrinterName, base::UTF8ToUTF16(printer_name));
+  const wchar_t* name = info_5.get()->pPrinterName;
+  const wchar_t* port = info_5.get()->pPortName;
+  DCHECK_EQ(name, base::UTF8ToUTF16(printer_name));
 
   PrinterSemanticCapsAndDefaults caps;
-
-  // Get printer capabilities. For more info see here:
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
-  caps.color_changeable = (::DeviceCapabilities(info_5.get()->pPrinterName,
-                                                info_5.get()->pPortName,
-                                                DC_COLORDEVICE,
-                                                NULL,
-                                                NULL) == 1);
-
-  caps.duplex_capable = (::DeviceCapabilities(info_5.get()->pPrinterName,
-                                              info_5.get()->pPortName,
-                                              DC_DUPLEX,
-                                              NULL,
-                                              NULL) == 1);
-
   UserDefaultDevMode user_settings;
-
   if (user_settings.Init(printer_handle)) {
     if ((user_settings.get()->dmFields & DM_COLOR) == DM_COLOR)
       caps.color_default = (user_settings.get()->dmColor == DMCOLOR_COLOR);
@@ -150,11 +241,31 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
         NOTREACHED();
       }
     }
+
+    if ((user_settings.get()->dmFields & DM_COLLATE) == DM_COLLATE)
+      caps.collate_default = (user_settings.get()->dmCollate == DMCOLLATE_TRUE);
   } else {
     LOG(WARNING) << "Fallback to color/simplex mode.";
     caps.color_default = caps.color_changeable;
     caps.duplex_default = SIMPLEX;
   }
+
+  // Get printer capabilities. For more info see here:
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
+  caps.color_changeable =
+      (DeviceCapabilities(name, port, DC_COLORDEVICE, NULL, NULL) == 1);
+
+  caps.duplex_capable =
+      (DeviceCapabilities(name, port, DC_DUPLEX, NULL, NULL) == 1);
+
+  caps.collate_capable =
+      (DeviceCapabilities(name, port, DC_COLLATE, NULL, NULL) == 1);
+
+  caps.copies_capable =
+      (DeviceCapabilities(name, port, DC_COPIES, NULL, NULL) > 1);
+
+  LoadPaper(name, port, user_settings.get(), &caps);
+  LoadDpi(name, port, user_settings.get(), &caps);
 
   *printer_info = caps;
   return true;

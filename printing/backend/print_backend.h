@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class DictionaryValue;
@@ -37,17 +38,33 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   PrinterSemanticCapsAndDefaults();
   ~PrinterSemanticCapsAndDefaults();
 
-  // Capabilities.
   bool color_changeable;
-  bool duplex_capable;
+  bool color_default;
 
 #if defined(USE_CUPS)
   ColorModel color_model;
   ColorModel bw_model;
 #endif
 
-  // Current defaults.
-  bool color_default;
+#if defined(OS_WIN)
+  bool collate_capable;
+  bool collate_default;
+
+  bool copies_capable;
+
+  struct Paper {
+    std::string name;
+    gfx::Size size_um;
+  };
+
+  std::vector<Paper> papers;
+  Paper default_paper;
+
+  std::vector<gfx::Size> dpis;
+  gfx::Size default_dpi;
+#endif
+
+  bool duplex_capable;
   DuplexMode duplex_default;
 };
 
