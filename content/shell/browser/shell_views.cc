@@ -490,8 +490,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
       wm_test_helper_->GetDefaultParent(NULL, NULL, gfx::Rect()),
       gfx::Rect(0, 0, width, height));
 #else
-  window_widget_ = views::Widget::CreateWindowWithBounds(
-      new ShellWindowDelegateView(this), gfx::Rect(0, 0, width, height));
+  window_widget_ = new views::Widget;
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(0, 0, width, height);
+  params.delegate = new ShellWindowDelegateView(this);
+  params.top_level = true;
+  params.remove_standard_frame = true;
+  window_widget_->Init(params);
 #endif
 
   content_size_ = gfx::Size(width, height);
