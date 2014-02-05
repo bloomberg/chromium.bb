@@ -800,6 +800,7 @@ void DevToolsWindow::Observe(int type,
 content::WebContents* DevToolsWindow::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
+  DCHECK(source == web_contents_);
   if (!params.url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     content::WebContents* inspected_web_contents = GetInspectedWebContents();
     return inspected_web_contents ?
@@ -815,14 +816,9 @@ content::WebContents* DevToolsWindow::OpenURLFromTab(
   manager->RegisterDevToolsClientHostFor(agent_host.get(),
                                          frontend_host_.get());
 
-  chrome::NavigateParams nav_params(profile_, params.url, params.transition);
-  FillNavigateParamsFromOpenURLParams(&nav_params, params);
-  nav_params.source_contents = source;
-  nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = params.user_gesture;
-  chrome::Navigate(&nav_params);
-  return nav_params.target_contents;
+  content::NavigationController::LoadURLParams load_url_params(params.url);
+  web_contents_->GetController().LoadURLWithParams(load_url_params);
+  return web_contents_;
 }
 
 void DevToolsWindow::AddNewContents(content::WebContents* source,

@@ -1891,9 +1891,6 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 void Browser::ScheduleUIUpdate(const WebContents* source,
                                unsigned changed_flags) {
   DCHECK(source);
-  if (DevToolsWindow::IsDevToolsWindow(source->GetRenderViewHost()))
-    return;
-
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
 
