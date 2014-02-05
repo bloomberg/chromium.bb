@@ -1307,22 +1307,22 @@ Press any key to continue exploring.
     The sign-in service below is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>. Sign in to continue.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
-    Please confirm your password.
+    Complete sign-in
   </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_HINT" desc="Hint for the password field on the confirm password dialog.">
-    Type your password here to confirm.
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL" desc="Label for the password field on the confirm password dialog.">
+    Please re-enter your password
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON" desc="Label for the confirm button on the confirm password dialog.">
     Confirm
   </message>
-  <message name="IDS_LOGIN_NO_PASSWORD_WARNING_TITLE" desc="Title for the no password warning dialog">
-    No password detected.
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_TEXT" desc="Text to explain to user why password needs to be typed again in the confirm password UI.">
+    Re-entering your password will allow you to sign in when you are offline.
   </message>
-  <message name="IDS_LOGIN_NO_PASSWORD_WARNING" desc="Body text of the no password warning dialog">
-    Password is not detected for your SAML identity provider. Please contact your administrator for more information.
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
+    Sorry, your password could not be verified. Please try again.
   </message>
-  <message name="IDS_LOGIN_NO_PASSWORD_WARNING_DISMISS_BUTTON" desc="Label for the dismiss button on the no password warning dialog.">
-    Ok
+  <message name="IDS_LOGIN_FATAL_ERROR_MESSAGE" desc="Message to show when the authentication could not be completed.">
+    Something went wrong with signing in.<ph name="LINE_BREAK">&lt;br&gt;</ph>Please contact your administrator or try again.
   </message>
   <message name="IDS_LOGIN_OFFLINE_EMAIL" desc="Email field text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     Email
@@ -4789,7 +4789,7 @@ All users must sign out to continue.
   <message name="IDS_FIRST_RUN_NEXT_BUTTON" desc="Text on the first-run tutorial button leading to next step of tutorial.">
     Next
   </message>
-  
+
   <!-- Charger replacement dialog -->
   <message name="IDS_CHARGER_REPLACEMENT_CHECK_CHARGER_TITLE" desc="Title on the check charger page">
     Check your charger
@@ -4823,7 +4823,7 @@ All users must sign out to continue.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_IRE" desc="The text in the select country drop down as ireland">
     Ireland
-  </message>  
+  </message>
   <message name="IDS_CHARGER_REPLACEMENT_NEXT_STEP" desc="Text on the button leading user to the next step">
     Next
   </message>
@@ -4855,7 +4855,7 @@ All users must sign out to continue.
     Please stop using the recalled charger.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_UPDATE_P2" desc="The 2nd paragraph on the charger update page">
-    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
+    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_UPDATE_FAQ" desc="Text about charger update FAQs">
     In the meantime, you may refer to the <ph name="BEGIN_LINK">&lt;a class="link" href="#"&gt;</ph>FAQs<ph name="END_LINK">&lt;/a&gt;</ph> and continue to use your HP Chromebook 11 with any other certified micro-USB charger, for example one provided with a tablet or smartphone. We apologize again for the inconvenience. Your safety is a top priority.
@@ -4891,10 +4891,10 @@ All users must sign out to continue.
     HP Chromebook 11 power charger request form
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_P1" desc="1st paragraph of text on the offline charger order form">
-    With guidance and approval from the CPSC and other regulatory agencies, Google and HP are recalling the original charger for the HP Chromebook 11. 
+    With guidance and approval from the CPSC and other regulatory agencies, Google and HP are recalling the original charger for the HP Chromebook 11.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_P2" desc="2nd paragraph of text on the offline charger order form">
-    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
+    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_CONFIRM" desc="Text for the check box that confirms user has ordered the charger offline">
     I have called the number and requested a replacement charger.
@@ -4912,7 +4912,7 @@ All users must sign out to continue.
     We see that you've ordered a replacement charger.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_MORE_INFO" desc="Text for fining more info for charger">
-    You can find more info at 
+    You can find more info at
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_DIALOG_TITLE" desc="Title of the charger replacement UI dialg">
     Check charger

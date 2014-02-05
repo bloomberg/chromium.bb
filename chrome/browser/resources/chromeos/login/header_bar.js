@@ -188,6 +188,8 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
+      var isSamlPasswordConfirm =
+          (this.signinUIState_ == SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
 
@@ -200,6 +202,7 @@ cr.define('login', function() {
           managedUserCreationDialogIsActive ||
           !this.showGuest_ ||
           wrongHWIDWarningIsActive ||
+          isSamlPasswordConfirm ||
           isMultiProfilesUI;
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;

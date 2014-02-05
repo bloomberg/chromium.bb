@@ -378,11 +378,13 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
   builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
 
-  // Strings used by confirm password dialog.
   builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
-  builder->Add("confirmPasswordHint", IDS_LOGIN_CONFIRM_PASSWORD_HINT);
+  builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
   builder->Add("confirmPasswordConfirmButton",
                IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON);
+  builder->Add("confirmPasswordText", IDS_LOGIN_CONFIRM_PASSWORD_TEXT);
+  builder->Add("confirmPasswordErrorText",
+               IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);

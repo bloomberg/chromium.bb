@@ -42,7 +42,7 @@
 #oobe.terms-of-service #inner-container,
 #oobe.wrong-hwid #inner-container,
 #oobe.confirm-password #inner-container,
-#oobe.message-box #inner-container {
+#oobe.fatal-error #inner-container {
   background: white;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
               0 4px 23px 5px rgba(0, 0, 0, 0.2),
@@ -116,7 +116,7 @@
 #terms-of-service-dot,
 #wrong-hwid-dot,
 #confirm-password-dot,
-#message-box-dot {
+#fatal-error-dot {
   display: none;
 }
 

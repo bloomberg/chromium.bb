@@ -68,6 +68,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     cancelAllowed_: undefined,
 
+    /**
+     * SAML password confirmation attempt count.
+     * @type {number}
+     */
+    samlPasswordConfirmAttempt_: 0,
+
     /** @override */
     decorate: function() {
       this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
@@ -227,7 +233,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     loadAuthExtension: function(data) {
       this.isLocal = data.isLocal;
       this.email = '';
+
+      // Reset SAML
       this.classList.toggle('saml', false);
+      this.samlPasswordConfirmAttempt_ = 0;
 
       this.updateAuthExtension(data);
 
@@ -378,8 +387,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.loading = true;
       Oobe.getInstance().headerHidden = false;
 
-      login.ConfirmPasswordScreen.show(
-          this.onConfirmPasswordCollected_.bind(this));
+      if (this.samlPasswordConfirmAttempt_ <= 1) {
+        login.ConfirmPasswordScreen.show(
+            this.samlPasswordConfirmAttempt_,
+            this.onConfirmPasswordCollected_.bind(this));
+      } else {
+        this.showFatalAuthError();
+      }
     },
 
     /**
@@ -387,6 +401,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onConfirmPasswordCollected_: function(password) {
+      this.samlPasswordConfirmAttempt_++;
       this.gaiaAuthHost_.verifyConfirmedPassword(password);
 
       // Shows signin UI again without changing states.
@@ -398,11 +413,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {string} email The authenticated user email.
      */
     onAuthNoPassword_: function(email) {
-      login.MessageBoxScreen.show(
-          loadTimeData.getString('noPasswordWarningTitle'),
-          loadTimeData.getString('noPasswordWarningBody'),
-          loadTimeData.getString('noPasswordWarningOkButton'),
-          Oobe.showSigninUI);
+      this.showFatalAuthError();
+    },
+
+    /**
+     * Shows the fatal auth error.
+     */
+    showFatalAuthError: function() {
+      login.FatalErrorScreen.show(Oobe.showSigninUI);
     },
 
     /**

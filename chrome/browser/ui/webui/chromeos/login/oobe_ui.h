@@ -69,7 +69,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenWrongHWID[];
   static const char kScreenAppLaunchSplash[];
   static const char kScreenConfirmPassword[];
-  static const char kScreenMessageBox[];
+  static const char kScreenFatalError[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();

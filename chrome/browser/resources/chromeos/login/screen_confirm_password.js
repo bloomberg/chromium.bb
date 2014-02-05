@@ -22,27 +22,18 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     decorate: function() {
       $('confirm-password-input').addEventListener(
           'keydown', this.onPasswordFieldKeyDown_.bind(this));
-    },
-
-    /**
-     * Screen controls in bottom strip.
-     * @type {Array.<HTMLButtonElement>} Buttons to be put in the bottom strip.
-     */
-    get buttons() {
-      var buttons = [];
-
-      var confirmButton = this.ownerDocument.createElement('button');
-      confirmButton.textContent =
-          loadTimeData.getString('confirmPasswordConfirmButton');
-      confirmButton.addEventListener('click',
-                                     this.onConfirmPassword_.bind(this));
-      buttons.push(confirmButton);
-
-      return buttons;
+      $('confirm-password-confirm-button').addEventListener(
+          'click', this.onConfirmPassword_.bind(this));
     },
 
     get defaultControl() {
       return $('confirm-password-input');
+    },
+
+    /** @override */
+    onBeforeShow: function(data) {
+      $('login-header-bar').signinUIState =
+          SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM;
     },
 
     /**
@@ -62,11 +53,13 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
 
     /**
      * Shows the confirm password screen.
+     * @param {number} attemptCount Number of attempts tried, starting at 0.
      * @param {function(string)} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(callback) {
+    show: function(attemptCount, callback) {
       this.callback_ = callback;
+      this.classList.toggle('error', attemptCount > 0);
 
       $('confirm-password-input').value = '';
       Oobe.showScreen({id: SCREEN_CONFIRM_PASSWORD});

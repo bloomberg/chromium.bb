@@ -22,7 +22,7 @@
     'managed-user-creation';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
-/** @const */ var SCREEN_MESSAGE_BOX = 'message-box';
+/** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -44,6 +44,7 @@
   ACCOUNT_PICKER: 2,
   WRONG_HWID_WARNING: 3,
   MANAGED_USER_CREATION_FLOW: 4,
+  SAML_PASSWORD_CONFIRM: 5,
 };
 
 /* Possible UI states of the error screen. */

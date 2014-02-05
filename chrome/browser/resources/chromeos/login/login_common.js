@@ -27,7 +27,7 @@
 <include src="screen_tpm_error.js"></include>
 <include src="screen_wrong_hwid.js"></include>
 <include src="screen_confirm_password.js"></include>
-<include src="screen_message_box.js"></include>
+<include src="screen_fatal_error.js"></include>
 <include src="user_pod_row.js"></include>
 <include src="resource_loader.js"></include>
 

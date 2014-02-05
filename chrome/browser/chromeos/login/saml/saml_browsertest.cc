@@ -470,10 +470,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   SetSignFormField("Email", "fake_user");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_MESSAGE_BOX).Wait();
-  JsExpect(
-      "$('message-box-title').textContent == "
-      "loadTimeData.getString('noPasswordWarningTitle')");
+  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
 }
 
 // Types |bob@example.com| into the GAIA login form but then authenticates as
@@ -500,6 +497,33 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   const User* user = UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kFirstSAMLUserEmail, user->email());
+}
+
+// Tests the password confirm flow: show error on the first failure and
+// fatal error on the second failure.
+IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  // Lands on confirm password screen with no error message.
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("!$('confirm-password').classList.contains('error')");
+
+  // Enter an unknown password for the first time should go back to confirm
+  // password screen with error message.
+  SendConfirmPassword("wrong_password");
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("$('confirm-password').classList.contains('error')");
+
+  // Enter an unknown password 2nd time should go back to confirm password
+  // screen.
+  SendConfirmPassword("wrong_password");
+  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
 }
 
 class SAMLPolicyTest : public SamlTest {

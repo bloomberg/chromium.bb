@@ -30,7 +30,7 @@ cr.define('cr.ui.Oobe', function() {
       login.TermsOfServiceScreen.register();
       login.AppLaunchSplashScreen.register();
       login.ConfirmPasswordScreen.register();
-      login.MessageBoxScreen.register();
+      login.FatalErrorScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

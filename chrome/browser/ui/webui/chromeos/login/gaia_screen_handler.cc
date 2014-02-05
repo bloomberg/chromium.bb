@@ -183,10 +183,8 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
 
   // Strings used by no password warning dialog.
-  builder->Add("noPasswordWarningTitle", IDS_LOGIN_NO_PASSWORD_WARNING_TITLE);
-  builder->Add("noPasswordWarningBody", IDS_LOGIN_NO_PASSWORD_WARNING);
-  builder->Add("noPasswordWarningOkButton",
-               IDS_LOGIN_NO_PASSWORD_WARNING_DISMISS_BUTTON);
+  builder->Add("fatalErrorMessage", IDS_LOGIN_FATAL_ERROR_MESSAGE);
+  builder->Add("fatalErrorDismissButton", IDS_OK);
 }
 
 void GaiaScreenHandler::Initialize() {}
