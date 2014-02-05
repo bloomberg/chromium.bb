@@ -145,4 +145,12 @@ void GetUpdatesProcessor::ApplyUpdatesForAllTypes(
   }
 }
 
+void GetUpdatesProcessor::PassiveApplyUpdatesForAllTypes(
+    sessions::StatusController* status_controller) {
+  for (UpdateHandlerMap::iterator it = update_handler_map_->begin();
+       it != update_handler_map_->end(); ++it) {
+    it->second->PassiveApplyUpdates(status_controller);
+  }
+}
+
 }  // namespace syncer

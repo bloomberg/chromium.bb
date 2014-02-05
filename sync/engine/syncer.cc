@@ -63,7 +63,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
   VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
   if (nudge_tracker.IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
-    if (!DownloadAndApplyUpdates(
+    if (!DownloadUpdates(
             request_types,
             session,
             &get_updates_processor,
@@ -75,6 +75,9 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                        base::ConstRef(nudge_tracker)))) {
       return HandleCycleEnd(session, nudge_tracker.updates_source());
     }
+    ApplyUpdates(session, &get_updates_processor);
+    if (ExitRequested())
+      return HandleCycleEnd(session, nudge_tracker.updates_source());
   }
 
   VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
@@ -95,7 +98,7 @@ bool Syncer::ConfigureSyncShare(
   GetUpdatesProcessor get_updates_processor(
       session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
-  DownloadAndApplyUpdates(
+  if (!DownloadUpdates(
       request_types,
       session,
       &get_updates_processor,
@@ -104,7 +107,21 @@ bool Syncer::ConfigureSyncShare(
                  &get_updates_processor,
                  kCreateMobileBookmarksFolder,
                  source,
-                 request_types));
+                 request_types))) {
+    return HandleCycleEnd(session, source);
+  }
+
+  {
+    TRACE_EVENT0("sync", "ApplyUpdatesPassively");
+
+    ApplyControlDataUpdates(session->context()->directory());
+
+    get_updates_processor.PassiveApplyUpdatesForAllTypes(
+        session->mutable_status_controller());
+    session->context()->set_hierarchy_conflict_detected(
+        session->status_controller().num_hierarchy_conflicts() > 0);
+  }
+
   return HandleCycleEnd(session, source);
 }
 
@@ -114,7 +131,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
   GetUpdatesProcessor get_updates_processor(
       session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Polling types " << ModelTypeSetToString(request_types);
-  DownloadAndApplyUpdates(
+  if (!DownloadUpdates(
       request_types,
       session,
       &get_updates_processor,
@@ -122,7 +139,10 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
                  session,
                  &get_updates_processor,
                  kCreateMobileBookmarksFolder,
-                 request_types));
+                 request_types))) {
+    return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
+  }
+  ApplyUpdates(session, &get_updates_processor);
   return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
 }
 
@@ -132,7 +152,7 @@ bool Syncer::RetrySyncShare(ModelTypeSet request_types,
   GetUpdatesProcessor get_updates_processor(
       session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Retrying types " << ModelTypeSetToString(request_types);
-  DownloadAndApplyUpdates(
+  if (!DownloadUpdates(
       request_types,
       session,
       &get_updates_processor,
@@ -140,8 +160,11 @@ bool Syncer::RetrySyncShare(ModelTypeSet request_types,
                  session,
                  &get_updates_processor,
                  kCreateMobileBookmarksFolder,
-                 request_types));
-  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
+                 request_types))) {
+    return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
+  }
+  ApplyUpdates(session, &get_updates_processor);
+  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
 }
 
 void Syncer::ApplyUpdates(SyncSession* session,
@@ -159,7 +182,7 @@ void Syncer::ApplyUpdates(SyncSession* session,
   session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
 }
 
-bool Syncer::DownloadAndApplyUpdates(
+bool Syncer::DownloadUpdates(
     ModelTypeSet request_types,
     SyncSession* session,
     GetUpdatesProcessor* get_updates_processor,
@@ -177,15 +200,10 @@ bool Syncer::DownloadAndApplyUpdates(
         download_result);
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
 
-  // Exit without applying if we're shutting down or an error was detected.
-  if (download_result != SYNCER_OK)
-    return false;
-  if (ExitRequested())
+  // Report failure if something unusual happened.
+  if (download_result != SYNCER_OK || ExitRequested())
     return false;
 
-  ApplyUpdates(session, get_updates_processor);
-  if (ExitRequested())
-    return false;
   return true;
 }
 

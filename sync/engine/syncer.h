@@ -73,7 +73,7 @@ class SYNC_EXPORT_PRIVATE Syncer {
  private:
   void ApplyUpdates(sessions::SyncSession* session,
                     GetUpdatesProcessor* get_updates_processor);
-  bool DownloadAndApplyUpdates(
+  bool DownloadUpdates(
       ModelTypeSet request_types,
       sessions::SyncSession* session,
       GetUpdatesProcessor* get_updates_processor,

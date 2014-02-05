@@ -42,20 +42,28 @@ void SyncDirectoryUpdateHandler::ProcessGetUpdatesResponse(
 
 void SyncDirectoryUpdateHandler::ApplyUpdates(
     sessions::StatusController* status) {
-  if (IsControlType(type_)) {
-    return;  // We don't process control types here.
+  if (!IsApplyUpdatesRequired()) {
+    return;
   }
 
-  if (!dir_->TypeHasUnappliedUpdates(type_)) {
-    return;  // No work to do.  Skip this type.
-  }
-
+  // This will invoke handlers that belong to the model and its thread, so we
+  // switch to the appropriate thread before we start this work.
   WorkCallback c = base::Bind(
       &SyncDirectoryUpdateHandler::ApplyUpdatesImpl,
       // We wait until the callback is executed.  We can safely use Unretained.
       base::Unretained(this),
       base::Unretained(status));
   worker_->DoWorkAndWaitUntilDone(c);
+}
+
+void SyncDirectoryUpdateHandler::PassiveApplyUpdates(
+    sessions::StatusController* status) {
+  if (!IsApplyUpdatesRequired()) {
+    return;
+  }
+
+  // Just do the work here instead of deferring to another thread.
+  ApplyUpdatesImpl(status);
 }
 
 SyncerError SyncDirectoryUpdateHandler::ApplyUpdatesImpl(
@@ -123,6 +131,14 @@ SyncerError SyncDirectoryUpdateHandler::ApplyUpdatesImpl(
   }
 
   return SYNCER_OK;
+}
+
+bool SyncDirectoryUpdateHandler::IsApplyUpdatesRequired() {
+  if (IsControlType(type_)) {
+    return false;  // We don't process control types here.
+  }
+
+  return dir_->TypeHasUnappliedUpdates(type_);
 }
 
 void SyncDirectoryUpdateHandler::UpdateSyncEntities(

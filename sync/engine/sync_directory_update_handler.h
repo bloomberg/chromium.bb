@@ -63,9 +63,16 @@ class SYNC_EXPORT_PRIVATE SyncDirectoryUpdateHandler {
   // Delegates to ApplyUpdatesImpl().
   void ApplyUpdates(sessions::StatusController* status);
 
+  // Apply updates on the sync thread.  This is for use during initial sync
+  // prior to model association.
+  void PassiveApplyUpdates(sessions::StatusController* status);
+
  private:
   friend class SyncDirectoryUpdateHandlerApplyUpdateTest;
   friend class SyncDirectoryUpdateHandlerProcessUpdateTest;
+
+  // Sometimes there is nothing to do, so we can return without doing anything.
+  bool IsApplyUpdatesRequired();
 
   // Processes the given SyncEntities and stores their data in the directory.
   // Their types must match this update handler's type.

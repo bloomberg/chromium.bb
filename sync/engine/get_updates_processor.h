@@ -55,8 +55,13 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
       const sync_pb::GetUpdatesResponse& gu_response,
       sessions::StatusController* status_controller);
 
-  // Applies pending updates for all sync types known to the manager.
+  // Applies pending updates for all sync types known to the manager.  Work is
+  // delegated to their model threads.
   void ApplyUpdatesForAllTypes(sessions::StatusController* status_controller);
+
+  // Applies updates on the sync thread.  Safe only in configure cycles.
+  void PassiveApplyUpdatesForAllTypes(
+      sessions::StatusController* status_controller);
 
  private:
   // A map of 'update handlers', one for each enabled type.
