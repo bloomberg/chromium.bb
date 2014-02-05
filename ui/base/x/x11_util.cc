@@ -655,27 +655,44 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   // rectangles. This means to determine if a point is inside a window for the
   // purpose of input handling we have to check the rectangles in the ShapeInput
   // list.
-  int dummy;
-  int input_rects_size = 0;
-  XRectangle* input_rects = XShapeGetRectangles(
-      gfx::GetXDisplay(), window, ShapeInput, &input_rects_size, &dummy);
-  if (!input_rects)
-    return true;
-  bool is_in_input_rects = false;
-  for (int i = 0; i < input_rects_size; ++i) {
-    // The ShapeInput rects appear to be in window space, so we have to
-    // translate by the window_rect's offset to map to screen space.
-    gfx::Rect input_rect =
-        gfx::Rect(input_rects[i].x + window_rect.x(),
-                  input_rects[i].y + window_rect.y(),
-                  input_rects[i].width, input_rects[i].height);
-    if (input_rect.Contains(screen_loc)) {
-      is_in_input_rects = true;
-      break;
+  // According to http://www.x.org/releases/current/doc/xextproto/shape.html,
+  // we need to also respect the ShapeBounding rectangles.
+  // The effective input region of a window is defined to be the intersection
+  // of the client input region with both the default input region and the
+  // client bounding region. Any portion of the client input region that is not
+  // included in both the default input region and the client bounding region
+  // will not be included in the effective input region on the screen.
+  int rectangle_kind[] = {ShapeInput, ShapeBounding};
+  for (size_t kind_index = 0;
+       kind_index < arraysize(rectangle_kind);
+       kind_index++) {
+    int dummy;
+    int shape_rects_size = 0;
+    XRectangle* shape_rects = XShapeGetRectangles(gfx::GetXDisplay(),
+                                                  window,
+                                                  rectangle_kind[kind_index],
+                                                  &shape_rects_size,
+                                                  &dummy);
+    if (!shape_rects)
+      continue;
+    bool is_in_shape_rects = false;
+    for (int i = 0; i < shape_rects_size; ++i) {
+      // The ShapeInput and ShapeBounding rects are to be in window space, so we
+      // have to translate by the window_rect's offset to map to screen space.
+      gfx::Rect shape_rect =
+          gfx::Rect(shape_rects[i].x + window_rect.x(),
+                    shape_rects[i].y + window_rect.y(),
+                    shape_rects[i].width, shape_rects[i].height);
+      if (shape_rect.Contains(screen_loc)) {
+        is_in_shape_rects = true;
+        break;
+      }
     }
+    XFree(shape_rects);
+    if (!is_in_shape_rects)
+      return false;
   }
-  XFree(input_rects);
-  return is_in_input_rects;
+  return true;
 }
 
 
