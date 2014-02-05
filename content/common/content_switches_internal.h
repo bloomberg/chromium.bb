@@ -9,6 +9,7 @@ namespace content {
 
 // Should we use overlay scrollbars.
 bool IsOverlayScrollbarEnabled();
+bool IsPinchToZoomEnabled();
 
 } // namespace content
 

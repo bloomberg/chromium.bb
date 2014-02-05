@@ -1481,11 +1481,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           chromeos::switches::kLoginProfile, login_profile);
 #endif
 
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    command_line->AppendSwitch(switches::kEnablePinch);
-#endif
-
 #if defined(ENABLE_WEBRTC)
     if (VersionInfo::GetChannel() <= VersionInfo::CHANNEL_DEV) {
       static const char* const kWebRtcDevSwitchNames[] = {

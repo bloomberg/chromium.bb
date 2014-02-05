@@ -107,6 +107,7 @@
 #include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -938,6 +939,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
+
+  if (content::IsPinchToZoomEnabled())
+    command_line->AppendSwitch(switches::kEnablePinch);
 
   AppendGpuCommandLineFlags(command_line);
 }

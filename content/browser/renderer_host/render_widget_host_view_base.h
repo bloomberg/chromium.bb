@@ -156,6 +156,10 @@ protected:
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
 
+  // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
+  // renderer.
+  bool pinch_zoom_enabled_;
+
  private:
   void FlushInput();
 

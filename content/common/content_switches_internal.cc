@@ -7,6 +7,10 @@
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 bool IsOverlayScrollbarEnabled() {
@@ -18,6 +22,23 @@ bool IsOverlayScrollbarEnabled() {
     return true;
 
   return false;
+}
+
+bool IsPinchToZoomEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // --disable-pinch should always disable pinch
+  if (command_line.HasSwitch(switches::kDisablePinch))
+    return false;
+
+#if defined(OS_WIN)
+  return base::win::GetVersion() >= base::win::VERSION_WIN8;
+#elif defined(OS_CHROMEOS)
+  return true;
+#endif
+
+  return command_line.HasSwitch(switches::kEnableViewport) ||
+      command_line.HasSwitch(switches::kEnablePinch);
 }
 
 } // namespace content

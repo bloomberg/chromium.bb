@@ -80,7 +80,6 @@
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/plugin_constants_win.h"
@@ -294,17 +293,6 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   results->depth = 24;
   results->depthPerComponent = 8;
   results->deviceScaleFactor = display.device_scale_factor();
-}
-
-bool ShouldSendPinchGesture() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return true;
-#endif
-  static bool pinch_allowed =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViewport) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
-  return pinch_allowed;
 }
 
 bool PointerEventActivates(const ui::Event& event) {
@@ -2992,10 +2980,9 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnGestureEvent");
-  // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
-      event->type() == ui::ET_GESTURE_PINCH_END) && !ShouldSendPinchGesture()) {
+      event->type() == ui::ET_GESTURE_PINCH_END) && !pinch_zoom_enabled_) {
     event->SetHandled();
     return;
   }

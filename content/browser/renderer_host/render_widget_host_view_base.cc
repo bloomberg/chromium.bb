@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/content_switches_internal.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/display.h"
@@ -390,6 +391,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       current_device_scale_factor_(0),
+      pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       renderer_frame_number_(0) {
 }
 
