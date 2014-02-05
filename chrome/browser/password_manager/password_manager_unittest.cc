@@ -19,8 +19,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -331,8 +329,8 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
 }
 
-TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
-  // Test that navigating a subframe does not prevent us from showing the save
+TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
+  // Test that navigating in the page does not prevent us from showing the save
   // password infobar.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
@@ -344,10 +342,8 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
   manager()->OnPasswordFormsParsed(observed);  // The initial load.
   manager()->OnPasswordFormsRendered(observed);  // The initial layout.
 
-  // Simulate navigating a sub-frame.
-  content::LoadCommittedDetails details;
-  content::FrameNavigateParams params;
-  manager()->DidNavigateAnyFrame(details, params);
+  // Simulate navigating in the page.
+  manager()->DidNavigateMainFrame(true);
 
   // Simulate submitting the password.
   OnPasswordFormSubmitted(form);
@@ -391,10 +387,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   manager()->OnPasswordFormsRendered(observed);
 
   // Now navigate to a second page.
-  content::LoadCommittedDetails details;
-  details.is_main_frame = true;
-  content::FrameNavigateParams params;
-  manager()->DidNavigateMainFrame(details, params);
+  manager()->DidNavigateMainFrame(false);
 
   // This page contains a form with the same markup, but on a different
   // URL.

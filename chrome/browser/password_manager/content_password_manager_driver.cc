@@ -18,21 +18,25 @@
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::WebContents* web_contents,
     PasswordManagerDelegate* delegate)
-    : web_contents_(web_contents),
+    : WebContentsObserver(web_contents),
       password_manager_(web_contents, delegate),
-      password_generation_manager_(web_contents, delegate) {}
+      password_generation_manager_(web_contents, delegate) {
+  DCHECK(web_contents);
+}
 
 ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {}
 
 void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  web_contents_->GetRenderViewHost()->Send(new AutofillMsg_FillPasswordForm(
-      web_contents_->GetRenderViewHost()->GetRoutingID(), form_data));
+  DCHECK(web_contents());
+  web_contents()->GetRenderViewHost()->Send(new AutofillMsg_FillPasswordForm(
+      web_contents()->GetRenderViewHost()->GetRoutingID(), form_data));
 }
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
+  DCHECK(web_contents());
   content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
+      web_contents()->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return false;
@@ -42,7 +46,8 @@ bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
 }
 
 bool ContentPasswordManagerDriver::IsOffTheRecord() {
-  return web_contents_->GetBrowserContext()->IsOffTheRecord();
+  DCHECK(web_contents());
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
 PasswordGenerationManager*
@@ -52,4 +57,15 @@ ContentPasswordManagerDriver::GetPasswordGenerationManager() {
 
 PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
   return &password_manager_;
+}
+
+void ContentPasswordManagerDriver::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  password_manager_.DidNavigateMainFrame(details.is_in_page);
+}
+
+bool ContentPasswordManagerDriver::OnMessageReceived(
+    const IPC::Message& message) {
+  return password_manager_.OnMessageReceived(message);
 }

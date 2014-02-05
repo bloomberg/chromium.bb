@@ -10,12 +10,14 @@
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
 }
 
-class ContentPasswordManagerDriver : public PasswordManagerDriver {
+class ContentPasswordManagerDriver : public PasswordManagerDriver,
+                                     public content::WebContentsObserver {
  public:
   explicit ContentPasswordManagerDriver(content::WebContents* web_contents,
                                         PasswordManagerDelegate* delegate);
@@ -29,9 +31,13 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
   virtual PasswordManager* GetPasswordManager() OVERRIDE;
 
- private:
-  content::WebContents* web_contents_;
+  // content::WebContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
 
+ private:
   // Must outlive this instance.
   PasswordManagerDelegate* delegate_;
 

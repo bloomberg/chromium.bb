@@ -95,7 +95,7 @@ void PasswordManager::RegisterProfilePrefs(
 
 PasswordManager::PasswordManager(WebContents* web_contents,
                                  PasswordManagerDelegate* delegate)
-    : content::WebContentsObserver(web_contents),
+    : web_contents_(web_contents),
       delegate_(delegate),
       driver_(delegate->GetDriver()) {
   DCHECK(delegate_);
@@ -125,12 +125,8 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // ability to detect forms.
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
                     !driver_->DidLastPageLoadEncounterSSLErrors());
-  PasswordFormManager* manager =
-      new PasswordFormManager(delegate_->GetProfile(),
-                              this,
-                              web_contents(),
-                              form,
-                              ssl_valid);
+  PasswordFormManager* manager = new PasswordFormManager(
+      delegate_->GetProfile(), this, web_contents_, form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -258,13 +254,10 @@ void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PasswordManager::DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) {
-  // Clear data after main frame navigation. We don't want to clear data after
-  // subframe navigation as there might be password forms on other frames that
-  // could be submitted.
-  if (!details.is_in_page)
+void PasswordManager::DidNavigateMainFrame(bool is_in_page) {
+  // Clear data after main frame navigation if the navigation was to a
+  // different page.
+  if (!is_in_page)
     pending_login_managers_.clear();
 }
 
@@ -305,12 +298,8 @@ void PasswordManager::OnPasswordFormsParsed(
       continue;
 
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
-    PasswordFormManager* manager =
-        new PasswordFormManager(delegate_->GetProfile(),
-                                this,
-                                web_contents(),
-                                *iter,
-                                ssl_valid);
+    PasswordFormManager* manager = new PasswordFormManager(
+        delegate_->GetProfile(), this, web_contents_, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     // Avoid prompting the user for access to a password if they don't have
@@ -362,7 +351,7 @@ void PasswordManager::OnPasswordFormsRendered(
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
       ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-          ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+          ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
       if (manage_passwords_bubble_ui_controller) {
         manage_passwords_bubble_ui_controller->OnPasswordSubmitted(
             provisional_save_manager_.release());
@@ -451,7 +440,7 @@ void PasswordManager::Autofill(
   }
 
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
   if (manage_passwords_bubble_ui_controller &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {

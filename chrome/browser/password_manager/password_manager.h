@@ -17,13 +17,21 @@
 #include "chrome/browser/ui/login/login_model.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "ipc/ipc_message_macros.h"
 
 class PasswordManagerDelegate;
 class PasswordManagerDriver;
 class PasswordManagerTest;
 class PasswordFormManager;
 class PrefRegistrySimple;
+
+namespace content {
+class WebContents;
+}
+
+namespace IPC {
+class Message;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -33,7 +41,7 @@ class PrefRegistrySyncable;
 // receiving password form data from the renderer and managing the password
 // database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public LoginModel, public content::WebContentsObserver {
+class PasswordManager : public LoginModel {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #if defined(OS_WIN)
@@ -77,11 +85,11 @@ class PasswordManager : public LoginModel, public content::WebContentsObserver {
   // of 2 (see SavePassword).
   void ProvisionallySavePassword(const autofill::PasswordForm& form);
 
-  // content::WebContentsObserver overrides.
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // Should be called when the user navigates the main frame.
+  void DidNavigateMainFrame(bool is_in_page);
+
+  // TODO(blundell): Eliminate this method. crbug.com/340669
+  bool OnMessageReceived(const IPC::Message& message);
 
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.
@@ -153,6 +161,12 @@ class PasswordManager : public LoginModel, public content::WebContentsObserver {
   // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
   // time a user submits a login form and gets to the next page.
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
+
+  // The WebContents instance associated with this instance. Scoped to the
+  // lifetime of this class, as this class is indirectly a WCUD via
+  // PasswordManagerDelegateImpl.
+  // TODO(blundell): Eliminate this ivar. crbug.com/340661
+  content::WebContents* web_contents_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerDelegate* const delegate_;
