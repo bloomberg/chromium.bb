@@ -169,7 +169,6 @@ TEST(FileSystemUtilTest, ConvertAccountMetadataToAppList) {
   EXPECT_EQ("name", app_resource.name());
   EXPECT_EQ("object_type", app_resource.object_type());
   EXPECT_TRUE(app_resource.supports_create());
-  EXPECT_EQ("http://product/url", app_resource.product_url().spec());
   const ScopedVector<std::string>& primary_mimetypes =
       app_resource.primary_mimetypes();
   ASSERT_EQ(1U, primary_mimetypes.size());

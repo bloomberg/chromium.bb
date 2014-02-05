@@ -173,8 +173,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
 
   // Foo.app can handle "text/plain" and "text/html"
   scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
-  foo_app->set_product_url(
-      GURL("https://chrome.google.com/webstore/detail/foo_app_id"));
+  foo_app->set_product_id("foo_app_id");
   foo_app->set_application_id("foo_app_id");
   foo_app->set_name("Foo");
   foo_app->set_object_type("foo_object_type");
@@ -185,8 +184,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
 
   // Bar.app can only handle "text/plain".
   scoped_ptr<google_apis::AppResource> bar_app(new google_apis::AppResource);
-  bar_app->set_product_url(
-      GURL("https://chrome.google.com/webstore/detail/bar_app_id"));
+  bar_app->set_product_id("bar_app_id");
   bar_app->set_application_id("bar_app_id");
   bar_app->set_name("Bar");
   bar_app->set_object_type("bar_object_type");
@@ -610,8 +608,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   // Baz.app can handle "text/plain".
   // This is a Drive app.
   scoped_ptr<google_apis::AppResource> baz_app(new google_apis::AppResource);
-  baz_app->set_product_url(
-      GURL("https://chrome.google.com/webstore/detail/baz_app_id"));
+  baz_app->set_product_id("baz_app_id");
   baz_app->set_application_id(kBazId);
   baz_app->set_name("Baz");
   baz_app->set_object_type("baz_object_type");
@@ -663,8 +660,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
 
   // Foo.app can handle ".gdoc" files.
   scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
-  foo_app->set_product_url(
-      GURL("https://chrome.google.com/webstore/detail/foo_app"));
+  foo_app->set_product_id("foo_app");
   foo_app->set_application_id(kFooId);
   foo_app->set_name("Foo");
   foo_app->set_object_type("foo_object_type");

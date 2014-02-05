@@ -56,15 +56,19 @@ DriveAppInfo::DriveAppInfo() {
 
 DriveAppInfo::DriveAppInfo(
     const std::string& app_id,
+    const std::string& product_id,
     const google_apis::InstalledApp::IconList& app_icons,
     const google_apis::InstalledApp::IconList& document_icons,
     const std::string& app_name,
-    const GURL& create_url)
+    const GURL& create_url,
+    bool is_removable)
     : app_id(app_id),
+      product_id(product_id),
       app_icons(app_icons),
       document_icons(document_icons),
       app_name(app_name),
-      create_url(create_url) {
+      create_url(create_url),
+      is_removable(is_removable) {
 }
 
 DriveAppInfo::~DriveAppInfo() {
@@ -169,10 +173,12 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
     }
 
     all_apps_[id] = DriveAppInfo(app.application_id(),
+                                 app.product_id(),
                                  app_icons,
                                  document_icons,
                                  app.name(),
-                                 app.create_url());
+                                 app.create_url(),
+                                 app.is_removable());
 
     // TODO(kinaba): consider taking primary/secondary distinction into account.
     AddAppSelectorList(app.primary_mimetypes(), id, &mimetype_map_);

@@ -523,6 +523,7 @@ class AppsListRequest : public DriveApiDataRequest {
  public:
   AppsListRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
+                  bool use_internal_endpoint,
                   const AppListCallback& callback);
   virtual ~AppsListRequest();
 
@@ -532,6 +533,7 @@ class AppsListRequest : public DriveApiDataRequest {
 
  private:
   const DriveApiUrlGenerator url_generator_;
+  bool use_internal_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
 };

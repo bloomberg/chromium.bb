@@ -585,6 +585,7 @@ TEST_F(DriveApiRequestsTest, AppsListRequest) {
     drive::AppsListRequest* request = new drive::AppsListRequest(
         request_sender_.get(),
         *url_generator_,
+        false,  // use_internal_endpoint
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &app_list)));

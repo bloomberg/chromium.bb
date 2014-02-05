@@ -35,10 +35,13 @@ TEST_F(DriveApiUrlGeneratorTest, GetAboutGetUrl) {
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
+  const bool use_internal_url = true;
+  EXPECT_EQ("https://www.googleapis.com/drive/v2internal/apps",
+            url_generator_.GetAppsListUrl(use_internal_url).spec());
   EXPECT_EQ("https://www.googleapis.com/drive/v2/apps",
-            url_generator_.GetAppsListUrl().spec());
+            url_generator_.GetAppsListUrl(!use_internal_url).spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/apps",
-            test_url_generator_.GetAppsListUrl().spec());
+            test_url_generator_.GetAppsListUrl(!use_internal_url).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetAppsDeleteUrl) {

@@ -30,7 +30,9 @@ class DriveApiUrlGenerator {
   GURL GetAboutGetUrl() const;
 
   // Returns a URL to invoke "Apps: list" method.
-  GURL GetAppsListUrl() const;
+  // Set |use_internal_endpoint| to true if official Chrome's API key is used
+  // and retrieving more information (related to App uninstall) is necessary.
+  GURL GetAppsListUrl(bool use_internal_endpoint) const;
 
   // Returns a URL to uninstall an app with the give |app_id|.
   GURL GetAppsDeleteUrl(const std::string& app_id) const;

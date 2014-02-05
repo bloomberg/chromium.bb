@@ -53,9 +53,8 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_TRUE(app1.supports_import());
   EXPECT_TRUE(app1.is_installed());
   EXPECT_FALSE(app1.is_authorized());
-  EXPECT_EQ("https://chrome.google.com/webstore/detail/"
-            "abcdefghabcdefghabcdefghabcdefgh",
-            app1.product_url().spec());
+  EXPECT_TRUE(app1.is_removable());
+  EXPECT_EQ("abcdefghabcdefghabcdefghabcdefgh", app1.product_id());
 
   ASSERT_EQ(1U, app1.primary_mimetypes().size());
   EXPECT_EQ("application/vnd.google-apps.drive-sdk.123456788192",
@@ -93,9 +92,8 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_FALSE(app2.supports_import());
   EXPECT_TRUE(app2.is_installed());
   EXPECT_FALSE(app2.is_authorized());
-  EXPECT_EQ("https://chrome.google.com/webstore/detail/"
-            "hgfedcbahgfedcbahgfedcbahgfedcba",
-            app2.product_url().spec());
+  EXPECT_FALSE(app2.is_removable());
+  EXPECT_EQ("hgfedcbahgfedcbahgfedcbahgfedcba", app2.product_id());
 
   ASSERT_EQ(3U, app2.primary_mimetypes().size());
   EXPECT_EQ("image/jpeg", *app2.primary_mimetypes()[0]);

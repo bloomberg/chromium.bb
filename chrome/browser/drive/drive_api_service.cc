@@ -533,7 +533,9 @@ CancelCallback DriveAPIService::GetAppList(const AppListCallback& callback) {
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new AppsListRequest(sender_.get(), url_generator_, callback));
+      new AppsListRequest(sender_.get(), url_generator_,
+                          google_apis::IsGoogleChromeAPIKeyUsed(),
+                          callback));
 }
 
 CancelCallback DriveAPIService::DownloadFile(

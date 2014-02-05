@@ -104,7 +104,6 @@ ConvertInstalledAppToAppResource(
   resource->set_name(installed_app.app_name());
   resource->set_object_type(installed_app.object_type());
   resource->set_supports_create(installed_app.supports_create());
-  resource->set_product_url(installed_app.GetProductUrl());
 
   {
     ScopedVector<std::string> primary_mimetypes(

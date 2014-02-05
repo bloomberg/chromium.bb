@@ -31,14 +31,21 @@ class DriveServiceInterface;
 struct DriveAppInfo {
   DriveAppInfo();
   DriveAppInfo(const std::string& app_id,
+               const std::string& product_id,
                const google_apis::InstalledApp::IconList& app_icons,
                const google_apis::InstalledApp::IconList& document_icons,
                const std::string& app_name,
-               const GURL& create_url);
+               const GURL& create_url,
+               bool is_removable);
   ~DriveAppInfo();
 
   // Drive app id.
   std::string app_id;
+  // Drive app's product id. This is different from app id that is used inside
+  // Drive. Product id is an id for the app in webstore; hence, it can be used
+  // for identifying the same app install as Chrome extension and as Drive app
+  // at the same time.
+  std::string product_id;
   // Drive application icon URLs for this app, paired with their size (length of
   // a side in pixels).
   google_apis::InstalledApp::IconList app_icons;
@@ -50,6 +57,9 @@ struct DriveAppInfo {
   // URL for opening a new file in the app. Empty if the app does not support
   // new file creation.
   GURL create_url;
+  // Returns if UninstallApp() is allowed for the app. Built-in apps have this
+  // field set false.
+  bool is_removable;
 };
 
 // Callback type for UninstallApp().

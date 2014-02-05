@@ -45,6 +45,22 @@ class DriveAppRegistryTest : public testing::Test {
   scoped_ptr<DriveAppRegistry> apps_registry_;
 };
 
+TEST_F(DriveAppRegistryTest, BasicParse) {
+  apps_registry_->Update();
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<DriveAppInfo> apps;
+  apps_registry_->GetAppList(&apps);
+
+  ASSERT_EQ(2u, apps.size());
+  EXPECT_EQ("123456788192", apps[0].app_id);
+  EXPECT_EQ("Drive app 1", apps[0].app_name);
+  EXPECT_EQ("https://www.example.com/createForApp1",
+            apps[0].create_url.spec());
+  EXPECT_EQ("abcdefghabcdefghabcdefghabcdefgh", apps[0].product_id);
+  EXPECT_TRUE(apps[0].is_removable);
+}
+
 TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   apps_registry_->Update();
   base::RunLoop().RunUntilIdle();

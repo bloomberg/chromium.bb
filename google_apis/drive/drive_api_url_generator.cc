@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 
@@ -32,6 +33,7 @@ const char kDriveV2InitiateUploadExistingFileUrlPrefix[] =
 
 // apps.delete and file.authorize API is exposed through a special endpoint
 // v2internal that is accessible only by the official API key for Chrome.
+const char kDriveV2InternalAppsUrl[] = "/drive/v2internal/apps";
 const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
 const char kDriveV2FilesAuthorizeUrlFormat[] =
     "/drive/v2internal/files/%s/authorize?appId=%s";
@@ -62,8 +64,9 @@ GURL DriveApiUrlGenerator::GetAboutGetUrl() const {
   return base_url_.Resolve(kDriveV2AboutUrl);
 }
 
-GURL DriveApiUrlGenerator::GetAppsListUrl() const {
-  return base_url_.Resolve(kDriveV2AppsUrl);
+GURL DriveApiUrlGenerator::GetAppsListUrl(bool use_internal_endpoint) const {
+  return base_url_.Resolve(use_internal_endpoint ?
+      kDriveV2InternalAppsUrl : kDriveV2AppsUrl);
 }
 
 GURL DriveApiUrlGenerator::GetAppsDeleteUrl(const std::string& app_id) const {

@@ -168,6 +168,9 @@ class AppResource {
   // If empty, application name is used instead.
   const std::string& object_type() const { return object_type_; }
 
+  // Returns the product ID.
+  const std::string& product_id() const { return product_id_; }
+
   // Returns whether this application supports creating new objects.
   bool supports_create() const { return supports_create_; }
 
@@ -181,8 +184,8 @@ class AppResource {
   // user's Drive.
   bool is_authorized() const { return authorized_; }
 
-  // Returns the product URL, e.g. at Chrome Web Store.
-  const GURL& product_url() const { return product_url_; }
+  // Returns whether this application is removable by apps.delete API.
+  bool is_removable() const { return removable_; }
 
   // Returns the create URL, i.e., the URL for opening a new file by the app.
   const GURL& create_url() const { return create_url_; }
@@ -229,6 +232,7 @@ class AppResource {
   void set_object_type(const std::string& object_type) {
     object_type_ = object_type;
   }
+  void set_product_id(const std::string& id) { product_id_ = id; }
   void set_supports_create(bool supports_create) {
     supports_create_ = supports_create;
   }
@@ -237,9 +241,7 @@ class AppResource {
   }
   void set_installed(bool installed) { installed_ = installed; }
   void set_authorized(bool authorized) { authorized_ = authorized; }
-  void set_product_url(const GURL& product_url) {
-    product_url_ = product_url;
-  }
+  void set_removable(bool removable) { removable_ = removable; }
   void set_primary_mimetypes(
       ScopedVector<std::string> primary_mimetypes) {
     primary_mimetypes_ = primary_mimetypes.Pass();
@@ -274,11 +276,12 @@ class AppResource {
   std::string application_id_;
   std::string name_;
   std::string object_type_;
+  std::string product_id_;
   bool supports_create_;
   bool supports_import_;
   bool installed_;
   bool authorized_;
-  GURL product_url_;
+  bool removable_;
   GURL create_url_;
   ScopedVector<std::string> primary_mimetypes_;
   ScopedVector<std::string> secondary_mimetypes_;

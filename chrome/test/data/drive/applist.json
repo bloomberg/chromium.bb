@@ -12,7 +12,9 @@
    "supportsImport": true,
    "installed": true,
    "authorized": false,
+   "removable": true,
    "productUrl": "https://chrome.google.com/webstore/detail/abcdefghabcdefghabcdefghabcdefgh",
+   "productId": "abcdefghabcdefghabcdefghabcdefgh",
    "createUrl": "https://www.example.com/createForApp1",
    "primaryMimeTypes": [
     "application/vnd.google-apps.drive-sdk.123456788192"
@@ -67,7 +69,9 @@
    "supportsImport": false,
    "installed": true,
    "authorized": false,
+   "removable": false,
    "productUrl": "https://chrome.google.com/webstore/detail/hgfedcbahgfedcbahgfedcbahgfedcba",
+   "productId": "hgfedcbahgfedcbahgfedcbahgfedcba",
    "createUrl": "https://www.example.com/createForApp2",
    "primaryMimeTypes": [
     "image/jpeg",
