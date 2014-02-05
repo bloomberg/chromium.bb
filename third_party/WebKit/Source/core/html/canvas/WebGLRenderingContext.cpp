@@ -599,7 +599,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     static const char* const bothPrefixes[] = { "", "WEBKIT_", 0, };
 
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
-    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, ApprovedExtension, webkitPrefix);
+    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, PrefixedExtension, webkitPrefix);
     registerExtension<OESElementIndexUint>(m_oesElementIndexUint);
     registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives);
     registerExtension<OESTextureFloat>(m_oesTextureFloat);
@@ -609,8 +609,8 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
     registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, PrefixedExtension, webkitPrefix);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, PrefixedExtension, webkitPrefix);
-    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);
+    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, PrefixedExtension, bothPrefixes);
+    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, PrefixedExtension, bothPrefixes);
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
     registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
 
