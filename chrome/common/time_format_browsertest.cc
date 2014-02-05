@@ -35,6 +35,6 @@ IN_PROC_BROWSER_TEST_F(TimeFormatBrowserTest, DecimalPointNotDot) {
   // http://crbug.com/60476
 
   base::string16 one_min =
-      ui::TimeFormat::TimeRemainingShort(TimeDelta::FromMinutes(1));
+      ui::TimeFormat::TimeDurationShort(TimeDelta::FromMinutes(1));
   EXPECT_EQ(base::ASCIIToUTF16("1 min"), one_min);
 }

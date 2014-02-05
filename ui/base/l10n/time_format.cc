@@ -357,7 +357,7 @@ base::string16 TimeFormat::TimeRemainingLong(const TimeDelta& delta) {
 }
 
 // static
-base::string16 TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeDurationShort(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_SHORT);
 }
 

@@ -40,7 +40,7 @@ void TestTimeFormats(const TimeDelta& delta, const char* expected_ascii) {
   base::string16 expected = ASCIIToUTF16(expected_ascii);
   base::string16 expected_left = expected + ASCIIToUTF16(" left");
   base::string16 expected_ago = expected + ASCIIToUTF16(" ago");
-  EXPECT_EQ(expected, TimeFormat::TimeRemainingShort(delta));
+  EXPECT_EQ(expected, TimeFormat::TimeDurationShort(delta));
   EXPECT_EQ(expected_left, TimeFormat::TimeRemaining(delta));
   EXPECT_EQ(expected_ago, TimeFormat::TimeElapsed(delta));
 }

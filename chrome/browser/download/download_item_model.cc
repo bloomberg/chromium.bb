@@ -627,7 +627,7 @@ base::string16 DownloadItemModel::GetInProgressStatusString() const {
 
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_STATUS_OPEN_IN,
-        ui::TimeFormat::TimeRemainingShort(time_remaining));
+        ui::TimeFormat::TimeDurationShort(time_remaining));
   }
 
   // In progress download with known time left: "100/120 MB, 10 secs left"

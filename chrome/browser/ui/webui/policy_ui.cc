@@ -188,7 +188,7 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   dict->SetString("clientId", client_id);
   dict->SetString("username", username);
   dict->SetString("refreshInterval",
-                  ui::TimeFormat::TimeRemainingShort(refresh_interval));
+                  ui::TimeFormat::TimeDurationShort(refresh_interval));
   dict->SetString("timeSinceLastRefresh", last_refresh_time.is_null() ?
       l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED) :
       ui::TimeFormat::TimeElapsed(base::Time::NowFromSystemTime() -
