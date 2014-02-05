@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
-#include "media/formats/mp4/offset_byte_queue.h"
+#include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp4/track_run_iterator.h"
 
 namespace media {
