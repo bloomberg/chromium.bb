@@ -6,6 +6,7 @@
 #define ASH_WM_DRAG_DETAILS_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_move_client.h"
@@ -27,6 +28,9 @@ struct ASH_EXPORT DragDetails {
               int window_component,
               aura::client::WindowMoveSource source);
   ~DragDetails();
+
+  // Initial show type.
+  ash::wm::WindowShowType initial_show_type;
 
   // Initial bounds of the window in parent coordinates.
   const gfx::Rect initial_bounds_in_parent;

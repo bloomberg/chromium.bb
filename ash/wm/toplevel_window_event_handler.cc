@@ -147,8 +147,7 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old) {
-  if (!window_state->IsNormalShowState())
-    handler_->CompleteDrag(DRAG_COMPLETE);
+  handler_->CompleteDrag(DRAG_COMPLETE);
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(

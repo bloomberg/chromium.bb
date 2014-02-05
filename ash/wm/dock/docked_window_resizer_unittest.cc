@@ -29,6 +29,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -239,6 +240,10 @@ class DockedWindowResizerTest
 
   bool test_panels() const { return window_type_ == ui::wm::WINDOW_TYPE_PANEL; }
 
+  aura::test::TestWindowDelegate* delegate() {
+    return &delegate_;
+  }
+
   const gfx::Point& initial_location_in_parent() const {
     return initial_location_in_parent_;
   }
@@ -264,7 +269,7 @@ TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
@@ -279,7 +284,7 @@ TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), +4);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
@@ -304,7 +309,7 @@ TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
   // The window right should be past the screen edge but not docked.
   // Initial touch point is 70px to the right which helps to find where the edge
   // should be.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right() +
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right() +
             window->bounds().width() - kGrabOffsetX - kUndershootBy - 1,
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
@@ -320,7 +325,7 @@ TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 0);
 
   // The window should be docked at the left edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().x(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
             window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
@@ -335,7 +340,7 @@ TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), -4);
 
   // The window should be docked at the left edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().x(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
             window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
@@ -367,7 +372,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -376,7 +381,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   shell->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
                            shell->GetPrimaryRootWindow());
   // The window should have moved and get attached to the left dock.
-  EXPECT_EQ(window->GetRootWindow()->bounds().x(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
             window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -384,7 +389,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
                            shell->GetPrimaryRootWindow());
   // The window should have moved and get attached to the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -392,7 +397,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   shell->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM,
                            shell->GetPrimaryRootWindow());
   // The window should stay in the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
@@ -408,7 +413,7 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
 
   // The window should be docked at the right edge.
   // Its width should shrink to ideal width.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(ideal_width(), window->GetBoundsInScreen().width());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
@@ -422,7 +427,7 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
   DragEnd();
 
   // The window should be still attached to the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -449,7 +454,7 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -475,7 +480,7 @@ TEST_P(DockedWindowResizerTest, AttachMaximize) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -499,11 +504,11 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 50);
 
   // Both windows should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().right(),
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
 
@@ -516,7 +521,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
   DragEnd();
 
   // The first window should be still docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
@@ -535,7 +540,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
 
   // w1 should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
@@ -580,7 +585,7 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w2.get(), 50);
 
   // The first window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
@@ -601,7 +606,7 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -678,7 +683,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
 
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
   // The window should be docked at the right edge.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
@@ -689,7 +694,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   DragMove(100, 0);
   EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
   DragEnd();
-  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer,
             window->parent()->id());
@@ -705,7 +710,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   DragMove(window->bounds().width()/2 - 5, 0);
   EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
   DragEnd();
-  EXPECT_NE(window->GetRootWindow()->bounds().right(),
+  EXPECT_NE(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
@@ -743,7 +748,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
@@ -753,7 +758,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 100);
   // Both windows should now be docked at the right edge.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().right(),
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
   // Dock width should be set to a wider window.
@@ -772,12 +777,12 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
   DragEnd();
 
   // The first window should be still docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
   // The second window should be still docked.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().right(),
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
 
@@ -815,7 +820,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
@@ -824,19 +829,19 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   EXPECT_EQ(w1->bounds().width(), docked_width(manager));
 
   ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(w2.get(), 25, 5));
-  DragMove(w2->GetRootWindow()->bounds().right()
+  DragMove(w2->GetRootWindow()->bounds().width()
            -w2->bounds().width()
            -(w2->bounds().width()/2 + 20)
            -w2->bounds().x(),
            50 - w2->bounds().y());
   DragEnd();
   // The first window should be still docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
   // The second window should be floating on the desktop.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().right() -
             (w2->bounds().width()/2 + 20),
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
@@ -914,13 +919,13 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w1.get(), 20);
   // A window should be docked at the left edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().x(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().x(),
             w1->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
       static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
   // The first window should be docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().x(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().x(),
             w1->GetBoundsInScreen().x());
   // Dock width should be set to that of a single docked window.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
@@ -934,7 +939,8 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
                                        min_dock_gap(),
                                        50);
   // The second window should be floating on the desktop.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().x() + (w1->bounds().right() + 20),
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().x() +
+                (w1->bounds().right() + 20),
             w2->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock width should be set to that of a single docked window.
@@ -1013,7 +1019,7 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
@@ -1023,7 +1029,7 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 100);
   // Both windows should now be docked at the right edge.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w2->GetRootWindow()->GetBoundsInScreen().right(),
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
   // Dock width should be set to a wider window.
@@ -1341,7 +1347,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
@@ -1468,7 +1474,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   DockedWindowLayoutManager* manager =
@@ -1493,7 +1499,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   // Dock again.
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+  EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, docked_alignment(manager));
@@ -1513,6 +1519,48 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w1->parent()->id());
   EXPECT_FALSE(window_state->IsDocked());
   EXPECT_TRUE(window_state->IsSnapped());
+}
+
+// Tests that a window is undocked if the window is maximized via a keyboard
+// accelerator during a drag.
+TEST_P(DockedWindowResizerTest, MaximizedDuringDrag) {
+  if (!SupportsHostWindowResize() || test_panels())
+    return;
+
+  scoped_ptr<aura::Window> window(CreateTestWindow(
+      gfx::Rect(0, 0, ideal_width(), 201)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+
+  // Dock the window to the right edge.
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, window.get(), 20);
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  DockedWindowLayoutManager* manager =
+      static_cast<DockedWindowLayoutManager*>(
+          window->parent()->layout_manager());
+  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, docked_alignment(manager));
+  EXPECT_EQ(window->bounds().width(), docked_width(manager));
+  EXPECT_TRUE(window_state->IsDocked());
+
+  // Maximize the window while in a real drag. In particular,
+  // ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged()
+  // must be called in order for the maximized window's size to be correct.
+  delegate()->set_window_component(HTCAPTION);
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(window->GetBoundsInScreen().origin());
+  generator.PressLeftButton();
+  generator.MoveMouseBy(10, 10);
+  window_state->Maximize();
+  generator.ReleaseLeftButton();
+
+  // |window| should get undocked.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(0, docked_width(manager));
+  EXPECT_EQ(
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      window->bounds().ToString());
+  EXPECT_TRUE(window_state->IsMaximized());
 }
 
 // Tests run twice - on both panels and normal windows

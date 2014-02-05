@@ -224,6 +224,16 @@ void DockedWindowResizer::FinishedDragging(
   const bool is_resized =
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 
+  // Undock the window if it is not in the normal or minimized show type. This
+  // happens if a user snaps or maximizes a window using a keyboard shortcut
+  // while it is being dragged.
+  if (window_state_->IsSnapped()) {
+    is_docked_ = false;
+  } else if (!window_state_->IsMinimized() &&
+             !window_state_->IsNormalShowState()) {
+    is_docked_ = false;
+  }
+
   // When drag is completed the dragged docked window is resized to the bounds
   // calculated by the layout manager that conform to other docked windows.
   if (!is_attached_panel && is_docked_ && !is_resized) {

@@ -423,12 +423,13 @@ void WorkspaceWindowResizer::CompleteDrag() {
   if (!did_move_or_resize_ || details().window_component != HTCAPTION)
     return;
 
+  // If the window's show type changed over the course of the drag do not snap
+  // the window. This happens when the user minimizes or maximizes the window
+  // using a keyboard shortcut while dragging it.
+  if (window_state()->window_show_type() != details().initial_show_type)
+    return;
+
   bool snapped = false;
-  // When the window is not in the normal show state, we do not snap the window.
-  // This happens when the user minimizes or maximizes the window by keyboard
-  // shortcut while dragging it. If the window is the result of dragging a tab
-  // out of a maximized window, it's already in the normal show state when this
-  // is called, so it does not matter.
   if (window_state()->IsNormalShowState() &&
       (GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL ||
        !window_state()->panel_attached() ||
