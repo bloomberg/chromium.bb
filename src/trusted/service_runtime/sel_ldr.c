@@ -15,6 +15,7 @@
 #include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/public/desc_metadata_types.h"
+#include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/secure_service.h"
 
 #include "native_client/src/shared/gio/gio.h"
@@ -77,6 +78,9 @@ static int ShouldEnableDynamicLoading(void) {
 int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
                                 struct NaClSyscallTableEntry *table) {
   struct NaClDescEffectorLdr  *effp;
+
+  /* Zero-initialize in case we miss any fields below. */
+  memset(nap, 0, sizeof(*nap));
 
   /* The validation cache will be injected later, if it exists. */
   nap->validation_cache = NULL;
@@ -331,6 +335,15 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
 int NaClAppCtor(struct NaClApp *nap) {
   return NaClAppWithSyscallTableCtor(nap, nacl_syscall);
+}
+
+struct NaClApp *NaClAppCreate(void) {
+  struct NaClApp *nap = malloc(sizeof(struct NaClApp));
+  if (nap == NULL)
+    NaClLog(LOG_FATAL, "Failed to allocate NaClApp\n");
+  if (!NaClAppCtor(nap))
+    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
+  return nap;
 }
 
 /*

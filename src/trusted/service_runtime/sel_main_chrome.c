@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/public/nacl_app.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -42,6 +43,20 @@
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
+
+static int g_initialized = 0;
+
+#if NACL_LINUX || NACL_OSX
+void NaClChromeMainSetUrandomFd(int urandom_fd) {
+  NaClSecureRngModuleSetUrandomFd(urandom_fd);
+}
+#endif
+
+void NaClChromeMainInit(void) {
+  CHECK(!g_initialized);
+  NaClAllModulesInit();
+  g_initialized = 1;
+}
 
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   struct NaClChromeMainArgs *args = malloc(sizeof(*args));
@@ -73,8 +88,11 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 
   /*
    * Initialize NaClLog so that Chromium can call
-   * NaClDescMakeCustomDesc() between calling
-   * NaClChromeMainArgsCreate() and NaClChromeMainStart().
+   * NaClDescMakeCustomDesc(), before NaClAllModulesInit() gets
+   * called.
+   *
+   * TODO(mseaborn): Remove this once Chromium calls
+   * NaClChromeMainInit() before NaClChromeMainArgsCreate().
    */
   NaClLogModuleInit();
 
@@ -124,12 +142,11 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   NaClDescUnref(nd);
 }
 
-void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
+void NaClChromeMainStartApp(struct NaClApp *nap,
+                            struct NaClChromeMainArgs *args) {
   char *av[1];
   int ac = 1;
   const char **envp;
-  struct NaClApp state;
-  struct NaClApp *nap = &state;
   NaClErrorCode errcode = LOAD_INTERNAL;
   int ret_code = 1;
   struct NaClEnvCleanser env_cleanser;
@@ -150,23 +167,17 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   if (args->urandom_fd != -1)
     NaClSecureRngModuleSetUrandomFd(args->urandom_fd);
 #endif
+  /* TODO(mseaborn): Remove this when NaClChromeMainStart() is removed. */
+  if (nap == NULL) {
+    NaClChromeMainInit();
+    nap = NaClAppCreate();
+  }
 
-  /*
-   * Clear state so that NaClBootstrapChannelErrorReporter will be
-   * able to know if the bootstrap channel is available or not.
-   */
-  memset(&state, 0, sizeof state);
-  NaClAllModulesInit();
   NaClBootstrapChannelErrorReporterInit();
-  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, &state);
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
 
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";
-
-  if (NACL_FI_ERROR_COND("AppCtor", !NaClAppCtor(&state))) {
-    NaClLog(LOG_FATAL, "Error while constructing app state\n");
-    goto done;
-  }
 
   errcode = LOAD_OK;
 
@@ -269,7 +280,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 #endif
 
   /* Give debuggers a well known point at which xlate_base is known.  */
-  NaClGdbHook(&state);
+  NaClGdbHook(nap);
 
   NaClCreateServiceSocket(nap);
   /*
@@ -405,4 +416,8 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   NaClAllModulesFini();
 
   NaClExit(ret_code);
+}
+
+void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
+  NaClChromeMainStartApp(NULL, args);
 }

@@ -18,16 +18,50 @@
 
 EXTERN_C_BEGIN
 
+struct NaClApp;
 struct NaClValidationCache;
 
 
 /*
- * Descriptor number for initial_ipc_desc.  This is chosen so as not
- * to conflict with NACL_SERVICE_PORT_DESCRIPTOR,
- * NACL_SERVICE_ADDRESS_DESCRIPTOR and export_addr_to inside
- * NaClChromeMainStart().
+ * The old, deprecated interface usage is as follows:
+ *
+ *   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
+ *   // Now NaCl is partially initialized, so the following is allowed:
+ *   args->initial_ipc_fd = NaClDescMakeCustomDesc(...);
+ *   // Fill out more of args...
+ *   NaClChromeMainStart(args);
+ *
+ * The new, preferred interface usage is as follows:
+ *
+ *   #if OS_POSIX
+ *   NaClChromeMainSetUrandomFd(urandom_fd);
+ *   #endif
+ *   NaClChromeMainInit();
+ *   // The following may be done in any order:
+ *   struct NaClApp *nap = NaClAppCreate();
+ *   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
+ *   // Fill out args...
+ *   NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, NaClDescMakeCustomDesc(...));
+ *   NaClChromeMainStartApp(nap, args);
  */
-#define NACL_CHROME_INITIAL_IPC_DESC 6
+
+/*
+ * Embedders of NaCl may use descriptor numbers of
+ * NACL_CHROME_DESC_BASE and higher when setting up a NaClApp's
+ * initial descriptors using NaClAppSetDesc().
+ *
+ * This number is chosen so as not to conflict with
+ * NACL_SERVICE_PORT_DESCRIPTOR, NACL_SERVICE_ADDRESS_DESCRIPTOR and
+ * export_addr_to inside NaClChromeMainStart().
+ */
+#define NACL_CHROME_DESC_BASE 6
+
+/*
+ * Descriptor number for initial_ipc_desc.
+ *
+ * Deprecated: use NaClAppSetDesc() and NACL_CHROME_DESC_BASE instead.
+ */
+#define NACL_CHROME_INITIAL_IPC_DESC NACL_CHROME_DESC_BASE
 
 
 struct NaClChromeMainArgs {
@@ -50,6 +84,8 @@ struct NaClChromeMainArgs {
    * Descriptor to provide to untrusted code as descriptor number
    * NACL_CHROME_INITIAL_IPC_DESC.  For use by the Chrome-IPC-based
    * PPAPI proxy.  Optional; may be NULL.
+   *
+   * Deprecated: use NaClAppSetDesc() instead.
    */
   struct NaClDesc *initial_ipc_desc;
 
@@ -116,6 +152,8 @@ struct NaClChromeMainArgs {
    * takes ownership of the file descriptor.  In principle this is
    * optional and may be -1, although startup may fail if this is not
    * provided.
+   *
+   * Deprecated: use NaClChromeMainSetUrandomFd() instead.
    */
   int urandom_fd;
 
@@ -154,11 +192,35 @@ struct NaClChromeMainArgs {
 #endif
 };
 
+#if NACL_LINUX || NACL_OSX
+/*
+ * Sets a file descriptor for /dev/urandom for reading random data.
+ * This takes ownership of the file descriptor.  This is intended for
+ * use inside an outer sandbox where NaCl may not be able to open()
+ * /dev/urandom.
+ *
+ * If this is called, it must be called before NaClChromeMainInit(),
+ * otherwise NaClChromeMainInit() will try to open() /dev/urandom.
+ */
+void NaClChromeMainSetUrandomFd(int urandom_fd);
+#endif
+
+/* Initialize NaCl.  This must be called before NaClAppCreate(). */
+void NaClChromeMainInit(void);
+
 /* Create a new args struct containing default values. */
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
 
-/* Launch NaCl. */
+/*
+ * Launch NaCl.  This does not return.
+ *
+ * Deprecated: use NaClAppCreate() and NaClChromeMainStartApp() instead.
+ */
 void NaClChromeMainStart(struct NaClChromeMainArgs *args);
+
+/* Launch NaCl.  This does not return. */
+void NaClChromeMainStartApp(struct NaClApp *nap,
+                            struct NaClChromeMainArgs *args);
 
 
 EXTERN_C_END

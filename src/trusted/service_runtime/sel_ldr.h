@@ -33,6 +33,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/elf.h"
 
+#include "native_client/src/public/nacl_app.h"
+
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -640,13 +642,7 @@ static const uintptr_t kNaClBadAddress = (uintptr_t) -1;
 struct NaClDesc *NaClAppGetDesc(struct NaClApp *nap,
                                 int            d);
 
-/*
- * Takes ownership of ndp.
- */
-void NaClAppSetDesc(struct NaClApp   *nap,
-                    int              d,
-                    struct NaClDesc  *ndp);
-
+/* NaClAppSetDesc() is defined in src/public/chrome_main.h. */
 
 int32_t NaClAppSetDescAvail(struct NaClApp   *nap,
                             struct NaClDesc  *ndp);
