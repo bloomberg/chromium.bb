@@ -30,10 +30,12 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
+#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 
 namespace WebCore {
 
@@ -41,6 +43,12 @@ DeviceOrientationController::DeviceOrientationController(Document* document)
     : DeviceSensorEventController(document)
     , DOMWindowLifecycleObserver(document->domWindow())
 {
+    Page* page = document->page();
+    ASSERT(page);
+    OwnPtr<DeviceOrientationInspectorAgent> deviceOrientationAgent(DeviceOrientationInspectorAgent::create(page));
+    InspectorController& inspectorController = page->inspectorController();
+    if (!inspectorController.hasAgent(deviceOrientationAgent.get()->name()))
+        inspectorController.registerModuleAgent(deviceOrientationAgent.release());
 }
 
 DeviceOrientationController::~DeviceOrientationController()

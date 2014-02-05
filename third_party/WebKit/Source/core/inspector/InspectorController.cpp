@@ -178,6 +178,11 @@ void InspectorController::inspectedPageDestroyed()
     m_page = 0;
 }
 
+bool InspectorController::hasAgent(const String& name)
+{
+    return m_agents.hasAgent(name);
+}
+
 void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)
 {
     m_agents.append(agent);

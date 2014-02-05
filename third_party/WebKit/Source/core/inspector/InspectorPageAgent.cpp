@@ -69,8 +69,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "modules/device_orientation/DeviceOrientationController.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
 #include "platform/UserGestureIndicator.h"
@@ -1144,22 +1142,6 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     if (mainFrame() && mainFrame()->settings())
         mainFrame()->settings()->setTouchEventEmulationEnabled(enabled);
-}
-
-void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
-{
-    DeviceOrientationController* controller = DeviceOrientationController::from(mainFrame()->document());
-    if (!controller) {
-        *error = "Internal error: unable to override device orientation";
-        return;
-    }
-
-    controller->didChangeDeviceOrientation(DeviceOrientationData::create(true, alpha, true, beta, true, gamma).get());
-}
-
-void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString* error)
-{
-    setDeviceOrientationOverride(error, 0, 0, 0);
 }
 
 bool InspectorPageAgent::overrideTextAutosizing(bool textAutosizing)
