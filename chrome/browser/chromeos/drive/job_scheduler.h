@@ -155,10 +155,12 @@ class JobScheduler
       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddNewDirectory operation to the queue.
-  void AddNewDirectory(const std::string& parent_resource_id,
-                       const std::string& directory_title,
-                       const ClientContext& context,
-                       const google_apis::GetResourceEntryCallback& callback);
+  void AddNewDirectory(
+      const std::string& parent_resource_id,
+      const std::string& directory_title,
+      const DriveServiceInterface::AddNewDirectoryOptions& options,
+      const ClientContext& context,
+      const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
   // The first two arguments |virtual_path| and |expected_file_size| are used
@@ -179,7 +181,7 @@ class JobScheduler
                      const base::FilePath& local_file_path,
                      const std::string& title,
                      const std::string& content_type,
-                     const drive::DriveUploader::UploadNewFileOptions& options,
+                     const DriveUploader::UploadNewFileOptions& options,
                      const ClientContext& context,
                      const google_apis::GetResourceEntryCallback& callback);
 
@@ -189,7 +191,7 @@ class JobScheduler
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const drive::DriveUploader::UploadExistingFileOptions& options,
+      const DriveUploader::UploadExistingFileOptions& options,
       const ClientContext& context,
       const google_apis::GetResourceEntryCallback& callback);
 

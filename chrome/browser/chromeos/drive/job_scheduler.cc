@@ -73,7 +73,7 @@ struct UploadNewFileParams {
   base::FilePath local_file_path;
   std::string title;
   std::string content_type;
-  drive::DriveUploader::UploadNewFileOptions options;
+  DriveUploader::UploadNewFileOptions options;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
@@ -96,7 +96,7 @@ struct UploadExistingFileParams {
   std::string resource_id;
   base::FilePath local_file_path;
   std::string content_type;
-  drive::DriveUploader::UploadExistingFileOptions options;
+  DriveUploader::UploadExistingFileOptions options;
   std::string etag;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
@@ -566,6 +566,7 @@ void JobScheduler::RemoveResourceFromDirectory(
 void JobScheduler::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
+    const DriveServiceInterface::AddNewDirectoryOptions& options,
     const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -577,7 +578,7 @@ void JobScheduler::AddNewDirectory(
       base::Unretained(drive_service_),
       parent_resource_id,
       directory_title,
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      options,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -624,7 +625,7 @@ void JobScheduler::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
-    const drive::DriveUploader::UploadNewFileOptions& options,
+    const DriveUploader::UploadNewFileOptions& options,
     const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -662,7 +663,7 @@ void JobScheduler::UploadExistingFile(
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const drive::DriveUploader::UploadExistingFileOptions& options,
+    const DriveUploader::UploadExistingFileOptions& options,
     const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -505,6 +505,7 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Root directory.
       "New Directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -537,21 +538,25 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       title_1,
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       title_2,
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       title_3,
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       title_4,
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
 
@@ -823,6 +828,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       "New Directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   expected_types.insert(TYPE_GET_ABOUT_RESOURCE);
