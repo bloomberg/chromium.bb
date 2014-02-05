@@ -91,7 +91,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/three_d_api_observer.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -119,6 +118,7 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -1557,8 +1557,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserOpenTabs", delay);
 
     // If we're running tests (ui_task is non-null), then we don't want to
-    // call FetchLanguageListFromTranslateServer or
-    // StartRepeatedVariationsSeedFetch.
+    // call RequestLanguageList or StartRepeatedVariationsSeedFetch.
     if (parameters().ui_task == NULL) {
       // Request new variations seed information from server.
       chrome_variations::VariationsService* variations_service =
@@ -1571,8 +1570,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
       }
 
-      TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(
-          profile_->GetPrefs());
+      TranslateDownloadManager::RequestLanguageList(profile_->GetPrefs());
     }
 
     run_message_loop_ = true;

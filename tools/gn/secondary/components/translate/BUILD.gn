@@ -17,8 +17,12 @@ static_library("translate_core_browser") {
     "core/browser/translate_error_details.h",
     "core/browser/translate_event_details.cc",
     "core/browser/translate_event_details.h",
+    "core/browser/translate_language_list.cc",
+    "core/browser/translate_language_list.h",
     "core/browser/translate_url_fetcher.cc",
     "core/browser/translate_url_fetcher.h",
+    "core/browser/translate_url_util.cc",
+    "core/browser/translate_url_util.h",
   ]
 
   deps = [
@@ -39,6 +43,8 @@ static_library("translate_core_common") {
     "core/common/translate_errors.h",
     "core/common/translate_metrics.cc",
     "core/common/translate_metrics.h",
+    "core/common/translate_pref_names.cc",
+    "core/common/translate_pref_names.h",
     "core/common/translate_switches.cc",
     "core/common/translate_switches.h",
     "core/common/translate_util.cc",

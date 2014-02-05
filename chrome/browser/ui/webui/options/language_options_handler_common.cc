@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -130,7 +131,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
                                default_target_language);
 
   std::vector<std::string> languages;
-  TranslateManager::GetSupportedLanguages(&languages);
+  TranslateDownloadManager::GetSupportedLanguages(&languages);
 
   base::ListValue* languages_list = new base::ListValue();
   for (std::vector<std::string>::iterator it = languages.begin();

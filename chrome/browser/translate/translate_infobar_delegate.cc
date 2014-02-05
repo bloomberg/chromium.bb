@@ -16,6 +16,7 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -43,8 +44,8 @@ void TranslateInfoBarDelegate::Create(
     const ShortcutConfiguration& shortcut_config) {
   // Check preconditions.
   if (infobar_type != TRANSLATION_ERROR) {
-    DCHECK(TranslateManager::IsSupportedLanguage(target_language));
-    if (!TranslateManager::IsSupportedLanguage(original_language)) {
+    DCHECK(TranslateDownloadManager::IsSupportedLanguage(target_language));
+    if (!TranslateDownloadManager::IsSupportedLanguage(original_language)) {
       // The original language can only be "unknown" for the "translating"
       // infobar, which is the case when the user started a translation from the
       // context menu.

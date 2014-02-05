@@ -11,6 +11,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -43,7 +44,7 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
   DCHECK(web_contents_);
 
   std::vector<std::string> language_codes;
-  TranslateManager::GetSupportedLanguages(&language_codes);
+  TranslateDownloadManager::GetSupportedLanguages(&language_codes);
 
   // Preparing for the alphabetical order in the locale.
   UErrorCode error = U_ZERO_ERROR;

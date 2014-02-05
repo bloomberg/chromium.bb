@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,9 +27,7 @@ class Profile;
 struct ShortcutConfiguration;
 class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
-struct TranslateEventDetails;
 class TranslateInfoBarDelegate;
-class TranslateLanguageList;
 class TranslateScript;
 
 namespace content {
@@ -56,25 +53,6 @@ class TranslateManager : public content::NotificationObserver {
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
 
-  // Fills |languages| with the list of languages that the translate server can
-  // translate to and from.
-  static void GetSupportedLanguages(std::vector<std::string>* languages);
-
-  // Returns the last-updated time when Chrome receives a language list from a
-  // Translate server. Returns null time if Chrome hasn't received any lists.
-  static base::Time GetSupportedLanguagesLastUpdated();
-
-  // Returns the language code that can be used with the Translate method for a
-  // specified |chrome_locale|.
-  static std::string GetLanguageCode(const std::string& chrome_locale);
-
-  // Returns true if |language| is supported by the translation server.
-  static bool IsSupportedLanguage(const std::string& language);
-
-  // Returns true if |language| is supported by the translation server as a
-  // alpha language.
-  static bool IsAlphaLanguage(const std::string& language);
-
   // Returns true if |language| is an Accept language for the user profile.
   static bool IsAcceptLanguage(Profile* profile, const std::string& language);
 
@@ -97,11 +75,6 @@ class TranslateManager : public content::NotificationObserver {
   // Sets whether of not the infobar UI is used. This method is intented to be
   // used only for tests.
   static void SetUseInfobar(bool value);
-
-  // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if switches::kDisableTranslate is set
-  // or if prefs::kEnableTranslate is set to false.
-  void FetchLanguageListFromTranslateServer(PrefService* prefs);
 
   // Allows caller to cleanup pending URLFetcher objects to make sure they
   // get released in the appropriate thread... Mainly for tests.
@@ -148,16 +121,11 @@ class TranslateManager : public content::NotificationObserver {
         const LanguageDetectionDetails& details) = 0;
     virtual void OnTranslateError(
         const TranslateErrorDetails& details) = 0;
-    virtual void OnTranslateEvent(
-        const TranslateEventDetails& details) = 0;
   };
 
   // Adds/removes observer.
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
-
-  // Notifies to the observers when translate event happens.
-  void NotifyTranslateEvent(const TranslateEventDetails& details);
 
  protected:
   TranslateManager();
@@ -229,9 +197,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;
-
-  // An instance of TranslateLanguageList which manages supported language list.
-  scoped_ptr<TranslateLanguageList> language_list_;
 
   // An instance of TranslateScript which manages JavaScript source for
   // Translate.

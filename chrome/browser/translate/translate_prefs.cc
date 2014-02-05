@@ -15,6 +15,7 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
@@ -448,7 +449,7 @@ void TranslatePrefs::CreateBlockedLanguages(
   }
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  std::string ui_lang = TranslateManager::GetLanguageCode(app_locale);
+  std::string ui_lang = TranslateDownloadManager::GetLanguageCode(app_locale);
   bool is_ui_english = ui_lang == "en" ||
       StartsWithASCII(ui_lang, "en-", false);
 

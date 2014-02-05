@@ -19,11 +19,9 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -37,10 +35,14 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
-#include "components/translate/core/browser/translate_event_details.h"
+#include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
+#include "components/translate/core/common/translate_pref_names.h"
+#include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -109,50 +111,6 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
            url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif
          !url.SchemeIs(content::kFtpScheme);
-}
-
-// static
-void TranslateManager::GetSupportedLanguages(
-    std::vector<std::string>* languages) {
-  if (GetInstance()->language_list_.get()) {
-    GetInstance()->language_list_->GetSupportedLanguages(languages);
-    return;
-  }
-  NOTREACHED();
-}
-
-// static
-base::Time TranslateManager::GetSupportedLanguagesLastUpdated() {
-  if (GetInstance()->language_list_.get()) {
-    return GetInstance()->language_list_->last_updated();
-  }
-  NOTREACHED();
-  return base::Time();
-}
-
-// static
-std::string TranslateManager::GetLanguageCode(
-    const std::string& chrome_locale) {
-  if (GetInstance()->language_list_.get())
-    return GetInstance()->language_list_->GetLanguageCode(chrome_locale);
-  NOTREACHED();
-  return chrome_locale;
-}
-
-// static
-bool TranslateManager::IsSupportedLanguage(const std::string& language) {
-  if (GetInstance()->language_list_.get())
-    return GetInstance()->language_list_->IsSupportedLanguage(language);
-  NOTREACHED();
-  return false;
-}
-
-// static
-bool TranslateManager::IsAlphaLanguage(const std::string& language) {
-  if (GetInstance()->language_list_.get())
-    return GetInstance()->language_list_->IsAlphaLanguage(language);
-  NOTREACHED();
-  return false;
 }
 
 // static
@@ -279,11 +237,6 @@ void TranslateManager::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-void TranslateManager::NotifyTranslateEvent(
-    const TranslateEventDetails& details) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnTranslateEvent(details));
-}
-
 void TranslateManager::NotifyLanguageDetection(
     const LanguageDetectionDetails& details) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLanguageDetection(details));
@@ -304,7 +257,6 @@ TranslateManager::TranslateManager()
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
                               content::NotificationService::AllSources());
-  language_list_.reset(new TranslateLanguageList);
   accept_languages_.reset(new TranslateAcceptLanguages);
   script_.reset(new TranslateScript);
 }
@@ -331,7 +283,7 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   // Allow disabling of translate from the command line to assist with
   // automated browser testing.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTranslate)) {
+          translate::switches::kDisableTranslate)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);
     return;
@@ -355,7 +307,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   }
 
   std::string target_lang = GetTargetLanguage(prefs);
-  std::string language_code = GetLanguageCode(page_lang);
+  std::string language_code =
+      TranslateDownloadManager::GetLanguageCode(page_lang);
 
   // Don't translate similar languages (ex: en-US to en).
   if (language_code == target_lang) {
@@ -366,7 +319,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
 
   // Nothing to do if either the language Chrome is in or the language of the
   // page is not supported by the translation server.
-  if (target_lang.empty() || !IsSupportedLanguage(language_code)) {
+  if (target_lang.empty() ||
+      !TranslateDownloadManager::IsSupportedLanguage(language_code)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED);
     TranslateBrowserMetrics::ReportUnsupportedLanguageAtInitiation(
@@ -462,7 +416,8 @@ void TranslateManager::InitiateTranslationPosted(int process_id,
     return;
   }
 
-  InitiateTranslation(web_contents, GetLanguageCode(page_lang));
+  InitiateTranslation(web_contents,
+                      TranslateDownloadManager::GetLanguageCode(page_lang));
 }
 
 void TranslateManager::TranslatePage(WebContents* web_contents,
@@ -479,7 +434,7 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   // kUnknownLanguageCode in order to send a translation request with enabling
   // server side auto language detection.
   std::string source_lang(original_source_lang);
-  if (!IsSupportedLanguage(source_lang))
+  if (!TranslateDownloadManager::IsSupportedLanguage(source_lang))
     source_lang = std::string(translate::kUnknownLanguageCode);
 
   if (IsTranslateBubbleEnabled()) {
@@ -600,7 +555,8 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
                                       PageTranslatedDetails* details) {
   if ((details->error_type == TranslateErrors::NONE) &&
       details->source_language != translate::kUnknownLanguageCode &&
-      !IsSupportedLanguage(details->source_language)) {
+      !TranslateDownloadManager::IsSupportedLanguage(
+           details->source_language)) {
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
 
@@ -632,24 +588,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
   }
 }
 
-void TranslateManager::FetchLanguageListFromTranslateServer(
-    PrefService* prefs) {
-  // We don't want to do this when translate is disabled.
-  DCHECK(prefs != NULL);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTranslate) ||
-      (prefs != NULL && !prefs->GetBoolean(prefs::kEnableTranslate))) {
-    return;
-  }
-
-  if (language_list_.get())
-    language_list_->RequestLanguageList();
-  else
-    NOTREACHED();
-}
-
 void TranslateManager::CleanupPendingUlrFetcher() {
-  language_list_.reset();
   script_.reset();
 }
 
@@ -749,11 +688,11 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
 
 // static
 std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
-  std::string ui_lang =
-      TranslatePrefs::ConvertLangCodeForTranslation(
-          GetLanguageCode(g_browser_process->GetApplicationLocale()));
+  std::string ui_lang = TranslatePrefs::ConvertLangCodeForTranslation(
+      TranslateDownloadManager::GetLanguageCode(
+          g_browser_process->GetApplicationLocale()));
 
-  if (IsSupportedLanguage(ui_lang))
+  if (TranslateDownloadManager::IsSupportedLanguage(ui_lang))
     return ui_lang;
 
   // Getting the accepted languages list
@@ -767,8 +706,8 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   std::vector<std::string>::iterator iter;
   for (iter = accept_langs_list.begin();
        iter != accept_langs_list.end(); ++iter) {
-    std::string lang_code = GetLanguageCode(*iter);
-    if (IsSupportedLanguage(lang_code))
+    std::string lang_code = TranslateDownloadManager::GetLanguageCode(*iter);
+    if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
       return lang_code;
   }
   return std::string();
@@ -783,8 +722,9 @@ std::string TranslateManager::GetAutoTargetLanguage(
                                           &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.
     // Also, GetLanguageCode will take care of removing country code if any.
-    auto_target_lang = GetLanguageCode(auto_target_lang);
-    if (IsSupportedLanguage(auto_target_lang))
+    auto_target_lang =
+        TranslateDownloadManager::GetLanguageCode(auto_target_lang);
+    if (TranslateDownloadManager::IsSupportedLanguage(auto_target_lang))
       return auto_target_lang;
   }
   return std::string();

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_list.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/webplugininfo.h"
@@ -36,8 +37,9 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
       const LanguageDetectionDetails& details) OVERRIDE;
   virtual void OnTranslateError(
       const TranslateErrorDetails& details) OVERRIDE;
-  virtual void OnTranslateEvent(
-      const TranslateEventDetails& details) OVERRIDE;
+
+  // Callback for translate events.
+  virtual void OnTranslateEvent(const TranslateEventDetails& details);
 
  private:
   // Handles the Javascript message 'removePrefItem'. This message is sent
@@ -58,6 +60,10 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
 
   // Sends the languages currently supported by the server to JavaScript.
   void SendSupportedLanguagesToJs();
+
+  // Subscription for translate events comming from the translate language list.
+  scoped_ptr<base::CallbackList<
+      void(const TranslateEventDetails&)>::Subscription> event_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsHandler);
 };

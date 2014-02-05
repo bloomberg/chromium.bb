@@ -7,6 +7,11 @@
 namespace translate {
 namespace switches {
 
+// Allows disabling of translate from the command line to assist with automated
+// browser testing (e.g. Selenium/WebDriver). Normal browser users should
+// disable translate with the preference.
+const char kDisableTranslate[] = "disable-translate";
+
 // Overrides security-origin with which Translate runs in an isolated world.
 const char kTranslateSecurityOrigin[] = "translate-security-origin";
 

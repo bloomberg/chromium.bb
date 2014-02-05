@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "components/translate/core/common/translate_pref_names.h"
 
 using preferences_helper::AppendStringPref;
 using preferences_helper::BooleanPrefMatches;

@@ -8,8 +8,25 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 
+namespace {
+// The singleton instance of TranslateService.
+TranslateService* g_translate_service = NULL;
+}
+
+TranslateService::TranslateService() {
+  resource_request_allowed_notifier_.Init(this);
+}
+
+TranslateService::~TranslateService() {}
+
 // static
 void TranslateService::Initialize() {
+  if (g_translate_service)
+    return;
+
+  g_translate_service = new TranslateService;
+  // Initialize the allowed state for resource requests.
+  g_translate_service->OnResourceRequestsAllowed();
   // Create the TranslateManager singleton.
   TranslateManager::GetInstance();
   TranslateDownloadManager* download_manager =
@@ -22,7 +39,25 @@ void TranslateService::Initialize() {
 
 // static
 void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
-  if (cleanup_pending_fetcher)
+  TranslateDownloadManager* download_manager =
+      TranslateDownloadManager::GetInstance();
+  if (cleanup_pending_fetcher) {
     TranslateManager::GetInstance()->CleanupPendingUlrFetcher();
-  TranslateDownloadManager::GetInstance()->set_request_context(NULL);
+    download_manager->Shutdown();
+  } else {
+    // This path is only used by tests.
+    download_manager->set_request_context(NULL);
+  }
+}
+
+void TranslateService::OnResourceRequestsAllowed() {
+  TranslateLanguageList* language_list =
+      TranslateDownloadManager::GetInstance()->language_list();
+  if (!language_list) {
+    NOTREACHED();
+    return;
+  }
+
+  language_list->SetResourceRequestsAllowed(
+      resource_request_allowed_notifier_.ResourceRequestsAllowed());
 }

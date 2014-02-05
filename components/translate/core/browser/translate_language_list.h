@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_LANGUAGE_LIST_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_LANGUAGE_LIST_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_
 
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
+struct TranslateEventDetails;
 class TranslateURLFetcher;
 
 // The TranslateLanguageList class is responsible for maintaining the latest
 // supporting language list.
-// This class is defined to be owned only by TranslateManager.
-class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
+class TranslateLanguageList {
  public:
   static const int kFetcherId = 1;
 
@@ -45,13 +45,22 @@ class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
   // alpha language.
   bool IsAlphaLanguage(const std::string& language);
 
-  // Fetches the language list from the translate server. It will retry
-  // automatically when a server return 5xx errors and retry count doesn't
-  // reach to limits.
+  // Fetches the language list from the translate server if resource requests
+  // are allowed, and otherwise keeps the request as pending until allowed.
   void RequestLanguageList();
 
-  // ResourceRequestAllowedNotifier::Observer implementation:
-  virtual void OnResourceRequestsAllowed() OVERRIDE;
+  // Sets whether requests are allowed. If |allowed| is true, this resumes any
+  // pending request.
+  void SetResourceRequestsAllowed(bool allowed);
+
+  typedef base::Callback<void(const TranslateEventDetails&)> EventCallback;
+  typedef base::CallbackList<void(const TranslateEventDetails&)>
+      EventCallbackList;
+
+  // Registers a callback for translate events related to the language list,
+  // such as updates and download errors.
+  scoped_ptr<EventCallbackList::Subscription> RegisterEventCallback(
+      const EventCallback& callback);
 
   // Disables the language list updater. This is used only for testing now.
   static void DisableUpdate();
@@ -67,6 +76,22 @@ class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
                                    bool success,
                                    const std::string& data);
 
+  // Notifies the callback list of a translate event.
+  void NotifyEvent(int line, const std::string& message);
+
+  // Parses |language_list| containing the list of languages that the translate
+  // server can translate to and from.
+  void SetSupportedLanguages(const std::string& language_list);
+
+  // Callbacks called on translate events.
+  EventCallbackList callback_list_;
+
+  // Whether the language list can be requested.
+  bool resource_requests_allowed_;
+
+  // True if the list has to be fetched when resource requests are allowed.
+  bool request_pending_;
+
   // All the languages supported by the translation server.
   std::set<std::string> all_supported_languages_;
 
@@ -80,10 +105,7 @@ class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
   // The last-updated time when the language list is sent.
   base::Time last_updated_;
 
-  // Helper class to know if it's allowed to make network resource requests.
-  ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
-
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageList);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_LANGUAGE_LIST_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_

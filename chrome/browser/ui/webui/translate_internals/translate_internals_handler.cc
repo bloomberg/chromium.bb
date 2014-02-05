@@ -14,18 +14,32 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_event_details.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 TranslateInternalsHandler::TranslateInternalsHandler() {
   TranslateManager::GetInstance()->AddObserver(this);
+  TranslateLanguageList* language_list =
+      TranslateDownloadManager::GetInstance()->language_list();
+  if (!language_list) {
+    NOTREACHED();
+    return;
+  }
+
+  event_subscription_ = language_list->RegisterEventCallback(base::Bind(
+      &TranslateInternalsHandler::OnTranslateEvent, base::Unretained(this)));
 }
 
 TranslateInternalsHandler::~TranslateInternalsHandler() {
   TranslateManager::GetInstance()->RemoveObserver(this);
+
+  // |event_subscription_| is deleted automatically and un-registers the
+  // callback automatically.
 }
 
 void TranslateInternalsHandler::RegisterMessages() {
@@ -166,9 +180,9 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   base::DictionaryValue dict;
 
   std::vector<std::string> languages;
-  TranslateManager::GetSupportedLanguages(&languages);
+  TranslateDownloadManager::GetSupportedLanguages(&languages);
   base::Time last_updated =
-      TranslateManager::GetSupportedLanguagesLastUpdated();
+      TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
 
   base::ListValue* languages_list = new base::ListValue();
   base::ListValue* alpha_languages_list = new base::ListValue();
@@ -176,7 +190,7 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
        it != languages.end(); ++it) {
     const std::string& lang = *it;
     languages_list->Append(new base::StringValue(lang));
-    if (TranslateManager::IsAlphaLanguage(lang))
+    if (TranslateDownloadManager::IsAlphaLanguage(lang))
       alpha_languages_list->Append(new base::StringValue(lang));
   }
 

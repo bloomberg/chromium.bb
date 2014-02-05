@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_UTIL_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_UTIL_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_UTIL_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_UTIL_H_
 
 #include "url/gurl.h"
 
@@ -19,4 +19,4 @@ GURL AddHostLocaleToUrl(const GURL& url);
 
 }  // namespace TranslateURLUtil
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_UTIL_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_UTIL_H_

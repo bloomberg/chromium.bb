@@ -147,7 +147,6 @@ extern const char kDisableSyncSyncedNotifications[];
 extern const char kDisableSyncTabs[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];
-extern const char kDisableTranslate[];
 extern const char kDisableTLSChannelID[];
 extern const char kDisableUserMediaSecurity[];
 extern const char kDisableWebResources[];

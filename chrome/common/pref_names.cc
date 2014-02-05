@@ -1138,9 +1138,6 @@ const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
 // Modifying bookmarks is completely disabled when this is set to false.
 const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 
-// Boolean that is true when the translate feature is enabled.
-const char kEnableTranslate[] = "translate.enabled";
-
 #if !defined(OS_ANDROID)
 const char kPinnedTabs[] = "pinned_tabs";
 #endif

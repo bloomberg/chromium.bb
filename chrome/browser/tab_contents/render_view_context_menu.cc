@@ -65,6 +65,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -960,7 +961,7 @@ void RenderViewContextMenu::AppendPageItems() {
 
   if (TranslateManager::IsTranslatableURL(params_.page_url)) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    locale = TranslateManager::GetLanguageCode(locale);
+    locale = TranslateDownloadManager::GetLanguageCode(locale);
     base::string16 language =
         l10n_util::GetDisplayNameForLocale(locale, locale, true);
     menu_model_.AddItem(
@@ -1236,7 +1237,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       std::string original_lang =
           translate_tab_helper->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateManager::GetLanguageCode(target_lang);
+      target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
       // Note that we intentionally enable the menu even if the original and
       // target languages are identical.  This is to give a way to user to
       // translate a page that might contains text fragments in a different
@@ -1247,7 +1248,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              !source_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a
              // target language for translation.
-             TranslateManager::IsSupportedLanguage(target_lang) &&
+             TranslateDownloadManager::IsSupportedLanguage(target_lang) &&
              // Disable on the Instant Extended NTP.
              !chrome::IsInstantNTP(source_web_contents_);
     }
@@ -1821,7 +1822,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       std::string original_lang =
           translate_tab_helper->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateManager::GetLanguageCode(target_lang);
+      target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       TranslatePrefs prefs(profile_->GetPrefs());

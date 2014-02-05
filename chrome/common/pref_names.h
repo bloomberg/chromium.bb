@@ -356,7 +356,6 @@ extern const char kAutofillGeneratedCardBubbleTimesShown[];
 extern const char kAutofillDialogDefaults[];
 extern const char kEditBookmarksEnabled[];
 
-extern const char kEnableTranslate[];
 extern const char kPinnedTabs[];
 
 extern const char kDisable3DAPIs[];

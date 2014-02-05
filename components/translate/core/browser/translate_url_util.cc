@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_url_util.h"
+#include "components/translate/core/browser/translate_url_util.h"
 
-#include "chrome/browser/translate/translate_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -30,7 +29,7 @@ GURL AddHostLocaleToUrl(const GURL& url) {
   return net::AppendQueryParameter(
       url,
       kHostLocaleQueryName,
-      TranslateManager::GetLanguageCode(
+      TranslateDownloadManager::GetLanguageCode(
           TranslateDownloadManager::GetInstance()->application_locale()));
 }
 
