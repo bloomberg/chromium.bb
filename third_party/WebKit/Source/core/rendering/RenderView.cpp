@@ -392,14 +392,6 @@ bool RenderView::requiresColumns(int desiredColumnCount) const
     return RenderBlock::requiresColumns(desiredColumnCount);
 }
 
-ColumnInfo::PaginationUnit RenderView::paginationUnit() const
-{
-    if (m_frameView)
-        return m_frameView->pagination().behavesLikeColumns ? ColumnInfo::Column : ColumnInfo::Page;
-
-    return ColumnInfo::Page;
-}
-
 void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // If we ever require layout but receive a paint anyway, something has gone horribly wrong.

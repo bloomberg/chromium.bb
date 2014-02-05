@@ -35,23 +35,21 @@ struct Pagination {
 
     Pagination()
         : mode(Unpaginated)
-        , behavesLikeColumns(false)
         , gap(0)
     {
     };
 
     bool operator==(const Pagination& other) const
     {
-        return mode == other.mode && behavesLikeColumns == other.behavesLikeColumns && gap == other.gap;
+        return mode == other.mode && gap == other.gap;
     }
 
     bool operator!=(const Pagination& other) const
     {
-        return mode != other.mode || behavesLikeColumns != other.behavesLikeColumns || gap != other.gap;
+        return mode != other.mode || gap != other.gap;
     }
 
     Mode mode;
-    bool behavesLikeColumns;
     unsigned gap;
 
     static void setStylesForPaginationMode(Mode, RenderStyle*);

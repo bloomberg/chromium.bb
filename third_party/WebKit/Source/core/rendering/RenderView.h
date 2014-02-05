@@ -207,8 +207,6 @@ private:
 
     void initializeLayoutState(LayoutState&);
 
-    virtual ColumnInfo::PaginationUnit paginationUnit() const OVERRIDE;
-
     bool shouldRepaint(const LayoutRect&) const;
 
     // These functions may only be accessed by LayoutStateMaintainer.

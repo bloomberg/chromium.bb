@@ -529,8 +529,6 @@ protected:
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
     bool hasNextPage(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
 
-    virtual ColumnInfo::PaginationUnit paginationUnit() const;
-
     bool createsBlockFormattingContext() const;
 
 public:

@@ -5201,11 +5201,6 @@ LayoutUnit RenderBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundar
     return logicalOffset + remainingLogicalHeight;
 }
 
-ColumnInfo::PaginationUnit RenderBlock::paginationUnit() const
-{
-    return ColumnInfo::Column;
-}
-
 LayoutUnit RenderBlock::pageLogicalTopForOffset(LayoutUnit offset) const
 {
     RenderView* renderView = view();

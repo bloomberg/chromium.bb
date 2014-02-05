@@ -69,7 +69,7 @@ public:
     void operator delete(void*);
 
     void clearPaginationInformation();
-    bool isPaginatingColumns() const { return m_columnInfo && m_columnInfo->paginationUnit() == ColumnInfo::Column; }
+    bool isPaginatingColumns() const { return m_columnInfo; }
     bool isPaginated() const { return m_isPaginated; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression
