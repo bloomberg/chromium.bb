@@ -8,16 +8,19 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
+#include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
-#include "grit/dom_distiller_resources.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "url/gurl.h"
+
+namespace {
+// Maximum number of distilled pages in an article.
+const int kMaxPagesInArticle = 32;
+}
 
 namespace dom_distiller {
 
@@ -39,90 +42,101 @@ scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
 DistillerImpl::DistillerImpl(
     const DistillerPageFactory& distiller_page_factory,
     const DistillerURLFetcherFactory& distiller_url_fetcher_factory)
-  : distiller_page_factory_(distiller_page_factory),
-    distiller_url_fetcher_factory_(distiller_url_fetcher_factory) {
-  distiller_page_ = distiller_page_factory_.CreateDistillerPage(this).Pass();
+    : distiller_url_fetcher_factory_(distiller_url_fetcher_factory),
+      distillation_in_progress_(false) {
+  page_distiller_.reset(new PageDistiller(distiller_page_factory));
 }
 
 DistillerImpl::~DistillerImpl() {
 }
 
 void DistillerImpl::Init() {
-  distiller_page_->Init();
+  DCHECK(!distillation_in_progress_);
+  page_distiller_->Init();
+  article_proto_.reset(new DistilledArticleProto());
 }
 
 void DistillerImpl::DistillPage(const GURL& url,
                             const DistillerCallback& distillation_cb) {
+  DCHECK(!distillation_in_progress_);
   distillation_cb_ = distillation_cb;
-  proto_.reset(new DistilledPageProto());
-  proto_->set_url(url.spec());
-  LoadURL(url);
+  DistillPage(url);
 }
 
-void DistillerImpl::LoadURL(const GURL& url) {
-  distiller_page_->LoadURL(url);
-}
-
-void DistillerImpl::OnLoadURLDone() {
-  GetDistilledContent();
-}
-
-void DistillerImpl::GetDistilledContent() {
-  std::string script =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DISTILLER_JS).as_string();
-  distiller_page_->ExecuteJavaScript(script);
-}
-
-void DistillerImpl::OnExecuteJavaScriptDone(const base::Value* value) {
-  std::string result;
-  bool fetched_image = false;
-  const base::ListValue* result_list = NULL;
-  if (!value->GetAsList(&result_list)) {
-    DCHECK(proto_);
-    distillation_cb_.Run(proto_.Pass());
-    return;
+void DistillerImpl::DistillPage(const GURL& url) {
+  DCHECK(!distillation_in_progress_);
+  if (url.is_valid() && article_proto_->pages_size() < kMaxPagesInArticle &&
+      processed_urls_.find(url.spec()) == processed_urls_.end()) {
+    distillation_in_progress_ = true;
+    // Distill the next page.
+    DCHECK(url.is_valid());
+    DCHECK_LT(article_proto_->pages_size(), kMaxPagesInArticle);
+    page_distiller_->DistillPage(
+        url,
+        base::Bind(&DistillerImpl::OnPageDistillationFinished,
+                   base::Unretained(this),
+                   url));
+  } else {
+    RunDistillerCallbackIfDone();
   }
-  int i = 0;
-  for (base::ListValue::const_iterator iter = result_list->begin();
-      iter != result_list->end(); ++iter, ++i) {
-    std::string item;
-    (*iter)->GetAsString(&item);
-    // The JavaScript returns an array where the first element is the title,
-    // the second element is the article content HTML, and the remaining
-    // elements are image URLs referenced in the HTML.
-    switch (i) {
-      case 0:
-        proto_->set_title(item);
-        break;
-      case 1:
-        proto_->set_html(item);
-        break;
-      default:
-        int image_number = i - 2;
-        std::string image_id = base::StringPrintf("%d", image_number);
-        FetchImage(image_id, item);
-        fetched_image = true;
+}
+
+void DistillerImpl::OnPageDistillationFinished(
+    const GURL& page_url,
+    scoped_ptr<DistilledPageInfo> distilled_page,
+    bool distillation_successful) {
+  DCHECK(distillation_in_progress_);
+  DCHECK(distilled_page.get());
+  if (!distillation_successful) {
+    RunDistillerCallbackIfDone();
+  } else {
+    DistilledPageProto* current_page = article_proto_->add_pages();
+    // Set the title of the article as the title of the first page.
+    if (article_proto_->pages_size() == 1) {
+      article_proto_->set_title(distilled_page->title);
     }
+
+    current_page->set_url(page_url.spec());
+    current_page->set_html(distilled_page->html);
+
+    GURL next_page_url(distilled_page->next_page_url);
+    if (next_page_url.is_valid()) {
+      // The pages should be in same origin.
+      DCHECK_EQ(next_page_url.GetOrigin(), page_url.GetOrigin());
+    }
+
+    processed_urls_.insert(page_url.spec());
+    distillation_in_progress_ = false;
+    int page_number = article_proto_->pages_size();
+    for (size_t img_num = 0; img_num < distilled_page->image_urls.size();
+         ++img_num) {
+      std::string image_id =
+          base::IntToString(page_number) + "_" + base::IntToString(img_num);
+      FetchImage(current_page, image_id, distilled_page->image_urls[img_num]);
+    }
+    DistillPage(next_page_url);
   }
-  if (!fetched_image)
-    distillation_cb_.Run(proto_.Pass());
 }
 
-void DistillerImpl::FetchImage(const std::string& image_id,
+void DistillerImpl::FetchImage(DistilledPageProto* distilled_page_proto,
+                               const std::string& image_id,
                                const std::string& item) {
   DistillerURLFetcher* fetcher =
       distiller_url_fetcher_factory_.CreateDistillerURLFetcher();
   image_fetchers_[image_id] = fetcher;
   fetcher->FetchURL(item,
                     base::Bind(&DistillerImpl::OnFetchImageDone,
-                               base::Unretained(this), image_id));
+                               base::Unretained(this),
+                               base::Unretained(distilled_page_proto),
+                               image_id));
 }
 
-void DistillerImpl::OnFetchImageDone(const std::string& id,
+void DistillerImpl::OnFetchImageDone(DistilledPageProto* distilled_page_proto,
+                                     const std::string& id,
                                      const std::string& response) {
-  DCHECK(proto_);
-  DistilledPageProto_Image* image = proto_->add_image();
+  DCHECK_GT(article_proto_->pages_size(), 0);
+  DCHECK(distilled_page_proto);
+  DistilledPageProto_Image* image = distilled_page_proto->add_image();
   image->set_name(id);
   image->set_data(response);
   DCHECK(image_fetchers_.end() != image_fetchers_.find(id));
@@ -130,8 +144,12 @@ void DistillerImpl::OnFetchImageDone(const std::string& id,
   int result = image_fetchers_.erase(id);
   delete fetcher;
   DCHECK_EQ(1, result);
-  if (image_fetchers_.empty()) {
-    distillation_cb_.Run(proto_.Pass());
+  RunDistillerCallbackIfDone();
+}
+
+void DistillerImpl::RunDistillerCallbackIfDone() {
+  if (image_fetchers_.empty() && !distillation_in_progress_) {
+    distillation_cb_.Run(article_proto_.Pass());
   }
 }
 

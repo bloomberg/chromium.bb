@@ -22,7 +22,7 @@ class SyncableService;
 
 namespace dom_distiller {
 
-class DistilledPageProto;
+class DistilledArticleProto;
 class DistillerFactory;
 class DomDistillerObserver;
 class DomDistillerStoreInterface;
@@ -70,7 +70,7 @@ class DomDistillerService {
  private:
   void CancelTask(TaskTracker* task);
   void AddDistilledPageToList(const ArticleEntry& entry,
-                              DistilledPageProto* proto,
+                              const DistilledArticleProto* article_proto,
                               bool distillation_succeeded);
 
   TaskTracker* CreateTaskTracker(const ArticleEntry& entry);

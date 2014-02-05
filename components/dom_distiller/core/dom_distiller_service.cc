@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/message_loop/message_loop.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
+#include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "url/gurl.h"
 
@@ -27,7 +28,7 @@ ArticleEntry CreateSkeletonEntryForUrl(const GURL& url) {
 void RunArticleAvailableCallback(
     const DomDistillerService::ArticleAvailableCallback& article_cb,
     const ArticleEntry& entry,
-    DistilledPageProto* proto,
+    const DistilledArticleProto* article_proto,
     bool distillation_succeeded) {
   article_cb.Run(distillation_succeeded);
 }
@@ -189,13 +190,16 @@ void DomDistillerService::CancelTask(TaskTracker* task) {
   }
 }
 
-void DomDistillerService::AddDistilledPageToList(const ArticleEntry& entry,
-                                                 DistilledPageProto* proto,
-                                                 bool distillation_succeeded) {
+void DomDistillerService::AddDistilledPageToList(
+    const ArticleEntry& entry,
+    const DistilledArticleProto* article_proto,
+    bool distillation_succeeded) {
   DCHECK(IsEntryValid(entry));
   if (distillation_succeeded) {
-    DCHECK(proto);
+    DCHECK(article_proto);
+    DCHECK_GT(article_proto->pages_size(), 0);
     store_->UpdateEntry(entry);
+    DCHECK_EQ(article_proto->pages_size(), entry.pages_size());
   }
 }
 

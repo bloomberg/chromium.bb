@@ -9,6 +9,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
@@ -31,7 +32,7 @@ namespace {
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
   virtual ~FakeViewRequestDelegate() {}
-  MOCK_METHOD1(OnArticleReady, void(DistilledPageProto* proto));
+  MOCK_METHOD1(OnArticleReady, void(const DistilledArticleProto* proto));
 };
 
 class MockDistillerObserver : public DomDistillerObserver {
@@ -52,9 +53,21 @@ DomDistillerService::ArticleAvailableCallback ArticleCallback(
 }
 
 void RunDistillerCallback(FakeDistiller* distiller,
-                          scoped_ptr<DistilledPageProto> proto) {
+                          scoped_ptr<DistilledArticleProto> proto) {
   distiller->RunDistillerCallback(proto.Pass());
   base::RunLoop().RunUntilIdle();
+}
+
+scoped_ptr<DistilledArticleProto> CreateArticleWithURL(const std::string& url) {
+  scoped_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
+  DistilledPageProto* page = proto->add_pages();
+  page->set_url(url);
+  return proto.Pass();
+}
+
+scoped_ptr<DistilledArticleProto> CreateDefaultArticle() {
+  return CreateArticleWithURL("http://www.example.com/default_article_page1")
+      .Pass();
 }
 
 }  // namespace
@@ -109,7 +122,7 @@ TEST_F(DomDistillerServiceTest, TestViewEntry) {
 
   ASSERT_FALSE(distiller->GetCallback().is_null());
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
   EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
 
   RunDistillerCallback(distiller, proto.Pass());
@@ -127,7 +140,7 @@ TEST_F(DomDistillerServiceTest, TestViewUrl) {
   ASSERT_FALSE(distiller->GetCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
   EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
 
   RunDistillerCallback(distiller, proto.Pass());
@@ -152,7 +165,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
   ASSERT_FALSE(distiller->GetCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
   EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
 
   RunDistillerCallback(distiller, proto.Pass());
@@ -160,7 +173,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
   ASSERT_FALSE(distiller2->GetCallback().is_null());
   EXPECT_EQ(url2, distiller2->GetUrl());
 
-  scoped_ptr<DistilledPageProto> proto2(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto2 = CreateDefaultArticle();
   EXPECT_CALL(viewer_delegate2, OnArticleReady(proto2.get()));
 
   RunDistillerCallback(distiller2, proto2.Pass());
@@ -210,7 +223,7 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
   ASSERT_FALSE(distiller->GetCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
   RunDistillerCallback(distiller, proto.Pass());
 
   EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
@@ -280,7 +293,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleObservers) {
         ArticleEntriesUpdated(util::HasExpectedUpdates(expected_updates)));
   }
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
   RunDistillerCallback(distiller, proto.Pass());
 
   // Remove should notify all observers that article is removed.
@@ -316,7 +329,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleCallbacks) {
     EXPECT_CALL(article_cb[i], DistillationCompleted(true));
   }
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
   RunDistillerCallback(distiller, proto.Pass());
 
   // Add the same url again, all callbacks should be called with true.
@@ -351,6 +364,59 @@ TEST_F(DomDistillerServiceTest, TestMultipleCallbacksOnRemove) {
 
   service_->RemoveEntry(entry_id);
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DomDistillerServiceTest, TestMultiplePageArticle) {
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  const int kPageCount = 8;
+
+  std::string base_url("http://www.example.com/p");
+  GURL pages_url[kPageCount];
+  for (int page_num = 0; page_num < kPageCount; ++page_num) {
+    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+  }
+
+  MockArticleAvailableCallback article_cb;
+  EXPECT_CALL(article_cb, DistillationCompleted(true));
+
+  std::string entry_id =
+      service_->AddToList(pages_url[0], ArticleCallback(&article_cb));
+
+  ArticleEntry entry;
+  ASSERT_FALSE(distiller->GetCallback().is_null());
+  EXPECT_EQ(pages_url[0], distiller->GetUrl());
+
+  // Create the article with pages to pass to the distiller.
+  scoped_ptr<DistilledArticleProto> proto =
+      CreateArticleWithURL(pages_url[0].spec());
+  for (int page_num = 1; page_num < kPageCount; ++page_num) {
+    DistilledPageProto* distilled_page = proto->add_pages();
+    distilled_page->set_url(pages_url[page_num].spec());
+  }
+
+  RunDistillerCallback(distiller, proto.Pass());
+  EXPECT_TRUE(store_->GetEntryByUrl(pages_url[0], &entry));
+
+  EXPECT_EQ(kPageCount, entry.pages_size());
+  // An article should have just one entry.
+  EXPECT_EQ(1u, store_->GetEntries().size());
+
+  // All pages should have correct urls.
+  for (int page_num = 0; page_num < kPageCount; ++page_num) {
+    EXPECT_EQ(pages_url[page_num].spec(), entry.pages(page_num).url());
+  }
+
+  // Should be able to query article using any of the pages url.
+  for (int page_num = 0; page_num < kPageCount; ++page_num) {
+    EXPECT_TRUE(store_->GetEntryByUrl(pages_url[page_num], &entry));
+  }
+
+  service_->RemoveEntry(entry_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, store_->GetEntries().size());
 }
 
 }  // namespace test

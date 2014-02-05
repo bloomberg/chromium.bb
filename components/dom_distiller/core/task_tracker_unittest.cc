@@ -18,7 +18,8 @@ namespace test {
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
   virtual ~FakeViewRequestDelegate() {}
-  MOCK_METHOD1(OnArticleReady, void(DistilledPageProto* proto));
+  MOCK_METHOD1(OnArticleReady,
+               void(const DistilledArticleProto* article_proto));
 };
 
 class TestCancelCallback {
@@ -36,7 +37,8 @@ class TestCancelCallback {
 
 class MockSaveCallback {
  public:
-  MOCK_METHOD3(Save, void(const ArticleEntry&, DistilledPageProto*, bool));
+  MOCK_METHOD3(Save,
+               void(const ArticleEntry&, const DistilledArticleProto*, bool));
 };
 
 class DomDistillerTaskTrackerTest : public testing::Test {

@@ -5,16 +5,14 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 
-#include <map>
 #include <string>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
-#include "components/dom_distiller/core/distiller_page.h"
+#include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
-#include "components/dom_distiller/core/proto/distilled_page.pb.h"
+#include "components/dom_distiller/core/page_distiller.h"
+#include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -24,8 +22,8 @@ class DistillerImpl;
 
 class Distiller {
  public:
-  typedef base::Callback<void(
-      scoped_ptr<DistilledPageProto>)> DistillerCallback;
+  typedef base::Callback<void(scoped_ptr<DistilledArticleProto>)>
+      DistillerCallback;
   virtual ~Distiller() {}
 
   // Distills a page, and asynchrounously returns the article HTML to the
@@ -55,8 +53,7 @@ class DistillerFactoryImpl : public DistillerFactory {
 };
 
 // Distills a article from a page and associated pages.
-class DistillerImpl : public Distiller,
-                      public DistillerPage::Delegate {
+class DistillerImpl : public Distiller {
  public:
   DistillerImpl(
       const DistillerPageFactory& distiller_page_factory,
@@ -70,28 +67,35 @@ class DistillerImpl : public Distiller,
   virtual void DistillPage(const GURL& url,
                            const DistillerCallback& callback) OVERRIDE;
 
-  // PageDistillerContext::Delegate
-  virtual void OnLoadURLDone() OVERRIDE;
-  virtual void OnExecuteJavaScriptDone(const base::Value* value) OVERRIDE;
-
-  void OnFetchImageDone(const std::string& id, const std::string& response);
-
  private:
-  virtual void LoadURL(const GURL& url);
-  virtual void FetchImage(const std::string& image_id, const std::string& item);
+  void OnFetchImageDone(DistilledPageProto* distilled_page_proto,
+                        const std::string& id,
+                        const std::string& response);
 
-  // Injects JavaScript to distill a loaded page down to its important content,
-  // e.g., extracting a news article from its surrounding boilerplate.
-  void GetDistilledContent();
+  void OnPageDistillationFinished(const GURL& page_url,
+                                  scoped_ptr<DistilledPageInfo> distilled_page,
+                                  bool distillation_successful);
 
-  const DistillerPageFactory& distiller_page_factory_;
+  virtual void FetchImage(DistilledPageProto* distilled_page_proto,
+                          const std::string& image_id,
+                          const std::string& item);
+
+  // Distills the page and adds the new page to |article_proto|.
+  void DistillPage(const GURL& url);
+
+  // Runs |distillation_cb_| if all distillation callbacks and image fetches are
+  // complete.
+  void RunDistillerCallbackIfDone();
+
   const DistillerURLFetcherFactory& distiller_url_fetcher_factory_;
-  scoped_ptr<DistillerPage> distiller_page_;
+  scoped_ptr<PageDistiller> page_distiller_;
   DistillerCallback distillation_cb_;
 
-  std::map<std::string, DistillerURLFetcher* > image_fetchers_;
-
-  scoped_ptr<DistilledPageProto> proto_;
+  base::hash_map<std::string, DistillerURLFetcher*> image_fetchers_;
+  scoped_ptr<DistilledArticleProto> article_proto_;
+  bool distillation_in_progress_;
+  // Set to keep track of which urls are already seen by the distiller.
+  base::hash_set<std::string> processed_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(DistillerImpl);
 };

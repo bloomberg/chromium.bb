@@ -22,7 +22,8 @@ class DistillerPage {
    public:
     virtual ~Delegate() {}
     virtual void OnLoadURLDone() {}
-    virtual void OnExecuteJavaScriptDone(const base::Value* value) {}
+    virtual void OnExecuteJavaScriptDone(const GURL& page_url,
+                                         const base::Value* value) {}
   };
 
   explicit DistillerPage(Delegate* delegate);
@@ -45,9 +46,10 @@ class DistillerPage {
   // a page is available.
   void ExecuteJavaScript(const std::string& script);
 
-  // Called when the JavaScript execution completes. |value| contains data
-  // returned by the script.
-  virtual void OnExecuteJavaScriptDone(const base::Value* value);
+  // Called when the JavaScript execution completes. |page_url| is the url of
+  // the distilled page. |value| contains data returned by the script.
+  virtual void OnExecuteJavaScriptDone(const GURL& page_url,
+                                       const base::Value* value);
 
  protected:
   enum State {

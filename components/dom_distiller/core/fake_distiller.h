@@ -27,27 +27,21 @@ class MockDistillerFactory : public DistillerFactory {
 
 class FakeDistiller : public Distiller {
  public:
-  FakeDistiller(bool execute_callback);
+  explicit FakeDistiller(bool execute_callback);
   virtual ~FakeDistiller();
   MOCK_METHOD0(Die, void());
 
   virtual void DistillPage(const GURL& url,
-                           const DistillerCallback& callback) OVERRIDE {
-    url_ = url;
-    callback_ = callback;
-    if (execute_callback_) {
-      RunDistillerCallback(make_scoped_ptr(new DistilledPageProto));
-    }
-  }
+                           const DistillerCallback& callback) OVERRIDE;
 
-  void RunDistillerCallback(scoped_ptr<DistilledPageProto> proto);
+  void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
 
   GURL GetUrl() { return url_; }
 
   DistillerCallback GetCallback() { return callback_; }
 
  private:
-  void RunDistillerCallbackInternal(scoped_ptr<DistilledPageProto> proto);
+  void RunDistillerCallbackInternal(scoped_ptr<DistilledArticleProto> proto);
 
   bool execute_callback_;
   GURL url_;

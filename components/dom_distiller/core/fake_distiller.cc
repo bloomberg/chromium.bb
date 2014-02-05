@@ -14,14 +14,26 @@ namespace test {
 MockDistillerFactory::MockDistillerFactory() {}
 MockDistillerFactory::~MockDistillerFactory() {}
 
-FakeDistiller::FakeDistiller(bool execute_callback) :
-      execute_callback_(execute_callback) {
+FakeDistiller::FakeDistiller(bool execute_callback)
+    : execute_callback_(execute_callback) {
   EXPECT_CALL(*this, Die()).Times(testing::AnyNumber());
 }
 
 FakeDistiller::~FakeDistiller() { Die(); }
 
-void FakeDistiller::RunDistillerCallback(scoped_ptr<DistilledPageProto> proto) {
+void FakeDistiller::DistillPage(const GURL& url,
+                                const DistillerCallback& callback) {
+  url_ = url;
+  callback_ = callback;
+  if (execute_callback_) {
+    scoped_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
+    proto->add_pages()->set_url(url_.spec());
+    RunDistillerCallback(proto.Pass());
+  }
+}
+
+void FakeDistiller::RunDistillerCallback(
+    scoped_ptr<DistilledArticleProto> proto) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDistiller::RunDistillerCallbackInternal,
@@ -30,7 +42,7 @@ void FakeDistiller::RunDistillerCallback(scoped_ptr<DistilledPageProto> proto) {
 }
 
 void FakeDistiller::RunDistillerCallbackInternal(
-    scoped_ptr<DistilledPageProto> proto) {
+    scoped_ptr<DistilledArticleProto> proto) {
   EXPECT_FALSE(callback_.is_null());
   callback_.Run(proto.Pass());
   callback_.Reset();

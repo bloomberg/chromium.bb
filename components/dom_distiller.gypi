@@ -84,6 +84,8 @@
             'dom_distiller/core/dom_distiller_service.h',
             'dom_distiller/core/dom_distiller_store.cc',
             'dom_distiller/core/dom_distiller_store.h',
+            'dom_distiller/core/page_distiller.cc',
+            'dom_distiller/core/page_distiller.h',
             'dom_distiller/core/task_tracker.cc',
             'dom_distiller/core/task_tracker.h',
           ],
@@ -112,6 +114,7 @@
           'target_name': 'distilled_page_proto',
           'type': 'static_library',
           'sources': [
+            'dom_distiller/core/proto/distilled_article.proto',
             'dom_distiller/core/proto/distilled_page.proto',
           ],
           'variables': {

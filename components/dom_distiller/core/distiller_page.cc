@@ -52,16 +52,16 @@ void DistillerPage::OnLoadURLFailed() {
   scoped_ptr<base::Value> empty(base::Value::CreateNullValue());
   if (!delegate_)
     return;
-  delegate_->OnExecuteJavaScriptDone(empty.get());
+  delegate_->OnExecuteJavaScriptDone(GURL(), empty.get());
 }
 
-void DistillerPage::OnExecuteJavaScriptDone(
-    const base::Value* value) {
+void DistillerPage::OnExecuteJavaScriptDone(const GURL& page_url,
+                                            const base::Value* value) {
   DCHECK_EQ(EXECUTING_JAVASCRIPT, state_);
   state_ = PAGE_AVAILABLE;
   if (!delegate_)
     return;
-  delegate_->OnExecuteJavaScriptDone(value);
+  delegate_->OnExecuteJavaScriptDone(page_url, value);
 }
 
 }  // namespace dom_distiller

@@ -55,16 +55,22 @@ void DistillerPageWebContents::ExecuteJavaScriptImpl(
       base::string16(),  // frame_xpath
       base::UTF8ToUTF16(script),
       base::Bind(&DistillerPage::OnExecuteJavaScriptDone,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 web_contents_->GetLastCommittedURL()));
 }
 
 void DistillerPageWebContents::DidFinishLoad(int64 frame_id,
                                              const GURL& validated_url,
                                              bool is_main_frame,
                                              RenderViewHost* render_view_host) {
-  content::WebContentsObserver::Observe(NULL);
-  OnLoadURLDone();
+  // TODO(shashishekhar): Find a better way to detect when it is safe to run the
+  // distillation script. Waiting for the entire page to load is really slow.
+  if (is_main_frame) {
+    content::WebContentsObserver::Observe(NULL);
+    OnLoadURLDone();
+  }
 }
+
 void DistillerPageWebContents::DidFailLoad(
     int64 frame_id,
     const GURL& validated_url,
@@ -72,8 +78,10 @@ void DistillerPageWebContents::DidFailLoad(
     int error_code,
     const base::string16& error_description,
     RenderViewHost* render_view_host) {
-  content::WebContentsObserver::Observe(NULL);
-  OnLoadURLFailed();
+  if (is_main_frame) {
+    content::WebContentsObserver::Observe(NULL);
+    OnLoadURLFailed();
+  }
 }
 
 }  // namespace dom_distiller

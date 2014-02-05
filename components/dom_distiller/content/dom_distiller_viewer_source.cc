@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "content/public/browser/render_frame_host.h"
@@ -53,7 +55,8 @@ class RequestViewerHandle : public ViewRequestDelegate {
   virtual ~RequestViewerHandle();
 
   // ViewRequestDelegate implementation.
-  virtual void OnArticleReady(DistilledPageProto* proto) OVERRIDE;
+  virtual void OnArticleReady(const DistilledArticleProto* article_proto)
+      OVERRIDE;
 
   void TakeViewerHandle(scoped_ptr<ViewerHandle> viewer_handle);
 
@@ -72,13 +75,21 @@ RequestViewerHandle::RequestViewerHandle(
 
 RequestViewerHandle::~RequestViewerHandle() {}
 
-void RequestViewerHandle::OnArticleReady(DistilledPageProto* proto) {
-  DCHECK(proto);
+void RequestViewerHandle::OnArticleReady(
+    const DistilledArticleProto* article_proto) {
+  DCHECK(article_proto);
   std::string title;
   std::string unsafe_article_html;
-  if (proto->has_title() && proto->has_html()) {
-    title = net::EscapeForHTML(proto->title());
-    unsafe_article_html = proto->html();
+  if (article_proto->has_title() && article_proto->pages_size() > 0 &&
+      article_proto->pages(0).has_html()) {
+    title = net::EscapeForHTML(article_proto->title());
+    // TODO(shashishekhar): Add support for correcting displaying multiple pages
+    // after discussing the right way to display them.
+    std::ostringstream unsafe_output_stream;
+    for (int page_num = 0; page_num < article_proto->pages_size(); ++page_num) {
+      unsafe_output_stream << article_proto->pages(page_num).html();
+    }
+    unsafe_article_html = unsafe_output_stream.str();
   } else {
     title = l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
     unsafe_article_html =

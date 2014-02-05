@@ -14,9 +14,6 @@ message DistilledPageProto {
   // The URLs used to create this page.
   required string url = 1;
 
-  // A title for the distilled page.
-  optional string title = 2;
-
   // The distilled HTML.
   required string html = 3;
 
