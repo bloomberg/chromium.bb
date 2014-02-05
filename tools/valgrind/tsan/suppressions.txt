@@ -263,22 +263,6 @@
 }
 
 {
-  bug_84726_a
-  ThreadSanitizer:Race
-  fun:qsort_r
-  fun:qsort
-  fun:_xdg_mime_alias_read_from_file
-}
-
-{
-  bug_84726_b
-  ThreadSanitizer:Race
-  fun:qsort_r
-  fun:qsort
-  fun:_cairo_bentley_ottmann_tessellate_polygon
-}
-
-{
   bug_177061
   ThreadSanitizer:Race
   ...
