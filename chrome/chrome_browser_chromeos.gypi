@@ -757,6 +757,8 @@
         'browser/chromeos/power/peripheral_battery_observer.h',
         'browser/chromeos/power/power_button_observer.cc',
         'browser/chromeos/power/power_button_observer.h',
+        'browser/chromeos/power/power_data_collector.cc',
+        'browser/chromeos/power/power_data_collector.h',
         'browser/chromeos/power/power_prefs.cc',
         'browser/chromeos/power/power_prefs.h',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.cc',
