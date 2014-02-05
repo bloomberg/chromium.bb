@@ -79,12 +79,8 @@ class ReverseInterface : public RefCountBase {
   // as the return type.
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys) = 0;
 
-  // An adapter to prevent this interface change from breaking the DEPS roll.
-  // TODO(ncbray) remove
-  virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc);
-  // TODO(ncbray) convert to a pure virtual.
   virtual bool OpenManifestEntry(nacl::string url_key,
-                                 struct NaClFileInfo* info);
+                                 struct NaClFileInfo* info) = 0;
   virtual bool CloseManifestEntry(int32_t desc) = 0;
   virtual void ReportCrash() = 0;
 

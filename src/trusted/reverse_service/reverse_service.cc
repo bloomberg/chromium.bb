@@ -283,21 +283,6 @@ int ReverseInterfaceWrapperCtor(ReverseInterfaceWrapper* self,
 
 namespace nacl {
 
-// TODO(ncbray) remove
-bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
-                                         int32_t* out_desc) {
-  UNREFERENCED_PARAMETER(url_key);
-  *out_desc = -1;
-  return false;
-}
-
-// TODO(ncbray) convert to a pure virtual.
-bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
-                                         struct NaClFileInfo* info) {
-  memset(info, 0, sizeof(*info));
-  return OpenManifestEntry(url_key, &info->desc);
-}
-
 ReverseService::ReverseService(DescWrapper* conn_cap,
                                ReverseInterface* rif)
   : service_(NULL),
