@@ -115,24 +115,6 @@ void InspectorStyleTextEditor::removeProperty(unsigned index)
     replaceProperty(index, "");
 }
 
-void InspectorStyleTextEditor::enableProperty(unsigned index)
-{
-    InspectorStyleProperty& disabledProperty = m_allProperties->at(index);
-    ASSERT(disabledProperty.sourceData.disabled);
-    internalReplaceProperty(disabledProperty, disabledProperty.rawText.substring(2, disabledProperty.rawText.length() - 4).stripWhiteSpace());
-}
-
-void InspectorStyleTextEditor::disableProperty(unsigned index)
-{
-    ASSERT(!m_allProperties->at(index).sourceData.disabled);
-
-    InspectorStyleProperty& property = m_allProperties->at(index);
-    property.setRawTextFromStyleDeclaration(m_styleText);
-    property.sourceData.disabled = true;
-
-    internalReplaceProperty(property, "/* " + property.rawText + " */");
-}
-
 void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStyleProperty& property, const String& newText)
 {
     const SourceRange& range = property.sourceData.range;

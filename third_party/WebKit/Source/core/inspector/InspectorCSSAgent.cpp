@@ -369,9 +369,6 @@ public:
         String oldText;
         bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, &oldText, exceptionState);
         m_oldText = oldText.stripWhiteSpace();
-        // FIXME: remove this once the model handles this case.
-        if (!m_oldText.endsWith(';'))
-            m_oldText.append(';');
         return result;
     }
 
@@ -394,38 +391,6 @@ private:
     String m_text;
     String m_oldText;
     bool m_overwrite;
-};
-
-class InspectorCSSAgent::TogglePropertyAction FINAL : public InspectorCSSAgent::StyleSheetAction {
-    WTF_MAKE_NONCOPYABLE(TogglePropertyAction);
-public:
-    TogglePropertyAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, unsigned propertyIndex, bool disable)
-        : InspectorCSSAgent::StyleSheetAction("ToggleProperty", styleSheet)
-        , m_cssId(cssId)
-        , m_propertyIndex(propertyIndex)
-        , m_disable(disable)
-    {
-    }
-
-    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
-    {
-        return redo(exceptionState);
-    }
-
-    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
-    {
-        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, !m_disable, exceptionState);
-    }
-
-    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
-    {
-        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, m_disable, exceptionState);
-    }
-
-private:
-    InspectorCSSId m_cssId;
-    unsigned m_propertyIndex;
-    bool m_disable;
 };
 
 class InspectorCSSAgent::SetRuleSelectorAction FINAL : public InspectorCSSAgent::StyleSheetAction {
@@ -1082,22 +1047,6 @@ void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const RefPtr<J
 
     TrackExceptionState exceptionState;
     bool success = m_domAgent->history()->perform(adoptPtr(new SetPropertyTextAction(inspectorStyleSheet, compoundId, propertyIndex, text, overwrite)), exceptionState);
-    if (success)
-        result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
-}
-
-void InspectorCSSAgent::toggleProperty(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, int propertyIndex, bool disable, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
-{
-    InspectorCSSId compoundId(fullStyleId);
-    ASSERT(!compoundId.isEmpty());
-
-    InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, compoundId.styleSheetId());
-    if (!inspectorStyleSheet)
-        return;
-
-    TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptPtr(new TogglePropertyAction(inspectorStyleSheet, compoundId, propertyIndex, disable)), exceptionState);
     if (success)
         result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);

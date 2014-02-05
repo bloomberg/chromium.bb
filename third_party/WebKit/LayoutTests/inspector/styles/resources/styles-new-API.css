@@ -29,5 +29,5 @@ body::after  {
 }
 
 h1 {
-    height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px;
+    height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px; /*padding-top:1px;*/
 }

@@ -42,8 +42,6 @@ public:
     void insertProperty(unsigned index, const String& propertyText, unsigned styleBodyLength);
     void replaceProperty(unsigned index, const String& newText);
     void removeProperty(unsigned index);
-    void enableProperty(unsigned index);
-    void disableProperty(unsigned index);
     const String& styleText() const { return m_styleText; }
 
 private:

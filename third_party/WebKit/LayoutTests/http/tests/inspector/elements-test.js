@@ -628,6 +628,23 @@ InspectorTest.dumpStyle = function(style, currentIndent)
     }
 }
 
+InspectorTest.dumpCSSStyleDeclaration = function(style, currentIndent)
+{
+    currentIndent = currentIndent || "";
+    if (!style) {
+        InspectorTest.addResult(currentIndent + "[NO STYLE]");
+        return;
+    }
+    var properties = style.allProperties;
+    for (var i = 0; i < properties.length; ++i) {
+        var property = properties[i];
+        if (property.status !== "disabled")
+            InspectorTest.addResult(currentIndent + "['" + property.name + "':'" + property.value + "'" + (property.priority === "important" ? " is-important" : "") + (!property["parsedOk"] ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " " + (property.status || "style"));
+        else
+            InspectorTest.addResult(currentIndent + "[text='" + property.text + "'] " + property.status);
+    }
+}
+
 InspectorTest.dumpBreadcrumb = function(message)
 {
     if (message)

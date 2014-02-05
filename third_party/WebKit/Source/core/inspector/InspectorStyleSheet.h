@@ -137,12 +137,12 @@ public:
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
     bool setPropertyText(unsigned index, const String& text, bool overwrite, String* oldText, ExceptionState&);
-    bool toggleProperty(unsigned index, bool disable, ExceptionState&);
     bool styleText(String* result) const;
 
 private:
     InspectorStyle(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheet* parentStyleSheet);
 
+    bool verifyPropertyText(const String& propertyText, bool canOmitSemicolon);
     void populateAllProperties(Vector<InspectorStyleProperty>& result) const;
     PassRefPtr<TypeBuilder::CSS::CSSStyle> styleWithProperties() const;
     PassRefPtr<CSSRuleSourceData> extractSourceData() const;
@@ -196,7 +196,6 @@ public:
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle(CSSStyleDeclaration*);
     bool setStyleText(const InspectorCSSId&, const String& text, String* oldText, ExceptionState&);
     bool setPropertyText(const InspectorCSSId&, unsigned propertyIndex, const String& text, bool overwrite, String* oldPropertyText, ExceptionState&);
-    bool toggleProperty(const InspectorCSSId&, unsigned propertyIndex, bool disable, ExceptionState&);
 
     virtual TypeBuilder::CSS::StyleSheetOrigin::Enum origin() const { return m_origin; }
     virtual bool getText(String* result) const;

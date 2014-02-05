@@ -281,16 +281,22 @@ function test()
 
     function test_disableProperty()
     {
-        function didDisableProperty(error, style)
+        function didDisableProperty(style)
         {
-            if (error) {
-                InspectorTest.addResult("error: " + error);
-                return;
-            }
             InspectorTest.addResult("");
             InspectorTest.addResult("=== After property manipulations ===");
-            InspectorTest.dumpStyle(style);
-            test_enableProperty(style.styleId);
+            InspectorTest.dumpCSSStyleDeclaration(style);
+            test_enableProperty(style);
+        }
+
+        function parseStylePayload(callback, error, payload)
+        {
+            if (error) {
+                InspectorTest.addResult(error);
+                InspectorTest.completeTest();
+                return;
+            }
+            callback(WebInspector.CSSStyleDeclaration.parsePayload(payload));
         }
 
         function stylesCallback(error, matchedCSSRules)
@@ -307,27 +313,62 @@ function test()
             // foo: .bar;
             // -moz-goog: 1***;
             // border-width: 0px;
+            // padding-top: 1px; [d]
 
             var styleId = matchedCSSRules[1].rule.style.styleId;
-            CSSAgent.toggleProperty(styleId, 0, true); // height: 100%
-            CSSAgent.toggleProperty(styleId, 7, true); // border-width: 0px
-            CSSAgent.setPropertyText(styleId, 7, "font-size: 12px;", false);
-            CSSAgent.setPropertyText(styleId, 9, "font-size: 14px;", false);
-            CSSAgent.toggleProperty(styleId, 9, true); // font-size: 14px
-            CSSAgent.setPropertyText(styleId, 8, "border-width: 1px;", true);
-            CSSAgent.toggleProperty(styleId, 8, false); // border-width: 1px
+            var orm = WebInspector.CSSStyleDeclaration.parsePayload(matchedCSSRules[1].rule.style);
+            orm.propertyAt(0).setDisabled(true, step1);
+
+            function step1(orm)
+            {
+                orm.propertyAt(7).setDisabled(true, step2);
+            }
+
+            function step2(orm)
+            {
+                CSSAgent.setPropertyText(orm.id, 7, "font-size: 12px;", false, parseStylePayload.bind(null, step3));
+            }
+
+            function step3(orm)
+            {
+                CSSAgent.setPropertyText(orm.id, 9, "font-size: 14px;", false, parseStylePayload.bind(null, step4));
+            }
+
+            function step4(orm)
+            {
+                orm.propertyAt(9).setDisabled(true, step5);
+            }
+
+            function step5(orm)
+            {
+                CSSAgent.setPropertyText(orm.id, 8, "border-width: 1px;", true, parseStylePayload.bind(null, step6));
+            }
+
+            function step6(orm)
+            {
+                orm.propertyAt(8).setDisabled(false, step7);
+            }
+
+            function step7(orm)
+            {
+                CSSAgent.setPropertyText(orm.id, 3, "", true, parseStylePayload.bind(null, step8));
+            }
+
+            function step8(orm)
+            {
+                orm.propertyAt(9).setDisabled(false, didDisableProperty);
+            }
+
             // height : 100% ; [d]
             // border: 1px solid;
             // border-width: 2px;
-            // background-color : #33FF33;
             // googles: abra;
             // foo: .bar;
             // -moz-goog: 1***;
             // font-size: 12px;
             // border-width: 1px;
             // font-size: 14px; [d]
-
-            CSSAgent.setPropertyText(styleId, 3, "", true, didDisableProperty);
+            // padding-top: 1px;
         }
 
         function nodeCallback(node)
@@ -337,22 +378,22 @@ function test()
         InspectorTest.nodeWithId("toggle", nodeCallback);
     }
 
-    function test_enableProperty(styleId)
+    function test_enableProperty(style)
     {
-        function didEnableProperty(error, style)
+        function didEnableProperty(style)
         {
-            if (error) {
-                InspectorTest.addResult("error: " + error);
-                return;
-            }
             InspectorTest.addResult("");
             InspectorTest.addResult("=== After property enabled ===");
-            InspectorTest.dumpStyle(style);
+            InspectorTest.dumpCSSStyleDeclaration(style);
             InspectorTest.completeTest();
         }
 
-        CSSAgent.toggleProperty(styleId, 6, false);
-        CSSAgent.toggleProperty(styleId, 8, false, didEnableProperty);
+        function step(style)
+        {
+            style.propertyAt(8).setDisabled(false, didEnableProperty);
+        }
+
+        style.propertyAt(6).setDisabled(false, step);
     }
 
     function loadAndDumpStyleSheet(styleSheetId, continuation, error)

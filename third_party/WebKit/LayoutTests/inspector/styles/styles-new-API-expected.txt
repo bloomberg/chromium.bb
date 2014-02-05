@@ -246,7 +246,7 @@ body::after  {
 }
 
 h1 {
-    height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px;
+    height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px; /*padding-top:1px;*/
 }
 '
 html: [regular, 4:0-4:4] {
@@ -292,6 +292,7 @@ h1: [regular, 30:0-30:2] {
     ['foo':'.bar' non-parsed] @[31:101-31:111] active
     ['-moz-goog':'1***' non-parsed] @[31:112-31:128] active
     ['border-width':'0px'] @[31:129-31:147] active
+    [text='/*padding-top:1px;*/'] disabled
     ['border-top-style':'solid'] @[undefined-undefined] style
     ['border-right-style':'solid'] @[undefined-undefined] style
     ['border-bottom-style':'solid'] @[undefined-undefined] style
@@ -461,6 +462,7 @@ body.main2: [regular, 23:0-23:10] {
 ['font-size':'12px'] @[32:4-32:20] active
 ['border-width':'1px'] @[33:4-33:22] active
 [text='/* font-size: 14px; */'] disabled
+['padding-top':'1px'] @[35:4-35:20] active
 ['border-top-width':'1px'] @[undefined-undefined] style
 ['border-right-width':'1px'] @[undefined-undefined] style
 ['border-bottom-width':'1px'] @[undefined-undefined] style
@@ -489,6 +491,7 @@ body.main2: [regular, 23:0-23:10] {
 ['font-size':'12px'] @[32:4-32:20] inactive
 ['border-width':'1px'] @[33:4-33:22] active
 ['font-size':'14px'] @[34:4-34:20] active
+['padding-top':'1px'] @[35:4-35:20] active
 ['border-top-width':'1px'] @[undefined-undefined] style
 ['border-right-width':'1px'] @[undefined-undefined] style
 ['border-bottom-width':'1px'] @[undefined-undefined] style

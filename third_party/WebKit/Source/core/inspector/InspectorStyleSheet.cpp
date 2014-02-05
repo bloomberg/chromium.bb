@@ -527,16 +527,32 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
     return result.release();
 }
 
-// This method does the following preprocessing of |propertyText| with |overwrite| == false and |index| past the last active property:
-// - If the last property (if present) has no closing ";", the ";" is prepended to the current |propertyText| value.
-// - A heuristic formatting is attempted to retain the style structure.
-//
-// The propertyText (if not empty) is checked to be a valid style declaration (containing at least one property). If not,
-// the method returns false (denoting an error).
+bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmitSemicolon)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
+    RuleSourceDataList sourceData;
+    RefPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create();
+    String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
+    StyleSheetHandler handler(declarationText, ownerDocument(), styleSheetContents.get(), &sourceData);
+    createCSSParser(ownerDocument())->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
+    Vector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+
+    // At least one property + the bogus property added just above should be present.
+    if (propertyCount < 2)
+        return false;
+
+    // Check for the proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
+    if (propertyData.at(propertyCount - 1).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
 bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText, bool overwrite, String* oldText, ExceptionState& exceptionState)
 {
     ASSERT(m_parentStyleSheet);
-    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
 
     if (!m_parentStyleSheet->ensureParsedDataReady()) {
         exceptionState.throwDOMException(NotFoundError, "The parent style sheet's data hasn't been processed.");
@@ -544,22 +560,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     }
 
     if (!propertyText.stripWhiteSpace().isEmpty()) {
-        RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
-        String declarationText = propertyText + " " + bogusPropertyName + ": none";
-        RuleSourceDataList sourceData;
-        StyleSheetHandler handler(declarationText, ownerDocument(), m_style->parentStyleSheet()->contents(), &sourceData);
-        createCSSParser(ownerDocument())->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, m_style->parentStyleSheet()->contents());
-        Vector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
-        unsigned propertyCount = propertyData.size();
-
-        // At least one property + the bogus property added just above should be present.
-        if (propertyCount < 2) {
-            exceptionState.throwDOMException(SyntaxError, "The property '" + propertyText + "' could not be set.");
-            return false;
-        }
-
-        // Check for the proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
-        if (propertyData.at(propertyCount - 1).name != bogusPropertyName) {
+        if (!verifyPropertyText(propertyText, false) && !verifyPropertyText(propertyText, true)) {
             exceptionState.throwDOMException(SyntaxError, "The property '" + propertyText + "' could not be set.");
             return false;
         }
@@ -591,47 +592,6 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
         editor.replaceProperty(index, propertyText);
     } else
         editor.insertProperty(index, propertyText, sourceData->ruleBodyRange.length());
-
-    return applyStyleText(editor.styleText());
-}
-
-bool InspectorStyle::toggleProperty(unsigned index, bool disable, ExceptionState& exceptionState)
-{
-    ASSERT(m_parentStyleSheet);
-    if (!m_parentStyleSheet->ensureParsedDataReady()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "No property could be found at the given index (" + String::number(index) + ").");
-        return false;
-    }
-
-    RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    if (!sourceData) {
-        exceptionState.throwDOMException(NotFoundError, "No property could be found at the given index (" + String::number(index) + ").");
-        return false;
-    }
-
-    String text;
-    bool success = styleText(&text);
-    if (!success) {
-        exceptionState.throwDOMException(NotFoundError, "No property could be found at the given index (" + String::number(index) + ").");
-        return false;
-    }
-
-    Vector<InspectorStyleProperty> allProperties;
-    populateAllProperties(allProperties);
-    if (index >= allProperties.size()) {
-        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than or equal to the maximum bound (" + String::number(allProperties.size()) + ").");
-        return false;
-    }
-
-    InspectorStyleProperty& property = allProperties.at(index);
-    if (property.sourceData.disabled == disable)
-        return true; // Idempotent operation.
-
-    InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
-    if (disable)
-        editor.disableProperty(index);
-    else
-        editor.enableProperty(index);
 
     return applyStyleText(editor.styleText());
 }
@@ -1344,20 +1304,6 @@ bool InspectorStyleSheet::setPropertyText(const InspectorCSSId& id, unsigned pro
     }
 
     bool success = inspectorStyle->setPropertyText(propertyIndex, text, overwrite, oldText, exceptionState);
-    if (success)
-        fireStyleSheetChanged();
-    return success;
-}
-
-bool InspectorStyleSheet::toggleProperty(const InspectorCSSId& id, unsigned propertyIndex, bool disable, ExceptionState& exceptionState)
-{
-    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
-    if (!inspectorStyle) {
-        exceptionState.throwDOMException(NotFoundError, "No property could be found for the given ID.");
-        return false;
-    }
-
-    bool success = inspectorStyle->toggleProperty(propertyIndex, disable, exceptionState);
     if (success)
         fireStyleSheetChanged();
     return success;
