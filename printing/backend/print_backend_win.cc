@@ -59,6 +59,8 @@ void LoadPaper(const wchar_t* printer,
     wchar_t chars[kMaxPaperName];
   };
 
+  DCHECK_EQ(sizeof(PaperName), sizeof(wchar_t) * kMaxPaperName);
+
   // Paper
   std::vector<PaperName> names;
   GetDeviceCapabilityArray(printer, port, DC_PAPERNAMES, &names);
@@ -81,9 +83,11 @@ void LoadPaper(const wchar_t* printer,
     PrinterSemanticCapsAndDefaults::Paper paper;
     paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
     if (!names.empty()) {
-      paper.name.assign(&names[i].chars, &names[i].chars + kMaxPaperName);
+      const wchar_t* name_start = names[i].chars;
+      base::string16 tmp_name(name_start, kMaxPaperName);
       // Trim trailing zeros.
-      paper.name = paper.name.c_str();
+      tmp_name = tmp_name.c_str();
+      paper.name = base::WideToUTF8(tmp_name);
     }
     caps->papers.push_back(paper);
   }
@@ -105,9 +109,11 @@ void LoadPaper(const wchar_t* printer,
           PrinterSemanticCapsAndDefaults::Paper paper;
           paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
           if (!names.empty()) {
-            paper.name.assign(&names[i].chars, &names[i].chars + kMaxPaperName);
+            const wchar_t* name_start = names[i].chars;
+            base::string16 tmp_name(name_start, kMaxPaperName);
             // Trim trailing zeros.
-            paper.name = paper.name.c_str();
+            tmp_name = tmp_name.c_str();
+            paper.name = base::WideToUTF8(tmp_name);
           }
           caps->default_paper = paper;
           break;
