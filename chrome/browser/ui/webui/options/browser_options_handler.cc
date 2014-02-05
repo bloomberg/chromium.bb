@@ -1524,9 +1524,12 @@ void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
 
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (group != "" && group != "Disabled")
+  if (group != "" && group != "Disabled" &&
+      HotwordServiceFactory::IsServiceAvailable(profile)) {
     web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+  }
 }
 
 #if defined(OS_CHROMEOS)

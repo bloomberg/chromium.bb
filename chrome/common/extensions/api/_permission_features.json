@@ -428,7 +428,11 @@
   },
   "hotwordPrivate": {
     "channel": "stable",
-    "extension_types": ["extension"]
+    "extension_types": ["extension"],
+    "whitelist": [
+      "8CE39F175D076AD6BDF7CBF418F2409558B367E3",  // hotword_helper
+      "09FDCB5851B8F3378DB630D06E316076E89C95A6"   // hotword nacl
+    ]
   },
   "identity": {
     "channel": "stable",

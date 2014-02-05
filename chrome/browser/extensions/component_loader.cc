@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -294,6 +295,14 @@ void ComponentLoader::AddHangoutServicesExtension() {
 #endif
 }
 
+void ComponentLoader::AddHotwordHelperExtension() {
+  Profile* profile = static_cast<Profile*>(browser_context_);
+  if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
+    Add(IDR_HOTWORD_HELPER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
+  }
+}
+
 void ComponentLoader::AddImageLoaderExtension() {
 #if defined(IMAGE_LOADER_EXTENSION)
 #ifndef NDEBUG
@@ -456,6 +465,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   if (!skip_session_components) {
     AddFileManagerExtension();
     AddHangoutServicesExtension();
+    AddHotwordHelperExtension();
     AddImageLoaderExtension();
 
 #if defined(ENABLE_SETTINGS_APP)

@@ -122,6 +122,7 @@ class ComponentLoader {
       bool skip_session_components);
   void AddFileManagerExtension();
   void AddHangoutServicesExtension();
+  void AddHotwordHelperExtension();
   void AddImageLoaderExtension();
   void AddBookmarksExtensions();
   void AddNetworkSpeechSynthesisExtension();
