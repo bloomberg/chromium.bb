@@ -83,16 +83,16 @@ class CONTENT_EXPORT Status {
   // specified by the Web Crypto import operation.
   static Status ErrorJwkUsageInconsistent();
 
-  // The "k" parameter was either missing, could not be parsed as a base-64
-  // encoded string, or the decoded bytes were empty.
+  // The "k" parameter was either missing or could not be parsed as a base-64
+  // encoded string.
   static Status ErrorJwkDecodeK();
 
-  // The "n" parameter was either missing, could not be parsed as a base-64
-  // encoded string, or the decoded bytes were empty.
+  // The "n" parameter was either missing or could not be parsed as a base-64
+  // encoded string.
   static Status ErrorJwkDecodeN();
 
-  // The "e" parameter was either missing, could not be parsed as a base-64
-  // encoded string, or the decoded bytes were empty.
+  // The "e" parameter was either missing or could not be parsed as a base-64
+  // encoded string.
   static Status ErrorJwkDecodeE();
 
   // TODO(eroman): Private key import through JWK is not yet supported.
@@ -101,6 +101,12 @@ class CONTENT_EXPORT Status {
   // The "kty" parameter was given and was a string, however it was
   // unrecognized.
   static Status ErrorJwkUnrecognizedKty();
+
+  // The amount of key data provided was incompatible with the selected
+  // algorithm. For instance if the algorith name was A128CBC then EXACTLY
+  // 128-bits of key data must have been provided. If 192-bits of key data were
+  // given that is an error.
+  static Status ErrorJwkIncorrectKeyLength();
 
   // ------------------------------------
   // Other errors

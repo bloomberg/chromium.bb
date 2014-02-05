@@ -38,89 +38,127 @@ bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
           algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep);
 }
 
-// Binds a specific key length value to a compatible factory function.
-typedef blink::WebCryptoAlgorithm (*AlgFactoryFuncWithOneShortArg)(
-    unsigned short);
-template <AlgFactoryFuncWithOneShortArg func, unsigned short key_length>
-blink::WebCryptoAlgorithm BindAlgFactoryWithKeyLen() {
-  return func(key_length);
-}
+typedef blink::WebCryptoAlgorithm (*AlgorithmCreationFunc)();
 
-// Binds a WebCryptoAlgorithmId value to a compatible factory function.
-typedef blink::WebCryptoAlgorithm (*AlgFactoryFuncWithWebCryptoAlgIdArg)(
-    blink::WebCryptoAlgorithmId);
-template <AlgFactoryFuncWithWebCryptoAlgIdArg func,
-          blink::WebCryptoAlgorithmId algorithm_id>
-blink::WebCryptoAlgorithm BindAlgFactoryAlgorithmId() {
-  return func(algorithm_id);
-}
-
-// Defines a map between a JWK 'alg' string ID and a corresponding Web Crypto
-// factory function.
-typedef blink::WebCryptoAlgorithm (*AlgFactoryFuncNoArgs)();
-typedef std::map<std::string, AlgFactoryFuncNoArgs> JwkAlgFactoryMap;
-
-class JwkAlgorithmFactoryMap {
+class JwkAlgorithmInfo {
  public:
-  JwkAlgorithmFactoryMap() {
-    map_["HS256"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
-                                   blink::WebCryptoAlgorithmIdSha256>;
-    map_["HS384"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
-                                   blink::WebCryptoAlgorithmIdSha384>;
-    map_["HS512"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
-                                   blink::WebCryptoAlgorithmIdSha512>;
-    map_["RS256"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
-                                   blink::WebCryptoAlgorithmIdSha256>;
-    map_["RS384"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
-                                   blink::WebCryptoAlgorithmIdSha384>;
-    map_["RS512"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
-                                   blink::WebCryptoAlgorithmIdSha512>;
-    map_["RSA1_5"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5>;
-    map_["RSA-OAEP"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateRsaOaepAlgorithm,
-                                   blink::WebCryptoAlgorithmIdSha1>;
-    // TODO(padolph): The Web Crypto spec does not enumerate AES-KW 128 yet
-    map_["A128KW"] = &blink::WebCryptoAlgorithm::createNull;
-    // TODO(padolph): The Web Crypto spec does not enumerate AES-KW 256 yet
-    map_["A256KW"] = &blink::WebCryptoAlgorithm::createNull;
-    map_["A128GCM"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdAesGcm>;
-    map_["A256GCM"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdAesGcm>;
-    map_["A128CBC"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdAesCbc>;
-    map_["A192CBC"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdAesCbc>;
-    map_["A256CBC"] =
-        &BindAlgFactoryAlgorithmId<webcrypto::CreateAlgorithm,
-                                   blink::WebCryptoAlgorithmIdAesCbc>;
+  JwkAlgorithmInfo()
+      : creation_func_(NULL),
+        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {
+
   }
 
-  blink::WebCryptoAlgorithm CreateAlgorithmFromName(const std::string& alg_id)
-      const {
-    const JwkAlgFactoryMap::const_iterator pos = map_.find(alg_id);
-    if (pos == map_.end())
-      return blink::WebCryptoAlgorithm::createNull();
-    return pos->second();
+  explicit JwkAlgorithmInfo(AlgorithmCreationFunc algorithm_creation_func)
+      : creation_func_(algorithm_creation_func),
+        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {
+  }
+
+  JwkAlgorithmInfo(AlgorithmCreationFunc algorithm_creation_func,
+                   unsigned int required_key_length_bits)
+      : creation_func_(algorithm_creation_func),
+        required_key_length_bytes_(required_key_length_bits / 8) {
+    DCHECK((required_key_length_bits % 8) == 0);
+  }
+
+  bool CreateAlgorithm(blink::WebCryptoAlgorithm* algorithm) const {
+    *algorithm = creation_func_();
+    return !algorithm->isNull();
+  }
+
+  bool IsInvalidKeyByteLength(size_t byte_length) const {
+    if (required_key_length_bytes_ == NO_KEY_SIZE_REQUIREMENT)
+      return false;
+    return required_key_length_bytes_  != byte_length;
   }
 
  private:
-  JwkAlgFactoryMap map_;
+  enum { NO_KEY_SIZE_REQUIREMENT = UINT_MAX };
+
+  AlgorithmCreationFunc creation_func_;
+
+  // The expected key size for the algorithm or NO_KEY_SIZE_REQUIREMENT.
+  unsigned int required_key_length_bytes_;
+
 };
 
-base::LazyInstance<JwkAlgorithmFactoryMap> jwk_alg_factory =
+typedef std::map<std::string, JwkAlgorithmInfo> JwkAlgorithmInfoMap;
+
+class JwkAlgorithmRegistry {
+ public:
+  JwkAlgorithmRegistry() {
+    // TODO(eroman):
+    // http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-20
+    // says HMAC with SHA-2 should have a key size at least as large as the
+    // hash output.
+    alg_to_info_["HS256"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                        blink::WebCryptoAlgorithmIdSha256>);
+    alg_to_info_["HS384"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                        blink::WebCryptoAlgorithmIdSha384>);
+    alg_to_info_["HS512"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                         blink::WebCryptoAlgorithmIdSha512>);
+    alg_to_info_["RS256"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
+                         blink::WebCryptoAlgorithmIdSha256>);
+    alg_to_info_["RS384"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
+                         blink::WebCryptoAlgorithmIdSha384>);
+    alg_to_info_["RS512"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
+                         blink::WebCryptoAlgorithmIdSha512>);
+    alg_to_info_["RSA1_5"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5>);
+    alg_to_info_["RSA-OAEP"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateRsaOaepAlgorithm,
+                         blink::WebCryptoAlgorithmIdSha1>);
+    // TODO(padolph): The Web Crypto spec does not enumerate AES-KW 128 yet
+    alg_to_info_["A128KW"] =
+        JwkAlgorithmInfo(&blink::WebCryptoAlgorithm::createNull, 128);
+    // TODO(padolph): The Web Crypto spec does not enumerate AES-KW 256 yet
+    alg_to_info_["A256KW"] =
+        JwkAlgorithmInfo(&blink::WebCryptoAlgorithm::createNull, 256);
+    alg_to_info_["A128GCM"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdAesGcm>, 128);
+    alg_to_info_["A256GCM"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdAesGcm>, 256);
+    alg_to_info_["A128CBC"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdAesCbc>, 128);
+    alg_to_info_["A192CBC"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdAesCbc>, 192);
+    alg_to_info_["A256CBC"] = JwkAlgorithmInfo(
+        &BindAlgorithmId<webcrypto::CreateAlgorithm,
+                         blink::WebCryptoAlgorithmIdAesCbc>, 256);
+  }
+
+  // Returns NULL if the algorithm name was not registered.
+  const JwkAlgorithmInfo* GetAlgorithmInfo(const std::string& jwk_alg) const {
+    const JwkAlgorithmInfoMap::const_iterator pos = alg_to_info_.find(jwk_alg);
+    if (pos == alg_to_info_.end())
+      return NULL;
+    return &pos->second;
+  }
+
+ private:
+  // Binds a WebCryptoAlgorithmId value to a compatible factory function.
+  typedef blink::WebCryptoAlgorithm (*FuncWithWebCryptoAlgIdArg)(
+      blink::WebCryptoAlgorithmId);
+  template <FuncWithWebCryptoAlgIdArg func,
+            blink::WebCryptoAlgorithmId algorithm_id>
+  static blink::WebCryptoAlgorithm BindAlgorithmId() {
+    return func(algorithm_id);
+  }
+
+  JwkAlgorithmInfoMap alg_to_info_;
+};
+
+base::LazyInstance<JwkAlgorithmRegistry> jwk_alg_registry =
     LAZY_INSTANCE_INITIALIZER;
 
 bool WebCryptoAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
@@ -161,12 +199,8 @@ bool GetDecodedUrl64ValueByKey(
     const std::string& key,
     std::string* decoded) {
   std::string value_url64;
-  if (!dict.GetString(key, &value_url64) ||
-      !webcrypto::Base64DecodeUrlSafe(value_url64, decoded) ||
-      !decoded->size()) {
-    return false;
-  }
-  return true;
+  return dict.GetString(key, &value_url64) &&
+         webcrypto::Base64DecodeUrlSafe(value_url64, decoded);
 }
 
 }  // namespace
@@ -530,6 +564,7 @@ Status WebCryptoImpl::ImportKeyJwk(
   // 6. JWK alg missing AND input algorithm specified: use input value
   // TODO(eroman): Should error if "alg" was specified but not a string.
   blink::WebCryptoAlgorithm algorithm = blink::WebCryptoAlgorithm::createNull();
+  const JwkAlgorithmInfo* algorithm_info = NULL;
   std::string jwk_alg_value;
   if (dict_value->GetString("alg", &jwk_alg_value)) {
     // JWK alg present
@@ -537,12 +572,12 @@ Status WebCryptoImpl::ImportKeyJwk(
     // TODO(padolph): Validate alg vs kty. For example kty="RSA" implies alg can
     // only be from the RSA family.
 
-    const blink::WebCryptoAlgorithm jwk_algorithm =
-        jwk_alg_factory.Get().CreateAlgorithmFromName(jwk_alg_value);
-    if (jwk_algorithm.isNull()) {
-      // JWK alg unrecognized
+    blink::WebCryptoAlgorithm jwk_algorithm =
+        blink::WebCryptoAlgorithm::createNull();
+    algorithm_info = jwk_alg_registry.Get().GetAlgorithmInfo(jwk_alg_value);
+    if (!algorithm_info || !algorithm_info->CreateAlgorithm(&jwk_algorithm))
       return Status::ErrorJwkUnrecognizedAlgorithm();  // case 1
-    }
+
     // JWK alg valid
     if (algorithm_or_null.isNull()) {
       // input algorithm not specified
@@ -591,11 +626,16 @@ Status WebCryptoImpl::ImportKeyJwk(
     if (!GetDecodedUrl64ValueByKey(*dict_value, "k", &jwk_k_value))
       return Status::ErrorJwkDecodeK();
 
-    // TODO(padolph): Some JWK alg ID's embed information about the key length
-    // in the alg ID string. For example "A128" implies the JWK carries 128 bits
-    // of key material, and "HS512" implies the JWK carries _at least_ 512 bits
-    // of key material. For such keys validate the actual key length against the
-    // value in the ID.
+    // Some JWK alg ID's embed information about the key length in the alg ID
+    // string. For example "A128CBC" implies the JWK carries 128 bits
+    // of key material. For such keys validate that enough bytes were provided.
+    // If this validation is not done, then it would be possible to select a
+    // different algorithm by passing a different lengthed key, since that is
+    // how WebCrypto interprets things.
+    if (algorithm_info &&
+        algorithm_info->IsInvalidKeyByteLength(jwk_k_value.size())) {
+      return Status::ErrorJwkIncorrectKeyLength();
+    }
 
     return ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
                              reinterpret_cast<const uint8*>(jwk_k_value.data()),

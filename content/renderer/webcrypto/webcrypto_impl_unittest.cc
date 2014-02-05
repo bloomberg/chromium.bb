@@ -1086,16 +1086,21 @@ TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
 
   // Fail on empty k.
   dict.SetString("k", "");
-  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkIncorrectKeyLength(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on k actual length (120 bits) inconsistent with the embedded JWK alg
   // value (128) for an AES key.
   dict.SetString("k", "AVj42h0Y5aqGtE3yluKL");
-  // TODO(eroman): This is failing for a different reason than the test
-  //               expects.
-  EXPECT_STATUS(Status::Error(), ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkIncorrectKeyLength(), ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on k actual length (192 bits) inconsistent with the embedded JWK alg
+  // value (128) for an AES key.
+  dict.SetString("k", "dGhpcyAgaXMgIDI0ICBieXRlcyBsb25n");
+  EXPECT_STATUS(Status::ErrorJwkIncorrectKeyLength(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 }
@@ -1465,7 +1470,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(true, public_key.extractable());
+  EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1521,7 +1526,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(true, public_key.extractable());
+  EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1535,7 +1540,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(true, public_key.extractable());
+  EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1546,23 +1551,29 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       modulus_length,
       public_exponent);
   EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
-      algorithm, extractable, usage_mask, &public_key, &private_key));
+      algorithm, false, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(true, public_key.extractable());
-  EXPECT_EQ(extractable, private_key.extractable());
+  // Even though "extractable" was set to false, the public key remains
+  // extractable.
+  EXPECT_TRUE(public_key.extractable());
+  EXPECT_FALSE(private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
 
-  // Fail SPKI export of private key. This is an ExportKey test, but do it here
-  // since it is expensive to generate an RSA key pair and we already have a
-  // private key here.
+  // Exporting a private key as SPKI format doesn't make sense. However this
+  // will first fail because the key is not extractable.
   blink::WebArrayBuffer output;
-  // TODO(eroman): This test is failing for a different reason than expected by
-  //               the test.
   EXPECT_STATUS(Status::ErrorKeyNotExtractable(), ExportKeyInternal(
+      blink::WebCryptoKeyFormatSpki, private_key, &output));
+
+  // Re-generate an extractable private_key and try to export it as SPKI format.
+  // This should fail since spki is for public keys.
+  EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
+      algorithm, true, usage_mask, &public_key, &private_key));
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(), ExportKeyInternal(
       blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 

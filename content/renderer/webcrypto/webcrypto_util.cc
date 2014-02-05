@@ -92,6 +92,11 @@ Status Status::ErrorJwkUnrecognizedKty() {
   return Status("The JWK \"kty\" property was unrecognized");
 }
 
+Status Status::ErrorJwkIncorrectKeyLength() {
+  return Status("The JWK \"k\" property did not include the right length "
+                "of key data for the given algorithm.");
+}
+
 Status Status::ErrorImportEmptyKeyData() {
   return Status("No key data was provided");
 }
