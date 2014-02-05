@@ -371,7 +371,7 @@ public:
         *prevNext = this;
     }
 
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     NO_SANITIZE_ADDRESS
     bool shouldAddToFreeList()
     {
@@ -389,7 +389,7 @@ public:
 
 private:
     FreeListEntry* m_next;
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     unsigned m_asanMagic;
 #endif
 };
@@ -439,7 +439,7 @@ public:
     void finalize(Header*);
     virtual bool checkAndMarkPointer(Visitor*, Address);
     ThreadHeap<Header>* heap() { return m_heap; }
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     void poisonUnmarkedObjects();
 #endif
 

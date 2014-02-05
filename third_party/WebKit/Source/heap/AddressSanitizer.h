@@ -31,7 +31,10 @@
 #ifndef AddressSanitizer_h
 #define AddressSanitizer_h
 
-#ifdef ADDRESS_SANITIZER
+// The following API isn't exposed by SyzyASan (current version of ASan on
+// Windows).
+// FIXME: Add Windows support here.
+#if defined(ADDRESS_SANITIZER) && !OS(WIN)
 extern "C" {
     // Marks memory region [addr, addr+size) as unaddressable.
     // This memory must be previously allocated by the user program. Accessing
@@ -57,9 +60,6 @@ extern "C" {
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
     __asan_unpoison_memory_region((addr), (size))
 #define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-    const size_t asanMagic = 0xabefeed0;
-    const size_t asanDeferMemoryReuseCount = 2;
-    const size_t asanDeferMemoryReuseMask = 0x3;
 }
 #else
 #define ASAN_POISON_MEMORY_REGION(addr, size)   \
@@ -68,5 +68,9 @@ extern "C" {
     ((void)(addr), (void)(size))
 #define NO_SANITIZE_ADDRESS
 #endif
+
+const size_t asanMagic = 0xabefeed0;
+const size_t asanDeferMemoryReuseCount = 2;
+const size_t asanDeferMemoryReuseMask = 0x3;
 
 #endif

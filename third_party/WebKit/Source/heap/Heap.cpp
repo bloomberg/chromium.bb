@@ -541,7 +541,7 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
         return;
     }
     entry = new (NotNull, address) FreeListEntry(size);
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     // For ASAN we don't add the entry to the free lists until the asanDeferMemoryReuseCount
     // reaches zero. However we always add entire pages to ensure that adding a new page will
     // increase the allocation space.
@@ -569,7 +569,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 
     // If ASAN is supported we add allocationGranularity bytes to the allocated space and
     // poison that to detect overflows
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     allocationSize += allocationGranularity;
 #endif
     if (threadState()->shouldGC())
@@ -684,7 +684,7 @@ template<typename Header>
 void ThreadHeap<Header>::sweep()
 {
     ASSERT(isConsistentForGC());
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
     // When using ASAN do a pre-sweep where all unmarked objects are poisoned before
     // calling their finalizer methods. This can catch the cases where one objects
     // finalizer tries to modify another object as part of finalization.
@@ -1023,7 +1023,7 @@ bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address addr)
     return true;
 }
 
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER)
 template<typename Header>
 void HeapPage<Header>::poisonUnmarkedObjects()
 {
