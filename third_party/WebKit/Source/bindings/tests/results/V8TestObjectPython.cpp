@@ -2647,6 +2647,39 @@ static void setterRaisesExceptionLongAttributeAttributeSetterCallback(v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
+    RefPtr<TestInterfaceEmpty> jsValue = imp->raisesExceptionTestInterfaceEmptyAttribute(exceptionState);
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
+        return;
+    v8SetReturnValueFast(info, jsValue.release(), imp);
+}
+
+static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setRaisesExceptionTestInterfaceEmptyAttribute(WTF::getPtr(cppValue), exceptionState);
+    exceptionState.throwIfNeeded();
+}
+
+static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedAttributeRaisesExceptionGetterAnyAttribute");
@@ -6788,6 +6821,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"raisesExceptionLongAttribute", TestObjectPythonV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"raisesExceptionGetterLongAttribute", TestObjectPythonV8Internal::raisesExceptionGetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::raisesExceptionGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterRaisesExceptionLongAttribute", TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"raisesExceptionTestInterfaceEmptyAttribute", TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback, TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttributeRaisesExceptionGetterAnyAttribute", TestObjectPythonV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback, TestObjectPythonV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectTestInterfaceAttribute", TestObjectPythonV8Internal::reflectTestInterfaceAttributeAttributeGetterCallback, TestObjectPythonV8Internal::reflectTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectReflectedNameAttributeTestAttribute", TestObjectPythonV8Internal::reflectReflectedNameAttributeTestAttributeAttributeGetterCallback, TestObjectPythonV8Internal::reflectReflectedNameAttributeTestAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

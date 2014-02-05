@@ -57,21 +57,20 @@ def generate_attribute(interface, attribute):
     has_custom_setter = (not attribute.is_read_only and
                          'Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Setter'])
-
-    has_strict_type_checking = (
-        ('StrictTypeChecking' in extended_attributes or
-         'StrictTypeChecking' in interface.extended_attributes) and
-        v8_types.is_wrapper_type(idl_type))
-
-    is_setter_raises_exception = (
-        'RaisesException' in extended_attributes and
-        extended_attributes['RaisesException'] in [None, 'Setter'])
-
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
     if is_custom_element_callbacks or is_reflect:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+    # [RaisesException], [RaisesException=Setter]
+    is_setter_raises_exception = (
+        'RaisesException' in extended_attributes and
+        extended_attributes['RaisesException'] in [None, 'Setter'])
+    # [StrictTypeChecking]
+    has_strict_type_checking = (
+        ('StrictTypeChecking' in extended_attributes or
+         'StrictTypeChecking' in interface.extended_attributes) and
+        v8_types.is_wrapper_type(idl_type))
 
     if (idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -157,17 +156,20 @@ def generate_getter(interface, attribute, contents):
     # exceptions), we need to use a local variable.
     # FIXME: check if compilers are smart enough to inline this, and if so,
     # always use a local variable (for readability and CG simplicity).
+    release = False
     if (attribute.is_nullable or
         idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
         contents['is_getter_raises_exception']):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
+        # EventHandler has special handling
+        if idl_type != 'EventHandler' and v8_types.is_interface_type(idl_type):
+            release = True
 
     def v8_set_return_value_statement(for_main_world=False):
         if contents['is_keep_alive_for_gc']:
             return 'v8SetReturnValue(info, wrapper)'
-        release = attribute.is_nullable and v8_types.is_interface_type(idl_type)
         return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes=extended_attributes, script_wrappable='imp', release=release, for_main_world=for_main_world)
 
     contents.update({

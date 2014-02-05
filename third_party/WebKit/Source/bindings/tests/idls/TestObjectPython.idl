@@ -171,6 +171,7 @@ interface TestObjectPython {
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
+    [RaisesException] attribute TestInterfaceEmpty raisesExceptionTestInterfaceEmptyAttribute;
     [CachedAttribute=isValueDirty, RaisesException] attribute any cachedAttributeRaisesExceptionGetterAnyAttribute;
     [Reflect] attribute TestInterface reflectTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] attribute TestInterface reflectReflectedNameAttributeTestAttribute;
