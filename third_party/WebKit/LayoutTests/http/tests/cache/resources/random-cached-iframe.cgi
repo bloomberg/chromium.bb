@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 
 print "Content-type: text/html\n";
 print "Cache-control: max-age=60000\n";

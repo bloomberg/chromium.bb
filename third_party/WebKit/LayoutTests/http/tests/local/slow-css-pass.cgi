@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 
 print "Content-type: text/css\n"; 
 print "Cache-control: no-store\n\n";

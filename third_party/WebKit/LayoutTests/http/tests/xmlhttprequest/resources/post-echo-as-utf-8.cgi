@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 #use CGI ();
 
 print "Content-type: text/plain;charset=utf-8\n\n";

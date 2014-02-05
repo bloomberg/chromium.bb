@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 
 print "Content-type: text/javascript\n";
 print "Cache-control: no-store\n";

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 
 print "Content-type: application/octet-stream\n";
 print "Cache-control: no-cache, no-store\n\n";
