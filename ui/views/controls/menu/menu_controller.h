@@ -112,9 +112,7 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
   void OnMouseReleased(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseMoved(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseEntered(SubmenuView* source, const ui::MouseEvent& event);
-#if defined(USE_AURA)
   bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
-#endif
   void OnGestureEvent(SubmenuView* source, ui::GestureEvent* event);
 
   bool GetDropFormats(

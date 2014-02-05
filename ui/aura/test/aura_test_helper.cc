@@ -115,7 +115,7 @@ void AuraTestHelper::TearDown() {
 void AuraTestHelper::RunAllPendingInMessageLoop() {
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().
-  base::RunLoop run_loop(Env::GetInstance()->GetDispatcher());
+  base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 }
 

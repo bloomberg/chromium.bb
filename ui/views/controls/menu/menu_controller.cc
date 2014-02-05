@@ -596,13 +596,11 @@ void MenuController::OnMouseEntered(SubmenuView* source,
   // do anything here.
 }
 
-#if defined(USE_AURA)
 bool MenuController::OnMouseWheel(SubmenuView* source,
                                   const ui::MouseWheelEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
   return part.submenu && part.submenu->OnMouseWheel(event);
 }
-#endif
 
 void MenuController::OnGestureEvent(SubmenuView* source,
                                     ui::GestureEvent* event) {
@@ -1061,7 +1059,7 @@ bool MenuController::Dispatch(const MSG& msg) {
   DispatchMessage(&msg);
   return exit_type_ == EXIT_NONE;
 }
-#elif defined(USE_AURA)
+#else
 bool MenuController::Dispatch(const base::NativeEvent& event) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
     aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);

@@ -53,7 +53,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   // for a response.
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop(base::MessagePumpX11::Current());
+  base::RunLoop run_loop;
 
   PendingRequest pending_request(target, run_loop.QuitClosure());
   pending_requests_.push_back(&pending_request);

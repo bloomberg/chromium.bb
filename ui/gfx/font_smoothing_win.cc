@@ -36,7 +36,7 @@ class CachedFontSmoothingSettings : public gfx::SingletonHwnd::Observer {
   // Queries the font settings from the system.
   void QueryFontSettings();
 
-  // Indicates whether the MessagePumpObserver has been registered.
+  // Indicates whether the SingletonHwnd::Observer has been registered.
   bool observer_added_;
 
   // Indicates whether |smoothing_enabled_| and |cleartype_enabled_| are valid

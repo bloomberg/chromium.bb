@@ -134,9 +134,6 @@ class NestedLoopCaptureView : public View {
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
 
     base::RunLoop run_loop;
-#if defined(USE_AURA)
-    run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
-#endif
     run_loop.Run();
     return true;
   }

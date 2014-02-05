@@ -228,7 +228,7 @@ int DragDropController::StartDragAndDrop(
     cancel_animation_->End();
 
   if (should_block_during_drag_drop_) {
-    base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
+    base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);

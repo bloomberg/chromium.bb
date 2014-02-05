@@ -1629,12 +1629,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
       performance_monitor::StartupTimer::STARTUP_NORMAL);
 
   DCHECK(base::MessageLoopForUI::IsCurrent());
-#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-  views::AcceleratorHandler accelerator_handler;
-  base::RunLoop run_loop(&accelerator_handler);
-#else
   base::RunLoop run_loop;
-#endif
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 

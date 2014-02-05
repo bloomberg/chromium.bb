@@ -17,10 +17,4 @@ bool AcceleratorHandler::Dispatch(const base::NativeEvent& event) {
   return true;
 }
 
-#if defined(USE_X11)
-bool DispatchXEvent(XEvent* xev) {
-  return false;
-}
-#endif  // defined(USE_X11)
-
 }  // namespace views

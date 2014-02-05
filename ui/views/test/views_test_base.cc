@@ -7,14 +7,11 @@
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/wm_state.h"
-#endif
 
 namespace views {
 
@@ -35,12 +32,10 @@ void ViewsTestBase::SetUp() {
   setup_called_ = true;
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
-#if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   bool allow_test_contexts = true;
   aura_test_helper_->SetUp(allow_test_contexts);
   wm_state_.reset(new views::corewm::WMState);
-#endif  // USE_AURA
   ui::InitializeInputMethodForTesting();
 }
 
@@ -54,36 +49,25 @@ void ViewsTestBase::TearDown() {
   views_delegate_.reset();
   testing::Test::TearDown();
   ui::ShutdownInputMethodForTesting();
-#if defined(USE_AURA)
   aura_test_helper_->TearDown();
   wm_state_.reset();
   CHECK(!corewm::ScopedCaptureClient::IsActive());
-#endif  // USE_AURA
 }
 
 void ViewsTestBase::RunPendingMessages() {
   base::RunLoop run_loop;
-#if defined(USE_AURA)
-  run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
-#endif
   run_loop.RunUntilIdle();
 }
 
 Widget::InitParams ViewsTestBase::CreateParams(
     Widget::InitParams::Type type) {
   Widget::InitParams params(type);
-#if defined(USE_AURA)
   params.context = aura_test_helper_->root_window();
-#endif
   return params;
 }
 
 gfx::NativeView ViewsTestBase::GetContext() {
-#if defined(USE_AURA)
   return aura_test_helper_->root_window();
-#else
-  return NULL;
-#endif
 }
 
 }  // namespace views

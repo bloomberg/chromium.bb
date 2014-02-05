@@ -36,12 +36,6 @@ class BASE_EXPORT RunLoop {
 #endif
   ~RunLoop();
 
-#if defined(USE_AURA)
-  void set_dispatcher(MessagePumpDispatcher* dispatcher) {
-    dispatcher_ = dispatcher;
-  }
-#endif
-
   // Run the current MessageLoop. This blocks until Quit is called. Before
   // calling Run, be sure to grab an AsWeakPtr or the QuitClosure in order to
   // stop the MessageLoop asynchronously. MessageLoop::Quit and QuitNow will

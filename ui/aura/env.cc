@@ -93,8 +93,7 @@ void Env::RootWindowActivated(RootWindow* root_window) {
 // Env, private:
 
 void Env::Init() {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(USE_X11) && \
-    !defined(USE_OZONE)
+#if defined(OS_WIN)
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "ui/aura/env.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -10,10 +11,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
 
 namespace views {
 
@@ -105,12 +102,10 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
   EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
-#if defined(USE_AURA)
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
   scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
-#endif
 
   // Ensure that closing the anchor widget also closes the bubble itself.
   anchor_widget->CloseNow();
@@ -198,12 +193,10 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   EXPECT_NE(anchor_widget, bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
-#if defined(USE_AURA)
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
   scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
-#endif
 
   // Ensure that closing the parent widget also closes the bubble itself.
   parent_widget->CloseNow();
@@ -265,10 +258,7 @@ class BubbleWidgetClosingTest : public BubbleDelegateTest,
                                 public views::WidgetObserver {
  public:
   BubbleWidgetClosingTest() : bubble_destroyed_(false) {
-#if defined(USE_AURA)
     aura::Env::CreateInstance();
-    loop_.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
-#endif
   }
 
   virtual ~BubbleWidgetClosingTest() {}
