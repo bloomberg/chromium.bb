@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/request_priority.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,13 +22,18 @@ using base::ListValue;
 using base::StringValue;
 using base::Value;
 
-namespace {
-const char kUnknownConditionName[] = "unknownType";
-}  // namespace
-
 namespace extensions {
 
 namespace keys = declarative_webrequest_constants;
+
+namespace {
+const char kUnknownConditionName[] = "unknownType";
+
+base::FilePath TestDataPath(base::StringPiece relative_to_src) {
+  base::FilePath src_dir;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  return src_dir.AppendASCII(relative_to_src);
+}
 
 TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   // Necessary for TestURLRequest.
@@ -111,16 +116,14 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
 
-  net::SpawnedTestServer test_server(
-      net::SpawnedTestServer::TYPE_HTTP,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/webrequest/declarative")));
-  ASSERT_TRUE(test_server.Start());
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.ServeFilesFromDirectory(TestDataPath(
+      "chrome/test/data/extensions/api_test/webrequest/declarative"));
+  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
+  net::TestURLRequest url_request(test_server.GetURL("/headers.html"),
                                   net::DEFAULT_PRIORITY,
                                   &delegate,
                                   &context);
@@ -500,16 +503,14 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // Necessary for TestURLRequest.
   base::MessageLoopForIO message_loop;
 
-  net::SpawnedTestServer test_server(
-      net::SpawnedTestServer::TYPE_HTTP,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/webrequest/declarative")));
-  ASSERT_TRUE(test_server.Start());
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.ServeFilesFromDirectory(TestDataPath(
+      "chrome/test/data/extensions/api_test/webrequest/declarative"));
+  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
+  net::TestURLRequest url_request(test_server.GetURL("/headers.html"),
                                   net::DEFAULT_PRIORITY,
                                   &delegate,
                                   &context);
@@ -680,4 +681,5 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   EXPECT_FALSE(result);
 }
 
+}  // namespace
 }  // namespace extensions
