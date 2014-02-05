@@ -53,7 +53,7 @@ username='test-username'
 #
 #     http://gerrit-releases.storage.googleapis.com/index.html
 url='https://www.googleapis.com/storage/v1beta2/b/gerrit-releases/o?projection=noAcl'
-curl --ssl-reqd -s $url | python <(cat <<EOF
+curl --retry 30 --ssl-reqd -s $url | python <(cat <<EOF
 # Receives Gerrit version via command line and reads json-encoded
 # text from stdin in the format:
 #
@@ -122,7 +122,7 @@ EOF
       rm -rf "$target"
     fi
   fi
-  curl --ssl-reqd -s -o "$target" \
+  curl --retry 30 --ssl-reqd -s -o "$target" \
       "https://gerrit-releases.storage.googleapis.com/$name"
   file_sum=$(md5sum "$target" | awk '{print $1}' | xargs)
   if [ "$file_sum" != "$net_sum" ]; then
