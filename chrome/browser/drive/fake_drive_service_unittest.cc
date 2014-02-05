@@ -72,6 +72,7 @@ class FakeDriveServiceTest : public testing::Test {
     fake_service_.AddNewDirectory(
         parent_resource_id,
         directory_title,
+        DriveServiceInterface::AddNewDirectoryOptions(),
         test_util::CreateCopyResultCallback(&error, &resource_entry));
     base::RunLoop().RunUntilIdle();
     return error == HTTP_CREATED;
@@ -1611,6 +1612,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
   fake_service_.AddNewDirectory(
       std::string(),
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1640,6 +1642,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1669,6 +1672,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1700,6 +1704,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   fake_service_.AddNewDirectory(
       kParentResourceId,
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1726,6 +1731,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
   fake_service_.AddNewDirectory(
       kParentResourceId,
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1743,6 +1749,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
       "new directory",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 

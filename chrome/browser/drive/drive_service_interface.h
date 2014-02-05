@@ -42,6 +42,20 @@ class DriveServiceObserver {
 // URLFetcher that runs on UI thread.
 class DriveServiceInterface {
  public:
+  // Optional parameters for AddNewDirectory().
+  struct AddNewDirectoryOptions {
+    AddNewDirectoryOptions();
+    ~AddNewDirectoryOptions();
+
+    // modified_date of the directory.
+    // Pass the null Time if you are not interested in setting this property.
+    base::Time modified_date;
+
+    // last_viewed_by_me_date of the directory.
+    // Pass the null Time if you are not interested in setting this property.
+    base::Time last_viewed_by_me_date;
+  };
+
   // Optional parameters for InitiateUploadNewFile().
   struct InitiateUploadNewFileOptions {
     InitiateUploadNewFileOptions();
@@ -321,6 +335,7 @@ class DriveServiceInterface {
   virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_title,
+      const AddNewDirectoryOptions& options,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Downloads a file with |resourced_id|. The downloaded file will

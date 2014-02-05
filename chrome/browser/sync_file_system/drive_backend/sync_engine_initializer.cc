@@ -277,6 +277,7 @@ void SyncEngineInitializer::CreateSyncRoot(const SyncStatusCallback& callback) {
   set_used_network(true);
   cancel_callback_ = drive_service_->AddNewDirectory(
       root_folder_id_, kSyncRootFolderTitle,
+      drive::DriveServiceInterface::AddNewDirectoryOptions(),
       base::Bind(&SyncEngineInitializer::DidCreateSyncRoot,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

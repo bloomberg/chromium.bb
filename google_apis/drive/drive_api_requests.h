@@ -140,9 +140,21 @@ class FilesInsertRequest : public DriveApiDataRequest {
   virtual ~FilesInsertRequest();
 
   // Optional request body.
+  const base::Time& last_viewed_by_me_date() const {
+    return last_viewed_by_me_date_;
+  }
+  void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
+    last_viewed_by_me_date_ = last_viewed_by_me_date;
+  }
+
   const std::string& mime_type() const { return mime_type_; }
   void set_mime_type(const std::string& mime_type) {
     mime_type_ = mime_type;
+  }
+
+  const base::Time& modified_date() const { return modified_date_; }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
   }
 
   const std::vector<std::string>& parents() const { return parents_; }
@@ -163,7 +175,9 @@ class FilesInsertRequest : public DriveApiDataRequest {
  private:
   const DriveApiUrlGenerator url_generator_;
 
+  base::Time last_viewed_by_me_date_;
   std::string mime_type_;
+  base::Time modified_date_;
   std::vector<std::string> parents_;
   std::string title_;
 

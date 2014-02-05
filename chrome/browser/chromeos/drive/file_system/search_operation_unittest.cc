@@ -57,6 +57,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   fake_service()->AddNewDirectory(
       fake_service()->GetRootResourceId(),
       "New Directory 1!",
+      DriveServiceInterface::AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(
           &gdata_error, &resource_entry));
   test_util::RunBlockingPoolTask();

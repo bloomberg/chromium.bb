@@ -118,6 +118,7 @@ class SyncEngineInitializerTest : public testing::Test {
     scoped_ptr<google_apis::ResourceEntry> entry;
     fake_drive_service_.AddNewDirectory(
         parent_folder_id, title,
+        drive::DriveServiceInterface::AddNewDirectoryOptions(),
         CreateResultReceiver(&error, &entry));
     base::RunLoop().RunUntilIdle();
 

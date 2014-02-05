@@ -29,6 +29,7 @@ class FakeDriveServiceWrapper : public drive::FakeDriveService {
   virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_name,
+      const AddNewDirectoryOptions& options,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
 
   void set_make_directory_conflict(bool enable) {

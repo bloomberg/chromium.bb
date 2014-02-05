@@ -280,6 +280,7 @@ TEST_F(JobSchedulerTest, GetChangeList) {
     fake_drive_service_->AddNewDirectory(
         fake_drive_service_->GetRootResourceId(),
         "new directory",
+        DriveServiceInterface::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(
             &error, &resource_entry));
     base::RunLoop().RunUntilIdle();

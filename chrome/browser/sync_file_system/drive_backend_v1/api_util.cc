@@ -340,13 +340,15 @@ void APIUtil::DidGetDirectory(const std::string& parent_resource_id,
       feed->entries(), title, resource_id, parent_type);
   if (!entry) {
     DVLOG(2) << "Directory not found. Creating: " << directory_name;
-    drive_service_->AddNewDirectory(resource_id,
-                                    directory_name,
-                                    base::Bind(&APIUtil::DidCreateDirectory,
-                                               AsWeakPtr(),
-                                               parent_resource_id,
-                                               title,
-                                               callback));
+    drive_service_->AddNewDirectory(
+        resource_id,
+        directory_name,
+        drive::DriveServiceInterface::AddNewDirectoryOptions(),
+        base::Bind(&APIUtil::DidCreateDirectory,
+                   AsWeakPtr(),
+                   parent_resource_id,
+                   title,
+                   callback));
     return;
   }
   DVLOG(2) << "Found Drive directory.";
@@ -567,13 +569,15 @@ void APIUtil::CreateDirectory(const std::string& parent_resource_id,
   // directories if there're duplicated directories. This must be ok
   // for current design but we'll need to merge directories when we support
   // 'real' directories.
-  drive_service_->AddNewDirectory(parent_resource_id,
-                                  title,
-                                  base::Bind(&APIUtil::DidCreateDirectory,
-                                             AsWeakPtr(),
-                                             parent_resource_id,
-                                             title,
-                                             callback));
+  drive_service_->AddNewDirectory(
+      parent_resource_id,
+      title,
+      drive::DriveServiceInterface::AddNewDirectoryOptions(),
+      base::Bind(&APIUtil::DidCreateDirectory,
+                 AsWeakPtr(),
+                 parent_resource_id,
+                 title,
+                 callback));
 }
 
 void APIUtil::DeleteFile(const std::string& resource_id,

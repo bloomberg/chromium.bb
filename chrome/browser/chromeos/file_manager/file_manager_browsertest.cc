@@ -320,6 +320,7 @@ class DriveTestVolume {
     fake_drive_service_->AddNewDirectory(
         parent_id,
         target_name,
+        drive::DriveServiceInterface::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     base::MessageLoop::current()->RunUntilIdle();

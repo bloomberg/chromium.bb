@@ -589,6 +589,7 @@ CancelCallback DriveAPIService::TrashResource(
 CancelCallback DriveAPIService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
+    const AddNewDirectoryOptions& options,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -596,7 +597,9 @@ CancelCallback DriveAPIService::AddNewDirectory(
   FilesInsertRequest* request = new FilesInsertRequest(
       sender_.get(), url_generator_,
       base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
   request->set_mime_type(kFolderMimeType);
+  request->set_modified_date(options.modified_date);
   request->add_parent(parent_resource_id);
   request->set_title(directory_title);
   request->set_fields(kFileResourceFields);

@@ -93,6 +93,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFolder(
   scoped_ptr<ResourceEntry> folder;
   fake_drive_service_->AddNewDirectory(
       parent_folder_id, title,
+      drive::DriveServiceInterface::AddNewDirectoryOptions(),
       CreateResultReceiver(&error, &folder));
   base::RunLoop().RunUntilIdle();
 

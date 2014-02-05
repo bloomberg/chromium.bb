@@ -577,6 +577,7 @@ void JobScheduler::AddNewDirectory(
       base::Unretained(drive_service_),
       parent_resource_id,
       directory_title,
+      DriveServiceInterface::AddNewDirectoryOptions(),
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

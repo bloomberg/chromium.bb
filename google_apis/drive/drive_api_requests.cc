@@ -210,8 +210,16 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
 
   base::DictionaryValue root;
 
+  if (!last_viewed_by_me_date_.is_null()) {
+    root.SetString("lastViewedByMeDate",
+                   util::FormatTimeAsString(last_viewed_by_me_date_));
+  }
+
   if (!mime_type_.empty())
     root.SetString("mimeType", mime_type_);
+
+  if (!modified_date_.is_null())
+    root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
 
   if (!parents_.empty()) {
     base::ListValue* parents_value = new base::ListValue;

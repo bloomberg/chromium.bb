@@ -102,6 +102,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
         parent_id, title,
+        drive::DriveServiceInterface::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     content::RunAllPendingInMessageLoop();
