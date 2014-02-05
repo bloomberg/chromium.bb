@@ -318,6 +318,14 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // in bytes, including framing overhead.
   void OnFrameWriteComplete(SpdyFrameType frame_type, size_t frame_size);
 
+  // SYN_STREAM-specific write handler invoked by OnFrameWriteComplete().
+  int OnRequestHeadersSent();
+
+  // DATA-specific write handler invoked by OnFrameWriteComplete().
+  // If more data is already available to be written, the next write is
+  // queued and ERR_IO_PENDING is returned. Returns OK otherwise.
+  int OnDataSent(size_t frame_size);
+
   // Called by the SpdySession when the request is finished.  This callback
   // will always be called at the end of the request and signals to the
   // stream that the stream has no more network events.  No further callbacks
@@ -427,14 +435,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
     STATE_CLOSED
   };
 
-  // Try to make progress sending/receiving the request/response.
-  int DoLoop(int result);
-
-  // The implementations of each state of the state machine.
-  int DoSendRequestHeaders();
-  int DoSendRequestHeadersComplete();
-  int DoOpen();
-
   // Update the histograms.  Can safely be called repeatedly, but should only
   // be called after the stream has completed.
   void UpdateHistograms();
@@ -471,10 +471,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   const SpdyStreamType type_;
 
   base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
-
-  // Sentinel variable used to make sure we don't get destroyed by a
-  // function called from DoLoop().
-  bool in_do_loop_;
 
   // There is a small period of time between when a server pushed stream is
   // first created, and the pushed data is replayed. Any data received during
@@ -547,10 +543,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   std::string domain_bound_private_key_;
   std::string domain_bound_cert_;
   ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;
-
-  // When OnFrameWriteComplete() is called, these variables are set.
-  SpdyFrameType just_completed_frame_type_;
-  size_t just_completed_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStream);
 };
