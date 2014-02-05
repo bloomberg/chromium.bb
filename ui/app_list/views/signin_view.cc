@@ -35,15 +35,12 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
     return;
 
   const gfx::FontList base_font_list;
-  const gfx::FontList& title_font_list =
-      base_font_list.DeriveFontListWithSizeDelta(
-          kTitleFontSize - base_font_list.GetFontSize());
-  const gfx::FontList& text_font_list =
-      base_font_list.DeriveFontListWithSizeDelta(
-          kTextFontSize - base_font_list.GetFontSize());
-  const gfx::FontList& button_font_list =
-      base_font_list.DeriveFontListWithSizeDelta(
-          kButtonFontSize - base_font_list.GetFontSize());
+  const gfx::FontList& title_font_list = base_font_list.DeriveWithSizeDelta(
+      kTitleFontSize - base_font_list.GetFontSize());
+  const gfx::FontList& text_font_list = base_font_list.DeriveWithSizeDelta(
+      kTextFontSize - base_font_list.GetFontSize());
+  const gfx::FontList& button_font_list = base_font_list.DeriveWithSizeDelta(
+      kButtonFontSize - base_font_list.GetFontSize());
 
   int title_descender =
       title_font_list.GetHeight() - title_font_list.GetBaseline();

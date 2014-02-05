@@ -15,7 +15,7 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -269,8 +269,9 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   NSDictionary* titleAttributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName : ui::ResourceBundle::GetSharedInstance()
-        .GetFont(app_list::kItemTextFontStyle)
-        .DeriveFont(kMacFontSizeDelta)
+        .GetFontList(app_list::kItemTextFontStyle)
+        .DeriveWithSizeDelta(kMacFontSizeDelta)
+        .GetPrimaryFont()
         .GetNativeFont(),
     NSForegroundColorAttributeName : [self isSelected] ?
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor) :
