@@ -5,7 +5,6 @@
 #include "mojo/examples/aura_demo/root_window_host_mojo.h"
 
 #include "mojo/examples/aura_demo/demo_context_factory.h"
-#include "mojo/examples/compositor_app/gles2_client_impl.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
@@ -37,9 +36,8 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   AllocationScope scope;
   native_viewport_->Create(bounds);
 
-  ScopedMessagePipeHandle gles2_handle;
   ScopedMessagePipeHandle gles2_client_handle;
-  CreateMessagePipe(&gles2_handle, &gles2_client_handle);
+  CreateMessagePipe(&gles2_handle_, &gles2_client_handle);
 
   // The ContextFactory must exist before any Compositors are created.
   if (!context_factory_) {
@@ -51,7 +49,6 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   CHECK(context_factory_) << "No GL bindings.";
 
   native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());
-  gles2_client_.reset(new GLES2ClientImpl(gles2_handle.Pass()));
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {}

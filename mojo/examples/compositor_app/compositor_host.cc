@@ -9,53 +9,14 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
-#include "gpu/command_buffer/client/context_support.h"
-#include "mojo/examples/compositor_app/gles2_client_impl.h"
+#include "mojo/examples/compositor_app/mojo_context_provider.h"
 
 namespace mojo {
 namespace examples {
 
-class MojoContextProvider : public cc::ContextProvider {
- public:
-  explicit MojoContextProvider(GLES2ClientImpl* gles2_client_impl)
-      : gles2_client_impl_(gles2_client_impl) {}
-
-  // cc::ContextProvider implementation.
-  virtual bool BindToCurrentThread() OVERRIDE { return true; }
-  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE {
-    return gles2_client_impl_->Interface();
-  }
-  virtual gpu::ContextSupport* ContextSupport() OVERRIDE {
-    return gles2_client_impl_->Support();
-  }
-  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
-  virtual Capabilities ContextCapabilities() OVERRIDE { return capabilities_; }
-  virtual bool IsContextLost() OVERRIDE {
-    return !gles2_client_impl_->Interface();
-  }
-  virtual void VerifyContexts() OVERRIDE {}
-  virtual bool DestroyedOnMainThread() OVERRIDE {
-    return !gles2_client_impl_->Interface();
-  }
-  virtual void SetLostContextCallback(
-      const LostContextCallback& lost_context_callback) OVERRIDE {}
-  virtual void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& memory_policy_changed_callback)
-      OVERRIDE {}
-
- protected:
-  friend class base::RefCountedThreadSafe<MojoContextProvider>;
-  virtual ~MojoContextProvider() {}
-
- private:
-  cc::ContextProvider::Capabilities capabilities_;
-  GLES2ClientImpl* gles2_client_impl_;
-};
-
-CompositorHost::CompositorHost(GLES2ClientImpl* gles2_client_impl)
-    : gles2_client_impl_(gles2_client_impl),
-      compositor_thread_("compositor") {
-  DCHECK(gles2_client_impl_);
+CompositorHost::CompositorHost(ScopedMessagePipeHandle gl_pipe)
+    : gl_pipe_(gl_pipe.Pass()), compositor_thread_("compositor") {
+  DCHECK(gl_pipe_.is_valid());
   bool started = compositor_thread_.Start();
   DCHECK(started);
 
@@ -111,7 +72,7 @@ void CompositorHost::ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
 scoped_ptr<cc::OutputSurface> CompositorHost::CreateOutputSurface(
     bool fallback) {
   return make_scoped_ptr(
-      new cc::OutputSurface(new MojoContextProvider(gles2_client_impl_)));
+      new cc::OutputSurface(new MojoContextProvider(gl_pipe_.Pass())));
 }
 
 void CompositorHost::DidInitializeOutputSurface(bool success) {}

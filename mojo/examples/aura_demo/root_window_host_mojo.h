@@ -19,8 +19,6 @@ class ContextFactory;
 namespace mojo {
 namespace examples {
 
-class GLES2ClientImpl;
-
 class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
@@ -31,7 +29,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual ~WindowTreeHostMojo();
 
   gfx::Rect bounds() const { return bounds_; }
-  GLES2ClientImpl* gles2_client() { return gles2_client_.get(); }
+  ScopedMessagePipeHandle TakeGLES2PipeHandle() { return gles2_handle_.Pass(); }
 
  private:
   // WindowTreeHost:
@@ -68,7 +66,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
   static ui::ContextFactory* context_factory_;
 
-  scoped_ptr<GLES2ClientImpl> gles2_client_;
+  ScopedMessagePipeHandle gles2_handle_;
   RemotePtr<NativeViewport> native_viewport_;
   base::Callback<void()> compositor_created_callback_;
 

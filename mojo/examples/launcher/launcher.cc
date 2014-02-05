@@ -13,8 +13,6 @@
 #include "base/path_service.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
 #include "mojo/examples/aura_demo/root_window_host_mojo.h"
-#include "mojo/examples/compositor_app/compositor_host.h"
-#include "mojo/examples/compositor_app/gles2_client_impl.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2_cpp.h"

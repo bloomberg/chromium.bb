@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "mojo/public/system/core_cpp.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
@@ -22,7 +23,7 @@ class GLES2ClientImpl;
 
 class CompositorHost : public cc::LayerTreeHostClient {
  public:
-  explicit CompositorHost(GLES2ClientImpl* gles2_client_impl);
+  explicit CompositorHost(ScopedMessagePipeHandle gl_pipe);
   virtual ~CompositorHost();
 
   void SetSize(gfx::Size viewport_size);
@@ -47,7 +48,7 @@ class CompositorHost : public cc::LayerTreeHostClient {
  private:
   void SetupScene();
 
-  GLES2ClientImpl* gles2_client_impl_;
+  ScopedMessagePipeHandle gl_pipe_;
   scoped_ptr<cc::LayerTreeHost> tree_;
   scoped_refptr<cc::Layer> child_layer_;
   base::Thread compositor_thread_;

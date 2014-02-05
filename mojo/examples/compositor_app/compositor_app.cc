@@ -7,7 +7,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
-#include "mojo/examples/compositor_app/gles2_client_impl.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2_cpp.h"
@@ -60,8 +59,7 @@ class SampleApp : public ShellClient {
       CreateMessagePipe(&gles2_handle, &gles2_client_handle);
 
       viewport_->CreateGLES2Context(gles2_client_handle.Pass());
-      gles2_client_.reset(new GLES2ClientImpl(gles2_handle.Pass()));
-      host_.reset(new CompositorHost(gles2_client_.get()));
+      host_.reset(new CompositorHost(gles2_handle.Pass()));
     }
 
     virtual ~NativeViewportClientImpl() {}
@@ -84,7 +82,6 @@ class SampleApp : public ShellClient {
     }
 
    private:
-    scoped_ptr<GLES2ClientImpl> gles2_client_;
     RemotePtr<NativeViewport> viewport_;
     scoped_ptr<CompositorHost> host_;
   };
