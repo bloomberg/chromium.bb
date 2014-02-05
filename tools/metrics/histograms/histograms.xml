@@ -21832,6 +21832,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.ResourceFetcher.HitCount">
+  <summary>
+    Number of dead resources found in the memory cache over the lifetime of the
+    ResourceFetcher.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.ResourceFetcher.LoadCount">
+  <summary>
+    Number of resources that needed to be loaded by the ResourceFetcher over its
+    lifetime.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.ResourceFetcher.ResourceHasClientUponCacheHit"
     enum="ResourceHasClient">
   <summary>
@@ -21844,6 +21858,13 @@ other types of suffix sets.
     enum="ResourceType">
   <summary>
     The type of the resource (e.g. image, script...) upon a cache hit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.ResourceFetcher.RevalidateCount">
+  <summary>
+    Number of dead resources that needed to be revalidated by the
+    ResourceFetcher over its lifetime.
   </summary>
 </histogram>
 
