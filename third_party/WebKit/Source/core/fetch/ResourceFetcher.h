@@ -151,8 +151,9 @@ public:
     virtual void willStartLoadingResource(ResourceRequest&) OVERRIDE;
     virtual bool defersLoading() const OVERRIDE;
     virtual bool isLoadedBy(ResourceLoaderHost*) const OVERRIDE;
-    virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
-    virtual bool canAccessResource(Resource*, const KURL&) const OVERRIDE;
+    virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) OVERRIDE;
+    virtual bool canAccessResource(Resource*, SecurityOrigin*, const KURL&) const OVERRIDE;
+
     virtual void refResourceLoaderHost() OVERRIDE;
     virtual void derefResourceLoaderHost() OVERRIDE;
 

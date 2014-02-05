@@ -69,8 +69,8 @@ public:
     virtual void willTerminateResourceLoader(ResourceLoader*) = 0;
     virtual void willStartLoadingResource(ResourceRequest&) = 0;
 
-    virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) = 0;
-    virtual bool canAccessResource(Resource*, const KURL&) const = 0;
+    virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) = 0;
+    virtual bool canAccessResource(Resource*, SecurityOrigin* sourceOrigin, const KURL&) const = 0;
     virtual bool defersLoading() const = 0;
     virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;
 

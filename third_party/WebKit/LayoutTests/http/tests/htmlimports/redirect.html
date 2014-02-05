@@ -13,20 +13,6 @@
 <link id="same-cors" rel="import" href="/security/resources/redir.php?url=http://localhost:8000/htmlimports/resources/cors-basic.cgi">
 <link id="same-xs"   rel="import" href="/security/resources/redir.php?url=http://localhost:8000/htmlimports/resources/hello.html">
 
-<!--
-<link id="cors-same" rel="import" href="http://localhost:8000/security/resources/cors-redir.php?url=http://127.0.0.1:8000/htmlimports/resources/hello.html">
-<link id="cors-xs" rel="import" href="http://localhost:8000/security/resources/cors-redir.php?url=http://localhost:8000/htmlimports/resources/hello.html">
-
-<link id="xs-same"   rel="import" href="http://localhost:8000/security/resources/redir.php?url=http://127.0.0.1:8000/htmlimports/resources/hello.html">
-<link id="xs-cors"   rel="import" href="http://localhost:8000/security/resources/redir.php?url=http://127.0.0.1:8000/htmlimports/resources/cors-basic.cgi">
-
-<link id="same-xs-same"   rel="import" href="/security/resources/redir.php?url=http%3A%2F%2Flocalhost%3A8000%2Fsecurity%2Fresources%2Fredir.php%3Furl%3Dhttp%3A%2F%2F127.0.0.1%3A8000%2Fhtmlimports%2Fresources%2Fhello.html">
-<link id="same-xs-cors"   rel="import" href="/security/resources/redir.php?url=http%3A%2F%2Flocalhost%3A8000%2Fsecurity%2Fresources%2Fredir.php%3Furl%3Dhttp%3A%2F%2F127.0.0.1%3A8000%2Fhtmlimports%2Fresources%2Fcors-basic.cgi">
-<link id="same-cors-same" rel="import" href="/security/resources/redir.php?url=http%3A%2F%2Flocalhost%3A8000%2Fsecurity%2Fresources%2Fcors-redir.php%3Furl%3Dhttp%3A%2F%2F127.0.0.1%3A8000%2Fhtmlimports%2Fresources%2Fhello.html">
-
-<link id="cors-xs-same"   rel="import" href="http://localhost:8000//security/resources/cors-redir.php?url=http%3A%2F%2Flocalhost%3A8000%2Fsecurity%2Fresources%2Fredir.php%3Furl%3Dhttp%3A%2F%2F127.0.0.1%3A8000%2Fhtmlimports%2Fresources%2Fhello.html">
-  -->
-
 </head>
 <body>
 <script>
@@ -44,25 +30,12 @@ function assert_not_loaded(id)
 }
 
 test(function() { assert_loaded("same"); }, "Accessing to a same origin import");
-test(function() { assert_loaded("cors"); }, "Accessing to CORS-enabed origin import");
+test(function() { assert_loaded("cors"); }, "Accessing to CORS-enabled origin import");
 test(function() { assert_not_loaded("xs"); }, "Blocking access to a cross origin import");
 
 test(function() { assert_loaded("same-same"); }, "Accessing to a same origin import including same domain redirect");
 test(function() { assert_loaded("same-cors"); }, "Accessing to a CORS origin import including same domain redirect");
 test(function() { assert_not_loaded("same-xs"); }, "Blocking access to a cross origin iamport including same domain redirect");
-
-// These won't work becaue of https://crbug.com/256976
-//test(function() { assert_loaded("cors-same"); }, "Accessing to a same origin import including CORS domain redirect");
-//test(function() { assert_not_loaded("cors-xs"); }, "Blocking access to a cross origin import including CORS domain redirect");
-//
-//test(function() { assert_not_loaded("xs-same"); }, "Blocking access to a same origin import including cross domain redirect");
-//test(function() { assert_not_loaded("xs-cors"); }, "Blocking access to a CORS origin import including cross domain redirect");
-//
-//test(function() { assert_not_loaded("same-xs-same"); }, "Blocking access to a same origin import including intermediate cross domain redirect");
-//test(function() { assert_not_loaded("same-xs-cors"); }, "Blocking access to a CORS origin import including intermediate cross domain redirect");
-//test(function() { assert_loaded("same-cors-same"); }, "Accessing to a same origin import including intermediate CORS domain redirect");
-//
-//test(function() { assert_not_loaded("cors-xs-same"); }, "Blocking access to a CORS requested but eventually same origin import including intermediate cross domain redirect");
 
 </script>
 </body>

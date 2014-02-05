@@ -31,6 +31,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FontResource.h"
@@ -550,17 +551,20 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     return true;
 }
 
-bool ResourceFetcher::canAccessResource(Resource* resource, const KURL& url) const
+bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
 {
     // Redirects can change the response URL different from one of request.
     if (!canRequest(resource->type(), url, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
-    if (!document() || document()->securityOrigin()->canRequest(url))
+    if (!sourceOrigin && document())
+        sourceOrigin = document()->securityOrigin();
+
+    if (sourceOrigin->canRequest(url))
         return true;
 
     String errorDescription;
-    if (!resource->passesAccessControlCheck(document()->securityOrigin(), errorDescription)) {
+    if (!resource->passesAccessControlCheck(sourceOrigin, errorDescription)) {
         if (frame() && frame()->document()) {
             String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
             frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
@@ -1312,10 +1316,22 @@ bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
     return this == possibleOwner;
 }
 
-bool ResourceFetcher::shouldRequest(Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
     if (!canRequest(resource->type(), request.url(), options, false, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
+    if (options.corsEnabled == IsCORSEnabled) {
+        SecurityOrigin* sourceOrigin = options.securityOrigin.get();
+        if (!sourceOrigin && document())
+            sourceOrigin = document()->securityOrigin();
+
+        String errorMessage;
+        if (!CrossOriginAccessControl::handleRedirect(resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
+            if (frame() && frame()->document())
+                frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorMessage);
+            return false;
+        }
+    }
     if (resource->type() == Resource::Image && shouldDeferImageLoad(request.url()))
         return false;
     return true;

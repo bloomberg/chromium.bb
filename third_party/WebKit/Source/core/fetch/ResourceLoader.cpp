@@ -267,10 +267,11 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
     ASSERT(!request.isNull());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
-    if (!m_host->shouldRequest(m_resource, request, m_options)) {
+    if (!m_host->canAccessRedirect(m_resource, request, redirectResponse, m_options)) {
         cancel();
         return;
     }
+
     m_host->redirectReceived(m_resource, redirectResponse);
     m_resource->willSendRequest(request, redirectResponse);
     if (request.isNull() || m_state == Terminated)
@@ -325,7 +326,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
             resource = m_resource->resourceToRevalidate();
         else
             m_resource->setResponse(resourceResponse);
-        if (!m_host->canAccessResource(resource, response.url())) {
+        if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
             cancel();
             return;
         }

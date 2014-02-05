@@ -199,13 +199,15 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         String accessControlErrorDescription;
 
         if (m_simpleRequest) {
-            allowRedirect = checkCrossOriginAccessRedirectionUrl(request.url(), accessControlErrorDescription)
+            allowRedirect = CrossOriginAccessControl::isLegalRedirectLocation(request.url(), accessControlErrorDescription)
                             && (m_sameOriginRequest || passesAccessControlCheck(redirectResponse, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription));
         } else {
             accessControlErrorDescription = "The request was redirected to '"+ request.url().string() + "', which is disallowed for cross-origin requests that require preflight.";
         }
 
         if (allowRedirect) {
+            // FIXME: consider combining this with CORS redirect handling performed by
+            // CrossOriginAccessControl::handleRedirect().
             clearResource();
 
             RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(redirectResponse.url());
@@ -460,21 +462,6 @@ bool DocumentThreadableLoader::isAllowedByPolicy(const KURL& url) const
 SecurityOrigin* DocumentThreadableLoader::securityOrigin() const
 {
     return m_options.securityOrigin ? m_options.securityOrigin.get() : m_document->securityOrigin();
-}
-
-bool DocumentThreadableLoader::checkCrossOriginAccessRedirectionUrl(const KURL& requestUrl, String& errorDescription)
-{
-    if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestUrl.protocol())) {
-        errorDescription = "The request was redirected to a URL ('" + requestUrl.string() + "') which has a disallowed scheme for cross-origin requests.";
-        return false;
-    }
-
-    if (!(requestUrl.user().isEmpty() && requestUrl.pass().isEmpty())) {
-        errorDescription = "The request was redirected to a URL ('" + requestUrl.string() + "') containing userinfo, which is disallowed for cross-origin requests.";
-        return false;
-    }
-
-    return true;
 }
 
 } // namespace WebCore

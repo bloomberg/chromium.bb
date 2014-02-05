@@ -27,8 +27,12 @@
 #include "config.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 
+#include "core/fetch/Resource.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
@@ -201,6 +205,69 @@ void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHea
         if (!strippedHeader.isEmpty())
             headerSet.add(strippedHeader);
     }
+}
+
+bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, String& errorDescription)
+{
+    // CORS restrictions imposed on Location: URL -- http://www.w3.org/TR/cors/#redirect-steps (steps 2 + 3.)
+    if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestURL.protocol())) {
+        errorDescription = "The request was redirected to a URL ('" + requestURL.string() + "') which has a disallowed scheme for cross-origin requests.";
+        return false;
+    }
+
+    if (!(requestURL.user().isEmpty() && requestURL.pass().isEmpty())) {
+        errorDescription = "The request was redirected to a URL ('" + requestURL.string() + "') containing userinfo, which is disallowed for cross-origin requests.";
+        return false;
+    }
+
+    return true;
+}
+
+bool CrossOriginAccessControl::handleRedirect(Resource* resource, SecurityOrigin* securityOrigin, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options, String& errorMessage)
+{
+    // http://www.w3.org/TR/cors/#redirect-steps terminology:
+    const KURL& originalURL = redirectResponse.url();
+    const KURL& requestURL = request.url();
+
+    bool redirectCrossOrigin = !securityOrigin->canRequest(requestURL);
+
+    // Same-origin request URLs that redirect are allowed without checking access.
+    if (!securityOrigin->canRequest(originalURL)) {
+        // Follow http://www.w3.org/TR/cors/#redirect-steps
+        String errorDescription;
+
+        // Steps 3 & 4 - check if scheme and other URL restrictions hold.
+        bool allowRedirect = isLegalRedirectLocation(requestURL, errorDescription);
+        if (allowRedirect) {
+            // Step 5: perform resource sharing access check.
+            StoredCredentials withCredentials = resource->resourceRequest().allowCookies() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+            allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription);
+            if (allowRedirect) {
+                RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
+                // Step 6: if the request URL origin is not same origin as the original URL's,
+                // set the source origin to a globally unique identifier.
+                if (!originalOrigin->canRequest(requestURL)) {
+                    options.securityOrigin = SecurityOrigin::createUnique();
+                    securityOrigin = options.securityOrigin.get();
+                }
+            }
+        }
+        if (!allowRedirect) {
+            const String& originalOrigin = SecurityOrigin::create(originalURL)->toString();
+            errorMessage = "Redirect at origin '" + originalOrigin + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription;
+            return false;
+        }
+    }
+    if (redirectCrossOrigin) {
+        // If now to a different origin, update/set Origin:.
+        request.clearHTTPOrigin();
+        request.setHTTPOrigin(securityOrigin->toAtomicString());
+        // If the user didn't request credentials in the first place, update our
+        // state so we neither request them nor expect they must be allowed.
+        if (options.credentialsRequested == ClientDidNotRequestCredentials)
+            options.allowCredentials = DoNotAllowStoredCredentials;
+    }
+    return true;
 }
 
 } // namespace WebCore

@@ -37,12 +37,21 @@ namespace WebCore {
 typedef HashSet<String, CaseFoldingHash> HTTPHeaderSet;
 
 class HTTPHeaderMap;
+class Resource;
+struct ResourceLoaderOptions;
+class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 
 enum AccessControlStatus {
     NotSharableCrossOrigin,
     SharableCrossOrigin
+};
+
+class CrossOriginAccessControl {
+public:
+    static bool isLegalRedirectLocation(const KURL&, String& errorDescription);
+    static bool handleRedirect(Resource*, SecurityOrigin*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&, String&);
 };
 
 bool isSimpleCrossOriginAccessRequest(const String& method, const HTTPHeaderMap&);

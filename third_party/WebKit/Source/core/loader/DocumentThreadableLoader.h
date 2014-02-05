@@ -100,7 +100,6 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
         bool isAllowedByPolicy(const KURL&) const;
 
         SecurityOrigin* securityOrigin() const;
-        bool checkCrossOriginAccessRedirectionUrl(const KURL&, String& errorDescription);
 
         ThreadableLoaderClient* m_client;
         Document* m_document;
