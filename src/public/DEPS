@@ -1,3 +1,4 @@
 include_rules = [
+  "+native_client/src/shared/imc/nacl_imc_c.h",
   "+native_client/src/trusted/service_runtime/include/machine/_types.h",
 ]
