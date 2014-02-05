@@ -7,6 +7,13 @@ import sys
 _no_value = object()
 
 
+def Collect(futures):
+  '''Creates a Future which returns a list of results from each Future in
+  |futures|.
+  '''
+  return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
+
+
 class Gettable(object):
   '''Allows a Future to accept a callable as a delegate. Wraps |f| in a .Get
   interface required by Future.

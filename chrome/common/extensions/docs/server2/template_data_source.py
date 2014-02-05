@@ -3,12 +3,13 @@
 # found in the LICENSE file.
 
 import logging
+import posixpath
 import traceback
 
 from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
-from future import Future
+from future import Collect
 
 
 class TemplateDataSource(DataSource):
@@ -19,6 +20,7 @@ class TemplateDataSource(DataSource):
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         server_instance.host_file_system_provider.GetTrunk())
     self._partial_dir = partial_dir
+    self._file_system = server_instance.host_file_system_provider.GetTrunk()
 
   def get(self, path):
     try:
@@ -29,6 +31,10 @@ class TemplateDataSource(DataSource):
       return None
 
   def Cron(self):
-    # TODO(kalman): Implement this; probably by finding all files that can be
-    # compiled to templates underneath |self._partial_dir| and compiling them.
-    return Future(value=())
+    futures = []
+    for root, _, files in self._file_system.Walk(self._partial_dir):
+      futures += [self._template_cache.GetFromFile(
+                      posixpath.join(self._partial_dir, root, f))
+                  for f in files
+                  if posixpath.splitext(f)[1] == '.html']
+    return Collect(futures)

@@ -18,14 +18,16 @@ import unittest
 
 from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
-from extensions_paths import EXTENSIONS, PUBLIC_TEMPLATES
+from extensions_paths import CONTENT_PROVIDERS, EXTENSIONS, PUBLIC_TEMPLATES
 from fake_fetchers import ConfigureFakeFetchers
+from third_party.json_schema_compiler import json_parse
 from handler import Handler
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
 from servlet import Request
-from test_util import EnableLogging, DisableLogging, ChromiumPath
+from test_util import ChromiumPath, DisableLogging, EnableLogging, ReadFile
+
 
 # Arguments set up if __main__ specifies them.
 _EXPLICIT_TEST_FILES = None
@@ -36,18 +38,43 @@ _VERBOSE = False
 def _ToPosixPath(os_path):
   return os_path.replace(os.sep, '/')
 
-def _GetPublicFiles():
-  '''Gets all public files mapped to their contents.
+
+def _FilterHidden(paths):
+  '''Returns a list of the non-hidden paths from |paths|.
   '''
-  public_path = ChromiumPath(PUBLIC_TEMPLATES)
+  # Hidden files start with a '.' but paths like './foo' and '../foo' are not
+  # hidden.
+  return [path for path in paths if (not path.startswith('.')) or
+                                     path.startswith('./') or
+                                     path.startswith('../')]
+
+
+def _GetPublicFiles():
+  '''Gets all public file paths mapped to their contents.
+  '''
+  def walk(path, prefix=''):
+    path = ChromiumPath(path)
+    public_files = {}
+    for root, dirs, files in os.walk(path, topdown=True):
+      relative_root = root[len(path):].lstrip(os.path.sep)
+      dirs[:] = _FilterHidden(dirs)
+      for filename in _FilterHidden(files):
+        with open(os.path.join(root, filename), 'r') as f:
+          request_path = posixpath.join(prefix, relative_root, filename)
+          public_files[request_path] = f.read()
+    return public_files
+
+  # Public file locations are defined in content_providers.json, sort of.  Epic
+  # hack to pull them out; list all the files from the directories that
+  # Chromium content providers ask for.
   public_files = {}
-  for path, dirs, files in os.walk(public_path, topdown=True):
-    dirs[:] = [d for d in dirs if d != '.svn']
-    relative_posix_path = _ToPosixPath(path[len(public_path):])
-    for filename in files:
-      with open(os.path.join(path, filename), 'r') as f:
-        public_files['/'.join((relative_posix_path, filename))] = f.read()
+  content_providers = json_parse.Parse(ReadFile(CONTENT_PROVIDERS))
+  for content_provider in content_providers.itervalues():
+    if 'chromium' in content_provider:
+      public_files.update(walk(content_provider['chromium']['dir'],
+                               prefix=content_provider['serveFrom']))
   return public_files
+
 
 class IntegrationTest(unittest.TestCase):
   def setUp(self):
@@ -123,7 +150,7 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       for path, content in public_files.iteritems():
-        assert path.startswith('/')
+        assert not path.startswith('/')
         if path.endswith('redirects.json'):
           continue
 
@@ -133,27 +160,34 @@ class IntegrationTest(unittest.TestCase):
           # This is reaaaaally rough since usually these will be tiny templates
           # that render large files. At least it'll catch zero-length responses.
           self.assertTrue(len(response.content) >= len(content),
-              'Content was "%s" when rendering %s' % (response.content, path))
+              'Rendered content length was %s vs template content length %s '
+              'when rendering %s' % (len(response.content), len(content), path))
 
         check_result(Handler(Request.ForTest(path)).Get())
 
-        # Make sure that leaving out the .html will temporarily redirect to the
-        # path with the .html.
-        if path.startswith(('/apps/', '/extensions/')):
-          redirect_result = Handler(
-              Request.ForTest(posixpath.splitext(path)[0])).Get()
-          self.assertEqual((path, False), redirect_result.GetRedirect())
+        if path.startswith(('apps/', 'extensions/')):
+          # Make sure that leaving out the .html will temporarily redirect to
+          # the path with the .html for APIs and articles.
+          if '/examples/' not in path:
+            base, _ = posixpath.splitext(path)
+            self.assertEqual(
+                ('/' + path, False),
+                Handler(Request.ForTest(base)).Get().GetRedirect(),
+                '%s did not (temporarily) redirect to %s.html' % (path, path))
 
-        # Make sure including a channel will permanently redirect to the same
-        # path without a channel.
-        for channel in BranchUtility.GetAllChannelNames():
-          redirect_result = Handler(
-              Request.ForTest('%s%s' % (channel, path))).Get()
-          self.assertEqual((path, True), redirect_result.GetRedirect())
+          # Make sure including a channel will permanently redirect to the same
+          # path without a channel.
+          for channel in BranchUtility.GetAllChannelNames():
+            redirect_result = Handler(
+                Request.ForTest(posixpath.join(channel, path))).Get()
+            self.assertEqual(
+                ('/' + path, True),
+                redirect_result.GetRedirect(),
+                '%s did not redirect to strip channel %s' % (path, channel))
 
         # Samples are internationalized, test some locales.
         if path.endswith('/samples.html'):
-          for lang in ['en-US', 'es', 'ar']:
+          for lang in ('en-US', 'es', 'ar'):
             check_result(Handler(Request.ForTest(
                 path,
                 headers={'Accept-Language': '%s;q=0.8' % lang})).Get())

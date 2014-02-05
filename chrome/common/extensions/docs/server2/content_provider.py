@@ -87,18 +87,14 @@ class ContentProvider(object):
     return ContentAndType(content, mimetype)
 
   def _MaybeMarkdown(self, path):
-    if posixpath.splitext(path)[1] != '.html':
+    base, ext = posixpath.splitext(path)
+    if ext != '.html':
       return path
-
-    dirname, file_name = posixpath.split(path)
-    if dirname != '':
-      dirname = dirname + '/'
-    file_list = self.file_system.ReadSingle(dirname).Get()
-    if file_name in file_list:
+    if self.file_system.Exists(path).Get():
       return path
-
-    if posixpath.splitext(file_name)[0] + '.md' in file_list:
-      return posixpath.splitext(path)[0] + '.md'
+    as_md = base + '.md'
+    if self.file_system.Exists(as_md).Get():
+      return as_md
     return path
 
   def GetContentAndType(self, path):
@@ -117,8 +113,11 @@ class ContentProvider(object):
     # Running Refresh() on the file system is enough to pull GitHub content,
     # which is all we need for now while the full render-every-page cron step
     # is in effect.
-    # TODO(kalman): Walk over the whole filesystem and compile the content.
-    return self.file_system.Refresh()
+    futures = []
+    for root, _, files in self.file_system.Walk(''):
+      futures += [self.GetContentAndType(posixpath.join(root, filename))
+                  for filename in files]
+    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
 
   def __repr__(self):
     return 'ContentProvider of <%s>' % repr(self.file_system)
