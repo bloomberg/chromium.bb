@@ -261,6 +261,7 @@ class RenderWidgetHostViewAndroid
   void SwapDelegatedFrame(uint32 output_surface_id,
                           scoped_ptr<cc::DelegatedFrameData> frame_data);
   void SendDelegatedFrameAck(uint32 output_surface_id);
+  void SendReturnedDelegatedResources(uint32 output_surface_id);
 
   void UpdateContentViewCoreFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);

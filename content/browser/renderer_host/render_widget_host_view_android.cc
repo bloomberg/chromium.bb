@@ -734,8 +734,25 @@ void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
                                                    ack);
 }
 
+void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
+    uint32 output_surface_id) {
+  DCHECK(resource_collection_);
+
+  cc::CompositorFrameAck ack;
+  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  DCHECK(!ack.resources.empty());
+
+  RenderWidgetHostImpl::SendReclaimCompositorResources(
+      host_->GetRoutingID(),
+      output_surface_id,
+      host_->GetProcess()->GetID(),
+      ack);
+}
+
 void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {
-  // TODO(danakj): If no ack is pending, collect and send resources now.
+  if (ack_callbacks_.size())
+    return;
+  SendReturnedDelegatedResources(last_output_surface_id_);
 }
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
@@ -751,13 +768,12 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
   if (output_surface_id != last_output_surface_id_) {
-    // TODO(danakj): Lose all resources and send them back here, such as:
-    // resource_collection_->LoseAllResources();
-    // SendReturnedDelegatedResources(last_output_surface_id_);
-
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
     if (resource_collection_.get()) {
+      if (resource_collection_->LoseAllResources())
+        SendReturnedDelegatedResources(last_output_surface_id_);
+
       resource_collection_->SetClient(NULL);
       resource_collection_ = NULL;
     }
