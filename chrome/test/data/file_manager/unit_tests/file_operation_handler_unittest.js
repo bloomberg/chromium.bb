@@ -35,7 +35,7 @@ function testCopySuccess() {
     status: {
       operationType: 'COPY',
       numRemainingItems: 1,
-      processingEntry: {name: 'sample.txt'},
+      processingEntryName: 'sample.txt',
       totalBytes: 200,
       processedBytes: 0
     }
@@ -81,7 +81,7 @@ function testCopyCancel() {
     status: {
       operationType: 'COPY',
       numRemainingItems: 1,
-      processingEntry: {name: 'sample.txt'},
+      processingEntryName: 'sample.txt',
       totalBytes: 200,
       processedBytes: 0
     }

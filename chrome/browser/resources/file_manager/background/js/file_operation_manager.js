@@ -412,6 +412,13 @@ FileOperationManager.Task = function(
   this.processedBytes = 0;
 
   /**
+   * Index of the progressing entry in sourceEntries.
+   * @type {number}
+   * @private
+   */
+  this.processingSourceIndex_ = 0;
+
+  /**
    * Set to true when cancel is requested.
    * @private {boolean}
    */
@@ -436,15 +443,6 @@ FileOperationManager.Task = function(
  * @param {function()} callback When entries resolved.
  */
 FileOperationManager.Task.prototype.initialize = function(callback) {
-};
-
-/**
- * Updates copy progress status for the entry.
- *
- * @param {number} size Number of bytes that has been copied since last update.
- */
-FileOperationManager.Task.prototype.updateFileCopyProgress = function(size) {
-  this.completedBytes += size;
 };
 
 /**
@@ -480,44 +478,33 @@ FileOperationManager.Task.prototype.run = function(
  * @return {object} Status object.
  */
 FileOperationManager.Task.prototype.getStatus = function() {
-  var numRemainingItems = this.countRemainingItems();
+  var processingEntry = this.sourceEntries[this.processingSourceIndex_];
   return {
     operationType: this.operationType,
-    numRemainingItems: numRemainingItems,
+    numRemainingItems: this.sourceEntries.length - this.processingSourceIndex_,
     totalBytes: this.totalBytes,
     processedBytes: this.processedBytes,
-    processingEntry: this.getSingleEntry()
+    processingEntryName: processingEntry ? processingEntry.name : ''
   };
 };
 
 /**
- * Counts the number of remaining items.
- * @return {number} Number of remaining items.
+ * Obtains the number of total processed bytes.
+ * @return {number} Number of total processed bytes.
+ * @private
  */
-FileOperationManager.Task.prototype.countRemainingItems = function() {
-  var count = 0;
-  for (var i = 0; i < this.processingEntries.length; i++) {
-    for (var entryURL in this.processingEntries[i]) {
-      count++;
+FileOperationManager.Task.prototype.calcProcessedBytes_ = function() {
+  var bytes = 0;
+  for (var i = 0; i < this.processingSourceIndex_ + 1; i++) {
+    var entryMap = this.processingEntries[i];
+    if (!entryMap)
+      break;
+    for (var name in entryMap) {
+      bytes += i < this.processingSourceIndex_ ?
+          entryMap[name].size : entryMap[name].processedBytes;
     }
   }
-  return count;
-};
-
-/**
- * Obtains the single processing entry. If there are multiple processing
- * entries, it returns null.
- * @return {Entry} First entry.
- */
-FileOperationManager.Task.prototype.getSingleEntry = function() {
-  if (this.countRemainingItems() !== 1)
-    return null;
-  for (var i = 0; i < this.processingEntries.length; i++) {
-    var entryMap = this.processingEntries[i];
-    for (var name in entryMap)
-      return entryMap[name];
-  }
-  return null;
+  return bytes;
 };
 
 /**
@@ -653,12 +640,10 @@ FileOperationManager.CopyTask.prototype.run = function(
               var sourceEntryURL = sourceEntry.toURL();
               var processedEntry =
                   this.processingEntries[index][sourceEntryURL];
-              if (processedEntry) {
-                this.processedBytes +=
-                    processedEntry.size - processedEntry.processedBytes;
-                progressCallback();
-                delete this.processingEntries[index][sourceEntryURL];
-              }
+
+              // Update current source index.
+              this.processingSourceIndex_ = index + 1;
+              this.processedBytes = this.calcProcessedBytes_();
 
               // The destination entry may be null, if the copied file got
               // deleted just after copying.
@@ -814,9 +799,9 @@ FileOperationManager.MoveTask.prototype.run = function(
         FileOperationManager.MoveTask.processEntry_(
             entry, this.targetDirEntry, entryChangedCallback,
             function() {
-              // Erase the processing entry.
-              this.processingEntries[index] = {};
-              this.processedBytes++;
+              // Update current source index.
+              this.processingSourceIndex_ = index + 1;
+              this.processedBytes = this.calcProcessedBytes_();
               callback();
             }.bind(this),
             errorCallback);

@@ -103,7 +103,7 @@ FileOperationHandler.getMessage_ = function(event) {
         }
     }
   } else if (event.status.numRemainingItems === 1) {
-    var name = event.status.processingEntry.name;
+    var name = event.status.processingEntryName;
     switch (event.status.operationType) {
       case 'COPY': return strf('COPY_FILE_NAME', name);
       case 'MOVE': return strf('MOVE_FILE_NAME', name);
