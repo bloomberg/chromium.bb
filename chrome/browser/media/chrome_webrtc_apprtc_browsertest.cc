@@ -37,8 +37,8 @@ const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 // WebRTC-AppRTC integration test. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
 // test suite since normal tester machines do not have webcams. Chrome will use
-// this camera for the regular AppRTC test whereas Firefox will use it in the
-// Firefox interop test (where case Chrome will use its built-in fake device).
+// its fake camera for both tests, but Firefox will use the real webcam in the
+// Firefox interop test.
 //
 // This test will bring up a AppRTC instance on localhost and verify that the
 // call gets up when connecting to the same room from two tabs in a browser.
@@ -54,6 +54,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
+
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -120,6 +123,36 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     return PollingWaitUntil(javascript, "1", tab_contents);
   }
 
+  bool EvalInJavascriptFile(content::WebContents* tab_contents,
+                            const base::FilePath& path) {
+    std::string javascript;
+    if (!ReadFileToString(path, &javascript)) {
+      LOG(ERROR) << "Missing javascript code at " << path.value() << ".";
+      return false;
+    }
+
+    if (!content::ExecuteScript(tab_contents, javascript)) {
+      LOG(ERROR) << "Failed to execute the following javascript: " <<
+          javascript;
+      return false;
+    }
+    return true;
+  }
+
+  bool DetectRemoteVideoPlaying(content::WebContents* tab_contents) {
+    if (!EvalInJavascriptFile(tab_contents, GetSourceDir().Append(
+        FILE_PATH_LITERAL("chrome/test/data/webrtc/test_functions.js"))))
+      return false;
+    if (!EvalInJavascriptFile(tab_contents, GetSourceDir().Append(
+        FILE_PATH_LITERAL("chrome/test/data/webrtc/video_detector.js"))))
+      return false;
+
+    // The remote video tag is called remoteVideo in the AppRTC code.
+    StartDetectingVideo(tab_contents, "remoteVideo");
+    WaitForVideoToPlay(tab_contents);
+    return true;
+  }
+
   base::FilePath GetSourceDir() {
     base::FilePath source_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
@@ -177,14 +210,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab = OpenPageAndAcceptUserMedia(room_url);
-  // TODO(phoglund): Remove when this bug gets fixed:
-  // http://code.google.com/p/webrtc/issues/detail?id=1742
-  SleepInJavascript(left_tab, 5000);
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab = OpenPageAndAcceptUserMedia(room_url);
 
   ASSERT_TRUE(WaitForCallToComeUp(left_tab));
   ASSERT_TRUE(WaitForCallToComeUp(right_tab));
+
+  ASSERT_TRUE(DetectRemoteVideoPlaying(left_tab));
+  ASSERT_TRUE(DetectRemoteVideoPlaying(right_tab));
 }
 
 #if defined(OS_LINUX)
@@ -196,8 +229,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
                        MAYBE_MANUAL_FirefoxApprtcInteropTest) {
-  // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
-  // http://code.google.com/p/webrtc/issues/detail?id=2703
+  // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
@@ -208,20 +240,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   while (!LocalApprtcInstanceIsUp())
     VLOG(1) << "Waiting for AppRTC to come up...";
 
-  // Run Chrome with a fake device to avoid having the browsers fight over the
-  // camera (we'll just give that to firefox here).
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseFakeDeviceForMediaStream);
-
   GURL room_url = GURL(base::StringPrintf("http://localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));
   content::WebContents* chrome_tab = OpenPageAndAcceptUserMedia(room_url);
 
-  // TODO(phoglund): Remove when this bug gets fixed:
-  // http://code.google.com/p/webrtc/issues/detail?id=1742
-  SleepInJavascript(chrome_tab, 5000);
-
   ASSERT_TRUE(LaunchFirefoxWithUrl(room_url));
 
   ASSERT_TRUE(WaitForCallToComeUp(chrome_tab));
+
+  // Ensure Firefox manages to send video our way.
+  ASSERT_TRUE(DetectRemoteVideoPlaying(chrome_tab));
 }

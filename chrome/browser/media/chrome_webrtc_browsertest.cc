@@ -76,19 +76,6 @@ class WebRtcBrowserTest : public WebRtcTestBase {
                                  "active", to_tab));
   }
 
-  void StartDetectingVideo(content::WebContents* tab_contents,
-                           const std::string& video_element) {
-    std::string javascript = base::StringPrintf(
-        "startDetection('%s', 'frame-buffer', 320, 240)",
-        video_element.c_str());
-    EXPECT_EQ("ok-started", ExecuteJavascript(javascript, tab_contents));
-  }
-
-  void WaitForVideoToPlay(content::WebContents* tab_contents) {
-    EXPECT_TRUE(PollingWaitUntil("isVideoPlaying()", "video-playing",
-                                 tab_contents));
-  }
-
   void HangUp(content::WebContents* from_tab) {
     EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
   }

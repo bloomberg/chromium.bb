@@ -62,6 +62,13 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // (i.e. with --test-launcher-developer-mode or --test-launcher-jobs=1).
   void DetectErrorsInJavaScript();
 
+  // Methods for detecting if video is playing (the loaded page must have
+  // chrome/test/data/webrtc/video_detector.js and its dependencies loaded to
+  // make that work). Looks at a 320x240 area of the target video tag.
+  void StartDetectingVideo(content::WebContents* tab_contents,
+                           const std::string& video_element) const;
+  void WaitForVideoToPlay(content::WebContents* tab_contents) const;
+
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          InfoBar* infobar) const;

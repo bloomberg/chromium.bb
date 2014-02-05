@@ -17,20 +17,26 @@ var gFingerprints = [];
  * we detected any video.
  *
  * @param {string} videoElementId The video element to analyze.
- * @param {string} canvasId A canvas element to write fingerprints into.
  * @param {int}    width The video element's width.
  * @param {int}    width The video element's height.
  *
  * @return {string} Returns ok-started to the test.
  */
 //
-function startDetection(videoElementId, canvasId, width, height) {
+function startDetection(videoElementId, width, height) {
   var video = document.getElementById(videoElementId);
-  var canvas = document.getElementById(canvasId);
+  if (!video)
+    throw failTest('Could not find video element with id ' + videoElementId);
+
   var NUM_FINGERPRINTS_TO_SAVE = 5;
+  var canvas = document.createElement('canvas');
+  canvas.style.display = 'none';
 
   setInterval(function() {
     var context = canvas.getContext('2d');
+    if (video.videoWidth == 0)
+      return;  // The video element isn't playing anything.
+
     captureFrame_(video, context, width, height);
     gFingerprints.push(fingerprint_(context, width, height));
     if (gFingerprints.length > NUM_FINGERPRINTS_TO_SAVE) {
