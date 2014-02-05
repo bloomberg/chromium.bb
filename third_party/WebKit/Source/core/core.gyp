@@ -455,50 +455,50 @@
             ],
           },
         }],
-        ['OS=="mac"', {  
-          'direct_dependent_settings': { 
-            'defines': [ 
-              # Chromium's version of WebCore includes the following Objective-C 
-              # classes. The system-provided WebCore framework may also provide  
-              # these classes. Because of the nature of Objective-C binding  
-              # (dynamically at runtime), it's possible for the  
-              # Chromium-provided versions to interfere with the system-provided 
-              # versions.  This may happen when a system framework attempts to 
-              # use core.framework, such as when converting an HTML-flavored 
-              # string to an NSAttributedString.  The solution is to force 
-              # Objective-C class names that would conflict to use alternate 
-              # names. 
-              #  
-              # This list will hopefully shrink but may also grow.  Its  
-              # performance is monitored by the "Check Objective-C Rename" 
-              # postbuild step, and any suspicious-looking symbols not handled 
-              # here or whitelisted in that step will cause a build failure. 
-              #  
-              # If this is unhandled, the console will receive log messages  
-              # such as: 
-              # com.google.Chrome[] objc[]: Class ScrollbarPrefsObserver is implemented in both .../Google Chrome.app/Contents/Versions/.../Google Chrome Helper.app/Contents/MacOS/../../../Google Chrome Framework.framework/Google Chrome Framework and /System/Library/Frameworks/WebKit.framework/Versions/A/Frameworks/WebCore.framework/Versions/A/WebCore. One of the two will be used. Which one is undefined.  
-              'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',  
-              'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',  
-            ],  
-            'postbuilds': [  
-              {  
-                # This step ensures that any Objective-C names that aren't 
-                # redefined to be "safe" above will cause a build failure. 
-                'postbuild_name': 'Check Objective-C Rename',  
-                'variables': { 
-                  'class_whitelist_regex': 
-                      'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',  
-                  'category_whitelist_regex':  
-                      'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',  
-                }, 
-                'action': [  
-                  '../build/scripts/check_objc_rename.sh', 
-                  '<(class_whitelist_regex)',  
-                  '<(category_whitelist_regex)', 
-                ], 
-              }, 
-            ], 
-          }, 
+        ['OS=="mac"', {
+          'direct_dependent_settings': {
+            'defines': [
+              # Chromium's version of WebCore includes the following Objective-C
+              # classes. The system-provided WebCore framework may also provide
+              # these classes. Because of the nature of Objective-C binding
+              # (dynamically at runtime), it's possible for the
+              # Chromium-provided versions to interfere with the system-provided
+              # versions.  This may happen when a system framework attempts to
+              # use core.framework, such as when converting an HTML-flavored
+              # string to an NSAttributedString.  The solution is to force
+              # Objective-C class names that would conflict to use alternate
+              # names.
+              #
+              # This list will hopefully shrink but may also grow.  Its
+              # performance is monitored by the "Check Objective-C Rename"
+              # postbuild step, and any suspicious-looking symbols not handled
+              # here or whitelisted in that step will cause a build failure.
+              #
+              # If this is unhandled, the console will receive log messages
+              # such as:
+              # com.google.Chrome[] objc[]: Class ScrollbarPrefsObserver is implemented in both .../Google Chrome.app/Contents/Versions/.../Google Chrome Helper.app/Contents/MacOS/../../../Google Chrome Framework.framework/Google Chrome Framework and /System/Library/Frameworks/WebKit.framework/Versions/A/Frameworks/WebCore.framework/Versions/A/WebCore. One of the two will be used. Which one is undefined.
+              'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
+              'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
+            ],
+            'postbuilds': [
+              {
+                # This step ensures that any Objective-C names that aren't
+                # redefined to be "safe" above will cause a build failure.
+                'postbuild_name': 'Check Objective-C Rename',
+                'variables': {
+                  'class_whitelist_regex':
+                      'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',
+                  'category_whitelist_regex':
+                      'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
+                },
+                'action': [
+                  '../build/scripts/check_objc_rename.sh',
+                  '<(class_whitelist_regex)',
+                  '<(category_whitelist_regex)',
+                ],
+              },
+            ],
+          },
         }],
         ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
           # This directory needs to be on the include path for multiple sub-targets of webcore.
@@ -566,93 +566,6 @@
       ],
       'sources': [
         '<@(webcore_svg_files)',
-      ],
-    },
-    {
-      'target_name': 'webcore_platform',
-      'type': 'static_library',
-      'dependencies': [
-        'webcore_prerequisites',
-      ],
-      # Disable c4267 warnings until we fix size_t to int truncations.
-      # Disable c4724 warnings which is generated in VS2012 due to improper
-      # compiler optimizations, see crbug.com/237063
-      'msvs_disabled_warnings': [ 4267, 4334, 4724 ],
-      'sources/': [
-        # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(cf|cg|harfbuzz|mac|opentype|svg|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
-
-        # Used only by mac.
-        ['exclude', 'platform/Theme\\.cpp$'],
-      ],
-      'conditions': [
-        ['OS!="linux"', {
-          'sources/': [
-            ['exclude', 'Linux\\.cpp$'],
-          ],
-        }],
-        ['toolkit_uses_gtk == 0', {
-          'sources/': [
-            ['exclude', 'platform/chromium/KeyCodeConversionGtk\\.cpp$'],
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'editing/SmartReplaceCF.cpp',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-            ],
-          },
-          'sources/': [
-            # Additional files from the WebCore Mac build that are presently
-            # used in the WebCore Chromium Mac build too.
-
-            # The Mac build is USE(CF).
-            ['include', 'CF\\.cpp$'],
-
-            # Cherry-pick some files that can't be included by broader regexps.
-            # Some of these are used instead of Chromium platform files, see
-            # the specific exclusions in the "exclude" list below.
-            ['include', 'platform/mac/WebCoreSystemInterface\\.h$'],
-            ['include', 'platform/mac/WebCoreTextRenderer\\.mm$'],
-            ['include', 'platform/text/mac/ShapeArabic\\.c$'],
-            ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
-            # Use USE_NEW_THEME on Mac.
-            ['include', 'platform/Theme\\.cpp$'],
-          ],
-        }],
-        ['OS=="win"', {
-          'sources/': [
-            ['exclude', 'Posix\\.cpp$'],
-          ],
-        },{ # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
-          ],
-        }],
-        ['OS=="win" and chromium_win_pch==1', {
-          'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
-          ],
-        }],
-        ['OS=="android"', {
-          'sources/': [
-            ['include', 'platform/chromium/ClipboardChromiumLinux\\.cpp$'],
-            ['include', 'platform/chromium/FileSystemChromiumLinux\\.cpp$'],
-          ],
-        }, { # OS!="android"
-          'sources/': [
-            ['exclude', 'Android\\.cpp$'],
-          ],
-        }],
-        ['use_default_render_theme==0', {
-          'sources/': [
-            ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
-          ],
-        }],
       ],
     },
     {
@@ -778,7 +691,33 @@
         }, { # OS!="android"
           'sources/': [['exclude', 'Android\\.cpp$']]
         }],
-        ['OS!="mac"', {
+        ['OS=="mac"', {
+          'sources': [
+            'editing/SmartReplaceCF.cpp',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+            ],
+          },
+          'sources/': [
+            # Additional files from the WebCore Mac build that are presently
+            # used in the WebCore Chromium Mac build too.
+
+            # The Mac build is USE(CF).
+            ['include', 'CF\\.cpp$'],
+
+            # Cherry-pick some files that can't be included by broader regexps.
+            # Some of these are used instead of Chromium platform files, see
+            # the specific exclusions in the "exclude" list below.
+            ['include', 'platform/mac/WebCoreSystemInterface\\.h$'],
+            ['include', 'platform/mac/WebCoreTextRenderer\\.mm$'],
+            ['include', 'platform/text/mac/ShapeArabic\\.c$'],
+            ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
+            # Use USE_NEW_THEME on Mac.
+            ['include', 'platform/Theme\\.cpp$'],
+          ],
+        }, { # OS!="mac"
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
         }],
         ['OS=="win" and chromium_win_pch==1', {
@@ -796,7 +735,6 @@
       'dependencies': [
         'webcore_dom',
         'webcore_html',
-        'webcore_platform',
         'webcore_remaining',
         'webcore_rendering',
         'webcore_svg',
