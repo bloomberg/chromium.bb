@@ -32,8 +32,6 @@
 #include "core/dom/Microtask.h"
 
 #include "bindings/v8/V8PerIsolateData.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -54,10 +52,7 @@ void Microtask::performCheckpoint()
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
 
-    // FIXME: Custom element's callbacks need to be refactored to enqueueMicrotask()
-    while (CustomElementScheduler::dispatchMicrotaskProcessingSteps() || !microtaskQueue().isEmpty()) {
-        if (microtaskQueue().isEmpty())
-            continue;
+    while (!microtaskQueue().isEmpty()) {
         Vector<MicrotaskCallback> microtasks;
         microtasks.swap(microtaskQueue());
         for (size_t i = 0; i < microtasks.size(); ++i) {

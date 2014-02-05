@@ -5,18 +5,34 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 
+#include "core/dom/Microtask.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 #include "core/html/HTMLImport.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
 static const CustomElementCallbackQueue::ElementQueueId kMicrotaskQueueId = 0;
 
+CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
+    : m_hasScheduledMicrotask(false)
+    , m_phase(Quiescent)
+{
+}
+
+CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
+{
+    DEFINE_STATIC_LOCAL(CustomElementMicrotaskDispatcher, instance, ());
+    return instance;
+}
+
 void CustomElementMicrotaskDispatcher::enqueue(HTMLImport* import, PassOwnPtr<CustomElementMicrotaskStep> step)
 {
     ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
+    ensureMicrotaskScheduled();
     if (import && import->customElementMicrotaskStep())
         import->customElementMicrotaskStep()->enqueue(step);
     else
@@ -26,15 +42,41 @@ void CustomElementMicrotaskDispatcher::enqueue(HTMLImport* import, PassOwnPtr<Cu
 void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue)
 {
     ASSERT(m_phase == Quiescent || m_phase == Resolving);
+    ensureMicrotaskScheduled();
     queue->setOwner(kMicrotaskQueueId);
     m_elements.append(queue);
 }
 
-bool CustomElementMicrotaskDispatcher::dispatch()
+void CustomElementMicrotaskDispatcher::importDidFinish(CustomElementMicrotaskImportStep* step)
 {
-    ASSERT(m_phase == Quiescent);
+    ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
+    ensureMicrotaskScheduled();
+}
 
-    bool didWork = false;
+void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduled()
+{
+    if (!m_hasScheduledMicrotask) {
+        Microtask::enqueueMicrotask(&dispatch);
+        m_hasScheduledMicrotask = true;
+    }
+}
+
+void CustomElementMicrotaskDispatcher::dispatch()
+{
+    instance().doDispatch();
+}
+
+void CustomElementMicrotaskDispatcher::doDispatch()
+{
+    ASSERT(isMainThread());
+
+    ASSERT(m_phase == Quiescent && m_hasScheduledMicrotask);
+    m_hasScheduledMicrotask = false;
+
+    // Finishing microtask work deletes all
+    // CustomElementCallbackQueues. Being in a callback delivery scope
+    // implies those queues could still be in use.
+    ASSERT_WITH_SECURITY_IMPLICATION(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
 
     m_phase = Resolving;
     m_resolutionAndImports.dispatch();
@@ -44,14 +86,11 @@ bool CustomElementMicrotaskDispatcher::dispatch()
         // Created callback may enqueue an attached callback.
         CustomElementCallbackDispatcher::CallbackDeliveryScope scope;
         (*it)->processInElementQueue(kMicrotaskQueueId);
-
-        didWork = true;
     }
 
     m_elements.clear();
+    CustomElementScheduler::microtaskDispatcherDidFinish();
     m_phase = Quiescent;
-
-    return didWork;
 }
 
 } // namespace WebCore

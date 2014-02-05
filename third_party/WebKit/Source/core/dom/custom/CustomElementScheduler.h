@@ -32,10 +32,8 @@
 #define CustomElementScheduler_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
-#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -45,7 +43,6 @@ class CustomElementDescriptor;
 class CustomElementLifecycleCallbacks;
 class CustomElementMicrotaskImportStep;
 class Element;
-class HTMLImport;
 class HTMLImportChild;
 
 class CustomElementScheduler {
@@ -58,7 +55,8 @@ public:
     static void resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
-    static bool dispatchMicrotaskProcessingSteps() { return instance().dispatch(); }
+    static void microtaskDispatcherDidFinish();
+    static void callbackDispatcherDidFinish();
 
 private:
     CustomElementScheduler() { }
@@ -68,13 +66,15 @@ private:
     CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
 
-    bool dispatch();
+    // FIXME: Consider moving the element's callback queue to
+    // ElementRareData. Then the scheduler can become completely
+    // static.
     void clearElementCallbackQueueMap();
 
+    // The element -> callback queue map is populated by the scheduler
+    // and owns the lifetimes of the CustomElementCallbackQueues.
     typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
     ElementCallbackQueueMap m_elementCallbackQueueMap;
-
-    CustomElementMicrotaskDispatcher m_microtaskDispatcher;
 };
 
 }

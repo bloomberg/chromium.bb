@@ -32,6 +32,7 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -73,6 +74,9 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     // Pop the element queue from the processing stack
     m_flattenedProcessingStack.resize(start);
     s_elementQueueEnd = start;
+
+    if (s_elementQueueStart == kNumSentinels)
+        CustomElementScheduler::callbackDispatcherDidFinish();
 }
 
 void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callbackQueue)

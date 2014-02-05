@@ -13,21 +13,33 @@
 namespace WebCore {
 
 class CustomElementCallbackQueue;
+class CustomElementMicrotaskImportStep;
 class CustomElementMicrotaskStep;
 class HTMLImport;
 
 class CustomElementMicrotaskDispatcher {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskDispatcher);
 public:
-    CustomElementMicrotaskDispatcher() : m_phase(Quiescent) { }
     ~CustomElementMicrotaskDispatcher() { }
+
+    static CustomElementMicrotaskDispatcher& instance();
 
     void enqueue(HTMLImport*, PassOwnPtr<CustomElementMicrotaskStep>);
     void enqueue(CustomElementCallbackQueue*);
-    bool dispatch();
+
+    void importDidFinish(CustomElementMicrotaskImportStep*);
+
     bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
 
 private:
+    CustomElementMicrotaskDispatcher();
+
+    void ensureMicrotaskScheduled();
+
+    static void dispatch();
+    void doDispatch();
+
+    bool m_hasScheduledMicrotask;
     enum {
         Quiescent,
         Resolving,

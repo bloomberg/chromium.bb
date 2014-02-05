@@ -63,10 +63,11 @@ public:
         size_t m_savedElementQueueStart;
     };
 
+    static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
+
 protected:
     friend class CustomElementScheduler;
     static CustomElementCallbackDispatcher& instance();
-    static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
     void enqueue(CustomElementCallbackQueue*);
 
 private:

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
+#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
+
 namespace WebCore {
 
 PassOwnPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create()
@@ -51,6 +53,7 @@ void CustomElementMicrotaskImportStep::importDidFinish()
     // imports should only "finish" once
     ASSERT(!m_importFinished);
     m_importFinished = true;
+    CustomElementMicrotaskDispatcher::instance().importDidFinish(this);
 }
 
 CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()

@@ -36,11 +36,11 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLImportChild.h"
-#include "wtf/MainThread.h"
 
 namespace WebCore {
 
@@ -88,7 +88,7 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElemen
 
     HTMLImport* import = element->document().import();
     OwnPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
-    instance().m_microtaskDispatcher.enqueue(import, step.release());
+    CustomElementMicrotaskDispatcher::instance().enqueue(import, step.release());
 }
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
@@ -101,7 +101,7 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
 
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
-    instance().m_microtaskDispatcher.enqueue(import->parent(), step.release());
+    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent(), step.release());
 
     return rawStep;
 }
@@ -121,10 +121,22 @@ CustomElementCallbackQueue* CustomElementScheduler::ensureCallbackQueue(PassRefP
     return it->value.get();
 }
 
+void CustomElementScheduler::callbackDispatcherDidFinish()
+{
+    if (CustomElementMicrotaskDispatcher::instance().elementQueueIsEmpty())
+        instance().clearElementCallbackQueueMap();
+}
+
+void CustomElementScheduler::microtaskDispatcherDidFinish()
+{
+    ASSERT(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
+    instance().clearElementCallbackQueueMap();
+}
+
 void CustomElementScheduler::clearElementCallbackQueueMap()
 {
     ElementCallbackQueueMap emptyMap;
-    instance().m_elementCallbackQueueMap.swap(emptyMap);
+    m_elementCallbackQueueMap.swap(emptyMap);
 }
 
 // Finds or creates the callback queue for element.
@@ -147,20 +159,8 @@ CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element>
         return callbackQueue;
     }
 
-    m_microtaskDispatcher.enqueue(callbackQueue);
+    CustomElementMicrotaskDispatcher::instance().enqueue(callbackQueue);
     return callbackQueue;
-}
-
-bool CustomElementScheduler::dispatch()
-{
-    ASSERT(isMainThread());
-    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope())
-        return false;
-
-    bool didWork = m_microtaskDispatcher.dispatch();
-    ASSERT(m_microtaskDispatcher.elementQueueIsEmpty());
-    clearElementCallbackQueueMap();
-    return didWork;
 }
 
 } // namespace WebCore
