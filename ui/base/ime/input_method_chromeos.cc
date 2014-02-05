@@ -553,19 +553,21 @@ void InputMethodChromeOS::DeleteSurroundingText(int32 offset, uint32 length) {
 }
 
 bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
-  bool consumed = character_composer_.FilterKeyPress(event);
+  if (!character_composer_.FilterKeyPress(event))
+    return false;
 
+  // CharacterComposer consumed the key event.  Update the composition text.
   chromeos::IBusText preedit;
   preedit.set_text(
       base::UTF16ToUTF8(character_composer_.preedit_string()));
   UpdatePreeditText(preedit, preedit.text().size(),
                     !preedit.text().empty());
-   std::string commit_text =
+  std::string commit_text =
       base::UTF16ToUTF8(character_composer_.composed_character());
   if (!commit_text.empty()) {
     CommitText(commit_text);
   }
-  return consumed;
+  return true;
 }
 
 void InputMethodChromeOS::ExtractCompositionText(
