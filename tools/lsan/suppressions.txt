@@ -63,6 +63,8 @@ leak:v8::internal::Genesis::Genesis
 
 # Suppressions for objects which can be owned by the V8 heap. This is a
 # temporary workaround until LeakSanitizer supports the V8 heap.
+# Those should only fire in (browser)tests. If you see one of them in Chrome,
+# then it's a real leak.
 # http://crbug.com/328552
 leak:extensions::ObjectBackedNativeHandler::RouteFunction
 leak:toString<WTF::AtomicString>
@@ -75,6 +77,8 @@ leak:WebCore::*::errorMethodCallback
 leak:WebCore::v8StringToWebCoreString
 leak:WTF::StringImpl::createUninitialized
 leak:ResourceBundleSourceMap::GetSource
+leak:WebCore::ScriptState::forContext
+leak:TranslateScriptBrowserTest::ExecuteScript
 
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
@@ -108,5 +112,8 @@ leak:gtk_util::*AppModal
 
 # http://crbug.com/318221
 leak:base::EnsureProcessTerminated
+
+# http://crbug.com/322671
+leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread
 
 # PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
