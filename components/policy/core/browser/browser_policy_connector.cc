@@ -56,9 +56,8 @@ bool MatchDomain(const base::string16& domain, const base::string16& pattern) {
 }  // namespace
 
 BrowserPolicyConnector::BrowserPolicyConnector(
-    scoped_ptr<ConfigurationPolicyHandlerList> handler_list)
+    const HandlerListFactory& handler_list_factory)
     : is_initialized_(false),
-      handler_list_(handler_list.Pass()),
       platform_policy_provider_(NULL) {
   // GetPolicyService() must be ready after the constructor is done.
   // The connector is created very early during startup, when the browser
@@ -68,6 +67,7 @@ BrowserPolicyConnector::BrowserPolicyConnector(
   // Initialize the SchemaRegistry with the Chrome schema before creating any
   // of the policy providers in subclasses.
   chrome_schema_ = Schema::Wrap(GetChromeSchemaData());
+  handler_list_ = handler_list_factory.Run(chrome_schema_);
   schema_registry_.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
                                      chrome_schema_);
 }

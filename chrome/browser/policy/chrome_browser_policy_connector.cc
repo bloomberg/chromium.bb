@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -130,7 +131,7 @@ class DeviceManagementServiceConfiguration
 }  // namespace
 
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
-    : BrowserPolicyConnector(BuildHandlerList()) {
+    : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
   ConfigurationPolicyProvider* platform_provider = CreatePlatformProvider();
   if (platform_provider)
     SetPlatformPolicyProvider(make_scoped_ptr(platform_provider));

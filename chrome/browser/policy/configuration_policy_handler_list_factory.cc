@@ -18,6 +18,7 @@
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/schema.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
@@ -474,7 +475,8 @@ StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
 
 }  // namespace
 
-scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
+scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
+    const Schema& chrome_schema) {
   scoped_ptr<ConfigurationPolicyHandlerList> handlers(
       new ConfigurationPolicyHandlerList(base::Bind(&GetChromePolicyDetails)));
   for (size_t i = 0; i < arraysize(kSimplePolicyMap); ++i) {

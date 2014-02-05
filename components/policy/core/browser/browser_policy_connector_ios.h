@@ -17,9 +17,8 @@ namespace policy {
 // Extends BrowserPolicyConnector with the setup for iOS builds.
 class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
  public:
-  BrowserPolicyConnectorIOS(
-      scoped_ptr<ConfigurationPolicyHandlerList> handler_list,
-      const std::string& user_agent);
+  BrowserPolicyConnectorIOS(const HandlerListFactory& handler_list_factory,
+                            const std::string& user_agent);
 
   virtual ~BrowserPolicyConnectorIOS();
 

@@ -56,9 +56,9 @@ class DeviceManagementServiceConfiguration
 }  // namespace
 
 BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
-    scoped_ptr<ConfigurationPolicyHandlerList> handler_list,
+    const HandlerListFactory& handler_list_factory,
     const std::string& user_agent)
-    : BrowserPolicyConnector(handler_list.Pass()),
+    : BrowserPolicyConnector(handler_list_factory),
       user_agent_(user_agent) {}
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}

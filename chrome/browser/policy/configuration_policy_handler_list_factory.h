@@ -10,9 +10,11 @@
 namespace policy {
 
 class ConfigurationPolicyHandlerList;
+class Schema;
 
 // Builds a platform-specific handler list.
-scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList();
+scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
+    const Schema& chrome_schema);
 
 }  // namespace policy
 

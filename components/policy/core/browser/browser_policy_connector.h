@@ -103,7 +103,7 @@ class POLICY_EXPORT BrowserPolicyConnector {
   // Builds an uninitialized BrowserPolicyConnector.
   // Init() should be called to create and start the policy components.
   explicit BrowserPolicyConnector(
-      scoped_ptr<ConfigurationPolicyHandlerList> handler_list);
+      const HandlerListFactory& handler_list_factory);
 
   // Helper for the public Init() that must be called by subclasses.
   void Init(PrefService* local_state,

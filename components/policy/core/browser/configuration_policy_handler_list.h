@@ -21,6 +21,7 @@ class ConfigurationPolicyHandler;
 class PolicyErrorMap;
 class PolicyMap;
 struct PolicyToPreferenceMapEntry;
+class Schema;
 
 // Converts policies to their corresponding preferences by applying a list of
 // ConfigurationPolicyHandler objects. This includes error checking and
@@ -50,6 +51,11 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandlerList);
 };
+
+// Callback with signature of BuildHandlerList(), to be used in constructor of
+// BrowserPolicyConnector.
+typedef base::Callback<scoped_ptr<ConfigurationPolicyHandlerList>(
+    const Schema&)> HandlerListFactory;
 
 }  // namespace policy
 
