@@ -36,9 +36,9 @@ RenderSVGTSpan::RenderSVGTSpan(Element* element)
 
 bool RenderSVGTSpan::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
-    // Always allow text (except empty textnodes).
+    // Always allow text (except empty textnodes and <br>).
     if (child->isText())
-        return !SVGRenderSupport::isEmptySVGInlineText(child);
+        return SVGRenderSupport::isRenderableTextNode(child);
 
 #if ENABLE(SVG_FONTS)
     // Only allow other types of  children if this is not an 'altGlyph'.

@@ -411,4 +411,11 @@ bool SVGRenderSupport::isEmptySVGInlineText(const RenderObject* object)
     return object->isSVGInlineText() && toRenderSVGInlineText(object)->hasEmptyText();
 }
 
+bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)
+{
+    ASSERT(object->isText());
+    // <br> is marked as text, but is not handled by the SVG rendering code-path.
+    return object->isSVGInlineText() && !toRenderSVGInlineText(object)->hasEmptyText();
+}
+
 }

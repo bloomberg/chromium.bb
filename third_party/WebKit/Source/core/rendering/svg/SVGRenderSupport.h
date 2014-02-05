@@ -84,6 +84,10 @@ public:
     // Helper method for determining whether an RenderSVGInlineText object has zero length text.
     static bool isEmptySVGInlineText(const RenderObject*);
 
+    // Helper method for determining if a RenderObject marked as text (isText()== true)
+    // can/will be rendered as part of a <text>.
+    static bool isRenderableTextNode(const RenderObject*);
+
 private:
     // This class is not constructable.
     SVGRenderSupport();

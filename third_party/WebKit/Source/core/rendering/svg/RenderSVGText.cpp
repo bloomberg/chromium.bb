@@ -70,7 +70,7 @@ RenderSVGText::~RenderSVGText()
 
 bool RenderSVGText::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
-    return child->isSVGInline() || (child->isText() && !SVGRenderSupport::isEmptySVGInlineText(child));
+    return child->isSVGInline() || (child->isText() && SVGRenderSupport::isRenderableTextNode(child));
 }
 
 RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(RenderObject* start)

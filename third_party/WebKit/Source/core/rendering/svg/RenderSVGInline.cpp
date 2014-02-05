@@ -32,8 +32,8 @@ namespace WebCore {
 
 bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) const
 {
-    if (SVGRenderSupport::isEmptySVGInlineText(child))
-        return false;
+    if (child->isText())
+        return SVGRenderSupport::isRenderableTextNode(child);
 
     if (!child->isSVGInline() && !child->isSVGInlineText())
         return false;

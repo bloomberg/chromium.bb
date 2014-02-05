@@ -1,0 +1,32 @@
+<!doctype html>
+<svg height="300">
+<text y="10">
+  <tspan></tspan>
+  <textPath></textPath>
+  <altGlyph>Bar</altGlyph>
+</text>
+</svg>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+function insertBR(parent) {
+  parent.appendChild(document.createTextNode('foo'));
+  parent.appendChild(document.createElement('br'));
+  parent.appendChild(document.createTextNode('bar'));
+}
+window.onload = function() {
+  var t = document.querySelector('text');
+  for (var child = t.firstChild; child; child = child.nextSibling) {
+    if (child instanceof Text)
+      continue;
+    insertBR(child);
+  }
+  insertBR(t);
+  setTimeout(function() {
+    if (window.testRunner)
+      testRunner.notifyDone();
+  }, 0);
+};
+</script>
