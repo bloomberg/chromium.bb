@@ -139,6 +139,10 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<MainFunctionParams> params_;
   scoped_ptr<CommandLine> command_line_;
 
+#if defined(OS_MACOSX)
+  scoped_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
+#endif
+
  private:
   void GoToOffset(int offset, const blink::WebHistoryItem& history_item);
 };

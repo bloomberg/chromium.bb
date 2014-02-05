@@ -28,6 +28,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -143,6 +147,9 @@ void RenderViewTest::SetUp() {
   render_thread_->set_new_window_routing_id(kNewWindowRouteId);
   render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
+#if defined(OS_MACOSX)
+  autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
+#endif
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
@@ -209,6 +216,11 @@ void RenderViewTest::TearDown() {
   // some new tasks which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
   base::RunLoop().RunUntilIdle();
+
+#if defined(OS_MACOSX)
+  // Needs to run before blink::shutdown().
+  autorelease_pool_.reset(NULL);
+#endif
 
   blink::shutdown();
 
