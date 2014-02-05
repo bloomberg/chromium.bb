@@ -13,6 +13,7 @@
 #include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace content {
 
@@ -69,6 +70,11 @@ class CONTENT_EXPORT TouchEventQueue {
   // touch sequence.
   void SetAckTimeoutEnabled(bool enabled, size_t ack_timeout_delay_ms);
 
+  // Sets whether touchmove's within a slop region will be suppressed if the
+  // preceding touchstart was not preventDefault'ed.
+  void SetTouchMoveSlopSuppressionEnabled(bool enabled,
+                                          double slop_length_dips);
+
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
   }
@@ -87,6 +93,7 @@ class CONTENT_EXPORT TouchEventQueue {
 
  private:
   class TouchTimeoutHandler;
+  class TouchMoveSlopSuppressor;
   friend class TouchTimeoutHandler;
   friend class TouchEventQueueTest;
 
@@ -108,7 +115,14 @@ class CONTENT_EXPORT TouchEventQueue {
   void PopTouchEventToClient(InputEventAckState ack_result,
                              const ui::LatencyInfo& renderer_latency_info);
 
-  bool ShouldForwardToRenderer(const blink::WebTouchEvent& event) const;
+  enum PreFilterResult {
+    ACK_WITH_NO_CONSUMER_EXISTS,
+    ACK_WITH_NOT_CONSUMED,
+    FORWARD_TO_RENDERER,
+  };
+  // Filter touches prior to forwarding to the renderer, e.g., if the renderer
+  // has no touch handler.
+  PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);
   void ForwardToRenderer(const TouchEventWithLatencyInfo& event);
   void UpdateTouchAckStates(const blink::WebTouchEvent& event,
                             InputEventAckState ack_result);
@@ -146,6 +160,10 @@ class CONTENT_EXPORT TouchEventQueue {
   // Optional handler for timed-out touch event acks, disabled by default.
   bool ack_timeout_enabled_;
   scoped_ptr<TouchTimeoutHandler> timeout_handler_;
+
+  // Optional suppression of TouchMove's within a slop region when a sequence
+  // has not yet been preventDefaulted, disabled by default.
+  scoped_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };

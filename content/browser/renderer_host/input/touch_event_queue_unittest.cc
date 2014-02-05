@@ -77,6 +77,10 @@ class TouchEventQueueTest : public testing::Test,
     queue_->SetAckTimeoutEnabled(true, timeout_delay_ms);
   }
 
+  void SetUpForTouchMoveSlopTesting(double slop_length) {
+    queue_->SetTouchMoveSlopSuppressionEnabled(true, slop_length);
+  }
+
   void SendTouchEvent(const WebTouchEvent& event) {
     queue_->QueueEvent(TouchEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -1245,4 +1249,148 @@ TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
+
+// Tests that TouchMove's are dropped if within the slop suppression region
+// for an unconsumed TouchStart
+TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
+  const double kSlopLengthDips = 10.;
+  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's within the region should be suppressed.
+  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  MoveTouchPoint(0, kHalfSlopLengthDips, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  MoveTouchPoint(0, -kHalfSlopLengthDips, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  // As soon as a TouchMove exceeds the (Euclidean) distance, no more
+  // TouchMove's should be suppressed.
+  // TODO(jdduke): Remove ceil with adoption of floating point touch coords,
+  // crbug/336807.
+  const double kFortyFiveDegreeSlopLengthXY =
+      std::ceil(kSlopLengthDips * std::sqrt(2.) / 2.);
+  MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .1,
+                    kFortyFiveDegreeSlopLengthXY + .1);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Even TouchMove's within the original slop region should now be forwarded.
+  MoveTouchPoint(0, 0, 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // A new touch sequence should reset suppression.
+  ReleaseTouchPoint(0);
+  PressTouchPoint(0, 0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(2U, GetAndResetSentEventCount());
+  ASSERT_EQ(2U, GetAndResetAckedEventCount());
+  ASSERT_EQ(0U, queued_event_count());
+
+  // The slop region is boundary-inclusive.
+  MoveTouchPoint(0, kSlopLengthDips, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, kSlopLengthDips + 1., 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+// Tests that TouchMove's are not dropped within the slop suppression region if
+// the touchstart was consumed.
+TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
+  const double kSlopLengthDips = 10.;
+  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's within the region should not be suppressed, as a touch was
+  // consumed.
+  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+// Tests that TouchMove's are not dropped if a secondary pointer is present
+// during any movement.
+TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
+  const double kSlopLengthDips = 10.;
+  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  const double kDoubleSlopLengthDips = 10.;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's within the region should be suppressed.
+  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Simulate a secondary pointer press.
+  PressTouchPoint(kDoubleSlopLengthDips, 0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove with a secondary pointer should not be suppressed.
+  MoveTouchPoint(1, kDoubleSlopLengthDips, 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Release the secondary pointer.
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's should not should be suppressed, even with the original
+  // unmoved pointer.
+  MoveTouchPoint(0, 0, 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
 }  // namespace content

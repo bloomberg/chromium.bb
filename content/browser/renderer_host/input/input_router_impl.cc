@@ -29,6 +29,11 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gfx/android/view_configuration.h"
+#include "ui/gfx/screen.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -41,6 +46,9 @@ using blink::WebMouseWheelEvent;
 namespace content {
 namespace {
 
+// TODO(jdduke): Instead of relying on command line flags or conditional
+// conditional compilation here, we should instead use an InputRouter::Settings
+// construct, supplied and customized by the RenderWidgetHostView.
 bool GetTouchAckTimeoutDelayMs(size_t* touch_ack_timeout_delay_ms) {
   CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
   if (!parsed_command_line->HasSwitch(switches::kTouchAckTimeoutDelayMs))
@@ -55,6 +63,21 @@ bool GetTouchAckTimeoutDelayMs(size_t* touch_ack_timeout_delay_ms) {
   *touch_ack_timeout_delay_ms = timeout_value;
   return true;
 }
+
+#if defined(OS_ANDROID)
+bool GetTouchMoveSlopSuppressionLengthDips(double* touch_slop_length_dips) {
+  const double touch_slop_length_pixels =
+      static_cast<double>(gfx::ViewConfiguration::GetTouchSlopInPixels());
+  const double device_scale_factor =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
+  *touch_slop_length_dips = touch_slop_length_pixels / device_scale_factor;
+  return true;
+}
+#else
+bool GetTouchMoveSlopSuppressionLengthDips(double* touch_slop_length_dips) {
+  return false;
+}
+#endif
 
 GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
                                              double timestamp_seconds,
@@ -112,6 +135,13 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       GetTouchAckTimeoutDelayMs(&touch_ack_timeout_delay_ms_);
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled_,
                                            touch_ack_timeout_delay_ms_);
+
+  double touch_move_slop_suppression_length_dips = 0;
+  if (GetTouchMoveSlopSuppressionLengthDips(
+          &touch_move_slop_suppression_length_dips)) {
+    touch_event_queue_->SetTouchMoveSlopSuppressionEnabled(
+        true, touch_move_slop_suppression_length_dips);
+  }
 }
 
 InputRouterImpl::~InputRouterImpl() {}
