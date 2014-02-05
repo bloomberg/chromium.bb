@@ -500,6 +500,8 @@ TEST_F(PasswordFormManagerTest, TestValidFormsBasic) {
 }
 
 TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
+  base::MessageLoop message_loop;
+
   // A dumb password manager.
   TestPasswordManagerDelegate delegate(profile());
   TestPasswordManager password_manager(&delegate);
@@ -537,6 +539,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
 }
 
 TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
+  base::MessageLoop message_loop;
+
   TestPasswordManagerDelegate delegate(profile());
   TestPasswordManager password_manager(&delegate);
   scoped_ptr<TestPasswordFormManager> manager(new TestPasswordFormManager(

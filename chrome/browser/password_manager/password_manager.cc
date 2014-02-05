@@ -24,7 +24,6 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/password_autofill_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -34,7 +33,6 @@
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 using base::UserMetricsAction;
-using content::BrowserThread;
 using content::WebContents;
 
 namespace {
@@ -70,10 +68,10 @@ void ReportMetrics(bool password_manager_enabled) {
 
   // Avoid checking OS password until later on in browser startup
   // since it calls a few Windows APIs.
-  BrowserThread::PostDelayedTask(BrowserThread::UI,
-                                 FROM_HERE,
-                                 base::Bind(&ReportOsPassword),
-                                 base::TimeDelta::FromSeconds(10));
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ReportOsPassword),
+      base::TimeDelta::FromSeconds(10));
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
