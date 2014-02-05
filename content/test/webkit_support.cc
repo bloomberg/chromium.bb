@@ -4,9 +4,14 @@
 
 #include "content/test/webkit_support.h"
 
+#include <string>
+
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_tokenizer.h"
+#include "content/public/common/content_switches.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -28,6 +33,20 @@
 namespace content {
 
 namespace {
+
+void EnableBlinkPlatformLogChannels(const std::string& channels) {
+  if (channels.empty())
+    return;
+  base::StringTokenizer t(channels, ", ");
+  while (t.GetNext())
+    blink::enableLogChannel(t.token().c_str());
+}
+
+void ParseBlinkCommandLineArgumentsForUnitTests() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  EnableBlinkPlatformLogChannels(
+      command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
+}
 
 class TestEnvironment {
  public:
@@ -72,6 +91,8 @@ TestEnvironment* test_environment;
 }  // namespace
 
 void SetUpTestEnvironmentForUnitTests() {
+  ParseBlinkCommandLineArgumentsForUnitTests();
+
   blink::WebRuntimeFeatures::enableStableFeatures(true);
   blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
   blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
