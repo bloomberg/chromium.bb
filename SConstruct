@@ -1251,6 +1251,11 @@ def GetIrtNexe(env, chrome_irt=False):
 pre_base_env.AddMethod(GetIrtNexe)
 
 def ApplyTLSEdit(env, nexe_name, raw_nexe):
+  # If the environment was built elsewhere, we do not need to apply tls_edit
+  # since it only needs to be done during building.
+  if env.Bit('built_elsewhere'):
+    return env.File(nexe_name)
+
   tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
   return env.Command(
       nexe_name,
