@@ -16,9 +16,9 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
 
   // One of the two profiles should not have been loaded. Reset its hash store.
   const base::FilePath unloaded_profile_path = GetUnloadedProfilePath();
-  ProfileImpl::ResetPrefHashStore(unloaded_profile_path);
+  chrome_prefs::ResetPrefHashStore(unloaded_profile_path);
 
   // One of the profile hash collections should be gone.
   ASSERT_EQ(2U, hashes->size());
