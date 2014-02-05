@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DRIVER_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DRIVER_H_
 
+class PasswordGenerationManager;
+class PasswordManager;
+
 namespace autofill {
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -24,9 +27,14 @@ class PasswordManagerDriver {
   // the last page load.
   virtual bool DidLastPageLoadEncounterSSLErrors() = 0;
 
+  // Returns the PasswordGenerationManager associated with this instance.
+  virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;
+
+  // Returns the PasswordManager associated with this instance.
+  virtual PasswordManager* GetPasswordManager() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };
-
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DRIVER_H_

@@ -41,7 +41,9 @@ class TestAutofillMetrics : public autofill::AutofillMetrics {
 class TestPasswordGenerationManager : public PasswordGenerationManager {
  public:
   explicit TestPasswordGenerationManager(content::WebContents* contents)
-      : PasswordGenerationManager(contents) {}
+      : PasswordGenerationManager(
+            contents,
+            PasswordManagerDelegateImpl::FromWebContents(contents)) {}
   virtual ~TestPasswordGenerationManager() {}
 
   virtual void SendAccountCreationFormsToRenderer(
@@ -71,6 +73,7 @@ class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
 
+    PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
     password_generation_manager_.reset(
         new TestPasswordGenerationManager(web_contents()));
   }
@@ -104,11 +107,6 @@ class IncognitoPasswordGenerationManagerTest :
 };
 
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
   PrefService* prefs = profile()->GetPrefs();
 
   // Enable syncing. Generation should be enabled.
@@ -135,11 +133,6 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
 TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Setup so that IsGenerationEnabled() returns true.
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
   ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       profile());
   sync_service->SetSyncSetupCompleted();
@@ -197,11 +190,6 @@ TEST_F(IncognitoPasswordGenerationManagerTest,
        UpdatePasswordSyncStateIncognito) {
   // Disable password manager by going incognito. Even though syncing is
   // enabled, generation should still be disabled.
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
   PrefService* prefs = profile()->GetPrefs();
 
   // Allow this test to control what should get synced.

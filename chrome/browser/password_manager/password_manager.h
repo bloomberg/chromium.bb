@@ -18,7 +18,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 class PasswordManagerDelegate;
 class PasswordManagerDriver;
@@ -34,17 +33,14 @@ class PrefRegistrySyncable;
 // receiving password form data from the renderer and managing the password
 // database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public LoginModel,
-                        public content::WebContentsObserver,
-                        public content::WebContentsUserData<PasswordManager> {
+class PasswordManager : public LoginModel, public content::WebContentsObserver {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
 #endif
-  static void CreateForWebContentsAndDelegate(
-      content::WebContents* contents,
-      PasswordManagerDelegate* delegate);
+  PasswordManager(content::WebContents* web_contents,
+                  PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
   typedef base::Callback<void(const autofill::PasswordForm&)>
@@ -95,17 +91,12 @@ class PasswordManager : public LoginModel,
       const std::vector<autofill::PasswordForm>& visible_forms);
 
  protected:
-  // Subclassed for unit tests.
-  PasswordManager(content::WebContents* web_contents,
-                  PasswordManagerDelegate* delegate);
 
   // Handle notification that a password form was submitted.
   virtual void OnPasswordFormSubmitted(
       const autofill::PasswordForm& password_form);
 
  private:
-  friend class content::WebContentsUserData<PasswordManager>;
-
   enum ProvisionalSaveFailure {
     SAVING_DISABLED,
     EMPTY_PASSWORD,

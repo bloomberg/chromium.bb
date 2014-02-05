@@ -5,6 +5,8 @@
 #include "chrome/browser/password_manager/password_generation_manager.h"
 
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -26,12 +28,13 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/rect.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordGenerationManager);
-
 PasswordGenerationManager::PasswordGenerationManager(
-    content::WebContents* contents)
+    content::WebContents* contents,
+    PasswordManagerDelegate* delegate)
     : content::WebContentsObserver(contents),
-      observer_(NULL) {}
+      observer_(NULL),
+      delegate_(delegate),
+      driver_(delegate->GetDriver()) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
@@ -86,7 +89,7 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
 
-  if (!PasswordManager::FromWebContents(web_contents())->IsSavingEnabled()) {
+  if (!driver_->GetPasswordManager()->IsSavingEnabled()) {
     DVLOG(2) << "Generation disabled because password saving is disabled";
     return false;
   }
@@ -140,7 +143,7 @@ void PasswordGenerationManager::OnShowPasswordGenerationPopup(
           element_bounds_in_screen_space,
           form,
           password_generator_.get(),
-          PasswordManager::FromWebContents(web_contents()),
+          driver_->GetPasswordManager(),
           observer_,
           web_contents(),
           web_contents()->GetView()->GetNativeView());

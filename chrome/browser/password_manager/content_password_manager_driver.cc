@@ -15,19 +15,18 @@
 #include "net/cert/cert_status_flags.h"
 
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
-    content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-}
+    content::WebContents* web_contents,
+    PasswordManagerDelegate* delegate)
+    : web_contents_(web_contents),
+      password_manager_(web_contents, delegate),
+      password_generation_manager_(web_contents, delegate) {}
 
-ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {
-}
+ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {}
 
 void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  web_contents_->GetRenderViewHost()->Send(
-      new AutofillMsg_FillPasswordForm(
-          web_contents_->GetRenderViewHost()->GetRoutingID(),
-          form_data));
+  web_contents_->GetRenderViewHost()->Send(new AutofillMsg_FillPasswordForm(
+      web_contents_->GetRenderViewHost()->GetRoutingID(), form_data));
 }
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
@@ -39,4 +38,13 @@ bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
   }
 
   return net::IsCertStatusError(entry->GetSSL().cert_status);
+}
+
+PasswordGenerationManager*
+ContentPasswordManagerDriver::GetPasswordGenerationManager() {
+  return &password_generation_manager_;
+}
+
+PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
+  return &password_manager_;
 }

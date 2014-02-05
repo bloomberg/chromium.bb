@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -434,7 +435,7 @@ void LoginDialogCallback(const GURL& request_url,
   }
 
   PasswordManager* password_manager =
-      PasswordManager::FromWebContents(parent_contents);
+      PasswordManagerDelegateImpl::GetManagerFromWebContents(parent_contents);
   if (!password_manager) {
     // Same logic as above.
     handler->CancelAuth();

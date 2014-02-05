@@ -12,6 +12,10 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/rect.h"
 
+class PasswordManager;
+class PasswordManagerDelegate;
+class PasswordManagerDriver;
+
 namespace autofill {
 struct FormData;
 class FormStructure;
@@ -38,10 +42,10 @@ class PrefRegistrySyncable;
 // This class is used to determine what forms we should offer to generate
 // passwords for and manages the popup which is created if the user chooses to
 // generate a password.
-class PasswordGenerationManager
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<PasswordGenerationManager> {
+class PasswordGenerationManager : public content::WebContentsObserver {
  public:
+  PasswordGenerationManager(content::WebContents* contents,
+                            PasswordManagerDelegate* delegate);
   virtual ~PasswordGenerationManager();
 
   // Detect account creation forms from forms with autofill type annotated.
@@ -56,11 +60,7 @@ class PasswordGenerationManager
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
- protected:
-  explicit PasswordGenerationManager(content::WebContents* contents);
-
  private:
-  friend class content::WebContentsUserData<PasswordGenerationManager>;
   friend class PasswordGenerationManagerTest;
 
   // WebContentsObserver:
@@ -101,6 +101,14 @@ class PasswordGenerationManager
   // Controls the popup
   base::WeakPtr<
     autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
+
+  // The PasswordManagerDelegate instance associated with this instance. Must
+  // outlive this instance.
+  PasswordManagerDelegate* delegate_;
+
+  // The PasswordManagerDriver instance associated with this instance. Must
+  // outlive this instance.
+  PasswordManagerDriver* driver_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
 };

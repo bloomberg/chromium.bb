@@ -37,8 +37,6 @@ using base::UserMetricsAction;
 using content::BrowserThread;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager);
-
 namespace {
 
 const char kSpdyProxyRealm[] = "/SpdyProxy";
@@ -95,19 +93,6 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
-// static
-void PasswordManager::CreateForWebContentsAndDelegate(
-    content::WebContents* contents,
-    PasswordManagerDelegate* delegate) {
-  if (FromWebContents(contents)) {
-    DCHECK_EQ(delegate, FromWebContents(contents)->delegate_);
-    return;
-  }
-
-  contents->SetUserData(UserDataKey(),
-                        new PasswordManager(contents, delegate));
 }
 
 PasswordManager::PasswordManager(WebContents* web_contents,
@@ -236,7 +221,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
 
   PasswordForm provisionally_saved_form(form);
-  provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
+  provisionally_saved_form.ssl_valid =
+      form.origin.SchemeIsSecure() &&
       !driver_->DidLastPageLoadEncounterSSLErrors();
   provisionally_saved_form.preferred = true;
   PasswordFormManager::OtherPossibleUsernamesAction action =

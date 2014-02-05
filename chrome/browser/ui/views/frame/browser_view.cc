@@ -23,6 +23,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -2452,16 +2453,15 @@ void BrowserView::ShowPasswordGenerationBubble(
   if (!web_contents)
     return;
 
-  PasswordGenerationBubbleView* bubble =
-      new PasswordGenerationBubbleView(
-          form,
-          bounds,
-          this,
-          web_contents->GetRenderViewHost(),
-          PasswordManager::FromWebContents(web_contents),
-          password_generator,
-          browser_.get(),
-          GetWidget()->GetThemeProvider());
+  PasswordGenerationBubbleView* bubble = new PasswordGenerationBubbleView(
+      form,
+      bounds,
+      this,
+      web_contents->GetRenderViewHost(),
+      PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents),
+      password_generator,
+      browser_.get(),
+      GetWidget()->GetThemeProvider());
 
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);

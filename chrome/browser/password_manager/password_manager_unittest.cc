@@ -24,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class PasswordGenerationManager;
+
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
@@ -45,6 +47,8 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
  public:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
+  MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
+  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
 };
 
 ACTION_P(InvokeConsumer, forms) {
@@ -66,14 +70,6 @@ class TestPasswordManager : public PasswordManager {
     PasswordManager::OnPasswordFormSubmitted(form);
   }
 
-  static TestPasswordManager* CreateForWebContentsAndDelegate(
-      content::WebContents* contents,
-      PasswordManagerDelegate* delegate) {
-    TestPasswordManager* tpm = new TestPasswordManager(contents, delegate);
-    contents->SetUserData(UserDataKey(), tpm);
-    return tpm;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPasswordManager);
 };
@@ -90,14 +86,23 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
     EXPECT_CALL(delegate_, GetDriver()).WillRepeatedly(Return(&driver_));
-    manager_ = TestPasswordManager::CreateForWebContentsAndDelegate(
-        web_contents(), &delegate_);
+
+    manager_.reset(new TestPasswordManager(web_contents(), &delegate_));
+
     EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(driver_, GetPasswordGenerationManager())
+        .WillRepeatedly(Return(static_cast<PasswordGenerationManager*>(NULL)));
+    EXPECT_CALL(driver_, GetPasswordManager())
+        .WillRepeatedly(Return(manager_.get()));
   }
 
   virtual void TearDown() {
     store_ = NULL;
+
+    // Destroy the PasswordManager before tearing down the Profile to avoid
+    // crashes due to prefs accesses.
+    manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -170,9 +175,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return true;
   }
 
-  TestPasswordManager* manager() {
-    return manager_;
-  }
+  TestPasswordManager* manager() { return manager_.get(); }
 
   void OnPasswordFormSubmitted(const autofill::PasswordForm& form) {
     manager()->OnPasswordFormSubmitted(form);
@@ -188,9 +191,9 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   scoped_refptr<MockPasswordStore> store_;
-  TestPasswordManager* manager_;
-  MockPasswordManagerDelegate delegate_;  // Owned by manager_.
+  MockPasswordManagerDelegate delegate_;
   MockPasswordManagerDriver driver_;
+  scoped_ptr<TestPasswordManager> manager_;
   PasswordForm submitted_form_;
 };
 

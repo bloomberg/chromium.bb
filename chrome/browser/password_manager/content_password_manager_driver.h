@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/password_manager/password_generation_manager.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
 
 namespace content {
@@ -15,16 +17,25 @@ class WebContents;
 
 class ContentPasswordManagerDriver : public PasswordManagerDriver {
  public:
-  explicit ContentPasswordManagerDriver(content::WebContents* web_contents);
+  explicit ContentPasswordManagerDriver(content::WebContents* web_contents,
+                                        PasswordManagerDelegate* delegate);
   virtual ~ContentPasswordManagerDriver();
 
   // PasswordManagerDriver implementation.
-  virtual void FillPasswordForm(
-      const autofill::PasswordFormFillData& form_data) OVERRIDE;
+  virtual void FillPasswordForm(const autofill::PasswordFormFillData& form_data)
+      OVERRIDE;
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
+  virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
+  virtual PasswordManager* GetPasswordManager() OVERRIDE;
 
  private:
   content::WebContents* web_contents_;
+
+  // Must outlive this instance.
+  PasswordManagerDelegate* delegate_;
+
+  PasswordManager password_manager_;
+  PasswordGenerationManager password_generation_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPasswordManagerDriver);
 };

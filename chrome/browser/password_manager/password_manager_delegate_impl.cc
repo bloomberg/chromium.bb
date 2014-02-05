@@ -25,7 +25,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-
 // SavePasswordInfoBarDelegate ------------------------------------------------
 
 // After a successful *new* login attempt, we take the PasswordFormManager in
@@ -208,9 +207,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl);
 
 PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      driver_(web_contents) {
-}
+    : web_contents_(web_contents), driver_(web_contents, this) {}
 
 PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 }
@@ -231,4 +228,25 @@ Profile* PasswordManagerDelegateImpl::GetProfile() {
 
 PasswordManagerDriver* PasswordManagerDelegateImpl::GetDriver() {
   return &driver_;
+}
+
+// static
+PasswordGenerationManager*
+PasswordManagerDelegateImpl::GetGenerationManagerFromWebContents(
+    content::WebContents* contents) {
+  PasswordManagerDelegateImpl* delegate =
+      PasswordManagerDelegateImpl::FromWebContents(contents);
+  if (!delegate)
+    return NULL;
+  return delegate->GetDriver()->GetPasswordGenerationManager();
+}
+
+// static
+PasswordManager* PasswordManagerDelegateImpl::GetManagerFromWebContents(
+    content::WebContents* contents) {
+  PasswordManagerDelegateImpl* delegate =
+      PasswordManagerDelegateImpl::FromWebContents(contents);
+  if (!delegate)
+    return NULL;
+  return delegate->GetDriver()->GetPasswordManager();
 }

@@ -17,7 +17,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/fullscreen.h"
-#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -711,14 +711,15 @@ void BrowserWindowCocoa::ShowPasswordGenerationBubble(
                                     rect.x() + rect.width()/2,
                                     rect.bottom());
 
-  PasswordGenerationBubbleController* controller =
-      [[PasswordGenerationBubbleController alloc]
-        initWithWindow:browser_->window()->GetNativeWindow()
-            anchoredAt:point
-        renderViewHost:web_contents->GetRenderViewHost()
-        passwordManager:PasswordManager::FromWebContents(web_contents)
-        usingGenerator:password_generator
-               forForm:form];
+  PasswordGenerationBubbleController* controller = [
+          [PasswordGenerationBubbleController alloc]
+       initWithWindow:browser_->window()->GetNativeWindow()
+           anchoredAt:point
+       renderViewHost:web_contents->GetRenderViewHost()
+      passwordManager:PasswordManagerDelegateImpl::GetManagerFromWebContents(
+                          web_contents)
+       usingGenerator:password_generator
+              forForm:form];
   [controller showWindow:nil];
 }
 

@@ -136,12 +136,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   InfoBarService::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
-      web_contents, PasswordManager::FromWebContents(web_contents));
+      web_contents,
+      PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents));
   SSLTabHelper::CreateForWebContents(web_contents);
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
@@ -160,7 +159,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HungPluginTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsBubbleUIController::CreateForWebContents(web_contents);
   NavigationTimeHelper::CreateForWebContents(web_contents);
-  PasswordGenerationManager::CreateForWebContents(web_contents);
   PDFTabHelper::CreateForWebContents(web_contents);
   PermissionBubbleManager::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
@@ -210,7 +208,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                                      std::string(),
                                      NULL)) {
     OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
-        web_contents, PasswordManager::FromWebContents(web_contents));
+        web_contents,
+        PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents));
   }
 #endif
 }

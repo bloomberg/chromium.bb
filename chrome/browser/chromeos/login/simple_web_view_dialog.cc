@@ -152,8 +152,6 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 
   // Create the password manager that is needed for the proxy.
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
 }
 
 void SimpleWebViewDialog::Init() {

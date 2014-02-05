@@ -11,6 +11,9 @@
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class PasswordGenerationManager;
+class PasswordManager;
+
 namespace content {
 class WebContents;
 }
@@ -26,6 +29,17 @@ class PasswordManagerDelegateImpl
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
+
+  // Convenience method to allow //chrome code easy access to a PasswordManager
+  // from a WebContents instance.
+  static PasswordManager* GetManagerFromWebContents(
+      content::WebContents* contents);
+
+  // Convenience method to allow //chrome code easy access to a
+  // PasswordGenerationManager
+  // from a WebContents instance.
+  static PasswordGenerationManager* GetGenerationManagerFromWebContents(
+      content::WebContents* contents);
 
  private:
   explicit PasswordManagerDelegateImpl(content::WebContents* web_contents);
