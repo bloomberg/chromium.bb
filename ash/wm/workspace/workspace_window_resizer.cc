@@ -109,10 +109,6 @@ namespace internal {
 
 namespace {
 
-// Snapping distance used instead of WorkspaceWindowResizer::kScreenEdgeInset
-// when resizing a window using touchscreen.
-const int kScreenEdgeInsetForTouchResize = 32;
-
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -368,7 +364,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     sticky_size = kStickyDistancePixels;
   } else if ((details().bounds_change & kBoundsChange_Resizes) &&
       details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
-    sticky_size = kScreenEdgeInsetForTouchResize;
+    sticky_size = SnapSizer::kScreenEdgeInsetForTouchDrag;
   } else {
     sticky_size = kScreenEdgeInset;
   }
@@ -919,10 +915,10 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
       SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
   if (!snap_sizer_) {
-    snap_sizer_.reset(new SnapSizer(window_state(),
-                                    location,
-                                    edge,
-                                    internal::SnapSizer::OTHER_INPUT));
+    SnapSizer::InputType input =
+        details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH ?
+            SnapSizer::TOUCH_DRAG_INPUT : SnapSizer::OTHER_INPUT;
+    snap_sizer_.reset(new SnapSizer(window_state(), location, edge, input));
   } else {
     snap_sizer_->Update(location);
   }
@@ -1001,10 +997,10 @@ SnapType WorkspaceWindowResizer::GetSnapType(
     gfx::Rect display_bounds(ScreenUtil::GetDisplayBoundsInParent(GetTarget()));
     int inset_left = 0;
     if (area.x() == display_bounds.x())
-      inset_left = kScreenEdgeInsetForTouchResize;
+      inset_left = SnapSizer::kScreenEdgeInsetForTouchDrag;
     int inset_right = 0;
     if (area.right() == display_bounds.right())
-      inset_right = kScreenEdgeInsetForTouchResize;
+      inset_right = SnapSizer::kScreenEdgeInsetForTouchDrag;
     area.Inset(inset_left, 0, inset_right, 0);
   }
   if (location.x() <= area.x())

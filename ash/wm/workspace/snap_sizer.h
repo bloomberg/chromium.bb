@@ -31,8 +31,12 @@ class ASH_EXPORT SnapSizer {
 
   enum InputType {
     TOUCH_MAXIMIZE_BUTTON_INPUT,
+    TOUCH_DRAG_INPUT,
     OTHER_INPUT
   };
+
+  // Snapping is made easier with a touch drag when using touchscreen.
+  static const int kScreenEdgeInsetForTouchDrag;
 
   // Set |input_type| to |TOUCH_MAXIMIZE_BUTTON_INPUT| when called by a touch
   // operation by the maximize button. This will allow the user to snap resize

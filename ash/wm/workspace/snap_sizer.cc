@@ -134,6 +134,9 @@ void SnapWindowToBounds(wm::WindowState* window_state,
 
 }  // namespace
 
+// static
+const int SnapSizer::kScreenEdgeInsetForTouchDrag = 32;
+
 SnapSizer::SnapSizer(wm::WindowState* window_state,
                      const gfx::Point& start,
                      Edge edge,
@@ -285,7 +288,9 @@ gfx::Rect SnapSizer::GetTargetBounds() const {
 bool SnapSizer::AlongEdge(int x) const {
   gfx::Rect area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       window_state_->window()));
-  return (x <= area.x()) || (x >= area.right() - 1);
+  int inset =
+      input_type_ == TOUCH_DRAG_INPUT ? kScreenEdgeInsetForTouchDrag : 0;
+  return (x <= area.x() + inset) || (x >= area.right() - 1 - inset);
 }
 
 }  // namespace internal
