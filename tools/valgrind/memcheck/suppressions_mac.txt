@@ -2394,3 +2394,16 @@
   fun:_ZN3gfx9GLSurface30InitializeOneOffImplementation*
   fun:_ZN3gfx9GLSurface24InitializeOneOffForTestsEv
 }
+{
+   bug_340909
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF17AtomicStringTable6createERNS_13WTFThreadDataE
+   fun:_ZN3WTFL17atomicStringTableEv
+   fun:_ZN3WTFL13atomicStringsEv
+   fun:_ZN3WTFL16addToStringTable*
+   fun:_ZN3WTF12AtomicString18addFromLiteralData*
+   fun:_ZN3WTF12AtomicString*ConstructFromLiteralTagE
+   fun:_ZN3WTF12AtomicString*ConstructFromLiteralTagE
+   fun:_ZN7WebCore9HTMLNames4initEv
+}
