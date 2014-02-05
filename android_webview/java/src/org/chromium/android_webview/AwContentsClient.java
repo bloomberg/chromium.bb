@@ -83,6 +83,16 @@ public abstract class AwContentsClient {
         }
 
         @Override
+        public void didNavigateMainFrame(String url, String baseUrl,
+                boolean isNavigationToDifferentPage, boolean isNavigationInPage) {
+            // This is here to emulate the Classic WebView firing onPageFinished for main frame
+            // navigations where only the hash fragment changes.
+            if (isNavigationInPage) {
+                AwContentsClient.this.onPageFinished(url);
+            }
+        }
+
+        @Override
         public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
             AwContentsClient.this.doUpdateVisitedHistory(url, isReload);
         }
@@ -119,6 +129,9 @@ public abstract class AwContentsClient {
     //             WebView specific methods that map directly to WebViewClient / WebChromeClient
     //--------------------------------------------------------------------------------------------
 
+    /**
+     * Parameters for the {@link AwContentsClient#showFileChooser} method.
+     */
     public static class FileChooserParams {
         public int mode;
         public String acceptTypes;

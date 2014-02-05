@@ -335,6 +335,16 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
     public void testNotCalledForAnchorNavigations() throws Throwable {
+        doTestNotCalledForAnchorNavigations(false);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
+    public void testNotCalledForAnchorNavigationsWithNonHierarchicalScheme() throws Throwable {
+        doTestNotCalledForAnchorNavigations(true);
+    }
+
+    private void doTestNotCalledForAnchorNavigations(boolean useLoadData) throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
@@ -347,7 +357,12 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         addPageToTestServer(mWebServer, anchorLinkPath,
                 getHtmlForPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
 
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
+        if (useLoadData) {
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                    getHtmlForPageWithSimpleLinkTo("#anchor"), "text/html", false);
+        } else {
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
+        }
 
         final int shouldOverrideUrlLoadingCallCount =
             shouldOverrideUrlLoadingHelper.getCallCount();

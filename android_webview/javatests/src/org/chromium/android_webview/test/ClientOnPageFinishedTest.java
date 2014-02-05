@@ -7,6 +7,8 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
@@ -149,6 +151,63 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             assertEquals(syncUrl, onPageFinishedHelper.getUrl());
             assertEquals(2, onPageFinishedHelper.getCallCount());
 
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedCalledForHrefNavigations() throws Throwable {
+        doTestOnPageFinishedCalledForHrefNavigations(false);
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedCalledForHrefNavigationsWithBaseUrl() throws Throwable {
+        doTestOnPageFinishedCalledForHrefNavigations(true);
+    }
+
+    private void doTestOnPageFinishedCalledForHrefNavigations(boolean useBaseUrl) throws Throwable {
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =
+                mContentsClient.getOnPageStartedHelper();
+        enableJavaScriptOnUiThread(mAwContents);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+
+            final String testHtml = CommonResources.makeHtmlPageFrom("",
+                    "<a href=\"#anchor\" id=\"link\">anchor</a>");
+            final String testPath = "/test.html";
+            final String testUrl = webServer.setResponse(testPath, testHtml, null);
+
+            if (useBaseUrl) {
+                loadDataWithBaseUrlSync(mAwContents, onPageFinishedHelper,
+                        testHtml, "text/html", false, webServer.getBaseUrl(), null);
+            } else {
+                loadUrlSync(mAwContents, onPageFinishedHelper, testUrl);
+            }
+
+            int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+            int onPageStartedCallCount = onPageStartedHelper.getCallCount();
+
+            JSUtils.clickOnLinkUsingJs(this, mAwContents,
+                    mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
+
+            onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+            assertEquals(onPageStartedCallCount, onPageStartedHelper.getCallCount());
+
+            onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+            onPageStartedCallCount = onPageStartedHelper.getCallCount();
+
+            executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
+                    "window.history.go(-1)");
+
+            onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+            assertEquals(onPageStartedCallCount, onPageStartedHelper.getCallCount());
         } finally {
             if (webServer != null) webServer.shutdown();
         }

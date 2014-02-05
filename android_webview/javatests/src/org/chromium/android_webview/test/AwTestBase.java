@@ -213,6 +213,28 @@ public class AwTestBase
         });
     }
 
+    protected void loadDataWithBaseUrlSync(final AwContents awContents,
+            CallbackHelper onPageFinishedHelper, final String data, final String mimeType,
+            final boolean isBase64Encoded, final String baseUrl,
+            final String historyUrl) throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        loadDataWithBaseUrlAsync(awContents, data, mimeType, isBase64Encoded, baseUrl, historyUrl);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
+    }
+
+    protected void loadDataWithBaseUrlAsync(final AwContents awContents,
+            final String data, final String mimeType, final boolean isBase64Encoded,
+            final String baseUrl, final String historyUrl) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.loadUrl(LoadUrlParams.createLoadDataParamsWithBaseUrl(
+                        data, mimeType, isBase64Encoded, baseUrl, historyUrl));
+            }
+        });
+    }
+
     /**
      * Reloads the current page synchronously.
      */
