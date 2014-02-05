@@ -695,7 +695,9 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
       rootType = RootType.DRIVE_OTHER;
       isReadOnly = true;
     } else {
-      throw new Error(entry.fullPath + ' is an invalid drive path.');
+      // Accessing Drive files outside of /drive/root and /drive/other is not
+      // allowed, but can happen. Therefore returning null.
+      return null;
     }
   } else {
     // Otherwise, root path is same with a mount path of the volume.
@@ -714,6 +716,7 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         rootType = RootType.CLOUD_DEVICE;
         break;
       default:
+        // Programming error, throw an exception.
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);
     }
     isReadOnly = volumeInfo.isReadOnly;
