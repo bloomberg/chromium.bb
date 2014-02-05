@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -83,7 +84,8 @@ void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged()) {
+  if (!base::SysInfo::IsRunningOnChromeOS() ||
+      connector->IsEnterpriseManaged()) {
     initialized_ = true;
     SendKioskApps();
     return;
