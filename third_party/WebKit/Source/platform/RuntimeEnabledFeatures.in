@@ -62,7 +62,7 @@ FastTextAutosizing
 Gamepad status=stable
 Geolocation status=stable
 HTMLImports status=test
-HighResolutionTimeInWorkers status=experimental
+HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 IndexedDB status=stable
 IndexedDBExperimental status=experimental
