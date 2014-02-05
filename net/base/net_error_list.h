@@ -310,6 +310,9 @@ NET_ERROR(SSL_INAPPROPRIATE_FALLBACK, -157)
 // Certificate Transparency: All Signed Certificate Timestamps failed to verify.
 NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -158)
 
+// The SSL server sent us a fatal unrecognized_name alert.
+NET_ERROR(SSL_UNRECOGNIZED_NAME_ALERT, -159)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
