@@ -182,6 +182,8 @@ private:
     // send() method after the state changed to CLOSING or CLOSED.
     void updateBufferedAmountAfterClose(unsigned long);
 
+    void releaseChannel();
+
     enum BinaryType {
         BinaryTypeBlob,
         BinaryTypeArrayBuffer

@@ -233,8 +233,7 @@ WebSocket::WebSocket(ExecutionContext* context)
 
 WebSocket::~WebSocket()
 {
-    if (m_channel)
-        m_channel->disconnect();
+    ASSERT(!m_channel);
 }
 
 void WebSocket::logError(const String& message)
@@ -337,6 +336,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         if (!isValidProtocolString(protocols[i])) {
             m_state = CLOSED;
             exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is invalid.");
+            releaseChannel();
             return;
         }
     }
@@ -345,6 +345,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         if (!visited.add(protocols[i]).isNewEntry) {
             m_state = CLOSED;
             exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is duplicated.");
+            releaseChannel();
             return;
         }
     }
@@ -377,6 +378,13 @@ void WebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
     m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, getFramingOverhead(payloadSize));
 
     logError("WebSocket is already in CLOSING or CLOSED state.");
+}
+
+void WebSocket::releaseChannel()
+{
+    ASSERT(m_channel);
+    m_channel->disconnect();
+    m_channel = 0;
 }
 
 void WebSocket::send(const String& message, ExceptionState& exceptionState)
@@ -558,7 +566,7 @@ void WebSocket::contextDestroyed()
 
 bool WebSocket::hasPendingActivity() const
 {
-    return m_state != CLOSED || !m_eventQueue->isEmpty();
+    return m_channel || !m_eventQueue->isEmpty();
 }
 
 void WebSocket::suspend()
@@ -578,15 +586,9 @@ void WebSocket::resume()
 void WebSocket::stop()
 {
     m_eventQueue->stop();
-
-    if (!hasPendingActivity()) {
-        ASSERT(!m_channel);
-        return;
-    }
     if (m_channel) {
         m_channel->close(WebSocketChannel::CloseEventCodeGoingAway, String());
-        m_channel->disconnect();
-        m_channel = 0;
+        releaseChannel();
     }
     m_state = CLOSED;
 }
@@ -634,6 +636,7 @@ void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
 void WebSocket::didReceiveMessageError()
 {
     WTF_LOG(Network, "WebSocket %p didReceiveMessageError()", this);
+    m_state = CLOSED;
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }
 
@@ -658,26 +661,10 @@ void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshake
         return;
     bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
 
-    // hasPendingActivity() returns false when m_state is CLOSED. So, it's
-    // possible that the wrapper gets garbage-collected during execution of the
-    // event. We need to keep this object alive to continue the rest of this
-    // method. Since the event we dispatch below sets "this" to the wrapper
-    // object, it doesn't get collected, but just to be sure, put a reference
-    // for protection.
-    //
-    // We can move m_channel clean up code before event dispatching, but it
-    // makes it harder to check correctness. Comparing cost, we now have this
-    // temporary reference.
-    RefPtr<WebSocket> protect(this);
-
     m_state = CLOSED;
     m_bufferedAmount = unhandledBufferedAmount;
     m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
-
-    if (m_channel) {
-        m_channel->disconnect();
-        m_channel = 0;
-    }
+    releaseChannel();
 }
 
 size_t WebSocket::getFramingOverhead(size_t payloadSize)
