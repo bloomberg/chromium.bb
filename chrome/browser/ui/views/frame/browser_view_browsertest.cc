@@ -54,3 +54,18 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabs) {
       browser2->tab_strip_model()->GetWebContentsAt(1));
   BrowserView::GetBrowserViewForBrowser(browser2)->GetWidget()->CloseNow();
 }
+
+// Same as CloseWithTabs, but activates the first tab, which is the first tab
+// BrowserView will destroy.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
+  Browser* browser2 =
+      new Browser(Browser::CreateParams(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  chrome::AddTabAt(browser2, GURL(), -1, true);
+  chrome::AddTabAt(browser2, GURL(), -1, true);
+  browser2->tab_strip_model()->ActivateTabAt(0, true);
+  TestWebContentsObserver observer(
+      browser2->tab_strip_model()->GetWebContentsAt(0),
+      browser2->tab_strip_model()->GetWebContentsAt(1));
+  BrowserView::GetBrowserViewForBrowser(browser2)->GetWidget()->CloseNow();
+}

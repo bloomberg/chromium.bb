@@ -1876,6 +1876,8 @@
         'browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc',
         'browser/ui/views/frame/browser_root_view.cc',
         'browser/ui/views/frame/browser_root_view.h',
+        'browser/ui/views/frame/browser_shutdown.cc',
+        'browser/ui/views/frame/browser_shutdown.h',
         'browser/ui/views/frame/browser_view.cc',
         'browser/ui/views/frame/browser_view.h',
         'browser/ui/views/frame/browser_view_layout.cc',

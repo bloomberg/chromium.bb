@@ -30,6 +30,7 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
 
  protected:
   // Overridden from views::NativeWidgetAura:
+  virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
 
   // Overridden from NativeBrowserFrame:

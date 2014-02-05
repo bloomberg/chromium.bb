@@ -438,6 +438,10 @@ BrowserView::BrowserView()
 }
 
 BrowserView::~BrowserView() {
+  // All the tabs should have been destroyed already. If we were closed by the
+  // OS with some tabs than the NativeBrowserFrame should have destroyed them.
+  DCHECK_EQ(0, browser_->tab_strip_model()->count());
+
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
@@ -477,16 +481,6 @@ BrowserView::~BrowserView() {
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
   toolbar_ = NULL;
-
-  // It is possible that we were forced-closed by the native view system and
-  // that tabs remain in the browser. Close any such remaining tabs. Detach
-  // before destroying in hopes of avoiding less callbacks trying to access
-  // members since destroyed.
-  {
-    ScopedVector<content::WebContents> contents;
-    while (browser_->tab_strip_model()->count())
-      contents.push_back(browser_->tab_strip_model()->DetachWebContentsAt(0));
-  }
 
   // Explicitly set browser_ to NULL.
   browser_.reset();

@@ -6,6 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
+#include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/desktop_user_action_handler_aura.h"
 #include "grit/chromium_strings.h"
@@ -46,6 +47,10 @@ DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {
 // DesktopBrowserFrameAura, views::DesktopNativeWidgetAura overrides:
 
 void DesktopBrowserFrameAura::OnHostClosed() {
+  // Destroy any remaining WebContents early on. Doing so may result in
+  // calling back to one of the Views/LayoutManagers or supporting classes of
+  // BrowserView. By destroying here we ensure all said classes are valid.
+  DestroyBrowserWebContents(browser_view_->browser());
   aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), NULL);
   DesktopNativeWidgetAura::OnHostClosed();
 }
