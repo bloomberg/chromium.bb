@@ -224,6 +224,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_SpokenFeedbackDisabled"));
       break;
+    case ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_VirtualKeyboardDisabled"));
+      break;
     case ash::UMA_STATUS_AREA_DISABLE_WIFI:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Network_WifiDisabled"));
@@ -255,6 +259,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
+      break;
+    case ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_VirtualKeyboardEnabled"));
       break;
     case ash::UMA_STATUS_AREA_ENABLE_WIFI:
       base::RecordAction(

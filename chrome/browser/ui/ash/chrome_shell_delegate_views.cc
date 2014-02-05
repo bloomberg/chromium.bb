@@ -123,6 +123,9 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
   virtual void SilenceSpokenFeedback() const OVERRIDE {
   }
 
+  virtual void SetVirtualKeyboardEnabled(bool enabled) OVERRIDE {
+  }
+
   virtual bool IsVirtualKeyboardEnabled() const OVERRIDE {
     return false;
   }

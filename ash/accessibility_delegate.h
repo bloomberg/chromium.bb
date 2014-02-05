@@ -63,6 +63,9 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns if autoclick is enabled or not.
   virtual bool IsAutoclickEnabled() const = 0;
 
+  // Invoked to enable or disable the a11y on-screen keyboard.
+  virtual void SetVirtualKeyboardEnabled(bool enabled) = 0;
+
   // Returns if the a11y virtual keyboard is enabled.
   virtual bool IsVirtualKeyboardEnabled() const = 0;
 
