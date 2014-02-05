@@ -364,7 +364,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
-    return CreateFakeOutputSurface();
+    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
   }
 
   void DrawOneFrame() {
@@ -5399,8 +5399,8 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   TestWebGraphicsContext3D* context3d = context.get();
-  scoped_ptr<OutputSurface> output_surface = CreateFakeOutputSurface();
-  CreateHostImpl(DefaultSettings(), output_surface.Pass());
+  scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
+  CreateHostImpl(DefaultSettings(), output_surface.PassAs<OutputSurface>());
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
@@ -5448,8 +5448,8 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   TestWebGraphicsContext3D* context3d = context.get();
-  scoped_ptr<OutputSurface> output_surface = CreateFakeOutputSurface();
-  CreateHostImpl(DefaultSettings(), output_surface.Pass());
+  scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
+  CreateHostImpl(DefaultSettings(), output_surface.PassAs<OutputSurface>());
 
   EXPECT_EQ(0u, context3d->NumTextures());
 

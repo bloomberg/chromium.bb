@@ -35,7 +35,8 @@ class PictureImageLayerImplTest : public testing::Test {
       : host_impl_(ImplSidePaintingSettings(), &proxy_) {
     tiling_client_.SetTileSize(ImplSidePaintingSettings().default_tile_size);
     host_impl_.CreatePendingTree();
-    host_impl_.InitializeRenderer(CreateFakeOutputSurface());
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   }
 
   scoped_ptr<TestablePictureImageLayerImpl> CreateLayer(int id,

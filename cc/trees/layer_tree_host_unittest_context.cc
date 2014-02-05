@@ -76,8 +76,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return TestWebGraphicsContext3D::Create();
   }
 
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurfaceForTest(
-      bool fallback) OVERRIDE {
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
+      OVERRIDE {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
@@ -504,10 +504,10 @@ class LayerTreeHostContextTestCreateOutputSurfaceFails
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
-    scoped_ptr<OutputSurface> surface =
-        LayerTreeHostContextTest::CreateOutputSurface(fallback);
+    scoped_ptr<FakeOutputSurface> surface =
+        LayerTreeHostContextTest::CreateFakeOutputSurface(fallback);
 
     if (surface)
       EXPECT_EQ(times_to_fail_, times_create_failed_);
@@ -1121,7 +1121,7 @@ class LayerTreeHostContextTestDontUseLostResources
     return draw_result;
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     // This will get called twice:
     // First when we create the initial output surface...
@@ -1131,7 +1131,7 @@ class LayerTreeHostContextTestDontUseLostResources
       lost_context_ = true;
       EXPECT_EQ(layer_tree_host()->source_frame_number(), 3);
     }
-    return LayerTreeHostContextTest::CreateOutputSurface(fallback);
+    return LayerTreeHostContextTest::CreateFakeOutputSurface(fallback);
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {

@@ -54,7 +54,8 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(CreateFakeOutputSurface());
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {

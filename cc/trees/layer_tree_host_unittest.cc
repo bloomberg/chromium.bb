@@ -2824,8 +2824,8 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
 
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
  protected:
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurfaceForTest(
-      bool fallback) OVERRIDE {
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
@@ -3013,14 +3013,13 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context3d(
         TestWebGraphicsContext3D::Create());
 
     return FakeOutputSurface::CreateDeferredGL(
-        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))
-        .PassAs<OutputSurface>();
+        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice));
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -4458,8 +4457,8 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
     settings->default_tile_size = gfx::Size(128, 128);
   }
 
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurfaceForTest(
-      bool fallback) OVERRIDE {
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();
     context_provider->SetMaxTransferBufferUsageBytes(1024 * 1024);
@@ -4703,7 +4702,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
       : first_output_surface_memory_limit_(4321234),
         second_output_surface_memory_limit_(1234321) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     if (!first_context_provider_) {
       first_context_provider_ = TestContextProvider::Create();
@@ -4721,7 +4720,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
                                      : first_output_surface_memory_limit_,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
-    return output_surface.PassAs<OutputSurface>();
+    return output_surface.Pass();
   }
 
   virtual void SetupTree() OVERRIDE {

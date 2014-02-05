@@ -153,10 +153,6 @@ class FakeOutputSurface : public OutputSurface {
   scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
 };
 
-static inline scoped_ptr<OutputSurface> CreateFakeOutputSurface() {
-  return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
-}
-
 }  // namespace cc
 
 #endif  // CC_TEST_FAKE_OUTPUT_SURFACE_H_

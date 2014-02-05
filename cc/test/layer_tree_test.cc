@@ -676,13 +676,12 @@ void LayerTreeTest::RunTestWithImplSidePainting() {
 
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
   scoped_ptr<FakeOutputSurface> output_surface =
-      CreateFakeOutputSurfaceForTest(fallback);
-
+      CreateFakeOutputSurface(fallback);
   output_surface_ = output_surface.get();
   return output_surface.PassAs<OutputSurface>();
 }
 
-scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurfaceForTest(
+scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface(
     bool fallback) {
   if (delegating_renderer_)
     return FakeOutputSurface::CreateDelegating3d();

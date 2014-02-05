@@ -33,7 +33,8 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
   host_impl.CreatePendingTree();
-  host_impl.InitializeRenderer(CreateFakeOutputSurface());
+  host_impl.InitializeRenderer(
+      FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   scoped_ptr<HeadsUpDisplayLayerImpl> layer =
     HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer->SetContentBounds(gfx::Size(100, 100));

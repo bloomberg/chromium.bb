@@ -103,16 +103,12 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
   virtual void AfterTest() OVERRIDE { EXPECT_EQ(4u, callbacks_.size()); }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
-    scoped_ptr<FakeOutputSurface> output_surface;
-    if (use_gl_renderer_) {
-      output_surface = FakeOutputSurface::Create3d().Pass();
-    } else {
-      output_surface = FakeOutputSurface::CreateSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice)).Pass();
-    }
-    return output_surface.PassAs<OutputSurface>();
+    if (use_gl_renderer_)
+      return FakeOutputSurface::Create3d();
+    return FakeOutputSurface::CreateSoftware(
+        make_scoped_ptr(new SoftwareOutputDevice));
   }
 
   bool use_gl_renderer_;
@@ -538,18 +534,16 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 class LayerTreeHostCopyRequestTestLostOutputSurface
     : public LayerTreeHostCopyRequestTest {
  protected:
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     if (!first_context_provider_.get()) {
       first_context_provider_ = TestContextProvider::Create();
-      return FakeOutputSurface::Create3d(first_context_provider_)
-          .PassAs<OutputSurface>();
+      return FakeOutputSurface::Create3d(first_context_provider_);
     }
 
     EXPECT_FALSE(second_context_provider_.get());
     second_context_provider_ = TestContextProvider::Create();
-    return FakeOutputSurface::Create3d(second_context_provider_)
-        .PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(second_context_provider_);
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -670,11 +664,10 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
  protected:
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     context_provider_ = TestContextProvider::Create();
-    return FakeOutputSurface::Create3d(context_provider_)
-        .PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(context_provider_);
   }
 
   virtual void SetupTree() OVERRIDE {

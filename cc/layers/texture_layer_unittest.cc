@@ -915,11 +915,11 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
     texture_ = provider->UnboundTestContext3d()->createExternalTexture();
-    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(provider);
   }
 
   // TextureLayerClient implementation.
@@ -1075,7 +1075,8 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
   virtual void SetUp() {
     TextureLayerTest::SetUp();
     layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
-    EXPECT_TRUE(host_impl_.InitializeRenderer(CreateFakeOutputSurface()));
+    EXPECT_TRUE(host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   }
 
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {
@@ -1348,11 +1349,11 @@ class TextureLayerClientTest
         expected_used_textures_on_draw_(0),
         expected_used_textures_on_commit_(0) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
     texture_ = provider->UnboundTestContext3d()->createExternalTexture();
-    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(provider);
   }
 
   virtual unsigned PrepareTexture() OVERRIDE { return texture_; }
@@ -1466,11 +1467,11 @@ class TextureLayerChangeInvisibleTest
         commit_count_(0),
         expected_texture_on_draw_(0) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
     scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
     texture_ = provider->UnboundTestContext3d()->createExternalTexture();
-    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(provider);
   }
 
   // TextureLayerClient implementation.
@@ -1960,9 +1961,9 @@ class TextureLayerLostContextTest
       : context_lost_(false),
         draw_count_(0) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
-    return CreateFakeOutputSurface();
+    return FakeOutputSurface::Create3d();
   }
 
   virtual unsigned PrepareTexture() OVERRIDE {

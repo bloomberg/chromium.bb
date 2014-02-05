@@ -185,11 +185,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   FakeOutputSurface* output_surface() { return output_surface_; }
   int LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl) const;
 
+  // Override this for pixel tests, where you need a real output surface.
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
-  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
+  // Override this for unit tests, which should not produce pixel output.
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback);
 
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurfaceForTest(
-      bool fallback);
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
 
   TestWebGraphicsContext3D* TestContext();
 

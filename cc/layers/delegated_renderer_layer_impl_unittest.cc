@@ -40,7 +40,8 @@ class DelegatedRendererLayerImplTest : public testing::Test {
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
     host_impl_.reset(new FakeLayerTreeHostImpl(settings, &proxy_));
-    host_impl_->InitializeRenderer(CreateFakeOutputSurface());
+    host_impl_->InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
