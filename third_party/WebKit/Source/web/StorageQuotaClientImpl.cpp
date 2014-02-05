@@ -39,11 +39,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/quota/DeprecatedWebStorageQuotaCallbacksImpl.h"
+#include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaCallback.h"
+#include "modules/quota/StorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageUsageCallback.h"
-#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "wtf/Threading.h"
 
@@ -67,7 +67,8 @@ void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, We
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, DeprecatedWebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
+        OwnPtr<StorageQuotaCallbacks> callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
+        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, callbacks.release());
     } else {
         // Requesting quota in Worker is not supported.
         executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
@@ -84,7 +85,8 @@ ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ExecutionContext* e
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, WebStorageQuotaCallbacksImpl::createLeakedPtr(resolver, executionContext));
+        OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver, executionContext);
+        webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, callbacks.release());
     } else {
         // Requesting quota in Worker is not supported.
         resolver->reject(DOMError::create(NotSupportedError));

@@ -29,46 +29,43 @@
  */
 
 #include "config.h"
-#include "modules/quota/DeprecatedWebStorageQuotaCallbacksImpl.h"
+#include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
-DeprecatedWebStorageQuotaCallbacksImpl::DeprecatedWebStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback> usageCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback> usageCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
     : m_usageCallback(usageCallback)
     , m_errorCallback(errorCallback)
 {
 }
 
-DeprecatedWebStorageQuotaCallbacksImpl::DeprecatedWebStorageQuotaCallbacksImpl(PassOwnPtr<StorageQuotaCallback> quotaCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageQuotaCallback> quotaCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
     : m_quotaCallback(quotaCallback)
     , m_errorCallback(errorCallback)
 {
 }
 
-DeprecatedWebStorageQuotaCallbacksImpl::~DeprecatedWebStorageQuotaCallbacksImpl()
+DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl()
 {
 }
 
-void DeprecatedWebStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
+void DeprecatedStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
 {
-    OwnPtr<DeprecatedWebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     if (m_usageCallback)
         m_usageCallback->handleEvent(usageInBytes, quotaInBytes);
 }
 
-void DeprecatedWebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
+void DeprecatedStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
 {
-    OwnPtr<DeprecatedWebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     if (m_quotaCallback)
         m_quotaCallback->handleEvent(grantedQuotaInBytes);
 }
 
-void DeprecatedWebStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
+void DeprecatedStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
 {
-    OwnPtr<DeprecatedWebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     if (m_errorCallback)
         m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)).get());
 }

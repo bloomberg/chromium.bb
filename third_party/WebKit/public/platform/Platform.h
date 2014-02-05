@@ -42,6 +42,7 @@
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
 #include "WebSpeechSynthesizer.h"
+#include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
 #include "WebString.h"
 #include "WebURLError.h"
@@ -87,7 +88,6 @@ class WebSocketStreamHandle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
-class WebStorageQuotaCallbacks;
 struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
@@ -613,12 +613,10 @@ public:
     // with the current usage and quota information for the partition. When
     // an error occurs WebStorageQuotaCallbacks::didFail is called with an
     // error code.
-    // The callbacks object is deleted when the callback method is called
-    // and does not need to be (and should not be) deleted manually.
     virtual void queryStorageUsageAndQuota(
         const WebURL& storagePartition,
         WebStorageQuotaType,
-        WebStorageQuotaCallbacks*) { }
+        WebStorageQuotaCallbacks) { }
 
 
     // WebDatabase --------------------------------------------------------

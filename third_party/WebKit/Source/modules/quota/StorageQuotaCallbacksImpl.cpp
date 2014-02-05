@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
+#include "modules/quota/StorageQuotaCallbacksImpl.h"
 
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
@@ -37,33 +37,30 @@
 
 namespace WebCore {
 
-WebStorageQuotaCallbacksImpl::WebStorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
+StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
     : m_resolver(resolver)
     , m_requestState(context)
 {
 }
 
-WebStorageQuotaCallbacksImpl::~WebStorageQuotaCallbacksImpl()
+StorageQuotaCallbacksImpl::~StorageQuotaCallbacksImpl()
 {
 }
 
-void WebStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
+void StorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
 {
-    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     DOMRequestState::Scope scope(m_requestState);
     m_resolver->resolve(StorageInfo::create(usageInBytes, quotaInBytes));
 }
 
-void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
+void StorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
 {
-    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     DOMRequestState::Scope scope(m_requestState);
     m_resolver->resolve(StorageInfo::create(usageInBytes, grantedQuotaInBytes));
 }
 
-void WebStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
+void StorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
 {
-    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
     DOMRequestState::Scope scope(m_requestState);
     m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)).get());
 }

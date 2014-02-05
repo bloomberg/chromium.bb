@@ -36,8 +36,8 @@
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/quota/StorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageQuotaClient.h"
-#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -97,7 +97,8 @@ ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String
     }
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), WebStorageQuotaCallbacksImpl::createLeakedPtr(resolver, executionContext));
+    OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver, executionContext);
+    blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks.release());
     return promise;
 }
 

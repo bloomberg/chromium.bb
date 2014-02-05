@@ -31,24 +31,54 @@
 #ifndef WebStorageQuotaCallbacks_h
 #define WebStorageQuotaCallbacks_h
 
+#include "WebCommon.h"
+#include "WebPrivatePtr.h"
 #include "WebStorageQuotaError.h"
+
+namespace WebCore {
+class StorageQuotaCallbacks;
+}
+
+namespace WTF { template <typename T> class PassOwnPtr; }
 
 namespace blink {
 
+class WebStorageQuotaCallbacksPrivate;
+
 class WebStorageQuotaCallbacks {
 public:
+    ~WebStorageQuotaCallbacks() { reset(); }
+    WebStorageQuotaCallbacks() { }
+    WebStorageQuotaCallbacks(const WebStorageQuotaCallbacks& c) { assign(c); }
+    WebStorageQuotaCallbacks& operator=(const WebStorageQuotaCallbacks& c)
+    {
+        assign(c);
+        return *this;
+    }
+
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebStorageQuotaCallbacks&);
+
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(const WTF::PassOwnPtr<WebCore::StorageQuotaCallbacks>&);
+#endif
+
     // Callback for WebFrameClient::queryStorageUsageAndQuota.
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) = 0;
+    BLINK_PLATFORM_EXPORT void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes);
 
     // Callback for WebFrameClient::requestStorageQuota.
     // This may return a smaller amount of quota than the requested.
-    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) = 0;
+    BLINK_PLATFORM_EXPORT void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes);
 
-    virtual void didFail(WebStorageQuotaError) = 0;
+    BLINK_PLATFORM_EXPORT void didFail(WebStorageQuotaError);
 
-protected:
-    virtual ~WebStorageQuotaCallbacks() { }
+private:
+    WebPrivatePtr<WebStorageQuotaCallbacksPrivate> m_private;
 };
+
+// FIXME: Remove this after two-side patches are landed.
+// (http://crbug.com/338995)
+#define NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
 
 } // namespace blink
 

@@ -41,6 +41,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
@@ -67,7 +68,6 @@ class WebRTCPeerConnectionHandler;
 class WebSharedWorker;
 class WebSharedWorkerClient;
 class WebSocketStreamHandle;
-class WebStorageQuotaCallbacks;
 class WebString;
 class WebURL;
 class WebURLLoader;
@@ -324,12 +324,10 @@ public:
     // is called with an error code otherwise.
     // Note that the requesting quota size may not always be granted and
     // a smaller amount of quota than requested might be returned.
-    // The callbacks object is deleted when the callback method is called
-    // and does not need to be (and should not be) deleted manually.
     virtual void requestStorageQuota(
         WebFrame*, WebStorageQuotaType,
         unsigned long long newQuotaInBytes,
-        WebStorageQuotaCallbacks*) { }
+        WebStorageQuotaCallbacks) { }
 
     // WebSocket -----------------------------------------------------
 
