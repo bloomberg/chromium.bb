@@ -76,19 +76,48 @@
           ],
         },  # end of target 'remoting_android_resources'
         {
+          'target_name': 'remoting_apk_manifest',
+          'type': 'none',
+          'sources': [
+            'android/java/AndroidManifest.xml.jinja2',
+          ],
+          'rules': [{
+            'rule_name': 'generate_manifest',
+            'extension': 'jinja2',
+            'inputs': [
+              '<(remoting_localize_path)',
+              '<(branding_path)',
+              '<(RULE_INPUT_PATH)',
+            ],
+            'outputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/remoting/android/<(RULE_INPUT_ROOT)',
+            ],
+            'action': [
+              'python', '<(remoting_localize_path)',
+              '--variables', '<(branding_path)',
+              '--template', '<(RULE_INPUT_PATH)',
+              '--locale_output', '<@(_outputs)',
+              'en',
+            ],
+          }],
+        },  # end of target 'remoting_apk_manifest'
+        {
           'target_name': 'remoting_apk',
           'type': 'none',
           'dependencies': [
-            'remoting_client_jni',
             'remoting_android_resources',
+            'remoting_apk_manifest',
+            'remoting_client_jni',
           ],
           'variables': {
             'apk_name': '<!(python <(version_py_path) -f <(branding_path) -t "@APK_FILE_NAME@")',
             'android_app_version_name': '<(version_full)',
             'android_app_version_code': '<!(python tools/android_version.py <(android_app_version_name))',
-            'manifest_package_name': 'org.chromium.chromoting',
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/AndroidManifest.xml',
             'native_lib_target': 'libremoting_client_jni',
             'java_in_dir': 'android/java',
+            'R_package': 'org.chromium.chromoting',
+            'package_name': '<(_target_name)',
             'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
             'additional_input_paths': [
               '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp',
