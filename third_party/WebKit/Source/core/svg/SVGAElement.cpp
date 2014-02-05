@@ -193,14 +193,6 @@ bool SVGAElement::supportsFocus() const
     return true;
 }
 
-bool SVGAElement::rendererIsFocusable() const
-{
-    if (renderer() && renderer()->absoluteClippedOverflowRect().isEmpty())
-        return false;
-
-    return SVGElement::rendererIsFocusable();
-}
-
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const
 {
     return attribute.name().localName() == hrefAttr || SVGGraphicsElement::isURLAttribute(attribute);
