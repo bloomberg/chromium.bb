@@ -89,6 +89,8 @@ struct MEDIA_EXPORT H264SPS {
   int frame_crop_bottom_offset;
   bool vui_parameters_present_flag;
   int chroma_array_type;
+  int sar_width;    // Set to 0 when not specified.
+  int sar_height;   // Set to 0 when not specified.
 };
 
 struct MEDIA_EXPORT H264PPS {

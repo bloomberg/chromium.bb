@@ -106,6 +106,21 @@ H264SEIMessage::H264SEIMessage() {
     }                                                                \
   } while (0)
 
+enum AspectRatioIdc {
+  kExtendedSar = 255,
+};
+
+// ISO 14496 part 10
+// VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
+static const int kTableSarWidth[] = {
+  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160, 4, 3, 2
+};
+static const int kTableSarHeight[] = {
+  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99, 3, 2, 1
+};
+COMPILE_ASSERT(arraysize(kTableSarWidth) == arraysize(kTableSarHeight),
+               sar_tables_must_have_same_size);
+
 H264Parser::H264Parser() {
   Reset();
 }
@@ -672,7 +687,21 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
 
   READ_BOOL_OR_RETURN(&sps->vui_parameters_present_flag);
   if (sps->vui_parameters_present_flag) {
-    DVLOG(1) << "VUI parameters present in SPS, ignoring";
+    bool aspect_ratio_info_present_flag;
+    READ_BOOL_OR_RETURN(&aspect_ratio_info_present_flag);
+    if (aspect_ratio_info_present_flag) {
+      int aspect_ratio_idc;
+      READ_BITS_OR_RETURN(8, &aspect_ratio_idc);
+      if (aspect_ratio_idc == kExtendedSar) {
+        READ_BITS_OR_RETURN(16, &sps->sar_width);
+        READ_BITS_OR_RETURN(16, &sps->sar_height);
+      } else {
+        const int max_aspect_ratio_idc = arraysize(kTableSarWidth) - 1;
+        IN_RANGE_OR_RETURN(aspect_ratio_idc, 0, max_aspect_ratio_idc);
+        sps->sar_width = kTableSarWidth[aspect_ratio_idc];
+        sps->sar_height = kTableSarHeight[aspect_ratio_idc];
+      }
+    }
   }
 
   // If an SPS with the same id already exists, replace it.
