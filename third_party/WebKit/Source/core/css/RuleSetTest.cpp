@@ -123,5 +123,17 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
     ASSERT_EQ(tagStr, CSSTestHelper::getRule(ruleData, 0).selector().tagQName().localName());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules("div::content { position: absolute }");
+    RuleSet& ruleSet = helper.ruleSet();
+    AtomicString str("div");
+    const RuleData* ruleData = ruleSet.tagRules(str.impl());
+    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
+    AtomicString valueStr("content");
+    ASSERT_EQ(valueStr, CSSTestHelper::getRule(ruleData, 0).selector().value());
+}
 
 } // namespace WebCore

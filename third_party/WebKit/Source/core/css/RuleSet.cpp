@@ -290,7 +290,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
     }
 
     if (!tagName.isEmpty()) {
-        addToRuleSet(component.tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
+        addToRuleSet(tagName.impl(), ensurePendingRules()->tagRules, ruleData);
         return true;
     }
 
