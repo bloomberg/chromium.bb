@@ -486,7 +486,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
       cursor_visibility_state_in_renderer_(UNKNOWN),
-      paint_observer_(NULL),
       touch_editing_client_(NULL),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
       weak_ptr_factory_(this) {
@@ -917,8 +916,6 @@ void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
-  if (is_loading_ && !is_loading && paint_observer_)
-    paint_observer_->OnPageLoadComplete();
   is_loading_ = is_loading;
   UpdateCursorIfOverSelf();
 }
@@ -1497,8 +1494,6 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   current_frame_size_ = frame_size_in_dip;
   CheckResizeLock();
 
-  if (paint_observer_)
-    paint_observer_->OnUpdateCompositorContent();
   window_->SchedulePaintInRect(damage_rect_in_dip);
 
   pending_delegated_ack_count_++;
@@ -1615,8 +1610,6 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
                    AsWeakPtr(),
                    output_surface_id));
   }
-  if (paint_observer_)
-    paint_observer_->OnUpdateCompositorContent();
   DidReceiveFrameFromRenderer();
 
   software_frame_manager_->SwapToNewFrameComplete(!host_->is_hidden());
@@ -1785,8 +1778,6 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     rect_to_paint.Inset(-1, -1);
     rect_to_paint.Intersect(window_->bounds());
 
-    if (paint_observer_)
-      paint_observer_->OnUpdateCompositorContent();
     window_->SchedulePaintInRect(rect_to_paint);
     for (size_t i = 0; i < latency_info.size(); i++)
       compositor->SetLatencyInfo(latency_info[i]);
@@ -2615,8 +2606,6 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
     paint_canvas_ = NULL;
     backing_store->SkiaShowRect(gfx::Point(), canvas);
 
-    if (paint_observer_)
-      paint_observer_->OnPaintComplete();
     ui::Compositor* compositor = GetCompositor();
     if (compositor) {
       for (size_t i = 0; i < software_latency_info_.size(); i++)
@@ -3206,8 +3195,6 @@ void RenderWidgetHostViewAura::OnCompositingStarted(
 
 void RenderWidgetHostViewAura::OnCompositingEnded(
     ui::Compositor* compositor) {
-  if (paint_observer_)
-    paint_observer_->OnCompositingComplete();
 }
 
 void RenderWidgetHostViewAura::OnCompositingAborted(
@@ -3313,8 +3300,6 @@ void RenderWidgetHostViewAura::OnLostResources() {
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  if (paint_observer_)
-    paint_observer_->OnViewDestroyed();
   if (touch_editing_client_)
     touch_editing_client_->OnViewDestroyed();
 

@@ -492,38 +492,27 @@ class ImageLayerDelegate : public ui::LayerDelegate {
 // done navigating and painting. This class accomplishes this by showing the
 // screenshot window on top of the page until the page has completed loading and
 // painting.
-class OverscrollNavigationOverlay :
-    public RenderWidgetHostViewAura::PaintObserver,
-    public WindowSlider::Delegate {
+class OverscrollNavigationOverlay : public WebContentsObserver,
+                                    public WindowSlider::Delegate {
  public:
   explicit OverscrollNavigationOverlay(WebContentsImpl* web_contents)
       : web_contents_(web_contents),
         image_delegate_(NULL),
-        view_(NULL),
         loading_complete_(false),
         received_paint_update_(false),
-        compositor_updated_(false),
         slide_direction_(SLIDE_UNKNOWN),
         need_paint_update_(true) {
   }
 
   virtual ~OverscrollNavigationOverlay() {
-    if (view_)
-      view_->set_paint_observer(NULL);
   }
 
   bool has_window() const { return !!window_.get(); }
 
-  void StartObservingView(RenderWidgetHostViewAura* view) {
-    if (view_)
-      view_->set_paint_observer(NULL);
-
+  void StartObserving() {
     loading_complete_ = false;
     received_paint_update_ = false;
-    compositor_updated_ = false;
-    view_ = view;
-    if (view_)
-      view_->set_paint_observer(this);
+    Observe(web_contents_);
 
     // Make sure the overlay window is on top.
     if (window_.get() && window_->parent())
@@ -569,13 +558,10 @@ class OverscrollNavigationOverlay :
     if (window_slider_.get() && window_slider_->IsSlideInProgress())
       return;
 
+    Observe(NULL);
     window_slider_.reset();
     window_.reset();
     image_delegate_ = NULL;
-    if (view_) {
-      view_->set_paint_observer(NULL);
-      view_ = NULL;
-    }
   }
 
   // Creates a layer to be used for window-slide. |offset| is the offset of the
@@ -632,8 +618,7 @@ class OverscrollNavigationOverlay :
 
     // Reset state and wait for the new navigation page to complete
     // loading/painting.
-    StartObservingView(ToRenderWidgetHostViewAura(
-        web_contents_->GetRenderWidgetHostView()));
+    StartObserving();
 
     // Perform the navigation.
     if (direction == SLIDE_BACK)
@@ -654,30 +639,15 @@ class OverscrollNavigationOverlay :
     StopObservingIfDone();
   }
 
-  // Overridden from RenderWidgetHostViewAura::PaintObserver:
-  virtual void OnPaintComplete() OVERRIDE {
+  // Overridden from WebContentsObserver:
+  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE {
     received_paint_update_ = true;
     StopObservingIfDone();
   }
 
-  virtual void OnCompositingComplete() OVERRIDE {
-    received_paint_update_ = compositor_updated_;
-    StopObservingIfDone();
-  }
-
-  virtual void OnUpdateCompositorContent() OVERRIDE {
-    compositor_updated_ = true;
-  }
-
-  virtual void OnPageLoadComplete() OVERRIDE {
+  virtual void DidStopLoading(RenderViewHost* host) OVERRIDE {
     loading_complete_ = true;
     StopObservingIfDone();
-  }
-
-  virtual void OnViewDestroyed() OVERRIDE {
-    DCHECK(view_);
-    view_->set_paint_observer(NULL);
-    view_ = NULL;
   }
 
   // The WebContents which is being navigated.
@@ -689,10 +659,8 @@ class OverscrollNavigationOverlay :
   // lifetime (destroys itself when |window_| is destroyed).
   ImageWindowDelegate* image_delegate_;
 
-  RenderWidgetHostViewAura* view_;
   bool loading_complete_;
   bool received_paint_update_;
-  bool compositor_updated_;
 
   enum SlideDirection {
     SLIDE_UNKNOWN,
@@ -1161,8 +1129,7 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   overscroll_window_->SetTransform(gfx::Transform());
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
                                         delegate);
-  navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(
-      web_contents_->GetRenderWidgetHostView()));
+  navigation_overlay_->StartObserving();
 }
 
 void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
@@ -1339,7 +1306,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   GetNativeView()->AddChild(view->GetNativeView());
 
   if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
-    navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(view));
+    navigation_overlay_->StartObserving();
   }
 
   RenderWidgetHostImpl* host_impl =
@@ -1376,10 +1343,8 @@ void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
-  if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
-    navigation_overlay_->StartObservingView(
-        ToRenderWidgetHostViewAura(host->GetView()));
-  }
+  if (navigation_overlay_.get() && navigation_overlay_->has_window())
+    navigation_overlay_->StartObserving();
   AttachTouchEditableToRenderView();
 }
 

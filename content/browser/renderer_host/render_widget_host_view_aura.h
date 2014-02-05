@@ -90,29 +90,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public base::SupportsWeakPtr<RenderWidgetHostViewAura>,
       public cc::DelegatedFrameResourceCollectionClient {
  public:
-  // Used to notify whenever the paint-content of the view changes.
-  class PaintObserver {
-   public:
-    PaintObserver() {}
-    virtual ~PaintObserver() {}
-
-    // This is called when painting of the page is completed.
-    virtual void OnPaintComplete() = 0;
-
-    // This is called when compositor painting of the page is completed.
-    virtual void OnCompositingComplete() = 0;
-
-    // This is called when the contents for compositor painting changes.
-    virtual void OnUpdateCompositorContent() = 0;
-
-    // This is called loading the page has completed.
-    virtual void OnPageLoadComplete() = 0;
-
-    // This is called when the view is destroyed, so that the observer can
-    // perform any necessary clean-up.
-    virtual void OnViewDestroyed() = 0;
-  };
-
   // Displays and controls touch editing elements such as selection handles.
   class TouchEditingClient {
    public:
@@ -146,10 +123,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
    protected:
     virtual ~TouchEditingClient() {}
   };
-
-  void set_paint_observer(PaintObserver* observer) {
-    paint_observer_ = observer;
-  }
 
   void set_touch_editing_client(TouchEditingClient* client) {
     touch_editing_client_ = client;
@@ -752,11 +725,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     NOT_VISIBLE,
   };
   CursorVisibilityState cursor_visibility_state_in_renderer_;
-
-  // An observer to notify that the paint content of the view has changed. The
-  // observer is not owned by the view, and must remove itself as an oberver
-  // when it is being destroyed.
-  PaintObserver* paint_observer_;
 
 #if defined(OS_WIN)
   // The list of rectangles from constrained windows over this view. Windowed
