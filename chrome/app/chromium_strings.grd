@@ -906,6 +906,72 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when there's an error signing in.">
         Chromium could not sync your data due to an error signing in.
       </message>
+      
+      <!-- Android uses native UI to handle Sync settings -->
+      <if expr="not is_android">
+        <!-- Sync options dialog strings -->
+         <if expr="not pp_ifdef('chromeos')">
+          <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+            Sign in to Chromium with your Google Account to save your personalized browser features to the web and access them from Chromium on any computer. You'll also be automatically signed in to your favorite Google services.
+          </message>
+        </if>
+        <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
+          Sign in to Chromium
+        </message>
+        <message name="IDS_SYNC_UPGRADE_CLIENT" desc="Message indicating client needs to be upgraded to the latest version.">
+          Sync Error: Chromium is out of date and needs to be updated.
+        </message>
+        <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
+          Chromium could not sync your data because it could not connect to the sync server. Retrying...
+        </message>
+        <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
+          By disconnecting your Google Account from Chromium, your data will remain on this computer but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+        </message>
+        <message name="IDS_SYNC_NTP_PASSWORD_PROMO" desc="The message to display to promote passwords sync now being available.">
+          Chromium can now sync your passwords.
+        </message>
+
+        <!-- Sync Promo New Tab Page bubble strings -->
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
+          You're now signed in to Chromium. Your bookmarks, history, and other settings are being synced with your Google Account.
+        </message>
+
+        <!-- Choose data types dialog strings -->
+        <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
+          Chromium securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption settings.
+        </message>
+
+        <!-- Encryption tab of the configure sync dialog -->
+        <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
+          Chromium requires you to encrypt your data using either your Google password or your own passphrase.
+        </message>
+        <message name="IDS_SYNC_ENCRYPTION_SECTION_MESSAGE" desc="Message explaining that sync data can be encrypted.">
+          For added security, Chromium will encrypt your data.
+        </message>
+
+        <!-- Login dialog strings -->
+        <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
+          Chromium sync makes it easy to share your data (such as bookmarks and settings) between your computers.
+          Chromium synchronizes your data by storing it online with Google when you sign in with your Google Account.
+        </message>
+
+        <!-- Sync app menu item strings -->
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_SYNC_MENU_PRE_SYNCED_LABEL" desc="The text for the sync app menu item before an account is synced.">
+            Sign in to Chromium...
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_SYNC_MENU_PRE_SYNCED_LABEL" desc="The text for the sync app menu item before an account is synced.">
+            Sign in to Chromium...
+          </message>
+        </if>
+
+        <!-- Sync promo page chrome://signin -->
+        <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER" desc="The first line of the of the message shown in NTP when a user is not signed in to sync.">
+          Not signed in to Chromium
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
         On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chromium users sharing this OS X account.

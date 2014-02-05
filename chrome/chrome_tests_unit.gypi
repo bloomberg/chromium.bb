@@ -2552,6 +2552,7 @@
 
             # Sync setup uses native ui.
             'browser/ui/webui/sync_setup_handler_unittest.cc',
+            'browser/sync/sync_ui_util_unittest.cc',
 
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
