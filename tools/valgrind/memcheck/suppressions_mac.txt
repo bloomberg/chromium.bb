@@ -2385,3 +2385,16 @@
    fun:_ZN3WTF12AtomicString*ConstructFromLiteralTagE
    fun:_ZN7WebCore9HTMLNames4initEv
 }
+{
+   bug_340957
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore7RuleSet18ensurePendingRulesEv
+   fun:_ZN7WebCore7RuleSet21findBestRuleSetAndAdd*
+   fun:_ZN7WebCore7RuleSet7addRule*
+   fun:_ZN7WebCore7RuleSet13addChildRules*
+   fun:_ZN7WebCore7RuleSet17addRulesFromSheet*
+   fun:_ZN7WebCore21CSSDefaultStyleSheets16loadDefaultStyleEv
+   fun:_ZN7WebCore21CSSDefaultStyleSheets32loadDefaultStylesheetIfNecessaryEv
+   fun:_ZN7WebCore13StyleResolver*
+}
