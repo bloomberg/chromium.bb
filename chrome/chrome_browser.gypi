@@ -1021,6 +1021,8 @@
         'browser/local_discovery/storage/privet_filesystem_backend.h',
         'browser/local_discovery/storage/privet_filesystem_constants.cc',
         'browser/local_discovery/storage/privet_filesystem_constants.h',
+        'browser/local_discovery/storage/privet_volume_lister.cc',
+        'browser/local_discovery/storage/privet_volume_lister.h',
         'browser/mac/dock.h',
         'browser/mac/dock.mm',
         'browser/mac/install_from_dmg.h',

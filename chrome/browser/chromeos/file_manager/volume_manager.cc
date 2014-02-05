@@ -138,10 +138,11 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
   return volume_info;
 }
 
-VolumeInfo CreatePrivetVolumeInfo() {
+VolumeInfo CreatePrivetVolumeInfo(
+    const local_discovery::PrivetVolumeLister::VolumeInfo& privet_volume_info) {
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_CLOUD_DEVICE;
-  volume_info.mount_path = base::FilePath(local_discovery::kPrivetFilePath);
+  volume_info.mount_path = privet_volume_info.volume_path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = true;
   volume_info.is_read_only = true;
@@ -215,6 +216,14 @@ void VolumeManager::Initialize() {
       prefs::kExternalStorageDisabled,
       base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
                  base::Unretained(this)));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivetStorage)) {
+    privet_volume_lister_.reset(new local_discovery::PrivetVolumeLister(
+        base::Bind(&VolumeManager::OnPrivetVolumesAvailable,
+                   base::Unretained(this))));
+    privet_volume_lister_->Start();
+  }
 }
 
 void VolumeManager::Shutdown() {
@@ -267,7 +276,11 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
-    result.push_back(CreatePrivetVolumeInfo());
+    for (local_discovery::PrivetVolumeLister::VolumeList::const_iterator i =
+             privet_volume_lister_->volume_list().begin();
+         i != privet_volume_lister_->volume_list().end(); i++) {
+      result.push_back(CreatePrivetVolumeInfo(*i));
+    }
   }
 
   return result;
@@ -490,6 +503,18 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
           chromeos::UNMOUNT_OPTIONS_NONE,
           chromeos::disks::DiskMountManager::UnmountPathCallback());
     }
+  }
+}
+
+void VolumeManager::OnPrivetVolumesAvailable(
+    const local_discovery::PrivetVolumeLister::VolumeList& volumes) {
+  for (local_discovery::PrivetVolumeLister::VolumeList::const_iterator i =
+           volumes.begin(); i != volumes.end(); i++) {
+    VolumeInfo volume_info = CreatePrivetVolumeInfo(*i);
+
+    FOR_EACH_OBSERVER(
+          VolumeManagerObserver, observers_,
+          OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, volume_info, false));
   }
 }
 

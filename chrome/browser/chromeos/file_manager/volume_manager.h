@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/local_discovery/storage/privet_volume_lister.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -154,12 +155,16 @@ class VolumeManager : public BrowserContextKeyedService,
   void OnExternalStorageDisabledChanged();
 
  private:
+  void OnPrivetVolumesAvailable(
+      const local_discovery::PrivetVolumeLister::VolumeList& volumes);
+
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;
   chromeos::disks::DiskMountManager* disk_mount_manager_;
   scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   PrefChangeRegistrar pref_change_registrar_;
   ObserverList<VolumeManagerObserver> observers_;
+  scoped_ptr<local_discovery::PrivetVolumeLister> privet_volume_lister_;
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };
 

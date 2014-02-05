@@ -10,6 +10,7 @@
 namespace local_discovery {
 
 extern const base::FilePath::CharType kPrivetFilePath[];
+extern const char kPrivetTypeStorage[];
 
 }  // namespace local_discovery
 

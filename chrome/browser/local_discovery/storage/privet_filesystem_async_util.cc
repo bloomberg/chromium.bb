@@ -45,15 +45,10 @@ void PrivetFileSystemAsyncUtil::GetFileInfo(
     const GetFileInfoCallback& callback) {
   base::File::Info file_info;
 
-  if (url.path() == base::FilePath(FILE_PATH_LITERAL("/privet"))) {
-    file_info.size = 20;
-    file_info.is_directory = true;
-    file_info.is_symbolic_link = false;
-  } else {
-    file_info.size = 3000;
-    file_info.is_directory = false;
-    file_info.is_symbolic_link = false;
-  }
+  file_info.size = 20;
+  file_info.is_directory = true;
+  file_info.is_symbolic_link = false;
+
   callback.Run(base::File::FILE_OK, file_info);
 }
 
