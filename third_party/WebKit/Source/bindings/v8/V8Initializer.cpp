@@ -175,11 +175,11 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
     initializeV8Common(isolate);
 
     v8::V8::SetFatalErrorHandler(reportFatalErrorInMainThread);
+    V8PerIsolateData::ensureInitialized(isolate);
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
     ScriptProfiler::initialize();
-    V8PerIsolateData::ensureInitialized(isolate);
 }
 
 static void reportFatalErrorInWorker(const char* location, const char* message)
