@@ -448,10 +448,10 @@ interface InspectorInstrumentation {
     void didCloseWebSocket([Keep] Document*, unsigned long identifier);
 
     [Resource]
-    void didReceiveWebSocketFrame(Document*, unsigned long identifier, const WebSocketFrame& frame);
+    void didReceiveWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
 
     [Resource]
-    void didSendWebSocketFrame(Document*, unsigned long identifier, const WebSocketFrame& frame);
+    void didSendWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
 
     [Resource]
     void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);

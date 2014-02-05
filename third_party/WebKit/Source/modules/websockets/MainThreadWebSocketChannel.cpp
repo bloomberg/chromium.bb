@@ -578,7 +578,7 @@ bool MainThreadWebSocketChannel::processFrame()
         return false;
     }
 
-    InspectorInstrumentation::didReceiveWebSocketFrame(m_document, m_identifier, frame);
+    InspectorInstrumentation::didReceiveWebSocketFrame(m_document, m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
 
     switch (frame.opCode) {
     case WebSocketFrame::OpCodeContinuation:
@@ -807,7 +807,7 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
     ASSERT(!m_suspended);
 
     WebSocketFrame frame(opCode, data, dataLength, WebSocketFrame::Final | WebSocketFrame::Masked);
-    InspectorInstrumentation::didSendWebSocketFrame(m_document, m_identifier, frame);
+    InspectorInstrumentation::didSendWebSocketFrame(m_document, m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
 
     OwnPtr<DeflateResultHolder> deflateResult = m_deflateFramer.deflate(frame);
     if (!deflateResult->succeeded()) {

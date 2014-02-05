@@ -67,7 +67,6 @@ class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
 
-struct WebSocketFrame;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
 
@@ -121,8 +120,8 @@ public:
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
     void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
     void didCloseWebSocket(Document*, unsigned long identifier);
-    void didReceiveWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
-    void didSendWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
+    void didReceiveWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
+    void didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
     // called from Internals for layout test purposes.

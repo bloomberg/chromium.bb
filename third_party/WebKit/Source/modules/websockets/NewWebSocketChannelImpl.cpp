@@ -38,6 +38,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "modules/websockets/WebSocketChannelClient.h"
+#include "modules/websockets/WebSocketFrame.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -161,7 +162,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
         // of individual frames.
         CString data = message.utf8();
         WebSocketFrame frame(WebSocketFrame::OpCodeText, data.data(), data.length(), WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
     }
     m_messages.append(Message(message));
     sendInternal();
@@ -178,7 +179,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
         // Since Binary data are not displayed in Inspector, this does not
         // affect actual behavior.
         WebSocketFrame frame(WebSocketFrame::OpCodeBinary, "", 0, WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
     }
     m_messages.append(Message(blobDataHandle));
     sendInternal();
@@ -192,7 +193,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& bu
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
         WebSocketFrame frame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(buffer.data()) + byteOffset, byteLength, WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
     }
     // buffer.slice copies its contents.
     m_messages.append(buffer.slice(byteOffset, byteOffset + byteLength));
@@ -420,7 +421,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
         // of individual frames.
         WebSocketFrame::OpCode opcode = m_receivingMessageTypeIsText ? WebSocketFrame::OpCodeText : WebSocketFrame::OpCodeBinary;
         WebSocketFrame frame(opcode, m_receivingMessageData.data(), m_receivingMessageData.size(), WebSocketFrame::Final);
-        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
+        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
     }
     if (m_receivingMessageTypeIsText) {
         String message = String::fromUTF8(m_receivingMessageData.data(), m_receivingMessageData.size());

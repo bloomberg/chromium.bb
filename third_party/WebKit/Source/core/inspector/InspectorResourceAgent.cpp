@@ -57,7 +57,6 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/Page.h"
 #include "core/xml/XMLHttpRequest.h"
-#include "modules/websockets/WebSocketFrame.h"
 #include "platform/JSONValues.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
@@ -559,21 +558,21 @@ void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifi
     m_frontend->webSocketClosed(IdentifiersFactory::requestId(identifier), currentTime());
 }
 
-void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, const WebSocketFrame& frame)
+void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
     RefPtr<TypeBuilder::Network::WebSocketFrame> frameObject = TypeBuilder::Network::WebSocketFrame::create()
-        .setOpcode(frame.opCode)
-        .setMask(frame.masked)
-        .setPayloadData(String(frame.payload, frame.payloadLength));
+        .setOpcode(opCode)
+        .setMask(masked)
+        .setPayloadData(String(payload, payloadLength));
     m_frontend->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
 }
 
-void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, const WebSocketFrame& frame)
+void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
     RefPtr<TypeBuilder::Network::WebSocketFrame> frameObject = TypeBuilder::Network::WebSocketFrame::create()
-        .setOpcode(frame.opCode)
-        .setMask(frame.masked)
-        .setPayloadData(String(frame.payload, frame.payloadLength));
+        .setOpcode(opCode)
+        .setMask(masked)
+        .setPayloadData(String(payload, payloadLength));
     m_frontend->webSocketFrameSent(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
 }
 

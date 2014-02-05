@@ -45,7 +45,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/storage/StorageArea.h"
-#include "modules/websockets/WebSocketFrame.h"
 #include "platform/network/FormData.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
