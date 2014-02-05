@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "sync/base/sync_export.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -42,7 +43,12 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   // URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
+ protected:
+  void ResetRegisterBackoffEntryForTest(
+      const net::BackoffEntry::Policy* policy);
+
  private:
+  void Register();
   void OnRegisterComplete(const std::string& registration_id,
                           gcm::GCMClient::Result result);
   void RequestAccessToken();
@@ -64,6 +70,7 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   // GCM registration_id is requested one at startup and never refreshed until
   // next restart.
   std::string registration_id_;
+  scoped_ptr<net::BackoffEntry> register_backoff_entry_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
 

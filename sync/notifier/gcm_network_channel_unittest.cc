@@ -14,6 +14,9 @@ namespace {
 
 class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
  public:
+  TestGCMNetworkChannelDelegate()
+      : register_call_count_(0) {}
+
   virtual void RequestToken(RequestTokenCallback callback) OVERRIDE {
     request_token_callback = callback;
   }
@@ -23,12 +26,51 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   }
 
   virtual void Register(RegisterCallback callback) OVERRIDE {
+    ++register_call_count_;
     register_callback = callback;
   }
 
   RequestTokenCallback request_token_callback;
   std::string invalidated_token;
   RegisterCallback register_callback;
+  int register_call_count_;
+};
+
+// Backoff policy for test. Run first 5 retries without delay.
+const net::BackoffEntry::Policy kTestBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  5,
+
+  // Initial delay for exponential back-off in ms.
+  2000, // 2 seconds.
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.2, // 20%.
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 3600 * 4, // 4 hours.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
+
+class TestGCMNetworkChannel : public GCMNetworkChannel {
+ public:
+  TestGCMNetworkChannel(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_ptr<GCMNetworkChannelDelegate> delegate)
+      :  GCMNetworkChannel(request_context_getter, delegate.Pass()) {
+    ResetRegisterBackoffEntryForTest(&kTestBackoffPolicy);
+  }
 };
 
 class GCMNetworkChannelTest
@@ -50,8 +92,9 @@ class GCMNetworkChannelTest
     // to it.
     delegate_ = new TestGCMNetworkChannelDelegate();
     scoped_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
-    gcm_network_channel_.reset(new GCMNetworkChannel(request_context_getter_,
-                                                     delegate.Pass()));
+    gcm_network_channel_.reset(new TestGCMNetworkChannel(
+        request_context_getter_,
+        delegate.Pass()));
     gcm_network_channel_->AddObserver(this);
     gcm_network_channel_->SetMessageReceiver(
         invalidation::NewPermanentCallback(
@@ -94,9 +137,14 @@ class GCMNetworkChannelTest
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
-    url_fetchers_created_count_++;
+    ++url_fetchers_created_count_;
     return scoped_ptr<net::FakeURLFetcher>(new net::FakeURLFetcher(
         url, delegate, response_data, response_code, status));
+  }
+
+  void RunLoopUntilIdle() {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
 
  private:
@@ -126,33 +174,36 @@ TEST_F(GCMNetworkChannelTest, HappyCase) {
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunLoopUntilIdle();
   EXPECT_EQ(url_fetchers_created_count(), 1);
 
   // Return another access token. Message should be cleared by now and shouldn't
   // be sent.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token2");
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunLoopUntilIdle();
   EXPECT_EQ(url_fetchers_created_count(), 1);
 }
 
 TEST_F(GCMNetworkChannelTest, FailedRegister) {
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
-  // Return error from Register call.
-  delegate()->register_callback.Run("", gcm::GCMClient::SERVER_ERROR);
+  EXPECT_EQ(1, delegate()->register_call_count_);
+  // Return transient error from Register call.
+  delegate()->register_callback.Run("", gcm::GCMClient::NETWORK_ERROR);
+  RunLoopUntilIdle();
+  // GcmNetworkChannel should have scheduled Register retry.
+  EXPECT_EQ(2, delegate()->register_call_count_);
+  // Return persistent error from Register call.
+  delegate()->register_callback.Run("", gcm::GCMClient::NOT_SIGNED_IN);
+  RunLoopUntilIdle();
+  // GcmNetworkChannel should give up trying.
+  EXPECT_EQ(2, delegate()->register_call_count_);
 
   network_channel()->SendMessage("abra.cadabra");
   // SendMessage shouldn't trigger RequestToken.
   EXPECT_TRUE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(0, url_fetchers_created_count());
 }
 
 TEST_F(GCMNetworkChannelTest, RegisterFinishesAfterSendMessage) {
@@ -176,10 +227,7 @@ TEST_F(GCMNetworkChannelTest, RegisterFinishesAfterSendMessage) {
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunLoopUntilIdle();
   EXPECT_EQ(url_fetchers_created_count(), 1);
 }
 
@@ -221,10 +269,7 @@ TEST_F(GCMNetworkChannelTest, AuthErrorFromServer) {
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunLoopUntilIdle();
   EXPECT_EQ(url_fetchers_created_count(), 1);
   EXPECT_EQ(delegate()->invalidated_token, "access.token");
 }

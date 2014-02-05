@@ -11,14 +11,45 @@
 
 namespace syncer {
 
+namespace {
+
+// Register backoff policy.
+const net::BackoffEntry::Policy kRegisterBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential back-off in ms.
+  2000, // 2 seconds.
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.2, // 20%.
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 3600 * 4, // 4 hours.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
+
+}  // namespace
+
 GCMNetworkChannel::GCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_ptr<GCMNetworkChannelDelegate> delegate)
     : request_context_getter_(request_context_getter),
       delegate_(delegate.Pass()),
+      register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
       weak_factory_(this) {
-  delegate_->Register(base::Bind(&GCMNetworkChannel::OnRegisterComplete,
-                                 weak_factory_.GetWeakPtr()));
+  Register();
 }
 
 GCMNetworkChannel::~GCMNetworkChannel() {
@@ -30,6 +61,16 @@ void GCMNetworkChannel::UpdateCredentials(
   // Do nothing. We get access token by requesting it for every message.
 }
 
+void GCMNetworkChannel::ResetRegisterBackoffEntryForTest(
+    const net::BackoffEntry::Policy* policy) {
+  register_backoff_entry_.reset(new net::BackoffEntry(policy));
+}
+
+void GCMNetworkChannel::Register() {
+  delegate_->Register(base::Bind(&GCMNetworkChannel::OnRegisterComplete,
+                                 weak_factory_.GetWeakPtr()));
+}
+
 void GCMNetworkChannel::OnRegisterComplete(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
@@ -37,12 +78,29 @@ void GCMNetworkChannel::OnRegisterComplete(
   if (result == gcm::GCMClient::SUCCESS) {
     DCHECK(!registration_id.empty());
     DVLOG(2) << "Got registration_id";
+    register_backoff_entry_->Reset();
     registration_id_ = registration_id;
     if (!encoded_message_.empty())
       RequestAccessToken();
   } else {
-    DVLOG(2) << "Register failed";
-    // TODO(pavely): crbug.com/335670: Implement exponential backoff retry.
+    DVLOG(2) << "Register failed: " << result;
+    // Retry in case of transient error.
+    switch (result) {
+      case gcm::GCMClient::NETWORK_ERROR:
+      case gcm::GCMClient::SERVER_ERROR:
+      case gcm::GCMClient::TTL_EXCEEDED:
+      case gcm::GCMClient::UNKNOWN_ERROR: {
+        register_backoff_entry_->InformOfRequest(false);
+        base::MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&GCMNetworkChannel::Register,
+                       weak_factory_.GetWeakPtr()),
+            register_backoff_entry_->GetTimeUntilRelease());
+        break;
+      }
+      default:
+        break;
+    }
   }
 }
 
