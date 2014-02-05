@@ -221,6 +221,9 @@ class ExceptionHandler {
 
   // Force signal handling for the specified signal.
   bool SimulateSignalDelivery(int sig);
+
+  // Report a crash signal from an SA_SIGINFO signal handler.
+  bool HandleSignal(int sig, siginfo_t* info, void* uc);
  private:
   // Save the old signal handlers and install new ones.
   static bool InstallHandlersLocked();
@@ -233,7 +236,6 @@ class ExceptionHandler {
   void WaitForContinueSignal();
 
   static void SignalHandler(int sig, siginfo_t* info, void* uc);
-  bool HandleSignal(int sig, siginfo_t* info, void* uc);
   static int ThreadEntry(void* arg);
   bool DoDump(pid_t crashing_process, const void* context,
               size_t context_size);
