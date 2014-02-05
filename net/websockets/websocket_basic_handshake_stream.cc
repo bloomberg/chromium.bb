@@ -234,7 +234,7 @@ bool ValidatePerMessageDeflateExtension(const WebSocketExtension& extension,
                  the_strings_server_and_client_must_be_the_same_length);
   typedef std::vector<WebSocketExtension::Parameter> ParameterVector;
 
-  DCHECK(extension.name() == "permessage-deflate");
+  DCHECK_EQ("permessage-deflate", extension.name());
   const ParameterVector& parameters = extension.parameters();
   std::set<std::string> seen_names;
   for (ParameterVector::const_iterator it = parameters.begin();
@@ -297,7 +297,7 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
   // code.
   bool seen_permessage_deflate = false;
   while (headers->EnumerateHeader(
-      &state, websockets::kSecWebSocketExtensions, &value)) {
+             &state, websockets::kSecWebSocketExtensions, &value)) {
     WebSocketExtensionParser parser;
     parser.Parse(value);
     if (parser.has_error()) {
@@ -315,7 +315,7 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
       }
       seen_permessage_deflate = true;
       if (!ValidatePerMessageDeflateExtension(
-               parser.extension(), failure_message, params))
+              parser.extension(), failure_message, params))
         return false;
     } else {
       *failure_message =
@@ -416,10 +416,7 @@ int WebSocketBasicHandshakeStream::ReadResponseHeaders(
                  callback));
   if (rv == ERR_IO_PENDING)
     return rv;
-  if (rv == OK)
-    return ValidateResponse();
-  OnFinishOpeningHandshake();
-  return rv;
+  return ValidateResponse(rv);
 }
 
 const HttpResponseInfo* WebSocketBasicHandshakeStream::GetResponseInfo() const {
@@ -526,11 +523,7 @@ std::string WebSocketBasicHandshakeStream::GetFailureMessage() const {
 void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
     const CompletionCallback& callback,
     int result) {
-  if (result == OK)
-    result = ValidateResponse();
-  else
-    OnFinishOpeningHandshake();
-  callback.Run(result);
+  callback.Run(ValidateResponse(result));
 }
 
 void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
@@ -546,44 +539,50 @@ void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
   connect_delegate_->OnFinishOpeningHandshake(response.Pass());
 }
 
-int WebSocketBasicHandshakeStream::ValidateResponse() {
+int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
   DCHECK(http_response_info_);
-  const scoped_refptr<HttpResponseHeaders>& headers =
-      http_response_info_->headers;
+  const HttpResponseHeaders* headers = http_response_info_->headers.get();
+  if (rv >= 0) {
+    switch (headers->response_code()) {
+      case HTTP_SWITCHING_PROTOCOLS:
+        OnFinishOpeningHandshake();
+        return ValidateUpgradeResponse(headers);
 
-  switch (headers->response_code()) {
-    case HTTP_SWITCHING_PROTOCOLS:
-      OnFinishOpeningHandshake();
-      return ValidateUpgradeResponse(headers);
+      // We need to pass these through for authentication to work.
+      case HTTP_UNAUTHORIZED:
+      case HTTP_PROXY_AUTHENTICATION_REQUIRED:
+        return OK;
 
-    // We need to pass these through for authentication to work.
-    case HTTP_UNAUTHORIZED:
-    case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      return OK;
-
-    // Other status codes are potentially risky (see the warnings in the
-    // WHATWG WebSocket API spec) and so are dropped by default.
-    default:
-      failure_message_ = base::StringPrintf("Unexpected status code: %d",
-                                            headers->response_code());
-      OnFinishOpeningHandshake();
-      return ERR_INVALID_RESPONSE;
+      // Other status codes are potentially risky (see the warnings in the
+      // WHATWG WebSocket API spec) and so are dropped by default.
+      default:
+        failure_message_ = base::StringPrintf(
+            "Error during WebSocket handshake: Unexpected response code: %d",
+            headers->response_code());
+        OnFinishOpeningHandshake();
+        return ERR_INVALID_RESPONSE;
+    }
+  } else {
+    failure_message_ =
+        std::string("Error during WebSocket handshake: ") + ErrorToString(rv);
+    OnFinishOpeningHandshake();
+    return rv;
   }
 }
 
 int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
-    const scoped_refptr<HttpResponseHeaders>& headers) {
+    const HttpResponseHeaders* headers) {
   extension_params_.reset(new WebSocketExtensionParams);
-  if (ValidateUpgrade(headers.get(), &failure_message_) &&
-      ValidateSecWebSocketAccept(headers.get(),
+  if (ValidateUpgrade(headers, &failure_message_) &&
+      ValidateSecWebSocketAccept(headers,
                                  handshake_challenge_response_,
                                  &failure_message_) &&
-      ValidateConnection(headers.get(), &failure_message_) &&
-      ValidateSubProtocol(headers.get(),
+      ValidateConnection(headers, &failure_message_) &&
+      ValidateSubProtocol(headers,
                           requested_sub_protocols_,
                           &sub_protocol_,
                           &failure_message_) &&
-      ValidateExtensions(headers.get(),
+      ValidateExtensions(headers,
                          requested_extensions_,
                          &extensions_,
                          &failure_message_,

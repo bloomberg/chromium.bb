@@ -107,6 +107,8 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     HttpRequestHeaders headers;
     headers.SetHeader("Host", "localhost");
     headers.SetHeader("Connection", "Upgrade");
+    headers.SetHeader("Pragma", "no-cache");
+    headers.SetHeader("Cache-Control", "no-cache");
     headers.SetHeader("Upgrade", "websocket");
     headers.SetHeader("Origin", origin);
     headers.SetHeader("Sec-WebSocket-Version", "13");

@@ -167,6 +167,7 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamWithCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper::DataKey(),
       create_helper.release());
   request->url_request()->SetLoadFlags(LOAD_DISABLE_CACHE |
+                                       LOAD_BYPASS_CACHE |
                                        LOAD_DO_NOT_PROMPT_FOR_LOGIN);
   request->url_request()->Start();
   return request.PassAs<WebSocketStreamRequest>();

@@ -37,6 +37,8 @@ std::string WebSocketStandardRequest(const std::string& path,
       "GET %s HTTP/1.1\r\n"
       "Host: localhost\r\n"
       "Connection: Upgrade\r\n"
+      "Pragma: no-cache\r\n"
+      "Cache-Control: no-cache\r\n"
       "Upgrade: websocket\r\n"
       "Origin: %s\r\n"
       "Sec-WebSocket-Version: 13\r\n"

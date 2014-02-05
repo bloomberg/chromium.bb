@@ -86,14 +86,12 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   void OnFinishOpeningHandshake();
 
-  // Validates the response from the server and returns OK or
-  // ERR_INVALID_RESPONSE.
-  int ValidateResponse();
+  // Validates the response and sends the finished handshake event.
+  int ValidateResponse(int rv);
 
   // Check that the headers are well-formed for a 101 response, and returns
   // OK if they are, otherwise returns ERR_INVALID_RESPONSE.
-  int ValidateUpgradeResponse(
-      const scoped_refptr<HttpResponseHeaders>& headers);
+  int ValidateUpgradeResponse(const HttpResponseHeaders* headers);
 
   HttpStreamParser* parser() const { return state_.parser(); }
 

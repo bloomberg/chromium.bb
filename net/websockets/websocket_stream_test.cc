@@ -251,23 +251,26 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
   EXPECT_EQ(GURL("ws://localhost/"), response_info_->url);
   EXPECT_EQ(101, response_info_->status_code);
   EXPECT_EQ("Switching Protocols", response_info_->status_text);
-  EXPECT_EQ(10u, request_headers.size());
+  ASSERT_EQ(12u, request_headers.size());
   EXPECT_EQ(HeaderKeyValuePair("Host", "localhost"), request_headers[0]);
   EXPECT_EQ(HeaderKeyValuePair("Connection", "Upgrade"), request_headers[1]);
-  EXPECT_EQ(HeaderKeyValuePair("Upgrade", "websocket"), request_headers[2]);
-  EXPECT_EQ(HeaderKeyValuePair("Origin", "http://localhost/"),
+  EXPECT_EQ(HeaderKeyValuePair("Pragma", "no-cache"), request_headers[2]);
+  EXPECT_EQ(HeaderKeyValuePair("Cache-Control", "no-cache"),
             request_headers[3]);
+  EXPECT_EQ(HeaderKeyValuePair("Upgrade", "websocket"), request_headers[4]);
+  EXPECT_EQ(HeaderKeyValuePair("Origin", "http://localhost/"),
+            request_headers[5]);
   EXPECT_EQ(HeaderKeyValuePair("Sec-WebSocket-Version", "13"),
-            request_headers[4]);
-  EXPECT_EQ(HeaderKeyValuePair("User-Agent", ""), request_headers[5]);
-  EXPECT_EQ(HeaderKeyValuePair("Accept-Encoding", "gzip,deflate"),
             request_headers[6]);
+  EXPECT_EQ(HeaderKeyValuePair("User-Agent", ""), request_headers[7]);
+  EXPECT_EQ(HeaderKeyValuePair("Accept-Encoding", "gzip,deflate"),
+            request_headers[8]);
   EXPECT_EQ(HeaderKeyValuePair("Accept-Language", "en-us,fr"),
-            request_headers[7]);
-  EXPECT_EQ("Sec-WebSocket-Key",  request_headers[8].first);
+            request_headers[9]);
+  EXPECT_EQ("Sec-WebSocket-Key",  request_headers[10].first);
   EXPECT_EQ(HeaderKeyValuePair("Sec-WebSocket-Extensions",
                                "permessage-deflate; client_max_window_bits"),
-            request_headers[9]);
+            request_headers[11]);
 
   std::vector<HeaderKeyValuePair> response_headers =
       ToVector(*response_info_->headers);
@@ -651,7 +654,8 @@ TEST_F(WebSocketStreamCreateTest, InvalidStatusCode) {
                                  kInvalidStatusCodeResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Unexpected status code: 200", failure_message());
+  EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
+            failure_message());
 }
 
 // Redirects are not followed (according to the WHATWG WebSocket API, which
@@ -673,7 +677,8 @@ TEST_F(WebSocketStreamCreateTest, RedirectsRejected) {
                                  kRedirectResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Unexpected status code: 302", failure_message());
+  EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 302",
+            failure_message());
 }
 
 // Malformed responses should be rejected. HttpStreamParser will accept just
@@ -696,7 +701,8 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
                                  kMalformedResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Unexpected status code: 200", failure_message());
+  EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
+            failure_message());
 }
 
 // Upgrade header must be present.
