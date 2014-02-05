@@ -205,7 +205,7 @@ void ProfileHelper::OnSessionRestoreStateChanged(
 void ProfileHelper::ActiveUserHashChanged(const std::string& hash) {
   active_user_id_hash_ = hash;
   base::FilePath profile_path = GetProfilePathByUserIdHash(hash);
-  LOG(WARNING) << "Switching to profile path: " << profile_path.value();
+  VLOG(1) << "Switching to profile path: " << profile_path.value();
 }
 
 }  // namespace chromeos
