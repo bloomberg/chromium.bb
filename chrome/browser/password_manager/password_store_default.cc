@@ -14,11 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using autofill::PasswordForm;
-using content::BrowserThread;
 
 PasswordStoreDefault::PasswordStoreDefault(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
@@ -36,12 +34,12 @@ PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   profile_ = NULL;
 }
 
 void PasswordStoreDefault::ReportMetricsImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   login_db_->ReportMetrics();
 }
 
@@ -122,12 +120,12 @@ void PasswordStoreDefault::GetBlacklistLoginsImpl(
 
 bool PasswordStoreDefault::FillAutofillableLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_->GetBlacklistLogins(forms);
 }

@@ -153,14 +153,14 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 PasswordStore::~PasswordStore() {}
 
 bool PasswordStore::ScheduleTask(const base::Closure& task) {
-  scoped_refptr<base::SequencedTaskRunner> task_runner(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       GetBackgroundTaskRunner());
   if (task_runner.get())
     return task_runner->PostTask(FROM_HERE, task);
   return false;
 }
 
-scoped_refptr<base::SequencedTaskRunner>
+scoped_refptr<base::SingleThreadTaskRunner>
 PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }

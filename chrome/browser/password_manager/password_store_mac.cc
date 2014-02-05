@@ -863,7 +863,7 @@ void PasswordStoreMac::ShutdownOnUIThread() {
 // arbitrarily long time (most notably, it can block on user confirmation
 // from a dialog). Run tasks on a dedicated thread to avoid blocking the DB
 // thread.
-scoped_refptr<base::SequencedTaskRunner>
+scoped_refptr<base::SingleThreadTaskRunner>
 PasswordStoreMac::GetBackgroundTaskRunner() {
   return (thread_.get()) ? thread_->message_loop_proxy() : NULL;
 }

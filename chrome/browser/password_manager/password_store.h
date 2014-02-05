@@ -182,7 +182,7 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
   // Get the TaskRunner to use for PasswordStore background tasks.
   // By default, a SingleThreadTaskRunner on the DB thread is used, but
   // subclasses can override.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner();
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.

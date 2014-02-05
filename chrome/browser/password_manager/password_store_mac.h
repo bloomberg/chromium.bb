@@ -44,7 +44,7 @@ class PasswordStoreMac : public PasswordStore {
  protected:
   virtual ~PasswordStoreMac();
 
-  virtual scoped_refptr<base::SequencedTaskRunner>
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetBackgroundTaskRunner() OVERRIDE;
 
  private:
