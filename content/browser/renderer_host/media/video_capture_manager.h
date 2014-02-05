@@ -84,17 +84,18 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                             VideoCaptureControllerEventHandler* client_handler);
 
   // Retrieves all capture supported formats for a particular device. Returns
-  // false if the |capture_session_id| is not found.The supported formats are
+  // false if the |capture_session_id| is not found. The supported formats are
   // cached during device(s) enumeration, and depending on the underlying
   // implementation, could be an empty list.
   bool GetDeviceSupportedFormats(
       media::VideoCaptureSessionId capture_session_id,
       media::VideoCaptureFormats* supported_formats);
 
-  // Retrieves the format currently in use. Returns true on success. If no
-  // format is in use, returns false, and |format_in_use| is untouched.
-  bool GetDeviceFormatInUse(media::VideoCaptureSessionId capture_session_id,
-                            media::VideoCaptureFormat* format_in_use);
+  // Retrieves the format(s) currently in use.  Returns false if the
+  // |capture_session_id| is not found. Returns true and |formats_in_use|
+  // otherwise. |formats_in_use| is empty if the device is not in use.
+  bool GetDeviceFormatsInUse(media::VideoCaptureSessionId capture_session_id,
+                             media::VideoCaptureFormats* formats_in_use);
 
  private:
   virtual ~VideoCaptureManager();

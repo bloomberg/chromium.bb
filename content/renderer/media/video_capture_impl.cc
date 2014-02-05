@@ -99,6 +99,14 @@ void VideoCaptureImpl::GetDeviceSupportedFormats(
                  base::Unretained(this), media::BindToCurrentLoop(callback)));
 }
 
+void VideoCaptureImpl::GetDeviceFormatsInUse(
+    const DeviceFormatsInUseCallback& callback) {
+  DCHECK(!callback.is_null());
+  io_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::GetDeviceFormatsInUseOnIOThread,
+                 base::Unretained(this), media::BindToCurrentLoop(callback)));
+}
+
 void VideoCaptureImpl::InitOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   message_filter_->AddDelegate(this);
@@ -187,6 +195,15 @@ void VideoCaptureImpl::GetDeviceSupportedFormatsOnIOThread(
   if (device_formats_callback_queue_.size() == 1)
     Send(new VideoCaptureHostMsg_GetDeviceSupportedFormats(device_id_,
                                                            session_id_));
+}
+
+void VideoCaptureImpl::GetDeviceFormatsInUseOnIOThread(
+    const DeviceFormatsInUseCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  device_formats_in_use_callback_queue_.push_back(callback);
+  if (device_formats_in_use_callback_queue_.size() == 1)
+    Send(
+        new VideoCaptureHostMsg_GetDeviceFormatsInUse(device_id_, session_id_));
 }
 
 void VideoCaptureImpl::OnBufferCreated(
@@ -324,7 +341,14 @@ void VideoCaptureImpl::OnDeviceSupportedFormatsEnumerated(
   for (size_t i = 0; i < device_formats_callback_queue_.size(); ++i)
     device_formats_callback_queue_[i].Run(supported_formats);
   device_formats_callback_queue_.clear();
+}
 
+void VideoCaptureImpl::OnDeviceFormatsInUseReceived(
+    const media::VideoCaptureFormats& formats_in_use) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  for (size_t i = 0; i < device_formats_in_use_callback_queue_.size(); ++i)
+    device_formats_in_use_callback_queue_[i].Run(formats_in_use);
+  device_formats_in_use_callback_queue_.clear();
 }
 
 void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {

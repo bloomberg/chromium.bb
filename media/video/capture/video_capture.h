@@ -53,6 +53,9 @@ class MEDIA_EXPORT VideoCapture {
   typedef base::Callback<void(const media::VideoCaptureFormats&)>
       DeviceFormatsCallback;
 
+  typedef base::Callback<void(const media::VideoCaptureFormats&)>
+      DeviceFormatsInUseCallback;
+
   VideoCapture() {}
 
   // Request video capture to start capturing with |params|.
@@ -73,6 +76,12 @@ class MEDIA_EXPORT VideoCapture {
   // instead of replying via EventHandler.
   virtual void GetDeviceSupportedFormats(
       const DeviceFormatsCallback& callback) = 0;
+
+  // Request the device capture in-use format(s), possibly by other user(s) in
+  // other renderer(s). If there is no format in use, the vector returned in
+  // the callback will be empty.
+  virtual void GetDeviceFormatsInUse(
+      const DeviceFormatsInUseCallback& callback) = 0;
 
  protected:
   virtual ~VideoCapture() {}

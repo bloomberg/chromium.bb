@@ -83,6 +83,11 @@ void PepperPlatformVideoCapture::GetDeviceSupportedFormats(
   NOTREACHED();
 }
 
+void PepperPlatformVideoCapture::GetDeviceFormatsInUse(
+    const DeviceFormatsInUseCallback& callback) {
+  NOTREACHED();
+}
+
 void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = NULL;
   StopCapture(NULL);

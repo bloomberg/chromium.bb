@@ -45,6 +45,11 @@ void VideoCaptureHandle::GetDeviceSupportedFormats(
   impl_->GetDeviceSupportedFormats(callback);
 }
 
+void VideoCaptureHandle::GetDeviceFormatsInUse(
+    const DeviceFormatsInUseCallback& callback) {
+  impl_->GetDeviceFormatsInUse(callback);
+}
+
 VideoCaptureImplManager::VideoCaptureImplManager()
     : filter_(new VideoCaptureMessageFilter()),
       weak_factory_(this) {

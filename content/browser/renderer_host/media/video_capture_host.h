@@ -128,6 +128,13 @@ class CONTENT_EXPORT VideoCaptureHost
       int device_id,
       media::VideoCaptureSessionId capture_session_id);
 
+  // IPC message: Get a device's currently in use format(s), referenced by
+  // |capture_session_id|. |device_id| is needed for message back-routing
+  // purposes.
+  void OnGetDeviceFormatsInUse(
+      int device_id,
+      media::VideoCaptureSessionId capture_session_id);
+
   // Send a newly created buffer to the VideoCaptureMessageFilter.
   void DoSendNewBufferOnIOThread(
       const VideoCaptureControllerID& controller_id,

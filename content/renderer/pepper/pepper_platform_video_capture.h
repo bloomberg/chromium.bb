@@ -49,6 +49,8 @@ class PepperPlatformVideoCapture
   virtual int CaptureFrameRate() OVERRIDE;
   virtual void GetDeviceSupportedFormats(
       const DeviceFormatsCallback& callback) OVERRIDE;
+  virtual void GetDeviceFormatsInUse(
+      const DeviceFormatsInUseCallback& callback) OVERRIDE;
 
   // media::VideoCapture::EventHandler implementation
   virtual void OnStarted(VideoCapture* capture) OVERRIDE;

@@ -55,6 +55,12 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceSupportedFormatsEnumerated,
                      int /* device_id */,
                      media::VideoCaptureFormats /* supported_formats */)
 
+// Notify the renderer about a device's format(s) in use; this is a response
+// to a VideoCaptureHostMsg_GetDeviceFormatInUse request.
+IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceFormatsInUseReceived,
+                     int /* device_id */,
+                     media::VideoCaptureFormats /* formats_in_use */)
+
 // Start a video capture as |device_id|, a new id picked by the renderer
 // process. The session to be started is determined by |params.session_id|.
 IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Start,
@@ -76,7 +82,12 @@ IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */)
 
-// Get the formats supported by device referenced by |capture_session_id|.
+// Get the formats supported by a device referenced by |capture_session_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceSupportedFormats,
+                     int /* device_id */,
+                     media::VideoCaptureSessionId /* session_id */)
+
+// Get the format(s) in use by a device referenced by |capture_session_id|.
+IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceFormatsInUse,
                      int /* device_id */,
                      media::VideoCaptureSessionId /* session_id */)

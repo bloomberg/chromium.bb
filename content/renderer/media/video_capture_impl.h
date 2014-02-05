@@ -69,6 +69,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual int CaptureFrameRate() OVERRIDE;
   virtual void GetDeviceSupportedFormats(
       const DeviceFormatsCallback& callback) OVERRIDE;
+  virtual void GetDeviceFormatsInUse(
+      const DeviceFormatsInUseCallback& callback) OVERRIDE;
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
@@ -89,6 +91,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StopCaptureOnIOThread(media::VideoCapture::EventHandler* handler);
   void GetDeviceSupportedFormatsOnIOThread(
       const DeviceFormatsCallback& callback);
+  void GetDeviceFormatsInUseOnIOThread(
+      const DeviceFormatsInUseCallback& callback);
 
   // VideoCaptureMessageFilter::Delegate interface.
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
@@ -102,10 +106,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
   virtual void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) OVERRIDE;
+  virtual void OnDeviceFormatsInUseReceived(
+      const media::VideoCaptureFormats& formats_in_use) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
-
-  void OnDeviceFormatsEnumeratedOnMainThread(
-      const media::VideoCaptureFormats& supported_formats);
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
@@ -131,6 +134,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Vector of callbacks to be notified of device format enumerations, used only
   // on IO Thread.
   std::vector<DeviceFormatsCallback> device_formats_callback_queue_;
+  // Vector of callbacks to be notified of a device's in use capture format(s),
+  // used only on IO Thread.
+  std::vector<DeviceFormatsInUseCallback> device_formats_in_use_callback_queue_;
 
   // Buffers available for sending to the client.
   typedef std::map<int32, scoped_refptr<ClientBuffer> > ClientBufferMap;

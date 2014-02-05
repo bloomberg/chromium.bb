@@ -63,6 +63,8 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferDestroyed)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceSupportedFormatsEnumerated,
                         OnDeviceSupportedFormatsEnumerated)
+    IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceFormatsInUseReceived,
+                        OnDeviceFormatsInUseReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -169,6 +171,17 @@ void VideoCaptureMessageFilter::OnDeviceSupportedFormatsEnumerated(
     return;
   }
   delegate->OnDeviceSupportedFormatsEnumerated(supported_formats);
+}
+
+void VideoCaptureMessageFilter::OnDeviceFormatsInUseReceived(
+    int device_id,
+    const media::VideoCaptureFormats& formats_in_use) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnDeviceFormatInUse: unknown device";
+    return;
+  }
+  delegate->OnDeviceFormatsInUseReceived(formats_in_use);
 }
 
 }  // namespace content

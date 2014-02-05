@@ -16,6 +16,7 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
+using ::testing::SaveArg;
 using media::MockVideoCaptureEventHandler;
 
 namespace content {
@@ -59,6 +60,8 @@ class VideoCaptureImplTest : public ::testing::Test {
                             DeviceReceiveEmptyBuffer)
         IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
                             DeviceGetSupportedFormats)
+        IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
+                            DeviceGetFormatsInUse)
         IPC_MESSAGE_UNHANDLED(handled = false)
       IPC_END_MESSAGE_MAP()
       EXPECT_TRUE(handled);
@@ -85,6 +88,11 @@ class VideoCaptureImplTest : public ::testing::Test {
       // supported formats, replies immediately with an empty format list.
       OnDeviceSupportedFormatsEnumerated(
           media::VideoCaptureFormats());
+    }
+
+    void DeviceGetFormatsInUse(int device_id,
+                               media::VideoCaptureSessionId session_id) {
+      OnDeviceFormatsInUseReceived(media::VideoCaptureFormats());
     }
   };
 
@@ -254,6 +262,27 @@ TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
   video_capture_impl_->DeInit(
       media::BindToCurrentLoop(run_loop_.QuitClosure()));
   run_loop_.Run();
+}
+
+// Check that a request to GetDeviceFormatsInUse() ends up eventually in the
+// provided callback.
+TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
+  scoped_ptr<MockVideoCaptureEventHandler> client(
+      new MockVideoCaptureEventHandler);
+
+  media::VideoCaptureFormats formats_in_use;
+  EXPECT_CALL(*client, OnDeviceFormatsInUseReceived(_))
+      .WillOnce(SaveArg<0>(&formats_in_use));
+
+  const base::Callback<void(const media::VideoCaptureFormats&)> callback =
+      base::Bind(&MockVideoCaptureEventHandler::OnDeviceFormatsInUseReceived,
+                 base::Unretained(client.get()));
+  video_capture_impl_->GetDeviceFormatsInUse(callback);
+  video_capture_impl_->DeInit(
+      media::BindToCurrentLoop(run_loop_.QuitClosure()));
+  run_loop_.Run();
+
+  EXPECT_TRUE(formats_in_use.empty());
 }
 
 }  // namespace content

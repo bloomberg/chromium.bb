@@ -166,6 +166,8 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady, OnReceiveEmptyBuffer)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
                         OnGetDeviceSupportedFormats)
+    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
+                        OnGetDeviceFormatsInUse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -279,6 +281,22 @@ void VideoCaptureHost::OnGetDeviceSupportedFormats(
   }
   Send(new VideoCaptureMsg_DeviceSupportedFormatsEnumerated(
       device_id, device_supported_formats));
+}
+
+void VideoCaptureHost::OnGetDeviceFormatsInUse(
+    int device_id,
+    media::VideoCaptureSessionId capture_session_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureHost::OnGetDeviceFormatsInUse, capture_session_id "
+           << capture_session_id;
+  media::VideoCaptureFormats formats_in_use;
+  if (!media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
+           capture_session_id, &formats_in_use)) {
+    DVLOG(1) << "Could not retrieve device format(s) in use for device_id="
+             << device_id << " capture_session_id=" << capture_session_id;
+  }
+  Send(new VideoCaptureMsg_DeviceFormatsInUseReceived(device_id,
+                                                      formats_in_use));
 }
 
 void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(

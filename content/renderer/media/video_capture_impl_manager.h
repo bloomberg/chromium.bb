@@ -53,6 +53,8 @@ class CONTENT_EXPORT VideoCaptureHandle : media::VideoCapture {
   virtual int CaptureFrameRate() OVERRIDE;
   virtual void GetDeviceSupportedFormats(
       const DeviceFormatsCallback& callback) OVERRIDE;
+  virtual void GetDeviceFormatsInUse(
+      const DeviceFormatsInUseCallback& callback) OVERRIDE;
 
  private:
   friend class VideoCaptureImplManager;

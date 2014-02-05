@@ -305,24 +305,26 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
   return true;
 }
 
-bool VideoCaptureManager::GetDeviceFormatInUse(
+bool VideoCaptureManager::GetDeviceFormatsInUse(
     media::VideoCaptureSessionId capture_session_id,
-    media::VideoCaptureFormat* format_in_use) {
+    media::VideoCaptureFormats* formats_in_use) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(formats_in_use->empty());
 
   std::map<media::VideoCaptureSessionId, MediaStreamDevice>::iterator it =
       sessions_.find(capture_session_id);
   if (it == sessions_.end())
     return false;
-  DVLOG(1) << "GetDeviceFormatInUse for device: " << it->second.name;
+  DVLOG(1) << "GetDeviceFormatsInUse for device: " << it->second.name;
 
-  // Return the currently in-use format of the device, if it's started.
+  // Return the currently in-use format(s) of the device, if it's started.
   DeviceEntry* device_in_use =
       GetDeviceEntryForMediaStreamDevice(it->second);
-  if (!device_in_use)
-    return false;
-  *format_in_use =
-      device_in_use->video_capture_controller->GetVideoCaptureFormat();
+  if (device_in_use) {
+    // Currently only one format-in-use is supported at the VCC level.
+    formats_in_use->push_back(
+        device_in_use->video_capture_controller->GetVideoCaptureFormat());
+  }
   return true;
 }
 
