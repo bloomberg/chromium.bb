@@ -2286,9 +2286,12 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
     HideDevToolsContainer();
 
   devtools_window_ = new_devtools_window;
-  contents_resizing_strategy_.CopyFrom(devtools_window_ ?
-      devtools_window_->GetContentsResizingStrategy() :
-      DevToolsContentsResizingStrategy());
+  if (devtools_window_) {
+    contents_resizing_strategy_.CopyFrom(
+      devtools_window_->GetContentsResizingStrategy());
+  } else {
+    contents_resizing_strategy_.CopyFrom(DevToolsContentsResizingStrategy());
+  }
 
   if (should_show)
     ShowDevToolsContainer();
