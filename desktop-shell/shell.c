@@ -4737,10 +4737,6 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		}
 	}
 
-	if ((shsurf->type == SHELL_SURFACE_XWAYLAND || shsurf->state.relative) &&
-	    shsurf->transient.flags == WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
-	}
-
 	switch (shsurf->type) {
 	/* XXX: xwayland's using the same fields for transient type */
 	case SHELL_SURFACE_XWAYLAND:
