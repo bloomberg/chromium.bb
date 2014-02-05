@@ -219,7 +219,7 @@
       "slide_drawer": [
         {
           "action": "swipe",
-          "element_function": "function(callback) { callback(document.getElementById('nav-drawer')); }",
+          "element_function": "function(callback) { callback(document.getElementById('content')); }",
           "distance": 200,
           "direction": "left",
           "left_start_percentage": 0.8,
