@@ -280,7 +280,6 @@ base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(
             base_language_codes[i], base_language_codes[i], false);
-    display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(base_language_codes[i], native_display_name);
 
