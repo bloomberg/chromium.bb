@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "sync/internal_api/public/base/cancelation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,10 +21,15 @@ class BlockingTask : public CancelationObserver {
   virtual ~BlockingTask();
 
   // Starts the |exec_thread_| and uses it to execute DoRun().
-  void RunAsync(base::WaitableEvent* task_done_signal);
+  void RunAsync(base::WaitableEvent* task_start_signal,
+                base::WaitableEvent* task_done_signal);
 
-  // Blocks until canceled.  Signals |task_done_signal| when finished.
-  void Run(base::WaitableEvent* task_done_signal);
+  // Blocks until canceled.  Signals |task_done_signal| when finished (either
+  // via early cancel or cancel after start).  Signals |task_start_signal| if
+  // and when the task starts successfully (which will not happen if the task
+  // was cancelled early).
+  void Run(base::WaitableEvent* task_start_signal,
+           base::WaitableEvent* task_done_signal);
 
   // Implementation of CancelationObserver.
   // Wakes up the thread blocked in Run().
@@ -46,21 +53,30 @@ BlockingTask::BlockingTask(CancelationSignal* cancel_signal)
     cancel_signal_(cancel_signal),
     was_started_(false) { }
 
-BlockingTask::~BlockingTask() {}
+BlockingTask::~BlockingTask() {
+  if (was_started_) {
+    cancel_signal_->UnregisterHandler(this);
+  }
+}
 
-void BlockingTask::RunAsync(base::WaitableEvent* task_done_signal) {
+void BlockingTask::RunAsync(base::WaitableEvent* task_start_signal,
+                            base::WaitableEvent* task_done_signal) {
   exec_thread_.Start();
   exec_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&BlockingTask::Run,
                  base::Unretained(this),
+                 base::Unretained(task_start_signal),
                  base::Unretained(task_done_signal)));
 }
 
-void BlockingTask::Run(base::WaitableEvent* task_done_signal) {
+void BlockingTask::Run(
+    base::WaitableEvent* task_start_signal,
+    base::WaitableEvent* task_done_signal) {
   if (cancel_signal_->TryRegisterHandler(this)) {
     DCHECK(!event_.IsSignaled());
     was_started_ = true;
+    task_start_signal->Signal();
     event_.Wait();
   }
   task_done_signal->Signal();
@@ -79,18 +95,16 @@ class CancelationSignalTest : public ::testing::Test {
   CancelationSignalTest();
   virtual ~CancelationSignalTest();
 
-  // Starts the blocking task on a background thread.
-  void StartBlockingTask();
+  // Starts the blocking task on a background thread.  Does not wait for the
+  // task to start.
+  void StartBlockingTaskAsync();
+
+  // Starts the blocking task on a background thread.  Does not return until
+  // the task has been started.
+  void StartBlockingTaskAndWaitForItToStart();
 
   // Cancels the blocking task.
   void CancelBlocking();
-
-  // Verifies that the background task is not running.  This could be beacause
-  // it was canceled early or because it was canceled after it was started.
-  //
-  // This method may block for a brief period of time while waiting for the
-  // background thread to make progress.
-  bool VerifyTaskDone();
 
   // Verifies that the background task was canceled early.
   //
@@ -102,27 +116,29 @@ class CancelationSignalTest : public ::testing::Test {
   base::MessageLoop main_loop_;
 
   CancelationSignal signal_;
+  base::WaitableEvent task_start_event_;
   base::WaitableEvent task_done_event_;
   BlockingTask blocking_task_;
 };
 
 CancelationSignalTest::CancelationSignalTest()
-  : task_done_event_(false, false), blocking_task_(&signal_) {}
+  : task_start_event_(false, false),
+    task_done_event_(false, false),
+    blocking_task_(&signal_) {}
 
 CancelationSignalTest::~CancelationSignalTest() {}
 
-void CancelationSignalTest::StartBlockingTask() {
-  blocking_task_.RunAsync(&task_done_event_);
+void CancelationSignalTest::StartBlockingTaskAsync() {
+  blocking_task_.RunAsync(&task_start_event_, &task_done_event_);
+}
+
+void CancelationSignalTest::StartBlockingTaskAndWaitForItToStart() {
+  blocking_task_.RunAsync(&task_start_event_, &task_done_event_);
+  task_start_event_.Wait();
 }
 
 void CancelationSignalTest::CancelBlocking() {
   signal_.Signal();
-}
-
-bool CancelationSignalTest::VerifyTaskDone() {
-  // Wait until BlockingTask::Run() has finished.
-  task_done_event_.Wait();
-  return true;
 }
 
 bool CancelationSignalTest::VerifyTaskNotStarted() {
@@ -148,28 +164,23 @@ TEST(CancelationSignalTest_SingleThread, CheckFlags) {
 }
 
 // Send the cancelation signal before the task is started.  This will ensure
-// that the task will never be attempted.
+// that the task will never be "started" (ie. TryRegisterHandler() will fail,
+// so it will never start blocking on its main WaitableEvent).
 TEST_F(CancelationSignalTest, CancelEarly) {
   CancelBlocking();
-  StartBlockingTask();
+  StartBlockingTaskAsync();
   EXPECT_TRUE(VerifyTaskNotStarted());
 }
 
-// This test is flaky on iOS and Mac; see http://crbug.com/340360
-#if defined(OS_IOS) || defined(OS_MACOSX)
-#define MAYBE_Cancel DISABLED_Cancel
-#else
-#define MAYBE_Cancel Cancel
-#endif
-// Send the cancelation signal after the request to start the task has been
-// posted.  This is racy.  The signal to stop may arrive before the signal to
-// run the task.  If that happens, we end up with another instance of the
-// CancelEarly test defined earlier.  If the signal requesting a stop arrives
-// after the task has been started, it should end up stopping the task.
-TEST_F(CancelationSignalTest, MAYBE_Cancel) {
-  StartBlockingTask();
+// Send the cancelation signal after the task has started running.  This tests
+// the non-early exit code path, where the task is stopped while it is in
+// progress.
+TEST_F(CancelationSignalTest, Cancel) {
+  StartBlockingTaskAndWaitForItToStart();
+
+  // Wait for the task to finish and let verify it has been started.
   CancelBlocking();
-  EXPECT_TRUE(VerifyTaskDone());
+  EXPECT_FALSE(VerifyTaskNotStarted());
 }
 
 }  // namespace syncer
