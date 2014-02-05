@@ -225,7 +225,10 @@ class RenderWidgetHostViewAndroid
 
   void WasResized();
 
-  blink::WebGLId GetScaledContentTexture(float scale, gfx::Size* out_size);
+  void GetScaledContentBitmap(
+      float scale,
+      gfx::Size* out_size,
+      const base::Callback<void(bool, const SkBitmap&)>& result_callback);
   bool PopulateBitmapWithContents(jobject jbitmap);
 
   bool HasValidFrame() const;
@@ -296,11 +299,7 @@ class RenderWidgetHostViewAndroid
   // Used to track whether this render widget needs a BeginFrame.
   bool needs_begin_frame_;
 
-  // Whether or not this widget is potentially attached to the view hierarchy.
-  // This view may not actually be attached if this is true, but it should be
-  // treated as such, because as soon as a ContentViewCore is set the layer
-  // will be attached automatically.
-  bool are_layers_attached_;
+  bool is_showing_;
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;

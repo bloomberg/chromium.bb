@@ -13,14 +13,14 @@
 namespace cc {
 
 void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
+                              gfx::Size size,
                               UIResourceFormat format) {
-  const SkImageInfo& info = pixel_ref->info();
-  DCHECK(info.fWidth);
-  DCHECK(info.fHeight);
+  DCHECK(size.width());
+  DCHECK(size.height());
   DCHECK(pixel_ref);
   DCHECK(pixel_ref->isImmutable());
   format_ = format;
-  size_ = gfx::Size(info.fWidth, info.fHeight);
+  size_ = size;
   pixel_ref_ = pixel_ref;
 
   // Default values for secondary parameters.
@@ -34,13 +34,16 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   DCHECK(skbitmap.isImmutable());
 
   skia::RefPtr<SkPixelRef> pixel_ref = skia::SharePtr(skbitmap.pixelRef());
-  Create(pixel_ref, UIResourceBitmap::RGBA8);
+  const SkImageInfo& info = pixel_ref->info();
+  Create(
+      pixel_ref, gfx::Size(info.fWidth, info.fHeight), UIResourceBitmap::RGBA8);
 
   SetOpaque(skbitmap.isOpaque());
 }
 
-UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref) {
-  Create(pixel_ref, UIResourceBitmap::ETC1);
+UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
+                                   gfx::Size size) {
+  Create(pixel_ref, size, UIResourceBitmap::ETC1);
 }
 
 UIResourceBitmap::~UIResourceBitmap() {}

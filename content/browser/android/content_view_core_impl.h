@@ -57,9 +57,11 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
-  virtual unsigned int GetScaledContentTexture(
+  virtual void GetScaledContentBitmap(
       float scale,
-      gfx::Size* out_size) OVERRIDE;
+      gfx::Size* out_size,
+      const base::Callback<void(bool, const SkBitmap&)>& result_callback)
+      OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) OVERRIDE;
