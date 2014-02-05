@@ -87,6 +87,7 @@ ResourceLoader::~ResourceLoader()
 void ResourceLoader::releaseResources()
 {
     ASSERT(m_state != Terminated);
+    ASSERT(m_notifiedLoadComplete);
     m_requestCountTracker.clear();
     m_host->didLoadResource(m_resource);
     if (m_state == Terminated)
@@ -247,7 +248,10 @@ void ResourceLoader::cancel(const ResourceError& error)
         m_loader.clear();
     }
 
-    m_host->didFailLoading(m_resource, nonNullError);
+    if (!m_notifiedLoadComplete) {
+        m_notifiedLoadComplete = true;
+        m_host->didFailLoading(m_resource, nonNullError);
+    }
 
     if (m_state == Finishing)
         m_resource->error(Resource::LoadError);
@@ -353,6 +357,12 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
     m_state = Finishing;
+
+    if (!m_notifiedLoadComplete) {
+        m_notifiedLoadComplete = true;
+        m_host->didFailLoading(m_resource, ResourceError::cancelledError(m_request.url()));
+    }
+
     m_resource->error(Resource::LoadError);
     cancel();
 }
@@ -391,8 +401,8 @@ void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime)
     RefPtr<ResourceLoader> protect(this);
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
-    m_resource->finish(finishTime);
     didFinishLoadingOnePart(finishTime);
+    m_resource->finish(finishTime);
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
     // the resources a second time, they have been released by cancel.
@@ -412,15 +422,16 @@ void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& err
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
-    m_resource->error(Resource::LoadError);
-
-    if (m_state == Terminated)
-        return;
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_host->didFailLoading(m_resource, error);
     }
+
+    m_resource->error(Resource::LoadError);
+
+    if (m_state == Terminated)
+        return;
 
     releaseResources();
 }
