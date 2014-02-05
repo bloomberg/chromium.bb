@@ -93,6 +93,22 @@ std::string GetMacArch(std::vector<std::string>* cflags) {
   return std::string();
 }
 
+// Searches for -miphoneos-version-min, returns the resulting value, and
+// removes it from the list. Returns the empty string if it's not found.
+std::string GetIPhoneVersionMin(std::vector<std::string>* cflags) {
+  // Searches for the "-arch" option and returns the corresponding GYP value.
+  const char prefix[] = "-miphoneos-version-min=";
+  for (size_t i = 0; i < cflags->size(); i++) {
+    const std::string& cur = (*cflags)[i];
+    if (StartsWithASCII(cur, prefix, true)) {
+      std::string result = cur.substr(arraysize(prefix) - 1);
+      cflags->erase(cflags->begin() + i);
+      return result;
+    }
+  }
+  return std::string();
+}
+
 // Finds all values from the given getter from all configs in the given list,
 // and adds them to the given result vector.
 template<typename T>
@@ -106,6 +122,38 @@ void FillConfigListValues(
     for (size_t val_i = 0; val_i < values.size(); val_i++)
       result->push_back(values[val_i]);
   }
+}
+
+bool IsClang(const Target* target) {
+  const Value* is_clang =
+      target->settings()->base_config()->GetValue("is_clang");
+  return is_clang && is_clang->type() == Value::BOOLEAN &&
+      is_clang->boolean_value();
+}
+
+bool IsIOS(const Target* target) {
+  const Value* is_ios = target->settings()->base_config()->GetValue("is_ios");
+  return is_ios && is_ios->type() == Value::BOOLEAN && is_ios->boolean_value();
+}
+
+// Returns true if the current target is an iOS simulator build.
+bool IsIOSSimulator(const std::vector<std::string>& cflags) {
+  // Search for the sysroot flag. We expect one flag to be the
+  // switch, and the following one to be the value.
+  const char sysroot[] = "-isysroot";
+  for (size_t i = 0; i < cflags.size(); i++) {
+    const std::string& cur = cflags[i];
+    if (cur == sysroot) {
+      if (i == cflags.size() - 1)
+        return false;  // No following value.
+
+      // The argument is a file path, we check the prefix of the file name.
+      base::FilePath path(UTF8ToFilePath(cflags[i + 1]));
+      std::string path_file_part = FilePathToUTF8(path.BaseName());
+      return StartsWithASCII(path_file_part, "iphonesimulator", false);
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -382,7 +430,9 @@ void GypBinaryTargetWriter::WriteVCFlags(Flags& flags, int indent) {
   Indent(indent) << "},\n";
 }
 
-void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
+void GypBinaryTargetWriter::WriteMacFlags(const Target* target,
+                                          Flags& flags,
+                                          int indent) {
   WriteNamedArray("defines", flags.defines, indent);
   WriteIncludeDirs(flags, indent);
 
@@ -414,14 +464,36 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
 
   Indent(indent) << "'xcode_settings': {\n";
 
-  // Architecture. GYP uses this to write the -arch flag passed to the
-  // compiler, it doesn't look at our -arch flag. So we need to specify it in
-  // this special var and not in the cflags to avoid duplicates or conflicts.
+  // Architecture. GYP reads this value and uses it to generate the -arch
+  // flag, so we always want to remove it from the cflags (which is a side
+  // effect of what GetMacArch does), even in cases where we don't use the
+  // value (in the iOS arm below).
   std::string arch = GetMacArch(&flags.cflags);
-  if (arch == "i386")
-    Indent(indent + kExtraIndent) << "'ARCHS': [ 'i386' ],\n";
-  else if (arch == "x86_64")
-    Indent(indent + kExtraIndent) << "'ARCHS': [ 'x86_64' ],\n";
+  if (IsIOS(target)) {
+    // When writing an iOS "target" (not host) target, we set VALID_ARCHS
+    // instead of ARCHS and always use this hardcoded value. This matches the
+    // GYP build.
+    Indent(indent + kExtraIndent) << "'VALID_ARCHS': 'armv7 i386',\n";
+
+    // Tell XCode to target both iPhone and iPad. GN has no such concept.
+    Indent(indent + kExtraIndent) << "'TARGETED_DEVICE_FAMILY': '1,2',\n";
+
+    if (IsIOSSimulator(flags.cflags)) {
+      Indent(indent + kExtraIndent) << "'SDKROOT': 'iphonesimulator',\n";
+    } else {
+      Indent(indent + kExtraIndent) << "'SDKROOT': 'iphoneos',\n";
+      std::string min_ver = GetIPhoneVersionMin(&flags.cflags);
+      if (!min_ver.empty())
+        Indent(indent + kExtraIndent) << "'IPHONEOS_DEPLOYMENT_TARGET': '',\n";
+    }
+  } else {
+    // When doing regular Mac and "host" iOS (which look like regular Mac)
+    // builds, we can set the ARCHS value to what's specified in the build.
+    if (arch == "i386")
+      Indent(indent + kExtraIndent) << "'ARCHS': [ 'i386' ],\n";
+    else if (arch == "x86_64")
+      Indent(indent + kExtraIndent) << "'ARCHS': [ 'x86_64' ],\n";
+  }
 
   // C/C++ flags.
   if (!flags.cflags.empty() || !flags.cflags_c.empty() ||
@@ -444,7 +516,7 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
   // Ld flags. Don't write these for static libraries. Otherwise, they'll be
   // passed to the library tool which doesn't expect it (the toolchain does
   // not use ldflags so these are ignored in the normal build).
-  if (target_->output_type() != Target::STATIC_LIBRARY)
+  if (target->output_type() != Target::STATIC_LIBRARY)
     WriteNamedArray("OTHER_LDFLAGS", flags.ldflags, indent + kExtraIndent);
 
   // Write the compiler that XCode should use. When we're using clang, we want
@@ -454,10 +526,7 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
   // TODO(brettw) this is a hack. We could add a way for the GN build to set
   // these values but as far as I can see this is the only use for them, so
   // currently we manually check the build config's is_clang value.
-  const Value* is_clang =
-      target_->settings()->base_config()->GetValue("is_clang");
-  if (is_clang && is_clang->type() == Value::BOOLEAN &&
-      is_clang->boolean_value()) {
+  if (IsClang(target)) {
     base::FilePath clang_path =
         target_->settings()->build_settings()->GetFullPath(SourceFile(
             "//third_party/llvm-build/Release+Asserts/bin/clang"));
@@ -533,14 +602,14 @@ void GypBinaryTargetWriter::WriteMacTargetAndHostFlags(
   // conditional).
   {
     Flags flags(FlagsFromTarget(target->item()->AsTarget()));
-    WriteMacFlags(flags, indent + extra_indent);
+    WriteMacFlags(target->item()->AsTarget(), flags, indent + extra_indent);
   }
 
   // Now optionally write the host conditional arm.
   if (host) {
     Indent(indent) << kToolsetTargetElse;
     Flags flags(FlagsFromTarget(host->item()->AsTarget()));
-    WriteMacFlags(flags, indent + kExtraIndent);
+    WriteMacFlags(host->item()->AsTarget(), flags, indent + kExtraIndent);
     Indent(indent) << kToolsetTargetEnd;
   }
 }
@@ -605,7 +674,7 @@ void GypBinaryTargetWriter::WriteDirectDependentSettings(int indent) {
   else if (target_->settings()->IsWin())
     WriteVCFlags(flags, indent + kExtraIndent);
   else if (target_->settings()->IsMac())
-    WriteMacFlags(flags, indent + kExtraIndent);
+    WriteMacFlags(target_, flags, indent + kExtraIndent);
   Indent(indent) << "},\n";
 }
 
@@ -620,7 +689,7 @@ void GypBinaryTargetWriter::WriteAllDependentSettings(int indent) {
   else if (target_->settings()->IsWin())
     WriteVCFlags(flags, indent + kExtraIndent);
   else if (target_->settings()->IsMac())
-    WriteMacFlags(flags, indent + kExtraIndent);
+    WriteMacFlags(target_, flags, indent + kExtraIndent);
   Indent(indent) << "},\n";
 }
 

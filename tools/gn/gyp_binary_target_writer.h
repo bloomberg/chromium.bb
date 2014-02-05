@@ -55,7 +55,7 @@ class GypBinaryTargetWriter : public GypTargetWriter {
   // cflags will be fixed up to account for things converted to VC settings
   // (rather than compiler flags).
   void WriteVCFlags(Flags& flags, int indent);
-  void WriteMacFlags(Flags& flags, int indent);
+  void WriteMacFlags(const Target* target, Flags& flags, int indent);
 
   // Writes the Linux compiler and linker flags. The first version does the
   // flags for the given target, the second version takes a pregenerted list of
