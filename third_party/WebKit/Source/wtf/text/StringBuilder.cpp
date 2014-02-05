@@ -166,9 +166,10 @@ void StringBuilder::reallocateBuffer<LChar>(unsigned requiredLength)
     ASSERT(m_is8Bit);
     ASSERT(m_buffer->is8Bit());
 
-    if (m_buffer->hasOneRef())
-        m_buffer = StringImpl::reallocate(m_buffer.release(), requiredLength, m_bufferCharacters8);
-    else
+    if (m_buffer->hasOneRef()) {
+        m_buffer = StringImpl::reallocate(m_buffer.release(), requiredLength);
+        m_bufferCharacters8 = const_cast<LChar*>(m_buffer->characters8());
+    } else
         allocateBuffer(m_buffer->characters8(), requiredLength);
 }
 
@@ -179,11 +180,12 @@ void StringBuilder::reallocateBuffer<UChar>(unsigned requiredLength)
     // otherwise fall back to "allocate and copy" method.
     m_string = String();
 
-    if (m_buffer->is8Bit())
+    if (m_buffer->is8Bit()) {
         allocateBufferUpConvert(m_buffer->characters8(), requiredLength);
-    else if (m_buffer->hasOneRef())
-        m_buffer = StringImpl::reallocate(m_buffer.release(), requiredLength, m_bufferCharacters16);
-    else
+    } else if (m_buffer->hasOneRef()) {
+        m_buffer = StringImpl::reallocate(m_buffer.release(), requiredLength);
+        m_bufferCharacters16 = const_cast<UChar*>(m_buffer->characters16());
+    } else
         allocateBuffer(m_buffer->characters16(), requiredLength);
 }
 

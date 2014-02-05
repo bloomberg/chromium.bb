@@ -318,41 +318,20 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     return adoptRef(new (string) StringImpl(length));
 }
 
-PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data)
+PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length)
 {
-    ASSERT(originalString->is8Bit());
     ASSERT(originalString->hasOneRef());
 
-    if (!length) {
-        data = 0;
+    if (!length)
         return empty();
-    }
 
+    bool is8Bit = originalString->is8Bit();
     // Same as createUninitialized() except here we use realloc.
-    size_t size = allocationSize<LChar>(length);
+    size_t size = is8Bit ? allocationSize<LChar>(length) : allocationSize<UChar>(length);
     originalString->~StringImpl();
     StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
-
-    data = reinterpret_cast<LChar*>(string + 1);
-    return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
-}
-
-PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data)
-{
-    ASSERT(!originalString->is8Bit());
-    ASSERT(originalString->hasOneRef());
-
-    if (!length) {
-        data = 0;
-        return empty();
-    }
-
-    // Same as createUninitialized() except here we use realloc.
-    size_t size = allocationSize<UChar>(length);
-    originalString->~StringImpl();
-    StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
-
-    data = reinterpret_cast<UChar*>(string + 1);
+    if (is8Bit)
+        return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
     return adoptRef(new (string) StringImpl(length));
 }
 

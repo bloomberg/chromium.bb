@@ -66,8 +66,7 @@ public:
             return;
         }
         if (newLength > m_data->length()) {
-            CharType* characters;
-            m_data = StringImpl::reallocate(m_data.release(), newLength, characters);
+            m_data = StringImpl::reallocate(m_data.release(), newLength);
             return;
         }
         shrink(newLength);
