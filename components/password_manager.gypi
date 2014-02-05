@@ -5,6 +5,24 @@
 {
   'targets': [
     {
+      'target_name': 'password_manager_core_browser',
+      'type': 'static_library',
+      'dependencies': [
+        'autofill_core_common',
+        'password_manager_core_common',
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'password_manager/core/browser/psl_matching_helper.cc',
+        'password_manager/core/browser/psl_matching_helper.h',
+      ],
+    },
+    {
       'target_name': 'password_manager_core_browser_test_support',
       'type': 'static_library',
       'dependencies': [

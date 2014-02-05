@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/login_database.h"
-#include "chrome/browser/password_manager/psl_matching_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using autofill::PasswordForm;

@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/password_manager/psl_matching_helper.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 
