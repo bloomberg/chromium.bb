@@ -692,12 +692,6 @@ const char kErrorOutOfRange[] = "out-of-range";
 const char kErrorPinMissing[] = "pin-missing";
 const char kErrorPppAuthFailed[] = "ppp-auth-failed";
 
-// Flimflam error messages.  These are deprecated in favor of the error result
-// codes below, and should be replaced in Chrome.  crbug.com/256855
-const char kErrorIncorrectPinMsg[] = "org.chromium.flimflam.Error.IncorrectPin";
-const char kErrorPinBlockedMsg[] = "org.chromium.flimflam.Error.PinBlocked";
-const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
-
 // Flimflam error result codes.
 const char kErrorResultSuccess[] = "org.chromium.flimflam.Error.Success";
 const char kErrorResultFailure[] = "org.chromium.flimflam.Error.Failure";
