@@ -98,17 +98,15 @@ PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  scoped_refptr<PasswordStore> ps;
   base::FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  LoginDatabase* login_db = new LoginDatabase();
+  scoped_ptr<LoginDatabase> login_db(new LoginDatabase());
   {
     // TODO(paivanof@gmail.com): execution of login_db->Init() should go
     // to DB thread. http://crbug.com/138903
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (!login_db->Init(login_db_file_path)) {
       LOG(ERROR) << "Could not initialize login database.";
-      delete login_db;
       return NULL;
     }
   }
@@ -119,10 +117,11 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::DB));
 
+  scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
   ps = new PasswordStoreWin(main_thread_runner,
                             db_thread_runner,
-                            login_db,
+                            login_db.release(),
                             profile,
                             WebDataService::FromBrowserContext(profile));
 #elif defined(OS_MACOSX)
@@ -130,12 +129,12 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain) ?
           new crypto::MockAppleKeychain() : new crypto::AppleKeychain();
   ps = new PasswordStoreMac(
-      main_thread_runner, db_thread_runner, keychain, login_db);
+      main_thread_runner, db_thread_runner, keychain, login_db.release());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
   ps = new PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db, profile);
+      main_thread_runner, db_thread_runner, login_db.release(), profile);
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -192,19 +191,15 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   ps = new PasswordStoreX(main_thread_runner,
                           db_thread_runner,
-                          login_db,
+                          login_db.release(),
                           profile,
                           backend.release());
 #elif defined(USE_OZONE)
   ps = new PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db, profile);
+      main_thread_runner, db_thread_runner, login_db.release(), profile);
 #else
   NOTIMPLEMENTED();
 #endif
-
-  if (!ps.get())
-    delete login_db;
-
   if (!ps.get() || !ps->Init()) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
