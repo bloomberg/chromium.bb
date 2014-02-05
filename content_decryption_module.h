@@ -81,7 +81,7 @@ typedef AudioFrames_2 AudioFrames;
 
 class Host_1;
 class Host_2;
-class Host_3;
+class Host_4;
 
 class DecryptedBlock;
 class VideoFrame;
@@ -663,10 +663,10 @@ class ContentDecryptionModule_2 {
 // provided in CreateCdmInstance() to allocate any Buffer that needs to
 // be passed back to the caller. Implementations must call Buffer::Destroy()
 // when a Buffer is created that will never be returned to the caller.
-class ContentDecryptionModule_3 {
+class ContentDecryptionModule_4 {
  public:
-  static const int kVersion = 3;
-  typedef Host_3 Host;
+  static const int kVersion = 4;
+  typedef Host_4 Host;
 
   // CreateSession(), UpdateSession(), and ReleaseSession() get passed a
   // |session_id| for a MediaKeySession object. It must be used in the reply via
@@ -679,6 +679,11 @@ class ContentDecryptionModule_3 {
       uint32_t session_id,
       const char* type, uint32_t type_size,
       const uint8_t* init_data, uint32_t init_data_size) = 0;
+
+  // Loads a session that has |web_session_id|.
+  virtual void LoadSession(
+      uint32_t session_id,
+      const char* web_session_id, uint32_t web_session_id_length) = 0;
 
   // Updates the session with |response|.
   virtual void UpdateSession(
@@ -793,11 +798,11 @@ class ContentDecryptionModule_3 {
   virtual void Destroy() = 0;
 
  protected:
-  ContentDecryptionModule_3() {}
-  virtual ~ContentDecryptionModule_3() {}
+  ContentDecryptionModule_4() {}
+  virtual ~ContentDecryptionModule_4() {}
 };
 
-typedef ContentDecryptionModule_3 ContentDecryptionModule;
+typedef ContentDecryptionModule_4 ContentDecryptionModule;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
@@ -927,9 +932,9 @@ class Host_2 {
   virtual ~Host_2() {}
 };
 
-class Host_3 {
+class Host_4 {
  public:
-  static const int kVersion = 3;
+  static const int kVersion = 4;
 
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
@@ -944,11 +949,13 @@ class Host_3 {
   // Returns the current epoch wall time in seconds.
   virtual double GetCurrentWallTimeInSeconds() = 0;
 
-  // Called by the CDM when a session is created and the value for the
+  // Called by the CDM when a session is created or loaded and the value for the
   // MediaKeySession's sessionId attribute is available (|web_session_id|).
   // This must be called before OnSessionMessage() or OnSessionReady() is called
   // for |session_id|. |web_session_id_length| should not include null
   // termination.
+  // When called in response to LoadSession(), the |web_session_id| must be the
+  // same as the |web_session_id| passed in LoadSession().
   virtual void OnSessionCreated(
       uint32_t session_id,
       const char* web_session_id, uint32_t web_session_id_length) = 0;
@@ -961,6 +968,8 @@ class Host_3 {
       const char* destination_url, uint32_t destination_url_length) = 0;
 
   // Called by the CDM when session |session_id| is ready.
+  // Note: "ready" event is deprecated. This is only used for the prefixed EME
+  // API's "keyAdded" event. Drop this when we deprecate prefixed EME API.
   virtual void OnSessionReady(uint32_t session_id) = 0;
 
   // Called by the CDM when session |session_id| is closed.
@@ -1005,8 +1014,8 @@ class Host_3 {
   virtual FileIO* CreateFileIO(FileIOClient* client) = 0;
 
  protected:
-  Host_3() {}
-  virtual ~Host_3() {}
+  Host_4() {}
+  virtual ~Host_4() {}
 };
 
 // Represents a decrypted block that has not been decoded.
