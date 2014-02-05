@@ -5136,6 +5136,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionToolbarModel.BrowserActionsCount">
+  <summary>
+    The number of icons the Browser Actions Container knows about (visible or
+    not). Measured once per startup per profile.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionToolbarModel.BrowserActionsVisible">
+  <summary>
+    The number of visible icons in the Browser Actions Container. Measured once
+    per startup per profile.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Create" enum="FileDialogType">
   <summary>Chrome OS File Browser opening mode.</summary>
 </histogram>
