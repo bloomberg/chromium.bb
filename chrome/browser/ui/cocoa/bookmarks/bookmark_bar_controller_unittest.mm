@@ -34,8 +34,8 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 
 using base::ASCIIToUTF16;

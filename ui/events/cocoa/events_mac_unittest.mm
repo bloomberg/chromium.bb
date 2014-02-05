@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/point.h"
 
 using namespace cocoa_test_event_utils;

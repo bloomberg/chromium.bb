@@ -17,8 +17,6 @@
         'gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
-        'base/test/cocoa_test_event_utils.h',
-        'base/test/cocoa_test_event_utils.mm',
         'base/test/ui_cocoa_test_helper.h',
         'base/test/ui_cocoa_test_helper.mm',
         'base/test/ui_controls.h',
@@ -285,6 +283,11 @@
         ['use_x11==1 and use_aura==1',  {
           'sources': [
             'base/cursor/cursor_loader_x11_unittest.cc',
+          ],
+        }],
+        ['OS=="mac"',  {
+          'dependencies': [
+            'events/events.gyp:events_test_support',
           ],
         }],
         ['use_aura==1 or toolkit_views==1',  {

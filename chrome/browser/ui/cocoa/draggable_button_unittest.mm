@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/draggable_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface TestableDraggableButton : DraggableButton {
   NSUInteger dragCount_;

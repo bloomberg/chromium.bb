@@ -169,6 +169,8 @@
         'events_base',
       ],
       'sources': [
+        'test/cocoa_test_event_utils.h',
+        'test/cocoa_test_event_utils.mm',
         'test/events_test_utils.cc',
         'test/events_test_utils.h',
         'test/events_test_utils_x11.cc',
@@ -183,6 +185,10 @@
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:x11',
           ],
+        }],
+        ['OS=="ios"', {
+          # The cocoa files don't apply to iOS.
+          'sources/': [['exclude', 'cocoa']],
         }],
       ],
     },

@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
 const CGFloat kBubbleWindowWidth = 100;

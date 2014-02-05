@@ -12,7 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 // Fake BookmarkButton delegate to get a pong on mouse entered/exited
 @interface FakeButtonDelegate : NSObject<BookmarkButtonDelegate> {

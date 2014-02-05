@@ -4,8 +4,8 @@
 
 #import "ui/base/cocoa/cocoa_event_utils.h"
 
-#include "ui/events/event_constants.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/event_constants.h"
 
 namespace {
 

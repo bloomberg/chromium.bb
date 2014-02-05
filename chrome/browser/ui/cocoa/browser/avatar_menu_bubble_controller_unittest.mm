@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 
 class AvatarMenuBubbleControllerTest : public CocoaTest {
  public:

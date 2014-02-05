@@ -25,8 +25,8 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 

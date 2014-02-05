@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
-#define UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
+#ifndef UI_EVENTS_TEST_COCOA_TEST_EVENT_UTILS_H_
+#define UI_EVENTS_TEST_COCOA_TEST_EVENT_UTILS_H_
 
 #include <utility>
 
@@ -62,4 +62,4 @@ NSEvent* OtherEventWithType(NSEventType event_type);
 
 }  // namespace cocoa_test_event_utils
 
-#endif  // UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
+#endif  // UI_EVENTS_TEST_COCOA_TEST_EVENT_UTILS_H_

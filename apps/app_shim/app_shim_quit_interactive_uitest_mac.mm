@@ -19,7 +19,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 
 using extensions::PlatformAppBrowserTest;
 

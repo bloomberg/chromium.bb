@@ -9,7 +9,7 @@
 #include "ui/app_list/app_list_item.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace app_list {
 namespace test {

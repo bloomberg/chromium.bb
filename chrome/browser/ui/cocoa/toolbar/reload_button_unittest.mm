@@ -13,7 +13,7 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface ReloadButton (Testing)
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds;

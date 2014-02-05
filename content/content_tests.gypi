@@ -14,6 +14,7 @@
         '../testing/gtest.gyp:gtest',
         '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/events/events.gyp:events_base',
+        '../ui/events/events.gyp:events_test_support',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/resources/ui_resources.gyp:ui_resources',

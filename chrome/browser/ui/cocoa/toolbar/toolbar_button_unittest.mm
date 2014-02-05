@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 #import "testing/gtest_mac.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface TestableToolbarButton : ToolbarButton {
  @private

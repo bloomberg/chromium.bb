@@ -18,7 +18,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock_extensions.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 using ::testing::Return;
 using ::testing::ReturnArg;

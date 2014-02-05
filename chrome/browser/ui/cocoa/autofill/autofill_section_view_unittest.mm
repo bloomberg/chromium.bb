@@ -9,8 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {

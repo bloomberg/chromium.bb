@@ -21,10 +21,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
-#import "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "ui/base/test/cocoa_test_event_utils.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 
 using content::SiteInstance;
 using content::WebContents;

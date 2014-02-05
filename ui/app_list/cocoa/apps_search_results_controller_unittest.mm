@@ -14,8 +14,8 @@
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestAppsSearchResultsDelegate : NSObject<AppsSearchResultsDelegate> {
  @private

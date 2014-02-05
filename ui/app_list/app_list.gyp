@@ -233,6 +233,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
+            '../events/events.gyp:events_test_support',
             '../ui_unittests.gyp:ui_test_support',
           ],
           'conditions': [
