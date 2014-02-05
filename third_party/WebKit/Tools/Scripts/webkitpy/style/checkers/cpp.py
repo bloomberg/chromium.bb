@@ -3411,17 +3411,16 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
         line = line[matched.end():]
 
 
-def check_for_toFoo_definition(filename, pattern, error):
-    """ Reports for using static_cast instead of toFoo convenience function.
+_RE_GENERAL_MACRO_PATTERN_STRING = None
+_RE_EXPLICIT_FUNCTION_PATTERN_STRING = None
 
-    This function will output warnings to make sure you are actually using
-    the added toFoo conversion functions rather than directly hard coding
-    the static_cast<Classname*> call. For example, you should toHTMLELement(Node*)
-    to convert Node* to HTMLElement*, instead of static_cast<HTMLElement*>(Node*)
+
+def check_for_toFoo_definition(filename, search_function_name, error):
+    """Checks for a Cpp-style static cast on objects by searching for the pattern.
 
     Args:
       filename: The name of the header file in which to check for toFoo definition.
-      pattern: The conversion function pattern to grep for.
+      search_function_name: The toFoo convenience function string.
       error: The function to call with any errors found.
     """
     def get_abs_filepath(filename):
@@ -3433,19 +3432,24 @@ def check_for_toFoo_definition(filename, pattern, error):
                 return os.path.join(root, filename)
         return None
 
-    def grep(lines, pattern, error):
+    def grep(lines, search_function_name, error):
         matches = []
         function_state = None
         for line_number in xrange(lines.num_lines()):
             line = (lines.elided[line_number]).rstrip()
             try:
-                if pattern in line:
+                if re.search(_RE_GENERAL_MACRO_PATTERN_STRING, line):
+                    # Search for DEFINE_TYPE_CASTS macro pattern in the source header.
+                    matches.append([line, line_number + 1, line_number + 1])
+                elif re.search(_RE_EXPLICIT_FUNCTION_PATTERN_STRING, line):
+                    # DEFINE_TYPE_CASTS macro pattern not found in source header.
+                    # Instead, search for toFoo() function pattern in source header.
                     if not function_state:
                         function_state = _FunctionState(1)
                     detect_functions(lines, line_number, function_state, error)
                     # Exclude the match of dummy conversion function. Dummy function is just to
                     # catch invalid conversions and shouldn't be part of possible alternatives.
-                    result = re.search(r'%s(\s+)%s' % ("void", pattern), line)
+                    result = re.search(r'%s(\s+)%s' % ("void", search_function_name), line)
                     if not result:
                         matches.append([line, function_state.body_start_position.row, function_state.end_position.row + 1])
                         function_state = None
@@ -3491,12 +3495,17 @@ def check_for_toFoo_definition(filename, pattern, error):
         f.close()
 
     # Make a list of all genuine alternatives to static_cast.
-    matches = grep(clean_lines, pattern, error)
+    matches = grep(clean_lines, search_function_name, error)
     return matches
 
 
 def check_for_object_static_cast(processing_file, line_number, line, error):
-    """Checks for a Cpp-style static cast on objects by looking for the pattern.
+    """ Reports for using static_cast instead of toFoo convenience function.
+
+    This function will output warnings to make sure you are actually using
+    the added toFoo conversion functions rather than directly hard coding
+    the static_cast<Classname*> call. For example, you should toHTMLELement(Node*)
+    to convert Node* to HTMLElement*, instead of static_cast<HTMLElement*>(Node*)
 
     Args:
       processing_file: The name of the processing file.
@@ -3504,6 +3513,7 @@ def check_for_object_static_cast(processing_file, line_number, line, error):
       line: The line of code to check.
       error: The function to call with any errors found.
     """
+
     matched = search(r'\bstatic_cast<(\s*\w*:?:?\w+\s*\*+\s*)>', line)
     if not matched:
         return
@@ -3519,9 +3529,13 @@ def check_for_object_static_cast(processing_file, line_number, line, error):
         class_name = class_name[namespace_pos + 2:]
 
     header_file = ''.join((class_name, '.h'))
-    matches = check_for_toFoo_definition(header_file, ''.join(('to', class_name)), error)
-    # Ignore (for now) if not able to find the header where toFoo might be defined.
-    # TODO: Handle cases where Classname might be defined in some other header or cpp file.
+    toFoo_name = ''.join(('to', class_name))
+    _RE_GENERAL_MACRO_PATTERN_STRING = re.compile(r'\s*DEFINE_(\w*)TYPE_CASTS\(%s,(.+)(\);$)' % class_name)
+    _RE_EXPLICIT_FUNCTION_PATTERN_STRING = re.compile(r'[ \w]*%s\*\s+%s\((.+)\)$' % (class_name, toFoo_name))
+    matches = check_for_toFoo_definition(header_file, toFoo_name, error)
+
+    # FIXME: Handle cases where Classname might be defined in some other header or cpp file.
+    # It will ensure check_for_toFoo_definition nevers 'None' and we can remove this unneccessary check.
     if matches is None:
         return
 
@@ -3536,15 +3550,14 @@ def check_for_object_static_cast(processing_file, line_number, line, error):
     if report_error:
         if len(matches):
             # toFoo is defined - enforce using it.
-            # TODO: Suggest an appropriate toFoo from the alternatives present in matches.
-            error(line_number, 'runtime/casting', 4,
+            # FIXME: Suggest an appropriate toFoo from the alternatives present in matches.
+            error(line_number, 'security/casting', 4,
                   'static_cast of class objects is not allowed. Use to%s defined in %s.' %
                   (class_name, header_file))
         else:
             # No toFoo defined - enforce definition & usage.
-            # TODO: Automate the generation of toFoo() to avoid any slippages ever.
             error(line_number, 'runtime/casting', 4,
-                  'static_cast of class objects is not allowed. Add to%s in %s and use it instead.' %
+                  'static_cast of class objects is not allowed. Define cast macro DEFINE_TYPE_CASTS(%s) in %s and use it.' %
                   (class_name, header_file))
 
 
@@ -3984,6 +3997,7 @@ class CppChecker(object):
         'runtime/threadsafe_fn',
         'runtime/unsigned',
         'runtime/virtual',
+        'security/casting',
         'whitespace/blank_line',
         'whitespace/braces',
         'whitespace/comma',
