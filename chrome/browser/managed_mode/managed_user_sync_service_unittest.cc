@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
@@ -17,6 +18,10 @@
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_user_images.h"
+#endif
 
 using sync_pb::ManagedUserSpecifics;
 using syncer::MANAGED_USERS;
@@ -278,23 +283,36 @@ TEST_F(ManagedUserSyncServiceTest, GetAvatarIndex) {
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(std::string(), &avatar));
   EXPECT_EQ(ManagedUserSyncService::kNoAvatar, avatar);
 
-  std::string avatar_str = ManagedUserSyncService::BuildAvatarString(24);
+  int avatar_index = 4;
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ("chromeos-avatar-index:24", avatar_str);
+  avatar_index += chromeos::kFirstDefaultImageIndex;
+#endif
+  std::string avatar_str =
+      ManagedUserSyncService::BuildAvatarString(avatar_index);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(base::StringPrintf("chromeos-avatar-index:%d", avatar_index),
+            avatar_str);
 #else
-  EXPECT_EQ("chrome-avatar-index:24", avatar_str);
+  EXPECT_EQ(base::StringPrintf("chrome-avatar-index:%d", avatar_index),
+            avatar_str);
 #endif
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
-  EXPECT_EQ(24, avatar);
+  EXPECT_EQ(avatar_index, avatar);
 
-  avatar_str = ManagedUserSyncService::BuildAvatarString(0);
+  avatar_index = 0;
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ("chromeos-avatar-index:0", avatar_str);
+  avatar_index += chromeos::kFirstDefaultImageIndex;
+#endif
+  avatar_str = ManagedUserSyncService::BuildAvatarString(avatar_index);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(base::StringPrintf("chromeos-avatar-index:%d", avatar_index),
+            avatar_str);
 #else
-  EXPECT_EQ("chrome-avatar-index:0", avatar_str);
+  EXPECT_EQ(base::StringPrintf("chrome-avatar-index:%d", avatar_index),
+            avatar_str);
 #endif
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
-  EXPECT_EQ(0, avatar);
+  EXPECT_EQ(avatar_index, avatar);
 
   EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("wrong-prefix:5",
                                                       &avatar));

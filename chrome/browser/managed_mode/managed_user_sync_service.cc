@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "sync/api/sync_change.h"
@@ -18,6 +19,10 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/protocol/sync.pb.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_user_images.h"
+#endif
 
 using base::DictionaryValue;
 using user_prefs::PrefRegistrySyncable;
@@ -129,7 +134,28 @@ bool ManagedUserSyncService::GetAvatarIndex(const std::string& avatar_str,
     return false;
   }
 
-  return base::StringToInt(avatar_str.substr(prefix_len), avatar_index);
+  if (!base::StringToInt(avatar_str.substr(prefix_len), avatar_index))
+    return false;
+
+  const int kChromeOSDummyAvatarIndex = -111;
+
+#if defined(OS_CHROMEOS)
+  return (*avatar_index == kChromeOSDummyAvatarIndex ||
+          (*avatar_index >= chromeos::kFirstDefaultImageIndex &&
+           *avatar_index < chromeos::kDefaultImagesCount));
+#else
+  // Check if the Chrome avatar index is set to a dummy value. Some early
+  // supervised user profiles on ChromeOS stored a dummy avatar index as a
+  // Chrome Avatar before there was logic to sync the ChromeOS avatar
+  // separately. Handle this as if the Chrome Avatar was not chosen yet (which
+  // is correct for these profiles).
+  if (*avatar_index == kChromeOSDummyAvatarIndex)
+    *avatar_index = kNoAvatar;
+  return (*avatar_index == kNoAvatar ||
+          (*avatar_index >= 0 &&
+           static_cast<size_t>(*avatar_index) <
+               ProfileInfoCache::GetDefaultAvatarIconCount()));
+#endif
 }
 
 // static
