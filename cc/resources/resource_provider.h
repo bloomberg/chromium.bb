@@ -363,10 +363,13 @@ class CC_EXPORT ResourceProvider {
 
  private:
   struct Resource {
+    enum Origin { Internal, External, Delegated };
+
     Resource();
     ~Resource();
     Resource(unsigned texture_id,
              const gfx::Size& size,
+             Origin origin,
              GLenum target,
              GLenum filter,
              GLenum texture_pool,
@@ -376,6 +379,7 @@ class CC_EXPORT ResourceProvider {
     Resource(uint8_t* pixels,
              SharedBitmap* bitmap,
              const gfx::Size& size,
+             Origin origin,
              GLenum filter,
              GLint wrap_mode);
 
@@ -393,11 +397,6 @@ class CC_EXPORT ResourceProvider {
     int imported_count;
     int exported_count;
     bool locked_for_write;
-    enum Origin {
-      Internal,
-      External,
-      Delegated,
-    };
     Origin origin;
     bool marked_for_deletion;
     bool pending_set_pixels;
