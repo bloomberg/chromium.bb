@@ -22,6 +22,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/push_messaging.h"
 #include "content/public/browser/browser_thread.h"
@@ -124,8 +126,10 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
   OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(GetProfile());
   fetcher_access_token_request_ = token_service->StartRequest(
-      token_service->GetPrimaryAccountId(), scopes, this);
+      signin_manager->GetAuthenticatedAccountId(), scopes, this);
 }
 
 void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
@@ -188,8 +192,10 @@ void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
 bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() const {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(GetProfile());
   return token_service->RefreshTokenIsAvailable(
-      token_service->GetPrimaryAccountId());
+      signin_manager->GetAuthenticatedAccountId());
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(

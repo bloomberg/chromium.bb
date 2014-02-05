@@ -23,6 +23,8 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/pref_names.h"
@@ -62,6 +64,12 @@ namespace {
 
 static const char kChromiumDomainRedirectUrlPattern[] =
     "https://%s.chromiumapp.org/";
+
+std::string GetPrimaryAccountId(Profile* profile) {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  return signin_manager->GetAuthenticatedAccountId();
+}
 
 }  // namespace
 
@@ -104,13 +112,10 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
     return false;
   }
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-
   std::set<std::string> scopes(oauth2_info.scopes.begin(),
                                oauth2_info.scopes.end());
   token_key_.reset(new ExtensionTokenKey(
-      GetExtension()->id(), token_service->GetPrimaryAccountId(), scopes));
+      GetExtension()->id(), GetPrimaryAccountId(GetProfile()), scopes));
 
   // Balanced in CompleteFunctionWithResult|CompleteFunctionWithError
   AddRef();
@@ -428,6 +433,7 @@ void IdentityGetAuthTokenFunction::DidGetTokenService(
 void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  const std::string primary_account_id = GetPrimaryAccountId(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -435,7 +441,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
            &app_client_id, &app_client_secret)) {
       login_token_request_ =
-          service->StartRequestForClient(service->GetPrimaryAccountId(),
+          service->StartRequestForClient(primary_account_id,
                                          app_client_id,
                                          app_client_secret,
                                          OAuth2TokenService::ScopeSet(),
@@ -445,7 +451,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   }
 #endif
   login_token_request_ = service->StartRequest(
-      service->GetPrimaryAccountId(), OAuth2TokenService::ScopeSet(), this);
+      primary_account_id, OAuth2TokenService::ScopeSet(), this);
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -490,7 +496,7 @@ bool IdentityGetAuthTokenFunction::HasLoginToken() const {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
   return token_service->RefreshTokenIsAvailable(
-      token_service->GetPrimaryAccountId());
+      GetPrimaryAccountId(GetProfile()));
 }
 
 std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(
@@ -719,9 +725,7 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  account_tracker_.ReportAuthError(token_service->GetPrimaryAccountId(), error);
+  account_tracker_.ReportAuthError(GetPrimaryAccountId(profile_), error);
 }
 
 void IdentityAPI::Shutdown() {

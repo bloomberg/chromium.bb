@@ -11,7 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/notification_details.h"
 #include "extensions/browser/extension_system.h"
 
@@ -52,9 +53,9 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // Ignore refresh tokens if there is no primary account ID at all.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  if (token_service->GetPrimaryAccountId().empty())
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  if (signin_manager->GetAuthenticatedAccountId().empty())
     return;
 
   DVLOG(1) << "AVAILABLE " << account_id;

@@ -14,8 +14,8 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -371,9 +371,9 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
   }
 
   const std::string GetPrimaryAccountId() {
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
-    return token_service->GetPrimaryAccountId();
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(browser()->profile());
+    return signin_manager->GetAuthenticatedAccountId();
   }
 
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
