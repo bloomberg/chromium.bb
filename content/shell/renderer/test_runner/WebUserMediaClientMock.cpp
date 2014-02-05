@@ -7,11 +7,13 @@
 #include "content/shell/renderer/test_runner/MockConstraints.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
@@ -75,6 +77,25 @@ private:
     WebUserMediaRequest m_request;
 };
 
+class MediaDevicesRequestTask : public WebMethodTask<WebUserMediaClientMock> {
+public:
+    MediaDevicesRequestTask(WebUserMediaClientMock* object, const WebMediaDevicesRequest& request, const WebVector<WebMediaDeviceInfo>& result)
+        : WebMethodTask<WebUserMediaClientMock>(object)
+        , m_request(request)
+        , m_result(result)
+    {
+    }
+
+    virtual void runIfValid() OVERRIDE
+    {
+        m_request.requestSucceeded(m_result);
+    }
+
+private:
+    WebMediaDevicesRequest m_request;
+    WebVector<WebMediaDeviceInfo> m_result;
+};
+
 ////////////////////////////////
 
 class MockExtraData : public WebMediaStream::ExtraData {
@@ -135,6 +156,22 @@ void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamR
 }
 
 void WebUserMediaClientMock::cancelUserMediaRequest(const WebUserMediaRequest&)
+{
+}
+
+void WebUserMediaClientMock::requestMediaDevices(const WebMediaDevicesRequest& request)
+{
+    const size_t three = 3;
+    WebVector<WebMediaDeviceInfo> devices(three);
+
+    devices[0].initialize("device1", WebMediaDeviceInfo::MediaDeviceKindAudioInput, "Built-in microphone", "group1");
+    devices[1].initialize("device2", WebMediaDeviceInfo::MediaDeviceKindAudioOutput, "Built-in speakers", "group1");
+    devices[2].initialize("device3", WebMediaDeviceInfo::MediaDeviceKindVideoInput, "Build-in webcam", "group2");
+
+    m_delegate->postTask(new MediaDevicesRequestTask(this, request, devices));
+}
+
+void WebUserMediaClientMock::cancelMediaDevicesRequest(const WebMediaDevicesRequest&)
 {
 }
 

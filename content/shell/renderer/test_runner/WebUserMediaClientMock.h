@@ -24,6 +24,8 @@ public:
 
     virtual void requestUserMedia(const blink::WebUserMediaRequest&) OVERRIDE;
     virtual void cancelUserMediaRequest(const blink::WebUserMediaRequest&) OVERRIDE;
+    virtual void requestMediaDevices(const blink::WebMediaDevicesRequest&) OVERRIDE;
+    virtual void cancelMediaDevicesRequest(const blink::WebMediaDevicesRequest&) OVERRIDE;
 
     // Task related methods
     WebTaskList* taskList() { return &m_taskList; }
