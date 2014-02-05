@@ -1256,6 +1256,7 @@ TEST(HeapTest, MarkTest)
             EXPECT_EQ(2u, Bar::s_live);
             EXPECT_TRUE(reinterpret_cast<Address>(foo) != reinterpret_cast<Address>(bar.get()));
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            EXPECT_TRUE(foo != bar); // To make sure foo is kept alive.
             EXPECT_EQ(2u, Bar::s_live);
         }
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -1282,6 +1283,7 @@ TEST(HeapTest, DeepTest)
         }
         EXPECT_EQ(depth + 2, Bar::s_live);
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(foo != bar); // To make sure foo and bar are kept alive.
         EXPECT_EQ(depth + 2, Bar::s_live);
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
