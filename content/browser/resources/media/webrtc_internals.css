@@ -24,11 +24,6 @@
   margin: 0.5em 0 0.5em 0;
 }
 
-.stats-graph-container-heading {
-  font-size: 0.8em;
-  font-weight: bold;
-}
-
 .stats-graph-sub-container {
   float: left;
   margin: 0.5em;
@@ -54,6 +49,10 @@
   font-weight: bold;
   text-align: center;
   padding: 0 0 1em 0;
+}
+
+.stats-table-active-connection {
+  font-weight: bold;
 }
 
 body {
@@ -85,22 +84,26 @@ th {
 
 .tab-head {
   background-color: rgb(220, 220, 220);
-  margin: 10px 5px 0 5px;
+  margin: 10px 2px 0 2px;
   text-decoration: underline;
   cursor: pointer;
   display: inline-block;
-  width: 32%;
+  word-break: break-all;
+  width: 20em;
 }
+
 .active-tab-head {
   background-color: turquoise;
   font-weight: bold;
 }
+
 .tab-body {
   border: 1px solid turquoise;
   border-top-width: 3px;
   padding: 0 10px 500px 10px;
   display: none;
 }
+
 .active-tab-body {
   display: block;
 }

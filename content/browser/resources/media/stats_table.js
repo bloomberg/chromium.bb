@@ -83,6 +83,7 @@ var StatsTable = (function(ssrcInfoManager) {
         var container = this.ensureStatsTableContainer_(peerConnectionElement);
         var details = document.createElement('details');
         container.appendChild(details);
+
         var summary = document.createElement('summary');
         summary.textContent = report.id;
         details.appendChild(summary);
@@ -139,6 +140,10 @@ var StatsTable = (function(ssrcInfoManager) {
         trElement.innerHTML = '<td>' + rowName + '</td><td></td>';
       }
       trElement.cells[1].textContent = value;
+
+      // Highlights the table for the active connection.
+      if (rowName == 'googActiveConnection' && value == 'true')
+        statsTable.parentElement.classList.add('stats-table-active-connection');
     }
   };
 

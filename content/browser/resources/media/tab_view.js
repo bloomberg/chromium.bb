@@ -52,7 +52,7 @@ var TabView = (function() {
 
       var head = document.createElement('div');
       head.className = this.TAB_HEAD_CLASS_;
-      head.textContent = id;
+      head.textContent = title + ' [' + id + ']';
       head.title = title;
       this.headBar_.appendChild(head);
       head.addEventListener('click', this.switchTab_.bind(this, id));
