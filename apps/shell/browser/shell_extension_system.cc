@@ -83,6 +83,17 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
       content::Source<BrowserContext>(browser_context_),
       content::NotificationService::NoDetails());
 
+  // This is effectively the same behavior as
+  // extensions::AppEventRouter::DispatchOnLaunchedEvent without any dependency
+  // on ExtensionSystem or Profile.
+  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
+  launch_data->SetBoolean("isKioskSession", false);
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  event_args->Append(launch_data.release());
+  scoped_ptr<Event> event(
+      new Event("app.runtime.onLaunched", event_args.Pass()));
+  event_router_->DispatchEventWithLazyListener(extension->id(), event.Pass());
+
   return true;
 }
 
