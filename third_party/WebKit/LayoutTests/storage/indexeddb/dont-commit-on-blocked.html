@@ -22,7 +22,7 @@ function holdConnection()
     debug("holdConnection():");
     debug("holding connection until versionchange event");
     debug("");
-    startWorker("resources/dont-commit-on-blocked-worker.js");
+    worker = startWorker("resources/dont-commit-on-blocked-worker.js");
 }
 
 function onVersionChange(e)
