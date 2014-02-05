@@ -336,56 +336,6 @@ private:
     String m_oldText;
 };
 
-class InspectorCSSAgent::SetStyleTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
-    WTF_MAKE_NONCOPYABLE(SetStyleTextAction);
-public:
-    SetStyleTextAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& text)
-        : InspectorCSSAgent::StyleSheetAction("SetPropertyText", styleSheet)
-        , m_cssId(cssId)
-        , m_text(text)
-    {
-    }
-
-    virtual String toString() OVERRIDE
-    {
-        return mergeId() + ": " + m_oldText + " -> " + m_text;
-    }
-
-    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
-    {
-        return redo(exceptionState);
-    }
-
-    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
-    {
-        String placeholder;
-        return m_styleSheet->setStyleText(m_cssId, m_oldText, &placeholder, exceptionState);
-    }
-
-    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
-    {
-        return m_styleSheet->setStyleText(m_cssId, m_text, &m_oldText, exceptionState);
-    }
-
-    virtual String mergeId() OVERRIDE
-    {
-        return String::format("SetStyleText %s:%u", m_cssId.styleSheetId().utf8().data(), m_cssId.ordinal());
-    }
-
-    virtual void merge(PassOwnPtr<Action> action) OVERRIDE
-    {
-        ASSERT(action->mergeId() == mergeId());
-
-        SetStyleTextAction* other = static_cast<SetStyleTextAction*>(action.get());
-        m_text = other->m_text;
-    }
-
-private:
-    InspectorCSSId m_cssId;
-    String m_text;
-    String m_oldText;
-};
-
 class InspectorCSSAgent::SetPropertyTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetPropertyTextAction);
 public:
@@ -1118,22 +1068,6 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
 
     TrackExceptionState exceptionState;
     m_domAgent->history()->perform(adoptPtr(new SetStyleSheetTextAction(inspectorStyleSheet, text)), exceptionState);
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
-}
-
-void InspectorCSSAgent::setStyleText(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
-{
-    InspectorCSSId compoundId(fullStyleId);
-    ASSERT(!compoundId.isEmpty());
-
-    InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, compoundId.styleSheetId());
-    if (!inspectorStyleSheet)
-        return;
-
-    TrackExceptionState exceptionState;
-    m_domAgent->history()->perform(adoptPtr(new SetStyleTextAction(inspectorStyleSheet, compoundId, text)), exceptionState);
-    if (!exceptionState.hadException())
-        result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 

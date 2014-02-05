@@ -140,7 +140,6 @@ public:
     virtual void getStyleSheet(ErrorString*, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& result) OVERRIDE;
     virtual void getStyleSheetText(ErrorString*, const String& styleSheetId, String* result) OVERRIDE;
     virtual void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text) OVERRIDE;
-    virtual void setStyleText(ErrorString*, const RefPtr<JSONObject>& styleId, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result) OVERRIDE;
     virtual void setPropertyText(ErrorString*, const RefPtr<JSONObject>& styleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result) OVERRIDE;
     virtual void toggleProperty(ErrorString*, const RefPtr<JSONObject>& styleId, int propertyIndex, bool disable, RefPtr<TypeBuilder::CSS::CSSStyle>& result) OVERRIDE;
     virtual void setRuleSelector(ErrorString*, const RefPtr<JSONObject>& ruleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
@@ -154,7 +153,6 @@ public:
 private:
     class StyleSheetAction;
     class SetStyleSheetTextAction;
-    class SetStyleTextAction;
     class SetPropertyTextAction;
     class TogglePropertyAction;
     class SetRuleSelectorAction;
