@@ -32,6 +32,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
+    {% if attribute.reflect_only %}
+    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
+    {{release_only_check(attribute.reflect_only) | indent}}
+    {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
@@ -88,6 +92,22 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
 }
 {% endfilter %}
+{% endmacro %}
+
+{######################################}
+{% macro release_only_check(reflect_only_values) %}
+{# Attribute is limited to only known values: check that the attribute value is
+   one of those. If not, set it to the empty string.
+   http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
+if (resultValue.isEmpty()) {
+    ;
+{% for value in reflect_only_values %}
+} else if (equalIgnoringCase(resultValue, "{{value}}")) {
+    resultValue = "{{value}}";
+{% endfor %}
+} else {
+    resultValue = "";
+}
 {% endmacro %}
 
 

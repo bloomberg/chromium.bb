@@ -122,6 +122,8 @@ def generate_attribute(interface, attribute):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
         'put_forwards': 'PutForwards' in extended_attributes,
+        'reflect_only': extended_attributes['ReflectOnly'].split('|')
+            if 'ReflectOnly' in extended_attributes else None,  # [ReflectOnly]
         'setter_callback': setter_callback_name(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
@@ -166,6 +168,11 @@ def generate_getter(interface, attribute, contents):
         # EventHandler has special handling
         if idl_type != 'EventHandler' and v8_types.is_interface_type(idl_type):
             release = True
+
+    if 'ReflectOnly' in extended_attributes:
+        contents['cpp_value_original'] = cpp_value
+        # FIXME: rename to jsValue
+        cpp_value = 'resultValue'
 
     def v8_set_return_value_statement(for_main_world=False):
         if contents['is_keep_alive_for_gc']:
