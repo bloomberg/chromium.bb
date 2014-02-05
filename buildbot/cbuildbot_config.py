@@ -1679,6 +1679,12 @@ _release = full.derive(official, internal,
   chrome_sdk=True,
 )
 
+_grouped_variant_release = _release.derive(
+  chrome_sdk=False,
+  unittests=None,
+  vm_tests=None,
+)
+
 ### Master release config.
 
 _release.add_config('x86-mario-release',
@@ -1692,10 +1698,8 @@ _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
   ),
-  _release.add_config('x86-alex_he-release',
+  _grouped_variant_release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
-    vm_tests=None,
-    unittests=None,
     hw_tests=[],
     upload_hw_test_artifacts=False,
   ),
@@ -1706,10 +1710,8 @@ _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
   ),
-  _release.add_config('x86-zgb_he-release',
+  _grouped_variant_release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
-    vm_tests=None,
-    unittests=None,
     hw_tests=[],
     upload_hw_test_artifacts=False,
   ),
@@ -1847,10 +1849,8 @@ _release.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
   ),
-  _release.add_config('parrot_ivb-release',
+  _grouped_variant_release.add_config('parrot_ivb-release',
     boards=['parrot_ivb'],
-    unittests=None,
-    vm_tests=None,
   )
 )
 
