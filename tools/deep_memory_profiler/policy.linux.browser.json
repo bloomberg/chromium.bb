@@ -24,10 +24,12 @@
     "mmap-gpu-transfer-ringbuffer",
     "mmap-gpu-gles2-createbuffer",
     "mmap-skia-font",
+    "mmap-blink-css",
+    "mmap-blink-document",
+    "mmap-blink-layout",
     "mmap-catch-all",
+    "tc-histogram",
     "tc-glib",
-    "tc-std-bits-string",
-    "tc-std-bits-ptsynch",
     "tc-skia",
     "tc-sqlite",
     "tc-syncer",
@@ -43,10 +45,14 @@
     "tc-history-urlindex-privatedata",
     "tc-crlset",
     "tc-extension-host",
+    "tc-extension-catch-all",
     "tc-bookmark-codec",
+    "tc-blink-css",
     "tc-webkit-catch-all",
     "tc-v8-catch-all",
     "tc-toplevel-string",
+    "tc-std-bits-string",
+    "tc-std-bits-ptsynch",
     "tc-std-treemap",
     "tc-std-hashmap",
     "tc-std-vector",
@@ -191,23 +197,33 @@
       "allocator": "mmap"
     },
     {
+      "name": "mmap-blink-css",
+      "stacktrace": ".*WebCore::Element::createPseudo.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-blink-document",
+      "stacktrace": ".*WebCore::.*(DocumentType::Comment|Text|(HTML|SVG).*Element)::create.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-blink-layout",
+      "stacktrace": ".*WebCore::Render.*",
+      "allocator": "mmap"
+    },
+    {
       "name": "mmap-catch-all",
       "stacktrace": ".*",
       "allocator": "mmap"
     },
     {
+      "name": "tc-histogram",
+      "stacktrace": ".*([hH]istogram|UseCount).*",
+      "allocator": "malloc"
+    },
+    {
       "name": "tc-glib",
       "stacktrace": ".*(g_realloc|g_malloc.?|slab_allocator_alloc_chunk)($| .*)",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-std-bits-string",
-      "stacksourcefile": ".*/usr/include/.*/bits/string.*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-std-bits-ptsynch",
-      "stacksourcefile": "/usr/include/.*/bits/ptsynch.*",
       "allocator": "malloc"
     },
     {
@@ -287,8 +303,18 @@
       "allocator": "malloc"
     },
     {
+      "name": "tc-extension-catch-all",
+      "stacktrace": ".*extensions::.*",
+      "allocator": "malloc"
+    },
+    {
       "name": "tc-bookmark-codec",
       "stacktrace": ".*BookmarkCodec::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-blink-css",
+      "stacktrace": ".*(WTF::|WebCore::|WebKit::).*(CSS|Style|Sheet).*",
       "allocator": "malloc"
     },
     {
@@ -319,6 +345,16 @@
     {
       "name": "tc-std-vector",
       "stacktrace": ".*std::(_Vector_base::_M_allocate|__1::vector::allocate).*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-std-bits-string",
+      "stacksourcefile": ".*/usr/include/.*/bits/string.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-std-bits-ptsynch",
+      "stacksourcefile": "/usr/include/.*/bits/ptsynch.*",
       "allocator": "malloc"
     },
     {
