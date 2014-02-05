@@ -210,6 +210,21 @@ class GitWrapper(SCMWrapper):
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
 
+  def GetRemoteURL(self, options, cwd=None):
+    try:
+      return self._Capture(['config', 'remote.%s.url' % self.remote],
+                           cwd=cwd or self.checkout_path).rstrip()
+    except (OSError, subprocess2.CalledProcessError):
+      pass
+    try:
+      # This may occur if we have a git-svn checkout.
+      if scm.GIT.IsGitSvn(os.curdir):
+        return scm.GIT.Capture(['config', '--local', '--get',
+                                'svn-remote.svn.url'], os.curdir).rstrip()
+    except (OSError, subprocess2.CalledProcessError):
+      pass
+    return None
+
   def GetRevisionDate(self, _revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
     time zone)."""
@@ -264,22 +279,6 @@ class GitWrapper(SCMWrapper):
       gclient_utils.CheckCallAndFilter(cmd3 + ['always'], **kwargs)
 
     gclient_utils.CheckCallAndFilter(cmd4, **kwargs)
-
-  def _FetchAndReset(self, revision, file_list, options):
-    """Equivalent to git fetch; git reset."""
-    quiet = []
-    if not options.verbose:
-      quiet = ['--quiet']
-    self._UpdateBranchHeads(options, fetch=False)
-
-    fetch_cmd = [
-      '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', self.remote, '--prune']
-    self._Run(fetch_cmd + quiet, options, retry=True)
-    self._Run(['reset', '--hard', revision] + quiet, options)
-    self.UpdateSubmoduleConfig()
-    if file_list is not None:
-      files = self._Capture(['ls-files']).splitlines()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -367,34 +366,9 @@ class GitWrapper(SCMWrapper):
                                 '\tAnd run gclient sync again\n'
                                 % (self.relpath, rev_str, self.relpath))
 
-    # See if the url has changed (the unittests use git://foo for the url, let
-    # that through).
-    current_url = self._Capture(['config', 'remote.%s.url' % self.remote])
-    return_early = False
-    # TODO(maruel): Delete url != 'git://foo' since it's just to make the
-    # unit test pass. (and update the comment above)
-    # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
-    # This allows devs to use experimental repos which have a different url
-    # but whose branch(s) are the same as official repos.
-    if (current_url != url and
-        url != 'git://foo' and
-        subprocess2.capture(
-            ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
-            cwd=self.checkout_path).strip() != 'False'):
-      print('_____ switching %s to a new upstream' % self.relpath)
-      # Make sure it's clean
-      self._CheckClean(rev_str)
-      # Switch over to the new upstream
-      self._Run(['remote', 'set-url', self.remote, url], options)
-      self._FetchAndReset(revision, file_list, options)
-      return_early = True
-
     # Need to do this in the normal path as well as in the post-remote-switch
     # path.
     self._PossiblySwitchCache(url, options)
-
-    if return_early:
-      return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     cur_branch = self._GetCurrentBranch()
 
@@ -808,8 +782,7 @@ class GitWrapper(SCMWrapper):
         # to relax this restriction in the future to allow for smarter cache
         # repo update schemes (such as pulling the same repo, but from a
         # different host).
-        existing_url = self._Capture(['config', 'remote.%s.url' % self.remote],
-                                     cwd=folder)
+        existing_url = self.GetRemoteURL(options, cwd=folder)
         assert self._NormalizeGitURL(existing_url) == self._NormalizeGitURL(url)
 
         if use_reference:
@@ -1098,6 +1071,22 @@ class SVNWrapper(SCMWrapper):
   def GetCheckoutRoot(self):
     return scm.SVN.GetCheckoutRoot(self.checkout_path)
 
+  def GetRemoteURL(self, options):
+    try:
+      return scm.SVN.CaptureLocalInfo([os.curdir],
+                                      self.checkout_path).get('URL')
+    except (OSError, subprocess2.CalledProcessError):
+      pass
+    try:
+      # This may occur if we have a git-svn checkout.
+      if scm.GIT.IsGitSvn(os.curdir):
+        return scm.GIT.Capture(['config', '--local', '--get',
+                                'svn-remote.svn.url'], os.curdir).rstrip()
+    except (OSError, subprocess2.CalledProcessError):
+      pass
+    return None
+
+
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
     time zone)."""
@@ -1137,15 +1126,10 @@ class SVNWrapper(SCMWrapper):
     Raises:
       Error: if can't get URL for relative path.
     """
-    # Only update if git or hg is not controlling the directory.
-    git_path = os.path.join(self.checkout_path, '.git')
-    if os.path.exists(git_path):
-      print('________ found .git directory; skipping %s' % self.relpath)
-      return
+    exists = os.path.exists(self.checkout_path)
 
-    hg_path = os.path.join(self.checkout_path, '.hg')
-    if os.path.exists(hg_path):
-      print('________ found .hg directory; skipping %s' % self.relpath)
+    if exists and scm.GIT.IsGitSvn(self.checkout_path):
+      print '________ %s looks like git-svn; skipping.' % self.relpath
       return
 
     if args:
@@ -1154,8 +1138,6 @@ class SVNWrapper(SCMWrapper):
     # revision is the revision to match. It is None if no revision is specified,
     # i.e. the 'deps ain't pinned'.
     url, revision = gclient_utils.SplitUrlRevision(self.url)
-    # Keep the original unpinned url for reference in case the repo is switched.
-    base_url = url
     managed = True
     if options.revision:
       # Override the revision number.
@@ -1174,7 +1156,6 @@ class SVNWrapper(SCMWrapper):
       rev_str = ''
 
     # Get the existing scm url and the revision number of the current checkout.
-    exists = os.path.exists(self.checkout_path)
     if exists and managed:
       try:
         from_info = scm.SVN.CaptureLocalInfo(
@@ -1310,53 +1291,6 @@ class SVNWrapper(SCMWrapper):
       revision = str(from_info_live['Revision'])
       rev_str = ' at %s' % revision
 
-    if from_info['URL'] != base_url:
-      # The repository url changed, need to switch.
-      try:
-        to_info = scm.SVN.CaptureRemoteInfo(url)
-      except (gclient_utils.Error, subprocess2.CalledProcessError):
-        # The url is invalid or the server is not accessible, it's safer to bail
-        # out right now.
-        raise gclient_utils.Error('This url is unreachable: %s' % url)
-      can_switch = ((from_info['Repository Root'] != to_info['Repository Root'])
-                    and (from_info['UUID'] == to_info['UUID']))
-      if can_switch:
-        print('\n_____ relocating %s to a new checkout' % self.relpath)
-        # We have different roots, so check if we can switch --relocate.
-        # Subversion only permits this if the repository UUIDs match.
-        # Perform the switch --relocate, then rewrite the from_url
-        # to reflect where we "are now."  (This is the same way that
-        # Subversion itself handles the metadata when switch --relocate
-        # is used.)  This makes the checks below for whether we
-        # can update to a revision or have to switch to a different
-        # branch work as expected.
-        # TODO(maruel):  TEST ME !
-        command = ['switch', '--relocate',
-                   from_info['Repository Root'],
-                   to_info['Repository Root'],
-                   self.relpath]
-        self._Run(command, options, cwd=self._root_dir)
-        from_info['URL'] = from_info['URL'].replace(
-            from_info['Repository Root'],
-            to_info['Repository Root'])
-      else:
-        if not options.force and not options.reset:
-          # Look for local modifications but ignore unversioned files.
-          for status in scm.SVN.CaptureStatus(None, self.checkout_path):
-            if status[0][0] != '?':
-              raise gclient_utils.Error(
-                  ('Can\'t switch the checkout to %s; UUID don\'t match and '
-                   'there is local changes in %s. Delete the directory and '
-                   'try again.') % (url, self.checkout_path))
-        # Ok delete it.
-        print('\n_____ switching %s to a new checkout' % self.relpath)
-        gclient_utils.rmtree(self.checkout_path)
-        # We need to checkout.
-        command = ['checkout', url, self.checkout_path]
-        command = self._AddAdditionalUpdateFlags(command, options, revision)
-        self._RunAndGetFileList(command, options, file_list, self._root_dir)
-        return self.Svnversion()
-
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
     if not options.force and str(from_info['Revision']) == revision:
@@ -1423,11 +1357,8 @@ class SVNWrapper(SCMWrapper):
       return self.update(options, [], file_list)
 
     if not os.path.isdir(os.path.join(self.checkout_path, '.svn')):
-      if os.path.isdir(os.path.join(self.checkout_path, '.git')):
-        print('________ found .git directory; skipping %s' % self.relpath)
-        return
-      if os.path.isdir(os.path.join(self.checkout_path, '.hg')):
-        print('________ found .hg directory; skipping %s' % self.relpath)
+      if scm.GIT.IsGitSvn(self.checkout_path):
+        print '________ %s looks like git-svn; skipping.' % self.relpath
         return
       if not options.force:
         raise gclient_utils.Error('Invalid checkout path, aborting')
