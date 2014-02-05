@@ -66,8 +66,11 @@ public:
 private:
     SMILTimeContainer(SVGSVGElement* owner);
 
+    bool isTimelineRunning() const;
+    void scheduleAnimationFrame(SMILTime fireTime);
+    void scheduleAnimationFrame();
+    void cancelAnimationFrame();
     void timerFired(Timer<SMILTimeContainer>*);
-    void startTimer(SMILTime fireTime, SMILTime minimumDelay = 0);
     void updateAnimations(SMILTime elapsed, bool seekToTime = false);
 
     void updateDocumentOrderIndexes();

@@ -54,7 +54,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
 
 SMILTimeContainer::~SMILTimeContainer()
 {
-    m_timer.stop();
+    cancelAnimationFrame();
     ASSERT(!m_timer.isActive());
 #ifndef NDEBUG
     ASSERT(!m_preventScheduledAnimationsChanges);
@@ -103,7 +103,7 @@ void SMILTimeContainer::notifyIntervalsChanged()
 {
     // Schedule updateAnimations() to be called asynchronously so multiple intervals
     // can change with updateAnimations() only called once at the end.
-    startTimer(0);
+    scheduleAnimationFrame();
 }
 
 SMILTime SMILTimeContainer::elapsed() const
@@ -140,7 +140,7 @@ void SMILTimeContainer::begin()
 
     if (m_pauseTime) {
         m_pauseTime = now;
-        m_timer.stop();
+        cancelAnimationFrame();
     }
 }
 
@@ -151,7 +151,7 @@ void SMILTimeContainer::pause()
 
     if (m_beginTime) {
         m_accumulatedActiveTime += m_pauseTime - lastResumeTime();
-        m_timer.stop();
+        cancelAnimationFrame();
     }
     m_resumeTime = 0;
 }
@@ -162,7 +162,7 @@ void SMILTimeContainer::resume()
     m_resumeTime = currentTime();
 
     m_pauseTime = 0;
-    startTimer(0);
+    scheduleAnimationFrame();
 }
 
 void SMILTimeContainer::setElapsed(SMILTime time)
@@ -174,7 +174,7 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     }
 
     if (m_beginTime)
-        m_timer.stop();
+        cancelAnimationFrame();
 
     double now = currentTime();
     m_beginTime = now - time.value();
@@ -203,22 +203,39 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     updateAnimations(time, true);
 }
 
-void SMILTimeContainer::startTimer(SMILTime fireTime, SMILTime minimumDelay)
+bool SMILTimeContainer::isTimelineRunning() const
 {
-    if (!m_beginTime || isPaused())
+    return m_beginTime && !isPaused();
+}
+
+void SMILTimeContainer::scheduleAnimationFrame(SMILTime fireTime)
+{
+    if (!isTimelineRunning())
         return;
 
     if (!fireTime.isFinite())
         return;
 
-    SMILTime delay = max(fireTime - elapsed(), minimumDelay);
+    SMILTime delay = max(fireTime - elapsed(), SMILTime(animationFrameDelay));
     m_timer.startOneShot(delay.value());
+}
+
+void SMILTimeContainer::scheduleAnimationFrame()
+{
+    if (!isTimelineRunning())
+        return;
+
+    m_timer.startOneShot(0);
+}
+
+void SMILTimeContainer::cancelAnimationFrame()
+{
+    m_timer.stop();
 }
 
 void SMILTimeContainer::timerFired(Timer<SMILTimeContainer>*)
 {
-    ASSERT(m_beginTime);
-    ASSERT(!m_pauseTime);
+    ASSERT(isTimelineRunning());
     updateAnimations(elapsed());
 }
 
@@ -309,7 +326,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 #ifndef NDEBUG
         m_preventScheduledAnimationsChanges = false;
 #endif
-        startTimer(earliestFireTime, animationFrameDelay);
+        scheduleAnimationFrame(earliestFireTime);
         return;
     }
 
@@ -321,7 +338,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
-    startTimer(earliestFireTime, animationFrameDelay);
+    scheduleAnimationFrame(earliestFireTime);
 
     for (unsigned i = 0; i < animationsToApplySize; ++i) {
         if (animationsToApply[i]->inDocument() && animationsToApply[i]->isSVGDiscardElement()) {
