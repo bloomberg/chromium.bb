@@ -2025,13 +2025,7 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount() {
 }
 
 void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
-  if (has_touch_handler_ == has_handlers)
-    return;
   has_touch_handler_ = has_handlers;
-#if defined(OS_ANDROID)
-  if (view_)
-    view_->HasTouchEventHandlers(has_touch_handler_);
-#endif
 }
 
 OverscrollController* RenderWidgetHostImpl::GetOverscrollController() const {

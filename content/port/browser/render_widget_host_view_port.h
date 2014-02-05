@@ -338,7 +338,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 #if defined(OS_ANDROID)
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) = 0;
-  virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 
 #if defined(OS_WIN)

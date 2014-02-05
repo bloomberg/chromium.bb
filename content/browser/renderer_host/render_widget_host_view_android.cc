@@ -1376,10 +1376,6 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
   }
 }
 
-void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
-    bool need_touch_events) {
-}
-
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks();
 }

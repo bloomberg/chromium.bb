@@ -153,7 +153,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}
-  virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
 #endif
   virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;

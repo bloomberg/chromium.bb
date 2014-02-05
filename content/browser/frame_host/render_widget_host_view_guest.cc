@@ -457,9 +457,6 @@ void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
     const gfx::Rect& target_rect,
     const SkBitmap& zoomed_bitmap) {
 }
-
-void RenderWidgetHostViewGuest::HasTouchEventHandlers(bool need_touch_events) {
-}
 #endif  // defined(OS_ANDROID)
 
 #if defined(TOOLKIT_GTK)

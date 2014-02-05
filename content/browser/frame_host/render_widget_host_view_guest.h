@@ -143,7 +143,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // RenderWidgetHostViewPort implementation.
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
-  virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
 #endif  // defined(OS_ANDROID)
 
 #if defined(TOOLKIT_GTK)
