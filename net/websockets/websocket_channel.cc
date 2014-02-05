@@ -317,6 +317,13 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
             << ". This may be a bug, or a harmless race.";
     return;
   }
+  if (state_ == CONNECTING) {
+    // Abort the in-progress handshake and drop the connection immediately.
+    stream_request_.reset();
+    state_ = CLOSED;
+    AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure, ""));
+    return;
+  }
   if (state_ != CONNECTED) {
     NOTREACHED() << "StartClosingHandshake() called in state " << state_;
     return;

@@ -1790,6 +1790,16 @@ TEST_F(WebSocketChannelEventInterfaceTest, SendCloseDropsChannel) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+// StartClosingHandshake() also works before connection completes, and calls
+// OnDropChannel.
+TEST_F(WebSocketChannelEventInterfaceTest, CloseDuringConnection) {
+  EXPECT_CALL(*event_interface_,
+              OnDropChannel(kWebSocketErrorAbnormalClosure, ""));
+
+  CreateChannelAndConnect();
+  channel_->StartClosingHandshake(kWebSocketNormalClosure, "Joe");
+}
+
 // OnDropChannel() is only called once when a write() on the socket triggers a
 // connection reset.
 TEST_F(WebSocketChannelEventInterfaceTest, OnDropChannelCalledOnce) {
