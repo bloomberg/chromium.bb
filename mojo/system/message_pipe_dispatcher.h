@@ -41,7 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
 
   // |Dispatcher| implementation/overrides:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
-  virtual MojoResult CloseImplNoLock() OVERRIDE;
+  virtual void CloseImplNoLock() OVERRIDE;
   virtual MojoResult WriteMessageImplNoLock(
       const void* bytes, uint32_t num_bytes,
       const std::vector<Dispatcher*>* dispatchers,

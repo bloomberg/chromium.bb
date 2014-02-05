@@ -42,8 +42,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // Creates a |MessageInTransit| of the given |type| and |subtype|, with the
   // data given by |bytes|/|num_bytes|.
-  static MessageInTransit* Create(Type type, Subtype subtype,
-                                  const void* bytes, uint32_t num_bytes);
+  static MessageInTransit* Create(Type type,
+                                  Subtype subtype,
+                                  const void* bytes,
+                                  uint32_t num_bytes,
+                                  uint32_t num_handles);
 
   // Destroys a |MessageInTransit| created using |Create()|.
   inline void Destroy() {
@@ -53,16 +56,23 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // Gets the size of the data (in number of bytes).
   uint32_t data_size() const {
-    return size_;
+    return data_size_;
   }
 
-  // Gets the data (of size |size()| bytes).
+  // Gets the data (of size |data_size()| bytes).
   const void* data() const {
     return reinterpret_cast<const char*>(this) + sizeof(*this);
   }
 
+  // TODO(vtl): Add a |num_bytes()| and use that (instead of |data_size()|)
+  // where appropriate. Similarly for |bytes()| (instead of |data()|)?
+
+  uint32_t num_handles() const {
+    return num_handles_;
+  }
+
   size_t size_with_header_and_padding() const {
-    return RoundUpMessageAlignment(sizeof(*this) + size_);
+    return RoundUpMessageAlignment(sizeof(*this) + data_size_);
   }
 
   Type type() const { return type_; }
@@ -83,19 +93,37 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
 
  private:
-  explicit MessageInTransit(uint32_t size, Type type, Subtype subtype)
-      : size_(size),
+  // TODO(vtl): Set |num_bytes_| and |num_handles_| properly.
+  explicit MessageInTransit(uint32_t data_size,
+                            Type type,
+                            Subtype subtype,
+                            uint32_t num_bytes,
+                            uint32_t num_handles)
+      : data_size_(data_size),
         type_(type),
         subtype_(subtype),
         source_id_(kInvalidEndpointId),
-        destination_id_(kInvalidEndpointId) {}
+        destination_id_(kInvalidEndpointId),
+        num_bytes_(num_bytes),
+        num_handles_(num_handles),
+        reserved0_(0),
+        reserved1_(0) {}
 
-  // "Header" for the data.
-  uint32_t size_;
+  // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
+  // size.
+  // Total size of data following the "header".
+  uint32_t data_size_;
   Type type_;
   Subtype subtype_;
   EndpointId source_id_;
   EndpointId destination_id_;
+  // Size of actual message data.
+  uint32_t num_bytes_;
+  // Number of handles "attached".
+  uint32_t num_handles_;
+  // To be used soon.
+  uint32_t reserved0_;
+  uint32_t reserved1_;
 
   // Intentionally unimplemented (and private): Use |Destroy()| instead (which
   // simply frees the memory).
@@ -106,7 +134,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
 // The size of |MessageInTransit| must be appropriate to maintain alignment of
 // the following data.
-COMPILE_ASSERT(sizeof(MessageInTransit) == 16, MessageInTransit_has_wrong_size);
+COMPILE_ASSERT(sizeof(MessageInTransit) % MessageInTransit::kMessageAlignment ==
+                   0, MessageInTransit_has_wrong_size);
 
 }  // namespace system
 }  // namespace mojo

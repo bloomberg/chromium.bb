@@ -30,6 +30,9 @@ LocalMessagePipeEndpoint::MessageQueueEntry::~MessageQueueEntry() {
     message_->Destroy();
   // Close all the dispatchers.
   for (size_t i = 0; i < dispatchers_.size(); i++) {
+    if (!dispatchers_[i].get())
+      continue;
+
     // Note: Taking the |Dispatcher| locks is okay, since no one else should
     // have a reference to the dispatchers (and the locks shouldn't be held).
     DCHECK(dispatchers_[i]->HasOneRef());
@@ -49,16 +52,21 @@ void LocalMessagePipeEndpoint::MessageQueueEntry::Init(
   if (dispatchers) {
     dispatchers_.reserve(dispatchers->size());
     for (size_t i = 0; i < dispatchers->size(); i++) {
-      dispatchers_.push_back(
-          (*dispatchers)[i]->CreateEquivalentDispatcherAndCloseNoLock());
+      if ((*dispatchers)[i]) {
+        dispatchers_.push_back(
+            (*dispatchers)[i]->CreateEquivalentDispatcherAndCloseNoLock());
 
 #ifndef NDEBUG
-      // It's important that we have "ownership" of these dispatchers. In
-      // particular, they must not be in the global handle table (i.e., have
-      // live handles referring to them). If we need to destroy any queued
-      // messages, we need to know that any handles in them should be closed.
-      DCHECK(dispatchers_[i]->HasOneRef());
+        // It's important that we have "ownership" of these dispatchers. In
+        // particular, they must not be in the global handle table (i.e., have
+        // live handles referring to them). If we need to destroy any queued
+        // messages, we need to know that any handles in them should be closed.
+        DCHECK(dispatchers_[i]->HasOneRef());
 #endif
+      } else {
+        LOG(ERROR) << "Enqueueing null dispatcher";
+        dispatchers_.push_back(scoped_refptr<Dispatcher>());
+      }
     }
   }
 }

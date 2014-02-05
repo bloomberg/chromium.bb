@@ -34,7 +34,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
 
   // |Dispatcher| implementation/overrides:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
-  virtual MojoResult CloseImplNoLock() OVERRIDE;
+  virtual void CloseImplNoLock() OVERRIDE;
   virtual MojoResult WriteDataImplNoLock(const void* elements,
                                          uint32_t* num_bytes,
                                          MojoWriteDataFlags flags) OVERRIDE;

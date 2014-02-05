@@ -55,14 +55,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual void Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
 
  private:
-  struct PreflightDispatcherInfo {
-    PreflightDispatcherInfo() : message_pipe(), port() {}
-
-    // For now, we only support sending message pipes, so this is simple.
-    MessagePipe* message_pipe;
-    unsigned port;
-  };
-
   bool is_attached() const {
     return !!channel_.get();
   }
@@ -75,13 +67,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   // |EnqueueMessageInternal()| (which then MUST be called if this succeeds).
   // |dispatchers| must be non-null and nonempty; |preflight_dispatcher_infos|
   // must be non-null and empty.
-  MojoResult PreflightDispatchers(
-      const std::vector<Dispatcher*>* dispatchers,
-      std::vector<PreflightDispatcherInfo>* preflight_dispatcher_infos);
-  // |dispatchers| should be non-null only if it's nonempty, in which case the
-  // dispatchers should have been preflighted by |PreflightDispatchers()|.
-  void EnqueueMessageInternal(MessageInTransit* message,
-                              const std::vector<Dispatcher*>* dispatchers);
+  // "Attaches" |dispatchers| to asdf
+  // TODO(vtl):
+  void SerializeDispatchers(MessageInTransit* message,
+                            const std::vector<Dispatcher*>* dispatchers);
+  void EnqueueMessageInternal(MessageInTransit* message);
 
 #ifdef NDEBUG
   void AssertConsistentState() const {}

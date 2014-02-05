@@ -41,10 +41,9 @@ class MockDispatcher : public Dispatcher {
   }
 
   // |Dispatcher| implementation/overrides:
-  virtual MojoResult CloseImplNoLock() OVERRIDE {
+  virtual void CloseImplNoLock() OVERRIDE {
     info_->IncrementCloseCallCount();
     lock().AssertAcquired();
-    return MOJO_RESULT_OK;
   }
 
   virtual MojoResult WriteMessageImplNoLock(

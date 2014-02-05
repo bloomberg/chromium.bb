@@ -23,9 +23,9 @@ COMPILE_ASSERT(static_cast<uint64_t>(sizeof(MessageInTransit)) +
                    kMaxMessageNumBytes <= 0x7fffffff,
                kMaxMessageNumBytes_too_big);
 
-COMPILE_ASSERT(sizeof(MessageInTransit) %
-                   MessageInTransit::kMessageAlignment == 0,
-               sizeof_MessageInTransit_not_a_multiple_of_alignment);
+COMPILE_ASSERT(
+    sizeof(MessageInTransit) % MessageInTransit::kMessageAlignment == 0,
+    sizeof_MessageInTransit_not_a_multiple_of_alignment);
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeMessagePipeEndpoint;
@@ -45,8 +45,13 @@ STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 MessageInTransit* MessageInTransit::Create(Type type,
                                            Subtype subtype,
                                            const void* bytes,
-                                           uint32_t num_bytes) {
-  const size_t size_with_header = sizeof(MessageInTransit) + num_bytes;
+                                           uint32_t num_bytes,
+                                           uint32_t num_handles) {
+  DCHECK_LE(num_bytes, kMaxMessageNumBytes);
+  DCHECK_LE(num_handles, kMaxMessageNumHandles);
+
+  const size_t data_size = num_bytes;
+  const size_t size_with_header = sizeof(MessageInTransit) + data_size;
   const size_t size_with_header_and_padding =
       RoundUpMessageAlignment(size_with_header);
 
@@ -56,8 +61,8 @@ MessageInTransit* MessageInTransit::Create(Type type,
 
   // The buffer consists of the header (a |MessageInTransit|, constructed using
   // a placement new), followed by the data, followed by padding (of zeros).
-  MessageInTransit* rv =
-      new (buffer) MessageInTransit(num_bytes, type, subtype);
+  MessageInTransit* rv = new (buffer) MessageInTransit(
+      static_cast<uint32_t>(data_size), type, subtype, num_bytes, num_handles);
   memcpy(buffer + sizeof(MessageInTransit), bytes, num_bytes);
   memset(buffer + size_with_header, 0,
          size_with_header_and_padding - size_with_header);

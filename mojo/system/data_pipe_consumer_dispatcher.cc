@@ -33,11 +33,10 @@ void DataPipeConsumerDispatcher::CancelAllWaitersNoLock() {
   data_pipe_->ConsumerCancelAllWaiters();
 }
 
-MojoResult DataPipeConsumerDispatcher::CloseImplNoLock() {
+void DataPipeConsumerDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   data_pipe_->ConsumerClose();
   data_pipe_ = NULL;
-  return MOJO_RESULT_OK;
 }
 
 MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(

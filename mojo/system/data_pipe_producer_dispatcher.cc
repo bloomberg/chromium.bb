@@ -33,11 +33,10 @@ void DataPipeProducerDispatcher::CancelAllWaitersNoLock() {
   data_pipe_->ProducerCancelAllWaiters();
 }
 
-MojoResult DataPipeProducerDispatcher::CloseImplNoLock() {
+void DataPipeProducerDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   data_pipe_->ProducerClose();
   data_pipe_ = NULL;
-  return MOJO_RESULT_OK;
 }
 
 MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(

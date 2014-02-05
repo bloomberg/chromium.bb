@@ -45,7 +45,7 @@ MessageInTransit* MakeTestMessage(uint32_t num_bytes) {
   return MessageInTransit::Create(
       MessageInTransit::kTypeMessagePipeEndpoint,
       MessageInTransit::kSubtypeMessagePipeEndpointData,
-      bytes.data(), num_bytes);
+      bytes.data(), num_bytes, 0);
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {

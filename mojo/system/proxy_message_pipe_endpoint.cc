@@ -56,8 +56,8 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
   MessageInTransit* message =
       MessageInTransit::Create(MessageInTransit::kTypeMessagePipe,
                                MessageInTransit::kSubtypeMessagePipePeerClosed,
-                               NULL, 0);
-  EnqueueMessageInternal(message, NULL);
+                               NULL, 0, 0);
+  EnqueueMessageInternal(message);
 }
 
 MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
@@ -65,21 +65,10 @@ MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
     const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(!dispatchers || !dispatchers->empty());
 
-  // No need to preflight if there are no dispatchers.
-  if (!dispatchers) {
-    EnqueueMessageInternal(message, NULL);
-    return MOJO_RESULT_OK;
-  }
+  if (dispatchers)
+    SerializeDispatchers(message, dispatchers);
 
-  std::vector<PreflightDispatcherInfo> preflight_dispatcher_infos;
-  MojoResult result = PreflightDispatchers(dispatchers,
-                                           &preflight_dispatcher_infos);
-  if (result != MOJO_RESULT_OK) {
-    message->Destroy();
-    return result;
-  }
-
-  EnqueueMessageInternal(message, dispatchers);
+  EnqueueMessageInternal(message);
   return MOJO_RESULT_OK;
 }
 
@@ -111,86 +100,28 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   for (std::deque<MessageInTransit*>::iterator it =
            paused_message_queue_.begin(); it != paused_message_queue_.end();
        ++it)
-    EnqueueMessageInternal(*it, NULL);
+    EnqueueMessageInternal(*it);
   paused_message_queue_.clear();
 }
 
-MojoResult ProxyMessagePipeEndpoint::PreflightDispatchers(
-    const std::vector<Dispatcher*>* dispatchers,
-    std::vector<PreflightDispatcherInfo>* preflight_dispatcher_infos) {
-  DCHECK(!dispatchers || !dispatchers->empty());
-  DCHECK(preflight_dispatcher_infos);
-  DCHECK(preflight_dispatcher_infos->empty());
+void ProxyMessagePipeEndpoint::SerializeDispatchers(
+    MessageInTransit* message,
+    const std::vector<Dispatcher*>* dispatchers) {
+  DCHECK(!dispatchers->empty());
 
-  // Size it to fit everything.
-  preflight_dispatcher_infos->resize(dispatchers->size());
-
-  // TODO(vtl): We'll begin with limited support for sending message pipe
-  // handles. We won't support:
-  //  - sending both handles (the |hash_set| below is to detect this case and
-  //    fail gracefully);
-  //  - sending a handle whose peer is remote.
-  base::hash_set<intptr_t> message_pipes;
-
-  for (size_t i = 0; i < dispatchers->size(); i++) {
-    Dispatcher* dispatcher = (*dispatchers)[i];
-    switch (dispatcher->GetType()) {
-      case Dispatcher::kTypeUnknown:
-        LOG(ERROR) << "Unknown dispatcher type";
-        return MOJO_RESULT_INTERNAL;
-
-      case Dispatcher::kTypeMessagePipe: {
-        MessagePipeDispatcher* mp_dispatcher =
-            static_cast<MessagePipeDispatcher*>(dispatcher);
-        (*preflight_dispatcher_infos)[i].message_pipe =
-            mp_dispatcher->GetMessagePipeNoLock();
-        DCHECK((*preflight_dispatcher_infos)[i].message_pipe);
-        (*preflight_dispatcher_infos)[i].port = mp_dispatcher->GetPortNoLock();
-
-        // Check for unsupported cases (see TODO above).
-        bool is_new_element = message_pipes.insert(reinterpret_cast<intptr_t>(
-            (*preflight_dispatcher_infos)[i].message_pipe)).second;
-        if (!is_new_element) {
-          NOTIMPLEMENTED()
-              << "Sending both sides of a message pipe not yet supported";
-          return MOJO_RESULT_UNIMPLEMENTED;
-        }
-        // TODO(vtl): Check that peer isn't remote (per above TODO).
-
-        break;
-      }
-
-      case Dispatcher::kTypeDataPipeProducer:
-        NOTIMPLEMENTED() << "Sending data pipe producers not yet supported";
-        return MOJO_RESULT_UNIMPLEMENTED;
-
-      case Dispatcher::kTypeDataPipeConsumer:
-        NOTIMPLEMENTED() << "Sending data pipe consumers not yet supported";
-        return MOJO_RESULT_UNIMPLEMENTED;
-
-      default:
-        LOG(ERROR) << "Invalid or unsupported dispatcher type";
-        return MOJO_RESULT_UNIMPLEMENTED;
-    }
-  }
-
-  // TODO(vtl): Support sending handles over OS pipes.
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  // TODO(vtl)
+  LOG(ERROR) << "Sending handles over remote message pipes not yet supported "
+                "(closing sent handles)";
+  for (size_t i = 0; i < dispatchers->size(); i++)
+    (*dispatchers)[i]->CloseNoLock();
 }
 
 // Note: We may have to enqueue messages even when our (local) peer isn't open
 // -- it may have been written to and closed immediately, before we were ready.
 // This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessageInternal(
-    MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
+    MessageInTransit* message) {
   DCHECK(is_open_);
-
-  DCHECK(!dispatchers || !dispatchers->empty());
-  // TODO(vtl): We don't actually support sending dispatchers yet. We shouldn't
-  // get here due to other checks.
-  DCHECK(!dispatchers) << "Not yet implemented";
 
   if (is_running()) {
     message->set_source_id(local_id_);

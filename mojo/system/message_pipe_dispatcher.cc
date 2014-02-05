@@ -51,12 +51,11 @@ void MessagePipeDispatcher::CancelAllWaitersNoLock() {
   message_pipe_->CancelAllWaiters(port_);
 }
 
-MojoResult MessagePipeDispatcher::CloseImplNoLock() {
+void MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   message_pipe_->Close(port_);
   message_pipe_ = NULL;
   port_ = kInvalidPort;
-  return MOJO_RESULT_OK;
 }
 
 MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(

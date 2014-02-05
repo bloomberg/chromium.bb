@@ -366,6 +366,8 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
       // here? Currently, we'll just fill in those handles with
       // |MOJO_HANDLE_INVALID| (and return success anyway).
       handles[i] = AddDispatcherNoLock(dispatchers[i]);
+      LOG_IF(ERROR, handles[i] == MOJO_HANDLE_INVALID)
+          << "Failed to add dispatcher (" << dispatchers[i].get() << ")";
     }
   }
 
@@ -504,11 +506,10 @@ scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
 
 MojoHandle CoreImpl::AddDispatcherNoLock(
     const scoped_refptr<Dispatcher>& dispatcher) {
-  DCHECK(dispatcher.get());
   handle_table_lock_.AssertAcquired();
   DCHECK_NE(next_handle_, MOJO_HANDLE_INVALID);
 
-  if (handle_table_.size() >= kMaxHandleTableSize)
+  if (!dispatcher.get() || handle_table_.size() >= kMaxHandleTableSize)
     return MOJO_HANDLE_INVALID;
 
   // TODO(vtl): Maybe we want to do something different/smarter. (Or maybe try

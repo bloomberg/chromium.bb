@@ -17,7 +17,15 @@ namespace mojo {
 namespace system {
 
 class CoreImpl;
+class Dispatcher;
 class Waiter;
+
+// These are actually implemented inline after |Dispatcher|'s definition.
+namespace test {
+base::Lock& GetDispatcherLock(const Dispatcher* dispatcher);
+// Must be called under the dispatcher lock.
+bool IsDispatcherClosedNoLock(const Dispatcher* dispatcher);
+}
 
 // A |Dispatcher| implements Mojo primitives that are "attached" to a particular
 // handle. This includes most (all?) primitives except for |MojoWait...()|. This
@@ -93,6 +101,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                        MojoResult wake_result);
   void RemoveWaiter(Waiter* waiter);
 
+  // Closes the dispatcher. This must be done under lock, and unlike |Close()|,
+  // the dispatcher must not be closed already. (This is the "equivalent" of
+  // |CreateEquivalentDispatcherAndCloseNoLock()|, for situations where the
+  // dispatcher must be disposed of instead of "transferred".)
+  void CloseNoLock();
+
   // Creates an equivalent dispatcher -- representing the same resource as this
   // dispatcher -- and close (i.e., disable) this dispatcher. I.e., this
   // dispatcher will look as though it was closed, but the resource it
@@ -110,7 +124,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // exactly once -- first |CancelAllWaitersNoLock()|, then |CloseImplNoLock()|,
   // when the dispatcher is being closed. They are called under |lock_|.
   virtual void CancelAllWaitersNoLock();
-  virtual MojoResult CloseImplNoLock();
+  virtual void CloseImplNoLock();
 
   // These are to be overridden by subclasses (if necessary). They are never
   // called after the dispatcher has been closed. They are called under |lock_|.
@@ -167,6 +181,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // For |WriteMessage()|, |CoreImpl| needs access to |lock()|,
   // |is_closed_no_lock()|, and |IsBusyNoLock()|.
   friend class CoreImpl;
+  // Test helpers to do the same sort of thing as |CoreImpl| (so things can be
+  // unit tested without involving |CoreImpl|).
+  friend base::Lock& test::GetDispatcherLock(const Dispatcher*);
+  friend bool test::IsDispatcherClosedNoLock(const Dispatcher*);
 
   // This protects the following members as well as any state added by
   // subclasses.
@@ -175,6 +193,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
+
+namespace test {
+
+inline base::Lock& GetDispatcherLock(const Dispatcher* dispatcher) {
+  return dispatcher->lock();
+}
+
+inline bool IsDispatcherClosedNoLock(const Dispatcher* dispatcher) {
+  dispatcher->lock().AssertAcquired();
+  return dispatcher->is_closed_no_lock();
+}
+
+}  // namespace test
 
 }  // namespace system
 }  // namespace mojo

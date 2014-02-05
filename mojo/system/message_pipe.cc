@@ -68,7 +68,8 @@ MojoResult MessagePipe::WriteMessage(
       MessageInTransit::Create(
           MessageInTransit::kTypeMessagePipeEndpoint,
           MessageInTransit::kSubtypeMessagePipeEndpointData,
-          bytes, num_bytes),
+          bytes, num_bytes,
+          dispatchers ? static_cast<uint32_t>(dispatchers->size()) : 0),
       dispatchers);
 }
 
@@ -115,7 +116,9 @@ MojoResult MessagePipe::EnqueueMessage(
     const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
-  DCHECK(!dispatchers || !dispatchers->empty());
+  DCHECK((!dispatchers && message->num_handles() == 0) ||
+         (dispatchers && dispatchers->size() > 0 &&
+              message->num_handles() == dispatchers->size()));
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
     DCHECK(!dispatchers);
@@ -134,7 +137,16 @@ MojoResult MessagePipe::EnqueueMessage(
   }
 
   if (dispatchers) {
+    // You're not allowed to send either handle to a message pipe over the
+    // message pipe, so check for this. (The case of trying to write a handle to
+    // itself is taken care of by |CoreImpl|. That case kind of makes sense, but
+    // leads to complications if, e.g., both sides try to do the same thing with
+    // their respective handles simultaneously. The other case, of trying to
+    // write the peer handle to a handle, doesn't make sense -- since no handle
+    // will be available to read the message from.)
     for (size_t i = 0; i < dispatchers->size(); i++) {
+      if (!(*dispatchers)[i])
+        continue;
       if ((*dispatchers)[i]->GetType() == Dispatcher::kTypeMessagePipe) {
         MessagePipeDispatcher* mp_dispatcher =
             static_cast<MessagePipeDispatcher*>((*dispatchers)[i]);

@@ -8,17 +8,21 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "mojo/system/channel.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
+#include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
@@ -203,7 +207,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
-  EXPECT_EQ(0, strcmp(buffer, hello));
+  EXPECT_STREQ(hello, buffer);
 
   // Write in the other direction: MP 1, port 1 -> ... -> MP 0, port 0.
 
@@ -227,7 +231,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(world), static_cast<size_t>(buffer_size));
-  EXPECT_EQ(0, strcmp(buffer, world));
+  EXPECT_STREQ(world, buffer);
 
   // Close MP 0, port 0.
   mp0->Close(0);
@@ -319,7 +323,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
-  EXPECT_EQ(0, strcmp(buffer, hello));
+  EXPECT_STREQ(hello, buffer);
 
   // Write: MP 0, port 0 -> MP 1, port 1 again.
 
@@ -363,7 +367,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(world), static_cast<size_t>(buffer_size));
-  EXPECT_EQ(0, strcmp(buffer, world));
+  EXPECT_STREQ(world, buffer);
 }
 
 TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
@@ -416,10 +420,79 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
-  EXPECT_EQ(0, strcmp(buffer, hello));
+  EXPECT_STREQ(hello, buffer);
 
   // And MP 1, port 1.
   mp1->Close(1);
+}
+
+// TODO(vtl): Handle-passing isn't actually implemented yet. For now, this tests
+// things leading up to it.
+TEST_F(RemoteMessagePipeTest, HandlePassing) {
+  const char hello[] = "hello";
+  Waiter waiter;
+
+  scoped_refptr<MessagePipe> mp0(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp1(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  ConnectMessagePipes(mp0, mp1);
+
+  // We'll try to pass one of these dispatc
+  scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipe> local_mp(new MessagePipe());
+  dispatcher->Init(local_mp, 0);
+
+  // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
+  // it later, it might already be readable.)
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+
+  // Write to MP 0, port 0.
+  {
+    base::AutoLock locker(test::GetDispatcherLock(dispatcher.get()));
+
+    std::vector<Dispatcher*> dispatchers;
+    dispatchers.push_back(dispatcher.get());
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                hello, sizeof(hello),
+                                &dispatchers,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_TRUE(test::IsDispatcherClosedNoLock(dispatcher.get()));
+  }
+
+  // Wait.
+  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  mp1->RemoveWaiter(1, &waiter);
+
+  // Read from MP 1, port 1.
+  char read_buffer[100] = { 0 };
+  uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  std::vector<scoped_refptr<Dispatcher> > read_dispatchers;
+  uint32_t read_num_dispatchers = 10;  // Maximum to get.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             read_buffer, &read_buffer_size,
+                             &read_dispatchers, &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(hello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(hello, read_buffer);
+  EXPECT_EQ(1u, read_dispatchers.size());
+  EXPECT_EQ(1u, read_num_dispatchers);
+
+  // TODO(vtl): Once we can pass the local message pipe handle (over a remote
+  // message pipe), this will fail.
+  EXPECT_FALSE(read_dispatchers[0].get());
+
+  // Close everything that belongs to us.
+  mp0->Close(0);
+  mp1->Close(1);
+  // Note that |local_mp|'s port 0 belong to |dispatcher|, which was closed.
+  local_mp->Close(1);
 }
 
 // Test racing closes (on each end).

@@ -126,9 +126,9 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
   // invalid.
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
-  // Assigns a new handle for the given dispatcher (which must be valid);
-  // returns |MOJO_HANDLE_INVALID| on failure (due to hitting resource limits).
-  // Must be called under |handle_table_lock_|.
+  // Assigns a new handle for the given dispatcher; returns
+  // |MOJO_HANDLE_INVALID| on failure (due to hitting resource limits) or if
+  // |dispatcher| is null. Must be called under |handle_table_lock_|.
   MojoHandle AddDispatcherNoLock(const scoped_refptr<Dispatcher>& dispatcher);
 
   // Internal implementation of |Wait()| and |WaitMany()|; doesn't do basic

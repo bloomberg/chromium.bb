@@ -15,9 +15,8 @@ MojoResult Dispatcher::Close() {
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  is_closed_ = true;
-  CancelAllWaitersNoLock();
-  return CloseImplNoLock();
+  CloseNoLock();
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Dispatcher::WriteMessage(const void* bytes,
@@ -126,6 +125,15 @@ void Dispatcher::RemoveWaiter(Waiter* waiter) {
   RemoveWaiterImplNoLock(waiter);
 }
 
+void Dispatcher::CloseNoLock() {
+  lock_.AssertAcquired();
+  DCHECK(!is_closed_);
+
+  is_closed_ = true;
+  CancelAllWaitersNoLock();
+  CloseImplNoLock();
+}
+
 scoped_refptr<Dispatcher>
 Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
   lock_.AssertAcquired();
@@ -152,12 +160,11 @@ void Dispatcher::CancelAllWaitersNoLock() {
   // will do something nontrivial.
 }
 
-MojoResult Dispatcher::CloseImplNoLock() {
+void Dispatcher::CloseImplNoLock() {
   lock_.AssertAcquired();
   DCHECK(is_closed_);
   // This may not need to do anything. Dispatchers should override this to do
   // any actual close-time cleanup necessary.
-  return MOJO_RESULT_OK;
 }
 
 MojoResult Dispatcher::WriteMessageImplNoLock(
