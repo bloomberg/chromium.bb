@@ -97,9 +97,6 @@ race:content::GpuWatchdogThread::CheckArmed
 # http://crbug.com/257396
 race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 
-# http://crbug.com/257543
-race:*GetObjectFromEntryAddress
-
 # http://crbug.com/258479
 race:SamplingStateScope
 
