@@ -33,7 +33,7 @@ SystemSettingsProvider::~SystemSettingsProvider() {
 void SystemSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
   // Non-guest users can change the time zone.
-  if (!LoginState::Get()->IsUserAuthenticated())
+  if (LoginState::Get()->IsGuestUser())
     return;
 
   if (path == kSystemTimezone) {

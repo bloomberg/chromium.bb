@@ -64,7 +64,7 @@ class CHROMEOS_EXPORT LoginState {
   // logged in, and only the owner will be allowed to log in).
   bool IsInSafeMode() const;
 
-  // Returns true if logged in and is a guest, retail, public, or kiosk user.
+  // Returns true if logged in and is a guest, retail, or public user.
   bool IsGuestUser() const;
 
   // Returns true if the user is an authenticated user (i.e. non public account)
