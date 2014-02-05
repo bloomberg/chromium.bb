@@ -251,8 +251,9 @@ interface TestObjectPython {
     // Custom type conversions
     CompareHow compareHowMethod();
     any anyMethod();
-    void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
     void voidMethodCompareHowArg(CompareHow compareHowArg);
+    void voidMethodEventTargetArg(EventTarget eventTargetArg);
+    void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
     void voidMethodAnyArg(any anyArg);
     // DOM node types
     void voidMethodAttrArg(Attr attrArg);

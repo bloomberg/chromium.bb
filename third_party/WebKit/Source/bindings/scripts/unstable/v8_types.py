@@ -399,6 +399,7 @@ V8_VALUE_TO_CPP_VALUE = {
     # Interface types
     'CompareHow': 'static_cast<Range::CompareHow>({v8_value}->Int32Value())',
     'Dictionary': 'Dictionary({v8_value}, info.GetIsolate())',
+    'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
     'MediaQueryListListener': 'MediaQueryListListener::create(ScriptValue({v8_value}, info.GetIsolate()))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.GetIsolate())',
     'Promise': 'ScriptPromise({v8_value}, info.GetIsolate())',

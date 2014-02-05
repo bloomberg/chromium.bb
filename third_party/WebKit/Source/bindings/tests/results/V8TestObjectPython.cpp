@@ -4082,24 +4082,6 @@ static void anyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodMediaQueryListListenerArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
-    imp->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
-}
-
-static void voidMethodMediaQueryListListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::voidMethodMediaQueryListListenerArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void voidMethodCompareHowArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4115,6 +4097,42 @@ static void voidMethodCompareHowArgMethodCallback(const v8::FunctionCallbackInfo
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectPythonV8Internal::voidMethodCompareHowArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(EventTarget*, eventTargetArg, V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    imp->voidMethodEventTargetArg(eventTargetArg);
+}
+
+static void voidMethodEventTargetArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodEventTargetArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodMediaQueryListListenerArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
+    imp->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
+}
+
+static void voidMethodMediaQueryListListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodMediaQueryListListenerArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -6891,8 +6909,9 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodAnyCallbackFunctionOptionalAnyArg", TestObjectPythonV8Internal::voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback, 0, 1},
     {"compareHowMethod", TestObjectPythonV8Internal::compareHowMethodMethodCallback, 0, 0},
     {"anyMethod", TestObjectPythonV8Internal::anyMethodMethodCallback, 0, 0},
-    {"voidMethodMediaQueryListListenerArg", TestObjectPythonV8Internal::voidMethodMediaQueryListListenerArgMethodCallback, 0, 1},
     {"voidMethodCompareHowArg", TestObjectPythonV8Internal::voidMethodCompareHowArgMethodCallback, 0, 1},
+    {"voidMethodEventTargetArg", TestObjectPythonV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1},
+    {"voidMethodMediaQueryListListenerArg", TestObjectPythonV8Internal::voidMethodMediaQueryListListenerArgMethodCallback, 0, 1},
     {"voidMethodAnyArg", TestObjectPythonV8Internal::voidMethodAnyArgMethodCallback, 0, 1},
     {"voidMethodAttrArg", TestObjectPythonV8Internal::voidMethodAttrArgMethodCallback, 0, 1},
     {"voidMethodDocumentArg", TestObjectPythonV8Internal::voidMethodDocumentArgMethodCallback, 0, 1},
