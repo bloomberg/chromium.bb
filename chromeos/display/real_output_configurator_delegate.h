@@ -48,9 +48,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
       int width,
       int height,
       const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
-  virtual void ConfigureCTM(
-      int touch_device_id,
-      const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
   virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE;
   virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE;
@@ -77,14 +74,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
 
   // Returns whether |id| is configured to preserve aspect when scaling.
   bool IsOutputAspectPreservingScaling(RROutput id);
-
-  // Searches for touchscreens among input devices,
-  // and tries to match them up to screens in |outputs|.
-  // |outputs| is an array of detected screens.
-  // If a touchscreen with same resolution as an output's native mode
-  // is detected, its id will be stored in this output.
-  void GetTouchscreens(
-      std::vector<OutputConfigurator::OutputSnapshot>* outputs);
 
   Display* display_;
   Window window_;

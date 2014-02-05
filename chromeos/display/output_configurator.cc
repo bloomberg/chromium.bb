@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chromeos/display/output_util.h"
 #include "chromeos/display/real_output_configurator_delegate.h"
+#include "chromeos/display/touchscreen_delegate_x11.h"
 
 namespace chromeos {
 
@@ -249,6 +250,11 @@ void OutputConfigurator::SetDelegateForTesting(scoped_ptr<Delegate> delegate) {
   configure_display_ = true;
 }
 
+void OutputConfigurator::SetTouchscreenDelegateForTesting(
+    scoped_ptr<TouchscreenDelegate> delegate) {
+  touchscreen_delegate_ = delegate.Pass();
+}
+
 void OutputConfigurator::SetInitialDisplayPower(DisplayPowerState power_state) {
   DCHECK_EQ(output_state_, STATE_INVALID);
   power_state_ = power_state;
@@ -261,6 +267,9 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
 
   if (!delegate_)
     delegate_.reset(new RealOutputConfiguratorDelegate());
+
+  if (!touchscreen_delegate_)
+    touchscreen_delegate_.reset(new TouchscreenDelegateX11());
 }
 
 void OutputConfigurator::Start(uint32 background_color_argb) {
@@ -660,6 +669,7 @@ void OutputConfigurator::ScheduleConfigureOutputs() {
 
 void OutputConfigurator::UpdateCachedOutputs() {
   cached_outputs_ = delegate_->GetOutputs();
+  touchscreen_delegate_->AssociateTouchscreens(&cached_outputs_);
 
   // Set |selected_mode| fields.
   for (size_t i = 0; i < cached_outputs_.size(); ++i) {
@@ -1001,7 +1011,8 @@ bool OutputConfigurator::EnterState(
 
       if (configure_succeeded) {
         if (output.touch_device_id)
-          delegate_->ConfigureCTM(output.touch_device_id, output.transform);
+          touchscreen_delegate_->ConfigureCTM(output.touch_device_id,
+                                              output.transform);
         cached_outputs_[i] = updated_outputs[i];
       } else {
         all_succeeded = false;

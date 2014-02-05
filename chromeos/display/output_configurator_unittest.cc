@@ -97,13 +97,70 @@ std::string JoinActions(const char* action, ...) {
   return actions;
 }
 
+class ActionLogger {
+ public:
+  ActionLogger() {}
+
+  void AppendAction(const std::string& action) {
+    if (!actions_.empty())
+      actions_ += ",";
+    actions_ += action;
+  }
+
+  // Returns a comma-separated string describing the actions that were
+  // requested since the previous call to GetActionsAndClear() (i.e.
+  // results are non-repeatable).
+  std::string GetActionsAndClear() {
+    std::string actions = actions_;
+    actions_.clear();
+    return actions;
+  }
+
+ private:
+  std::string actions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActionLogger);
+};
+
+class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
+ public:
+  // Ownership of |log| remains with the caller.
+  explicit TestTouchscreenDelegate(ActionLogger* log) : log_(log) {}
+  virtual ~TestTouchscreenDelegate() {}
+
+  const OutputConfigurator::CoordinateTransformation& GetCTM(
+      int touch_device_id) {
+    return ctms_[touch_device_id];
+  }
+
+  // OutputConfigurator::TouchscreenDelegate implementation:
+  virtual void AssociateTouchscreens(
+      std::vector<OutputConfigurator::OutputSnapshot>* outputs) OVERRIDE {}
+  virtual void ConfigureCTM(
+      int touch_device_id,
+      const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE {
+    log_->AppendAction(GetCTMAction(touch_device_id, ctm));
+    ctms_[touch_device_id] = ctm;
+  }
+
+ private:
+  ActionLogger* log_;  // Not owned.
+
+  // Most-recently-configured transformation matrices, keyed by touch device ID.
+  std::map<int, OutputConfigurator::CoordinateTransformation> ctms_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTouchscreenDelegate);
+};
+
 class TestDelegate : public OutputConfigurator::Delegate {
  public:
   static const int kXRandREventBase = 10;
 
-  TestDelegate()
+  // Ownership of |log| remains with the caller.
+  explicit TestDelegate(ActionLogger* log)
       : max_configurable_pixels_(0),
-        hdcp_state_(HDCP_STATE_UNDESIRED) {}
+        hdcp_state_(HDCP_STATE_UNDESIRED),
+        log_(log) {}
   virtual ~TestDelegate() {}
 
   const std::vector<OutputConfigurator::OutputSnapshot>& outputs() const {
@@ -120,47 +177,35 @@ class TestDelegate : public OutputConfigurator::Delegate {
 
   void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
 
-  // Returns a comma-separated string describing the actions that were
-  // requested since the previous call to GetActionsAndClear() (i.e.
-  // results are non-repeatable).
-  std::string GetActionsAndClear() {
-    std::string actions = actions_;
-    actions_.clear();
-    return actions;
-  }
-
-  const OutputConfigurator::CoordinateTransformation& get_ctm(
-      int touch_device_id) {
-    return ctms_[touch_device_id];
-  }
-
   // OutputConfigurator::Delegate overrides:
   virtual void InitXRandRExtension(int* event_base) OVERRIDE {
-    AppendAction(kInitXRandR);
+    log_->AppendAction(kInitXRandR);
     *event_base = kXRandREventBase;
   }
-  virtual void UpdateXRandRConfiguration(
-      const base::NativeEvent& event) OVERRIDE { AppendAction(kUpdateXRandR); }
-  virtual void GrabServer() OVERRIDE { AppendAction(kGrab); }
-  virtual void UngrabServer() OVERRIDE { AppendAction(kUngrab); }
-  virtual void SyncWithServer() OVERRIDE { AppendAction(kSync); }
-  virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE {
-    AppendAction(GetBackgroundAction(color_argb));
+  virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
+      OVERRIDE {
+    log_->AppendAction(kUpdateXRandR);
   }
-  virtual void ForceDPMSOn() OVERRIDE { AppendAction(kForceDPMS); }
+  virtual void GrabServer() OVERRIDE { log_->AppendAction(kGrab); }
+  virtual void UngrabServer() OVERRIDE { log_->AppendAction(kUngrab); }
+  virtual void SyncWithServer() OVERRIDE { log_->AppendAction(kSync); }
+  virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE {
+    log_->AppendAction(GetBackgroundAction(color_argb));
+  }
+  virtual void ForceDPMSOn() OVERRIDE { log_->AppendAction(kForceDPMS); }
   virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs()
       OVERRIDE {
     return outputs_;
   }
   virtual void AddOutputMode(RROutput output, RRMode mode) OVERRIDE {
-    AppendAction(GetAddOutputModeAction(output, mode));
+    log_->AppendAction(GetAddOutputModeAction(output, mode));
   }
   virtual bool ConfigureCrtc(RRCrtc crtc,
                              RRMode mode,
                              RROutput output,
                              int x,
                              int y) OVERRIDE {
-    AppendAction(GetCrtcAction(crtc, x, y, mode, output));
+    log_->AppendAction(GetCrtcAction(crtc, x, y, mode, output));
 
     if (max_configurable_pixels_ == 0)
       return true;
@@ -181,20 +226,14 @@ class TestDelegate : public OutputConfigurator::Delegate {
       int width,
       int height,
       const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE {
-    AppendAction(
+    log_->AppendAction(
         GetFramebufferAction(width,
                              height,
                              outputs.size() >= 1 ? outputs[0].crtc : 0,
                              outputs.size() >= 2 ? outputs[1].crtc : 0));
   }
-  virtual void ConfigureCTM(
-      int touch_device_id,
-      const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE {
-    AppendAction(GetCTMAction(touch_device_id, ctm));
-    ctms_[touch_device_id] = ctm;
-  }
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE {
-    AppendAction(projecting ? kProjectingOn : kProjectingOff);
+    log_->AppendAction(projecting ? kProjectingOn : kProjectingOff);
   }
 
   virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE {
@@ -203,29 +242,11 @@ class TestDelegate : public OutputConfigurator::Delegate {
   }
 
   virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE {
-    AppendAction(GetSetHDCPStateAction(id, state));
+    log_->AppendAction(GetSetHDCPStateAction(id, state));
     return true;
   }
 
  private:
-  struct ModeDetails {
-    ModeDetails() : width(0), height(0), interlaced(false) {}
-    ModeDetails(int width, int height, bool interlaced)
-        : width(width),
-          height(height),
-          interlaced(interlaced) {}
-
-    int width;
-    int height;
-    bool interlaced;
-  };
-
-  void AppendAction(const std::string& action) {
-    if (!actions_.empty())
-      actions_ += ",";
-    actions_ += action;
-  }
-
   OutputConfigurator::OutputSnapshot* GetOutputFromId(RROutput output_id) {
     for (unsigned int i = 0; i < outputs_.size(); i++) {
       if (outputs_[i].output == output_id)
@@ -234,15 +255,8 @@ class TestDelegate : public OutputConfigurator::Delegate {
     return NULL;
   }
 
-  std::map<RRMode, ModeDetails> modes_;
-
-  // Most-recently-configured transformation matrices, keyed by touch device ID.
-  std::map<int, OutputConfigurator::CoordinateTransformation> ctms_;
-
   // Outputs to be returned by GetOutputs().
   std::vector<OutputConfigurator::OutputSnapshot> outputs_;
-
-  std::string actions_;
 
   // |max_configurable_pixels_| represents the maximum number of pixels that
   // ConfigureCrtc will support.  Tests can use this to force ConfigureCrtc
@@ -254,6 +268,8 @@ class TestDelegate : public OutputConfigurator::Delegate {
 
   // Result value of GetHDCPState().
   HDCPState hdcp_state_;
+
+  ActionLogger* log_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -371,9 +387,17 @@ class OutputConfiguratorTest : public testing::Test {
   virtual ~OutputConfiguratorTest() {}
 
   virtual void SetUp() OVERRIDE {
-    delegate_ = new TestDelegate();
+    log_.reset(new ActionLogger());
+
+    delegate_ = new TestDelegate(log_.get());
     configurator_.SetDelegateForTesting(
         scoped_ptr<OutputConfigurator::Delegate>(delegate_));
+
+    touchscreen_delegate_ = new TestTouchscreenDelegate(log_.get());
+    configurator_.SetTouchscreenDelegateForTesting(
+        scoped_ptr<OutputConfigurator::TouchscreenDelegate>(
+            touchscreen_delegate_));
+
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
 
@@ -440,17 +464,24 @@ class OutputConfiguratorTest : public testing::Test {
   // Initializes |configurator_| with a single internal display.
   void InitWithSingleOutput() {
     UpdateOutputs(1, false);
-    EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+    EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
     configurator_.Init(false);
-    EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+    EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
     configurator_.Start(0);
-    EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
-                          GetFramebufferAction(kSmallModeWidth,
-                              kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-                          GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                                        outputs_[0].output).c_str(),
-                          kForceDPMS, kUngrab, kProjectingOff, NULL),
-              delegate_->GetActionsAndClear());
+    EXPECT_EQ(
+        JoinActions(
+            kGrab,
+            kInitXRandR,
+            GetFramebufferAction(
+                kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+            GetCrtcAction(
+                outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output)
+                .c_str(),
+            kForceDPMS,
+            kUngrab,
+            kProjectingOff,
+            NULL),
+        log_->GetActionsAndClear());
   }
 
   base::MessageLoop message_loop_;
@@ -458,7 +489,9 @@ class OutputConfiguratorTest : public testing::Test {
   TestMirroringController mirroring_controller_;
   OutputConfigurator configurator_;
   TestObserver observer_;
+  scoped_ptr<ActionLogger> log_;
   TestDelegate* delegate_;  // not owned
+  TestTouchscreenDelegate* touchscreen_delegate_;  // not owned
   OutputConfigurator::TestApi test_api_;
 
   OutputConfigurator::OutputSnapshot outputs_[2];
@@ -547,43 +580,61 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   UpdateOutputs(2, true);
   const int kDualHeight =
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kBigModeWidth, kDualHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                            kBigModeId, outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kBigModeId,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Disconnect the second output.
   observer_.Reset();
   UpdateOutputs(1, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kUngrab, kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kUngrab,
+          kProjectingOff,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -591,21 +642,29 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   outputs_[1].mode_infos.erase(kSmallModeId);
   state_controller_.set_state(STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kBigModeWidth, kDualHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                            kBigModeId, outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kBigModeId,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
 
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -613,15 +672,14 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   // Setting STATE_DUAL_MIRROR should try to reconfigure.
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
-  EXPECT_EQ(JoinActions(NULL), delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(NULL), log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Set back to software mirror mode.
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -629,13 +687,18 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   // Disconnect the second output.
   observer_.Reset();
   UpdateOutputs(1, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kUngrab, kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kUngrab,
+          kProjectingOff,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 }
@@ -646,15 +709,22 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   state_controller_.set_state(STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -663,15 +733,19 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kBigModeWidth, kBigModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId,
-                            outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId, outputs_[1].output)
+              .c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -680,15 +754,18 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, 0,
-                            outputs_[1].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc, 0, 0, 0, outputs_[1].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -697,15 +774,21 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -717,16 +800,24 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   UpdateOutputs(2, true);
   const int kDualHeight =
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kBigModeWidth, kDualHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                            kBigModeId, outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kBigModeId,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -736,15 +827,19 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kBigModeWidth, kBigModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId,
-                            outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId, outputs_[1].output)
+              .c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -754,16 +849,21 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kBigModeWidth, kDualHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                            0, outputs_[1].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        0,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -772,16 +872,23 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kBigModeWidth, kDualHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                            kBigModeId, outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kBigModeId,
+                        outputs_[1].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -792,40 +899,46 @@ TEST_F(OutputConfiguratorTest, Casting) {
 
   // Notify configurator that casting session is started.
   configurator_.OnCastingSessionStartedOrStopped(true);
-  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kProjectingOn, log_->GetActionsAndClear());
 
   // Verify that the configurator keeps a count of active casting sessions
   // instead of treating it as a single global state.
   configurator_.OnCastingSessionStartedOrStopped(true);
-  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kProjectingOn, log_->GetActionsAndClear());
   configurator_.OnCastingSessionStartedOrStopped(false);
-  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kProjectingOn, log_->GetActionsAndClear());
 
   // Turn all displays off and check that projecting is not turned off.
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   // Turn all displays back on.
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   // Notify configurator that casting session is ended.
   configurator_.OnCastingSessionStartedOrStopped(false);
-  EXPECT_EQ(kProjectingOff, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kProjectingOff, log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, SuspendAndResume) {
@@ -835,143 +948,183 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   // on.  The configurator should still reprobe on resume in case a display
   // was connected while suspended.
   configurator_.SuspendDisplays();
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.ResumeDisplays();
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   // Now turn the display off before suspending and check that the
   // configurator turns it back on and syncs with the server.
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   configurator_.SuspendDisplays();
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kForceDPMS, kUngrab, kSync, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          kSync,
+          NULL),
+      log_->GetActionsAndClear());
 
   configurator_.ResumeDisplays();
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   // If a second, external display is connected, the displays shouldn't be
   // powered back on before suspending.
   state_controller_.set_state(STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, 0,
-                            outputs_[1].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc, 0, 0, 0, outputs_[1].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 
   configurator_.SuspendDisplays();
   EXPECT_EQ(JoinActions(kGrab, kUngrab, kSync, NULL),
-            delegate_->GetActionsAndClear());
+            log_->GetActionsAndClear());
 
   // If a display is disconnected while suspended, the configurator should
   // pick up the change.
   UpdateOutputs(1, false);
   configurator_.ResumeDisplays();
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
-                            outputs_[0].output).c_str(),
-                        kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, Headless) {
   UpdateOutputs(0, false);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Start(0);
-  EXPECT_EQ(JoinActions(kGrab, kInitXRandR, kForceDPMS, kUngrab,
-                        kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                kGrab, kInitXRandR, kForceDPMS, kUngrab, kProjectingOff, NULL),
+            log_->GetActionsAndClear());
 
   // Not much should happen when the display power state is changed while
   // no displays are connected.
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab, kForceDPMS, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+            log_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
   outputs_[0] = outputs_[1];
   UpdateOutputs(1, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kBigModeWidth, kBigModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kBigModeId,
-                            outputs_[0].output).c_str(),
-                        kUngrab, kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, kBigModeId, outputs_[0].output)
+              .c_str(),
+          kUngrab,
+          kProjectingOff,
+          NULL),
+      log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
   UpdateOutputs(2, false);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   state_controller_.set_state(STATE_DUAL_MIRROR);
   configurator_.Start(0);
-  EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          kInitXRandR,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   UpdateOutputs(0, false);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
   configurator_.Start(0);
   observer_.Reset();
@@ -1027,14 +1180,14 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
   // the output change events don't trigger an additional probe, which can
   // block the UI thread.
   test_api_.SendScreenChangeEvent();
-  EXPECT_EQ(kUpdateXRandR, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kUpdateXRandR, log_->GetActionsAndClear());
 
   test_api_.SendOutputChangeEvent(
       outputs_[0].output, outputs_[0].crtc, outputs_[0].current_mode, true);
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].current_mode, false);
   EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Send an event stating that the second output is connected and check
   // that it gets updated.
@@ -1043,73 +1196,102 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].current_mode, true);
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 
   // An event about the second output changing modes should trigger another
   // reconfigure.
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].native_mode, true);
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 
   // Disconnect the second output.
   UpdateOutputs(1, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        kUngrab, kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(
+              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          kUngrab,
+          kProjectingOff,
+          NULL),
+      log_->GetActionsAndClear());
 
   // An additional event about the second output being disconnected should
   // be ignored.
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].current_mode, false);
   EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Lower the limit for which the delegate will succeed, which should result
   // in the second output sticking with its native mode.
   delegate_->set_max_configurable_pixels(1);
   UpdateOutputs(2, true);
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        GetFramebufferAction(kBigModeWidth,
-                            kSmallModeHeight + kBigModeHeight +
-                              OutputConfigurator::kVerticalGap,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, kSmallModeHeight +
-                            OutputConfigurator::kVerticalGap, kBigModeId,
-                            outputs_[1].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, kSmallModeHeight +
-                            OutputConfigurator::kVerticalGap, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(kBigModeWidth,
+                               kSmallModeHeight + kBigModeHeight +
+                                   OutputConfigurator::kVerticalGap,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kBigModeId,
+                        outputs_[1].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
+                        kSmallModeId,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 
   // A change event reporting a mode change on the second output should
   // trigger another reconfigure.
@@ -1117,15 +1299,21 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].mirror_mode, true);
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_EQ(JoinActions(kGrab,
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
@@ -1167,17 +1355,24 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
   configurator_.Init(true /* is_panel_fitting_enabled */);
   configurator_.Start(0);
   EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
-  EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
-                        GetAddOutputModeAction(
-                            outputs_[0].output, kSmallModeId).c_str(),
-                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
-                            outputs_[1].output).c_str(),
-                        kForceDPMS, kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          kInitXRandR,
+          GetAddOutputModeAction(outputs_[0].output, kSmallModeId).c_str(),
+          GetFramebufferAction(kSmallModeWidth,
+                               kSmallModeHeight,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          kForceDPMS,
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 
   // Both outputs should be using the small mode.
   ASSERT_EQ(1, observer_.num_changes());
@@ -1199,7 +1394,7 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
 TEST_F(OutputConfiguratorTest, OutputProtection) {
   configurator_.Init(false);
   configurator_.Start(0);
-  EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
   OutputConfigurator::OutputProtectionClientId id =
       configurator_.RegisterOutputProtectionClient();
@@ -1207,7 +1402,7 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
 
   // One output.
   UpdateOutputs(1, true);
-  EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
@@ -1217,11 +1412,11 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Two outputs.
   UpdateOutputs(2, true);
-  EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
                                                         outputs_[1].display_id,
                                                         &link_mask,
@@ -1230,14 +1425,14 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
             link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(id,
                                            outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_HDCP));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED),
-            delegate_->GetActionsAndClear());
+            log_->GetActionsAndClear());
 
   // Enable protection.
   delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
@@ -1248,12 +1443,12 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_HDCP),
             protection_mask);
-  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Protections should be disabled after unregister.
   configurator_.UnregisterOutputProtectionClient(id);
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED),
-            delegate_->GetActionsAndClear());
+            log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
@@ -1266,16 +1461,16 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
   configurator_.Init(false);
   configurator_.Start(0);
   UpdateOutputs(2, true);
-  EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
   // Clients never know state enableness for methods that they didn't request.
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(client1,
                                            outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_HDCP));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
-                                  HDCP_STATE_DESIRED).c_str(),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
+      log_->GetActionsAndClear());
   delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
 
   uint32_t link_mask = 0;
@@ -1299,16 +1494,16 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
       configurator_.EnableOutputProtection(client2,
                                            outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
-                                  HDCP_STATE_DESIRED).c_str(),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
+      log_->GetActionsAndClear());
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(client1,
                                            outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
-                                  HDCP_STATE_UNDESIRED).c_str(),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED).c_str(),
+      log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
@@ -1324,8 +1519,10 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
   const int kDualWidth = kBigModeWidth;
 
-  OutputConfigurator::CoordinateTransformation ctm1 = delegate_->get_ctm(1);
-  OutputConfigurator::CoordinateTransformation ctm2 = delegate_->get_ctm(2);
+  OutputConfigurator::CoordinateTransformation ctm1 =
+      touchscreen_delegate_->GetCTM(1);
+  OutputConfigurator::CoordinateTransformation ctm2 =
+      touchscreen_delegate_->GetCTM(2);
 
   EXPECT_EQ(kSmallModeHeight - 1, round((kDualHeight - 1) * ctm1.y_scale));
   EXPECT_EQ(0, round((kDualHeight - 1) * ctm1.y_offset));
@@ -1381,17 +1578,23 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   state_controller_.set_state(STATE_SINGLE);
   UpdateOutputs(1, true);
 
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(2560, 1600,
-                            outputs_[0].crtc, 0).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode + 3,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode + 2,
-                            outputs_[0].output).c_str(),
-                        kUngrab, kProjectingOff, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(2560, 1600, outputs_[0].crtc, 0).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kFirstMode + 2, outputs_[0].output)
+              .c_str(),
+          kUngrab,
+          kProjectingOff,
+          NULL),
+      log_->GetActionsAndClear());
 
   // This test should attempt to configure a mirror mode that will not succeed
   // and should end up in extended mode.
@@ -1401,48 +1604,58 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   state_controller_.set_state(STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
 
-  EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
-                        GetFramebufferAction(
-                            outputs_[0].mode_infos[kFirstMode].width,
-                            outputs_[0].mode_infos[kFirstMode].height,
-                            outputs_[0].crtc,
-                            outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc,
-                            0, 0, kFirstMode, outputs_[0].output).c_str(),
-                        // First mode tried is expected to fail and it will
-                        // retry wil the 4th mode in the list.
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode + 3,
-                            outputs_[0].output).c_str(),
-                        // Then attempt to configure crtc1 with the first mode.
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kFirstMode,
-                            outputs_[1].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0, 0, kFirstMode + 3,
-                            outputs_[1].output).c_str(),
-                        // Since it was requested to go into mirror mode
-                        // and the configured modes were different, it
-                        // should now try and setup a valid configurable
-                        // extended mode.
-                        GetFramebufferAction(
-                            outputs_[0].mode_infos[kFirstMode].width,
-                            outputs_[0].mode_infos[kFirstMode].height +
-                              outputs_[1].mode_infos[kFirstMode].height +
-                              OutputConfigurator::kVerticalGap,
-                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode + 3,
-                            outputs_[0].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            outputs_[1].mode_infos[kFirstMode].height +
-                              OutputConfigurator::kVerticalGap, kFirstMode,
-                            outputs_[1].output).c_str(),
-                        GetCrtcAction(outputs_[1].crtc, 0,
-                            outputs_[1].mode_infos[kFirstMode].height +
-                              OutputConfigurator::kVerticalGap, kFirstMode + 3,
-                            outputs_[1].output).c_str(),
-                        kUngrab, kProjectingOn, NULL),
-            delegate_->GetActionsAndClear());
-
+  EXPECT_EQ(
+      JoinActions(
+          kUpdateXRandR,
+          kGrab,
+          GetFramebufferAction(outputs_[0].mode_infos[kFirstMode].width,
+                               outputs_[0].mode_infos[kFirstMode].height,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
+              .c_str(),
+          // First mode tried is expected to fail and it will
+          // retry wil the 4th mode in the list.
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
+              .c_str(),
+          // Then attempt to configure crtc1 with the first mode.
+          GetCrtcAction(outputs_[1].crtc, 0, 0, kFirstMode, outputs_[1].output)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[1].crtc, 0, 0, kFirstMode + 3, outputs_[1].output)
+              .c_str(),
+          // Since it was requested to go into mirror mode
+          // and the configured modes were different, it
+          // should now try and setup a valid configurable
+          // extended mode.
+          GetFramebufferAction(outputs_[0].mode_infos[kFirstMode].width,
+                               outputs_[0].mode_infos[kFirstMode].height +
+                                   outputs_[1].mode_infos[kFirstMode].height +
+                                   OutputConfigurator::kVerticalGap,
+                               outputs_[0].crtc,
+                               outputs_[1].crtc).c_str(),
+          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
+              .c_str(),
+          GetCrtcAction(
+              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
+              .c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        outputs_[1].mode_infos[kFirstMode].height +
+                            OutputConfigurator::kVerticalGap,
+                        kFirstMode,
+                        outputs_[1].output).c_str(),
+          GetCrtcAction(outputs_[1].crtc,
+                        0,
+                        outputs_[1].mode_infos[kFirstMode].height +
+                            OutputConfigurator::kVerticalGap,
+                        kFirstMode + 3,
+                        outputs_[1].output).c_str(),
+          kUngrab,
+          kProjectingOn,
+          NULL),
+      log_->GetActionsAndClear());
 }
 
 }  // namespace chromeos

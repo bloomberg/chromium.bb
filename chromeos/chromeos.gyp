@@ -210,6 +210,8 @@
         'display/output_util.h',
         'display/real_output_configurator_delegate.cc',
         'display/real_output_configurator_delegate.h',
+        'display/touchscreen_delegate_x11.cc',
+        'display/touchscreen_delegate_x11.h',
         'ime/component_extension_ime_manager.cc',
         'ime/component_extension_ime_manager.h',
         'ime/extension_ime_util.cc',

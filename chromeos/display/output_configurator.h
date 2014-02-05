@@ -243,14 +243,6 @@ class CHROMEOS_EXPORT OutputConfigurator
         int height,
         const std::vector<OutputConfigurator::OutputSnapshot>& outputs) = 0;
 
-    // Configures XInput's Coordinate Transformation Matrix property.
-    // |touch_device_id| the ID of the touchscreen device to configure.
-    // |ctm| contains the desired transformation parameters.  The offsets
-    // in it should be normalized so that 1 corresponds to the X or Y axis
-    // size for the corresponding offset.
-    virtual void ConfigureCTM(int touch_device_id,
-                              const CoordinateTransformation& ctm) = 0;
-
     // Sends a D-Bus message to the power manager telling it that the
     // machine is or is not projecting.
     virtual void SendProjectingStateToPowerManager(bool projecting) = 0;
@@ -260,6 +252,27 @@ class CHROMEOS_EXPORT OutputConfigurator
 
     // Sets HDCP state of output.
     virtual bool SetHDCPState(RROutput id, HDCPState state) = 0;
+  };
+
+  class TouchscreenDelegate {
+   public:
+    virtual ~TouchscreenDelegate() {}
+
+    // Searches for touchscreens among input devices,
+    // and tries to match them up to screens in |outputs|.
+    // |outputs| is an array of detected screens.
+    // If a touchscreen with same resolution as an output's native mode
+    // is detected, its id will be stored in this output.
+    virtual void AssociateTouchscreens(
+        std::vector<OutputSnapshot>* outputs) = 0;
+
+    // Configures XInput's Coordinate Transformation Matrix property.
+    // |touch_device_id| the ID of the touchscreen device to configure.
+    // |ctm| contains the desired transformation parameters.  The offsets
+    // in it should be normalized so that 1 corresponds to the X or Y axis
+    // size for the corresponding offset.
+    virtual void ConfigureCTM(int touch_device_id,
+                              const CoordinateTransformation& ctm) = 0;
   };
 
   // Helper class used by tests.
@@ -339,6 +352,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Replaces |delegate_| with |delegate| and sets |configure_display_| to
   // true.  Should be called before Init().
   void SetDelegateForTesting(scoped_ptr<Delegate> delegate);
+
+  void SetTouchscreenDelegateForTesting(
+      scoped_ptr<TouchscreenDelegate> delegate);
 
   // Sets the initial value of |power_state_|.  Must be called before Start().
   void SetInitialDisplayPower(DisplayPowerState power_state);
@@ -512,6 +528,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<Delegate> delegate_;
+  scoped_ptr<TouchscreenDelegate> touchscreen_delegate_;
 
   // Used to enable modes which rely on panel fitting.
   bool is_panel_fitting_enabled_;
