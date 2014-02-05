@@ -283,8 +283,17 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
   delete data;
   per_compositor_data_.erase(it);
-  if (per_compositor_data_.empty())
-    gl_helper_.reset();
+  if (per_compositor_data_.empty()) {
+    // Destroying the GLHelper may cause some async actions to be cancelled,
+    // causing things to request a new GLHelper. Due to crbug.com/176091 the
+    // GLHelper created in this case would be lost/leaked if we just reset()
+    // on the |gl_helper_| variable directly. So instead we call reset() on a
+    // local scoped_ptr.
+    scoped_ptr<GLHelper> helper = gl_helper_.Pass();
+    helper.reset();
+    DCHECK(!gl_helper_) << "Destroying the GLHelper should not cause a new "
+                           "GLHelper to be created.";
+  }
 }
 
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }

@@ -1868,7 +1868,15 @@ static void CopyFromCompositingSurfaceFinished(
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
   bitmap_pixels_lock.reset();
-  release_callback->Run(0, false);
+
+  uint32 sync_point = 0;
+  if (result) {
+    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+    sync_point = gl_helper->InsertSyncPoint();
+  }
+  bool lost_resource = sync_point == 0;
+  release_callback->Run(sync_point, lost_resource);
+
   callback.Run(result, *bitmap);
 }
 
@@ -1878,12 +1886,9 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
     const SkBitmap::Config config,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-
-  DCHECK(result->HasTexture());
-  if (!result->HasTexture())
-    return;
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
@@ -1931,11 +1936,8 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasBitmap());
-
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  if (!result->HasBitmap())
-    return;
 
   scoped_ptr<SkBitmap> source = result->TakeBitmap();
   DCHECK(source);
@@ -1980,13 +1982,17 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinishedForVideo(
     bool result) {
   callback.Run(result);
 
-  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-  uint32 sync_point = gl_helper ? gl_helper->InsertSyncPoint() : 0;
+  uint32 sync_point = 0;
+  if (result) {
+    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+    sync_point = gl_helper->InsertSyncPoint();
+  }
   if (release_callback) {
     // A release callback means the texture came from the compositor, so there
     // should be no |subscriber_texture|.
     DCHECK(!subscriber_texture);
-    release_callback->Run(sync_point, false);
+    bool lost_resource = sync_point == 0;
+    release_callback->Run(sync_point, lost_resource);
   }
   ReturnSubscriberTexture(rwhva, subscriber_texture, sync_point);
 }
