@@ -187,9 +187,11 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
     DCHECK(!use_gpu_rasterization());
+    buffer_ = NULL;
     client->OnRasterCompleted(this, analysis_);
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
+    DCHECK(!buffer_);
     reply_.Run(analysis_, !HasFinishedRunning());
   }
 
