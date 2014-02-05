@@ -156,18 +156,6 @@ bool MapBufferToVideoFrame(
 
 }  // namespace
 
-CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
-                             const CVTimeStamp* now,
-                             const CVTimeStamp* output_time,
-                             CVOptionFlags flags_in,
-                             CVOptionFlags* flags_out,
-                             void* context) {
-  CompositingIOSurfaceMac* surface =
-      static_cast<CompositingIOSurfaceMac*>(context);
-  surface->DisplayLinkTick(display_link, output_time);
-  return kCVReturnSuccess;
-}
-
 CompositingIOSurfaceMac::CopyContext::CopyContext(
     const scoped_refptr<CompositingIOSurfaceContext>& context)
   : transformer(new CompositingIOSurfaceTransformer(
@@ -263,63 +251,12 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
                      base::Unretained(this),
                      false),
           true),
-      display_link_(0),
-      display_link_stop_timer_(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                               this, &CompositingIOSurfaceMac::StopDisplayLink),
-      vsync_interval_numerator_(0),
-      vsync_interval_denominator_(0),
       gl_error_(GL_NO_ERROR) {
   CHECK(offscreen_context_);
 }
 
-void CompositingIOSurfaceMac::SetupCVDisplayLink() {
-  if (display_link_) {
-    LOG(ERROR) << "DisplayLink already setup";
-    return;
-  }
-
-  CVDisplayLinkRef display_link;
-  CVReturn ret = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
-  if (ret != kCVReturnSuccess) {
-    LOG(WARNING) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
-    return;
-  }
-
-  display_link_ = display_link;
-
-  ret = CVDisplayLinkSetOutputCallback(display_link_,
-                                       &DisplayLinkCallback, this);
-  DCHECK(ret == kCVReturnSuccess)
-      << "CVDisplayLinkSetOutputCallback failed: " << ret;
-
-  StartOrContinueDisplayLink();
-
-  CVTimeStamp cv_time;
-  ret = CVDisplayLinkGetCurrentTime(display_link_, &cv_time);
-  DCHECK(ret == kCVReturnSuccess)
-      << "CVDisplayLinkGetCurrentTime failed: " << ret;
-
-  {
-    base::AutoLock lock(lock_);
-    CalculateVsyncParametersLockHeld(&cv_time);
-  }
-
-  // Stop display link for now, it will be started when needed during Draw.
-  StopDisplayLink();
-}
-
-void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
-                                                 uint32* interval_numerator,
-                                                 uint32* interval_denominator) {
-  base::AutoLock lock(lock_);
-  *timebase = vsync_timebase_;
-  *interval_numerator = vsync_interval_numerator_;
-  *interval_denominator = vsync_interval_denominator_;
-}
-
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   FailAllCopies();
-  CVDisplayLinkRelease(display_link_);
   CGLSetCurrentContext(offscreen_context_->cgl_context());
   DestroyAllCopyContextsWithinContext();
   UnrefIOSurfaceWithContextCurrent();
@@ -356,9 +293,6 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     float window_scale_factor,
     bool flush_drawable) {
   DCHECK_EQ(CGLGetCurrentContext(), drawing_context->cgl_context());
-
-  if (display_link_ == NULL)
-    SetupCVDisplayLink();
 
   bool has_io_surface = HasIOSurface();
   TRACE_EVENT1("browser", "CompositingIOSurfaceMac::DrawIOSurface",
@@ -486,8 +420,6 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
 
   // Try to finish previous copy requests after flush to get better pipelining.
   CheckIfAllCopiesAreFinished(false);
-
-  StartOrContinueDisplayLink();
 
   return result;
 }
@@ -644,43 +576,6 @@ void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
   // again, OSX may have reused the same ID for a new tab and we don't want to
   // blit random tab contents.
   io_surface_handle_ = 0;
-}
-
-void CompositingIOSurfaceMac::DisplayLinkTick(CVDisplayLinkRef display_link,
-                                              const CVTimeStamp* time) {
-  TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::DisplayLinkTick");
-  base::AutoLock lock(lock_);
-  CalculateVsyncParametersLockHeld(time);
-}
-
-void CompositingIOSurfaceMac::CalculateVsyncParametersLockHeld(
-    const CVTimeStamp* time) {
-  lock_.AssertAcquired();
-  vsync_interval_numerator_ = static_cast<uint32>(time->videoRefreshPeriod);
-  vsync_interval_denominator_ = time->videoTimeScale;
-  // Verify that videoRefreshPeriod is 32 bits.
-  DCHECK((time->videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
-
-  vsync_timebase_ =
-      base::TimeTicks::FromInternalValue(time->hostTime / 1000);
-}
-
-void CompositingIOSurfaceMac::StartOrContinueDisplayLink() {
-  if (display_link_ == NULL)
-    return;
-
-  if (!CVDisplayLinkIsRunning(display_link_)) {
-    CVDisplayLinkStart(display_link_);
-  }
-  display_link_stop_timer_.Reset();
-}
-
-void CompositingIOSurfaceMac::StopDisplayLink() {
-  if (display_link_ == NULL)
-    return;
-
-  if (CVDisplayLinkIsRunning(display_link_))
-    CVDisplayLinkStop(display_link_);
 }
 
 bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {

@@ -222,9 +222,11 @@ int GpuMain(const MainFunctionParams& parameters) {
     // Determine if we need to initialize GL here or it has already been done.
     bool gl_already_initialized = false;
 #if defined(OS_MACOSX)
-    // On Mac, GLSurface::InitializeOneOff() is called from the sandbox warmup
-    // code before getting here.
-    gl_already_initialized = true;
+    if (!command_line.HasSwitch(switches::kNoSandbox)) {
+      // On Mac, if the sandbox is enabled, then GLSurface::InitializeOneOff()
+      // is called from the sandbox warmup code before getting here.
+      gl_already_initialized = true;
+    }
 #endif
     if (command_line.HasSwitch(switches::kInProcessGPU)) {
       // With in-process GPU, GLSurface::InitializeOneOff() is called from

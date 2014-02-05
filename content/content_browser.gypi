@@ -828,6 +828,8 @@
     'browser/renderer_host/delegated_frame_evictor.h',
     'browser/renderer_host/dip_util.cc',
     'browser/renderer_host/dip_util.h',
+    'browser/renderer_host/display_link_mac.h',
+    'browser/renderer_host/display_link_mac.cc',
     'browser/renderer_host/file_utilities_message_filter.cc',
     'browser/renderer_host/file_utilities_message_filter.h',
     'browser/renderer_host/gamepad_browser_message_filter.cc',

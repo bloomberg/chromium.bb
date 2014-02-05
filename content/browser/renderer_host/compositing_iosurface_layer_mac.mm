@@ -79,23 +79,30 @@
       &attribs.front(), &pixel_format, &number_virtual_screens);
   if (error != kCGLNoError) {
     LOG(ERROR) << "Failed to create pixel format for layer.";
+    CHECK(0);
     return nil;
   }
   return pixel_format;
 }
 
 - (void)releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat {
+  if (!pixelFormat) {
+    CHECK(0);
+  }
+
   CGLReleasePixelFormat(pixelFormat);
 }
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
   if (!renderWidgetHostView_) {
+    CHECK(0);
     LOG(ERROR) << "Cannot create layer context because there is no host.";
     return nil;
   }
 
   context_ = renderWidgetHostView_->compositing_iosurface_context_;
   if (!context_) {
+    CHECK(0);
     LOG(ERROR) << "Cannot create layer context because host has no context.";
     return nil;
   }
@@ -104,8 +111,10 @@
 }
 
 - (void)releaseCGLContext:(CGLContextObj)glContext {
-  if (!context_.get())
+  if (!context_) {
+    CHECK(0);
     return;
+  }
 
   DCHECK(glContext == context_->cgl_context());
   context_ = nil;

@@ -89,11 +89,18 @@ CompositingIOSurfaceContext::Get(int window_number) {
     return NULL;
   }
 
+  scoped_refptr<DisplayLinkMac> display_link = DisplayLinkMac::Create();
+  if (!display_link) {
+    LOG(ERROR) << "Failed to create display link for GL context.";
+    return NULL;
+  }
+
   return new CompositingIOSurfaceContext(
       window_number,
       nsgl_context.release(),
       cgl_context,
       is_vsync_disabled,
+      display_link,
       shader_program_cache.Pass());
 }
 
@@ -112,6 +119,7 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     NSOpenGLContext* nsgl_context,
     CGLContextObj cgl_context,
     bool is_vsync_disabled,
+    scoped_refptr<DisplayLinkMac> display_link,
     scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache)
     : window_number_(window_number),
       nsgl_context_(nsgl_context),
@@ -121,7 +129,8 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       can_be_shared_(true),
       initialized_is_intel_(false),
       is_intel_(false),
-      screen_(0) {
+      screen_(0),
+      display_link_(display_link) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());
   window_map()->insert(std::make_pair(window_number_, this));
 }

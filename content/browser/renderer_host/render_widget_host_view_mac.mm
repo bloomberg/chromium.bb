@@ -1859,6 +1859,15 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
+  // Update the host with VSync parametrs.
+  base::TimeTicks timebase;
+  base::TimeDelta interval;
+  if (compositing_iosurface_context_ &&
+      compositing_iosurface_context_->display_link()->GetVSyncParameters(
+          &timebase, &interval)) {
+    render_widget_host_->UpdateVSyncParameters(timebase, interval);
+  }
+
   // Update the scale factor of the layer to match the scale factor of the
   // IOSurface.
   [compositing_iosurface_layer_ updateScaleFactor];
