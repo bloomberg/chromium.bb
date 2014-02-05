@@ -31,6 +31,9 @@ class NET_EXPORT ProxyServer {
     SCHEME_SOCKS4  = 1 << 3,
     SCHEME_SOCKS5  = 1 << 4,
     SCHEME_HTTPS   = 1 << 5,
+    // A QUIC proxy is an HTTP proxy in which QUIC is used as the transport,
+    // instead of TCP.
+    SCHEME_QUIC    = 1 << 6,
   };
 
   // Default copy-constructor and assignment operator are OK!
@@ -59,6 +62,9 @@ class NET_EXPORT ProxyServer {
     return scheme_ == SCHEME_SOCKS4 || scheme_ == SCHEME_SOCKS5;
   }
 
+  // Returns true if this ProxyServer is a QUIC proxy.
+  bool is_quic() const { return scheme_ == SCHEME_QUIC; }
+
   const HostPortPair& host_port_pair() const;
 
   // Parses from an input with format:
@@ -77,6 +83,7 @@ class NET_EXPORT ProxyServer {
   //   "socks5://foopy"   {scheme=SOCKS5, host="foopy", port=1080}
   //   "http://foopy:17"  {scheme=HTTP, host="foopy", port=17}
   //   "https://foopy:17" {scheme=HTTPS, host="foopy", port=17}
+  //   "quic://foopy:17"  {scheme=QUIC, host="foopy", port=17}
   //   "direct://"        {scheme=DIRECT}
   //   "foopy:X"          INVALID -- bad port.
   static ProxyServer FromURI(const std::string& uri, Scheme default_scheme);
@@ -99,6 +106,7 @@ class NET_EXPORT ProxyServer {
   //   "DIRECT"           {scheme=DIRECT}
   //   "SOCKS5 foopy"     {scheme=SOCKS5, host="foopy", port=1080}
   //   "HTTPS foopy:123"  {scheme=HTTPS, host="foopy", port=123}
+  //   "QUIC foopy:123"   {scheme=QUIC, host="foopy", port=123}
   //   "BLAH xxx:xx"      INVALID
   static ProxyServer FromPacString(const std::string& pac_string);
   static ProxyServer FromPacString(std::string::const_iterator pac_string_begin,

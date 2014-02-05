@@ -36,6 +36,8 @@ ProxyServer::Scheme GetSchemeFromPacTypeInternal(
     return ProxyServer::SCHEME_DIRECT;
   if (LowerCaseEqualsASCII(begin, end, "https"))
     return ProxyServer::SCHEME_HTTPS;
+  if (LowerCaseEqualsASCII(begin, end, "quic"))
+    return ProxyServer::SCHEME_QUIC;
 
   return ProxyServer::SCHEME_INVALID;
 }
@@ -57,6 +59,8 @@ ProxyServer::Scheme GetSchemeFromURIInternal(std::string::const_iterator begin,
     return ProxyServer::SCHEME_DIRECT;
   if (LowerCaseEqualsASCII(begin, end, "https"))
     return ProxyServer::SCHEME_HTTPS;
+  if (LowerCaseEqualsASCII(begin, end, "quic"))
+    return ProxyServer::SCHEME_QUIC;
   return ProxyServer::SCHEME_INVALID;
 }
 
@@ -131,6 +135,8 @@ std::string ProxyServer::ToURI() const {
       return std::string("socks5://") + host_port_pair().ToString();
     case SCHEME_HTTPS:
       return std::string("https://") + host_port_pair().ToString();
+    case SCHEME_QUIC:
+      return std::string("quic://") + host_port_pair().ToString();
     default:
       // Got called with an invalid scheme.
       NOTREACHED();
@@ -181,6 +187,8 @@ std::string ProxyServer::ToPacString() const {
       return std::string("SOCKS5 ") + host_port_pair().ToString();
     case SCHEME_HTTPS:
       return std::string("HTTPS ") + host_port_pair().ToString();
+    case SCHEME_QUIC:
+      return std::string("QUIC ") + host_port_pair().ToString();
     default:
       // Got called with an invalid scheme.
       NOTREACHED();
@@ -197,10 +205,13 @@ int ProxyServer::GetDefaultPortForScheme(Scheme scheme) {
     case SCHEME_SOCKS5:
       return 1080;
     case SCHEME_HTTPS:
+    case SCHEME_QUIC:
       return 443;
-    default:
-      return -1;
+    case SCHEME_INVALID:
+    case SCHEME_DIRECT:
+      break;
   }
+  return -1;
 }
 
 // static

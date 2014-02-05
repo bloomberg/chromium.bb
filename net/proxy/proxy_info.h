@@ -75,6 +75,13 @@ class NET_EXPORT ProxyInfo {
     return proxy_server().is_http();
   }
 
+  // Returns true if the first valid proxy server is a quic proxy.
+  bool is_quic() const {
+    if (is_empty())
+      return false;
+    return proxy_server().is_quic();
+  }
+
   // Returns true if the first valid proxy server is a socks server.
   bool is_socks() const {
     if (is_empty())

@@ -436,6 +436,9 @@ base::DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
     case net::ProxyServer::SCHEME_HTTPS:
       out->SetString(keys::kProxyConfigRuleScheme, "https");
       break;
+    case net::ProxyServer::SCHEME_QUIC:
+      out->SetString(keys::kProxyConfigRuleScheme, "quic");
+      break;
     case net::ProxyServer::SCHEME_SOCKS4:
       out->SetString(keys::kProxyConfigRuleScheme, "socks4");
       break;
