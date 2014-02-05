@@ -16,6 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -110,13 +111,12 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   const base::string16 message_lead = GetMessageLead();
 
   if (!message_lead.empty()) {
-    views::Label* message_lead_label = new views::Label(message_lead);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    views::Label* message_lead_label = new views::Label(
+        message_lead, rb->GetFontList(ui::ResourceBundle::BoldFont));
     message_lead_label->SetMultiLine(true);
     message_lead_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_lead_label->SetAllowCharacterBreak(true);
-
-    gfx::FontList font_list(gfx::Font().DeriveFont(0, gfx::Font::BOLD));
-    message_lead_label->SetFontList(font_list);
 
     layout->StartRow(0, 0);
     layout->AddView(message_lead_label);

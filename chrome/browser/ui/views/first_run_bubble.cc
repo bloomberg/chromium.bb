@@ -41,11 +41,12 @@ void FirstRunBubble::Init() {
   const gfx::FontList& original_font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
-  views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_FR_BUBBLE_TITLE, browser_ ?
-          GetDefaultSearchEngineName(browser_->profile()) : base::string16()));
-  title->SetFontList(original_font_list.DeriveFontListWithSizeDeltaAndStyle(
-      2, gfx::Font::BOLD));
+  views::Label* title = new views::Label(
+      l10n_util::GetStringFUTF16(
+          IDS_FR_BUBBLE_TITLE,
+          browser_ ? GetDefaultSearchEngineName(browser_->profile())
+              : base::string16()),
+      original_font_list.Derive(2, gfx::Font::BOLD));
 
   views::Link* change =
       new views::Link(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_CHANGE));
@@ -53,8 +54,8 @@ void FirstRunBubble::Init() {
   change->set_listener(this);
 
   views::Label* subtext =
-      new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
-  subtext->SetFontList(original_font_list);
+      new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT),
+                       original_font_list);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);

@@ -109,7 +109,7 @@ GtkWidget* ValidationMessageBubbleGtk::ConstructContent(
     GtkWidget* sub_label = gtk_label_new(base::UTF16ToUTF8(sub_text).c_str());
     const gfx::Font& sub_font = bundle.GetFont(ResourceBundle::BaseFont);
     gtk_util::ForceFontSizePixels(sub_label, sub_font.GetHeight());
-    int max_characters = kTextMaxWidth / sub_font.GetAverageCharacterWidth();
+    int max_characters = kTextMaxWidth / sub_font.GetExpectedTextWidth(1);
     if (sub_text.length() > static_cast<size_t>(max_characters))
       gtk_util::SetLabelWidth(sub_label, kTextMaxWidth);
     gtk_box_pack_start(

@@ -110,14 +110,12 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
 #if !defined(OS_ANDROID)
-  subtext_font_list_ = name_font_list_.DeriveFontListWithSizeDelta(
-      kLabelFontSizeDelta);
+  subtext_font_list_ = name_font_list_.DeriveWithSizeDelta(kLabelFontSizeDelta);
 #if defined(OS_MACOSX)
   // There is no italic version of the system font.
   warning_font_list_ = name_font_list_;
 #else
-  warning_font_list_ = name_font_list_.DeriveFontListWithSizeDeltaAndStyle(
-      0, gfx::Font::ITALIC);
+  warning_font_list_ = name_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
 #endif
 #endif
 }

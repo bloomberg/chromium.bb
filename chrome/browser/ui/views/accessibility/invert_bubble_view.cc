@@ -24,9 +24,12 @@
 
 namespace {
 
-const char kHighContrastExtensionUrl[] = "https://chrome.google.com/webstore/detail/djcfdncoelnlbldjfhinnjlhdjlikmph";
-const char kDarkThemeSearchUrl[] = "https://chrome.google.com/webstore/search-themes/dark";
-const char kLearnMoreUrl[] = "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
+const char kHighContrastExtensionUrl[] =
+    "https://chrome.google.com/webstore/detail/djcfdncoelnlbldjfhinnjlhdjlikmph";
+const char kDarkThemeSearchUrl[] =
+    "https://chrome.google.com/webstore/search-themes/dark";
+const char kLearnMoreUrl[] =
+    "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
 const int kBubbleWidth = 500;
 
 class InvertBubbleView : public views::BubbleDelegateView,
@@ -73,8 +76,7 @@ void InvertBubbleView::Init() {
 
   views::Label* title = new views::Label(
       l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION),
-      original_font_list.DeriveFontListWithSizeDeltaAndStyle(2,
-                                                             gfx::Font::BOLD));
+      original_font_list.Derive(2, gfx::Font::BOLD));
   title->SetMultiLine(true);
   title->SizeToFit(kBubbleWidth);
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/loading_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/font_list.h"
 
 namespace {
 
@@ -54,11 +55,12 @@ class AutofillLoadingAnimationBridge : public gfx::AnimationDelegate {
   if (self = [super initWithNibName:nil bundle:nil]) {
     delegate_ = delegate;
 
-    gfx::Font font = ui::ResourceBundle::GetSharedInstance().
-        GetFont(ui::ResourceBundle::BaseFont).DeriveFont(8);
-    NSFont* native_font = font.GetNativeFont();
+    const gfx::FontList& font_list =
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::LargeFont);
+    NSFont* native_font = font_list.GetPrimaryFont().GetNativeFont();
     animationDriver_.reset(
-        new AutofillLoadingAnimationBridge(self, font.GetHeight()));
+        new AutofillLoadingAnimationBridge(self, font_list.GetHeight()));
 
     base::scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSZeroRect]);
     [view setBoxType:NSBoxCustom];

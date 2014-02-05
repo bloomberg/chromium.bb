@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/common/password_form.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -130,8 +130,8 @@ class PasswordGenerationPopupControllerImpl
   // Handle to the popup. May be NULL if popup isn't showing.
   PasswordGenerationPopupView* view_;
 
-  // Font used in the popup.
-  gfx::Font font_;
+  // Font list used in the popup.
+  gfx::FontList font_list_;
 
   base::string16 current_password_;
   bool password_selected_;

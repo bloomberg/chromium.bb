@@ -21,7 +21,9 @@
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/scoped_region.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/text_utils.h"
 
 using content::WebContents;
 
@@ -33,7 +35,7 @@ int GetTitleWidth(gfx::Font* font, base::string16 title) {
   if (title.empty())
     return 0;
 
-  return font->GetStringWidth(title);
+  return gfx::GetStringWidth(title, gfx::FontList(*font));
 }
 
 }  // namespace

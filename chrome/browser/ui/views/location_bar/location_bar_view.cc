@@ -146,7 +146,7 @@ gfx::FontList GetLargestFontListWithHeightBound(
     const int space_at_bottom = height - (y_offset + font_list.GetHeight());
     if ((y_offset >= 0) && (space_at_bottom >= 0))
       break;
-    font_list = font_list.DeriveFontListWithSizeDelta(-1);
+    font_list = font_list.DeriveWithSizeDelta(-1);
   }
   return font_list;
 }

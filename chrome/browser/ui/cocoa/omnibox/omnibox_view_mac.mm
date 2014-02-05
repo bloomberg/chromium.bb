@@ -28,7 +28,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
 
@@ -124,7 +125,7 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 
 // static
 NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(resource_id).ToNSImage();
 }
 
@@ -942,8 +943,9 @@ void OmniboxViewMac::FocusLocation(bool select_all) {
 // static
 NSFont* OmniboxViewMac::GetFieldFont() {
   // This value should be kept in sync with InstantPage::InitializeFonts.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetFont(ResourceBundle::BaseFont).DeriveFont(1).GetNativeFont();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(1)
+      .GetPrimaryFont().GetNativeFont();
 }
 
 int OmniboxViewMac::GetOmniboxTextLength() const {

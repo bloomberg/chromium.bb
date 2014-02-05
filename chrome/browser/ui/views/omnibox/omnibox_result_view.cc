@@ -117,8 +117,7 @@ OmniboxResultView::OmniboxResultView(OmniboxResultViewModel* model,
       font_list_(font_list),
       font_height_(
           std::max(font_list.GetHeight(),
-                   font_list.DeriveFontListWithSizeDeltaAndStyle(
-                       0, gfx::Font::BOLD).GetHeight())),
+                   font_list.DeriveWithStyle(gfx::Font::BOLD).GetHeight())),
       ellipsis_width_(gfx::GetStringWidth(base::string16(kEllipsis),
                                           font_list)),
       mirroring_context_(new MirroringContext()),

@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/text_utils.h"
 
 namespace autofill {
 
@@ -138,8 +139,9 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
 
 int PasswordGenerationPopupControllerImpl::GetDesiredWidth() {
   // Minimum width we want to display the password.
-  int minimum_length_for_text = 2 * kHorizontalPadding +
-      font_.GetExpectedTextWidth(kMinimumWidth) +
+  int minimum_length_for_text =
+      2 * kHorizontalPadding +
+      font_list_.GetExpectedTextWidth(kMinimumWidth) +
       2 * kPopupBorderThickness;
 
   // If the width of the field is longer than the minimum, use that instead.
@@ -152,15 +154,16 @@ int PasswordGenerationPopupControllerImpl::GetDesiredHeight(int width) {
   // line break in the middle of the link, but as long as the link isn't longer
   // than given width this shouldn't affect the height calculated here. The
   // default width should be wide enough to prevent this from being an issue.
-  int total_length = font_.GetStringWidth(HelpText() + LearnMoreLink());
+  int total_length = gfx::GetStringWidth(HelpText() + LearnMoreLink(),
+                                         font_list_);
   int usable_width = width - 2 * kHorizontalPadding;
   int text_height =
       static_cast<int>(ceil(static_cast<double>(total_length)/usable_width)) *
-      font_.GetHeight();
+      font_list_.GetHeight();
   int help_section_height = text_height + 2 * kHelpVerticalPadding;
 
   int password_section_height =
-      font_.GetHeight() + 2 * kPasswordVerticalPadding;
+      font_list_.GetHeight() + 2 * kPasswordVerticalPadding;
 
   return (2 * kPopupBorderThickness +
           help_section_height +
@@ -179,7 +182,7 @@ void PasswordGenerationPopupControllerImpl::CalculateBounds() {
       kPopupBorderThickness,
       kPopupBorderThickness,
       popup_bounds_.width() - 2 * kPopupBorderThickness,
-      font_.GetHeight() + 2 * kPasswordVerticalPadding);
+      font_list_.GetHeight() + 2 * kPasswordVerticalPadding);
 
   divider_bounds_ = gfx::Rect(kPopupBorderThickness,
                               password_bounds_.bottom(),

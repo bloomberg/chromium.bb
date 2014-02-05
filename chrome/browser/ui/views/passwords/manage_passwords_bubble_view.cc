@@ -17,7 +17,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/grid_layout.h"
@@ -33,14 +33,13 @@ namespace {
 void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
                         bool username,
                         int* biggest_width) {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::FontList font_list(rb->GetFontList(ui::ResourceBundle::BaseFont));
+  const gfx::FontList font_list;
   base::string16 display_string(username ?
       password_form.username_value :
       ManagePasswordItemView::GetPasswordDisplayString(
           password_form.password_value));
-  *biggest_width = std::max(
-      gfx::Canvas::GetStringWidth(display_string, font_list), *biggest_width);
+  *biggest_width = std::max(gfx::GetStringWidth(display_string, font_list),
+                            *biggest_width);
 }
 
 }  // namespace
@@ -163,9 +162,8 @@ void ManagePasswordsBubbleView::Init() {
   // bubble. We do not need to clamp the password field width because
   // ManagePasswordItemView::GetPasswordFisplayString() does this.
 
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const int predefined_username_field_max_width =
-      rb->GetFont(ui::ResourceBundle::BaseFont).GetAverageCharacterWidth() * 22;
+      gfx::FontList().GetExpectedTextWidth(22);
   const int max_username_or_password_width =
       std::min(GetMaximumUsernameOrPasswordWidth(true),
                predefined_username_field_max_width);
@@ -185,6 +183,7 @@ void ManagePasswordsBubbleView::Init() {
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
 
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   views::Label* title_label =
       new views::Label(manage_passwords_bubble_model_->title());
   title_label->SetMultiLine(true);
