@@ -73,9 +73,13 @@ void ExtensionUninstallDialog::ConfirmUninstall(
     const extensions::Extension* extension) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
+  // Bookmark apps may not have 128x128 icons so accept 48x48 icons.
+  const int icon_size = extension_->from_bookmark()
+      ? extension_misc::EXTENSION_ICON_MEDIUM
+      : extension_misc::EXTENSION_ICON_LARGE;
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
-      extension_misc::EXTENSION_ICON_LARGE,
+      icon_size,
       ExtensionIconSet::MATCH_BIGGER);
   // Load the icon whose pixel size is large enough to be displayed under
   // maximal supported scale factor. UI code will scale the icon down if needed.
