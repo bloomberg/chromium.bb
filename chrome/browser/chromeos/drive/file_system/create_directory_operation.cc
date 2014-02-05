@@ -32,8 +32,11 @@ FileError CreateDirectoryRecursively(
   title.AppendRelativePath(relative_file_path, &remaining_path);
 
   ResourceEntry entry;
+  const base::Time now = base::Time::Now();
   entry.set_title(title.AsUTF8Unsafe());
   entry.mutable_file_info()->set_is_directory(true);
+  entry.mutable_file_info()->set_last_modified(now.ToInternalValue());
+  entry.mutable_file_info()->set_last_accessed(now.ToInternalValue());
   entry.set_parent_local_id(parent_local_id);
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
 

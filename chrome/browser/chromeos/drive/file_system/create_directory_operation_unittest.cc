@@ -57,6 +57,10 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kNewDirectory1, &entry));
   EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
   EXPECT_TRUE(entry.file_info().is_directory());
+  EXPECT_FALSE(base::Time::FromInternalValue(
+      entry.file_info().last_modified()).is_null());
+  EXPECT_FALSE(base::Time::FromInternalValue(
+      entry.file_info().last_accessed()).is_null());
   EXPECT_EQ(1U, observer()->updated_local_ids().size());
   EXPECT_EQ(1U, observer()->updated_local_ids().count(entry.local_id()));
 
