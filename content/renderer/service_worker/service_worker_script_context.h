@@ -31,11 +31,11 @@ class ServiceWorkerScriptContext {
       blink::WebServiceWorkerContextProxy* proxy);
   ~ServiceWorkerScriptContext();
 
-  void OnMessageReceived(const IPC::Message& message);
+  void OnMessageReceived(int request_id, const IPC::Message& message);
 
  private:
   // Send message back to the browser.
-  void Send(const IPC::Message& message);
+  void Send(int request_id, const IPC::Message& message);
 
   void OnFetchEvent(const ServiceWorkerFetchRequest& request);
 
@@ -44,6 +44,9 @@ class ServiceWorkerScriptContext {
 
   // Not owned; this object is destroyed when proxy_ becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;
+
+  // Used by message handlers.
+  int current_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContext);
 };

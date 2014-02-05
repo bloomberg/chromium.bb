@@ -197,11 +197,12 @@ void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
 
 void ServiceWorkerDispatcherHost::OnSendMessageToBrowser(
     int embedded_worker_id,
+    int request_id,
     const IPC::Message& message) {
   if (!context_)
     return;
   context_->embedded_worker_registry()->OnSendMessageToBrowser(
-      embedded_worker_id, message);
+      embedded_worker_id, request_id, message);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

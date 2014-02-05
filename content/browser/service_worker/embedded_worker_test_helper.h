@@ -70,6 +70,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnStopWorker(int embedded_worker_id);
   virtual void OnSendMessageToWorker(int thread_id,
                                      int embedded_worker_id,
+                                     int request_id,
                                      const IPC::Message& message);
 
   // Call this to simulate sending WorkerStarted, WorkerStopped and
@@ -77,6 +78,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateWorkerStarted(int thread_id, int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
   void SimulateSendMessageToBrowser(int embedded_worker_id,
+                                    int request_id,
                                     const IPC::Message& message);
 
  private:
@@ -86,6 +88,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnStopWorkerStub(int embedded_worker_id);
   void OnSendMessageToWorkerStub(int thread_id,
                                  int embedded_worker_id,
+                                 int request_id,
                                  const IPC::Message& message);
 
   EmbeddedWorkerRegistry* registry();

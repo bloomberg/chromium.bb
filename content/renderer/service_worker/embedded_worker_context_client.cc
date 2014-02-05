@@ -75,9 +75,10 @@ bool EmbeddedWorkerContextClient::OnMessageReceived(
 }
 
 void EmbeddedWorkerContextClient::SendMessageToBrowser(
+    int request_id,
     const IPC::Message& message) {
   sender_->Send(new EmbeddedWorkerHostMsg_SendMessageToBrowser(
-      embedded_worker_id_, message));
+      embedded_worker_id_, request_id, message));
 }
 
 void EmbeddedWorkerContextClient::workerContextFailedToStart() {
@@ -122,11 +123,12 @@ void EmbeddedWorkerContextClient::workerContextDestroyed() {
 void EmbeddedWorkerContextClient::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,
+    int request_id,
     const IPC::Message& message) {
   if (!script_context_)
     return;
   DCHECK_EQ(embedded_worker_id_, embedded_worker_id);
-  script_context_->OnMessageReceived(message);
+  script_context_->OnMessageReceived(request_id, message);
 }
 
 void EmbeddedWorkerContextClient::SendWorkerStarted() {

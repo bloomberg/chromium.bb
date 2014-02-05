@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -62,6 +63,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public EmbeddedWorkerInstance::Observer {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode,
+                              const IPC::Message& message)> MessageCallback;
 
   enum Status {
     STOPPED = EmbeddedWorkerInstance::STOPPED,
@@ -92,6 +95,24 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 
+  // Sends an IPC message to the worker.
+  // If the worker is not running this first tries to start it by
+  // calling StartWorker internally.
+  // |callback| can be null if the sender does not need to know if the
+  // message is successfully sent or not.
+  // (If the sender expects the receiver to respond please use
+  // SendMessageAndRegisterCallback instead)
+  void SendMessage(const IPC::Message& message, const StatusCallback& callback);
+
+  // Sends an IPC message to the worker and registers |callback| to
+  // be notified when a response message is received.
+  // The |callback| will be also fired with an error code if the worker
+  // is unexpectedly (being) stopped.
+  // If the worker is not running this first tries to start it by
+  // calling StartWorker internally.
+  void SendMessageAndRegisterCallback(const IPC::Message& message,
+                                      const MessageCallback& callback);
+
   // Sends fetch event to the associated embedded worker.
   // This immediately returns false if the worker is not running
   // or sending a message to the child process fails.
@@ -109,9 +130,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // EmbeddedWorkerInstance::Observer overrides:
   virtual void OnStarted() OVERRIDE;
   virtual void OnStopped() OVERRIDE;
-  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnMessageReceived(int request_id,
+                                 const IPC::Message& message) OVERRIDE;
 
  private:
+  typedef ServiceWorkerVersion self;
   friend class base::RefCounted<ServiceWorkerVersion>;
 
   virtual ~ServiceWorkerVersion();
@@ -122,8 +145,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
 
+  // Pending callbacks.
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
+
+  IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
+
+  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

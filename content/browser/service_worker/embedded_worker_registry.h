@@ -54,6 +54,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
   void OnSendMessageToBrowser(int embedded_worker_id,
+                              int request_id,
                               const IPC::Message& message);
 
   // Keeps a map from process_id to sender information.

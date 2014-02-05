@@ -68,7 +68,7 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
 }
 
 void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
-    int embedded_worker_id, const IPC::Message& message) {
+    int embedded_worker_id, int request_id, const IPC::Message& message) {
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
   if (found == worker_map_.end()) {
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
@@ -77,7 +77,7 @@ void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
   // TODO(kinuko): Filter out unexpected messages here and uncomment below
   // when we actually define messages that are to be sent from child process
   // to the browser via this channel. (We don't have any yet)
-  // found->second->OnMessageReceived(message);
+  found->second->OnMessageReceived(request_id, message);
 }
 
 void EmbeddedWorkerRegistry::AddChildProcessSender(

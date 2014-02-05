@@ -44,7 +44,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     virtual ~Observer() {}
     virtual void OnStarted() = 0;
     virtual void OnStopped() = 0;
-    virtual void OnMessageReceived(const IPC::Message& message) = 0;
+    virtual void OnMessageReceived(int request_id,
+                                   const IPC::Message& message) = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -62,7 +63,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Sends |message| to the embedded worker running in the child process.
   // It is invalid to call this while the worker is not in RUNNING status.
-  ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
+  // |request_id| can be optionally used to establish 2-way request-response
+  // messaging (e.g. the receiver can send back a response using the same
+  // request_id).
+  ServiceWorkerStatusCode SendMessage(
+      int request_id, const IPC::Message& message);
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.
@@ -102,7 +107,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Called back from Registry when the worker instance sends message
   // to the browser (i.e. EmbeddedWorker observers).
-  void OnMessageReceived(const IPC::Message& message);
+  void OnMessageReceived(int request_id, const IPC::Message& message);
 
   // Chooses a process to start this worker and populate process_id_.
   // Returns false when no process is available.

@@ -50,6 +50,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                        int embedded_worker_id);
   void OnWorkerStopped(int embedded_worker_id);
   void OnSendMessageToBrowser(int embedded_worker_id,
+                              int request_id,
                               const IPC::Message& message);
 
   // Callbacks from ServiceWorkerContextCore

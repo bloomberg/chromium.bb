@@ -47,7 +47,7 @@ class EmbeddedWorkerContextClient
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  void SendMessageToBrowser(const IPC::Message& message);
+  void SendMessageToBrowser(int request_id, const IPC::Message& message);
 
   // WebServiceWorkerContextClient overrides.
   virtual void workerContextFailedToStart();
@@ -61,6 +61,7 @@ class EmbeddedWorkerContextClient
  private:
   void OnSendMessageToWorker(int thread_id,
                              int embedded_worker_id,
+                             int request_id,
                              const IPC::Message& message);
   void SendWorkerStarted();
 

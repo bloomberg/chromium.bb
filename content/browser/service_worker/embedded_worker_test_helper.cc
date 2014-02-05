@@ -79,6 +79,7 @@ void EmbeddedWorkerTestHelper::OnStopWorker(int embedded_worker_id) {
 void EmbeddedWorkerTestHelper::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,
+    int request_id,
     const IPC::Message& message) {
   // Do nothing on the message by default.
 }
@@ -101,8 +102,8 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStopped(
 }
 
 void EmbeddedWorkerTestHelper::SimulateSendMessageToBrowser(
-    int embedded_worker_id, const IPC::Message& message) {
-  registry()->OnSendMessageToBrowser(embedded_worker_id, message);
+    int embedded_worker_id, int request_id, const IPC::Message& message) {
+  registry()->OnSendMessageToBrowser(embedded_worker_id, request_id, message);
 }
 
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
@@ -134,6 +135,7 @@ void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {
 void EmbeddedWorkerTestHelper::OnSendMessageToWorkerStub(
     int thread_id,
     int embedded_worker_id,
+    int request_id,
     const IPC::Message& message) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
@@ -144,6 +146,7 @@ void EmbeddedWorkerTestHelper::OnSendMessageToWorkerStub(
                  weak_factory_.GetWeakPtr(),
                  thread_id,
                  embedded_worker_id,
+                 request_id,
                  message));
 }
 

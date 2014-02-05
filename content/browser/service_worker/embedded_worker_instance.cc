@@ -44,11 +44,13 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
+    int request_id,
     const IPC::Message& message) {
   DCHECK(status_ == RUNNING);
   return registry_->Send(process_id_,
                          new EmbeddedWorkerContextMsg_SendMessageToWorker(
-                             thread_id_, embedded_worker_id_, message));
+                             thread_id_, embedded_worker_id_,
+                             request_id, message));
 }
 
 void EmbeddedWorkerInstance::AddProcessReference(int process_id) {
@@ -95,8 +97,10 @@ void EmbeddedWorkerInstance::OnStopped() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnStopped());
 }
 
-void EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnMessageReceived(message));
+void EmbeddedWorkerInstance::OnMessageReceived(int request_id,
+                                               const IPC::Message& message) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnMessageReceived(request_id, message));
 }
 
 void EmbeddedWorkerInstance::AddObserver(Observer* observer) {

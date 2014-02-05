@@ -155,7 +155,8 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual void OnMessageReceived(
+      int request_id, const IPC::Message& message) OVERRIDE {
     NOTREACHED();
   }
 
