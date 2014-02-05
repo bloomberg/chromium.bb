@@ -15,36 +15,117 @@
 
 namespace policy {
 
-struct PolicyErrorMap::PendingError {
-  PendingError(const std::string& policy,
-               const std::string& subkey,
-               int index,
-               int message_id,
-               const std::string& replacement)
-      : policy(policy),
-        subkey(subkey),
-        index(index),
-        message_id(message_id),
-        has_replacement(true),
-        replacement(replacement) {}
+class PolicyErrorMap::PendingError {
+ public:
+  explicit PendingError(const std::string& policy_name)
+      : policy_name_(policy_name) {}
+  virtual ~PendingError() {}
 
-  PendingError(const std::string& policy,
-               const std::string& subkey,
-               int index,
-               int message_id)
-      : policy(policy),
-        subkey(subkey),
-        index(index),
-        message_id(message_id),
-        has_replacement(false) {}
+  const std::string& policy_name() const { return policy_name_; }
 
-  std::string policy;
-  std::string subkey;
-  int index;
-  int message_id;
-  bool has_replacement;
-  std::string replacement;
+  virtual base::string16 GetMessage() const = 0;
+
+ private:
+  std::string policy_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingError);
 };
+
+namespace {
+
+class SimplePendingError : public PolicyErrorMap::PendingError {
+ public:
+  SimplePendingError(const std::string& policy_name,
+                     int message_id,
+                     const std::string& replacement)
+      : PendingError(policy_name),
+        message_id_(message_id),
+        replacement_(replacement) {}
+  virtual ~SimplePendingError() {}
+
+  virtual base::string16 GetMessage() const OVERRIDE {
+    if (message_id_ >= 0) {
+      if (replacement_.empty())
+        return l10n_util::GetStringUTF16(message_id_);
+      return l10n_util::GetStringFUTF16(message_id_,
+                                        base::ASCIIToUTF16(replacement_));
+    }
+    return base::ASCIIToUTF16(replacement_);
+  }
+
+ private:
+  int message_id_;
+  std::string replacement_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimplePendingError);
+};
+
+class DictSubkeyPendingError : public SimplePendingError {
+ public:
+  DictSubkeyPendingError(const std::string& policy_name,
+                         const std::string& subkey,
+                         int message_id,
+                         const std::string& replacement)
+      : SimplePendingError(policy_name, message_id, replacement),
+        subkey_(subkey) {}
+  virtual ~DictSubkeyPendingError() {}
+
+  virtual base::string16 GetMessage() const OVERRIDE {
+    return l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
+                                      base::ASCIIToUTF16(subkey_),
+                                      SimplePendingError::GetMessage());
+  }
+
+ private:
+  std::string subkey_;
+
+  DISALLOW_COPY_AND_ASSIGN(DictSubkeyPendingError);
+};
+
+class ListItemPendingError : public SimplePendingError {
+ public:
+  ListItemPendingError(const std::string& policy_name,
+                       int index,
+                       int message_id,
+                       const std::string& replacement)
+      : SimplePendingError(policy_name, message_id, replacement),
+        index_(index) {}
+  virtual ~ListItemPendingError() {}
+
+  virtual base::string16 GetMessage() const OVERRIDE {
+    return l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
+                                      base::IntToString16(index_),
+                                      SimplePendingError::GetMessage());
+  }
+
+ private:
+  int index_;
+
+  DISALLOW_COPY_AND_ASSIGN(ListItemPendingError);
+};
+
+class SchemaValidatingPendingError : public SimplePendingError {
+ public:
+  SchemaValidatingPendingError(const std::string& policy_name,
+                               const std::string& error_path,
+                               const std::string& replacement)
+      : SimplePendingError(policy_name, -1, replacement),
+        error_path_(error_path) {};
+  virtual ~SchemaValidatingPendingError() {}
+
+  virtual base::string16 GetMessage() const OVERRIDE {
+    return l10n_util::GetStringFUTF16(IDS_POLICY_SCHEMA_VALIDATION_ERROR,
+                                      base::ASCIIToUTF16(error_path_),
+                                      SimplePendingError::GetMessage());
+  }
+
+ private:
+  std::string error_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(SchemaValidatingPendingError);
+};
+
+}  // namespace
 
 PolicyErrorMap::PolicyErrorMap() {
 }
@@ -57,39 +138,46 @@ bool PolicyErrorMap::IsReady() const {
 }
 
 void PolicyErrorMap::AddError(const std::string& policy, int message_id) {
-  AddError(PendingError(policy, std::string(), -1, message_id));
+  AddError(new SimplePendingError(policy, message_id, std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id) {
-  AddError(PendingError(policy, subkey, -1, message_id));
+  AddError(
+      new DictSubkeyPendingError(policy, subkey, message_id, std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id) {
-  AddError(PendingError(policy, std::string(), index, message_id));
+  AddError(new ListItemPendingError(policy, index, message_id, std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, std::string(), -1, message_id, replacement));
+  AddError(new SimplePendingError(policy, message_id, replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, subkey, -1, message_id, replacement));
+  AddError(new DictSubkeyPendingError(policy, subkey, message_id, replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, std::string(), index, message_id, replacement));
+  AddError(new ListItemPendingError(policy, index, message_id, replacement));
+}
+
+void PolicyErrorMap::AddError(const std::string& policy,
+                              const std::string& error_path,
+                              const std::string& message) {
+  AddError(new SchemaValidatingPendingError(policy, error_path, message));
 }
 
 base::string16 PolicyErrorMap::GetErrors(const std::string& policy) {
@@ -126,36 +214,17 @@ void PolicyErrorMap::Clear() {
   map_.clear();
 }
 
-void PolicyErrorMap::AddError(const PendingError& error) {
+void PolicyErrorMap::AddError(PendingError* error) {
   if (IsReady()) {
     Convert(error);
+    delete error;
   } else {
     pending_.push_back(error);
   }
 }
 
-void PolicyErrorMap::Convert(const PendingError& error) {
-  base::string16 submessage;
-  if (error.has_replacement) {
-    submessage = l10n_util::GetStringFUTF16(error.message_id,
-                                            base::ASCIIToUTF16(
-                                                error.replacement));
-  } else {
-    submessage = l10n_util::GetStringUTF16(error.message_id);
-  }
-  base::string16 message;
-  if (!error.subkey.empty()) {
-    message = l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
-                                         base::ASCIIToUTF16(error.subkey),
-                                         submessage);
-  } else if (error.index >= 0) {
-    message = l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
-                                         base::IntToString16(error.index),
-                                         submessage);
-  } else {
-    message = submessage;
-  }
-  map_.insert(std::make_pair(error.policy, message));
+void PolicyErrorMap::Convert(PendingError* error) {
+  map_.insert(std::make_pair(error->policy_name(), error->GetMessage()));
 }
 
 void PolicyErrorMap::CheckReadyAndConvert() {

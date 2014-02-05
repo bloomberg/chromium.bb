@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
@@ -20,6 +21,8 @@ class POLICY_EXPORT PolicyErrorMap {
  public:
   typedef std::multimap<std::string, base::string16> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
+
+  class PendingError;
 
   PolicyErrorMap();
   virtual ~PolicyErrorMap();
@@ -68,6 +71,12 @@ class POLICY_EXPORT PolicyErrorMap {
                 int message_id,
                 const std::string& replacement_string);
 
+  // Adds an entry with key |policy|, the schema validation error location
+  // |error_path|, and detailed error |message|.
+  void AddError(const std::string& policy,
+                const std::string& error_path,
+                const std::string& message);
+
   // Returns all the error messages stored for |policy|, separated by a white
   // space. Returns an empty string if there are no errors for |policy|.
   base::string16 GetErrors(const std::string& policy);
@@ -81,18 +90,16 @@ class POLICY_EXPORT PolicyErrorMap {
   void Clear();
 
  private:
-  struct PendingError;
-
   // Maps the error when ready, otherwise adds it to the pending errors list.
-  void AddError(const PendingError& error);
+  void AddError(PendingError* error);
 
   // Converts a PendingError into a |map_| entry.
-  void Convert(const PendingError& error);
+  void Convert(PendingError* error);
 
   // Converts all pending errors to |map_| entries.
   void CheckReadyAndConvert();
 
-  std::vector<PendingError> pending_;
+  ScopedVector<PendingError> pending_;
   PolicyMapType map_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyErrorMap);

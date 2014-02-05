@@ -146,6 +146,9 @@
   <message name="IDS_POLICY_LIST_ENTRY_ERROR" desc="The text displayed in the status column for errors in list entry in a policy.">
     List entry "<ph name="ENTRY_INDEX">$1<ex>3</ex></ph>": <ph name="ERROR">$2<ex>Value is out of range.</ex></ph>
   </message>
+  <message name="IDS_POLICY_SCHEMA_VALIDATION_ERROR" desc="The text displayed in the status column when the policy value doesn't conform to the policy schema.">
+    Schema validation error at "<ph name="ERROR_PATH">$1<ex>AC.Delays.ScreenOff</ex></ph>": <ph name="ERROR">$2<ex>Value is out of range.</ex></ph>
+  </message>
   <message name="IDS_POLICY_INVALID_SEARCH_URL_ERROR" desc="The text displayed in the status column when a the URL given for DefaultSearchProviderSearchURL is invalid.">
     Invalid search URL.
   </message>
