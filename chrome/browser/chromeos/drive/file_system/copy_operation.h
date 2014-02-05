@@ -135,6 +135,7 @@ class CopyOperation {
   // is completed.
   void ScheduleTransferRegularFileAfterUpdateLocalState(
       const FileOperationCallback& callback,
+      const base::FilePath& remote_dest_path,
       std::string* local_id,
       FileError error);
 

@@ -80,6 +80,49 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
       remote_dest_path.DirName()));
 }
 
+TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_Overwrite) {
+  const base::FilePath local_src_path = temp_dir().AppendASCII("local.txt");
+  const base::FilePath remote_dest_path(
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
+
+  // Prepare a local file.
+  EXPECT_TRUE(
+      google_apis::test_util::WriteStringToFile(local_src_path, "hello"));
+  // Confirm that the remote file exists.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
+
+  // Transfer the local file to Drive.
+  FileError error = FILE_ERROR_FAILED;
+  operation_->TransferFileFromLocalToRemote(
+      local_src_path,
+      remote_dest_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // TransferFileFromLocalToRemote stores a copy of the local file in the cache,
+  // marks it dirty and requests the observer to upload the file.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
+  EXPECT_EQ(1U, observer()->updated_local_ids().count(entry.local_id()));
+  FileCacheEntry cache_entry;
+  bool found = false;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::GetCacheEntry,
+                 base::Unretained(cache()), entry.local_id(), &cache_entry),
+      google_apis::test_util::CreateCopyResultCallback(&found));
+  test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_dirty());
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(
+      remote_dest_path.DirName()));
+}
+
 TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
   const base::FilePath local_src_path = temp_dir().AppendASCII("local.gdoc");
   const base::FilePath remote_dest_path(FILE_PATH_LITERAL(

@@ -421,7 +421,7 @@ void CopyOperation::ScheduleTransferRegularFile(
 
   create_file_operation_->CreateFile(
       remote_dest_path,
-      true,  // Exclusive (i.e. fail if a file already exists).
+      false,  // Not exclusive (OK even if a file already exists).
       std::string(),  // no specific mime type; CreateFile should guess it.
       base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterCreate,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -450,18 +450,22 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
           metadata_, cache_, local_src_path, remote_dest_path, local_id),
       base::Bind(
           &CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState,
-          weak_ptr_factory_.GetWeakPtr(), callback, base::Owned(local_id)));
+          weak_ptr_factory_.GetWeakPtr(), callback, remote_dest_path,
+          base::Owned(local_id)));
 }
 
 void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
+    const base::FilePath& remote_dest_path,
     std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK)
+  if (error == FILE_ERROR_OK) {
+    observer_->OnDirectoryChangedByOperation(remote_dest_path.DirName());
     observer_->OnEntryUpdatedByOperation(*local_id);
+  }
   callback.Run(error);
 }
 
