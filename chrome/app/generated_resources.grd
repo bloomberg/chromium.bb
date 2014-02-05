@@ -2562,88 +2562,13 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
-      <message name="IDS_CERT_SELECTOR_TABLE_CERT_FORMAT" desc="Format for a certificate row in the certificate selector table.">
-        <ph name="SUBJECT">$1<ex>FOAF ME Cert http://foaf.me/test</ex></ph> (<ph name="ISSUER">$2<ex>FOAF.ME</ex></ph>)
-      </message>
+      <if expr="pp_ifdef('toolkit_views')">
+        <message name="IDS_CERT_SELECTOR_TABLE_CERT_FORMAT" desc="Format for a certificate row in the certificate selector table.">
+          <ph name="SUBJECT">$1<ex>FOAF ME Cert http://foaf.me/test</ex></ph> (<ph name="ISSUER">$2<ex>FOAF.ME</ex></ph>)
+        </message>
+      </if>
 
-
-      <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as Linux. -->
-      <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
-        This site has requested that you identify yourself with a certificate:
-      </message>
-      <message name="IDS_CERT_SELECTOR_CHOOSE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog describing the certificate selector combobox and certificate details">
-        Choose a certificate to present as identification:
-      </message>
-      <message name="IDS_CERT_SELECTOR_DETAILS_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog in the 'choose a certificate' section describing the certificate details">
-        Details of selected certificate:
-      </message>
-      <message name="IDS_CERT_SELECTOR_CERT_EXPIRED" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are expired.">
-        (expired)
-      </message>
-      <message name="IDS_CERT_SELECTOR_CERT_NOT_YET_VALID" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are not yet valid.">
-        (not yet valid)
-      </message>
-      <message name="IDS_CERT_SUBJECTNAME_FORMAT" desc="Format for detailed certificate subject in certificate details">
-        Issued to: <ph name="NAME">$1<ex>CN=VeriSign Browser Certificate,OU=Device Identifier - r1923847</ex></ph>
-      </message>
-      <message name="IDS_CERT_ISSUERNAME_FORMAT" desc="Format for detailed certificate issuer in certificate details">
-        Issued by: <ph name="NAME">$1<ex>CN=VeriSign Device CA,O="VeriSign, Inc.",C=US</ex></ph>
-      </message>
-      <message name="IDS_CERT_VALIDITY_RANGE_FORMAT" desc="Format for showing the range of dates a certificate is valid in the certificate details">
-        Valid from <ph name="START_DATE_TIME">$1<ex>7/2/09 7:18:34 PM</ex></ph> to <ph name="END_DATE_TIME">$2<ex>7/2/10 7:28:34 PM</ex></ph>
-      </message>
-      <message name="IDS_CERT_X509_EXTENDED_KEY_USAGE_FORMAT" desc="Format for showing the usages a certificate is valid for in the certificate details">
-        Purposes: <ph name="USAGES">$1<ex>SSL Client Certificate,Email Signer Certificate</ex></ph>
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_FORMAT" desc="Format for showing the key usages a certificate is valid for in the certificate details">
-        Certificate Key Usage: <ph name="USAGES">$1<ex>Signing,Key Encipherment</ex></ph>
-      </message>
-      <message name="IDS_CERT_EMAIL_ADDRESSES_FORMAT" desc="Format for showing the email address(es) a certificate is associated with in the certificate details">
-        Email: <ph name="EMAIL_ADDRESSES">$1<ex>foo@example.com</ex></ph>
-      </message>
-      <message name="IDS_CERT_TOKEN_FORMAT" desc="Format for showing the location a certificate is stored">
-        Stored in: <ph name="CERT_LOCATION">$1<ex>NSS Certificate Database</ex></ph>
-      </message>
-
-
-      <!-- Certificate viewer dialog strings.  These are only used on platforms that don't have a native certificate info dialog, such as Linux. -->
-      <message name="IDS_CERT_INFO_DIALOG_TITLE" desc="Title of dialog displaying info about a certificate">
-        Certificate Viewer: <ph name="CERTIFICATE_NAME">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_CERT_INFO_GENERAL_TAB_LABEL" desc="Title of the notebook page displaying the basic info about the certificate">
-        &amp;General
-      </message>
-      <message name="IDS_CERT_INFO_DETAILS_TAB_LABEL" desc="Title of the notebook page displaying the details about the certificate">
-        &amp;Details
-      </message>
-      <message name="IDS_CERT_INFO_VERIFIED_USAGES_GROUP" desc="The label of the group in the general page of the certificate info dialog which lists the usages that the certificate is verified for">
-        This certificate has been verified for the following usages:
-      </message>
-      <message name="IDS_CERT_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
-        SSL Client Certificate
-      </message>
-      <message name="IDS_CERT_USAGE_SSL_SERVER" desc="The description of a certificate that is verified for use as an SSL server">
-        SSL Server Certificate
-      </message>
-      <message name="IDS_CERT_USAGE_SSL_SERVER_WITH_STEPUP" desc="The description of a certificate that is verified for use as an SSL server with step up">
-        SSL Server with Step-up
-      </message>
-      <message name="IDS_CERT_USAGE_EMAIL_SIGNER" desc="The description of a certificate that is verified for signing emails">
-        Email Signer Certificate
-      </message>
-      <message name="IDS_CERT_USAGE_EMAIL_RECEIVER" desc="The description of a
-        certificate that is verified for encrypting email">
-        Email Encryption Certificate
-      </message>
-      <message name="IDS_CERT_USAGE_OBJECT_SIGNER" desc="The description of a certificate that is verified for signing executable code">
-        Code Signer
-      </message>
-      <message name="IDS_CERT_USAGE_SSL_CA" desc="The description of a certificate that is verified for use by an SSL certification authority">
-        SSL Certification Authority
-      </message>
-      <message name="IDS_CERT_USAGE_STATUS_RESPONDER" desc="The description of a certificate that is verified for use as a status responder">
-        Status Responder Certificate
-      </message>
+      <!-- Certificate viewer dialog strings that are shared across all the platforms -->
       <message name="IDS_CERT_INFO_SUBJECT_GROUP" desc="The label of the Issued To group in the general page of the certificate info dialog">
         Issued To
       </message>
@@ -2652,9 +2577,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
       <message name="IDS_CERT_INFO_COMMON_NAME_LABEL" desc="The label of the Common Name field in the general page of the certificate info dialog.  (CN) is the name of this field in the standard">
         Common Name (CN)
-      </message>
-      <message name="IDS_CERT_INFO_IDN_VALUE_FORMAT" desc="The format of values for Common Name and SubjectAltName fields in the certificate info dialog when a name is an Internationalized Domain Name (eg, παράδειγμα.δοκιμή).">
-        <ph name="ASCII_NAME">$1<ex>xn--hxajbheg2az3al.xn--jxalpdlp</ex></ph> (<ph name="UNICODE_NAME">$2<ex>see desc; only ASCII allowed in ph.</ex></ph>)
       </message>
       <message name="IDS_CERT_INFO_ORGANIZATION_LABEL" desc="The label of the Organization field in the general page of the certificate info dialog.  (O) is the name of this field in the standard">
         Organization (O)
@@ -2683,74 +2605,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA-1 Fingerprint field in the general page of the certificate info dialog">
         SHA-1 Fingerprint
       </message>
-      <message name="IDS_CERT_INFO_FIELD_NOT_PRESENT" desc="The text displayed in the certificate info dialog for a given field when the certificate does not contain that field">
-        &lt;Not Part Of Certificate&gt;
-      </message>
-
-      <message name="IDS_CERT_DETAILS_CERTIFICATE_HIERARCHY_LABEL" desc="The label of the Certificate Hierarchy tree in the details page of the certificate info dialog.">
-        Certificate Hierarchy
-      </message>
-      <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELDS_LABEL" desc="The label of the Certificate Fields tree in the details page of the certificate info dialog.">
-        Certificate Fields
-      </message>
-      <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELD_VALUE_LABEL" desc="The label of the Certificate Field Value text in the details page of the certificate info dialog.">
-        Field Value
-      </message>
-      <message name="IDS_CERT_DETAILS_CERTIFICATE" desc="The label of the Certificate element in the details page of the certificate info dialog.">
-        Certificate
-      </message>
-      <message name="IDS_CERT_DETAILS_VERSION" desc="The label of the Version element in the details page of the certificate info dialog.">
-        Version
-      </message>
-      <message name="IDS_CERT_DETAILS_VERSION_FORMAT" desc="The format of the Version field value in the details page of the certificate info dialog.">
-        Version <ph name="NUMBER">$1<ex>3</ex></ph>
-      </message>
-      <message name="IDS_CERT_DETAILS_SERIAL_NUMBER" desc="The label of the Serial Number element in the details page of the certificate info dialog.">
-        Serial Number
-      </message>
-      <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG" desc="The label of the Certificate Signature Algorithm element in the details page of the certificate info dialog.">
-        Certificate Signature Algorithm
-      </message>
-      <message name="IDS_CERT_DETAILS_ISSUER" desc="The label of the Issuer element in the details page of the certificate info dialog.">
-        Issuer
-      </message>
-      <message name="IDS_CERT_DETAILS_VALIDITY" desc="The label of the Validity element in the details page of the certificate info dialog.">
-        Validity
-      </message>
-      <message name="IDS_CERT_DETAILS_NOT_BEFORE" desc="The label of the Validity->Not Before element in the details page of the certificate info dialog.">
-        Not Before
-      </message>
-      <message name="IDS_CERT_DETAILS_NOT_AFTER" desc="The label of the Validity->Not After element in the details page of the certificate info dialog.">
-        Not After
-      </message>
-      <message name="IDS_CERT_DETAILS_SUBJECT" desc="The label of the Subject element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
-        Subject
-      </message>
-      <message name="IDS_CERT_DETAILS_SUBJECT_KEY_INFO" desc="The label of the Subject Public Key Info element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
-        Subject Public Key Info
-      </message>
-      <message name="IDS_CERT_DETAILS_SUBJECT_KEY_ALG" desc="The label of the Subject Public Key Algorithm element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
-        Subject Public Key Algorithm
-      </message>
-      <message name="IDS_CERT_DETAILS_SUBJECT_KEY" desc="The label of the Subject's Public Key element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
-        Subject's Public Key
-      </message>
-      <message name="IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT" desc="Format for displaying a textual dump of an RSA public key.">
-Modulus (<ph name="MODULUS_NUM_BITS">$1<ex>1024</ex></ph> bits):
-<ph name="MODULUS_HEX_DUMP">$2<ex>00 0A 38 CF ...</ex></ph>
-
-Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
-<ph name="EXPONENT_HEX_DUMP">$4<ex>01 00 01</ex></ph>
-      </message>
-      <message name="IDS_CERT_DETAILS_EXTENSIONS" desc="The label of the Extensions element in the details page of the certificate info dialog.">
-        Extensions
-      </message>
-      <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE" desc="The label of the Certificate Signature Value element in the details page of the certificate info dialog.">
-        Certificate Signature Value
-      </message>
-      <message name="IDS_CERT_DETAILS_EXPORT_CERTIFICATE" desc="The label of the button to export the selected certificate">
-        E&amp;xport...
-      </message>
       <message name="IDS_CERT_EXPORT_TYPE_BASE64" desc="The description of saving a single certificate in base64 encoding.">
         Base64-encoded ASCII, single certificate
       </message>
@@ -2767,523 +2621,675 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         PKCS #7, certificate chain
       </message>
 
-      <message translateable="false" name="IDS_CERT_OID_AVA_COMMON_NAME" desc="">
-        CN
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_STATE_OR_PROVINCE" desc="">
-        ST
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATION_NAME" desc="">
-        O
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATIONAL_UNIT_NAME" desc="">
-        OU
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_DN_QUALIFIER" desc="">
-        dnQualifier
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_COUNTRY_NAME" desc="">
-        C
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_SERIAL_NUMBER" desc="">
-        serialNumber
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_LOCALITY" desc="">
-        L
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_AVA_DC" desc="">
-        DC
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_RFC1274_MAIL" desc="">
-        MAIL
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_RFC1274_UID" desc="">
-        UID
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_PKCS9_EMAIL_ADDRESS" desc="">
-        E
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_BUSINESS_CATEGORY" desc="">
-        businessCategory
-      </message>
-      <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_COUNTRY" desc="">
-        incorporationCountry
-      </message>
+      <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as GTK Linux. -->
+      <if expr="pp_ifdef('toolkit_uses_gtk')">
+        <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
+          This site has requested that you identify yourself with a certificate:
+        </message>
+        <message name="IDS_CERT_SELECTOR_CHOOSE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog describing the certificate selector combobox and certificate details">
+          Choose a certificate to present as identification:
+        </message>
+        <message name="IDS_CERT_SELECTOR_DETAILS_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog in the 'choose a certificate' section describing the certificate details">
+          Details of selected certificate:
+        </message>
+        <message name="IDS_CERT_SELECTOR_CERT_EXPIRED" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are expired.">
+          (expired)
+        </message>
+        <message name="IDS_CERT_SELECTOR_CERT_NOT_YET_VALID" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are not yet valid.">
+          (not yet valid)
+        </message>
+        <message name="IDS_CERT_SUBJECTNAME_FORMAT" desc="Format for detailed certificate subject in certificate details">
+          Issued to: <ph name="NAME">$1<ex>CN=VeriSign Browser Certificate,OU=Device Identifier - r1923847</ex></ph>
+        </message>
+        <message name="IDS_CERT_ISSUERNAME_FORMAT" desc="Format for detailed certificate issuer in certificate details">
+          Issued by: <ph name="NAME">$1<ex>CN=VeriSign Device CA,O="VeriSign, Inc.",C=US</ex></ph>
+        </message>
+        <message name="IDS_CERT_VALIDITY_RANGE_FORMAT" desc="Format for showing the range of dates a certificate is valid in the certificate details">
+          Valid from <ph name="START_DATE_TIME">$1<ex>7/2/09 7:18:34 PM</ex></ph> to <ph name="END_DATE_TIME">$2<ex>7/2/10 7:28:34 PM</ex></ph>
+        </message>
+        <message name="IDS_CERT_X509_EXTENDED_KEY_USAGE_FORMAT" desc="Format for showing the usages a certificate is valid for in the certificate details">
+          Purposes: <ph name="USAGES">$1<ex>SSL Client Certificate,Email Signer Certificate</ex></ph>
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_FORMAT" desc="Format for showing the key usages a certificate is valid for in the certificate details">
+          Certificate Key Usage: <ph name="USAGES">$1<ex>Signing,Key Encipherment</ex></ph>
+        </message>
+        <message name="IDS_CERT_EMAIL_ADDRESSES_FORMAT" desc="Format for showing the email address(es) a certificate is associated with in the certificate details">
+          Email: <ph name="EMAIL_ADDRESSES">$1<ex>foo@example.com</ex></ph>
+        </message>
+        <message name="IDS_CERT_TOKEN_FORMAT" desc="Format for showing the location a certificate is stored">
+          Stored in: <ph name="CERT_LOCATION">$1<ex>NSS Certificate Database</ex></ph>
+        </message>
+      </if>
 
-      <message name="IDS_CERT_OID_PKCS1_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_RSA_ENCRYPTION">
-        PKCS #1 RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION">
-        PKCS #1 MD2 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION">
-        PKCS #1 MD4 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION">
-        PKCS #1 MD5 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION">
-        PKCS #1 SHA-1 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION">
-        PKCS #1 SHA-256 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION">
-        PKCS #1 SHA-384 With RSA Encryption
-      </message>
-      <message name="IDS_CERT_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION">
-        PKCS #1 SHA-512 With RSA Encryption
-      </message>
+      <!-- Certificate viewer dialog strings.  These are used in WebUI and GTK certificate viewers. Android uses OS-level certificate manager -->
+      <if expr="not is_android">
+        <message name="IDS_CERT_INFO_DIALOG_TITLE" desc="Title of dialog displaying info about a certificate">
+          Certificate Viewer: <ph name="CERTIFICATE_NAME">$1<ex>www.google.com</ex></ph>
+        </message>
+        <message name="IDS_CERT_INFO_GENERAL_TAB_LABEL" desc="Title of the notebook page displaying the basic info about the certificate">
+          &amp;General
+        </message>
+        <message name="IDS_CERT_INFO_DETAILS_TAB_LABEL" desc="Title of the notebook page displaying the details about the certificate">
+          &amp;Details
+        </message>
+        <message name="IDS_CERT_INFO_VERIFIED_USAGES_GROUP" desc="The label of the group in the general page of the certificate info dialog which lists the usages that the certificate is verified for">
+          This certificate has been verified for the following usages:
+        </message>
+        <message name="IDS_CERT_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
+          SSL Client Certificate
+        </message>
+        <message name="IDS_CERT_USAGE_SSL_SERVER" desc="The description of a certificate that is verified for use as an SSL server">
+          SSL Server Certificate
+        </message>
+        <message name="IDS_CERT_USAGE_SSL_SERVER_WITH_STEPUP" desc="The description of a certificate that is verified for use as an SSL server with step up">
+          SSL Server with Step-up
+        </message>
+        <message name="IDS_CERT_USAGE_EMAIL_SIGNER" desc="The description of a certificate that is verified for signing emails">
+          Email Signer Certificate
+        </message>
+        <message name="IDS_CERT_USAGE_EMAIL_RECEIVER" desc="The description of a
+          certificate that is verified for encrypting email">
+          Email Encryption Certificate
+        </message>
+        <message name="IDS_CERT_USAGE_OBJECT_SIGNER" desc="The description of a certificate that is verified for signing executable code">
+          Code Signer
+        </message>
+        <message name="IDS_CERT_USAGE_SSL_CA" desc="The description of a certificate that is verified for use by an SSL certification authority">
+          SSL Certification Authority
+        </message>
+        <message name="IDS_CERT_USAGE_STATUS_RESPONDER" desc="The description of a certificate that is verified for use as a status responder">
+          Status Responder Certificate
+        </message>
+        <message name="IDS_CERT_INFO_IDN_VALUE_FORMAT" desc="The format of values for Common Name and SubjectAltName fields in the certificate info dialog when a name is an Internationalized Domain Name (eg, παράδειγμα.δοκιμή).">
+          <ph name="ASCII_NAME">$1<ex>xn--hxajbheg2az3al.xn--jxalpdlp</ex></ph> (<ph name="UNICODE_NAME">$2<ex>see desc; only ASCII allowed in ph.</ex></ph>)
+        </message>
+        <message name="IDS_CERT_INFO_FIELD_NOT_PRESENT" desc="The text displayed in the certificate info dialog for a given field when the certificate does not contain that field">
+          &lt;Not Part Of Certificate&gt;
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE_HIERARCHY_LABEL" desc="The label of the Certificate Hierarchy tree in the details page of the certificate info dialog.">
+          Certificate Hierarchy
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELDS_LABEL" desc="The label of the Certificate Fields tree in the details page of the certificate info dialog.">
+          Certificate Fields
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELD_VALUE_LABEL" desc="The label of the Certificate Field Value text in the details page of the certificate info dialog.">
+          Field Value
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE" desc="The label of the Certificate element in the details page of the certificate info dialog.">
+          Certificate
+        </message>
+        <message name="IDS_CERT_DETAILS_VERSION" desc="The label of the Version element in the details page of the certificate info dialog.">
+          Version
+        </message>
+        <message name="IDS_CERT_DETAILS_VERSION_FORMAT" desc="The format of the Version field value in the details page of the certificate info dialog.">
+          Version <ph name="NUMBER">$1<ex>3</ex></ph>
+        </message>
+        <message name="IDS_CERT_DETAILS_SERIAL_NUMBER" desc="The label of the Serial Number element in the details page of the certificate info dialog.">
+          Serial Number
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG" desc="The label of the Certificate Signature Algorithm element in the details page of the certificate info dialog.">
+          Certificate Signature Algorithm
+        </message>
+        <message name="IDS_CERT_DETAILS_ISSUER" desc="The label of the Issuer element in the details page of the certificate info dialog.">
+          Issuer
+        </message>
+        <message name="IDS_CERT_DETAILS_VALIDITY" desc="The label of the Validity element in the details page of the certificate info dialog.">
+          Validity
+        </message>
+        <message name="IDS_CERT_DETAILS_NOT_BEFORE" desc="The label of the Validity->Not Before element in the details page of the certificate info dialog.">
+          Not Before
+        </message>
+        <message name="IDS_CERT_DETAILS_NOT_AFTER" desc="The label of the Validity->Not After element in the details page of the certificate info dialog.">
+          Not After
+        </message>
+        <message name="IDS_CERT_DETAILS_SUBJECT" desc="The label of the Subject element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+          Subject
+        </message>
+        <message name="IDS_CERT_DETAILS_SUBJECT_KEY_INFO" desc="The label of the Subject Public Key Info element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+          Subject Public Key Info
+        </message>
+        <message name="IDS_CERT_DETAILS_SUBJECT_KEY_ALG" desc="The label of the Subject Public Key Algorithm element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+          Subject Public Key Algorithm
+        </message>
+        <message name="IDS_CERT_DETAILS_SUBJECT_KEY" desc="The label of the Subject's Public Key element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+          Subject's Public Key
+        </message>
+        <message name="IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT" desc="Format for displaying a textual dump of an RSA public key.">
+  Modulus (<ph name="MODULUS_NUM_BITS">$1<ex>1024</ex></ph> bits):
+  <ph name="MODULUS_HEX_DUMP">$2<ex>00 0A 38 CF ...</ex></ph>
+  
+  Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
+  <ph name="EXPONENT_HEX_DUMP">$4<ex>01 00 01</ex></ph>
+        </message>
+        <message name="IDS_CERT_DETAILS_EXTENSIONS" desc="The label of the Extensions element in the details page of the certificate info dialog.">
+          Extensions
+        </message>
+        <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE" desc="The label of the Certificate Signature Value element in the details page of the certificate info dialog.">
+          Certificate Signature Value
+        </message>
+        <message name="IDS_CERT_DETAILS_EXPORT_CERTIFICATE" desc="The label of the button to export the selected certificate">
+          E&amp;xport...
+        </message>
 
-      <message name="IDS_CERT_EXT_NS_CERT_TYPE" desc="description of extension Netscape Certificate Type">
-        Netscape Certificate Type
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL" desc="description of a certificate type for email">
-        Email Certificate
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL_CA" desc="description of a certificate type for email certification authority">
-        Email Certification Authority
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_BASE_URL" desc="description of extension Netscape Certificate Base URL">
-        Netscape Certificate Base URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_REVOCATION_URL" desc="description of extension Netscape Certificate Revocation URL">
-        Netscape Certificate Revocation URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_CA_REVOCATION_URL" desc="description of extension Netscape Certification Authority Revocation URL">
-        Netscape Certification Authority Revocation URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_URL" desc="description of extension Netscape Certificate Renewal URL">
-        Netscape Certificate Renewal URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_CA_POLICY_URL" desc="description of extension Netscape Certification Authority Policy URL">
-        Netscape Certification Authority Policy URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_SSL_SERVER_NAME" desc="description of extension Netscape Certificate SSL Server Name">
-        Netscape Certificate SSL Server Name
-      </message>
-      <message name="IDS_CERT_EXT_NS_COMMENT" desc="description of extension Netscape Certificate Comment">
-        Netscape Certificate Comment
-      </message>
-      <message name="IDS_CERT_EXT_NS_LOST_PASSWORD_URL" desc="description of extension Netscape Lost Password URL">
-        Netscape Lost Password URL
-      </message>
-      <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_TIME" desc="description of extension Netscape Certificate Renewal Time">
-        Netscape Certificate Renewal Time
-      </message>
-      <message name="IDS_CERT_X509_SUBJECT_DIRECTORY_ATTR" desc="description of extension Certificate Subject Directory Attributes">
-        Certificate Subject Directory Attributes
-      </message>
-      <message name="IDS_CERT_X509_SUBJECT_KEYID" desc="description of extension Certificate Subject Key ID">
-        Certificate Subject Key ID
-      </message>
-      <message name="IDS_CERT_KEYID_FORMAT" desc="format for key id in certificate extensions details">
-        Key ID: <ph name="KEY_ID">$1<ex>19 EB 8E 93</ex></ph>
-      </message>
-      <message name="IDS_CERT_ISSUER_FORMAT" desc="format for issuer in certificate extensions details">
-        Issuer: <ph name="CERTIFICATE_AUTHORITY">$1<ex>VeriSign</ex></ph>
-      </message>
-      <message name="IDS_CERT_SERIAL_NUMBER_FORMAT" desc="format for serial number in certificate extensions details">
-        Serial Number: <ph name="SERIAL_NUMBER">$1<ex>19 EB 8E 93</ex></ph>
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE" desc="description of extension Certificate Key Usage">
-        Certificate Key Usage
-      </message>
-      <message name="IDS_CERT_X509_SUBJECT_ALT_NAME" desc="description of extension Certificate Subject Alternative Name">
-        Certificate Subject Alternative Name
-      </message>
-      <message name="IDS_CERT_X509_ISSUER_ALT_NAME" desc="description of extension Certificate Issuer Alternative Name">
-        Certificate Issuer Alternative Name
-      </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINTS" desc="description of extension Certificate Basic Constraints">
-        Certificate Basic Constraints
-      </message>
-      <message name="IDS_CERT_X509_NAME_CONSTRAINTS" desc="description of extension Certificate Name Constraints">
-        Certificate Name Constraints
-      </message>
-      <message name="IDS_CERT_X509_CRL_DIST_POINTS" desc="description of extension CRL Distribution Points">
-        CRL Distribution Points
-      </message>
-      <message name="IDS_CERT_X509_CERT_POLICIES" desc="description of extension Certificate Policies">
-        Certificate Policies
-      </message>
-      <message name="IDS_CERT_X509_POLICY_MAPPINGS" desc="description of extension Certificate Policy Mappings">
-        Certificate Policy Mappings
-      </message>
-      <message name="IDS_CERT_X509_POLICY_CONSTRAINTS" desc="description of extension Certificate Policy Constraints">
-        Certificate Policy Constraints
-      </message>
-      <message name="IDS_CERT_X509_AUTH_KEYID" desc="description of extension Certification Authority Key Identifier">
-        Certification Authority Key ID
-      </message>
-      <message name="IDS_CERT_X509_EXT_KEY_USAGE" desc="description of extension Extended Key Usage">
-        Extended Key Usage
-      </message>
-      <message name="IDS_CERT_X509_AUTH_INFO_ACCESS" desc="description of extension Authority Information Access">
-        Authority Information Access
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_SIGNING" desc="description of certificate usage Signing">
-        Signing
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_NONREP" desc="description of certificate usage Non-repudiation">
-        Non-repudiation
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHERMENT" desc="description of certificate usage Key Encipherment">
-        Key Encipherment
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_DATA_ENCIPHERMENT" desc="description of certificate usage Data Encipherment">
-        Data Encipherment
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_KEY_AGREEMENT" desc="description of certificate usage Key Agreement">
-        Key Agreement
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_CERT_SIGNER" desc="description of certificate usage Certificate Signer">
-        Certificate Signer
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_CRL_SIGNER" desc="description of certificate usage CRL Signer">
-        CRL Signer
-      </message>
-      <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY" desc="description of certificate usage Encipher Only">
-        Encipher Only
-      </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certification Authority">
-        Is a Certification Authority
-      </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_NOT_CA" desc="description of certificate constraint Is not a Certification Authority">
-        Is not a Certification Authority
-      </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN" desc="description of certificate constraint Maximum number of intermediate CAs: %S">
-        Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA">$1<ex>5</ex></ph>
-      </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN_UNLIMITED" desc="value NUM_INTERMEDIATE_CA when there is no limit">
-        unlimited
-      </message>
-      <message name="IDS_CERT_PKIX_CPS_POINTER_QUALIFIER" desc="description of pointer (URI) to Certification Practice Statement published by Certification Authority">
-        Certification Practice Statement Pointer
-      </message>
-      <message name="IDS_CERT_PKIX_USER_NOTICE_QUALIFIER" desc="description of User Notice certificate policy qualifier">
-        User Notice
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_UNUSED" desc="description of certificate revocation for reason Unused">
-        Unused
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_KEY_COMPROMISE" desc="description of certificate revocation for reason Key Compromise">
-        Key Compromise
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_CA_COMPROMISE" desc="description of certificate revocation for reason CA Compromise">
-        CA Compromise
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_AFFILIATION_CHANGED" desc="description of certificate revocation for reason Affiliation Changed">
-        Affiliation Changed
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_SUPERSEDED" desc="description of certificate revocation for reason Superseded">
-        Superseded
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_CESSATION_OF_OPERATION" desc="description of certificate revocation for reason Cessation of Operation">
-        Cessation of Operation
-      </message>
-      <message name="IDS_CERT_REVOCATION_REASON_CERTIFICATE_HOLD" desc="description of certificate revocation for reason Certificate Hold">
-        Certificate on Hold
-      </message>
-      <message name="IDS_CERT_OCSP_RESPONDER_FORMAT" desc="format for info about OCSP responder">
-        OCSP Responder: <ph name="LOCATION">$1<ex>Foo</ex></ph>
-      </message>
-      <message name="IDS_CERT_CA_ISSUERS_FORMAT" desc="format for info about CA Issuers">
-        CA Issuers: <ph name="LOCATION">$1<ex>Foo</ex></ph>
-      </message>
-      <message name="IDS_CERT_UNKNOWN_OID_INFO_FORMAT" desc="format for info about an OID we don't have a specific format for">
-        <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>: <ph name="INFO">$2<ex>Foo</ex></ph>
-      </message>
-      <message name="IDS_CERT_EXT_KEY_USAGE_FORMAT" desc="format for description of an extended key usage, with its object identifier (OID).">
-        <ph name="USAGE">$1<ex>TLS Web Server Authentication</ex></ph> (<ph name="OID">$2<ex>OID.1.3.6.1.5.5.7.3.1</ex></ph>)
-      </message>
-      <message name="IDS_CERT_MULTILINE_INFO_START_FORMAT" desc="format for header line where further info will appear on the following lines">
-        <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>:
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_RFC822_NAME" desc="label for the certRFC822Name general name type">
-        Email Address
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_DNS_NAME" desc="label for the certDNSName general name type">
-        DNS Name
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_X400_ADDRESS" desc="label for the certX400Address general name type">
-        X.400 Address
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_DIRECTORY_NAME" desc="label for the certDirectoryName general name type">
-        X.500 Name
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_EDI_PARTY_NAME" desc="label for the certEDIPartyName general name type">
-        EDI Party Name
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_URI" desc="label for the certURI general name type">
-        URI
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_IP_ADDRESS" desc="label for the certIPAddress general name type">
-        IP Address
-      </message>
-      <message name="IDS_CERT_GENERAL_NAME_REGISTERED_ID" desc="label for the certRegisteredID general name type">
-        Registered OID
-      </message>
-      <message name="IDS_CERT_EXT_MS_CERT_TYPE" desc="description of extension Microsoft Certificate Template Name">
-        Microsoft Certificate Template Name
-      </message>
-      <message name="IDS_CERT_EXT_MS_CA_VERSION" desc="description of extension Microsoft CA Version">
-        Microsoft CA Version
-      </message>
-      <message name="IDS_CERT_EXT_MS_NT_PRINCIPAL_NAME" desc="description of extension Microsoft Principal Name">
-        Microsoft Principal Name
-      </message>
-      <message name="IDS_CERT_EXT_MS_NTDS_REPLICATION" desc="description of extension Microsoft Domain GUID">
-        Microsoft Domain GUID
-      </message>
-      <message name="IDS_CERT_EKU_TLS_WEB_SERVER_AUTHENTICATION" desc="description of extended key usage TLS WWW Server Authentication">
-        TLS WWW Server Authentication
-      </message>
-      <message name="IDS_CERT_EKU_TLS_WEB_CLIENT_AUTHENTICATION" desc="description of extended key usage TLS WWW Client Authentication">
-        TLS WWW Client Authentication
-      </message>
-      <message name="IDS_CERT_EKU_CODE_SIGNING" desc="description of extended key usage Code Signing">
-        Code Signing
-      </message>
-      <message name="IDS_CERT_EKU_EMAIL_PROTECTION" desc="description of extended key usage E-mail Protection">
-        Email Protection
-      </message>
-      <message name="IDS_CERT_EKU_TIME_STAMPING" desc="description of extended key usage Time Stamping">
-        Time Stamping
-      </message>
-      <message name="IDS_CERT_EKU_OCSP_SIGNING" desc="description of extended key usage Signing OCSP Responses">
-        Signing OCSP Responses
-      </message>
-      <message name="IDS_CERT_EKU_MS_INDIVIDUAL_CODE_SIGNING" desc="description of extended key usage Microsoft Individual Code Signing">
-        Microsoft Individual Code Signing
-      </message>
-      <message name="IDS_CERT_EKU_MS_COMMERCIAL_CODE_SIGNING" desc="description of extended key usage Microsoft Commercial Code Signing">
-        Microsoft Commercial Code Signing
-      </message>
-      <message name="IDS_CERT_EKU_MS_TRUST_LIST_SIGNING" desc="description of extended key usage Microsoft Trust List Signing">
-        Microsoft Trust List Signing
-      </message>
-      <message name="IDS_CERT_EKU_MS_TIME_STAMPING" desc="description of extended key usage Microsoft Time Stamping">
-        Microsoft Time Stamping
-      </message>
-      <message name="IDS_CERT_EKU_MS_SERVER_GATED_CRYPTO" desc="description of extended key usage Microsoft Server Gated Crypto">
-        Microsoft Server Gated Cryptography
-      </message>
-      <message name="IDS_CERT_EKU_MS_ENCRYPTING_FILE_SYSTEM" desc="description of extended key usage Microsoft Encrypting File System">
-        Microsoft Encrypting File System
-      </message>
-      <message name="IDS_CERT_EKU_MS_FILE_RECOVERY" desc="description of extended key usage Microsoft File Recovery">
-        Microsoft File Recovery
-      </message>
-      <message name="IDS_CERT_EKU_MS_WINDOWS_HARDWARE_DRIVER_VERIFICATION" desc="description of extended key usage Microsoft Windows Hardware Driver Verification">
-        Microsoft Windows Hardware Driver Verification
-      </message>
-      <message name="IDS_CERT_EKU_MS_QUALIFIED_SUBORDINATION" desc="description of extended key usage Microsoft Qualified Subordination">
-        Microsoft Qualified Subordination
-      </message>
-      <message name="IDS_CERT_EKU_MS_KEY_RECOVERY" desc="description of extended key usage Microsoft Key Recovery">
-        Microsoft Key Recovery
-      </message>
-      <message name="IDS_CERT_EKU_MS_DOCUMENT_SIGNING" desc="description of extended key usage Microsoft Document Signing">
-        Microsoft Document Signing
-      </message>
-      <message name="IDS_CERT_EKU_MS_LIFETIME_SIGNING" desc="description of extended key usage Microsoft Lifetime Signing">
-        Microsoft Lifetime Signing
-      </message>
-      <message name="IDS_CERT_EKU_MS_SMART_CARD_LOGON" desc="description of extended key usage Microsoft Smart Card Logon">
-        Microsoft Smart Card Logon
-      </message>
-      <message name="IDS_CERT_EKU_MS_KEY_RECOVERY_AGENT" desc="description of extended key usage Microsoft Key Recovery Agent">
-        Microsoft Key Recovery Agent
-      </message>
-      <message name="IDS_CERT_EKU_NETSCAPE_INTERNATIONAL_STEP_UP" desc="description of extended key usage Netscape International Step-Up">
-        Netscape International Step-Up
-      </message>
-      <message name="IDS_CERT_EXTENSION_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is critical">
-        Critical
-      </message>
-      <message name="IDS_CERT_EXTENSION_NON_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is not critical">
-        Not Critical
-      </message>
-      <message name="IDS_CERT_EXTENSION_DUMP_ERROR" desc="The text displayed in the certificate details dialog for a given extension which could not be decoded">
-        Error: Unable to decode extension
-      </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_COMMON_NAME" desc="">
+          CN
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_STATE_OR_PROVINCE" desc="">
+          ST
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATION_NAME" desc="">
+          O
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATIONAL_UNIT_NAME" desc="">
+          OU
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_DN_QUALIFIER" desc="">
+          dnQualifier
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_COUNTRY_NAME" desc="">
+          C
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_SERIAL_NUMBER" desc="">
+          serialNumber
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_LOCALITY" desc="">
+          L
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_DC" desc="">
+          DC
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_RFC1274_MAIL" desc="">
+          MAIL
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_RFC1274_UID" desc="">
+          UID
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_PKCS9_EMAIL_ADDRESS" desc="">
+          E
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_BUSINESS_CATEGORY" desc="">
+          businessCategory
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_COUNTRY" desc="">
+          incorporationCountry
+        </message>
 
-      <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
-      <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
-        Certificate manager
-      </message>
-      <message name="IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL" desc="Title of the notebook page displaying the user's own certificates">
-        Your Certificates
-      </message>
-      <message name="IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL" desc="Title of the notebook page displaying server certificates">
-        Servers
-      </message>
-      <message name="IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL" desc="Title of the notebook page displaying certificate authorities">
-        Authorities
-      </message>
-      <message name="IDS_CERT_MANAGER_OTHER_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
-        Others
-      </message>
-      <message name="IDS_CERT_MANAGER_USER_TREE_DESCRIPTION" desc="Description label above the tree showing the user's own certificates">
-        You have certificates from these organizations that identify you:
-      </message>
-      <message name="IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION" desc="Description label above the tree showing server certificates">
-        You have certificates on file that identify these servers:
-      </message>
-      <message name="IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION" desc="Description label above the Certificate Authorities tree">
-        You have certificates on file that identify these certificate authorities:
-      </message>
-      <message name="IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
-        You have certificates on file that do not fit in any of the other categories:
-      </message>
-      <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
-        View...
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates">
-        Import...
-      </message>
-      <message name="IDS_CERT_MANAGER_EXPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to export certificates">
-        Export...
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_BUTTON" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
-        Edit...
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_BUTTON" desc="Label for the button in the certificate manager which allows you to delete certificates">
-        Delete...
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_USER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a user certificate">
-        Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
-        If you delete one of your own certificates, you can no longer use it to identify yourself.
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_SERVER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a server certificate">
-        Delete server certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>"?
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a server certificate">
-        If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certification authority certificate">
-        Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certification authority certificate">
-        If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_OTHER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
-        Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
-      </message>
-      <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_DESC" desc="Description of password prompt in certificate manager for exporting a personal certificate">
-        Please enter a password to encrypt this certificate file.
-      </message>
-      <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_HELP" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
-        The password you choose will be required to restore this file later.  Please record it in a safe location.
-      </message>
-      <message name="IDS_CERT_MANAGER_RESTORE_PASSWORD_DESC" desc="Description of password prompt in certificate manager for restoring a personal certificate">
-        Please enter the password that was used to encrypt this certificate file.
-      </message>
-      <message name="IDS_CERT_MANAGER_PASSWORD_LABEL" desc="The label of the password field in the certificate manager for restoring or exporting a personal certificate">
-        Password:
-      </message>
-      <message name="IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL" desc="The label of the field in the certificate manager for re-entering the password when creating a export.">
-        Confirm Password:
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_FILES" desc="The label in the file selector dialog for PKCS #12 file type.">
-        PKCS #12 Files
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
-        PKCS #12 Export Error
-      </message>
-      <message name="IDS_CERT_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
-        There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
-      </message>
-      <message name="IDS_CERT_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box. Untrusted certificates are sometimes added in order to explicitly distrust them. Thus, they will be listed but it's important that the user note that they serve a different purpose from the rest.">
-        Untrusted
-      </message>
-      <message name="IDS_CERT_MANAGER_POLICY_INSTALLED" desc="The text of the popup bubble shown when the user clicks the controlled setting indicator next to a certificate entry.">
-        This certificate has been installed by your system administrator.
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
-        PKCS #12 Import Error
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC" desc="The message in the error dialog for PKCS #12 files with invalid MAC.">
-        Incorrect password or corrupt file.
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt PKCS #12 files.">
-        Invalid or corrupt file.
-      </message>
-      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported PKCS #12 files.">
-        File uses unsupported features.
-      </message>
-      <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file read errors.">
-        There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
-      </message>
-      <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
-        Incorrect password.
-      </message>
-      <message name="IDS_CERT_MANAGER_CERT_PARSE_ERROR" desc="The message in the certificate manager error dialog for importing invalid certificate files.">
-        Unable to parse file.
-      </message>
-      <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
-        Unknown error.
-      </message>
-      <message name="IDS_CERT_MANAGER_ERROR_NOT_CA" desc="The error message when trying to import certificate authorities and a certificate is not a certification authority">
-        Not a Certification Authority.
-      </message>
-      <message name="IDS_CERT_MANAGER_ERROR_CERT_ALREADY_EXISTS" desc="The error message when trying to import certificate which already exists.">
-        Certificate already exists.
-      </message>
-      <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
-        Certificate Deletion Error
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TITLE" desc="Title of the certificate manager edit trust dialog">
-        Certificate authority
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_TRUST_LABEL" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
-        Edit trust settings:
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing Certification Authority trust flags">
-        The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
-        Trust this certificate for identifying websites.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
-        Trust this certificate for identifying email users.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
-        Trust this certificate for identifying software makers.
-      </message>
-      <message name="IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE" desc="The title in the error dialog for certificate trust editing errors.">
-        Error Setting Certificate Trust
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT" desc="Description in dialog for importing a Certification Authority and setting its trust flags">
-        Do you want to trust "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" as a Certification Authority?
-      </message>
-      <message name="IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
-        Certification Authority Import Error
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT" desc="The format of per-certificate error messages in import failure dialog">
-        <ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>: <ph name="ERROR">$2<ex>Not a Certification Authority</ex></ph>
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED" desc="The header in certificate manager error dialog for single certificates that could not be imported.">
-        The file contained one certificate, which was not imported:
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, when none were successfully imported.">
-        The file contained multiple certificates, none of which were imported:
-      </message>
-      <message name="IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, even though others were.">
-        The file contained multiple certificates, some of which were not imported:
-      </message>
-      <message name="IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
-        Server Certificate Import Error
-      </message>
-      <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
-        <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
-      </message>
-      <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for hardware-backed keys.">
-        hardware-backed
-      </message>
+        <message name="IDS_CERT_OID_PKCS1_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_RSA_ENCRYPTION">
+          PKCS #1 RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION">
+          PKCS #1 MD2 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION">
+          PKCS #1 MD4 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION">
+          PKCS #1 MD5 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION">
+          PKCS #1 SHA-1 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION">
+          PKCS #1 SHA-256 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION">
+          PKCS #1 SHA-384 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION">
+          PKCS #1 SHA-512 With RSA Encryption
+        </message>
+
+        <message name="IDS_CERT_EXT_NS_CERT_TYPE" desc="description of extension Netscape Certificate Type">
+          Netscape Certificate Type
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL" desc="description of a certificate type for email">
+          Email Certificate
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL_CA" desc="description of a certificate type for email certification authority">
+          Email Certification Authority
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_BASE_URL" desc="description of extension Netscape Certificate Base URL">
+          Netscape Certificate Base URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_REVOCATION_URL" desc="description of extension Netscape Certificate Revocation URL">
+          Netscape Certificate Revocation URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_CA_REVOCATION_URL" desc="description of extension Netscape Certification Authority Revocation URL">
+          Netscape Certification Authority Revocation URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_URL" desc="description of extension Netscape Certificate Renewal URL">
+          Netscape Certificate Renewal URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_CA_POLICY_URL" desc="description of extension Netscape Certification Authority Policy URL">
+          Netscape Certification Authority Policy URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_SSL_SERVER_NAME" desc="description of extension Netscape Certificate SSL Server Name">
+          Netscape Certificate SSL Server Name
+        </message>
+        <message name="IDS_CERT_EXT_NS_COMMENT" desc="description of extension Netscape Certificate Comment">
+          Netscape Certificate Comment
+        </message>
+        <message name="IDS_CERT_EXT_NS_LOST_PASSWORD_URL" desc="description of extension Netscape Lost Password URL">
+          Netscape Lost Password URL
+        </message>
+        <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_TIME" desc="description of extension Netscape Certificate Renewal Time">
+          Netscape Certificate Renewal Time
+        </message>
+        <message name="IDS_CERT_X509_SUBJECT_DIRECTORY_ATTR" desc="description of extension Certificate Subject Directory Attributes">
+          Certificate Subject Directory Attributes
+        </message>
+        <message name="IDS_CERT_X509_SUBJECT_KEYID" desc="description of extension Certificate Subject Key ID">
+          Certificate Subject Key ID
+        </message>
+        <message name="IDS_CERT_KEYID_FORMAT" desc="format for key id in certificate extensions details">
+          Key ID: <ph name="KEY_ID">$1<ex>19 EB 8E 93</ex></ph>
+        </message>
+        <message name="IDS_CERT_ISSUER_FORMAT" desc="format for issuer in certificate extensions details">
+          Issuer: <ph name="CERTIFICATE_AUTHORITY">$1<ex>VeriSign</ex></ph>
+        </message>
+        <message name="IDS_CERT_SERIAL_NUMBER_FORMAT" desc="format for serial number in certificate extensions details">
+          Serial Number: <ph name="SERIAL_NUMBER">$1<ex>19 EB 8E 93</ex></ph>
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE" desc="description of extension Certificate Key Usage">
+          Certificate Key Usage
+        </message>
+        <message name="IDS_CERT_X509_SUBJECT_ALT_NAME" desc="description of extension Certificate Subject Alternative Name">
+          Certificate Subject Alternative Name
+        </message>
+        <message name="IDS_CERT_X509_ISSUER_ALT_NAME" desc="description of extension Certificate Issuer Alternative Name">
+          Certificate Issuer Alternative Name
+        </message>
+        <message name="IDS_CERT_X509_BASIC_CONSTRAINTS" desc="description of extension Certificate Basic Constraints">
+          Certificate Basic Constraints
+        </message>
+        <message name="IDS_CERT_X509_NAME_CONSTRAINTS" desc="description of extension Certificate Name Constraints">
+          Certificate Name Constraints
+        </message>
+        <message name="IDS_CERT_X509_CRL_DIST_POINTS" desc="description of extension CRL Distribution Points">
+          CRL Distribution Points
+        </message>
+        <message name="IDS_CERT_X509_CERT_POLICIES" desc="description of extension Certificate Policies">
+          Certificate Policies
+        </message>
+        <message name="IDS_CERT_X509_POLICY_MAPPINGS" desc="description of extension Certificate Policy Mappings">
+          Certificate Policy Mappings
+        </message>
+        <message name="IDS_CERT_X509_POLICY_CONSTRAINTS" desc="description of extension Certificate Policy Constraints">
+          Certificate Policy Constraints
+        </message>
+        <message name="IDS_CERT_X509_AUTH_KEYID" desc="description of extension Certification Authority Key Identifier">
+          Certification Authority Key ID
+        </message>
+        <message name="IDS_CERT_X509_EXT_KEY_USAGE" desc="description of extension Extended Key Usage">
+          Extended Key Usage
+        </message>
+        <message name="IDS_CERT_X509_AUTH_INFO_ACCESS" desc="description of extension Authority Information Access">
+          Authority Information Access
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_SIGNING" desc="description of certificate usage Signing">
+          Signing
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_NONREP" desc="description of certificate usage Non-repudiation">
+          Non-repudiation
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHERMENT" desc="description of certificate usage Key Encipherment">
+          Key Encipherment
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_DATA_ENCIPHERMENT" desc="description of certificate usage Data Encipherment">
+          Data Encipherment
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_KEY_AGREEMENT" desc="description of certificate usage Key Agreement">
+          Key Agreement
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_CERT_SIGNER" desc="description of certificate usage Certificate Signer">
+          Certificate Signer
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_CRL_SIGNER" desc="description of certificate usage CRL Signer">
+          CRL Signer
+        </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY" desc="description of certificate usage Encipher Only">
+          Encipher Only
+        </message>
+        <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certification Authority">
+          Is a Certification Authority
+        </message>
+        <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_NOT_CA" desc="description of certificate constraint Is not a Certification Authority">
+          Is not a Certification Authority
+        </message>
+        <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN" desc="description of certificate constraint Maximum number of intermediate CAs: %S">
+          Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA">$1<ex>5</ex></ph>
+        </message>
+        <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN_UNLIMITED" desc="value NUM_INTERMEDIATE_CA when there is no limit">
+          unlimited
+        </message>
+        <message name="IDS_CERT_PKIX_CPS_POINTER_QUALIFIER" desc="description of pointer (URI) to Certification Practice Statement published by Certification Authority">
+          Certification Practice Statement Pointer
+        </message>
+        <message name="IDS_CERT_PKIX_USER_NOTICE_QUALIFIER" desc="description of User Notice certificate policy qualifier">
+          User Notice
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_UNUSED" desc="description of certificate revocation for reason Unused">
+          Unused
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_KEY_COMPROMISE" desc="description of certificate revocation for reason Key Compromise">
+          Key Compromise
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_CA_COMPROMISE" desc="description of certificate revocation for reason CA Compromise">
+          CA Compromise
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_AFFILIATION_CHANGED" desc="description of certificate revocation for reason Affiliation Changed">
+          Affiliation Changed
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_SUPERSEDED" desc="description of certificate revocation for reason Superseded">
+          Superseded
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_CESSATION_OF_OPERATION" desc="description of certificate revocation for reason Cessation of Operation">
+          Cessation of Operation
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_CERTIFICATE_HOLD" desc="description of certificate revocation for reason Certificate Hold">
+          Certificate on Hold
+        </message>
+        <message name="IDS_CERT_OCSP_RESPONDER_FORMAT" desc="format for info about OCSP responder">
+          OCSP Responder: <ph name="LOCATION">$1<ex>Foo</ex></ph>
+        </message>
+        <message name="IDS_CERT_CA_ISSUERS_FORMAT" desc="format for info about CA Issuers">
+          CA Issuers: <ph name="LOCATION">$1<ex>Foo</ex></ph>
+        </message>
+        <message name="IDS_CERT_UNKNOWN_OID_INFO_FORMAT" desc="format for info about an OID we don't have a specific format for">
+          <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>: <ph name="INFO">$2<ex>Foo</ex></ph>
+        </message>
+        <message name="IDS_CERT_EXT_KEY_USAGE_FORMAT" desc="format for description of an extended key usage, with its object identifier (OID).">
+          <ph name="USAGE">$1<ex>TLS Web Server Authentication</ex></ph> (<ph name="OID">$2<ex>OID.1.3.6.1.5.5.7.3.1</ex></ph>)
+        </message>
+        <message name="IDS_CERT_MULTILINE_INFO_START_FORMAT" desc="format for header line where further info will appear on the following lines">
+          <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>:
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_RFC822_NAME" desc="label for the certRFC822Name general name type">
+          Email Address
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_DNS_NAME" desc="label for the certDNSName general name type">
+          DNS Name
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_X400_ADDRESS" desc="label for the certX400Address general name type">
+          X.400 Address
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_DIRECTORY_NAME" desc="label for the certDirectoryName general name type">
+          X.500 Name
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_EDI_PARTY_NAME" desc="label for the certEDIPartyName general name type">
+          EDI Party Name
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_URI" desc="label for the certURI general name type">
+          URI
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_IP_ADDRESS" desc="label for the certIPAddress general name type">
+          IP Address
+        </message>
+        <message name="IDS_CERT_GENERAL_NAME_REGISTERED_ID" desc="label for the certRegisteredID general name type">
+          Registered OID
+        </message>
+        <message name="IDS_CERT_EXT_MS_CERT_TYPE" desc="description of extension Microsoft Certificate Template Name">
+          Microsoft Certificate Template Name
+        </message>
+        <message name="IDS_CERT_EXT_MS_CA_VERSION" desc="description of extension Microsoft CA Version">
+          Microsoft CA Version
+        </message>
+        <message name="IDS_CERT_EXT_MS_NT_PRINCIPAL_NAME" desc="description of extension Microsoft Principal Name">
+          Microsoft Principal Name
+        </message>
+        <message name="IDS_CERT_EXT_MS_NTDS_REPLICATION" desc="description of extension Microsoft Domain GUID">
+          Microsoft Domain GUID
+        </message>
+        <message name="IDS_CERT_EKU_TLS_WEB_SERVER_AUTHENTICATION" desc="description of extended key usage TLS WWW Server Authentication">
+          TLS WWW Server Authentication
+        </message>
+        <message name="IDS_CERT_EKU_TLS_WEB_CLIENT_AUTHENTICATION" desc="description of extended key usage TLS WWW Client Authentication">
+          TLS WWW Client Authentication
+        </message>
+        <message name="IDS_CERT_EKU_CODE_SIGNING" desc="description of extended key usage Code Signing">
+          Code Signing
+        </message>
+        <message name="IDS_CERT_EKU_EMAIL_PROTECTION" desc="description of extended key usage E-mail Protection">
+          Email Protection
+        </message>
+        <message name="IDS_CERT_EKU_TIME_STAMPING" desc="description of extended key usage Time Stamping">
+          Time Stamping
+        </message>
+        <message name="IDS_CERT_EKU_OCSP_SIGNING" desc="description of extended key usage Signing OCSP Responses">
+          Signing OCSP Responses
+        </message>
+        <message name="IDS_CERT_EKU_MS_INDIVIDUAL_CODE_SIGNING" desc="description of extended key usage Microsoft Individual Code Signing">
+          Microsoft Individual Code Signing
+        </message>
+        <message name="IDS_CERT_EKU_MS_COMMERCIAL_CODE_SIGNING" desc="description of extended key usage Microsoft Commercial Code Signing">
+          Microsoft Commercial Code Signing
+        </message>
+        <message name="IDS_CERT_EKU_MS_TRUST_LIST_SIGNING" desc="description of extended key usage Microsoft Trust List Signing">
+          Microsoft Trust List Signing
+        </message>
+        <message name="IDS_CERT_EKU_MS_TIME_STAMPING" desc="description of extended key usage Microsoft Time Stamping">
+          Microsoft Time Stamping
+        </message>
+        <message name="IDS_CERT_EKU_MS_SERVER_GATED_CRYPTO" desc="description of extended key usage Microsoft Server Gated Crypto">
+          Microsoft Server Gated Cryptography
+        </message>
+        <message name="IDS_CERT_EKU_MS_ENCRYPTING_FILE_SYSTEM" desc="description of extended key usage Microsoft Encrypting File System">
+          Microsoft Encrypting File System
+        </message>
+        <message name="IDS_CERT_EKU_MS_FILE_RECOVERY" desc="description of extended key usage Microsoft File Recovery">
+          Microsoft File Recovery
+        </message>
+        <message name="IDS_CERT_EKU_MS_WINDOWS_HARDWARE_DRIVER_VERIFICATION" desc="description of extended key usage Microsoft Windows Hardware Driver Verification">
+          Microsoft Windows Hardware Driver Verification
+        </message>
+        <message name="IDS_CERT_EKU_MS_QUALIFIED_SUBORDINATION" desc="description of extended key usage Microsoft Qualified Subordination">
+          Microsoft Qualified Subordination
+        </message>
+        <message name="IDS_CERT_EKU_MS_KEY_RECOVERY" desc="description of extended key usage Microsoft Key Recovery">
+          Microsoft Key Recovery
+        </message>
+        <message name="IDS_CERT_EKU_MS_DOCUMENT_SIGNING" desc="description of extended key usage Microsoft Document Signing">
+          Microsoft Document Signing
+        </message>
+        <message name="IDS_CERT_EKU_MS_LIFETIME_SIGNING" desc="description of extended key usage Microsoft Lifetime Signing">
+          Microsoft Lifetime Signing
+        </message>
+        <message name="IDS_CERT_EKU_MS_SMART_CARD_LOGON" desc="description of extended key usage Microsoft Smart Card Logon">
+          Microsoft Smart Card Logon
+        </message>
+        <message name="IDS_CERT_EKU_MS_KEY_RECOVERY_AGENT" desc="description of extended key usage Microsoft Key Recovery Agent">
+          Microsoft Key Recovery Agent
+        </message>
+        <message name="IDS_CERT_EKU_NETSCAPE_INTERNATIONAL_STEP_UP" desc="description of extended key usage Netscape International Step-Up">
+          Netscape International Step-Up
+        </message>
+        <message name="IDS_CERT_EXTENSION_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is critical">
+          Critical
+        </message>
+        <message name="IDS_CERT_EXTENSION_NON_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is not critical">
+          Not Critical
+        </message>
+        <message name="IDS_CERT_EXTENSION_DUMP_ERROR" desc="The text displayed in the certificate details dialog for a given extension which could not be decoded">
+          Error: Unable to decode extension
+        </message>
+
+        <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
+        <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
+          Certificate manager
+        </message>
+        <message name="IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL" desc="Title of the notebook page displaying the user's own certificates">
+          Your Certificates
+        </message>
+        <message name="IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL" desc="Title of the notebook page displaying server certificates">
+          Servers
+        </message>
+        <message name="IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL" desc="Title of the notebook page displaying certificate authorities">
+          Authorities
+        </message>
+        <message name="IDS_CERT_MANAGER_OTHER_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
+          Others
+        </message>
+        <message name="IDS_CERT_MANAGER_USER_TREE_DESCRIPTION" desc="Description label above the tree showing the user's own certificates">
+          You have certificates from these organizations that identify you:
+        </message>
+        <message name="IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION" desc="Description label above the tree showing server certificates">
+          You have certificates on file that identify these servers:
+        </message>
+        <message name="IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION" desc="Description label above the Certificate Authorities tree">
+          You have certificates on file that identify these certificate authorities:
+        </message>
+        <message name="IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
+          You have certificates on file that do not fit in any of the other categories:
+        </message>
+        <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
+          View...
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates">
+          Import...
+        </message>
+        <message name="IDS_CERT_MANAGER_EXPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to export certificates">
+          Export...
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_BUTTON" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
+          Edit...
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_BUTTON" desc="Label for the button in the certificate manager which allows you to delete certificates">
+          Delete...
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_USER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a user certificate">
+          Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
+          If you delete one of your own certificates, you can no longer use it to identify yourself.
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_SERVER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a server certificate">
+          Delete server certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>"?
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a server certificate">
+          If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certification authority certificate">
+          Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certification authority certificate">
+          If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_OTHER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
+          Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
+        </message>
+        <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_DESC" desc="Description of password prompt in certificate manager for exporting a personal certificate">
+          Please enter a password to encrypt this certificate file.
+        </message>
+        <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_HELP" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
+          The password you choose will be required to restore this file later.  Please record it in a safe location.
+        </message>
+        <message name="IDS_CERT_MANAGER_RESTORE_PASSWORD_DESC" desc="Description of password prompt in certificate manager for restoring a personal certificate">
+          Please enter the password that was used to encrypt this certificate file.
+        </message>
+        <message name="IDS_CERT_MANAGER_PASSWORD_LABEL" desc="The label of the password field in the certificate manager for restoring or exporting a personal certificate">
+          Password:
+        </message>
+        <message name="IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL" desc="The label of the field in the certificate manager for re-entering the password when creating a export.">
+          Confirm Password:
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_FILES" desc="The label in the file selector dialog for PKCS #12 file type.">
+          PKCS #12 Files
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
+          PKCS #12 Export Error
+        </message>
+        <message name="IDS_CERT_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
+          There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
+        </message>
+        <message name="IDS_CERT_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box. Untrusted certificates are sometimes added in order to explicitly distrust them. Thus, they will be listed but it's important that the user note that they serve a different purpose from the rest.">
+          Untrusted
+        </message>
+        <message name="IDS_CERT_MANAGER_POLICY_INSTALLED" desc="The text of the popup bubble shown when the user clicks the controlled setting indicator next to a certificate entry.">
+          This certificate has been installed by your system administrator.
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
+          PKCS #12 Import Error
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC" desc="The message in the error dialog for PKCS #12 files with invalid MAC.">
+          Incorrect password or corrupt file.
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt PKCS #12 files.">
+          Invalid or corrupt file.
+        </message>
+        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported PKCS #12 files.">
+          File uses unsupported features.
+        </message>
+        <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file read errors.">
+          There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
+        </message>
+        <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
+          Incorrect password.
+        </message>
+        <message name="IDS_CERT_MANAGER_CERT_PARSE_ERROR" desc="The message in the certificate manager error dialog for importing invalid certificate files.">
+          Unable to parse file.
+        </message>
+        <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
+          Unknown error.
+        </message>
+        <message name="IDS_CERT_MANAGER_ERROR_NOT_CA" desc="The error message when trying to import certificate authorities and a certificate is not a certification authority">
+          Not a Certification Authority.
+        </message>
+        <message name="IDS_CERT_MANAGER_ERROR_CERT_ALREADY_EXISTS" desc="The error message when trying to import certificate which already exists.">
+          Certificate already exists.
+        </message>
+        <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
+          Certificate Deletion Error
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_CA_TITLE" desc="Title of the certificate manager edit trust dialog">
+          Certificate authority
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_TRUST_LABEL" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
+          Edit trust settings:
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing Certification Authority trust flags">
+          The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
+          Trust this certificate for identifying websites.
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
+          Trust this certificate for identifying email users.
+        </message>
+        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
+          Trust this certificate for identifying software makers.
+        </message>
+        <message name="IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE" desc="The title in the error dialog for certificate trust editing errors.">
+          Error Setting Certificate Trust
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT" desc="Description in dialog for importing a Certification Authority and setting its trust flags">
+          Do you want to trust "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" as a Certification Authority?
+        </message>
+        <message name="IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
+          Certification Authority Import Error
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT" desc="The format of per-certificate error messages in import failure dialog">
+          <ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>: <ph name="ERROR">$2<ex>Not a Certification Authority</ex></ph>
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED" desc="The header in certificate manager error dialog for single certificates that could not be imported.">
+          The file contained one certificate, which was not imported:
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, when none were successfully imported.">
+          The file contained multiple certificates, none of which were imported:
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, even though others were.">
+          The file contained multiple certificates, some of which were not imported:
+        </message>
+        <message name="IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
+          Server Certificate Import Error
+        </message>
+        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
+          <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
+        </message>
+        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for hardware-backed keys.">
+          hardware-backed
+        </message>
+      </if>
+
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...

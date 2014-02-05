@@ -1671,6 +1671,9 @@
       ['toolkit_views==1', {
         'grit_defines': ['-D', 'toolkit_views'],
       }],
+      ['toolkit_uses_gtk==1', {
+        'grit_defines': ['-D', 'toolkit_uses_gtk'],
+      }],
       ['use_aura==1', {
         'grit_defines': ['-D', 'use_aura'],
       }],

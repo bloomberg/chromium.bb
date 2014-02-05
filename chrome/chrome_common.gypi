@@ -694,8 +694,10 @@
             'dependencies': [
               '../third_party/openssl/openssl.gyp:openssl',
             ],
-          },
-        ],
+            'sources!': [
+              'common/net/x509_certificate_model.cc',
+            ],
+        }],
         ['use_openssl==1', {
             'sources!': [
               'common/net/x509_certificate_model_nss.cc',

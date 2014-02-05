@@ -3359,6 +3359,7 @@
             ['exclude', '^browser/sync/glue/extension_'],
             ['exclude', '^browser/sync/glue/theme_'],
             ['exclude', '^browser/usb/'],
+            ['exclude', '^third_party/mozilla_security_manager/'],
           ],
         }],
         ['OS=="mac"', {
