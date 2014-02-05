@@ -215,7 +215,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
   net::test_server::EmbeddedTestServer pdf_test_server_;
 };
 
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
+    (defined(OS_LINUX) || defined(OS_WIN))
 // TODO(thestig): http://crbug.com/79837
 #define MAYBE_Basic DISABLED_Basic
 #else
@@ -239,8 +240,9 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
 #endif
 }
 
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
-// TODO(sanjeevr): http://crbug.com/79837
+#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
+    (defined(OS_LINUX) || defined(OS_MACOSX))
+// TODO(sanjeevr): http://crbug.com/79837, http://crbug.com/332778
 #define MAYBE_Scroll DISABLED_Scroll
 #else
 #define MAYBE_Scroll Scroll
@@ -269,8 +271,9 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_GT(y_offset, 0);
 }
 
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
-// TODO(thestig): http://crbug.com/79837
+#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
+    (defined(OS_LINUX) || defined(OS_MACOSX))
+// TODO(thestig): http://crbug.com/79837, http://crbug.com/329912
 #define MAYBE_FindAndCopy DISABLED_FindAndCopy
 #else
 #define MAYBE_FindAndCopy FindAndCopy
