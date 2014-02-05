@@ -64,9 +64,7 @@ static void addReferencesForNodeWithEventListeners(v8::Isolate* isolate, Node* n
         if (!v8listener->hasExistingListenerObject())
             continue;
 
-        // FIXME: update this to use the upcasting function which v8 will provide.
-        v8::Persistent<v8::Value>* value = reinterpret_cast<v8::Persistent<v8::Value>*>(&(v8listener->existingListenerObjectPersistentHandle()));
-        isolate->SetReference(wrapper, *value);
+        isolate->SetReference(wrapper, v8::Persistent<v8::Value>::Cast(v8listener->existingListenerObjectPersistentHandle()));
     }
 }
 
@@ -117,7 +115,7 @@ public:
         if (m_nodesInNewSpace.size() >= wrappersHandledByEachMinorGC)
             return;
 
-        // Casting to a Handle is safe here, since the Persistent cannot get GCd
+        // Casting to a Handle is safe here, since the Persistent doesn't get GCd
         // during the GC prologue.
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
@@ -224,9 +222,7 @@ private:
             UnsafePersistent<v8::Object> unsafeWrapper = (*nodeIterator)->unsafePersistent();
             v8::Persistent<v8::Object>* wrapper = unsafeWrapper.persistent();
             wrapper->MarkPartiallyDependent();
-            // FIXME: update this to use the upcasting function which v8 will provide
-            v8::Persistent<v8::Value>* value = reinterpret_cast<v8::Persistent<v8::Value>*>(wrapper);
-            isolate->SetObjectGroupId(*value, id);
+            isolate->SetObjectGroupId(v8::Persistent<v8::Value>::Cast(*wrapper), id);
         }
     }
 
@@ -245,13 +241,12 @@ public:
 
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
     {
-        // Casting to a Handle is safe here, since the Persistent cannot get GCd
-        // during the GC prologue.
-        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
-
         if (classId != v8DOMNodeClassId && classId != v8DOMObjectClassId)
             return;
 
+        // Casting to a Handle is safe here, since the Persistent doesn't get GCd
+        // during the GC prologue.
+        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
 
@@ -275,8 +270,7 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
-            v8::Persistent<v8::Object>* wrapperPersistent = reinterpret_cast<v8::Persistent<v8::Object>*>(value);
-            type->visitDOMWrapper(object, *wrapperPersistent, m_isolate);
+            type->visitDOMWrapper(object, v8::Persistent<v8::Object>::Cast(*value), m_isolate);
         } else {
             ASSERT_NOT_REACHED();
         }
