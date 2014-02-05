@@ -13,6 +13,7 @@ function AudioPlayer(container) {
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
   this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
+  this.selectedEntry_ = null;
 
   this.currentTrackIndex_ = -1;
   this.playlistGeneration_ = 0;
@@ -81,11 +82,7 @@ function unload() {
  * Reloads the player.
  */
 function reload() {
-  if (window.appState) {
-    util.saveAppState();
-    AudioPlayer.instance.load(window.appState);
-    return;
-  }
+  AudioPlayer.instance.load(window.appState);
 }
 
 /**
@@ -96,8 +93,9 @@ AudioPlayer.prototype.load = function(playlist) {
   this.playlistGeneration_++;
   this.currentTrackIndex_ = -1;
 
-  // Save the app state, in case of restart.
-  window.appState = playlist;
+  // Save the app state, in case of restart. Make a copy of the object, so the
+  // playlist member is not changed after entries are resolved.
+  window.appState = JSON.parse(JSON.stringify(playlist));  // cloning
   util.saveAppState();
 
   this.syncExpanded();
@@ -160,10 +158,12 @@ AudioPlayer.prototype.displayMetadata_ = function(track, metadata, opt_error) {
  * @private
  */
 AudioPlayer.prototype.onExternallyUnmounted_ = function(event) {
-  if (!this.selectedItemFilesystemPath_)
+  if (!this.selectedEntry_)
     return;
-  if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
-    close();
+
+  if (this.volumeManager_.getVolumeInfo(this.selectedEntry_) ===
+      event.volumeInfo)
+    window.close();
 };
 
 /**
@@ -189,13 +189,9 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
   this.currentTrackIndex_ = newTrack;
   this.player_.currentTrackIndex = this.currentTrackIndex_;
 
-  if (window.appState) {
-    window.appState.position = this.currentTrackIndex_;
-    window.appState.time = 0;
-    util.saveAppState();
-  } else {
-    util.platform.setPreference(AudioPlayer.TRACK_KEY, this.currentTrackIndex_);
-  }
+  window.appState.position = this.currentTrackIndex_;
+  window.appState.time = 0;
+  util.saveAppState();
 
   var entry = this.entries_[this.currentTrackIndex_];
 
@@ -203,9 +199,7 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
     if (this.currentTrackIndex_ != newTrack)
       return;
 
-    // Resolve real filesystem path of the current audio file.
-    this.selectedItemFilesystemPath_ = null;
-    this.selectedItemFilesystemPath_ = entry.fullPath;
+    this.selectedEntry_ = entry;
   }.bind(this));
 };
 
