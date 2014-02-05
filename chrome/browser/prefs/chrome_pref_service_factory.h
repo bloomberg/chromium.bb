@@ -57,22 +57,17 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     ManagedUserSettingsService* managed_user_settings,
+    scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async);
 
-// Schedules verification of the path resolution of the preferences file under
-// |profile_path|.
-void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
-
-// Initializes the PrefHashStore for the profile preferences file under
-// |profile_path| without actually loading that profile.
-void InitializePrefHashStoreIfRequired(
-    const base::FilePath& profile_path);
-
-// Resets the contents of the preference hash store for the profile at
-// |profile_path|.
-void ResetPrefHashStore(const base::FilePath& profile_path);
+// Initializes a preference hash store for the profile preferences file at
+// |pref_filename| without actually loading the profile.
+void InitializeHashStoreForPrefFile(
+    const base::FilePath& pref_filename,
+    base::SequencedTaskRunner* pref_io_task_runner,
+    scoped_ptr<PrefHashStore> pref_hash_store);
 
 }  // namespace chrome_prefs
 
