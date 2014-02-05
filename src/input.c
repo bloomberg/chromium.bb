@@ -1482,6 +1482,9 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			return;
 		}
 
+		weston_compositor_run_touch_binding(ec, seat,
+						    time, touch_type);
+
 		grab->interface->down(grab, time, touch_id, sx, sy);
 		if (touch->num_tp == 1) {
 			touch->grab_serial =
@@ -1518,8 +1521,6 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			weston_touch_set_focus(seat, NULL);
 		break;
 	}
-
-	weston_compositor_run_touch_binding(ec, seat, time, touch_type);
 }
 
 static void
