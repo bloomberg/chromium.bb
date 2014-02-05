@@ -214,6 +214,8 @@ public:
         HTMLObjectElementLegacyCall,
         BeforeLoadEvent,
         GetMatchedCSSRules,
+        PrefixedGetImageDataHD,
+        PrefixedPutImageDataHD,
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,

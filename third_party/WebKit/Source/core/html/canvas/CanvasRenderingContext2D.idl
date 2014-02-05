@@ -146,8 +146,8 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy);
     [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
-    [RaisesException] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy);
-    [RaisesException] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    [RaisesException, DeprecateAs=PrefixedPutImageDataHD] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy);
+    [RaisesException, DeprecateAs=PrefixedPutImageDataHD] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     [RaisesException] CanvasPattern createPattern(HTMLCanvasElement? canvas, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException] CanvasPattern createPattern(HTMLImageElement? image, [TreatNullAs=NullString] DOMString repetitionType);
@@ -160,7 +160,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     // pixel manipulation
     [RaisesException] ImageData getImageData(float sx, float sy, float sw, float sh);
 
-    [RaisesException] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
+    [RaisesException, DeprecateAs=PrefixedGetImageDataHD] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
 
     // Focus rings
     [RuntimeEnabled=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);

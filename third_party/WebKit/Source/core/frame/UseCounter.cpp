@@ -709,6 +709,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case HTMLSourceElementMedia:
         return "'HTMLSourceElement.media' is deprecated. This attribute doesn't do anything.";
 
+    case PrefixedGetImageDataHD:
+        return "'CanvasRenderingContext2D.webkitGetImageDataHD' is deprecated. Please use getImageData instead.";
+
+    case PrefixedPutImageDataHD:
+        return "'CanvasRenderingContext2D.webkitPutImageDataHD' is deprecated. Please use putImageData instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
