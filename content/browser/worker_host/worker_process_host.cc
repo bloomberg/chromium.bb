@@ -130,14 +130,16 @@ WorkerProcessHost::WorkerProcessHost(
 WorkerProcessHost::~WorkerProcessHost() {
   // If we crashed, tell the RenderViewHosts.
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    const WorkerDocumentSet::DocumentInfoSet& parents =
-        i->worker_document_set()->documents();
-    for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
-             parents.begin(); parent_iter != parents.end(); ++parent_iter) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&WorkerCrashCallback, parent_iter->render_process_id(),
-                     parent_iter->render_frame_id()));
+    if (!i->load_failed()) {
+      const WorkerDocumentSet::DocumentInfoSet& parents =
+          i->worker_document_set()->documents();
+      for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
+               parents.begin(); parent_iter != parents.end(); ++parent_iter) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&WorkerCrashCallback, parent_iter->render_process_id(),
+                       parent_iter->render_frame_id()));
+      }
     }
     WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
         this, i->worker_route_id());
@@ -317,8 +319,6 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   params.content_security_policy = instance.content_security_policy();
   params.security_policy_type = instance.security_policy_type();
   params.route_id = instance.worker_route_id();
-  params.creator_process_id = instance.parent_process_id();
-  params.shared_worker_appcache_id = instance.main_resource_appcache_id();
   Send(new WorkerProcessMsg_CreateWorker(params));
 
   UpdateTitle();
@@ -329,8 +329,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   for (WorkerInstance::FilterList::const_iterator i =
            instance.filters().begin();
        i != instance.filters().end(); ++i) {
-    CHECK(i->first);
-    i->first->Send(new ViewMsg_WorkerCreated(i->second));
+    i->filter()->Send(new ViewMsg_WorkerCreated(i->route_id()));
   }
 }
 
@@ -338,7 +337,7 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
                                       WorkerMessageFilter* filter) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (!i->closed() && i->HasFilter(filter, message.routing_id())) {
-      RelayMessage(message, worker_message_filter_.get(), i->worker_route_id());
+      RelayMessage(message, filter, &(*i));
       return true;
     }
   }
@@ -358,6 +357,12 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
                         OnWorkerContextClosed)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoaded,
+                        OnWorkerScriptLoaded)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoadFailed,
+                        OnWorkerScriptLoadFailed)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerConnected,
+                        OnWorkerConnected)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
@@ -407,6 +412,45 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
   }
 }
 
+void WorkerProcessHost::OnWorkerScriptLoaded(int worker_route_id) {
+  WorkerDevToolsManager::GetInstance()->WorkerContextStarted(this,
+                                                             worker_route_id);
+}
+
+void WorkerProcessHost::OnWorkerScriptLoadFailed(int worker_route_id) {
+  bool shutdown = true;
+  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() != worker_route_id) {
+      shutdown = false;
+      continue;
+    }
+    i->set_load_failed(true);
+    for (WorkerInstance::FilterList::const_iterator j = i->filters().begin();
+          j != i->filters().end(); ++j) {
+      j->filter()->Send(new ViewMsg_WorkerScriptLoadFailed(j->route_id()));
+    }
+  }
+  if (shutdown) {
+    base::KillProcess(
+          process_->GetData().handle, RESULT_CODE_NORMAL_EXIT, false);
+  }
+}
+
+void WorkerProcessHost::OnWorkerConnected(int message_port_id,
+                                          int worker_route_id) {
+  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() != worker_route_id)
+      continue;
+    for (WorkerInstance::FilterList::const_iterator j = i->filters().begin();
+          j != i->filters().end(); ++j) {
+      if (j->message_port_id() != message_port_id)
+        continue;
+      j->filter()->Send(new ViewMsg_WorkerConnected(j->route_id()));
+      return;
+    }
+  }
+}
+
 void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         const GURL& url,
                                         const base::string16& name,
@@ -444,8 +488,8 @@ void WorkerProcessHost::OnForceKillWorkerProcess() {
 
 void WorkerProcessHost::RelayMessage(
     const IPC::Message& message,
-    WorkerMessageFilter* filter,
-    int route_id) {
+    WorkerMessageFilter* incoming_filter,
+    WorkerInstance* instance) {
   if (message.type() == WorkerMsg_Connect::ID) {
     // Crack the SharedWorker Connect message to setup routing for the port.
     int sent_message_port_id;
@@ -454,27 +498,26 @@ void WorkerProcessHost::RelayMessage(
             &message, &sent_message_port_id, &new_routing_id)) {
       return;
     }
-    new_routing_id = filter->GetNextRoutingID();
+    new_routing_id = worker_message_filter_->GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(
         sent_message_port_id,
-        filter->message_port_message_filter(),
+        worker_message_filter_->message_port_message_filter(),
         new_routing_id);
 
+    instance->SetMessagePortID(incoming_filter,
+                               message.routing_id(),
+                               sent_message_port_id);
     // Resend the message with the new routing id.
-    filter->Send(new WorkerMsg_Connect(
-        route_id, sent_message_port_id, new_routing_id));
+    worker_message_filter_->Send(new WorkerMsg_Connect(
+        instance->worker_route_id(), sent_message_port_id, new_routing_id));
 
     // Send any queued messages for the sent port.
     MessagePortService::GetInstance()->SendQueuedMessagesIfPossible(
         sent_message_port_id);
   } else {
     IPC::Message* new_message = new IPC::Message(message);
-    new_message->set_routing_id(route_id);
-    filter->Send(new_message);
-    if (message.type() == WorkerMsg_StartWorkerContext::ID) {
-      WorkerDevToolsManager::GetInstance()->WorkerContextStarted(
-          this, route_id);
-    }
+    new_message->set_routing_id(instance->worker_route_id());
+    worker_message_filter_->Send(new_message);
     return;
   }
 }
@@ -646,9 +689,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
     int worker_route_id,
-    int parent_process_id,
     int render_frame_id,
-    int64 main_resource_appcache_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition)
     : url_(url),
@@ -657,34 +698,27 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       content_security_policy_(content_security_policy),
       security_policy_type_(security_policy_type),
       worker_route_id_(worker_route_id),
-      parent_process_id_(parent_process_id),
       render_frame_id_(render_frame_id),
-      main_resource_appcache_id_(main_resource_appcache_id),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(resource_context),
-      partition_(partition) {
-  DCHECK(resource_context_);
-}
-
-WorkerProcessHost::WorkerInstance::WorkerInstance(
-    const GURL& url,
-    bool shared,
-    const base::string16& name,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& partition)
-    : url_(url),
-      closed_(false),
-      name_(name),
-      worker_route_id_(MSG_ROUTING_NONE),
-      parent_process_id_(0),
-      main_resource_appcache_id_(0),
-      worker_document_set_(new WorkerDocumentSet()),
-      resource_context_(resource_context),
-      partition_(partition) {
+      partition_(partition),
+      load_failed_(false) {
   DCHECK(resource_context_);
 }
 
 WorkerProcessHost::WorkerInstance::~WorkerInstance() {
+}
+
+void WorkerProcessHost::WorkerInstance::SetMessagePortID(
+    WorkerMessageFilter* filter,
+    int route_id,
+    int message_port_id) {
+  for (FilterList::iterator i = filters_.begin(); i != filters_.end(); ++i) {
+    if (i->filter() == filter && i->route_id() == route_id) {
+      i->set_message_port_id(message_port_id);
+      return;
+    }
+  }
 }
 
 // Compares an instance based on the algorithm in the WebWorkers spec - an
@@ -732,7 +766,7 @@ void WorkerProcessHost::WorkerInstance::AddFilter(WorkerMessageFilter* filter,
 void WorkerProcessHost::WorkerInstance::RemoveFilter(
     WorkerMessageFilter* filter, int route_id) {
   for (FilterList::iterator i = filters_.begin(); i != filters_.end();) {
-    if (i->first == filter && i->second == route_id)
+    if (i->filter() == filter && i->route_id() == route_id)
       i = filters_.erase(i);
     else
       ++i;
@@ -744,7 +778,7 @@ void WorkerProcessHost::WorkerInstance::RemoveFilter(
 void WorkerProcessHost::WorkerInstance::RemoveFilters(
     WorkerMessageFilter* filter) {
   for (FilterList::iterator i = filters_.begin(); i != filters_.end();) {
-    if (i->first == filter)
+    if (i->filter() == filter)
       i = filters_.erase(i);
     else
       ++i;
@@ -755,7 +789,7 @@ bool WorkerProcessHost::WorkerInstance::HasFilter(
     WorkerMessageFilter* filter, int route_id) const {
   for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
        ++i) {
-    if (i->first == filter && i->second == route_id)
+    if (i->filter() == filter && i->route_id() == route_id)
       return true;
   }
   return false;

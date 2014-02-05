@@ -268,29 +268,6 @@ void WorkerServiceImpl::OnWorkerMessageFilterClosing(
     }
   }
 
-  for (WorkerProcessHost::Instances::iterator i =
-           pending_shared_workers_.begin();
-       i != pending_shared_workers_.end(); ) {
-     i->RemoveFilters(filter);
-     if (i->NumFilters() == 0) {
-      i = pending_shared_workers_.erase(i);
-    } else {
-      ++i;
-    }
-  }
-
-  // Also, see if that process had any pending shared workers.
-  for (WorkerProcessHost::Instances::iterator iter =
-           pending_shared_workers_.begin();
-       iter != pending_shared_workers_.end(); ) {
-    iter->worker_document_set()->RemoveAll(filter);
-    if (iter->worker_document_set()->IsEmpty()) {
-      iter = pending_shared_workers_.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-
   // Either a worker proceess has shut down, in which case we can start one of
   // the queued workers, or a renderer has shut down, in which case it doesn't
   // affect anything.  We call this function in both scenarios because then we
@@ -303,8 +280,38 @@ void WorkerServiceImpl::CreateWorker(
     int route_id,
     WorkerMessageFilter* filter,
     ResourceContext* resource_context,
-    const WorkerStoragePartition& partition) {
+    const WorkerStoragePartition& partition,
+    bool* url_mismatch) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  *url_mismatch = false;
+  WorkerProcessHost::WorkerInstance* existing_instance =
+      FindSharedWorkerInstance(
+          params.url, params.name, partition, resource_context);
+  if (existing_instance) {
+    if (params.url != existing_instance->url()) {
+      *url_mismatch = true;
+      return;
+    }
+    if (existing_instance->load_failed()) {
+      filter->Send(new ViewMsg_WorkerScriptLoadFailed(route_id));
+      return;
+    }
+    existing_instance->AddFilter(filter, route_id);
+    existing_instance->worker_document_set()->Add(
+        filter, params.document_id, filter->render_process_id(),
+        params.render_frame_route_id);
+    filter->Send(new ViewMsg_WorkerCreated(route_id));
+    return;
+  }
+  for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
+       i != queued_workers_.end(); ++i) {
+    if (i->Matches(params.url, params.name, partition, resource_context) &&
+        params.url != i->url()) {
+      *url_mismatch = true;
+      return;
+    }
+  }
+
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
   // a wrapped IPC message through us, we know which WorkerProcessHost to give
@@ -315,9 +322,7 @@ void WorkerServiceImpl::CreateWorker(
       params.content_security_policy,
       params.security_policy_type,
       next_worker_route_id(),
-      0,
       params.render_frame_route_id,
-      params.script_resource_appcache_id,
       resource_context,
       partition);
   instance.AddFilter(filter, route_id);
@@ -326,50 +331,6 @@ void WorkerServiceImpl::CreateWorker(
       params.render_frame_route_id);
 
   CreateWorkerFromInstance(instance);
-}
-
-void WorkerServiceImpl::LookupSharedWorker(
-    const ViewHostMsg_CreateWorker_Params& params,
-    int route_id,
-    WorkerMessageFilter* filter,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& partition,
-    bool* exists,
-    bool* url_mismatch) {
-  *exists = true;
-  WorkerProcessHost::WorkerInstance* instance = FindSharedWorkerInstance(
-      params.url, params.name, partition, resource_context);
-
-  if (!instance) {
-    // If no worker instance currently exists, we need to create a pending
-    // instance - this is to make sure that any subsequent lookups passing a
-    // mismatched URL get the appropriate url_mismatch error at lookup time.
-    // Having named shared workers was a Really Bad Idea due to details like
-    // this.
-    instance = CreatePendingInstance(params.url, params.name,
-                                     resource_context, partition);
-    *exists = false;
-  }
-
-  // Make sure the passed-in instance matches the URL - if not, return an
-  // error.
-  if (params.url != instance->url()) {
-    *url_mismatch = true;
-    *exists = false;
-  } else {
-    *url_mismatch = false;
-    // Add our route ID to the existing instance so we can send messages to it.
-    instance->AddFilter(filter, route_id);
-
-    // Add the passed filter/document_id to the worker instance.
-    // TODO(atwilson): This won't work if the message is from a worker process.
-    // We don't support that yet though (this message is only sent from
-    // renderers) but when we do, we'll need to add code to pass in the current
-    // worker's document set for nested workers.
-    instance->worker_document_set()->Add(
-        filter, params.document_id, filter->render_process_id(),
-        params.render_frame_route_id);
-  }
 }
 
 void WorkerServiceImpl::ForwardToWorker(const IPC::Message& message,
@@ -399,18 +360,6 @@ void WorkerServiceImpl::DocumentDetached(unsigned long long document_id,
     }
     ++iter;
   }
-
-  // Remove the document from any pending shared workers.
-  for (WorkerProcessHost::Instances::iterator iter =
-           pending_shared_workers_.begin();
-       iter != pending_shared_workers_.end(); ) {
-    iter->worker_document_set()->Remove(filter, document_id);
-    if (iter->worker_document_set()->IsEmpty()) {
-      iter = pending_shared_workers_.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
 }
 
 bool WorkerServiceImpl::CreateWorkerFromInstance(
@@ -420,54 +369,6 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
     return true;
   }
 
-  // Check to see if this shared worker is already running (two pages may have
-  // tried to start up the worker simultaneously).
-  // See if a worker with this name already exists.
-  WorkerProcessHost::WorkerInstance* existing_instance =
-      FindSharedWorkerInstance(
-          instance.url(), instance.name(), instance.partition(),
-          instance.resource_context());
-  WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
-      instance.GetFilter();
-  // If this worker is already running, no need to create a new copy. Just
-  // inform the caller that the worker has been created.
-  if (existing_instance) {
-    // Walk the worker's filter list to see if this client is listed. If not,
-    // then it means that the worker started by the client already exited so
-    // we should not attach to this new one (http://crbug.com/29243).
-    if (!existing_instance->HasFilter(filter_info.first, filter_info.second))
-      return false;
-    filter_info.first->Send(new ViewMsg_WorkerCreated(filter_info.second));
-    return true;
-  }
-
-  // Look to see if there's a pending instance.
-  WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
-      instance.url(), instance.name(), instance.partition(),
-      instance.resource_context());
-  // If there's no instance *and* no pending instance (or there is a pending
-  // instance but it does not contain our filter info), then it means the
-  // worker started up and exited already. Log a warning because this should
-  // be a very rare occurrence and is probably a bug, but it *can* happen so
-  // handle it gracefully.
-  if (!pending ||
-      !pending->HasFilter(filter_info.first, filter_info.second)) {
-    DLOG(WARNING) << "Pending worker already exited";
-    return false;
-  }
-
-  // Assign the accumulated document set and filter list for this pending
-  // worker to the new instance.
-  DCHECK(!pending->worker_document_set()->IsEmpty());
-  instance.ShareDocumentSet(*pending);
-  for (WorkerProcessHost::WorkerInstance::FilterList::const_iterator i =
-           pending->filters().begin();
-       i != pending->filters().end(); ++i) {
-    instance.AddFilter(i->first, i->second);
-  }
-  RemovePendingInstances(instance.url(), instance.name(),
-                         instance.partition(), instance.resource_context());
-
   // Remove any queued instances of this worker and copy over the filter to
   // this instance.
   for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
@@ -475,16 +376,17 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
     if (iter->Matches(instance.url(), instance.name(),
                       instance.partition(), instance.resource_context())) {
       DCHECK(iter->NumFilters() == 1);
+      DCHECK_EQ(instance.url(), iter->url());
       WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
           iter->GetFilter();
-      instance.AddFilter(filter_info.first, filter_info.second);
+      instance.AddFilter(filter_info.filter(), filter_info.route_id());
       iter = queued_workers_.erase(iter);
     } else {
       ++iter;
     }
   }
 
-  WorkerMessageFilter* first_filter = instance.filters().begin()->first;
+  WorkerMessageFilter* first_filter = instance.filters().begin()->filter();
   WorkerProcessHost* worker = new WorkerProcessHost(
       instance.resource_context(), instance.partition());
   // TODO(atwilson): This won't work if the message is from a worker process.
@@ -682,58 +584,6 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
     }
   }
   return NULL;
-}
-
-WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
-    const GURL& url,
-    const base::string16& name,
-    const WorkerStoragePartition& partition,
-    ResourceContext* resource_context) {
-  // Walk the pending instances looking for a matching pending worker.
-  for (WorkerProcessHost::Instances::iterator iter =
-           pending_shared_workers_.begin();
-       iter != pending_shared_workers_.end();
-       ++iter) {
-    if (iter->Matches(url, name, partition, resource_context))
-      return &(*iter);
-  }
-  return NULL;
-}
-
-
-void WorkerServiceImpl::RemovePendingInstances(
-    const GURL& url,
-    const base::string16& name,
-    const WorkerStoragePartition& partition,
-    ResourceContext* resource_context) {
-  // Walk the pending instances looking for a matching pending worker.
-  for (WorkerProcessHost::Instances::iterator iter =
-           pending_shared_workers_.begin();
-       iter != pending_shared_workers_.end(); ) {
-    if (iter->Matches(url, name, partition, resource_context)) {
-      iter = pending_shared_workers_.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-}
-
-WorkerProcessHost::WorkerInstance* WorkerServiceImpl::CreatePendingInstance(
-    const GURL& url,
-    const base::string16& name,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& partition) {
-  // Look for an existing pending shared worker.
-  WorkerProcessHost::WorkerInstance* instance =
-      FindPendingInstance(url, name, partition, resource_context);
-  if (instance)
-    return instance;
-
-  // No existing pending worker - create a new one.
-  WorkerProcessHost::WorkerInstance pending(
-      url, true, name, resource_context, partition);
-  pending_shared_workers_.push_back(pending);
-  return &pending_shared_workers_.back();
 }
 
 }  // namespace content

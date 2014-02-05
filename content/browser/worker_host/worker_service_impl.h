@@ -44,14 +44,8 @@ class CONTENT_EXPORT WorkerServiceImpl
                     int route_id,
                     WorkerMessageFilter* filter,
                     ResourceContext* resource_context,
-                    const WorkerStoragePartition& worker_partition);
-  void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
-                          int route_id,
-                          WorkerMessageFilter* filter,
-                          ResourceContext* resource_context,
-                          const WorkerStoragePartition& worker_partition,
-                          bool* exists,
-                          bool* url_error);
+                    const WorkerStoragePartition& worker_partition,
+                    bool* url_mismatch);
   void ForwardToWorker(const IPC::Message& message,
                        WorkerMessageFilter* filter);
   void DocumentDetached(unsigned long long document_id,
@@ -105,23 +99,6 @@ class CONTENT_EXPORT WorkerServiceImpl
   // Tries to see if any of the queued workers can be created.
   void TryStartingQueuedWorker();
 
-  // APIs for manipulating our set of pending shared worker instances.
-  WorkerProcessHost::WorkerInstance* CreatePendingInstance(
-      const GURL& url,
-      const base::string16& name,
-      ResourceContext* resource_context,
-      const WorkerStoragePartition& worker_partition);
-  WorkerProcessHost::WorkerInstance* FindPendingInstance(
-      const GURL& url,
-      const base::string16& name,
-      const WorkerStoragePartition& worker_partition,
-      ResourceContext* resource_context);
-  void RemovePendingInstances(
-      const GURL& url,
-      const base::string16& name,
-      const WorkerStoragePartition& worker_partition,
-      ResourceContext* resource_context);
-
   WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
       const GURL& url,
       const base::string16& name,
@@ -133,11 +110,6 @@ class CONTENT_EXPORT WorkerServiceImpl
   int next_worker_route_id_;
 
   WorkerProcessHost::Instances queued_workers_;
-
-  // These are shared workers that have been looked up, but not created yet.
-  // We need to keep a list of these to synchronously detect shared worker
-  // URL mismatches when two pages launch shared workers simultaneously.
-  WorkerProcessHost::Instances pending_shared_workers_;
 
   ObserverList<WorkerServiceObserver> observers_;
 

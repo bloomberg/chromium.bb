@@ -8,6 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
+#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {
@@ -27,8 +28,6 @@ SharedWorkerRepository::createSharedWorkerConnector(
     const blink::WebString& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type) {
   int route_id = MSG_ROUTING_NONE;
-  bool exists = false;
-  bool url_mismatch = false;
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
   params.name = name;
@@ -36,16 +35,12 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.security_policy_type = security_policy_type;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame()->GetRoutingID();
-  params.route_id = MSG_ROUTING_NONE;
-  params.script_resource_appcache_id = 0;
-  Send(new ViewHostMsg_LookupSharedWorker(
-      params, &exists, &route_id, &url_mismatch));
-  if (url_mismatch)
+  Send(new ViewHostMsg_CreateWorker(params, &route_id));
+  if (route_id == MSG_ROUTING_NONE)
     return NULL;
   documents_with_workers_.insert(document_id);
   return new WebSharedWorkerProxy(ChildThread::current(),
                                   document_id,
-                                  exists,
                                   route_id,
                                   params.render_frame_route_id);
 }

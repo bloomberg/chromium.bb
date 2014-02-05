@@ -117,18 +117,13 @@ bool WorkerThread::OnMessageReceived(const IPC::Message& msg) {
 
 void WorkerThread::OnCreateWorker(
     const WorkerProcessMsg_CreateWorker_Params& params) {
-  WorkerAppCacheInitInfo appcache_init_info(
-      params.creator_process_id,
-      params.shared_worker_appcache_id);
-
   // WebSharedWorkerStub own themselves.
   new WebSharedWorkerStub(
       params.url,
       params.name,
       params.content_security_policy,
       params.security_policy_type,
-      params.route_id,
-      appcache_init_info);
+      params.route_id);
 }
 
 // The browser process is likely dead. Terminate all workers.

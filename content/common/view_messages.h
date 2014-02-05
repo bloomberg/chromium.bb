@@ -342,14 +342,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
 
   // RenderFrame routing id used to send messages back to the parent.
   IPC_STRUCT_MEMBER(int, render_frame_route_id)
-
-  // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
-  // a new unique ID is created and assigned to the worker.
-  IPC_STRUCT_MEMBER(int, route_id)
-
-  // The ID of the appcache the main shared worker script resource was loaded
-  // from, only valid for shared workers.
-  IPC_STRUCT_MEMBER(int64, script_resource_appcache_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
@@ -1154,9 +1146,20 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                     bool /* active */)
 
-// Response message to ViewHostMsg_CreateShared/DedicatedWorker.
+// Response message to ViewHostMsg_CreateWorker.
 // Sent when the worker has started.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)
+
+// Sent when the worker failed to load the worker script.
+// In normal cases, this message is sent after ViewMsg_WorkerCreated is sent.
+// But if the shared worker of the same URL already exists and it has failed
+// to load the script, when the renderer send ViewHostMsg_CreateWorker before
+// the shared worker is killed only ViewMsg_WorkerScriptLoadFailed is sent.
+IPC_MESSAGE_ROUTED0(ViewMsg_WorkerScriptLoadFailed)
+
+// Sent when the worker has connected.
+// This message is sent only if the worker successfully loaded the script.
+IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 
 // Tells the renderer that the network state has changed and that
 // window.navigator.onLine should be updated for all WebViews.
@@ -1653,21 +1656,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWorker,
                             ViewHostMsg_CreateWorker_Params,
                             int /* route_id */)
-
-// This message is sent to the browser to see if an instance of this shared
-// worker already exists. If so, it returns exists == true. If a
-// non-empty name is passed, also validates that the url matches the url of
-// the existing worker. If a matching worker is found, the passed-in
-// document_id is associated with that worker, to ensure that the worker
-// stays alive until the document is detached.
-// The route_id returned can be used to forward messages to the worker via
-// ForwardToWorker if it exists, otherwise it should be passed in to any
-// future call to CreateWorker to avoid creating duplicate workers.
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LookupSharedWorker,
-                            ViewHostMsg_CreateWorker_Params,
-                            bool /* exists */,
-                            int /* route_id */,
-                            bool /* url_mismatch */)
 
 // A renderer sends this to the browser process when a document has been
 // detached. The browser will use this to constrain the lifecycle of worker

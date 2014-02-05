@@ -14,7 +14,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebMessagePortChannel;
 class WebSharedWorker;
 }
 
@@ -31,8 +30,7 @@ class WebSharedWorkerStub : public IPC::Listener {
                       const base::string16& name,
                       const base::string16& content_security_policy,
                       blink::WebContentSecurityPolicyType security_policy_type,
-                      int route_id,
-                      const WorkerAppCacheInitInfo& appcache_init_info);
+                      int route_id);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -50,10 +48,6 @@ class WebSharedWorkerStub : public IPC::Listener {
 
   WebSharedWorkerClientProxy* client() { return &client_; }
 
-  const WorkerAppCacheInitInfo& appcache_init_info() const {
-    return appcache_init_info_;
-  }
-
   // Returns the script url of this worker.
   const GURL& url();
 
@@ -62,31 +56,23 @@ class WebSharedWorkerStub : public IPC::Listener {
   virtual ~WebSharedWorkerStub();
 
   void OnConnect(int sent_message_port_id, int routing_id);
-  void OnStartWorkerContext(
-      const GURL& url, const base::string16& user_agent,
-      const base::string16& source_code,
-      const base::string16& content_security_policy,
-      blink::WebContentSecurityPolicyType policy_type);
 
   void OnTerminateWorkerContext();
 
   ScopedChildProcessReference process_ref_;
 
   int route_id_;
-  WorkerAppCacheInitInfo appcache_init_info_;
 
   // WebSharedWorkerClient that responds to outgoing API calls
   // from the worker object.
   WebSharedWorkerClientProxy client_;
 
   blink::WebSharedWorker* impl_;
-  base::string16 name_;
-  bool started_;
+  bool running_;
   GURL url_;
-  bool worker_script_loaded_;
   scoped_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
-  typedef std::vector<blink::WebMessagePortChannel*> PendingChannelList;
+  typedef std::vector<WebMessagePortChannelImpl*> PendingChannelList;
   PendingChannelList pending_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerStub);

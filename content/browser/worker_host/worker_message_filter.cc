@@ -40,8 +40,6 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
     // Worker messages.
     // Only sent from renderer for now, until we have nested workers.
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
-    // Only sent from renderer for now, until we have nested workers.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker, OnForwardToWorker)
     // Only sent from renderer.
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
@@ -58,22 +56,12 @@ int WorkerMessageFilter::GetNextRoutingID() {
 void WorkerMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int* route_id) {
-  *route_id = params.route_id != MSG_ROUTING_NONE ?
-      params.route_id : GetNextRoutingID();
-  WorkerServiceImpl::GetInstance()->CreateWorker(
-      params, *route_id, this, resource_context_, partition_);
-}
-
-void WorkerMessageFilter::OnLookupSharedWorker(
-    const ViewHostMsg_CreateWorker_Params& params,
-    bool* exists,
-    int* route_id,
-    bool* url_error) {
+  bool url_error = false;
   *route_id = GetNextRoutingID();
-
-  WorkerServiceImpl::GetInstance()->LookupSharedWorker(
-      params, *route_id, this, resource_context_, partition_, exists,
-      url_error);
+  WorkerServiceImpl::GetInstance()->CreateWorker(
+      params, *route_id, this, resource_context_, partition_, &url_error);
+  if (url_error)
+    *route_id = MSG_ROUTING_NONE;
 }
 
 void WorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {

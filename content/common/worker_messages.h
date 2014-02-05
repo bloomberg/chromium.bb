@@ -43,8 +43,6 @@ IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(base::string16, content_security_policy)
   IPC_STRUCT_MEMBER(blink::WebContentSecurityPolicyType, security_policy_type)
   IPC_STRUCT_MEMBER(int, route_id)
-  IPC_STRUCT_MEMBER(int, creator_process_id)
-  IPC_STRUCT_MEMBER(int64, shared_worker_appcache_id)
 IPC_STRUCT_END()
 
 //-----------------------------------------------------------------------------
@@ -87,13 +85,6 @@ IPC_SYNC_MESSAGE_CONTROL0_0(WorkerProcessHostMsg_ForceKillWorker)
 //-----------------------------------------------------------------------------
 // Worker messages
 // These are messages sent from the renderer process to the worker process.
-IPC_MESSAGE_ROUTED5(WorkerMsg_StartWorkerContext,
-                    GURL /* url */,
-                    base::string16  /* user_agent */,
-                    base::string16  /* source_code */,
-                    base::string16  /* content_security_policy */,
-                    blink::WebContentSecurityPolicyType)
-
 IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 
 IPC_MESSAGE_ROUTED2(WorkerMsg_Connect,
@@ -109,4 +100,15 @@ IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 // WorkerMsg_PostMessage is also sent here.
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
+
 IPC_MESSAGE_ROUTED0(WorkerHostMsg_WorkerContextDestroyed)
+
+IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoaded,
+                     int /* worker_route_id */)
+
+IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoadFailed,
+                     int /* worker_route_id */)
+
+IPC_MESSAGE_CONTROL2(WorkerHostMsg_WorkerConnected,
+                     int /* message_port_id */,
+                     int /* worker_route_id */)

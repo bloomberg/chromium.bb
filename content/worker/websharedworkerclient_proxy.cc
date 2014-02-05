@@ -61,11 +61,13 @@ void WebSharedWorkerClientProxy::workerContextDestroyed() {
 }
 
 void WebSharedWorkerClientProxy::workerScriptLoaded() {
+  Send(new WorkerHostMsg_WorkerScriptLoaded(route_id_));
   if (stub_)
     stub_->WorkerScriptLoaded();
 }
 
 void WebSharedWorkerClientProxy::workerScriptLoadFailed() {
+  Send(new WorkerHostMsg_WorkerScriptLoadFailed(route_id_));
   if (stub_)
     stub_->WorkerScriptLoadFailed();
 }
@@ -91,9 +93,7 @@ WebSharedWorkerClientProxy::notificationPresenter() {
 WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   DCHECK(!app_cache_host_);
-  app_cache_host_ =
-      new WorkerWebApplicationCacheHostImpl(stub_->appcache_init_info(),
-                                            client);
+  app_cache_host_ = new WorkerWebApplicationCacheHostImpl(client);
   // Remember the id of the instance we create so we have access to that
   // value when creating nested dedicated workers in createWorker.
   appcache_host_id_ = app_cache_host_->host_id();
