@@ -170,17 +170,14 @@ class AddressValidatorImpl : public AddressValidator {
 
       // Validate sub-region specific postal code format. A sub-region specifies
       // the regular expression for a prefix of the postal code.
-      int match_position = -1;
       if (ruleset->field() > COUNTRY &&
           !address.postal_code.empty() &&
           !rule.GetPostalCodeFormat().empty() &&
           FilterAllows(filter,
                        POSTAL_CODE,
                        AddressProblem::MISMATCHING_VALUE) &&
-          (!RE2::PartialMatch(address.postal_code,
-                              rule.GetPostalCodeFormat(),
-                              &match_position) ||
-           match_position != 0)) {
+          !RE2::FullMatch(address.postal_code,
+                          "^(" + rule.GetPostalCodeFormat() + ").*")) {
         problems->push_back(AddressProblem(
             POSTAL_CODE,
             AddressProblem::MISMATCHING_VALUE,

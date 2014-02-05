@@ -15,6 +15,8 @@
 #include <libaddressinput/address_validator.h>
 
 #include <libaddressinput/address_data.h>
+#include <libaddressinput/address_field.h>
+#include <libaddressinput/address_problem.h>
 #include <libaddressinput/downloader.h>
 #include <libaddressinput/load_rules_delegate.h>
 #include <libaddressinput/storage.h>
@@ -36,7 +38,9 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
       : validator_(AddressValidator::Build(
             scoped_ptr<Downloader>(new FakeDownloader),
             scoped_ptr<Storage>(new FakeStorage),
-            this)) {}
+            this)) {
+    validator_->LoadRules("US");
+  }
 
   virtual ~AddressValidatorTest() {}
 
@@ -47,17 +51,87 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
   // LoadRulesDelegate implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
                                               bool success) {
+    EXPECT_TRUE(success);
   }
 };
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
-  validator_->LoadRules("US");
   AddressData address;
   address.country_code = "US";
+
   AddressProblems problems;
   EXPECT_EQ(
       AddressValidator::SUCCESS,
       validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+}
+
+TEST_F(AddressValidatorTest, USZipCode) {
+  AddressData address;
+  address.address_lines.push_back("340 Main St.");
+  address.locality = "Venice";
+  address.administrative_area = "CA";
+  address.country_code = "US";
+
+  // Valid Californian zip code.
+  address.postal_code = "90291";
+  AddressProblems problems;
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
+
+  problems.clear();
+
+  // An extended, valid Californian zip code.
+  address.postal_code = "90210-1234";
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
+
+  problems.clear();
+
+  // New York zip code (which is invalid for California).
+  address.postal_code = "12345";
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_EQ(1U, problems.size());
+  EXPECT_EQ(problems[0].field, POSTAL_CODE);
+  EXPECT_EQ(problems[0].type, AddressProblem::MISMATCHING_VALUE);
+
+  problems.clear();
+
+  // A zip code with a "90" in the middle.
+  address.postal_code = "12903";
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_EQ(1U, problems.size());
+  EXPECT_EQ(problems[0].field, POSTAL_CODE);
+  EXPECT_EQ(problems[0].type, AddressProblem::MISMATCHING_VALUE);
+
+  problems.clear();
+
+  // Invalid zip code (too many digits).
+  address.postal_code = "902911";
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_EQ(1U, problems.size());
+  EXPECT_EQ(problems[0].field, POSTAL_CODE);
+  EXPECT_EQ(problems[0].type, AddressProblem::UNRECOGNIZED_FORMAT);
+
+  problems.clear();
+
+  // Invalid zip code (too few digits).
+  address.postal_code = "9029";
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_EQ(1U, problems.size());
+  EXPECT_EQ(problems[0].field, POSTAL_CODE);
+  EXPECT_EQ(problems[0].type, AddressProblem::UNRECOGNIZED_FORMAT);
 }
 
 TEST_F(AddressValidatorTest, BasicValidation) {
