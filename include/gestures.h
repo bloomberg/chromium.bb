@@ -219,6 +219,8 @@ typedef struct {
 } GestureSwipe;
 
 typedef struct {
+  char __dummy;
+  // Remove this when there is a member in this struct. http://crbug.com/341155
   // Currently no members
 } GestureSwipeLift;
 
