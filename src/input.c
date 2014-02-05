@@ -172,11 +172,11 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, x, y);
 
+	if (pointer->focus)
+		weston_view_from_global_fixed(pointer->focus,
+					      pointer->x, pointer->y, &sx, &sy);
 	resource_list = &pointer->focus_resource_list;
 	wl_resource_for_each(resource, resource_list) {
-		weston_view_from_global_fixed(pointer->focus,
-					      pointer->x, pointer->y,
-					      &sx, &sy);
 		wl_pointer_send_motion(resource, time, sx, sy);
 	}
 }
