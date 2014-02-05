@@ -159,7 +159,7 @@ class DumpReaderLinux(DumpReaderMultipart):
     """Linux breakpad dump reader."""
 
     def _binaries_to_symbolize(self):
-        return ['content_shell', 'libTestNetscapePlugIn.so', 'libffmpegsumo.so', 'libosmesa.so']
+        return ['content_shell', 'libtest_netscape_plugin.so', 'libffmpegsumo.so', 'libosmesa.so']
 
     def _file_extension(self):
         return 'dmp'
