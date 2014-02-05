@@ -1727,31 +1727,45 @@ void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const Stri
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength)
+// Create a MediaKeyNeededEvent for WD EME.
+static PassRefPtr<Event> createNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyNeeded: contentType=%s", contentType.utf8().data());
-
-    // Send event for WD EME.
     MediaKeyNeededEventInit initializer;
     initializer.contentType = contentType;
     initializer.initData = Uint8Array::create(initData, initDataLength);
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyNeededEvent::create(EventTypeNames::needkey, initializer);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
+    return MediaKeyNeededEvent::create(EventTypeNames::needkey, initializer);
+}
 
-    // Send event for v0.1b EME.
-    if (hasEventListeners(EventTypeNames::webkitneedkey)) {
-        MediaKeyEventInit webkitInitializer;
-        webkitInitializer.keySystem = String();
-        webkitInitializer.sessionId = String();
-        webkitInitializer.initData = Uint8Array::create(initData, initDataLength);
-        webkitInitializer.bubbles = false;
-        webkitInitializer.cancelable = false;
+// Create a 'needkey' MediaKeyEvent for v0.1b EME.
+static PassRefPtr<Event> createWebkitNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
+{
+    MediaKeyEventInit webkitInitializer;
+    webkitInitializer.keySystem = String();
+    webkitInitializer.sessionId = String();
+    webkitInitializer.initData = Uint8Array::create(initData, initDataLength);
+    webkitInitializer.bubbles = false;
+    webkitInitializer.cancelable = false;
 
-        event = MediaKeyEvent::create(EventTypeNames::webkitneedkey, webkitInitializer);
+    return MediaKeyEvent::create(EventTypeNames::webkitneedkey, webkitInitializer);
+}
+
+bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength)
+{
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyNeeded: contentType=%s", contentType.utf8().data());
+
+    if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
+        // Send event for WD EME.
+        RefPtr<Event> event = createNeedKeyEvent(contentType, initData, initDataLength);
+        event->setTarget(this);
+        m_asyncEventQueue->enqueueEvent(event.release());
+    }
+
+    if (RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled()) {
+        // Send event for v0.1b EME.
+        RefPtr<Event> event = createWebkitNeedKeyEvent(contentType, initData, initDataLength);
         event->setTarget(this);
         m_asyncEventQueue->enqueueEvent(event.release());
     }
