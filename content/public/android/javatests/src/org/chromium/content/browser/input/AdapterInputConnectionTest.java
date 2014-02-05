@@ -78,6 +78,32 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0 ,4);
     }
 
+    @MediumTest
+    @Feature({"TextInput", "Main"})
+    public void testDismissInputMethodWindowAfterFinishingTyping() throws Throwable {
+        assertEquals(false, mWrapper.isHidden());
+
+        mConnection.performEditorAction(EditorInfo.IME_ACTION_NEXT);
+        assertEquals(false, mWrapper.isHidden());
+        mWrapper.showSoftInput(null, 0, null);
+
+        mConnection.performEditorAction(EditorInfo.IME_ACTION_SEND);
+        assertEquals(false, mWrapper.isHidden());
+        mWrapper.showSoftInput(null, 0, null);
+
+        mConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
+        assertEquals(true, mWrapper.isHidden());
+        mWrapper.showSoftInput(null, 0, null);
+
+        mConnection.performEditorAction(EditorInfo.IME_ACTION_DONE);
+        assertEquals(true, mWrapper.isHidden());
+        mWrapper.showSoftInput(null, 0, null);
+
+        mConnection.performEditorAction(EditorInfo.IME_ACTION_SEARCH);
+        assertEquals(true, mWrapper.isHidden());
+        mWrapper.showSoftInput(null, 0, null);
+    }
+
     private static class TestImeAdapter extends ImeAdapter {
         public TestImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
             super(wrapper, embedder);
@@ -86,6 +112,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     private static class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         private final ArrayList<ImeState> mUpdates = new ArrayList<ImeState>();
+        private boolean hidden = false;
 
         public TestInputMethodManagerWrapper(Context context) {
             super(context);
@@ -95,7 +122,9 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void restartInput(View view) {}
 
         @Override
-        public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {}
+        public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+            hidden = false;
+        }
 
         @Override
         public boolean isActive(View view) {
@@ -105,6 +134,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         @Override
         public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
                 ResultReceiver resultReceiver) {
+            hidden = true;
             return true;
         }
 
@@ -126,6 +156,10 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
             assertEquals("Composition start did not match", compositionStart,
                     state.compositionStart);
             assertEquals("Composition end did not match", compositionEnd, state.compositionEnd);
+        }
+
+        public boolean isHidden() {
+            return hidden;
         }
     }
 
