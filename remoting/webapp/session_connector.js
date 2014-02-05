@@ -16,9 +16,13 @@ var remoting = remoting || {};
  * @param {Element} pluginParent The node under which to add the client plugin.
  * @param {function(remoting.ClientSession):void} onOk Callback on success.
  * @param {function(remoting.Error):void} onError Callback on error.
+ * @param {function(string, string):boolean} onExtensionMessage The handler for
+ *     protocol extension messages. Returns true if a message is recognized;
+ *     false otherwise.
  * @constructor
  */
-remoting.SessionConnector = function(pluginParent, onOk, onError) {
+remoting.SessionConnector = function(pluginParent, onOk, onError,
+                                     onExtensionMessage) {
   /**
    * @type {Element}
    * @private
@@ -36,6 +40,12 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
    * @private
    */
   this.onError_ = onError;
+
+  /**
+   * @type {function(string, string):boolean}
+   * @private
+   */
+  this.onExtensionMessage_ = onExtensionMessage;
 
   /**
    * @type {string}
@@ -384,7 +394,8 @@ remoting.SessionConnector.prototype.createSession_ = function() {
       this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
-  this.clientSession_.createPluginAndConnect(this.pluginParent_);
+  this.clientSession_.createPluginAndConnect(this.pluginParent_,
+                                             this.onExtensionMessage_);
 };
 
 /**

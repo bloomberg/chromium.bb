@@ -307,10 +307,14 @@ remoting.ClientSession.prototype.hasCapability_ = function(capability) {
 /**
  * @param {Element} container The element to add the plugin to.
  * @param {string} id Id to use for the plugin element .
+ * @param {function(string, string):boolean} onExtensionMessage The handler for
+ *     protocol extension messages. Returns true if a message is recognized;
+ *     false otherwise.
  * @return {remoting.ClientPlugin} Create plugin object for the locally
  * installed plugin.
  */
-remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
+remoting.ClientSession.prototype.createClientPlugin_ =
+    function(container, id, onExtensionMessage) {
   var plugin = /** @type {remoting.ViewerPlugin} */
       document.createElement('embed');
 
@@ -322,7 +326,7 @@ remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   container.appendChild(plugin);
 
-  return new remoting.ClientPlugin(plugin);
+  return new remoting.ClientPlugin(plugin, onExtensionMessage);
 };
 
 /**
@@ -350,10 +354,14 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  * Adds <embed> element to |container| and readies the sesion object.
  *
  * @param {Element} container The element to add the plugin to.
+ * @param {function(string, string):boolean} onExtensionMessage The handler for
+ *     protocol extension messages. Returns true if a message is recognized;
+ *     false otherwise.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
-    function(container) {
-  this.plugin_ = this.createClientPlugin_(container, this.PLUGIN_ID);
+    function(container, onExtensionMessage) {
+  this.plugin_ = this.createClientPlugin_(container, this.PLUGIN_ID,
+                                          onExtensionMessage);
   remoting.HostSettings.load(this.hostId_,
                              this.onHostSettingsLoaded_.bind(this));
 };

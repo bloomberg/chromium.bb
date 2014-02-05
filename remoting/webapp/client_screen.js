@@ -28,12 +28,7 @@ remoting.clientSession = null;
  * Initiate an IT2Me connection.
  */
 remoting.connectIT2Me = function() {
-  if (!remoting.connector) {
-    remoting.connector = new remoting.SessionConnector(
-        document.getElementById('client-plugin-container'),
-        remoting.onConnected,
-        showConnectError_);
-  }
+  remoting.ensureSessionConnector_();
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   remoting.connector.connectIT2Me(accessCode);
@@ -246,12 +241,7 @@ remoting.connectMe2Me = function(hostId) {
  * @return {void} Nothing.
  */
 remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
-  if (!remoting.connector) {
-    remoting.connector = new remoting.SessionConnector(
-        document.getElementById('client-plugin-container'),
-        remoting.onConnected,
-        showConnectError_);
-  }
+  remoting.ensureSessionConnector_();
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
   /**
@@ -384,5 +374,28 @@ remoting.onConnected = function(clientSession) {
       clientName = navigator.platform;
     }
     clientSession.requestPairing(clientName, onPairingComplete);
+  }
+};
+
+/**
+ * Extension message handler.
+ *
+ * @param {string} type The type of the extension message.
+ * @param {string} data The payload of the extension message.
+ * @return {boolean} Return true if the extension message was recognized.
+ */
+remoting.onExtensionMessage = function(type, data) {
+  return false;
+};
+
+/**
+ * Create a session connector if one doesn't already exist.
+ */
+remoting.ensureSessionConnector_ = function() {
+  if (!remoting.connector) {
+    remoting.connector = new remoting.SessionConnector(
+        document.getElementById('client-plugin-container'),
+        remoting.onConnected,
+        showConnectError_, remoting.onExtensionMessage);
   }
 };

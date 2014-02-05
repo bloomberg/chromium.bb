@@ -18,10 +18,14 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.ViewerPlugin} plugin The plugin embed element.
+ * @param {function(string, string):boolean} onExtensionMessage The handler for
+ *     protocol extension messages. Returns true if a message is recognized;
+ *     false otherwise.
  * @constructor
  */
-remoting.ClientPlugin = function(plugin) {
+remoting.ClientPlugin = function(plugin, onExtensionMessage) {
   this.plugin = plugin;
+  this.onExtensionMessage_ = onExtensionMessage;
 
   this.desktopWidth = 0;
   this.desktopHeight = 0;
@@ -342,8 +346,11 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
         console.log('Got echo reply: ' + message.data['data']);
         break;
       default:
-        console.log('Unexpected message received: ' +
-                    message.data['type'] + ': ' + message.data['data']);
+        if (!this.onExtensionMessage_(message.data['type'],
+                                      message.data['data'])) {
+          console.log('Unexpected message received: ' +
+                      message.data['type'] + ': ' + message.data['data']);
+        }
     }
   }
 };
