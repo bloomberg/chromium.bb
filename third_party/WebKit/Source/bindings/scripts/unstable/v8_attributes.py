@@ -122,8 +122,10 @@ def generate_attribute(interface, attribute):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
         'put_forwards': 'PutForwards' in extended_attributes,
+        'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
+        'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attributes['ReflectOnly'].split('|')
-            if 'ReflectOnly' in extended_attributes else None,  # [ReflectOnly]
+            if 'ReflectOnly' in extended_attributes else None,
         'setter_callback': setter_callback_name(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]

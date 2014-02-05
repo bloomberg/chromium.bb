@@ -34,7 +34,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.reflect_only %}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
-    {{release_only_check(attribute.reflect_only) | indent}}
+    {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
+                         attribute.reflect_invalid) | indent}}
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
@@ -95,18 +96,23 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {% endmacro %}
 
 {######################################}
-{% macro release_only_check(reflect_only_values) %}
+{% macro release_only_check(reflect_only_values, reflect_missing,
+                            reflect_invalid) %}
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
 if (resultValue.isEmpty()) {
+{% if reflect_missing %}
+    resultValue = "{{reflect_missing}}";
+{% else %}
     ;
+{% endif %}
 {% for value in reflect_only_values %}
 } else if (equalIgnoringCase(resultValue, "{{value}}")) {
     resultValue = "{{value}}";
 {% endfor %}
 } else {
-    resultValue = "";
+    resultValue = "{{reflect_invalid}}";
 }
 {% endmacro %}
 
