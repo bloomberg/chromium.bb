@@ -15,8 +15,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Collection of functions for JavaScript-based interactions with a page.
  */

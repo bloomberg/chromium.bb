@@ -125,6 +125,7 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
             // to detect a dontResend response.
             onPageFinishedHelper.waitForCallback(callCount, 1, TIMEOUT, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
+            // Exception expected from testDontResend case.
         }
     }
 }
