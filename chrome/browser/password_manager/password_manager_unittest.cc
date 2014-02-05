@@ -40,6 +40,7 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
+  MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
 };
 
@@ -85,6 +86,8 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
             profile(), MockPasswordStore::Build).get());
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
+    EXPECT_CALL(delegate_, GetPrefs()).
+        WillRepeatedly(Return(profile()->GetTestingPrefService()));
     EXPECT_CALL(delegate_, GetDriver()).WillRepeatedly(Return(&driver_));
 
     manager_.reset(new TestPasswordManager(web_contents(), &delegate_));

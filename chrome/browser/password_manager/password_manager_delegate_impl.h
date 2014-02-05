@@ -28,6 +28,7 @@ class PasswordManagerDelegateImpl
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
 
   // Convenience method to allow //chrome code easy access to a PasswordManager

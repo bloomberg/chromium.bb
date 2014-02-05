@@ -47,6 +47,7 @@ class TestPasswordManagerDelegate : public PasswordManagerDelegate {
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE {}
   virtual Profile* GetProfile() OVERRIDE { return profile_; }
+  virtual PrefService* GetPrefs() OVERRIDE { return profile_->GetPrefs(); }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
 
  private:

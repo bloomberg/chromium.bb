@@ -7,6 +7,7 @@
 
 class PasswordFormManager;
 class PasswordManagerDriver;
+class PrefService;
 class Profile;
 
 // An abstraction of operations in the external environment (WebContents)
@@ -24,7 +25,11 @@ class PasswordManagerDelegate {
       PasswordFormManager* form_to_save) = 0;
 
   // Get the profile for which we are managing passwords.
+  // TODO(gcasto): Remove this function. crbug.com/335107.
   virtual Profile* GetProfile() = 0;
+
+  // Gets prefs associated with this embedder.
+  virtual PrefService* GetPrefs() = 0;
 
   // Returns the PasswordManagerDriver instance associated with this instance.
   virtual PasswordManagerDriver* GetDriver() = 0;

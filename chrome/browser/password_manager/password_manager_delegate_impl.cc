@@ -226,6 +226,10 @@ Profile* PasswordManagerDelegateImpl::GetProfile() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
+PrefService* PasswordManagerDelegateImpl::GetPrefs() {
+  return GetProfile()->GetPrefs();
+}
+
 PasswordManagerDriver* PasswordManagerDelegateImpl::GetDriver() {
   return &driver_;
 }

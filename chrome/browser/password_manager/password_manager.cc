@@ -101,7 +101,7 @@ PasswordManager::PasswordManager(WebContents* web_contents,
   DCHECK(delegate_);
   DCHECK(driver_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
-                                 delegate_->GetProfile()->GetPrefs());
+                                 delegate_->GetPrefs());
 
   ReportMetrics(*password_manager_enabled_);
 }
@@ -238,7 +238,7 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
 
   std::string group_name = password_manager_metrics_util::GroupIdToString(
       password_manager_metrics_util::MonitoredDomainGroupId(
-          form_origin, delegate_->GetProfile()->GetPrefs()));
+          form_origin, delegate_->GetPrefs()));
   if (!group_name.empty()) {
     password_manager_metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.ProvisionalSaveFailure_" + group_name, failure,
