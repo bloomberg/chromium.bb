@@ -95,7 +95,7 @@ void SetupProgressiveScanFieldTrial() {
             << "' ('" << group_char << "') for "
             << name_of_experiment << " field trial";
   } else {
-    LOG(ERROR) << "Couldn't write to " << group_file_path.value();
+    VLOG(1) << "Couldn't write to " << group_file_path.value();
   }
 }
 
