@@ -42,17 +42,6 @@ class ExtensionAction {
   // parameter.
   static const int kDefaultTabId;
 
-  // TODO(jyasskin): Simplify the Appearance enum.
-  enum Appearance {
-    // The action icon is hidden.
-    INVISIBLE,
-    // The action is trying to get the user's attention but isn't yet
-    // running on the page.  Was only used for script badges.
-    WANTS_ATTENTION,
-    // The action icon is visible with its normal appearance.
-    ACTIVE,
-  };
-
   // A fade-in animation.
   class IconAnimation : public gfx::LinearAnimation {
    public:
@@ -215,10 +204,9 @@ class ExtensionAction {
     return GetValue(&badge_background_color_, tab_id);
   }
 
-  // Set this action's badge visibility on a specific tab.  This takes
-  // care of any appropriate transition animations.  Returns true if
-  // the appearance has changed.
-  bool SetAppearance(int tab_id, Appearance value);
+  // Set this action's badge visibility on a specific tab.  Returns true if
+  // the visibility has changed.
+  bool SetIsVisible(int tab_id, bool value);
   // The declarative appearance overrides a default appearance but is overridden
   // by an appearance set directly on the tab.
   void DeclarativeShow(int tab_id);
@@ -226,13 +214,24 @@ class ExtensionAction {
 
   // Get the badge visibility for a tab, or the default badge visibility
   // if none was set.
+  // Gets the visibility of |tab_id|.  Returns the first of: a specific
+  // visibility set on the tab; a declarative visibility set on the tab; the
+  // default visibility set for all tabs; or |false|.  Don't return this
+  // result to an extension's background page because the declarative state can
+  // leak information about hosts the extension doesn't have permission to
+  // access.
   bool GetIsVisible(int tab_id) const {
-    return GetAppearance(tab_id) != INVISIBLE;
-  }
+    if (const bool* tab_is_visible = FindOrNull(&is_visible_, tab_id))
+      return *tab_is_visible;
 
-  // True if the tab's action wants the user's attention.
-  bool WantsAttention(int tab_id) const {
-    return GetAppearance(tab_id) == WANTS_ATTENTION;
+    if (ContainsKey(declarative_show_count_, tab_id))
+      return true;
+
+    if (const bool* default_is_visible =
+        FindOrNull(&is_visible_, kDefaultTabId))
+      return *default_is_visible;
+
+    return false;
   }
 
   // Remove all tab-specific state.
@@ -294,26 +293,6 @@ class ExtensionAction {
     }
   }
 
-  // Gets the appearance of |tab_id|.  Returns the first of: a specific
-  // appearance set on the tab; a declarative appearance set on the tab; the
-  // default appearance set for all tabs; or INVISIBLE.  Don't return this
-  // result to an extension's background page because the declarative state can
-  // leak information about hosts the extension doesn't have permission to
-  // access.
-  Appearance GetAppearance(int tab_id) const {
-    if (const Appearance* tab_appearance = FindOrNull(&appearance_, tab_id))
-      return *tab_appearance;
-
-    if (ContainsKey(declarative_show_count_, tab_id))
-      return ACTIVE;
-
-    if (const Appearance* default_appearance =
-        FindOrNull(&appearance_, kDefaultTabId))
-      return *default_appearance;
-
-    return INVISIBLE;
-  }
-
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
   const std::string extension_id_;
@@ -328,7 +307,7 @@ class ExtensionAction {
   std::map<int, std::string> badge_text_;
   std::map<int, SkColor> badge_background_color_;
   std::map<int, SkColor> badge_text_color_;
-  std::map<int, Appearance> appearance_;
+  std::map<int, bool> is_visible_;
 
   // Declarative state exists for two reasons: First, we need to hide it from
   // the extension's background/event page to avoid leaking data from hosts the

@@ -56,9 +56,6 @@ class PageActionDecoration : public ImageDecoration,
 
   // Overridden from |LocationBarDecoration|
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
-  virtual void DrawWithBackgroundInFrame(NSRect background_frame,
-                                         NSRect frame,
-                                         NSView* control_view) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;

@@ -34,15 +34,14 @@ TEST(ExtensionActionTest, Visibility) {
   ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, ActionInfo());
 
   ASSERT_FALSE(action.GetIsVisible(1));
-  action.SetAppearance(ExtensionAction::kDefaultTabId, ExtensionAction::ACTIVE);
+  action.SetIsVisible(ExtensionAction::kDefaultTabId, true);
   ASSERT_TRUE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
 
-  action.SetAppearance(ExtensionAction::kDefaultTabId,
-                       ExtensionAction::INVISIBLE);
+  action.SetIsVisible(ExtensionAction::kDefaultTabId, false);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
-  action.SetAppearance(100, ExtensionAction::ACTIVE);
+  action.SetIsVisible(100, true);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
   EXPECT_FALSE(action.GetIconAnimation(100))

@@ -82,26 +82,6 @@ CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
   return extensions::IconsInfo::kPageActionIconMaxSize;
 }
 
-void PageActionDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
-                                                     NSRect frame,
-                                                     NSView* control_view) {
-  {
-    gfx::Rect bounds(NSRectToCGRect(background_frame));
-    gfx::CanvasSkiaPaint canvas(background_frame, /*opaque=*/false);
-    // set_composite_alpha(true) makes the extension action paint on top of the
-    // location bar instead of whatever's behind the Chrome window.
-    canvas.set_composite_alpha(true);
-    location_bar_util::PaintExtensionActionBackground(
-        *page_action_, current_tab_id_,
-        &canvas, bounds,
-        SK_ColorBLACK, SK_ColorWHITE);
-    // Destroying |canvas| draws the background.
-  }
-
-  ImageDecoration::DrawWithBackgroundInFrame(
-      background_frame, frame, control_view);
-}
-
 bool PageActionDecoration::AcceptsMousePress() {
   return true;
 }

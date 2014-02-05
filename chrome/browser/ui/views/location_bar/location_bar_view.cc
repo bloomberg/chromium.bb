@@ -962,9 +962,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   // The border itself will be drawn in PaintChildren() since it includes an
   // inner shadow which should be drawn over the contents.
-
-  if (!is_popup_mode_)
-    PaintPageActionBackgrounds(canvas);
 }
 
 void LocationBarView::SetShowFocusRect(bool show) {
@@ -1513,39 +1510,6 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 
   FirstRunBubble::ShowBubble(browser, GetLocationBarAnchor());
 #endif
-}
-
-void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
-  WebContents* web_contents = GetWebContents();
-  // web_contents may be NULL while the browser is shutting down.
-  if (!web_contents)
-    return;
-
-  const int32 tab_id = SessionID::IdForTab(web_contents);
-  const ToolbarModel::SecurityLevel security_level =
-      GetToolbarModel()->GetSecurityLevel(false);
-  const SkColor text_color = GetColor(security_level, TEXT);
-  const SkColor background_color = GetColor(security_level, BACKGROUND);
-
-  for (PageActionViews::const_iterator
-           page_action_view = page_action_views_.begin();
-       page_action_view != page_action_views_.end();
-       ++page_action_view) {
-    gfx::Rect bounds = (*page_action_view)->bounds();
-    int horizontal_padding =
-        GetItemPadding() - GetBuiltInHorizontalPaddingForChildViews();
-    // Make the bounding rectangle include the whole vertical range of the
-    // location bar, and the mid-point pixels between adjacent page actions.
-    //
-    // For odd horizontal_paddings, "horizontal_padding + 1" includes the
-    // mid-point between two page actions in the bounding rectangle.  For even
-    // paddings, the +1 is dropped, which is right since there is no pixel at
-    // the mid-point.
-    bounds.Inset(-(horizontal_padding + 1) / 2, 0);
-    location_bar_util::PaintExtensionActionBackground(
-        *(*page_action_view)->image_view()->page_action(),
-        tab_id, canvas, bounds, text_color, background_color);
-  }
 }
 
 void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {

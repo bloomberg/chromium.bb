@@ -32,41 +32,4 @@ base::string16 CalculateMinString(const base::string16& description) {
   return min_string;
 }
 
-
-void PaintExtensionActionBackground(const ExtensionAction& action,
-                                    int tab_id,
-                                    gfx::Canvas* canvas,
-                                    const gfx::Rect& bounds,
-                                    SkColor text_color,
-                                    SkColor background_color) {
-  if (!action.WantsAttention(tab_id))
-    return;
-
-  SkPoint gradient_bounds[2] = { {SkIntToScalar(bounds.x()),
-                                  SkIntToScalar(bounds.y())},
-                                 {SkIntToScalar(bounds.x()),
-                                  SkIntToScalar(bounds.bottom())} };
-  SkColor gradient_colors[2] = {
-    color_utils::AlphaBlend(text_color, background_color, 0x13),
-    color_utils::AlphaBlend(text_color, background_color, 0x1d)
-  };
-  skia::RefPtr<SkShader> gradient = skia::AdoptRef(
-      SkGradientShader::CreateLinear(gradient_bounds, gradient_colors,
-                                     NULL, 2, SkShader::kClamp_TileMode));
-  SkPaint paint;
-  paint.setShader(gradient.get());
-  canvas->DrawRect(bounds, paint);
-
-  SkColor border_color =
-      color_utils::AlphaBlend(text_color, background_color, 0x55);
-  canvas->DrawLine(bounds.origin(),
-                   gfx::Point(bounds.x(), bounds.bottom()),
-                   border_color);
-  // "-1" because gfx::Rects are half-open, not including their right or
-  // bottom edges.
-  canvas->DrawLine(gfx::Point(bounds.right() - 1, bounds.y()),
-                   gfx::Point(bounds.right() - 1, bounds.bottom()),
-                   border_color);
-}
-
 }  // namespace location_bar_util

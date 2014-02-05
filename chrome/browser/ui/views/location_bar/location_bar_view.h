@@ -404,10 +404,6 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
-  // Draws backgrounds and borders for page actions.  Must be called
-  // after layout, so the |page_action_views_| have their bounds.
-  void PaintPageActionBackgrounds(gfx::Canvas* canvas);
-
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.

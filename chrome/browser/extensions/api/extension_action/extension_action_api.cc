@@ -50,6 +50,19 @@ const char kBadgeBackgroundColorStorageKey[] = "badge_background_color";
 const char kBadgeTextColorStorageKey[] = "badge_text_color";
 const char kAppearanceStorageKey[] = "appearance";
 
+// Only add values to the end of this enum, since it's stored in the user's
+// Extension State, under the kAppearanceStorageKey.  It represents the
+// ExtensionAction's default visibility.
+enum StoredAppearance {
+  // The action icon is hidden.
+  INVISIBLE = 0,
+  // The action is trying to get the user's attention but isn't yet
+  // running on the page.  Was only used for script badges.
+  OBSOLETE_WANTS_ATTENTION = 1,
+  // The action icon is visible with its normal appearance.
+  ACTIVE = 2,
+};
+
 // Whether the browser action is visible in the toolbar.
 const char kBrowserActionVisible[] = "browser_action_visible";
 
@@ -141,9 +154,15 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
     action->SetBadgeBackgroundColor(kTabId, RawStringToSkColor(str_value));
   if (dict->GetString(kBadgeTextColorStorageKey, &str_value))
     action->SetBadgeTextColor(kTabId, RawStringToSkColor(str_value));
-  if (dict->GetInteger(kAppearanceStorageKey, &int_value))
-    action->SetAppearance(kTabId,
-                          static_cast<ExtensionAction::Appearance>(int_value));
+  if (dict->GetInteger(kAppearanceStorageKey, &int_value)) {
+    switch (int_value) {
+      case INVISIBLE:
+      case OBSOLETE_WANTS_ATTENTION:
+        action->SetIsVisible(kTabId, false);
+      case ACTIVE:
+        action->SetIsVisible(kTabId, true);
+    }
+  }
 
   const base::DictionaryValue* icon_value = NULL;
   if (dict->GetDictionary(kIconStorageKey, &icon_value)) {
@@ -173,8 +192,7 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   dict->SetString(kBadgeTextColorStorageKey,
                   SkColorToRawString(action->GetBadgeTextColor(kTabId)));
   dict->SetInteger(kAppearanceStorageKey,
-                   action->GetIsVisible(kTabId) ?
-                       ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+                   action->GetIsVisible(kTabId) ? ACTIVE : INVISIBLE);
 
   gfx::ImageSkia icon = action->GetExplicitlySetIcon(kTabId);
   if (!icon.isNull()) {
@@ -649,8 +667,7 @@ bool ExtensionActionFunction::ParseCSSColorString(
 bool ExtensionActionFunction::SetVisible(bool visible) {
   if (extension_action_->GetIsVisible(tab_id_) == visible)
     return true;
-  extension_action_->SetAppearance(
-      tab_id_, visible ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  extension_action_->SetIsVisible(tab_id_, visible);
   NotifyChange();
   return true;
 }
@@ -911,8 +928,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Set visibility and broadcast notifications that the UI should be updated.
-  page_action->SetAppearance(
-      tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  page_action->SetIsVisible(tab_id, enable);
   page_action->SetTitle(tab_id, title);
   extensions::TabHelper::FromWebContents(contents)->
       location_bar_controller()->NotifyChange();

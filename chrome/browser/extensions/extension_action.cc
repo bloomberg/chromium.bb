@@ -165,9 +165,8 @@ ExtensionAction::ExtensionAction(
       has_changed_(false) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
-  SetAppearance(kDefaultTabId,
-                action_type == extensions::ActionInfo::TYPE_BROWSER ?
-                ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  SetIsVisible(kDefaultTabId,
+               action_type == extensions::ActionInfo::TYPE_BROWSER);
   SetTitle(kDefaultTabId, manifest_data.default_title);
   SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
   if (!manifest_data.default_icon.empty()) {
@@ -190,7 +189,7 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->badge_text_ = badge_text_;
   copy->badge_background_color_ = badge_background_color_;
   copy->badge_text_color_ = badge_text_color_;
-  copy->appearance_ = appearance_;
+  copy->is_visible_ = is_visible_;
   copy->icon_animation_ = icon_animation_;
   copy->id_ = id_;
 
@@ -241,9 +240,6 @@ gfx::Image ExtensionAction::ApplyAttentionAndAnimation(
     const gfx::ImageSkia& original_icon,
     int tab_id) const {
   gfx::ImageSkia icon = original_icon;
-  if (GetValue(&appearance_, tab_id) == WANTS_ATTENTION)
-    icon = gfx::ImageSkia(new GetAttentionImageSource(icon), icon.size());
-
   return gfx::Image(ApplyIconAnimation(tab_id, icon));
 }
 
@@ -251,13 +247,13 @@ gfx::ImageSkia ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
   return GetValue(&icon_, tab_id);
 }
 
-bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
-  const Appearance old_appearance = GetValue(&appearance_, tab_id);
+bool ExtensionAction::SetIsVisible(int tab_id, bool new_visibility) {
+  const bool old_visibility = GetValue(&is_visible_, tab_id);
 
-  if (old_appearance == new_appearance)
+  if (old_visibility == new_visibility)
     return false;
 
-  SetValue(&appearance_, tab_id, new_appearance);
+  SetValue(&is_visible_, tab_id, new_visibility);
 
   return true;
 }
@@ -281,7 +277,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   badge_text_.erase(tab_id);
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
-  appearance_.erase(tab_id);
+  is_visible_.erase(tab_id);
   // TODO(jyasskin): Erase the element from declarative_show_count_
   // when the tab's closed.  There's a race between the
   // PageActionController and the ContentRulesRegistry on navigation,
