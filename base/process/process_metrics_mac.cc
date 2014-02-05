@@ -308,7 +308,7 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
                  reinterpret_cast<task_info_t>(&power_info_data),
                  &power_info_count);
   if (kr != KERN_SUCCESS) {
-    // Most likely cause: |task| is a zombie, or this is on a pre-10.8 system
+    // Most likely cause: |task| is a zombie, or this is on a pre-10.8.4 system
     // where TASK_POWER_INFO isn't supported yet.
     return 0;
   }
