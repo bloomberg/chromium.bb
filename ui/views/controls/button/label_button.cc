@@ -111,8 +111,8 @@ const gfx::FontList& LabelButton::GetFontList() const {
 
 void LabelButton::SetFontList(const gfx::FontList& font_list) {
   cached_normal_font_list_ = font_list;
-  cached_bold_font_list_ = font_list.DeriveFontListWithSizeDeltaAndStyle(
-      0, font_list.GetFontStyle() | gfx::Font::BOLD);
+  cached_bold_font_list_ = font_list.DeriveWithStyle(
+      font_list.GetFontStyle() | gfx::Font::BOLD);
 
   // STYLE_BUTTON uses bold text to indicate default buttons.
   label_->SetFontList(

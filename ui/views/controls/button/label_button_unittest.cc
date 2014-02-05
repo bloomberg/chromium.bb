@@ -174,7 +174,7 @@ TEST_F(LabelButtonTest, FontList) {
 
   const gfx::FontList original_font_list = button.GetFontList();
   const gfx::FontList large_font_list =
-      original_font_list.DeriveFontListWithSizeDelta(100);
+      original_font_list.DeriveWithSizeDelta(100);
   const int original_width = button.GetPreferredSize().width();
   const int original_height = button.GetPreferredSize().height();
 

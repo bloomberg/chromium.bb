@@ -49,8 +49,7 @@ scoped_ptr<Label> CreateLabelRange(
     result->SetTooltipText(style_info.tooltip);
   if (style_info.font_style != gfx::Font::NORMAL) {
     result->SetFontList(
-        result->font_list().DeriveFontListWithSizeDeltaAndStyle(
-            0, style_info.font_style));
+        result->font_list().DeriveWithStyle(style_info.font_style));
   }
 
   return result.Pass();
@@ -211,8 +210,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     // style may differ from the base font. The font specified by the range
     // should be used when eliding text.
     if (position >= range.start()) {
-      text_font_list = text_font_list.DeriveFontListWithSizeDeltaAndStyle(
-          0, current_range->style_info.font_style);
+      text_font_list = text_font_list.DeriveWithStyle(
+          current_range->style_info.font_style);
     }
     gfx::ElideRectangleText(remaining_string,
                             text_font_list,

@@ -18,10 +18,11 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_win.h"
@@ -171,17 +172,18 @@ class NativeMenuWin::MenuHostWindow {
   void OnMeasureItem(WPARAM w_param, MEASUREITEMSTRUCT* measure_item_struct) {
     NativeMenuWin::ItemData* data = GetItemData(measure_item_struct->itemData);
     if (data) {
-      gfx::Font font;
-      measure_item_struct->itemWidth = font.GetStringWidth(data->label) +
+      gfx::FontList font_list;
+      measure_item_struct->itemWidth =
+          gfx::GetStringWidth(data->label, font_list) +
           kIconWidth + kItemLeftMargin + views::kItemLabelSpacing -
           GetSystemMetrics(SM_CXMENUCHECK);
       if (data->submenu.get())
         measure_item_struct->itemWidth += kArrowWidth;
       // If the label contains an accelerator, make room for tab.
       if (data->label.find(L'\t') != base::string16::npos)
-        measure_item_struct->itemWidth += font.GetStringWidth(L" ");
+        measure_item_struct->itemWidth += gfx::GetStringWidth(L" ", font_list);
       measure_item_struct->itemHeight =
-          font.GetHeight() + kItemBottomMargin + kItemTopMargin;
+          font_list.GetHeight() + kItemBottomMargin + kItemTopMargin;
     } else {
       // Measure separator size.
       measure_item_struct->itemHeight = GetSystemMetrics(SM_CYMENU) / 2;
@@ -225,9 +227,9 @@ class NativeMenuWin::MenuHostWindow {
       SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &underline_mnemonics, 0);
       if (!underline_mnemonics)
         format |= DT_HIDEPREFIX;
-      gfx::Font font;
-      HGDIOBJ old_font =
-          static_cast<HFONT>(SelectObject(dc, font.GetNativeFont()));
+      gfx::FontList font_list;
+      HGDIOBJ old_font = static_cast<HFONT>(
+          SelectObject(dc, font_list.GetPrimaryFont().GetNativeFont()));
 
       // If an accelerator is specified (with a tab delimiting the rest of the
       // label from the accelerator), we have to justify the fist part on the

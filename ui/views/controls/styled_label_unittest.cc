@@ -230,8 +230,7 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
   // and normal style.
   Label label(ASCIIToUTF16(bold_text));
   const gfx::Size normal_label_size = label.GetPreferredSize();
-  label.SetFontList(label.font_list().DeriveFontListWithSizeDeltaAndStyle(
-      0, gfx::Font::BOLD));
+  label.SetFontList(label.font_list().DeriveWithStyle(gfx::Font::BOLD));
   const gfx::Size bold_label_size = label.GetPreferredSize();
 
   ASSERT_GE(bold_label_size.width(), normal_label_size.width());

@@ -229,10 +229,8 @@ void Link::RecalculateFont() {
   const int style = font_list().GetFontStyle();
   const int intended_style = (enabled() && underline_) ?
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
-  if (style != intended_style) {
-    Label::SetFontList(
-        font_list().DeriveFontListWithSizeDeltaAndStyle(0, intended_style));
-  }
+  if (style != intended_style)
+    Label::SetFontList(font_list().DeriveWithStyle(intended_style));
 }
 
 }  // namespace views

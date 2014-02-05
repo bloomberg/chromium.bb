@@ -89,8 +89,8 @@ class TabStrip : public View {
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
       title_(new Label(title,
-                       gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(
-                           0, gfx::Font::BOLD))),
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
+                           ui::ResourceBundle::BoldFont))),
       tab_state_(TAB_ACTIVE),
       contents_(contents) {
   // Calculate this now while the font list is guaranteed to be bold.
