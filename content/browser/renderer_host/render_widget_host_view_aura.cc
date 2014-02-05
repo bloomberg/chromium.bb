@@ -1541,10 +1541,12 @@ void RenderWidgetHostViewAura::UnusedResourcesAreAvailable() {
 
 void RenderWidgetHostViewAura::SendReturnedDelegatedResources(
     uint32 output_surface_id) {
+  DCHECK(resource_collection_);
+
   cc::CompositorFrameAck ack;
-  if (resource_collection_)
-    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   DCHECK(!ack.resources.empty());
+
   RenderWidgetHostImpl::SendReclaimCompositorResources(
       host_->GetRoutingID(),
       output_surface_id,
