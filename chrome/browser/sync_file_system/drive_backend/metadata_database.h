@@ -418,7 +418,7 @@ class MetadataDatabase {
   void EraseFileFromDatabase(const std::string& file_id,
                              leveldb::WriteBatch* batch);
 
-  int64 GetNextTrackerID(leveldb::WriteBatch* batch);
+  int64 IncrementTrackerID(leveldb::WriteBatch* batch);
 
   void RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
                                    leveldb::WriteBatch* batch);
@@ -430,6 +430,8 @@ class MetadataDatabase {
   bool HasActiveTrackerForPath(int64 parent_tracker,
                                const std::string& title) const;
 
+  void RemoveUnneededTrackersForMissingFile(const std::string& file_id,
+                                            leveldb::WriteBatch* batch);
   void UpdateByFileMetadata(const tracked_objects::Location& from_where,
                             scoped_ptr<FileMetadata> file,
                             leveldb::WriteBatch* batch);
@@ -441,6 +443,9 @@ class MetadataDatabase {
 
   scoped_ptr<base::ListValue> DumpTrackers();
   scoped_ptr<base::ListValue> DumpMetadata();
+
+  void StoreFileMetadata(scoped_ptr<FileMetadata> file_metadata);
+  void StoreFileTracker(scoped_ptr<FileTracker> file_tracker);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::FilePath database_path_;
