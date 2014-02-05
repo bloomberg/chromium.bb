@@ -227,7 +227,7 @@ XID GetHighestAncestorWindow(XID window, XID root);
 static const int kAllDesktops = -1;
 // Queries the desktop |window| is on, kAllDesktops if sticky. Returns false if
 // property not found.
-UI_BASE_EXPORT bool GetWindowDesktop(XID window, int* desktop);
+bool GetWindowDesktop(XID window, int* desktop);
 
 // Translates an X11 error code into a printable string.
 UI_BASE_EXPORT std::string GetX11ErrorString(XDisplay* display, int err);
