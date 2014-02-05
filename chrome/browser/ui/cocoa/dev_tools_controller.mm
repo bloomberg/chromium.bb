@@ -16,20 +16,22 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
 #include "ui/gfx/size_conversions.h"
 
 using content::WebContents;
 
-@interface DevToolsContainerView : NSView {
-  gfx::Insets contentsInsets_;
+@interface DevToolsContainerView : BaseView {
+  DevToolsContentsResizingStrategy strategy_;
 
   // Weak references. Ownership via -subviews.
   NSView* devToolsView_;
   NSView* contentsView_;
 }
 
-- (void)setContentsInsets:(const gfx::Insets&)insets;
+- (void)setContentsResizingStrategy:
+    (const DevToolsContentsResizingStrategy&)strategy;
 - (void)adjustSubviews;
 - (void)showDevTools:(NSView*)devToolsView;
 - (void)hideDevTools;
@@ -39,8 +41,9 @@ using content::WebContents;
 
 @implementation DevToolsContainerView
 
-- (void)setContentsInsets:(const gfx::Insets&)insets {
-  contentsInsets_ = insets;
+- (void)setContentsResizingStrategy:
+    (const DevToolsContentsResizingStrategy&)strategy {
+  strategy_.CopyFrom(strategy);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
@@ -75,20 +78,15 @@ using content::WebContents;
   }
 
   DCHECK_EQ(2u, [[self subviews] count]);
-  NSRect bounds = [self bounds];
-
-  [devToolsView_ setFrame:bounds];
-
-  CGFloat width = std::max(static_cast<CGFloat>(0),
-                           NSWidth(bounds) - contentsInsets_.width());
-  CGFloat height = std::max(static_cast<CGFloat>(0),
-                            NSHeight(bounds) - contentsInsets_.height());
-  CGFloat left = std::min(static_cast<CGFloat>(contentsInsets_.left()),
-                          NSWidth(bounds));
-  // Flip top and bottom for NSView geometry.
-  CGFloat top = std::min(static_cast<CGFloat>(contentsInsets_.bottom()),
-                         NSHeight(bounds));
-  [contentsView_ setFrame:NSMakeRect(left, top, width, height)];
+  gfx::Rect new_devtools_bounds;
+  gfx::Rect new_contents_bounds;
+  ApplyDevToolsContentsResizingStrategy(
+      strategy_, gfx::Size(NSSizeToCGSize([self bounds].size)),
+      [self flipNSRectToRect:[devToolsView_ bounds]],
+      [self flipNSRectToRect:[contentsView_ bounds]],
+      &new_devtools_bounds, &new_contents_bounds);
+  [devToolsView_ setFrame:[self flipRectToNSRect:new_devtools_bounds]];
+  [contentsView_ setFrame:[self flipRectToNSRect:new_contents_bounds]];
 }
 
 @end
@@ -128,13 +126,15 @@ using content::WebContents;
 
   devToolsWindow_ = newDevToolsWindow;
   if (devToolsWindow_) {
-    gfx::Insets insets = devToolsWindow_->GetContentsInsets();
+    const DevToolsContentsResizingStrategy& strategy =
+        devToolsWindow_->GetContentsResizingStrategy();
     devToolsWindow_->web_contents()->GetView()->SetOverlayView(
-        contents->GetView(), gfx::Point(insets.left(), insets.top()));
-    [devToolsContainerView_ setContentsInsets:insets];
+        contents->GetView(),
+        gfx::Point(strategy.insets().left(), strategy.insets().top()));
+    [devToolsContainerView_ setContentsResizingStrategy:strategy];
   } else {
-    gfx::Insets zeroInsets;
-    [devToolsContainerView_ setContentsInsets:zeroInsets];
+    DevToolsContentsResizingStrategy zeroStrategy;
+    [devToolsContainerView_ setContentsResizingStrategy:zeroStrategy];
   }
 
   if (shouldShow)

@@ -2286,8 +2286,9 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
     HideDevToolsContainer();
 
   devtools_window_ = new_devtools_window;
-  contents_insets_ = devtools_window_ ? devtools_window_->GetContentsInsets() :
-      gfx::Insets();
+  contents_resizing_strategy_.CopyFrom(devtools_window_ ?
+      devtools_window_->GetContentsResizingStrategy() :
+      DevToolsContentsResizingStrategy());
 
   if (should_show)
     ShowDevToolsContainer();
@@ -2312,22 +2313,31 @@ void BrowserWindowGtk::HideDevToolsContainer() {
 void BrowserWindowGtk::OnDevToolsContainerSetFloatingPosition(
     GtkFloatingContainer* container, GtkAllocation* allocation,
     BrowserWindowGtk* browser_window) {
-  gfx::Insets insets = browser_window->contents_insets_;
+  GtkAllocation contents_allocation;
+  gtk_widget_get_allocation(browser_window->contents_container_->widget(),
+      &contents_allocation);
 
-  int contents_width = std::max(0, allocation->width - insets.width());
-  int contents_height = std::max(0, allocation->height - insets.height());
-  int contents_x = std::min(insets.left(), allocation->width);
-  int contents_y = std::min(insets.top(), allocation->height);
+  gfx::Size container_size(allocation->width, allocation->height);
+  gfx::Rect old_devtools_bounds(0, 0, allocation->width, allocation->height);
+  gfx::Rect old_contents_bounds(contents_allocation.x, contents_allocation.y,
+      contents_allocation.width, contents_allocation.height);
+  gfx::Rect new_devtools_bounds;
+  gfx::Rect new_contents_bounds;
+
+  ApplyDevToolsContentsResizingStrategy(
+      browser_window->contents_resizing_strategy_, container_size,
+      old_devtools_bounds, old_contents_bounds,
+      &new_devtools_bounds, &new_contents_bounds);
 
   gtk_widget_set_size_request(browser_window->contents_container_->widget(),
-      contents_width, contents_height);
+      new_contents_bounds.width(), new_contents_bounds.height());
 
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, contents_x);
+  g_value_set_int(&value, new_contents_bounds.x());
   gtk_container_child_set_property(GTK_CONTAINER(container),
       browser_window->contents_container_->widget(), "x", &value);
-  g_value_set_int(&value, contents_y);
+  g_value_set_int(&value, new_contents_bounds.y());
   gtk_container_child_set_property(GTK_CONTAINER(container),
       browser_window->contents_container_->widget(), "y", &value);
   g_value_unset(&value);

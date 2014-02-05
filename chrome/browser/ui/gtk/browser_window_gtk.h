@@ -533,9 +533,9 @@ class BrowserWindowGtk
   // or is inspected with undocked version of DevToolsWindow.
   DevToolsWindow* devtools_window_;
 
-  // Insets from the sides of devtools_floating_container_ to the sides of
-  // contents_container_. Non-zero only if docked devtools is visible.
-  gfx::Insets contents_insets_;
+  // Resizing strategy of contents_container_ inside
+  // devtools_floating_container_. Non-empty only if docked devtools is visible.
+  DevToolsContentsResizingStrategy contents_resizing_strategy_;
 
   // Floating container for devtools_container_ and contents_container_.
   // Owned by render_area_vbox_.

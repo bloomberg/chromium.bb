@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/insets.h"
+#include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "ui/views/layout/layout_manager.h"
 
 // ContentsLayoutManager positions the WebContents and devtools WebContents.
@@ -20,8 +20,9 @@ class ContentsLayoutManager : public views::LayoutManager {
   // pushed down vertically by |margin|.
   void SetActiveTopMargin(int margin);
 
-  // Sets the contents insets from the sides.
-  void SetContentsViewInsets(const gfx::Insets& insets);
+  // Sets the contents resizing strategy.
+  void SetContentsResizingStrategy(
+      const DevToolsContentsResizingStrategy& strategy);
 
   // views::LayoutManager overrides:
   virtual void Layout(views::View* host) OVERRIDE;
@@ -35,7 +36,7 @@ class ContentsLayoutManager : public views::LayoutManager {
 
   views::View* host_;
 
-  gfx::Insets insets_;
+  DevToolsContentsResizingStrategy strategy_;
   int active_top_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsLayoutManager);

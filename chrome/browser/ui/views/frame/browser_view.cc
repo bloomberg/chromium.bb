@@ -2152,11 +2152,12 @@ void BrowserView::UpdateDevToolsForContents(
   if (devtools_window_) {
     devtools_web_view_->SetPreferredSize(devtools_window_->GetMinimumSize());
     devtools_web_view_->SetVisible(true);
-    GetContentsLayoutManager()->SetContentsViewInsets(
-        devtools_window_->GetContentsInsets());
+    GetContentsLayoutManager()->SetContentsResizingStrategy(
+        devtools_window_->GetContentsResizingStrategy());
   } else {
     devtools_web_view_->SetVisible(false);
-    GetContentsLayoutManager()->SetContentsViewInsets(gfx::Insets());
+    GetContentsLayoutManager()->SetContentsResizingStrategy(
+        DevToolsContentsResizingStrategy());
   }
   contents_container_->Layout();
 }

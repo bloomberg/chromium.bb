@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_embedder_message_dispatcher.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
 
 class Browser;
@@ -121,9 +121,9 @@ class DevToolsWindow : private content::NotificationObserver,
   content::RenderViewHost* GetRenderViewHost();
 
   // Inspected WebContents is placed over DevTools WebContents in docked mode.
-  // The following methods return the insets of inspected WebContents
-  // relative to DevTools WebContents.
-  gfx::Insets GetContentsInsets() const;
+  // The following method returns the resizing strategy of inspected
+  // WebContents relative to DevTools WebContents.
+  const DevToolsContentsResizingStrategy& GetContentsResizingStrategy() const;
 
   // Minimum size of the docked DevTools WebContents. This includes
   // the overlaying inspected WebContents size.
@@ -299,6 +299,8 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void CloseWindow() OVERRIDE;
   virtual void SetContentsInsets(
       int left, int top, int right, int bottom) OVERRIDE;
+  virtual void SetContentsResizingStrategy(
+      const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetIsDocked(bool is_docked) OVERRIDE;
@@ -380,7 +382,7 @@ class DevToolsWindow : private content::NotificationObserver,
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob> >
       IndexingJobsMap;
   IndexingJobsMap indexing_jobs_;
-  gfx::Insets contents_insets_;
+  DevToolsContentsResizingStrategy contents_resizing_strategy_;
   // True if we're in the process of handling a beforeunload event originating
   // from the inspected webcontents, see InterceptPageBeforeUnload for details.
   bool intercepted_page_beforeunload_;

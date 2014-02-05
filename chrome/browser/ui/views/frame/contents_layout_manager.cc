@@ -18,11 +18,12 @@ ContentsLayoutManager::ContentsLayoutManager(
 ContentsLayoutManager::~ContentsLayoutManager() {
 }
 
-void ContentsLayoutManager::SetContentsViewInsets(const gfx::Insets& insets) {
-  if (insets_ == insets)
+void ContentsLayoutManager::SetContentsResizingStrategy(
+    const DevToolsContentsResizingStrategy& strategy) {
+  if (strategy_.Equals(strategy))
     return;
 
-  insets_ = insets;
+  strategy_.CopyFrom(strategy);
   if (host_)
     host_->InvalidateLayout();
 }
@@ -42,15 +43,23 @@ void ContentsLayoutManager::Layout(views::View* contents_container) {
   int top = active_top_margin_;
   int height = std::max(0, contents_container->height() - top);
   int width = contents_container->width();
-  devtools_view_->SetBounds(0, top, width, height);
 
-  int contents_width = std::max(0, width - insets_.width());
-  int contents_height = std::max(0, height - insets_.height());
-  contents_view_->SetBounds(
-      std::min(insets_.left(), width),
-      top + std::min(insets_.top(), height),
-      contents_width,
-      contents_height);
+  gfx::Size container_size(width, height);
+  gfx::Rect old_devtools_bounds(devtools_view_->bounds());
+  gfx::Rect old_contents_bounds(contents_view_->bounds());
+  gfx::Rect new_devtools_bounds;
+  gfx::Rect new_contents_bounds;
+
+  old_devtools_bounds.Offset(0, -top);
+  old_contents_bounds.Offset(0, -top);
+  ApplyDevToolsContentsResizingStrategy(strategy_, container_size,
+      old_devtools_bounds, old_contents_bounds,
+      &new_devtools_bounds, &new_contents_bounds);
+  new_devtools_bounds.Offset(0, top);
+  new_contents_bounds.Offset(0, top);
+
+  devtools_view_->SetBoundsRect(new_devtools_bounds);
+  contents_view_->SetBoundsRect(new_contents_bounds);
 }
 
 gfx::Size ContentsLayoutManager::GetPreferredSize(views::View* host) {

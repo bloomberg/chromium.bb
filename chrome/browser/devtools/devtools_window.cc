@@ -492,8 +492,9 @@ content::RenderViewHost* DevToolsWindow::GetRenderViewHost() {
   return web_contents_->GetRenderViewHost();
 }
 
-gfx::Insets DevToolsWindow::GetContentsInsets() const {
-  return contents_insets_;
+const DevToolsContentsResizingStrategy&
+DevToolsWindow::GetContentsResizingStrategy() const {
+  return contents_resizing_strategy_;
 }
 
 gfx::Size DevToolsWindow::GetMinimumSize() const {
@@ -997,14 +998,17 @@ void DevToolsWindow::CloseWindow() {
 
 void DevToolsWindow::SetContentsInsets(
     int top, int left, int bottom, int right) {
-  if (contents_insets_.top() == top &&
-      contents_insets_.left() == left &&
-      contents_insets_.bottom() == bottom &&
-      contents_insets_.right() == right) {
-    return;
-  }
+  gfx::Insets insets(top, left, bottom, right);
+  SetContentsResizingStrategy(insets, contents_resizing_strategy_.min_size());
+}
 
-  contents_insets_ = gfx::Insets(top, left, bottom, right);
+void DevToolsWindow::SetContentsResizingStrategy(
+    const gfx::Insets& insets, const gfx::Size& min_size) {
+  DevToolsContentsResizingStrategy strategy(insets, min_size);
+  if (contents_resizing_strategy_.Equals(strategy))
+    return;
+
+  contents_resizing_strategy_.CopyFrom(strategy);
   if (is_docked_) {
     // Update inspected window.
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
