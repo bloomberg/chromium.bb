@@ -50,9 +50,6 @@ public:
     void setInnerText(const String&, ExceptionState&);
     void setOuterText(const String&, ExceptionState&);
 
-    Element* insertAdjacentElement(const String& where, Element* newChild, ExceptionState&);
-    void insertAdjacentText(const String& where, const String& text, ExceptionState&);
-
     virtual bool hasCustomFocusLogic() const;
     virtual bool supportsFocus() const OVERRIDE;
 

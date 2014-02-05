@@ -403,6 +403,9 @@ public:
     String outerHTML() const;
     void setInnerHTML(const String&, ExceptionState&);
     void setOuterHTML(const String&, ExceptionState&);
+
+    Element* insertAdjacentElement(const String& where, Element* newChild, ExceptionState&);
+    void insertAdjacentText(const String& where, const String& text, ExceptionState&);
     void insertAdjacentHTML(const String& where, const String& html, ExceptionState&);
 
     String textFromChildren();

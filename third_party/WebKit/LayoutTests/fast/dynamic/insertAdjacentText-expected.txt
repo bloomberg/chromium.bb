@@ -1,4 +1,4 @@
-Caught expected exception: SyntaxError: Failed to execute 'insertAdjacentText' on 'HTMLElement': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
+Caught expected exception: SyntaxError: Failed to execute 'insertAdjacentText' on 'Element': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
 1 (black) 2 (green) 3 (green) 4 (black) 
 
 PASS

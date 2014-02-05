@@ -451,24 +451,6 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
         mergeWithNextTextNode(prev.release(), exceptionState);
 }
 
-Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& exceptionState)
-{
-    if (!newChild) {
-        // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-        exceptionState.throwTypeError("The node provided is null.");
-        return 0;
-    }
-
-    Node* returnValue = insertAdjacent(where, newChild, exceptionState);
-    return toElement(returnValue);
-}
-
-void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionState& exceptionState)
-{
-    RefPtr<Text> textNode = document().createTextNode(text);
-    insertAdjacent(where, textNode.get(), exceptionState);
-}
-
 void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, MutableStylePropertySet* style)
 {
     // Vertical alignment with respect to the current baseline of the text

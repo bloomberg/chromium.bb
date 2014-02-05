@@ -36,11 +36,6 @@
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
-                                  [Default=Undefined] optional Element element);
-    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
-                            [Default=Undefined] optional DOMString text);
-
     [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
 
     [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;

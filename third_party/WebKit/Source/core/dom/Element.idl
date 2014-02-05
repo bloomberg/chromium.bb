@@ -94,6 +94,11 @@
     HTMLCollection getElementsByClassName(DOMString classNames);
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
+
+    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
+                                  [Default=Undefined] optional Element element);
+    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
+                            [Default=Undefined] optional DOMString text);
     [CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString where, DOMString html);
 
     [Reflect=class, PerWorldBindings] attribute DOMString className;

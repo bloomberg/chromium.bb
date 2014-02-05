@@ -2388,6 +2388,24 @@ static Element* contextElementForInsertion(const String& where, Element* element
     return 0;
 }
 
+Element* Element::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& exceptionState)
+{
+    if (!newChild) {
+        // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
+        exceptionState.throwTypeError("The node provided is null.");
+        return 0;
+    }
+
+    Node* returnValue = insertAdjacent(where, newChild, exceptionState);
+    return toElement(returnValue);
+}
+
+void Element::insertAdjacentText(const String& where, const String& text, ExceptionState& exceptionState)
+{
+    RefPtr<Text> textNode = document().createTextNode(text);
+    insertAdjacent(where, textNode.get(), exceptionState);
+}
+
 void Element::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& exceptionState)
 {
     RefPtr<Element> contextElement = contextElementForInsertion(where, this, exceptionState);

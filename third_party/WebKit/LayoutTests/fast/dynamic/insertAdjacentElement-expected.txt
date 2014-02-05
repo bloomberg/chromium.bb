@@ -1,5 +1,5 @@
-Caught expected exception: SyntaxError: Failed to execute 'insertAdjacentElement' on 'HTMLElement': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
-Caught expected exception: TypeError: Failed to execute 'insertAdjacentElement' on 'HTMLElement': The node provided is null.
+Caught expected exception: SyntaxError: Failed to execute 'insertAdjacentElement' on 'Element': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
+Caught expected exception: TypeError: Failed to execute 'insertAdjacentElement' on 'Element': The node provided is null.
 1 (black) 2 (green) 3 (green) 4 (black) 
 
 PASS
