@@ -276,8 +276,7 @@ public class TraceEvent {
 
     /**
      * Convenience wrapper around the versions of startAsync() that take string parameters.
-     * @param id The id of the asynchronous event.  Will automatically figure out the name from
-     *           calling {@link #getCallerName()}.
+     * @param id The id of the asynchronous event.
      * @see #begin()
      */
     public static void startAsync(long id) {
@@ -288,7 +287,6 @@ public class TraceEvent {
      * Triggers the 'start' native trace event with no arguments.
      * @param name The name of the event.
      * @param id   The id of the asynchronous event.
-     * @see #begin()
      */
     public static void startAsync(String name, long id) {
         if (sEnabled) nativeStartAsync(name, id, null);
@@ -299,7 +297,6 @@ public class TraceEvent {
      * @param name The name of the event.
      * @param id   The id of the asynchronous event.
      * @param arg  The arguments of the event.
-     * @see #begin()
      */
     public static void startAsync(String name, long id, String arg) {
         if (sEnabled) nativeStartAsync(name, id, arg);
@@ -307,9 +304,8 @@ public class TraceEvent {
 
     /**
      * Convenience wrapper around the versions of finishAsync() that take string parameters.
-     * @param id The id of the asynchronous event.  Will automatically figure out the name from
-     *           calling {@link #getCallerName()}.
-     * @see #finish()
+     * @param id The id of the asynchronous event.
+     * @see #begin()
      */
     public static void finishAsync(long id) {
         if (sEnabled) nativeFinishAsync(getCallerName(), id, null);
@@ -319,7 +315,6 @@ public class TraceEvent {
      * Triggers the 'finish' native trace event with no arguments.
      * @param name The name of the event.
      * @param id   The id of the asynchronous event.
-     * @see #begin()
      */
     public static void finishAsync(String name, long id) {
         if (sEnabled) nativeFinishAsync(name, id, null);
@@ -330,7 +325,6 @@ public class TraceEvent {
      * @param name The name of the event.
      * @param id   The id of the asynchronous event.
      * @param arg  The arguments of the event.
-     * @see #begin()
      */
     public static void finishAsync(String name, long id, String arg) {
         if (sEnabled) nativeFinishAsync(name, id, arg);
@@ -341,6 +335,9 @@ public class TraceEvent {
      * The name of the event will be derived from the class and function name that call this.
      * IMPORTANT: if using this version, ensure end() (no parameters) is always called from the
      * same calling context.
+     *
+     * Note that the overhead is at ms or sub-ms order. Don't use this when millisecond accuracy
+     * is desired.
      */
     public static void begin() {
         if (sEnabled) nativeBegin(getCallerName(), null);
@@ -364,8 +361,8 @@ public class TraceEvent {
     }
 
     /**
-     * Convenience wrapper around the versions of end() that take string parameters. See begin()
-     * for more information.
+     * Convenience wrapper around the versions of end() that take string parameters.
+     * @see #begin()
      */
     public static void end() {
         if (sEnabled) nativeEnd(getCallerName(), null);
