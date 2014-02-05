@@ -188,13 +188,6 @@ public:
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
 
-    // Page and FrameView both store a Pagination value. Page::pagination() is set only by API,
-    // and FrameView::pagination() is set only by CSS. Page::pagination() will affect all
-    // FrameViews in the page cache, but FrameView::pagination() only affects the current
-    // FrameView.
-    const Pagination& pagination() const { return m_pagination; }
-    void setPagination(const Pagination&);
-
     static void allVisitedStateChanged();
     static void visitedStateChanged(LinkHash visitedHash);
 
@@ -282,8 +275,6 @@ private:
 
     float m_pageScaleFactor;
     float m_deviceScaleFactor;
-
-    Pagination m_pagination;
 
     RefPtr<PageGroup> m_group;
 

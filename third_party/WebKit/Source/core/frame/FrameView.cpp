@@ -128,7 +128,7 @@ Pagination::Mode paginationModeForRenderStyle(RenderStyle* style)
     // paged-y always corresponds to TopToBottomPaginated or BottomToTopPaginated. If the WritingMode
     // is horizontal, then the direction of the horizontality dictates the choice. If the WritingMode
     // is vertical, then we use TextDirection to choose between those options.
-    if (writingMode == TopToBottomWritingMode || (!isHorizontalWritingMode && textDirection == RTL))
+    if (writingMode == TopToBottomWritingMode || (!isHorizontalWritingMode && textDirection == LTR))
         return Pagination::TopToBottomPaginated;
     return Pagination::BottomToTopPaginated;
 }
@@ -2261,24 +2261,12 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
 
 }
 
-const Pagination& FrameView::pagination() const
-{
-    if (m_pagination != Pagination())
-        return m_pagination;
-
-    if (isMainFrame())
-        return m_frame->page()->pagination();
-
-    return m_pagination;
-}
-
 void FrameView::setPagination(const Pagination& pagination)
 {
     if (m_pagination == pagination)
         return;
 
     m_pagination = pagination;
-
     m_frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 

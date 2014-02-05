@@ -157,8 +157,6 @@ public:
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool, ExceptionState&);
 
     void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
-    void setPagination(Document* document, const String& mode, int gap, ExceptionState& ec) { setPagination(document, mode, gap, 0, ec); }
-    void setPagination(Document*, const String& mode, int gap, int pageLength, ExceptionState&);
     String viewportAsText(Document*, float devicePixelRatio, int availableWidth, int availableHeight, ExceptionState&);
 
     bool wasLastChangeUserEdit(Element* textField, ExceptionState&);

@@ -207,7 +207,6 @@ private:
 
     void initializeLayoutState(LayoutState&);
 
-    virtual void calcColumnWidth() OVERRIDE;
     virtual ColumnInfo::PaginationUnit paginationUnit() const OVERRIDE;
 
     bool shouldRepaint(const LayoutRect&) const;

@@ -110,8 +110,6 @@
 
     [RaisesException] void setScrollViewPosition(Document document, long x, long y);
 
-    [RaisesException] void setPagination(Document document, DOMString mode, long gap, optional long pageLength);
-
     [RaisesException] DOMString viewportAsText(Document document,
                                                float devicePixelRatio,
                                                long availableWidth,

@@ -295,14 +295,7 @@ public:
     // we need this function in order to do the scroll ourselves.
     bool wheelEvent(const PlatformWheelEvent&);
 
-    // Page and FrameView both store a Pagination value. Page::pagination() is set only by API,
-    // and FrameView::pagination() is set only by CSS. Page::pagination() will affect all
-    // FrameViews in the page cache, but FrameView::pagination() only affects the current
-    // FrameView. FrameView::pagination() will return m_pagination if it has been set. Otherwise,
-    // it will return Page::pagination() since currently there are no callers that need to
-    // distinguish between the two.
-    const Pagination& pagination() const;
-    void setPagination(const Pagination&);
+    const Pagination& pagination() const { return m_pagination; }
 
     bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
     void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
@@ -345,6 +338,7 @@ private:
 
     void applyOverflowToViewportAndSetRenderer(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
     void applyPaginationToViewport();
+    void setPagination(const Pagination&);
 
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 

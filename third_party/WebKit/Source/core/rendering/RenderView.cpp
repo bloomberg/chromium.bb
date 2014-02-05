@@ -392,16 +392,6 @@ bool RenderView::requiresColumns(int desiredColumnCount) const
     return RenderBlock::requiresColumns(desiredColumnCount);
 }
 
-void RenderView::calcColumnWidth()
-{
-    int columnWidth = contentLogicalWidth();
-    if (m_frameView && style()->hasInlineColumnAxis()) {
-        if (int pageLength = m_frameView->pagination().pageLength)
-            columnWidth = pageLength;
-    }
-    setDesiredColumnCountAndWidth(1, columnWidth);
-}
-
 ColumnInfo::PaginationUnit RenderView::paginationUnit() const
 {
     if (m_frameView)
@@ -956,14 +946,7 @@ int RenderView::viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclu
 
 int RenderView::viewLogicalHeight() const
 {
-    int height = style()->isHorizontalWritingMode() ? viewHeight(ScrollableArea::ExcludeScrollbars) : viewWidth(ScrollableArea::ExcludeScrollbars);
-
-    if (hasColumns() && !style()->hasInlineColumnAxis()) {
-        if (int pageLength = m_frameView->pagination().pageLength)
-            height = pageLength;
-    }
-
-    return height;
+    return style()->isHorizontalWritingMode() ? viewHeight(ScrollableArea::ExcludeScrollbars) : viewWidth(ScrollableArea::ExcludeScrollbars);
 }
 
 float RenderView::zoomFactor() const

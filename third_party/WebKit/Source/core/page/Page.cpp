@@ -364,16 +364,6 @@ void Page::setDeviceScaleFactor(float scaleFactor)
     }
 }
 
-void Page::setPagination(const Pagination& pagination)
-{
-    if (m_pagination == pagination)
-        return;
-
-    m_pagination = pagination;
-
-    setNeedsRecalcStyleInAllFrames();
-}
-
 void Page::allVisitedStateChanged()
 {
     HashSet<Page*>::iterator pagesEnd = allPages().end();

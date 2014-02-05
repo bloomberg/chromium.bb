@@ -199,7 +199,6 @@ void Internals::resetToConsistentState(Page* page)
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
-    page->setPagination(Pagination());
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<AtomicString>());
     delete s_pagePopupDriver;
@@ -949,35 +948,6 @@ void Internals::setScrollViewPosition(Document* document, long x, long y, Except
     frameView->setScrollOffsetFromInternals(IntPoint(x, y));
     frameView->setScrollbarsSuppressed(scrollbarsSuppressedOldValue);
     frameView->setConstrainsScrollingToContentEdge(constrainsScrollingToContentEdgeOldValue);
-}
-
-void Internals::setPagination(Document* document, const String& mode, int gap, int pageLength, ExceptionState& exceptionState)
-{
-    if (!document || !document->page()) {
-        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's page cannot be retrieved." : "The document provided is invalid.");
-        return;
-    }
-    Page* page = document->page();
-
-    Pagination pagination;
-    if (mode == "Unpaginated")
-        pagination.mode = Pagination::Unpaginated;
-    else if (mode == "LeftToRightPaginated")
-        pagination.mode = Pagination::LeftToRightPaginated;
-    else if (mode == "RightToLeftPaginated")
-        pagination.mode = Pagination::RightToLeftPaginated;
-    else if (mode == "TopToBottomPaginated")
-        pagination.mode = Pagination::TopToBottomPaginated;
-    else if (mode == "BottomToTopPaginated")
-        pagination.mode = Pagination::BottomToTopPaginated;
-    else {
-        exceptionState.throwDOMException(SyntaxError, "The pagination mode provided ('" + mode + "') is invalid.");
-        return;
-    }
-
-    pagination.gap = gap;
-    pagination.pageLength = pageLength;
-    page->setPagination(pagination);
 }
 
 String Internals::viewportAsText(Document* document, float, int availableWidth, int availableHeight, ExceptionState& exceptionState)
