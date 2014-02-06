@@ -17,8 +17,6 @@
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -298,7 +296,7 @@ void PasswordManager::OnPasswordFormsParsed(
   }
 }
 
-bool PasswordManager::ShouldShowSavePasswordInfoBar() const {
+bool PasswordManager::ShouldPromptUserToSavePassword() const {
   return provisional_save_manager_->IsNewLogin() &&
          !provisional_save_manager_->HasGeneratedPassword() &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
@@ -333,21 +331,8 @@ void PasswordManager::OnPasswordFormsRendered(
   if (provisional_save_manager_->HasGeneratedPassword())
     UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
 
-  if (ShouldShowSavePasswordInfoBar()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
-      ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-          ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
-      if (manage_passwords_bubble_ui_controller) {
-        manage_passwords_bubble_ui_controller->OnPasswordSubmitted(
-            provisional_save_manager_.release());
-      } else {
-        provisional_save_manager_.reset();
-      }
-    } else {
-      delegate_->AddSavePasswordInfoBarIfPermitted(
-          provisional_save_manager_.release());
-    }
+  if (ShouldPromptUserToSavePassword()) {
+    delegate_->PromptUserToSavePassword(provisional_save_manager_.release());
   } else {
     provisional_save_manager_->Save();
     provisional_save_manager_.reset();
@@ -425,11 +410,5 @@ void PasswordManager::Autofill(
       break;
   }
 
-  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
-  if (manage_passwords_bubble_ui_controller &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
-    manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
-  }
+  delegate_->PasswordWasAutofilled(best_matches);
 }

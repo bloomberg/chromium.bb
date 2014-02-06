@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -212,14 +215,36 @@ PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
 PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 }
 
-void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
+void PasswordManagerDelegateImpl::PromptUserToSavePassword(
     PasswordFormManager* form_to_save) {
-  std::string uma_histogram_suffix(
-      password_manager_metrics_util::GroupIdToString(
-          password_manager_metrics_util::MonitoredDomainGroupId(
-              form_to_save->realm(), GetProfile()->GetPrefs())));
-  SavePasswordInfoBarDelegate::Create(
-      web_contents_, form_to_save, uma_histogram_suffix);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSavePasswordBubble)) {
+    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+        ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
+    if (manage_passwords_bubble_ui_controller) {
+      manage_passwords_bubble_ui_controller->OnPasswordSubmitted(form_to_save);
+    } else {
+      delete form_to_save;
+    }
+  } else {
+    std::string uma_histogram_suffix(
+        password_manager_metrics_util::GroupIdToString(
+            password_manager_metrics_util::MonitoredDomainGroupId(
+                form_to_save->realm(), GetProfile()->GetPrefs())));
+    SavePasswordInfoBarDelegate::Create(
+        web_contents_, form_to_save, uma_histogram_suffix);
+  }
+}
+
+void PasswordManagerDelegateImpl::PasswordWasAutofilled(
+    const autofill::PasswordFormMap& best_matches) const {
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
+  if (manage_passwords_bubble_ui_controller &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSavePasswordBubble)) {
+    manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
+  }
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfile() {

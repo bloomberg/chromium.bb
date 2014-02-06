@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 
+#include "components/autofill/core/common/password_form.h"
+
 class PasswordFormManager;
 class PasswordManagerDriver;
 class PrefService;
@@ -18,11 +20,14 @@ class PasswordManagerDelegate {
   PasswordManagerDelegate() {}
   virtual ~PasswordManagerDelegate() {}
 
-  // A mechanism to show an infobar in the current tab at our request.
-  // The infobar may not show in some circumstances, such as when the one-click
-  // sign in infobar is or will be shown.
-  virtual void AddSavePasswordInfoBarIfPermitted(
-      PasswordFormManager* form_to_save) = 0;
+  // Informs the embedder of a password form that can be saved if the user
+  // allows it. The embedder is not required to prompt the user if it decides
+  // that this form doesn't need to be saved.
+  virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save) = 0;
+
+  // Called when a password is autofilled. Default implementation is a no-op.
+  virtual void PasswordWasAutofilled(
+      const autofill::PasswordFormMap& best_matches) const {}
 
   // Get the profile for which we are managing passwords.
   // TODO(gcasto): Remove this function. crbug.com/335107.
