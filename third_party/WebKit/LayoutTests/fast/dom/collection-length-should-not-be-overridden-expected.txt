@@ -13,7 +13,7 @@ PASS form.elements[1].name is 'length'
 PASS select.options.length is 2
 PASS select.options[0].getAttribute('name') is 'length'
 PASS select.options[1] is select.options['some']
-PASS table.rows.length is 2
+FAIL table.rows.length should be 2 (of type number). Was [object HTMLTableRowElement] (of type object).
 PASS table.rows[0] is table.rows['another']
 PASS table.rows[1].id is 'length'
 PASS successfullyParsed is true

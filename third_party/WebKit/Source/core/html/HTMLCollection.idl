@@ -23,6 +23,9 @@
     Custom=Wrap,
     DependentLifetime,
     SetWrapperReferenceFrom=ownerNode,
+    // FIXME(crbug.com/341192): OverrideBuiltins should be removed once the impact on
+    // performance becomes acceptable.
+    OverrideBuiltins
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Element item([Default=Undefined] optional unsigned long index);
