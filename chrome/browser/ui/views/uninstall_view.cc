@@ -18,7 +18,6 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -171,7 +170,6 @@ namespace chrome {
 int ShowUninstallBrowserPrompt(bool show_delete_profile) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   int result = content::RESULT_CODE_NORMAL_EXIT;
-  views::AcceleratorHandler accelerator_handler;
 
   // Take a reference on g_browser_process while showing the dialog. This is
   // done because the dialog uses the views framework which may increment
@@ -182,7 +180,7 @@ int ShowUninstallBrowserPrompt(bool show_delete_profile) {
   // See http://crbug.com/241366 for details.
   g_browser_process->AddRefModule();
 
-  base::RunLoop run_loop(&accelerator_handler);
+  base::RunLoop run_loop;
   UninstallView* view = new UninstallView(&result,
                                           run_loop.QuitClosure(),
                                           show_delete_profile);

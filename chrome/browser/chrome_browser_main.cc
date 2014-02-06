@@ -188,10 +188,6 @@
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/focus/accelerator_handler.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif

@@ -20,7 +20,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -581,9 +580,6 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
       kSearchTextfieldID, kSearchButtonID, kHelpLinkID,
       kThumbnailContainerID, kThumbnailStarID, kThumbnailSuperStarID };
 
-  // Uncomment the following line to manually test the UI of this test.
-  // base::RunLoop(new AcceleratorHandler()).Run();
-
   // Let's traverse the whole focus hierarchy (several times, to make sure it
   // loops OK).
   GetFocusManager()->ClearFocus();
@@ -633,9 +629,6 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
     v->SetEnabled(false);
   }
 
-  // Uncomment the following line to manually test the UI of this test.
-  // base::RunLoop(new AcceleratorHandler()).Run();
-
   View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
   GetFocusManager()->ClearFocus();
@@ -683,9 +676,6 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
     ASSERT_TRUE(v != NULL);
     v->SetVisible(false);
   }
-
-  // Uncomment the following line to manually test the UI of this test.
-  // base::RunLoop(new AcceleratorHandler()).Run();
 
   View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).

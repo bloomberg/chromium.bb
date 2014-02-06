@@ -4,8 +4,6 @@
 
 #include "content/public/test/test_launcher.h"
 
-#include <stack>
-
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/file_util.h"
@@ -34,10 +32,6 @@
 #include "content/public/app/startup_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif  // defined(OS_WIN)
-
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/focus/accelerator_handler.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
@@ -88,26 +82,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     return true;
   }
 
-  virtual void PreRunMessageLoop(base::RunLoop* run_loop) OVERRIDE {
-#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      linked_ptr<views::AcceleratorHandler> handler(
-          new views::AcceleratorHandler);
-      handlers_.push(handler);
-      run_loop->set_dispatcher(handler.get());
-    }
-#endif
-  }
-
-  virtual void PostRunMessageLoop() OVERRIDE {
-#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      DCHECK_EQ(handlers_.empty(), false);
-      handlers_.pop();
-    }
-#endif
-  }
-
  protected:
   virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
 #if defined(OS_WIN) || defined (OS_LINUX)
@@ -133,10 +107,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
  private:
-#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-  std::stack<linked_ptr<views::AcceleratorHandler> > handlers_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
 };
 

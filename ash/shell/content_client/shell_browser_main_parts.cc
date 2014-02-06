@@ -30,7 +30,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/wm_state.h"
-#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
 
 #if defined(USE_X11)

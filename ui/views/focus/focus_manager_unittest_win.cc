@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/widget.h"
 
@@ -216,8 +215,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   // First send a non-accelerator key sequence.
   PostKeyDown(ui::VKEY_9);
   PostKeyUp(ui::VKEY_9);
-  AcceleratorHandler accelerator_handler;
-  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop(&accelerator_handler));
+  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
   run_loop->RunUntilIdle();
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
@@ -236,7 +234,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_9);
   PostKeyUp(ui::VKEY_7);
   PostKeyUp(ui::VKEY_8);
-  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop.reset(new base::RunLoop());
   run_loop->RunUntilIdle();
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
@@ -255,7 +253,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   // Now send an accelerator key sequence.
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_0);
-  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop.reset(new base::RunLoop());
   run_loop->RunUntilIdle();
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
@@ -270,7 +268,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_1);
   PostKeyUp(ui::VKEY_0);
-  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop.reset(new base::RunLoop());
   run_loop->RunUntilIdle();
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());

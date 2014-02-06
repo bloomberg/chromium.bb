@@ -11,7 +11,6 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/focus/widget_focus_manager.h"
