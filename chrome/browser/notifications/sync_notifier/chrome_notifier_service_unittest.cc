@@ -587,7 +587,13 @@ TEST_F(ChromeNotifierServiceTest, ServiceEnabledTest) {
 
 }
 
-TEST_F(ChromeNotifierServiceTest, AddNewSendingServicesTest) {
+// http://crbug.com/341326
+#if defined(TOOLKIT_GTK)
+#define MAYBE_AddNewSendingServicesTest DISABLED_AddNewSendingServicesTest
+#else
+#define MAYBE_AddNewSendingServicesTest AddNewSendingServicesTest
+#endif
+TEST_F(ChromeNotifierServiceTest, MAYBE_AddNewSendingServicesTest) {
   // This test will see if we get a new sending service after the first
   // notification for that service.
   ChromeNotifierService notifier(profile_.get(), notification_manager());
