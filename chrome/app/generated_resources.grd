@@ -7376,9 +7376,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword">
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>:
       </message>
-      <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
-        Search or type URL
+      <message name="IDS_OMNIBOX_EMPTY_HINT_WITH_DEFAULT_SEARCH_PROVIDER" desc="The text displayed in the omnibox when it is empty, which includes the name of the default search provider.">
+        Search <ph name="ENGINE">$1<ex>Google</ex></ph> or type URL
       </message>
+      <message name="IDS_OMNIBOX_EMPTY_HINT_NO_DEFAULT_SEARCH_PROVIDER" desc="The text displayed in the omnibox when it is empty, if the default search provider cannot be determined.">
+        Type URL
+      </message>
+      <if expr="is_ios">
+        <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
+          Search or type URL
+        </message>
+      </if>
 
       <!-- Native Frame menu -->
       <message name="IDS_ALWAYS_ON_TOP" desc="The optional menu in native frame windows for setting the window to be always on top">

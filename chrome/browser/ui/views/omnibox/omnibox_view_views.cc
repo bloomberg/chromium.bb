@@ -170,9 +170,6 @@ void OmniboxViewViews::Init() {
   if (popup_window_mode_)
     SetReadOnly(true);
 
-  if (chrome::ShouldDisplayOriginChip())
-    set_placeholder_text(l10n_util::GetStringUTF16(IDS_OMNIBOX_EMPTY_HINT));
-
   // Initialize the popup view using the same font.
   popup_view_.reset(OmniboxPopupContentsView::Create(
       GetFontList(), this, model(), location_bar_view_));
@@ -448,6 +445,9 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
+  if (chrome::ShouldDisplayOriginChip())
+    set_placeholder_text(GetHintText());
+
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {

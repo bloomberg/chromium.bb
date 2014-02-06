@@ -80,6 +80,10 @@ class OmniboxView {
   // Returns the resource ID of the icon to show for the current text.
   int GetIcon() const;
 
+  // Returns the hint text that can be displayed when there is no text in the
+  // omnibox.
+  base::string16 GetHintText() const;
+
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will
   // revert to the permanent text.

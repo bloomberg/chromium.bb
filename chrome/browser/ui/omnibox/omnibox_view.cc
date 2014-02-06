@@ -11,9 +11,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "grit/generated_resources.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
@@ -100,6 +105,25 @@ int OmniboxView::GetIcon() const {
     return controller_->GetToolbarModel()->GetIcon();
   return AutocompleteMatch::TypeToLocationBarIcon(model_.get() ?
       model_->CurrentTextType() : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+}
+
+base::string16 OmniboxView::GetHintText() const {
+  // Attempt to determine the default search provider and use that in the hint
+  // text.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(model_->profile());
+  if (template_url_service) {
+    TemplateURL* template_url =
+        template_url_service->GetDefaultSearchProvider();
+    if (template_url)
+      return l10n_util::GetStringFUTF16(
+          IDS_OMNIBOX_EMPTY_HINT_WITH_DEFAULT_SEARCH_PROVIDER,
+          template_url->AdjustedShortNameForLocaleDirection());
+  }
+
+  // Otherwise return a hint based on there being no default search provider.
+  return l10n_util::GetStringUTF16(
+      IDS_OMNIBOX_EMPTY_HINT_NO_DEFAULT_SEARCH_PROVIDER);
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {
