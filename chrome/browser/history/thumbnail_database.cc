@@ -275,60 +275,9 @@ void GenerateDiagnostics(sql::Connection* db,
   }
 }
 
-// Create v5 schema for recovery code.
-bool InitSchemaV5(sql::Connection* db) {
-  // This schema was derived from the strings used when v5 was in
-  // force.  The [favicons] index and the [icon_mapping] items were
-  // copied from the current strings, after verifying that the
-  // resulting schema exactly matches the schema created by the
-  // original versions of those strings.  This allows the linker to
-  // share the strings if they match, while preferring correctness of
-  // the current versions change.
-
-  const char kFaviconsV5[] =
-      "CREATE TABLE IF NOT EXISTS favicons("
-      "id INTEGER PRIMARY KEY,"
-      "url LONGVARCHAR NOT NULL,"
-      "last_updated INTEGER DEFAULT 0,"
-      "image_data BLOB,"
-      "icon_type INTEGER DEFAULT 1,"
-      "sizes LONGVARCHAR"
-      ")";
-  const char kFaviconsIndexV5[] =
-      "CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)";
-  if (!db->Execute(kFaviconsV5) || !db->Execute(kFaviconsIndexV5))
-    return false;
-
-  const char kIconMappingV5[] =
-      "CREATE TABLE IF NOT EXISTS icon_mapping"
-      "("
-      "id INTEGER PRIMARY KEY,"
-      "page_url LONGVARCHAR NOT NULL,"
-      "icon_id INTEGER"
-      ")";
-  const char kIconMappingUrlIndexV5[] =
-      "CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
-      " ON icon_mapping(page_url)";
-  const char kIconMappingIdIndexV5[] =
-      "CREATE INDEX IF NOT EXISTS icon_mapping_icon_id_idx"
-      " ON icon_mapping(icon_id)";
-  if (!db->Execute(kIconMappingV5) ||
-      !db->Execute(kIconMappingUrlIndexV5) ||
-      !db->Execute(kIconMappingIdIndexV5)) {
-    return false;
-  }
-
-  return true;
-}
-
-// TODO(shess): Consider InitSchemaV7().  InitSchemaV5() is worthwhile
-// because there appear to be 10s of thousands of marooned v5
-// databases in the wild.  Once recovery reaches stable, the number of
-// corrupt-but-recoverable databases should drop, possibly to the
-// point where it is not worthwhile to maintain previous-version
-// recovery code.
-// TODO(shess): Alternately, think on a way to more cleanly represent
-// versioned schema going forward.
+// NOTE(shess): Schema modifications must consider initial creation in
+// |InitImpl()|, recovery in |RecoverDatabaseOrRaze()|, and history pruning in
+// |RetainDataForPageUrls()|.
 bool InitTables(sql::Connection* db) {
   const char kIconMappingSql[] =
       "CREATE TABLE IF NOT EXISTS icon_mapping"
@@ -367,6 +316,9 @@ bool InitTables(sql::Connection* db) {
   return true;
 }
 
+// NOTE(shess): Schema modifications must consider initial creation in
+// |InitImpl()|, recovery in |RecoverDatabaseOrRaze()|, and history pruning in
+// |RetainDataForPageUrls()|.
 bool InitIndices(sql::Connection* db) {
   const char kIconMappingUrlIndexSql[] =
       "CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
@@ -410,14 +362,14 @@ enum RecoveryEventType {
   RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT,  // obsolete
   RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING,  // obsolete
   RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT,  // obsolete
-  RECOVERY_EVENT_RECOVERED_VERSION6,
+  RECOVERY_EVENT_RECOVERED_VERSION6,  // obsolete
   RECOVERY_EVENT_FAILED_META_INIT,
   RECOVERY_EVENT_FAILED_META_VERSION,
   RECOVERY_EVENT_DEPRECATED,
-  RECOVERY_EVENT_FAILED_V5_INITSCHEMA,
-  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_FAVICONS,
-  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_ICON_MAPPING,
-  RECOVERY_EVENT_RECOVERED_VERSION5,
+  RECOVERY_EVENT_FAILED_V5_INITSCHEMA,  // obsolete
+  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_FAVICONS,  // obsolete
+  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_ICON_MAPPING,  // obsolete
+  RECOVERY_EVENT_RECOVERED_VERSION5,  // obsolete
   RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS,
   RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS,
   RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING,
@@ -482,84 +434,27 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     return;
   }
 
-  // Recover v5 database to v5 schema.  Next pass through Init() will
-  // migrate to v7.
-  if (version == 5) {
-    sql::MetaTable recover_meta_table;
-    if (!recover_meta_table.Init(recovery->db(), version, version)) {
-      sql::Recovery::Rollback(recovery.Pass());
-      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INIT);
-      return;
-    }
-
-    // TODO(shess): These tests are separate for histogram purposes,
-    // but once things look stable it can be tightened up.
-    if (!InitSchemaV5(recovery->db())) {
-      sql::Recovery::Rollback(recovery.Pass());
-      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_V5_INITSCHEMA);
-      return;
-    }
-
-    if (!recovery->AutoRecoverTable("favicons", 0, &favicons_rows_recovered)) {
-      sql::Recovery::Rollback(recovery.Pass());
-      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_V5_AUTORECOVER_FAVICONS);
-      return;
-    }
-
-    if (!recovery->AutoRecoverTable("icon_mapping", 0,
-                                    &icon_mapping_rows_recovered)) {
-      sql::Recovery::Rollback(recovery.Pass());
-      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_V5_AUTORECOVER_ICON_MAPPING);
-      return;
-    }
-
-    ignore_result(sql::Recovery::Recovered(recovery.Pass()));
-
-    // TODO(shess): Could this code be shared with the v6/7 code
-    // without requiring too much state to be carried?
-
-    // Track the size of the recovered database relative to the size of
-    // the input database.  The size should almost always be smaller,
-    // unless the input database was empty to start with.  If the
-    // percentage results are very low, something is awry.
-    int64 final_size = 0;
-    if (original_size > 0 &&
-        base::GetFileSize(db_path, &final_size) &&
-        final_size > 0) {
-      UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
-                               final_size * 100 / original_size);
-    }
-
-    // Using 10,000 because these cases mostly care about "none
-    // recovered" and "lots recovered".  More than 10,000 rows recovered
-    // probably means there's something wrong with the profile.
-    UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFavicons",
-                               favicons_rows_recovered);
-    UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsIconMapping",
-                               icon_mapping_rows_recovered);
-
-    RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED_VERSION5);
-    return;
-  }
-
-  // This code may be able to fetch versions that the regular
+  // This code may be able to fetch version information that the regular
   // deprecation path cannot.
-  if (version <= kDeprecatedVersionNumber) {
+  // NOTE(shess): v5 and v6 are currently not deprecated in the normal Init()
+  // path, but are deprecated in the recovery path in the interest of keeping
+  // the code simple.  http://crbug.com/327485 for numbers.
+  DCHECK_LE(kDeprecatedVersionNumber, 6);
+  if (version <= 6) {
     sql::Recovery::Unrecoverable(recovery.Pass());
     RecordRecoveryEvent(RECOVERY_EVENT_DEPRECATED);
     return;
   }
 
-  // TODO(shess): Earlier versions have been handled or deprecated,
-  // later versions should be impossible.  Unrecoverable() seems
-  // reasonable.
-  if (version != 6 && version != 7) {
+  // Earlier versions have been handled or deprecated, later versions should be
+  // impossible.
+  if (version != 7) {
+    sql::Recovery::Unrecoverable(recovery.Pass());
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
-    sql::Recovery::Rollback(recovery.Pass());
     return;
   }
 
-  // Both v6 and v7 recover to current schema version.
+  // Recover to current schema version.
   sql::MetaTable recover_meta_table;
   if (!recover_meta_table.Init(recovery->db(), kCurrentVersionNumber,
                                kCompatibleVersionNumber)) {
@@ -585,9 +480,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     return;
   }
 
-  // [favicons] differs because v6 had an unused [sizes] column which
-  // was removed in v7.
-  if (!recovery->AutoRecoverTable("favicons", 1, &favicons_rows_recovered)) {
+  if (!recovery->AutoRecoverTable("favicons", 0, &favicons_rows_recovered)) {
     sql::Recovery::Rollback(recovery.Pass());
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS);
     return;
@@ -643,11 +536,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsIconMapping",
                              icon_mapping_rows_recovered);
 
-  if (version == 6) {
-    RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED_VERSION6);
-  } else {
-    RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
-  }
+  RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
 }
 
 void DatabaseErrorCallback(sql::Connection* db,

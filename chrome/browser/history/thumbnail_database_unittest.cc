@@ -835,9 +835,9 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v6.sql"));
 
-  // Corrupt the database again by adjusting the header.  This form of
-  // corruption will cause immediate failures during Open(), before
-  // the migration code runs, so the version-6 recovery will occur.
+  // Corrupt the database by adjusting the header.  This form of corruption will
+  // cause immediate failures during Open(), before the migration code runs, so
+  // the recovery code will run.
   EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
 
   // Database is unusable at the SQLite level.
@@ -850,27 +850,17 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
-  // Database should be recovered during open.
+  // Database open should succeed.
   {
     sql::ScopedErrorIgnorer ignore_errors;
     ignore_errors.IgnoreError(SQLITE_CORRUPT);
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-
-    // Test that some data is present, copied from
-    // ThumbnailDatabaseTest.Version6 .
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::FAVICON,
-                         kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::TOUCH_ICON,
-                         kIconUrl3, kLargeSize, sizeof(kBlob2), kBlob2));
-
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
-  // Check that the database is recovered at a SQLite level, and that
-  // the current schema is in place.
+  // The database should be usable at the SQLite level, with a current schema
+  // and no data.
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
@@ -878,17 +868,24 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
 
     // Check that the expected tables exist.
     VerifyTablesAndColumns(&raw_db);
+
+    // Version 6 recovery is deprecated, the data should all be gone.
+    VerifyDatabaseEmpty(&raw_db);
   }
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery5) {
+  // TODO(shess): See comment at top of Recovery test.
+  if (!sql::Recovery::FullRecoverySupported())
+    return;
+
   // Create an example database without loading into ThumbnailDatabase
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v5.sql"));
 
-  // Corrupt the database again by adjusting the header.  This form of
-  // corruption will cause immediate failures during Open(), before
-  // the migration code runs, so the version-5 recovery will occur.
+  // Corrupt the database by adjusting the header.  This form of corruption will
+  // cause immediate failures during Open(), before the migration code runs, so
+  // the recovery code will run.
   EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
 
   // Database is unusable at the SQLite level.
@@ -901,27 +898,17 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
-  // Database should be recovered during open.
+  // Database open should succeed.
   {
     sql::ScopedErrorIgnorer ignore_errors;
     ignore_errors.IgnoreError(SQLITE_CORRUPT);
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-
-    // Test that some data is present, copied from
-    // ThumbnailDatabaseTest.Version5 .
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::FAVICON,
-                         kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::TOUCH_ICON,
-                         kIconUrl3, gfx::Size(), sizeof(kBlob2), kBlob2));
-
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
-  // Check that the database is recovered at a SQLite level, and that
-  // the current schema is in place.
+  // The database should be usable at the SQLite level, with a current schema
+  // and no data.
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
@@ -929,6 +916,9 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
 
     // Check that the expected tables exist.
     VerifyTablesAndColumns(&raw_db);
+
+    // Version 5 recovery is deprecated, the data should all be gone.
+    VerifyDatabaseEmpty(&raw_db);
   }
 }
 
