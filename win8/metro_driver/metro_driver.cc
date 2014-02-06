@@ -15,6 +15,10 @@
 #include "base/win/scoped_comptr.h"
 #include "win8/metro_driver/winrt_utils.h"
 
+#if !defined(USE_AURA)
+#include "win8/metro_driver/chrome_app_view.h"
+#endif
+
 // TODO(siggi): Move this to GYP.
 #pragma comment(lib, "runtimeobject.lib")
 
@@ -55,7 +59,7 @@ base::AtExitManager at_exit;
 #endif
 
 extern "C" __declspec(dllexport)
-int InitMetro() {
+int InitMetro(LPTHREAD_START_ROUTINE thread_proc, void* context) {
   // Initialize the command line.
   CommandLine::Init(0, NULL);
   logging::LoggingSettings settings;
@@ -93,7 +97,8 @@ int InitMetro() {
   if (FAILED(hr))
     return 1;
 
-  auto view_factory = mswr::Make<ChromeAppViewFactory>(core_app.Get());
+  auto view_factory = mswr::Make<ChromeAppViewFactory>(
+      core_app.Get(), thread_proc, context);
   hr = core_app->Run(view_factory.Get());
   DVLOG(1) << "exiting InitMetro, hr=" << hr;
 
