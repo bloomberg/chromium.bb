@@ -23,6 +23,8 @@ run in Chrome 34 or higher.
 
   * `PPB_FileIO <struct_p_p_b___file_i_o__1__1.html>`_
 
+  * `PPB_FileMapping <struct_p_p_b___file_mapping__0__1.html>`_
+
   * `PPB_FileRef <struct_p_p_b___file_ref__1__2.html>`_
 
   * `PPB_FileSystem <struct_p_p_b___file_system__1__0.html>`_
@@ -45,7 +47,7 @@ run in Chrome 34 or higher.
 
   * `PPB_Instance <struct_p_p_b___instance__1__0.html>`_
 
-  * `PPB_KeyboardInputEvent <struct_p_p_b___keyboard_input_event__1__0.html>`_
+  * `PPB_KeyboardInputEvent <struct_p_p_b___keyboard_input_event__1__2.html>`_
 
   * `PPB_MediaStreamAudioTrack <struct_p_p_b___media_stream_audio_track__0__1.html>`_
 
@@ -218,6 +220,8 @@ Files
   * `ppb_core.h <ppb__core_8h.html>`_
 
   * `ppb_file_io.h <ppb__file__io_8h.html>`_
+
+  * `ppb_file_mapping.h <ppb__file__mapping_8h.html>`_
 
   * `ppb_file_ref.h <ppb__file__ref_8h.html>`_
 

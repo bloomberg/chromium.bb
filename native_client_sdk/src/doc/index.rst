@@ -5,7 +5,7 @@ Welcome to Native Client
 .. raw:: html
 
   <div id="home">
-  <a class="button-nacl button-download" href="/native-client/dev/sdk/download">Download SDK</a>
+  <a class="button-nacl button-download" href="/native-client/sdk/download.html">Download SDK</a>
   <div class="big-intro">
 
 **Native Client** is a sandbox for running compiled C and C++ code in the
