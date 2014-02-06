@@ -65,7 +65,6 @@ static bool shouldOnlyIncludeDirectChildren(CollectionType type)
     case TSectionRows:
     case TableTBodies:
         return true;
-    case ChildNodeListType:
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -104,7 +103,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case DataListOptions:
     case MapAreas:
         return NodeListIsRootedAtNode;
-    case ChildNodeListType:
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -150,7 +148,6 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
         return InvalidateForFormControls;
     case ClassCollectionType:
         return InvalidateOnClassAttrChange;
-    case ChildNodeListType:
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -259,7 +256,6 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
     case DocumentNamedItems:
     case TableRows:
     case WindowNamedItems:
-    case ChildNodeListType:
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -315,7 +311,7 @@ ALWAYS_INLINE Element* LiveNodeListBase::iterateForPreviousNode(const Collection
 }
 
 template <typename Collection>
-Element* LiveNodeListBase::itemBefore(const Collection& collection, const Node* previous)
+Element* LiveNodeListBase::itemBefore(const Collection& collection, const Element* previous)
 {
     Node* current;
     if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
@@ -326,14 +322,12 @@ Element* LiveNodeListBase::itemBefore(const Collection& collection, const Node* 
     return iterateForPreviousNode(collection, current);
 }
 
-Node* LiveNodeList::itemBefore(const Node* previous) const
+Element* LiveNodeList::itemBefore(const Element* previous) const
 {
-    if (type() == ChildNodeListType)
-        return LIKELY(!!previous) ? previous->previousSibling() : rootNode().lastChild();
     return LiveNodeListBase::itemBefore(*this, previous);
 }
 
-Element* HTMLCollection::itemBefore(const Node* previous) const
+Element* HTMLCollection::itemBefore(const Element* previous) const
 {
     return LiveNodeListBase::itemBefore(*this, previous);
 }
@@ -369,40 +363,18 @@ inline Element* traverseMatchingElementsForwardToOffset(const NodeListType& node
     return 0;
 }
 
-static inline Node* traverseSiblingsForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset)
-{
-    ASSERT(currentOffset < offset);
-    Node* next = &currentNode;
-    while ((next = next->nextSibling())) {
-        if (++currentOffset == offset)
-            return next;
-    }
-    return 0;
-}
-
 // FIXME: This should be in LiveNodeList.cpp but it needs to stay here until firstMatchingElement()
 // and others are moved to a separate header.
-Node* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
+Element* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
 {
-    ASSERT(isLiveNodeListType(type()));
-    switch (type()) {
-    case ChildNodeListType:
-        return root.firstChild();
-    default:
-        return firstMatchingElement(static_cast<const LiveNodeList&>(*this), root);
-    }
+    return firstMatchingElement(*this, root);
 }
 
 // FIXME: This should be in LiveNodeList.cpp but it needs to stay here until traverseMatchingElementsForwardToOffset()
 // and others are moved to a separate header.
-Node* LiveNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const
+Element* LiveNodeList::traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const
 {
-    switch (type()) {
-    case ChildNodeListType:
-        return traverseSiblingsForwardToOffset(offset, currentNode, currentOffset);
-    default:
-        return traverseMatchingElementsForwardToOffset(*this, offset, toElement(currentNode), currentOffset, root);
-    }
+    return traverseMatchingElementsForwardToOffset(*this, offset, currentNode, currentOffset, root);
 }
 
 Element* HTMLCollection::virtualItemAfter(Element*) const

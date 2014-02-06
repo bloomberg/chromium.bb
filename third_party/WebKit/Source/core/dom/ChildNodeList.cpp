@@ -1,8 +1,9 @@
-/**
+/*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -28,21 +29,31 @@
 
 namespace WebCore {
 
-ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> node)
-    : LiveNodeList(node, ChildNodeListType, DoNotInvalidateOnAttributeChanges)
+ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> parent)
+    : m_parent(parent)
 {
+    ASSERT(m_parent);
 }
 
 ChildNodeList::~ChildNodeList()
 {
-    ownerNode()->nodeLists()->removeChildNodeList(this);
+    m_parent->nodeLists()->removeChildNodeList(this);
 }
 
-bool ChildNodeList::nodeMatches(const Element& testNode) const
+Node* ChildNodeList::itemBefore(const Node* previous) const
 {
-    // This function will be called only by LiveNodeList::namedItem,
-    // for an element that was located with getElementById.
-    return testNode.parentNode() == rootNode();
+    return LIKELY(!!previous) ? previous->previousSibling() : rootNode().lastChild();
+}
+
+Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode&) const
+{
+    ASSERT(currentOffset < offset);
+    Node* next = &currentNode;
+    while ((next = next->nextSibling())) {
+        if (++currentOffset == offset)
+            return next;
+    }
+    return 0;
 }
 
 } // namespace WebCore

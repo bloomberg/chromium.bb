@@ -57,14 +57,13 @@ enum CollectionType {
     HTMLTagCollectionType,
 
     // Live NodeList.
-    ChildNodeListType,
     NameNodeListType,
     RadioNodeListType,
     RadioImgNodeListType,
     LabelsNodeListType,
 };
 
-static const CollectionType FirstLiveNodeListType = ChildNodeListType;
+static const CollectionType FirstLiveNodeListType = NameNodeListType;
 
 inline bool isLiveNodeListType(CollectionType type)
 {

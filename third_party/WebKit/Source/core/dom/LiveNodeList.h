@@ -57,14 +57,12 @@ public:
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
         ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
 
-        if (collectionType != ChildNodeListType)
-            document().registerNodeList(this);
+        document().registerNodeList(this);
     }
 
     virtual ~LiveNodeListBase()
     {
-        if (type() != ChildNodeListType)
-            document().unregisterNodeList(this);
+        document().unregisterNodeList(this);
     }
 
     ContainerNode& rootNode() const;
@@ -94,7 +92,7 @@ protected:
     template <typename Collection>
     static Element* iterateForPreviousNode(const Collection&, Node* current);
     template <typename Collection>
-    static Element* itemBefore(const Collection&, const Node* previousItem);
+    static Element* itemBefore(const Collection&, const Element* previousItem);
 
 private:
     void invalidateIdNameCacheMaps() const;
@@ -134,7 +132,7 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
 class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
     LiveNodeList(PassRefPtr<ContainerNode> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
-        : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, collectionType == ChildNodeListType,
+        : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, false,
         collectionType)
     { }
 
@@ -148,14 +146,14 @@ public:
 
     // Collection IndexCache API.
     bool canTraverseBackward() const { return true; }
-    Node* itemBefore(const Node* previousItem) const;
-    Node* traverseToFirstElement(const ContainerNode& root) const;
-    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
+    Element* itemBefore(const Element* previousItem) const;
+    Element* traverseToFirstElement(const ContainerNode& root) const;
+    Element* traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
     virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }
 
-    mutable CollectionIndexCache<LiveNodeList, Node> m_collectionIndexCache;
+    mutable CollectionIndexCache<LiveNodeList, Element> m_collectionIndexCache;
 };
 
 } // namespace WebCore

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/NodeList.h"
 
+#include "core/dom/ChildNodeList.h"
 #include "core/dom/EmptyNodeList.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/Node.h"
@@ -41,6 +42,8 @@ Node* NodeList::ownerNode() const
 {
     if (isLiveNodeList())
         return static_cast<const LiveNodeList*>(this)->ownerNode();
+    if (isChildNodeList())
+        return static_cast<const ChildNodeList*>(this)->ownerNode();
     if (isEmptyNodeList())
         return static_cast<const EmptyNodeList*>(this)->ownerNode();
     return 0;
