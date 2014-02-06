@@ -325,6 +325,11 @@ bool HTMLPlugInElement::isKeyboardFocusable() const
     return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }
 
+bool HTMLPlugInElement::hasCustomFocusLogic() const
+{
+    return !hasAuthorShadowRoot();
+}
+
 bool HTMLPlugInElement::isPluginElement() const
 {
     return true;
