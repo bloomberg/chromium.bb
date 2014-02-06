@@ -46,8 +46,6 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
   MOCK_METHOD2(OnPushPromise, void(SpdyStreamId stream_id,
                                    SpdyStreamId promised_stream_id));
-  MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
-                                           size_t len));
 };
 
 }  // namespace test

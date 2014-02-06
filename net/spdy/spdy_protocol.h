@@ -282,7 +282,7 @@ enum SpdyFrameType {
   GOAWAY,
   HEADERS,
   WINDOW_UPDATE,
-  CREDENTIAL,
+  CREDENTIAL,  // No longer valid.  Kept for identifiability/enum order.
   BLOCKED,
   PUSH_PROMISE,
   LAST_CONTROL_TYPE = PUSH_PROMISE
