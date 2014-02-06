@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<!--  NOTE: index.html/index.js are automatically generated from index.in.html
+      using the command: vulcanize --csp index.in.html -o index.html
+      index.html/index.js SHOULD NOT be modified manually.
+      TODO(raymes): Get rid of the need for vulcanize once HTMLImports is
+      working properly in polymer.  -->
+<html i18n-values="dir:textdirection">
+<head>
+  <meta charset="utf-8">
+  <script src="polymer_loader.js"></script>
+  <link rel="import" href="../../../../third_party/polymer/polymer-selector/polymer-selector.html">
+  <link rel="import" href="html_office/elements/viewer-toolbar/viewer-toolbar.html">
+  <link rel="import" href="html_office/elements/viewer-button/viewer-button.html">
+  <style>
+    body {
+      background-color: #ccc;
+      margin: 0;
+    }
+    viewer-toolbar {
+      z-index: 2;
+    }
+    object {
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+<viewer-toolbar>
+  <polymer-selector>
+    <viewer-button src="button_fit_page.png" latchable=true></viewer-button>
+    <viewer-button src="button_fit_width.png" latchable=true></viewer-button>
+    <viewer-button src="button_zoom_in.png"></viewer-button>
+    <viewer-button src="button_zoom_out.png"></viewer-button>
+  </polymer-selector>
+  <viewer-button src="button_save.png"></viewer-button>
+  <viewer-button src="button_print.png"></viewer-button>
+</viewer-toolbar>
+
+</body>
+<script src="pdf.js"></script>
+</html>

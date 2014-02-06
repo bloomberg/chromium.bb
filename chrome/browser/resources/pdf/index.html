@@ -1,0 +1,277 @@
+<!DOCTYPE HTML>
+<!--  NOTE: index.html/index.js are automatically generated from index.in.html
+      using the command: vulcanize --csp index.in.html -o index.html
+      index.html/index.js SHOULD NOT be modified manually.
+      TODO(raymes): Get rid of the need for vulcanize once HTMLImports is
+      working properly in polymer.  -->
+<html i18n-values="dir:textdirection">
+<head>
+  <meta charset="utf-8">
+  <script src="polymer_loader.js"></script>
+  
+  
+  
+  
+<!--
+ Copyright 2013 The Polymer Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+<!-- <link rel="import" href="../polymer-dev/polymer.html"> -->
+<!--
+Copyright 2013 The Polymer Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<!--
+/**
+ * @module Polymer Elements
+ */
+-->
+<!--
+/**
+ * The polymer-selection element is used to manage selection state. It has no
+ * visual appearance and is typically used in conjuneciton with another element.
+ * For example, <a href="polymer-selector.html">polymer-selector</a>
+ * use a polymer-selection to manage selection.
+ *
+ * To mark an item as selected, call the select(item) method on 
+ * polymer-selection. Notice that the item itself is an argument to this method.
+ * The polymer-selection element manages selection state for any given set of
+ * items. When an item is selected, the `polymer-select` event is fired.
+ * The attribute "multi" indicates if multiple items can be selected at once.
+ * 
+ * Example:
+ *
+ *     <polymer-element name="selection-example">
+ *        <template>
+ *          <style>
+ *            ::-webkit-distributed(> .selected) {
+ *              font-weight: bold;
+ *              font-style: italic;
+ *            }
+ *          </style>
+ *          <ul on-tap="{{itemTapAction}}">
+ *            <content></content>
+ *          </ul>
+ *          <polymer-selection id="selection" multi on-polymer-select="{{selectAction}}"></polymer-selection>
+ *        </template>
+ *        <script>
+ *          Polymer('selection-example', {
+ *            itemTapAction: function(e) {
+ *              this.$.selection.select(e.target);
+ *            },
+ *            selectAction: function(e, detail) {
+ *              detail.item.classList.toggle('selected', detail.isSelected);
+ *            }
+ *          });
+ *        </script>
+ *     </polymer-element>
+ *
+ *     <selection-example>
+ *       <li>Red</li>
+ *       <li>Green</li>
+ *       <li>Blue</li>
+ *     </selection-example>
+ *
+ * @class polymer-selection
+ */
+ /**
+ * Fired when an item's selection state is changed. This event is fired both
+ * when an item is selected or deselected. The `isSelected` detail property
+ * contains the selection state.
+ * 
+ * @event polymer-select
+ * @param {Object} detail
+ *   @param {boolean} detail.isSelected true for selection and false for deselection
+ *   @param {Object} detail.item the item element
+ */
+-->
+
+
+<polymer-element name="polymer-selection" attributes="multi" assetpath="../../../../third_party/polymer/polymer-selection/">
+  <template>
+    <style>
+      :host {
+        display: none !important;
+      }
+    </style>
+  </template>
+  
+</polymer-element>
+
+<!--
+Copyright 2013 The Polymer Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<!--
+/**
+ * @module Polymer Elements
+ */
+/**
+ * polymer-selector is used to manage a list of elements that can be selected.
+ * The attribute "selected" indicates which item element is being selected.
+ * The attribute "multi" indicates if multiple items can be selected at once.
+ * Tapping on the item element would fire "polymer-activate" event. Use
+ * "polymer-select" event to listen for selection changes.
+ *
+ * Example:
+ *
+ *     <polymer-selector selected="0">
+ *       <div>Item 1</div>
+ *       <div>Item 2</div>
+ *       <div>Item 3</div>
+ *     </polymer-selector>
+ *
+ * polymer-selector is not styled.  So one needs to use "polymer-selected" CSS
+ * class to style the selected element.
+ * 
+ *     <style>
+ *       .item.polymer-selected {
+ *         background: #eee;
+ *       }
+ *     </style>
+ *     ...
+ *     <polymer-selector>
+ *       <div class="item">Item 1</div>
+ *       <div class="item">Item 2</div>
+ *       <div class="item">Item 3</div>
+ *     </polymer-selector>
+ *
+ * @class polymer-selector
+ */
+/**
+ * Fired when an item's selection state is changed. This event is fired both
+ * when an item is selected or deselected. The `isSelected` detail property
+ * contains the selection state.
+ * 
+ * @event polymer-select
+ * @param {Object} detail
+ *   @param {boolean} detail.isSelected true for selection and false for deselection
+ *   @param {Object} detail.item the item element
+ */
+/**
+ * Fired when an item element is tapped.
+ * 
+ * @event polymer-activate
+ * @param {Object} detail
+ *   @param {Object} detail.item the item element
+ */
+-->
+
+
+
+<polymer-element name="polymer-selector" attributes="selected multi valueattr selectedClass selectedProperty selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent" assetpath="../../../../third_party/polymer/polymer-selector/">
+  <template>
+    <polymer-selection id="selection" multi="{{multi}}" on-polymer-select="{{selectionSelect}}"></polymer-selection>
+    <content id="items" select="*"></content>
+  </template>
+  
+</polymer-element>
+
+<polymer-element name="viewer-toolbar" attributes="fadingIn" on-mouseover="{{fadeIn}}" on-mousemove="{{fadeIn}}" on-mouseout="{{fadeOut}}" assetpath="html_office/elements/viewer-toolbar/">
+  <template>
+    <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  bottom: 0;
+  display: block;
+  font-size: 0;
+  opacity: 1;
+  position: fixed;
+  right: 0;
+  padding: 30px 30px 15px 30vw;
+}
+
+#toolbar {
+  border-radius: 3px;
+  box-shadow: 0 1px 2px gray, 0 3px 3px rgba(0, 0, 0, .2);
+  overflow: hidden;
+}
+</style>
+    <div id="toolbar">
+      <content></content>
+    </div>
+  </template>
+  
+</polymer-element>
+
+<polymer-element name="viewer-button" attributes="src latchable" assetpath="html_office/elements/viewer-button/">
+  <template>
+    <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#icon {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  height: 100%;
+  width: 100%;
+}
+
+:host {
+  -webkit-user-select: none;
+  background-image: linear-gradient(rgb(60, 80, 119), rgb(15, 24, 41));
+  border: 1px solid rgb(11, 9, 16);
+  cursor: default;
+  display: inline-block;
+  height: 36px;
+  margin: 0;
+  width: 43px;
+}
+
+:host(:focus:host) {
+  outline: none;
+}
+
+:host(:hover:host) {
+  background-image: linear-gradient(rgb(73, 102, 155), rgb(32, 52, 95));
+}
+
+:host(.latchable.polymer-selected:host),
+:host(:active:host) {
+  background-color: rgb(75, 103, 156);
+  background-image: none;
+}
+</style>
+    <div id="icon"></div>
+  </template>
+  
+</polymer-element>
+<style>
+    body {
+      background-color: #ccc;
+      margin: 0;
+    }
+    viewer-toolbar {
+      z-index: 2;
+    }
+    object {
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+<viewer-toolbar>
+  <polymer-selector>
+    <viewer-button src="button_fit_page.png" latchable="true"></viewer-button>
+    <viewer-button src="button_fit_width.png" latchable="true"></viewer-button>
+    <viewer-button src="button_zoom_in.png"></viewer-button>
+    <viewer-button src="button_zoom_out.png"></viewer-button>
+  </polymer-selector>
+  <viewer-button src="button_save.png"></viewer-button>
+  <viewer-button src="button_print.png"></viewer-button>
+</viewer-toolbar>
+
+
+<script src="index.js"></script>
+</body>
+<script src="pdf.js"></script>
+</html>
