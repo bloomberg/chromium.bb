@@ -419,16 +419,30 @@ class Tab::TabCloseButton : public views::ImageButton {
     views::View::ConvertRectToTarget(tab_, this, &tab_bounds_f);
     gfx::Rect tab_bounds = gfx::ToEnclosingRect(tab_bounds_f);
 
-    // If the button is hidden behind another tab, the hit test mask is empty.
-    // Otherwise set the hit test mask to be the contents bounds.
-    path->reset();
-    if (tab_bounds.Intersects(button_bounds)) {
-      // Include the padding in the hit test mask for touch events.
-      if (source == HIT_TEST_SOURCE_TOUCH)
-        button_bounds = GetLocalBounds();
+    // If either the top or bottom of the tab close button is clipped,
+    // do not consider these regions to be part of the button's bounds.
+    int top_overflow = tab_bounds.y() - button_bounds.y();
+    int bottom_overflow = button_bounds.bottom() - tab_bounds.bottom();
+    if (top_overflow > 0)
+      button_bounds.set_y(tab_bounds.y());
+    else if (bottom_overflow > 0)
+      button_bounds.set_height(button_bounds.height() - bottom_overflow);
 
-      // TODO: this isn't quite right, really need to intersect the two regions.
-      path->addRect(RectToSkRect(button_bounds));
+    // If the hit test request is in response to a gesture, |path| should be
+    // empty unless the entire tab close button is visible to the user. Hit
+    // test requests in response to a mouse event should always set |path|
+    // to be the visible portion of the tab close button, even if it is
+    // partially hidden behind another tab.
+    path->reset();
+    gfx::Rect intersection(gfx::IntersectRects(tab_bounds, button_bounds));
+    if (!intersection.IsEmpty()) {
+      // TODO(tdanderson): Consider always returning the intersection if
+      // the non-rectangular shape of the tabs can be accounted for.
+      if (source == HIT_TEST_SOURCE_TOUCH &&
+          !tab_bounds.Contains(button_bounds))
+        return;
+
+      path->addRect(RectToSkRect(intersection));
     }
   }
 

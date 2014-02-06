@@ -257,7 +257,7 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
 
 
   // Tests involving |left_tab|, which has part of its bounds and its tab
-  // close button occluded by |active_tab|.
+  // close button completely occluded by |active_tab|.
 
   // Bounds of the tab's hit test mask.
   gfx::Rect tab_bounds = GetTabHitTestMask(left_tab);
@@ -269,7 +269,7 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
   // TODO(tdanderson): Uncomment this line once crbug.com/311609 is resolved.
   //EXPECT_EQ(gfx::Rect(84, 8, 18, 18).ToString(), contents_bounds.ToString());
 
-  // Verify that the tab close button is occluded.
+  // Verify that the tab close button is completely occluded.
   EXPECT_FALSE(tab_bounds.Contains(contents_bounds));
 
   // Hit tests in the non-occuluded region of the tab.
@@ -317,11 +317,12 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
   EXPECT_TRUE(active_tab->HitTestRect(gfx::Rect(30, 15, 1, 1)));
   EXPECT_TRUE(active_tab->HitTestRect(gfx::Rect(30, 15, 2, 2)));
 
-  // Hit tests against the tab close button. Note that if the hit test
-  // source is a mouse, a hit test within the button's padding should fail.
+  // Hit tests against the tab close button. Note that hit tests from either
+  // mouse or touch should both fail if they are strictly contained within
+  // the button's padding.
   views::ImageButton* active_close = active_tab->close_button_;
   EXPECT_FALSE(active_close->HitTestRect(gfx::Rect(1, 1, 1, 1)));
-  EXPECT_TRUE(active_close->HitTestRect(gfx::Rect(1, 1, 2, 2)));
+  EXPECT_FALSE(active_close->HitTestRect(gfx::Rect(1, 1, 2, 2)));
   EXPECT_TRUE(active_close->HitTestRect(gfx::Rect(10, 10, 1, 1)));
   EXPECT_TRUE(active_close->HitTestRect(gfx::Rect(10, 10, 25, 35)));
 
@@ -348,14 +349,73 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
   EXPECT_TRUE(most_right_tab->HitTestRect(gfx::Rect(85, 15, 1, 1)));
   EXPECT_TRUE(most_right_tab->HitTestRect(gfx::Rect(85, 15, 2, 2)));
 
-  // Hit tests against the tab close button. Note that if the hit test
-  // source is a mouse, a hit test within the button's padding should fail.
+  // Hit tests against the tab close button. Note that hit tests from either
+  // mouse or touch should both fail if they are strictly contained within
+  // the button's padding.
   views::ImageButton* most_right_close = most_right_tab->close_button_;
   EXPECT_FALSE(most_right_close->HitTestRect(gfx::Rect(1, 1, 1, 1)));
-  EXPECT_TRUE(most_right_close->HitTestRect(gfx::Rect(1, 1, 2, 2)));
+  EXPECT_FALSE(most_right_close->HitTestRect(gfx::Rect(1, 1, 2, 2)));
   EXPECT_TRUE(most_right_close->HitTestRect(gfx::Rect(10, 10, 1, 1)));
   EXPECT_TRUE(most_right_close->HitTestRect(gfx::Rect(10, 10, 25, 35)));
   EXPECT_TRUE(most_right_close->HitTestRect(gfx::Rect(-10, 10, 25, 35)));
+}
+
+// Creates a tab strip in stacked layout mode and verifies the correctness
+// of hit tests against the visible/occluded region of a partially-occluded
+// tab close button.
+TEST_F(TabStripTest, ClippedTabCloseButton) {
+  tab_strip_->SetBounds(0, 0, 220, 20);
+
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+  ASSERT_EQ(2, tab_strip_->tab_count());
+
+  Tab* left_tab = tab_strip_->tab_at(0);
+  left_tab->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), gfx::Size(200, 20)));
+
+  Tab* active_tab = tab_strip_->tab_at(1);
+  active_tab->SetBoundsRect(gfx::Rect(gfx::Point(180, 0), gfx::Size(200, 20)));
+  ASSERT_TRUE(active_tab->IsActive());
+
+  // Switch to stacked layout mode and force a layout to ensure tabs stack.
+  tab_strip_->SetLayoutType(TAB_STRIP_LAYOUT_STACKED, false);
+  tab_strip_->DoLayout();
+
+
+  // Tests involving |left_tab|, which has part of its bounds and its tab
+  // close button partially occluded by |active_tab|.
+
+  // Bounds of the tab's hit test mask.
+  gfx::Rect tab_bounds = GetTabHitTestMask(left_tab);
+  EXPECT_EQ(gfx::Rect(6, 2, 91, 27).ToString(), tab_bounds.ToString());
+
+  // Bounds of the tab close button (without padding) in the tab's
+  // coordinate space.
+  gfx::Rect contents_bounds = GetTabCloseHitTestMask(left_tab, false);
+  // TODO(tdanderson): Uncomment this line once crbug.com/311609 is resolved.
+  //EXPECT_EQ(gfx::Rect(84, 8, 18, 18).ToString(), contents_bounds.ToString());
+
+  // Verify that the tab close button is only partially occluded.
+  EXPECT_FALSE(tab_bounds.Contains(contents_bounds));
+  EXPECT_TRUE(tab_bounds.Intersects(contents_bounds));
+
+  views::ImageButton* left_close = left_tab->close_button_;
+
+  // Hit tests from mouse should return true if and only if the location
+  // is within a visible region.
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(2, 15, 1, 1)));
+  EXPECT_TRUE(left_close->HitTestRect(gfx::Rect(3, 15, 1, 1)));
+  EXPECT_TRUE(left_close->HitTestRect(gfx::Rect(10, 10, 1, 1)));
+  EXPECT_TRUE(left_close->HitTestRect(gfx::Rect(15, 12, 1, 1)));
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(16, 10, 1, 1)));
+
+  // All hit tests from touch should return false because the button is
+  // not fully visible.
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(2, 15, 2, 2)));
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(3, 15, 25, 25)));
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(10, 10, 4, 5)));
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(15, 12, 2, 2)));
+  EXPECT_FALSE(left_close->HitTestRect(gfx::Rect(16, 10, 20, 20)));
 }
 
 TEST_F(TabStripTest, GetEventHandlerForOverlappingArea) {
