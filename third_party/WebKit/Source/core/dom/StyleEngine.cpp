@@ -206,17 +206,16 @@ void StyleEngine::updateInjectedStyleSheetCache() const
     if (!owningPage)
         return;
 
-    const PageGroup& pageGroup = owningPage->group();
-    const InjectedStyleSheetVector& sheets = pageGroup.injectedStyleSheets();
-    for (unsigned i = 0; i < sheets.size(); ++i) {
-        const InjectedStyleSheet* sheet = sheets[i].get();
-        if (sheet->injectedFrames() == InjectStyleInTopFrameOnly && m_document.ownerElement())
+    const InjectedStyleSheetEntryVector& entries = InjectedStyleSheets::instance().entries();
+    for (unsigned i = 0; i < entries.size(); ++i) {
+        const InjectedStyleSheetEntry* entry = entries[i].get();
+        if (entry->injectedFrames() == InjectStyleInTopFrameOnly && m_document.ownerElement())
             continue;
-        if (!URLPatternMatcher::matchesPatterns(m_document.url(), sheet->whitelist()))
+        if (!URLPatternMatcher::matchesPatterns(m_document.url(), entry->whitelist()))
             continue;
         RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), KURL());
         m_injectedAuthorStyleSheets.append(groupSheet);
-        groupSheet->contents()->parseString(sheet->source());
+        groupSheet->contents()->parseString(entry->source());
     }
 }
 

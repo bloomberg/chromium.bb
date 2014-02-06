@@ -109,6 +109,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
+#include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/page/PageGroupLoadDeferrer.h"
@@ -3456,13 +3457,12 @@ void WebView::injectStyleSheet(const WebString& sourceCode, const WebVector<WebS
     for (size_t i = 0; i < patternsIn.size(); ++i)
         patterns.append(patternsIn[i]);
 
-    PageGroup* pageGroup = PageGroup::sharedGroup();
-    pageGroup->injectStyleSheet(sourceCode, patterns, static_cast<WebCore::StyleInjectionTarget>(injectIn));
+    InjectedStyleSheets::instance().add(sourceCode, patterns, static_cast<WebCore::StyleInjectionTarget>(injectIn));
 }
 
 void WebView::removeInjectedStyleSheets()
 {
-    PageGroup::sharedGroup()->removeInjectedStyleSheets();
+    InjectedStyleSheets::instance().removeAll();
 }
 
 void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)

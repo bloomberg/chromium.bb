@@ -68,7 +68,7 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/InjectedStyleSheet.h"
+#include "core/page/InjectedStyleSheets.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/style/RenderStyleConstants.h"

@@ -1302,6 +1302,8 @@
             'page/FrameTree.cpp',
             'page/HistoryController.cpp',
             'page/HistoryController.h',
+            'page/InjectedStyleSheets.cpp',
+            'page/InjectedStyleSheets.h',
             'page/MouseEventWithHitTestResults.cpp',
             'page/MouseEventWithHitTestResults.h',
             'frame/Navigator.cpp',

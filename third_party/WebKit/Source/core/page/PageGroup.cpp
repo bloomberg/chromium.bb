@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/page/PageGroup.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "wtf/StdLibExtras.h"
@@ -40,7 +38,6 @@ PageGroup::PageGroup()
 
 PageGroup::~PageGroup()
 {
-    removeInjectedStyleSheets();
 }
 
 PageGroup* PageGroup::sharedGroup()
@@ -61,28 +58,6 @@ void PageGroup::removePage(Page* page)
     ASSERT(page);
     ASSERT(m_pages.contains(page));
     m_pages.remove(page);
-}
-
-void PageGroup::injectStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectIn)
-{
-    m_injectedStyleSheets.append(adoptPtr(new InjectedStyleSheet(source, whitelist, injectIn)));
-    invalidatedInjectedStyleSheetCacheInAllFrames();
-}
-
-void PageGroup::removeInjectedStyleSheets()
-{
-    m_injectedStyleSheets.clear();
-    invalidatedInjectedStyleSheetCacheInAllFrames();
-}
-
-void PageGroup::invalidatedInjectedStyleSheetCacheInAllFrames()
-{
-    // Clear our cached sheets and have them just reparse.
-    HashSet<Page*>::const_iterator end = m_pages.end();
-    for (HashSet<Page*>::const_iterator it = m_pages.begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->styleEngine()->invalidateInjectedStyleSheetCache();
-    }
 }
 
 } // namespace WebCore

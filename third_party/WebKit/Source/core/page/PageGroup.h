@@ -26,7 +26,7 @@
 #ifndef PageGroup_h
 #define PageGroup_h
 
-#include "core/page/InjectedStyleSheet.h"
+#include "core/page/InjectedStyleSheets.h"
 #include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -41,11 +41,6 @@ namespace WebCore {
     // It has nothing to do with Page. There is one shared PageGroup
     // in the renderer process, which all normal Pages belong to. There are also
     // additional private PageGroups for SVGImage, Inspector Overlay, etc.
-
-    // This really only exists to service InjectedStyleSheets at this point.
-    // InjectedStyleSheets could instead just use a global, and StyleEngine
-    // could be taught to look for InjectedStyleSheets when resolving style
-    // for normal frames.
     class PageGroup : public Supplementable<PageGroup>, public RefCounted<PageGroup> {
         WTF_MAKE_NONCOPYABLE(PageGroup); WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -59,18 +54,10 @@ namespace WebCore {
         void addPage(Page*);
         void removePage(Page*);
 
-        void injectStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget);
-        void removeInjectedStyleSheets();
-
-        const InjectedStyleSheetVector& injectedStyleSheets() const { return m_injectedStyleSheets; }
-
     private:
         PageGroup();
 
-        void invalidatedInjectedStyleSheetCacheInAllFrames();
-
         HashSet<Page*> m_pages;
-        InjectedStyleSheetVector m_injectedStyleSheets;
     };
 
 } // namespace WebCore

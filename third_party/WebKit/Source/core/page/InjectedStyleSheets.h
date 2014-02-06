@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright 2014 The Chromium Authors. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InjectedStyleSheet_h
-#define InjectedStyleSheet_h
+#ifndef InjectedStyleSheets_h
+#define InjectedStyleSheets_h
 
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -33,10 +34,10 @@ namespace WebCore {
 
 enum StyleInjectionTarget { InjectStyleInAllFrames, InjectStyleInTopFrameOnly };
 
-class InjectedStyleSheet {
+class InjectedStyleSheetEntry {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    InjectedStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectedFrames)
+    InjectedStyleSheetEntry(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectedFrames)
         : m_source(source)
         , m_whitelist(whitelist)
         , m_injectedFrames(injectedFrames)
@@ -53,8 +54,24 @@ private:
     StyleInjectionTarget m_injectedFrames;
 };
 
-typedef Vector<OwnPtr<InjectedStyleSheet> > InjectedStyleSheetVector;
+typedef Vector<OwnPtr<InjectedStyleSheetEntry> > InjectedStyleSheetEntryVector;
+
+class InjectedStyleSheets {
+public:
+    static InjectedStyleSheets& instance();
+
+    void add(const String& source, const Vector<String>& whitelist, StyleInjectionTarget);
+    void removeAll();
+
+    const InjectedStyleSheetEntryVector& entries() const { return m_entries; }
+
+private:
+    InjectedStyleSheets() { }
+    void invalidateInjectedStyleSheetCacheInAllFrames();
+
+    InjectedStyleSheetEntryVector m_entries;
+};
 
 } // namespace WebCore
 
-#endif // InjectedStyleSheet_h
+#endif // InjectedStyleSheets_h
