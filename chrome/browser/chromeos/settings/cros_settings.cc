@@ -231,8 +231,10 @@ bool CrosSettings::FindEmailInList(const std::string& path,
     std::string canonicalized_entry(
         gaia::CanonicalizeEmail(gaia::SanitizeEmail(entry_string)));
 
-    if (canonicalized_entry == canonicalized_email)
+    if (canonicalized_entry != wildcard_email &&
+        canonicalized_entry == canonicalized_email) {
       return true;
+    }
 
     // If there is a wildcard match, don't exit early. There might be an exact
     // match further down the list that should take precedence if present.

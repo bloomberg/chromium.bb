@@ -255,4 +255,24 @@ TEST_F(CrosSettingsTest, FindEmailInList) {
   EXPECT_TRUE(IsWhitelisted(cs, "upper@example.com"));
 }
 
+TEST_F(CrosSettingsTest, FindEmailInListWildcard) {
+  base::ListValue list;
+  list.Append(new base::StringValue("user@example.com"));
+  list.Append(new base::StringValue("*@example.com"));
+
+  CrosSettings* cs = &settings_;
+  cs->Set(kAccountsPrefUsers, list);
+
+  bool wildcard_match = false;
+  EXPECT_TRUE(cs->FindEmailInList(
+      kAccountsPrefUsers, "test@example.com", &wildcard_match));
+  EXPECT_TRUE(wildcard_match);
+  EXPECT_TRUE(cs->FindEmailInList(
+      kAccountsPrefUsers, "user@example.com", &wildcard_match));
+  EXPECT_FALSE(wildcard_match);
+  EXPECT_TRUE(cs->FindEmailInList(
+      kAccountsPrefUsers, "*@example.com", &wildcard_match));
+  EXPECT_TRUE(wildcard_match);
+}
+
 }  // namespace chromeos
