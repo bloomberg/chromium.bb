@@ -457,7 +457,7 @@ const char kDoNotTrackLearnMoreURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kAttestationForContentProtectionLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=tpm";
+    "https://support.google.com/?p=verified_access";
 #endif
 
 const char kChromiumProjectURL[] = "http://www.chromium.org/";
