@@ -322,13 +322,13 @@ cr.define('options', function() {
         var panel = node.querySelector('.manifest-errors');
         panel.hidden = false;
         panel.appendChild(new extensions.ExtensionErrorList(
-            extension.manifestErrors, 'extensionErrorsManifestErrors'));
+            extension.manifestErrors));
       }
       if (extension.runtimeErrors) {
         var panel = node.querySelector('.runtime-errors');
         panel.hidden = false;
         panel.appendChild(new extensions.ExtensionErrorList(
-            extension.runtimeErrors, 'extensionErrorsRuntimeErrors'));
+            extension.runtimeErrors));
       }
       if (extension.installWarnings) {
         var panel = node.querySelector('.install-warnings');

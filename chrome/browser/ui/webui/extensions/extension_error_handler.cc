@@ -57,32 +57,32 @@ ExtensionErrorHandler::~ExtensionErrorHandler() {
 void ExtensionErrorHandler::GetLocalizedValues(
     content::WebUIDataSource* source) {
   source->AddString(
-      "extensionErrorsManifestErrors",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_MANIFEST_ERRORS));
-  source->AddString(
-      "extensionErrorsRuntimeErrors",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_RUNTIME_ERRORS));
-  source->AddString(
       "extensionErrorsShowMore",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_MORE));
   source->AddString(
       "extensionErrorsShowFewer",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_FEWER));
   source->AddString(
-      "extensionErrorViewSource",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_SOURCE));
+      "extensionErrorViewDetails",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_DETAILS));
   source->AddString(
-      "extensionErrorInspect",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_INSPECT));
+      "extensionErrorViewManifest",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_MANIFEST));
   source->AddString(
-      "extensionErrorContext",
+      "extensionErrorOverlayContextUrl",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT));
   source->AddString(
-      "extensionErrorStackTrace",
+      "extensionErrorOverlayStackTrace",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_STACK_TRACE));
   source->AddString(
-      "extensionErrorAnonymousFunction",
+      "extensionErrorOverlayAnonymousFunction",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION));
+  source->AddString(
+      "extensionErrorOverlayLaunchDevtools",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS));
+  source->AddString(
+      "extensionErrorOverlayContextUnknown",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN));
 }
 
 void ExtensionErrorHandler::RegisterMessages() {
