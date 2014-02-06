@@ -157,7 +157,7 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 					   pointer->x, pointer->y,
 					   &sx, &sy);
 
-	if (pointer->focus != view)
+	if (pointer->focus != view || pointer->sx != sx || pointer->sy != sy)
 		weston_pointer_set_focus(pointer, view, sx, sy);
 }
 
@@ -166,18 +166,19 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 			    wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_pointer *pointer = grab->pointer;
-	wl_fixed_t sx, sy;
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
 
+	if (pointer->focus)
+		weston_view_from_global_fixed(pointer->focus, x, y,
+					      &pointer->sx, &pointer->sy);
+
 	weston_pointer_move(pointer, x, y);
 
-	if (pointer->focus)
-		weston_view_from_global_fixed(pointer->focus,
-					      pointer->x, pointer->y, &sx, &sy);
 	resource_list = &pointer->focus_resource_list;
 	wl_resource_for_each(resource, resource_list) {
-		wl_pointer_send_motion(resource, time, sx, sy);
+		wl_pointer_send_motion(resource, time,
+				       pointer->sx, pointer->sy);
 	}
 }
 
@@ -614,16 +615,17 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 	struct wl_display *display = pointer->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_list *focus_resource_list;
-	int different_surface = 0;
+	int refocus = 0;
 
 	if ((!pointer->focus && view) ||
 	    (pointer->focus && !view) ||
-	    (pointer->focus && pointer->focus->surface != view->surface))
-		different_surface = 1;
+	    (pointer->focus && pointer->focus->surface != view->surface) ||
+	    pointer->sx != sx || pointer->sy != sy)
+		refocus = 1;
 
 	focus_resource_list = &pointer->focus_resource_list;
 
-	if (!wl_list_empty(focus_resource_list) && different_surface) {
+	if (!wl_list_empty(focus_resource_list) && refocus) {
 		serial = wl_display_next_serial(display);
 		wl_resource_for_each(resource, focus_resource_list) {
 			wl_pointer_send_leave(resource, serial,
@@ -633,8 +635,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		move_resources(&pointer->resource_list, focus_resource_list);
 	}
 
-	if (find_resource_for_view(&pointer->resource_list, view) &&
-	    different_surface) {
+	if (find_resource_for_view(&pointer->resource_list, view) && refocus) {
 		struct wl_client *surface_client =
 			wl_resource_get_client(view->surface->resource);
 
@@ -672,6 +673,9 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 
 	pointer->focus = view;
 	pointer->focus_view_listener.notify = pointer_focus_view_destroyed;
+	pointer->sx = sx;
+	pointer->sy = sy;
+
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
