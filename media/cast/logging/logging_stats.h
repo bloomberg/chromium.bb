@@ -47,13 +47,11 @@ class LoggingStats {
   void InsertGenericEvent(const base::TimeTicks& time_of_event,
                           CastLoggingEvent event, int value);
 
-  // Get log stats: some of the values, such as frame rate and bit rates are
-  // computed at the time of the call.
-  const FrameStatsMap* GetFrameStatsData(const base::TimeTicks& now);
+  FrameStatsMap GetFrameStatsData() const;
 
-  const PacketStatsMap* GetPacketStatsData(const base::TimeTicks& now);
+  PacketStatsMap GetPacketStatsData() const;
 
-  const GenericStatsMap* GetGenericStatsData();
+  GenericStatsMap GetGenericStatsData() const;
 
  private:
   void InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
@@ -64,10 +62,6 @@ class LoggingStats {
   FrameStatsMap frame_stats_;
   PacketStatsMap packet_stats_;
   GenericStatsMap generic_stats_;
-  // Every event has an individual start time
-  base::TimeTicks start_time_[kNumOfLoggingEvents];
-  // Keep track of event counts.
-  int counts_[kNumOfLoggingEvents];
 
   DISALLOW_COPY_AND_ASSIGN(LoggingStats);
 };

@@ -9,13 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 
 namespace media {
 namespace cast {
 
-static const uint32 kFrameIdUnknown = 0xFFFF;
+static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 
 struct CastLoggingConfig {
   CastLoggingConfig(bool sender);
@@ -76,9 +75,11 @@ struct FrameEvent {
   ~FrameEvent();
 
   uint32 frame_id;
-  size_t size;  // Encoded size only.
+  // Size is set only for kAudioFrameEncoded and kVideoFrameEncoded.
+  size_t size;
   std::vector<base::TimeTicks> timestamp;
   std::vector<CastLoggingEvent> type;
+  // Delay is only set for kAudioPlayoutDelay and kVideoRenderDelay.
   base::TimeDelta delay_delta;  // Render/playout delay.
 };
 
@@ -109,15 +110,40 @@ struct GenericEvent {
   std::vector<base::TimeTicks> timestamp;
 };
 
+// Generic statistics given the raw data. More specific data (e.g. frame rate
+// and bit rate) can be computed given the basic metrics.
+// Some of the metrics will only be set when applicable, e.g. delay and size.
 struct FrameLogStats {
   FrameLogStats();
   ~FrameLogStats();
+  base::TimeTicks first_event_time;
+  base::TimeTicks last_event_time;
+  int event_counter;
+  size_t sum_size;
+  base::TimeDelta min_delay;
+  base::TimeDelta max_delay;
+  base::TimeDelta sum_delay;
+};
 
-  double framerate_fps;
-  double bitrate_kbps;
-  int max_delay_ms;
-  int min_delay_ms;
-  int avg_delay_ms;
+struct PacketLogStats {
+  PacketLogStats();
+  ~PacketLogStats();
+  base::TimeTicks first_event_time;
+  base::TimeTicks last_event_time;
+  int event_counter;
+  size_t sum_size;
+};
+
+struct GenericLogStats {
+  GenericLogStats();
+  ~GenericLogStats();
+  base::TimeTicks first_event_time;
+  base::TimeTicks last_event_time;
+  int event_counter;
+  int sum;
+  uint64 sum_squared;
+  int min;
+  int max;
 };
 
 struct ReceiverRtcpEvent {
@@ -138,9 +164,9 @@ typedef std::map<CastLoggingEvent, GenericEvent> GenericRawMap;
 typedef std::multimap<uint32, ReceiverRtcpEvent> AudioRtcpRawMap;
 typedef std::multimap<uint32, ReceiverRtcpEvent> VideoRtcpRawMap;
 
-typedef std::map<CastLoggingEvent, linked_ptr<FrameLogStats > > FrameStatsMap;
-typedef std::map<CastLoggingEvent, double> PacketStatsMap;
-typedef std::map<CastLoggingEvent, double> GenericStatsMap;
+typedef std::map<CastLoggingEvent, FrameLogStats> FrameStatsMap;
+typedef std::map<CastLoggingEvent, PacketLogStats> PacketStatsMap;
+typedef std::map<CastLoggingEvent, GenericLogStats> GenericStatsMap;
 
 }  // namespace cast
 }  // namespace media

@@ -403,7 +403,7 @@ void AudioReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   RtcpReceiverLogMessage receiver_log;
   AudioRtcpRawMap audio_logs =
-      cast_environment_->Logging()->GetAudioRtcpRawData();
+      cast_environment_->Logging()->GetAndResetAudioRtcpRawData();
 
   while (!audio_logs.empty()) {
     AudioRtcpRawMap::iterator it = audio_logs.begin();

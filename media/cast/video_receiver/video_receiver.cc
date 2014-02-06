@@ -423,7 +423,7 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
   RtcpReceiverLogMessage receiver_log;
   VideoRtcpRawMap video_logs =
-      cast_environment_->Logging()->GetVideoRtcpRawData();
+      cast_environment_->Logging()->GetAndResetVideoRtcpRawData();
 
   while (!video_logs.empty()) {
     // TODO(hclam): Avoid calling begin() within a loop.

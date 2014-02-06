@@ -88,13 +88,18 @@ std::string CastLoggingToString(CastLoggingEvent event) {
   }
 }
 
-FrameEvent::FrameEvent() {}
+FrameEvent::FrameEvent()
+    : frame_id(0u),
+      size(0u) {}
 FrameEvent::~FrameEvent() {}
 
-BasePacketInfo::BasePacketInfo() {}
+BasePacketInfo::BasePacketInfo()
+    : size(0u) {}
 BasePacketInfo::~BasePacketInfo() {}
 
-PacketEvent::PacketEvent() {}
+PacketEvent::PacketEvent()
+    : frame_id(0u),
+      max_packet_id(0) {}
 PacketEvent::~PacketEvent() {}
 
 GenericEvent::GenericEvent() {}
@@ -104,12 +109,23 @@ ReceiverRtcpEvent::ReceiverRtcpEvent() {}
 ReceiverRtcpEvent::~ReceiverRtcpEvent() {}
 
 FrameLogStats::FrameLogStats()
-    : framerate_fps(0),
-      bitrate_kbps(0),
-      max_delay_ms(0),
-      min_delay_ms(0),
-      avg_delay_ms(0) {}
+    : event_counter(0),
+      sum_size(0) {}
 FrameLogStats::~FrameLogStats() {}
 
+PacketLogStats::PacketLogStats()
+    : event_counter(0),
+      sum_size(0) {}
+
+PacketLogStats::~PacketLogStats() {}
+
+GenericLogStats::GenericLogStats()
+    : event_counter(0),
+      sum(0),
+      sum_squared(0),
+      min(0),
+      max(0) {}
+
+GenericLogStats::~GenericLogStats() {}
 }  // namespace cast
 }  // namespace media

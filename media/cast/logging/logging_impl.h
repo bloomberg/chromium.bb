@@ -62,18 +62,20 @@ class LoggingImpl : public base::NonThreadSafe {
                           int value);
 
   // Get raw data.
-  FrameRawMap GetFrameRawData();
-  PacketRawMap GetPacketRawData();
-  GenericRawMap GetGenericRawData();
-  AudioRtcpRawMap GetAudioRtcpRawData();
-  VideoRtcpRawMap GetVideoRtcpRawData();
+  FrameRawMap GetFrameRawData() const;
+  PacketRawMap GetPacketRawData() const;
+  GenericRawMap GetGenericRawData() const;
 
-  // Get stats only (computed when called). Triggers UMA stats when enabled.
-  const FrameStatsMap* GetFrameStatsData(const base::TimeTicks& now);
-  const PacketStatsMap* GetPacketStatsData(const base::TimeTicks& now);
-  const GenericStatsMap* GetGenericStatsData();
+  // Get the RTCP data and reset the data.
+  AudioRtcpRawMap GetAndResetAudioRtcpRawData();
+  VideoRtcpRawMap GetAndResetVideoRtcpRawData();
 
-  // Reset raw logging data.
+  // Get stats only.
+  FrameStatsMap GetFrameStatsData() const;
+  PacketStatsMap GetPacketStatsData() const;
+  GenericStatsMap GetGenericStatsData() const;
+
+  // Reset raw logging data (this does not reset the RTCP raw data).
   void ResetRaw();
   // Reset stats logging data.
   void ResetStats();

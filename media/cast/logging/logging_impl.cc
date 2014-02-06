@@ -55,9 +55,9 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
   }
   if (config_.enable_uma_stats) {
     if (event == kAudioFrameEncoded)
-      UMA_HISTOGRAM_COUNTS("Cast.AudioFrameEncoded", frame_size);
+      UMA_HISTOGRAM_COUNTS("Cast.AudioFrameEncodedSize", frame_size);
     else if (event == kVideoFrameEncoded) {
-      UMA_HISTOGRAM_COUNTS("Cast.VideoFrameEncoded", frame_size);
+      UMA_HISTOGRAM_COUNTS("Cast.VideoFrameEncodedSize", frame_size);
     }
   }
 
@@ -169,7 +169,7 @@ void LoggingImpl::InsertGenericUmaEvent(CastLoggingEvent event, int value) {
       UMA_HISTOGRAM_COUNTS("Cast.RttMs", value);
       break;
     case kPacketLoss:
-      UMA_HISTOGRAM_COUNTS("Cast.PacketLoss", value);
+      UMA_HISTOGRAM_COUNTS("Cast.PacketLossFraction", value);
       break;
     case kJitterMs:
       UMA_HISTOGRAM_COUNTS("Cast.JitterMs", value);
@@ -184,149 +184,44 @@ void LoggingImpl::InsertGenericUmaEvent(CastLoggingEvent event, int value) {
 }
 
 // should just get the entire class, would be much easier.
-FrameRawMap LoggingImpl::GetFrameRawData() {
+FrameRawMap LoggingImpl::GetFrameRawData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetFrameData();
 }
 
-PacketRawMap LoggingImpl::GetPacketRawData() {
+PacketRawMap LoggingImpl::GetPacketRawData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetPacketData();
 }
 
-GenericRawMap LoggingImpl::GetGenericRawData() {
+GenericRawMap LoggingImpl::GetGenericRawData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetGenericData();
 }
 
-AudioRtcpRawMap LoggingImpl::GetAudioRtcpRawData() {
+AudioRtcpRawMap LoggingImpl::GetAndResetAudioRtcpRawData() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetAndResetAudioRtcpData();
 }
 
-VideoRtcpRawMap LoggingImpl::GetVideoRtcpRawData() {
+VideoRtcpRawMap LoggingImpl::GetAndResetVideoRtcpRawData() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetAndResetVideoRtcpData();
 }
 
-const FrameStatsMap* LoggingImpl::GetFrameStatsData(
-    const base::TimeTicks& now) {
+FrameStatsMap LoggingImpl::GetFrameStatsData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  // Get stats data.
-  const FrameStatsMap* stats = stats_.GetFrameStatsData(now);
-  if (config_.enable_uma_stats) {
-    FrameStatsMap::const_iterator it;
-    for (it = stats->begin(); it != stats->end(); ++it) {
-      // Check for an active event.
-      // The default frame event implies frame rate.
-      if (it->second->framerate_fps > 0) {
-        switch (it->first) {
-          case kAudioFrameReceived:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameReceived",
-                it->second->framerate_fps);
-            break;
-          case kAudioFrameCaptured:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameCaptured",
-                it->second->framerate_fps);
-            break;
-          case kAudioFrameEncoded:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameEncoded",
-                it->second->framerate_fps);
-            break;
-          case kVideoFrameCaptured:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameCaptured",
-                it->second->framerate_fps);
-            break;
-          case kVideoFrameReceived:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameReceived",
-                it->second->framerate_fps);
-            break;
-          case kVideoFrameSentToEncoder:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameSentToEncoder",
-                it->second->framerate_fps);
-            break;
-          case kVideoFrameEncoded:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameEncoded",
-                it->second->framerate_fps);
-            break;
-          case kVideoFrameDecoded:
-            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameDecoded",
-                it->second->framerate_fps);
-            break;
-          default:
-            // No-op
-            break;
-        }
-      } else {
-        // All active frame events trigger frame rate computation.
-        continue;
-      }
-      // Bit rate should only be provided following encoding for either audio
-      // or video.
-      if (it->first == kVideoFrameEncoded) {
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoBitrateKbps",
-            it->second->framerate_fps);
-      } else if (it->first == kAudioFrameEncoded) {
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioBitrateKbps",
-            it->second->framerate_fps);
-      }
-      // Delay events.
-      if (it->first == kAudioPlayoutDelay) {
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayAvg",
-            it->second->avg_delay_ms);
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayMin",
-            it->second->min_delay_ms);
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayMax",
-            it->second->max_delay_ms);
-      } else if (it->first == kVideoRenderDelay) {
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayAvg",
-            it->second->avg_delay_ms);
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayMin",
-            it->second->min_delay_ms);
-        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayMax",
-            it->second->max_delay_ms);
-      }
-    }
-  }
-  return stats;
+  return stats_.GetFrameStatsData();
 }
 
-const PacketStatsMap* LoggingImpl::GetPacketStatsData(
-    const base::TimeTicks& now) {
+PacketStatsMap LoggingImpl::GetPacketStatsData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  // Get stats data.
-  const PacketStatsMap* stats = stats_.GetPacketStatsData(now);
-  if (config_.enable_uma_stats) {
-    PacketStatsMap::const_iterator it;
-    for (it = stats->begin(); it != stats->end(); ++it) {
-      switch (it->first) {
-        case kPacketSentToPacer:
-          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketSentToPacer", it->second);
-          break;
-        case kPacketSentToNetwork:
-          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketSentToNetwork", it->second);
-          break;
-        case kPacketRetransmitted:
-          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketRetransmited", it->second);
-          break;
-        case kDuplicatePacketReceived:
-          UMA_HISTOGRAM_COUNTS("Cast.Stats.DuplicatePacketReceived",
-                               it->second);
-          break;
-        default:
-          // No-op.
-          break;
-      }
-    }
-  }
-  return stats;
+  return stats_.GetPacketStatsData();
 }
 
-const GenericStatsMap* LoggingImpl::GetGenericStatsData() {
+GenericStatsMap LoggingImpl::GetGenericStatsData() const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  // Get stats data.
-  const GenericStatsMap* stats = stats_.GetGenericStatsData();
-  return stats;
+  return stats_.GetGenericStatsData();
 }
 
 void LoggingImpl::ResetRaw() {

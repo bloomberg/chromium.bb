@@ -221,7 +221,7 @@ void VideoSender::SendRtcpReport() {
 
   transport::RtcpSenderLogMessage sender_log_message;
   VideoRtcpRawMap video_logs =
-      cast_environment_->Logging()->GetVideoRtcpRawData();
+      cast_environment_->Logging()->GetAndResetVideoRtcpRawData();
 
   while (!video_logs.empty()) {
     // TODO(hclam): Avoid calling begin() within a loop.
