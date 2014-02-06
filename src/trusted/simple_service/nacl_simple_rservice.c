@@ -326,11 +326,14 @@ int NaClSimpleRevConnectionCtor(
     return 0;
   }
 
+  NaClRefCountRef((struct NaClRefCount *) self->service);
   self->service = service;
   self->connected_socket = conn;
   self->exit_cb = exit_cb;
   self->instance_data = instance_data;
 
+  NACL_VTBL(NaClRefCount, self) =
+      (struct NaClRefCountVtbl *) &kNaClSimpleRevConnectionVtbl;
   return 1;
 }
 
