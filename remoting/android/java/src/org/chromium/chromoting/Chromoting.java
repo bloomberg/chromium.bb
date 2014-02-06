@@ -34,6 +34,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -264,7 +268,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
                 // Interpret what the directory server told us.
                 JSONObject data = new JSONObject(String.valueOf(response)).getJSONObject("data");
-                mHosts = data.getJSONArray("items");
+                mHosts = sortHosts(data.getJSONArray("items"));
                 Log.i("hostlist", "Received host listing from directory server");
             } catch (RuntimeException ex) {
                 // Make sure any other failure is reported to the user (as an unknown error).
@@ -321,6 +325,41 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                         updateUi();
                     }
             });
+        }
+
+        private JSONArray sortHosts(JSONArray hosts) {
+            List<JSONObject> hostList = new ArrayList<JSONObject>();
+            for (int i = 0; i < hosts.length(); i++) {
+                try {
+                    hostList.add(hosts.getJSONObject(i));
+                } catch (JSONException ex) {
+                    // Ignore non-object entries.
+                }
+            }
+
+            Comparator<JSONObject> compareHosts = new Comparator<JSONObject>() {
+                public int compare(JSONObject a, JSONObject b) {
+                    try {
+                        boolean aOnline = a.getString("status").equals("ONLINE");
+                        boolean bOnline = b.getString("status").equals("ONLINE");
+                        if (aOnline && !bOnline) {
+                            return -1;
+                        }
+                        if (bOnline && !aOnline) {
+                            return 1;
+                        }
+                        String aName = a.getString("hostName").toUpperCase();
+                        String bName = b.getString("hostName").toUpperCase();
+                        return aName.compareTo(bName);
+                    } catch (JSONException ex) {
+                        return 0;
+                    }
+                }
+            };
+            Collections.sort(hostList, compareHosts);
+
+            JSONArray result = new JSONArray(hostList);
+            return result;
         }
     }
 
