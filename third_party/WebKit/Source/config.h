@@ -100,11 +100,11 @@
 #define WTF_USE_RUBBER_BANDING 1
 #endif /* OS(MACOSX) */
 
-#if !OS(MACOSX) && !OS(ANDROID)
+#if !OS(MACOSX) && !OS(ANDROID) && !OS(LINUX)
 /* On other platforms the "system malloc" is TCMalloc, so there's
  * no need to use Blink's fast PartitionAlloc allocator. */
 #define WTF_USE_SYSTEM_MALLOC 1
-#endif /* !OS(MACOSX) && !OS(ANDROID) */
+#endif /* !OS(MACOSX) && !OS(ANDROID) && !OS(LINUX) */
 
 #if OS(POSIX)
 #define HAVE_MMAP 1
