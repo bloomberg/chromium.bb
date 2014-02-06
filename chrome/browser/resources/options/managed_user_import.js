@@ -207,11 +207,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Closes the overlay if importing the managed user was successful.
+     * Closes the overlay if importing the managed user was successful. Also
+     * reset the cached list of managed users in order to get an updated list
+     * when the overlay is reopened.
      * @private
      */
     onSuccess_: function() {
       this.updateImportInProgress_(false);
+      options.ManagedUserListData.resetPromise();
       OptionsPage.closeOverlay();
     },
   };
