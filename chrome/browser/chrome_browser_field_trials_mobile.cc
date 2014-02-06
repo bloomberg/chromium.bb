@@ -12,6 +12,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/prerender/prerender_field_trial.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -72,6 +76,9 @@ void SetupMobileFieldTrials(const CommandLine& parsed_command_line,
                             const base::Time& install_time,
                             PrefService* local_state) {
   DataCompressionProxyFieldTrials();
+#if defined(OS_ANDROID)
+  prerender::ConfigurePrerender(parsed_command_line);
+#endif
 }
 
 }  // namespace chrome
