@@ -52,7 +52,7 @@ TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelega
 
 double TimedItem::iterationDuration() const
 {
-    double result = m_specified.hasIterationDuration ? m_specified.iterationDuration : intrinsicIterationDuration();
+    double result = std::isnan(m_specified.iterationDuration) ? intrinsicIterationDuration() : m_specified.iterationDuration;
     ASSERT(result >= 0);
     return result;
 }

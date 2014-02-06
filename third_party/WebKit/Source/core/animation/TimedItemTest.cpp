@@ -114,7 +114,6 @@ private:
 TEST(AnimationTimedItemTest, Sanity)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -168,7 +167,6 @@ TEST(AnimationTimedItemTest, Sanity)
 TEST(AnimationTimedItemTest, FillForwards)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -182,7 +180,6 @@ TEST(AnimationTimedItemTest, FillForwards)
 TEST(AnimationTimedItemTest, FillBackwards)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBackwards;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -197,7 +194,6 @@ TEST(AnimationTimedItemTest, FillBackwards)
 TEST(AnimationTimedItemTest, FillBoth)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBoth;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -212,7 +208,6 @@ TEST(AnimationTimedItemTest, FillBoth)
 TEST(AnimationTimedItemTest, StartDelay)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.startDelay = 0.5;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -230,7 +225,6 @@ TEST(AnimationTimedItemTest, StartDelay)
 TEST(AnimationTimedItemTest, ZeroIteration)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.iterationCount = 0;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -249,7 +243,6 @@ TEST(AnimationTimedItemTest, ZeroIteration)
 TEST(AnimationTimedItemTest, InfiniteIteration)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -269,7 +262,6 @@ TEST(AnimationTimedItemTest, Iteration)
 {
     Timing timing;
     timing.iterationCount = 2;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -299,7 +291,6 @@ TEST(AnimationTimedItemTest, IterationStart)
     Timing timing;
     timing.iterationStart = 1.2;
     timing.iterationCount = 2.2;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBoth;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -321,7 +312,6 @@ TEST(AnimationTimedItemTest, IterationAlternate)
 {
     Timing timing;
     timing.iterationCount = 10;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.direction = Timing::PlaybackDirectionAlternate;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -343,7 +333,6 @@ TEST(AnimationTimedItemTest, IterationAlternateReverse)
 {
     Timing timing;
     timing.iterationCount = 10;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -574,7 +563,6 @@ TEST(AnimationTimedItemTest, ZeroDurationIterationAlternateReverse)
 TEST(AnimationTimedItemTest, InfiniteDurationSanity)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = 1;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -606,7 +594,6 @@ TEST(AnimationTimedItemTest, InfiniteDurationSanity)
 TEST(AnimationTimedItemTest, InfiniteDurationZeroIterations)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = 0;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -637,7 +624,6 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroIterations)
 TEST(AnimationTimedItemTest, InfiniteDurationInfiniteIterations)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -668,7 +654,6 @@ TEST(AnimationTimedItemTest, InfiniteDurationInfiniteIterations)
 TEST(AnimationTimedItemTest, InfiniteDurationZeroPlaybackRate)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.playbackRate = 0;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -699,7 +684,6 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroPlaybackRate)
 TEST(AnimationTimedItemTest, Events)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.iterationCount = 2;
     timing.startDelay = 1;
@@ -744,7 +728,6 @@ TEST(AnimationTimedItemTest, Events)
 TEST(AnimationTimedItemTest, TimeToEffectChange)
 {
     Timing timing;
-    timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.iterationStart = 0.2;
     timing.iterationCount = 2.5;
