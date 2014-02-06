@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "components/password_manager/core/browser/login_database.h"
 
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.

@@ -38,6 +38,7 @@
             'json_schema/json_schema_validator_unittest_base.h',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/psl_matching_helper_unittest.cc',
             'precache/content/precache_manager_unittest.cc',
             'precache/core/precache_database_unittest.cc',
@@ -114,6 +115,7 @@
             'components.gyp:password_manager_core_browser_test_support',
 
             # Dependencies of precache/core
+            'components.gyp:password_manager_core_browser',
             'components.gyp:precache_core',
 
             # Dependencies of signin
@@ -178,6 +180,9 @@
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
+                # TODO(blundell): Provide the iOS login DB implementation and
+                # then re-enable this test. http://crbug.com/341429
+                ['exclude', '^password_manager/core/browser/login_database_unittest.cc'],
               ],
               'conditions': [
                 ['configuration_policy==1', {

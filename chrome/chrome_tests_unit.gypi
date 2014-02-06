@@ -1103,7 +1103,6 @@
         'browser/notifications/sync_notifier/welcome_delegate_unittest.cc',
         'browser/omnibox/omnibox_field_trial_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
-        'browser/password_manager/login_database_unittest.cc',
         'browser/password_manager/native_backend_gnome_x_unittest.cc',
         'browser/password_manager/native_backend_kwallet_x_unittest.cc',
         'browser/password_manager/password_form_manager_unittest.cc',

@@ -9,18 +9,36 @@
       'type': 'static_library',
       'dependencies': [
         'autofill_core_common',
+        'encryptor',
         'password_manager_core_common',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../sql/sql.gyp:sql',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'password_manager/core/browser/login_database.cc',
+        'password_manager/core/browser/login_database.h',
+        'password_manager/core/browser/login_database_mac.cc',
+        'password_manager/core/browser/login_database_posix.cc',
+        'password_manager/core/browser/login_database_win.cc',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'sources!': [
+            # TODO(blundell): Provide the iOS login DB implementation and then
+            # also exclude the POSIX one from iOS. http://crbug.com/341429
+            'password_manager/core/browser/login_database_posix.cc',
+          ],
+        }],
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'password_manager_core_browser_test_support',

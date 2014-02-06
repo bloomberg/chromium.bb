@@ -20,8 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
-#include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "components/password_manager/core/browser/login_database.h"
 #include "crypto/apple_keychain.h"
 
 using autofill::PasswordForm;

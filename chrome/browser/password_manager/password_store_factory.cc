@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/password_manager/core/browser/login_database.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
