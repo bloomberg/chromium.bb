@@ -53,7 +53,7 @@ public:
 
     T* get() const { return m_ptr; }
     // FIXME: oilpan: Remove this once we remove RefPtrWillBeRawPtr.
-    T* release() const { return m_ptr; }
+    RawPtr<T> release() const { return *this; }
     void clear() { m_ptr = 0; }
 
     RawPtr& operator=(T* ptr)

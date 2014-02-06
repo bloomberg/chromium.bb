@@ -2930,7 +2930,8 @@ END
     }
 
     my $argumentString = join(", ", @beforeArgumentList, @argumentList, @afterArgumentList);
-    $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::create(${argumentString});\n";
+    my $refPtrType = IsGarbageCollectedType($interfaceName) ? "RefPtrWillBeRawPtr<$implClassName>" : "RefPtr<$implClassName>";
+    $code .= "    $refPtrType impl = ${implClassName}::create(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
     if ($constructorRaisesException) {
@@ -5157,7 +5158,7 @@ sub GenerateToV8Converters
         return;
     }
 
-    my $createWrapperArgumentType = GetPassRefPtrType($interface);
+    my $passRefPtrType = GetPassRefPtrType($interface);
 
     # FIXME: Do we really need to treat /SVG/ as dependent DOM objects?
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
@@ -5170,7 +5171,7 @@ sub GenerateToV8Converters
 
     my $code = "";
     $code .= <<END;
-v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${passRefPtrType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl.get(), isolate));

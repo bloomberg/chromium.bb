@@ -39,7 +39,9 @@
 
 namespace WebCore {
 
-PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionState& exceptionState)
+DEFINE_GC_INFO(TextEncoder);
+
+PassRefPtrWillBeRawPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionState& exceptionState)
 {
     const String& encodingLabel = utfLabel.isNull() ? String("utf-8") : utfLabel;
 
@@ -55,7 +57,7 @@ PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionSta
         return 0;
     }
 
-    return adoptRef(new TextEncoder(encoding.name()));
+    return adoptRefWillBeNoop(new TextEncoder(encoding.name()));
 }
 
 TextEncoder::TextEncoder(const String& encoding)
