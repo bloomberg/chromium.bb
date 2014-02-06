@@ -48,14 +48,16 @@ static void disposeMapWithUnsafePersistentValues(Map* map)
     map->clear();
 }
 
-V8PerContextData::~V8PerContextData()
+void V8PerContextData::dispose()
 {
     v8::HandleScope handleScope(m_isolate);
-    V8PerContextDataHolder::from(m_context.newLocal(m_isolate))->setPerContextData(0);
+    V8PerContextDataHolder::from(v8::Local<v8::Context>::New(m_isolate, m_context))->setPerContextData(0);
 
     disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
     m_customElementBindings.clear();
+
+    m_context.Reset();
 }
 
 #define V8_STORE_PRIMORDIAL(name, Name) \
@@ -64,7 +66,7 @@ V8PerContextData::~V8PerContextData()
     v8::Handle<v8::String> symbol = v8AtomicString(m_isolate, #Name); \
     if (symbol.IsEmpty()) \
         return false; \
-    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(m_context.newLocal(m_isolate)->Global()->Get(symbol)); \
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(v8::Local<v8::Context>::New(m_isolate, m_context)->Global()->Get(symbol)); \
     if (object.IsEmpty()) \
         return false; \
     v8::Handle<v8::Value> prototypeValue = object->Get(prototypeString); \
@@ -75,7 +77,7 @@ V8PerContextData::~V8PerContextData()
 
 bool V8PerContextData::init()
 {
-    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
+    v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_isolate, m_context);
     V8PerContextDataHolder::from(context)->setPerContextData(this);
 
     v8::Handle<v8::String> prototypeString = v8AtomicString(m_isolate, "prototype");
@@ -93,7 +95,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
-    v8::Context::Scope scope(m_context.newLocal(m_isolate));
+    v8::Context::Scope scope(v8::Local<v8::Context>::New(m_isolate, m_context));
     v8::Local<v8::Function> function = constructorForType(type);
     v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(function);
     if (!instanceTemplate.IsEmpty()) {
@@ -107,7 +109,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
-    v8::Context::Scope scope(m_context.newLocal(m_isolate));
+    v8::Context::Scope scope(v8::Local<v8::Context>::New(m_isolate, m_context));
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate, worldType(m_isolate));
     // Getting the function might fail if we're running out of stack or memory.
     v8::TryCatch tryCatch;

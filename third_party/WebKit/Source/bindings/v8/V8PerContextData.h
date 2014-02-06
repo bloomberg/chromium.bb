@@ -84,7 +84,7 @@ private:
         , m_perContextData(0)
         , m_isolatedWorld(0)
     {
-        m_context.setWeak(this, &V8PerContextDataHolder::weakCallback);
+        m_context.SetWeak(this, &V8PerContextDataHolder::weakCallback);
         context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
     }
 
@@ -93,10 +93,11 @@ private:
     static void weakCallback(const v8::WeakCallbackData<v8::Context, V8PerContextDataHolder>& data)
     {
         data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
+        data.GetParameter()->m_context.Reset();
         delete data.GetParameter();
     }
 
-    ScopedPersistent<v8::Context> m_context;
+    v8::Persistent<v8::Context> m_context;
     V8PerContextData* m_perContextData;
     DOMWrapperWorld* m_isolatedWorld;
 };
@@ -108,7 +109,10 @@ public:
         return adoptPtr(new V8PerContextData(context));
     }
 
-    ~V8PerContextData();
+    ~V8PerContextData()
+    {
+        dispose();
+    }
 
     bool init();
 
@@ -164,6 +168,8 @@ private:
     {
     }
 
+    void dispose();
+
     v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
     v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);
 
@@ -181,7 +187,7 @@ private:
     // by the DOMActivityLoggerMap in DOMWrapperWorld.
     V8DOMActivityLogger* m_activityLogger;
     v8::Isolate* m_isolate;
-    ScopedPersistent<v8::Context> m_context;
+    v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
     typedef WTF::HashMap<CustomElementDefinition*, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
