@@ -73,10 +73,7 @@ GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(Profile* profile)
     : profile_(profile), load_count_(0) {}
 
 GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
-  if (load_count_ > 0) {
-    UnloadGaiaAuthExtension(profile_);
-    load_count_ = 0;
-  }
+  DCHECK_EQ(0, load_count_);
 }
 
 void GaiaAuthExtensionLoader::LoadIfNeeded() {
@@ -89,6 +86,13 @@ void GaiaAuthExtensionLoader::UnloadIfNeeded() {
   --load_count_;
   if (load_count_ == 0)
     UnloadGaiaAuthExtension(profile_);
+}
+
+void GaiaAuthExtensionLoader::Shutdown() {
+  if (load_count_ > 0) {
+    UnloadGaiaAuthExtension(profile_);
+    load_count_ = 0;
+  }
 }
 
 // static
