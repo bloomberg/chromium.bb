@@ -45,11 +45,10 @@ enum NodeListRootType {
 class LiveNodeListBase {
 public:
     LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
-        bool shouldOnlyIncludeDirectChildren, CollectionType collectionType)
+        CollectionType collectionType)
         : m_ownerNode(ownerNode)
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
-        , m_shouldOnlyIncludeDirectChildren(shouldOnlyIncludeDirectChildren)
         , m_collectionType(collectionType)
     {
         ASSERT(m_ownerNode);
@@ -87,7 +86,6 @@ protected:
     Document& document() const { return m_ownerNode->document(); }
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
-    bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
     template <typename Collection>
     static Element* iterateForPreviousNode(const Collection&, Node* current);
@@ -100,7 +98,6 @@ private:
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
     const unsigned m_rootType : 2;
     const unsigned m_invalidationType : 4;
-    const unsigned m_shouldOnlyIncludeDirectChildren : 1;
     const unsigned m_collectionType : 5;
 };
 
@@ -132,7 +129,7 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
 class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
     LiveNodeList(PassRefPtr<ContainerNode> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
-        : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, false,
+        : LiveNodeListBase(ownerNode.get(), rootType, invalidationType,
         collectionType)
     { }
 
@@ -143,6 +140,7 @@ public:
     using LiveNodeListBase::ownerNode;
 
     virtual void invalidateCache() const OVERRIDE FINAL;
+    bool shouldOnlyIncludeDirectChildren() const { return false; }
 
     // Collection IndexCache API.
     bool canTraverseBackward() const { return true; }

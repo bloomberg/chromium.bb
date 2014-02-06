@@ -66,6 +66,7 @@ protected:
 
     bool overridesItemAfter() const { return m_overridesItemAfter; }
     virtual Element* virtualItemAfter(Element*) const;
+    bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
     virtual void updateNameCache() const;
     bool hasNameCache() const { return m_isNameCacheValid; }
@@ -90,6 +91,7 @@ private:
     }
 
     const unsigned m_overridesItemAfter : 1;
+    const unsigned m_shouldOnlyIncludeDirectChildren : 1;
     mutable unsigned m_isNameCacheValid : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;

@@ -39,7 +39,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static bool shouldOnlyIncludeDirectChildren(CollectionType type)
+static bool shouldTypeOnlyIncludeDirectChildren(CollectionType type)
 {
     switch (type) {
     case ClassCollectionType:
@@ -161,9 +161,9 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
 }
 
 HTMLCollection::HTMLCollection(ContainerNode* ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
-    : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type),
-        WebCore::shouldOnlyIncludeDirectChildren(type), type)
+    : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type), type)
     , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
+    , m_shouldOnlyIncludeDirectChildren(shouldTypeOnlyIncludeDirectChildren(type))
     , m_isNameCacheValid(false)
 {
     ScriptWrappable::init(this);
