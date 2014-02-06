@@ -63,7 +63,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
   // updates the existing sync item instead.
-  void AddItem(AppListItem* item);
+  void AddItem(scoped_ptr<AppListItem> item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);

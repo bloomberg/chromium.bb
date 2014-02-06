@@ -22,6 +22,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
+#include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 
@@ -113,8 +115,14 @@ void AppListControllerDelegate::RemoveAppFromFolder(Profile* profile,
       app_list::AppListSyncableServiceFactory::GetForProfile(
           profile)->model();
   app_list::AppListItem* item = model->FindItem(app_id);
-  if (item)
-    model->MoveItemToFolder(item, "");
+  DCHECK(item) << "App not found in model: " << app_id;
+  syncer::StringOrdinal position;
+  app_list::AppListFolderItem* folder_item =
+      model->FindFolderItem(item->folder_id());
+  DCHECK(folder_item) << "No folder for item: " << item->ToDebugString();
+  // Position the item just after the folder.
+  position = folder_item->position().CreateAfter();
+  model->MoveItemToFolderAt(item, "", position);
 }
 
 bool AppListControllerDelegate::IsAppFromWebStore(

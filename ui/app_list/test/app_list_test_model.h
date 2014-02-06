@@ -17,10 +17,10 @@ namespace test {
 // Extends AppListModel with helper functions for use in tests.
 class AppListTestModel : public AppListModel {
  public:
-  class AppListTestItemModel : public AppListItem {
+  class AppListTestItem : public AppListItem {
    public:
-    AppListTestItemModel(const std::string& id, AppListTestModel* model);
-    virtual ~AppListTestItemModel();
+    AppListTestItem(const std::string& id, AppListTestModel* model);
+    virtual ~AppListTestItem();
     virtual void Activate(int event_flags) OVERRIDE;
     virtual const char* GetItemType() const OVERRIDE;
 
@@ -29,12 +29,17 @@ class AppListTestModel : public AppListModel {
    private:
     AppListTestModel* model_;
 
-    DISALLOW_COPY_AND_ASSIGN(AppListTestItemModel);
+    DISALLOW_COPY_AND_ASSIGN(AppListTestItem);
   };
 
   static const char kItemType[];
 
   AppListTestModel();
+
+  // Raw pointer version convenience versions of AppListModel methods.
+  AppListItem* AddItem(AppListItem* item);
+  AppListItem* AddItemToFolder(AppListItem* item, const std::string& folder_id);
+  void MoveItemToFolder(AppListItem* item, const std::string& folder_id);
 
   // Generates a name based on |id|.
   std::string GetItemName(int id);
@@ -49,8 +54,8 @@ class AppListTestModel : public AppListModel {
   std::string GetModelContent();
 
   // Creates an item with |title| and |full_name|. Caller owns the result.
-  AppListTestItemModel* CreateItem(const std::string& title,
-                                   const std::string& full_name);
+  AppListTestItem* CreateItem(const std::string& title,
+                              const std::string& full_name);
 
   // Creates and adds an item with |title| and |full_name| to the model.
   void CreateAndAddItem(const std::string& title, const std::string& full_name);
@@ -65,7 +70,7 @@ class AppListTestModel : public AppListModel {
   AppListItem* last_activated() { return last_activated_; }
 
  private:
-  void ItemActivated(AppListTestItemModel* item);
+  void ItemActivated(AppListTestItem* item);
 
   int activate_count_;
   AppListItem* last_activated_;

@@ -76,14 +76,11 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
                                size_t to_index,
                                app_list::AppListItem* item) OVERRIDE;
 
-  ExtensionAppItem* CreateAppItem(const std::string& extension_id,
-                                  const std::string& extension_name,
-                                  const gfx::ImageSkia& installing_icon,
-                                  bool is_platform_app);
-
-  // Adds apps in |extensions| to |apps|.
-  void AddApps(const extensions::ExtensionSet* extensions,
-               ExtensionAppList* apps);
+  scoped_ptr<ExtensionAppItem> CreateAppItem(
+      const std::string& extension_id,
+      const std::string& extension_name,
+      const gfx::ImageSkia& installing_icon,
+      bool is_platform_app);
 
   // Populates the model with apps.
   void PopulateApps();
@@ -92,7 +89,7 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   void ResortApps();
 
   // Inserts an app based on app ordinal prefs.
-  void InsertApp(ExtensionAppItem* app);
+  void InsertApp(scoped_ptr<ExtensionAppItem> app);
 
   // Sets which app is intended to be highlighted. Will remove the highlight
   // from a currently highlighted app.

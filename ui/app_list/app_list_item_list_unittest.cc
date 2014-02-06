@@ -65,9 +65,9 @@ class AppListItemListTest : public testing::Test {
   }
 
  protected:
-  AppListItem* CreateItem(const std::string& title,
-                               const std::string& full_name) {
-    AppListItem* item = new AppListItem(title);
+  scoped_ptr<AppListItem> CreateItem(const std::string& title,
+                                     const std::string& full_name) {
+    scoped_ptr<AppListItem> item(new AppListItem(title));
     size_t nitems = item_list_.item_count();
     syncer::StringOrdinal position;
     if (nitems == 0)
@@ -76,14 +76,13 @@ class AppListItemListTest : public testing::Test {
       position = item_list_.item_at(nitems - 1)->position().CreateAfter();
     item->set_position(position);
     item->SetTitleAndFullName(title, full_name);
-    return item;
+    return item.Pass();
   }
 
   AppListItem* CreateAndAddItem(const std::string& title,
                                 const std::string& full_name) {
-    AppListItem* item = CreateItem(title, full_name);
-    item_list_.AddItem(item);
-    return item;
+    scoped_ptr<AppListItem> item(CreateItem(title, full_name));
+    return item_list_.AddItem(item.Pass());
   }
 
   scoped_ptr<AppListItem> RemoveItem(const std::string& id) {
@@ -92,6 +91,11 @@ class AppListItemListTest : public testing::Test {
 
   scoped_ptr<AppListItem> RemoveItemAt(size_t index) {
     return item_list_.RemoveItemAt(index);
+  }
+
+  syncer::StringOrdinal CreatePositionBefore(
+      const syncer::StringOrdinal& position) {
+    return item_list_.CreatePositionBefore(position);
   }
 
   bool VerifyItemListOrdinals() {
@@ -225,6 +229,29 @@ TEST_F(AppListItemListTest, MoveItem) {
   item_list_.MoveItem(0, 3);
   EXPECT_TRUE(VerifyItemListOrdinals());
   EXPECT_TRUE(VerifyItemOrder4(1, 2, 3, 0));
+}
+
+TEST_F(AppListItemListTest, CreatePositionBefore) {
+  CreateAndAddItem(GetItemName(0), GetItemName(0));
+  syncer::StringOrdinal position0 = item_list_.item_at(0)->position();
+  syncer::StringOrdinal new_position;
+  new_position = CreatePositionBefore(position0.CreateBefore());
+  EXPECT_TRUE(new_position.LessThan(position0));
+  new_position = CreatePositionBefore(position0);
+  EXPECT_TRUE(new_position.LessThan(position0));
+  new_position = CreatePositionBefore(position0.CreateAfter());
+  EXPECT_TRUE(new_position.GreaterThan(position0));
+
+  CreateAndAddItem(GetItemName(1), GetItemName(1));
+  syncer::StringOrdinal position1 = item_list_.item_at(1)->position();
+  EXPECT_TRUE(position1.GreaterThan(position0));
+  new_position = CreatePositionBefore(position1);
+  EXPECT_TRUE(new_position.GreaterThan(position0));
+  EXPECT_TRUE(new_position.LessThan(position1));
+
+  // Invalid ordinal should return a position at the end of the list.
+  new_position = CreatePositionBefore(syncer::StringOrdinal());
+  EXPECT_TRUE(new_position.GreaterThan(position1));
 }
 
 TEST_F(AppListItemListTest, SetItemPosition) {

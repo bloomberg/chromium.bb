@@ -163,33 +163,19 @@ void ExtensionAppModelBuilder::OnShutdown() {
   }
 }
 
-ExtensionAppItem* ExtensionAppModelBuilder::CreateAppItem(
+scoped_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
     const std::string& extension_id,
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app) {
   const app_list::AppListSyncableService::SyncItem* sync_item =
       service_ ? service_->GetSyncItem(extension_id) : NULL;
-  return new ExtensionAppItem(profile_,
-                              sync_item,
-                              extension_id,
-                              extension_name,
-                              installing_icon,
-                              is_platform_app);
-}
-
-void ExtensionAppModelBuilder::AddApps(
-    const extensions::ExtensionSet* extensions,
-    ExtensionAppList* apps) {
-  for (extensions::ExtensionSet::const_iterator app = extensions->begin();
-       app != extensions->end(); ++app) {
-    if (ShouldDisplayInAppLauncher(profile_, *app)) {
-      apps->push_back(CreateAppItem((*app)->id(),
-                                    "",
-                                    gfx::ImageSkia(),
-                                    (*app)->is_platform_app()));
-    }
-  }
+  return make_scoped_ptr(new ExtensionAppItem(profile_,
+                                              sync_item,
+                                              extension_id,
+                                              extension_name,
+                                              installing_icon,
+                                              is_platform_app));
 }
 
 void ExtensionAppModelBuilder::BuildModel() {
@@ -207,22 +193,24 @@ void ExtensionAppModelBuilder::BuildModel() {
 void ExtensionAppModelBuilder::PopulateApps() {
   extensions::ExtensionSet extensions;
   controller_->GetApps(profile_, &extensions);
-  ExtensionAppList apps;
-  AddApps(&extensions, &apps);
 
-  if (apps.empty())
-    return;
-
-  for (size_t i = 0; i < apps.size(); ++i)
-    InsertApp(apps[i]);
+  for (extensions::ExtensionSet::const_iterator app = extensions.begin();
+       app != extensions.end(); ++app) {
+    if (!ShouldDisplayInAppLauncher(profile_, *app))
+      continue;
+    InsertApp(CreateAppItem((*app)->id(),
+                            "",
+                            gfx::ImageSkia(),
+                            (*app)->is_platform_app()));
+  }
 }
 
-void ExtensionAppModelBuilder::InsertApp(ExtensionAppItem* app) {
+void ExtensionAppModelBuilder::InsertApp(scoped_ptr<ExtensionAppItem> app) {
   if (service_) {
-    service_->AddItem(app);
+    service_->AddItem(app.PassAs<app_list::AppListItem>());
     return;
   }
-  model_->AddItem(app);
+  model_->AddItem(app.PassAs<app_list::AppListItem>());
 }
 
 void ExtensionAppModelBuilder::SetHighlightedApp(

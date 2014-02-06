@@ -60,9 +60,15 @@ class APP_LIST_EXPORT AppListItemList {
   friend class AppListItemListTest;
   friend class AppListModel;
 
+  // Returns a unique, valid StringOrdinal immediately before |position| or at
+  // the end of the list if |position| is invalid.
+  syncer::StringOrdinal CreatePositionBefore(
+      const syncer::StringOrdinal& position);
+
   // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
-  // Triggers observers_.OnListItemAdded(). Returns the index of the added item.
-  size_t AddItem(AppListItem* item);
+  // Triggers observers_.OnListItemAdded(). Returns a pointer to the added item
+  // that is safe to use (e.g. after releasing a scoped ptr).
+  AppListItem* AddItem(scoped_ptr<AppListItem> item_ptr);
 
   // Finds item matching |id| in |app_list_items_| (linear search) and deletes
   // it. Triggers observers_.OnListItemRemoved() after removing the item from

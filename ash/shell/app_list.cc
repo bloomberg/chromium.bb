@@ -209,7 +209,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       WindowTypeShelfItem::Type type =
           static_cast<WindowTypeShelfItem::Type>(i);
       std::string id = base::StringPrintf("%d", i);
-      model_->AddItem(new WindowTypeShelfItem(id, type));
+      scoped_ptr<WindowTypeShelfItem> shelf_item(
+          new WindowTypeShelfItem(id, type));
+      model_->AddItem(shelf_item.PassAs<app_list::AppListItem>());
     }
   }
 

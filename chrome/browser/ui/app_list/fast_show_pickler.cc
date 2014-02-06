@@ -212,9 +212,9 @@ void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
   DCHECK_EQ(0u, dest->item_list()->item_count());
   for (size_t i = 0; i < src->item_list()->item_count(); i++) {
     AppListItem* src_item = src->item_list()->item_at(i);
-    AppListItem* dest_item = new AppListItem(src_item->id());
-    CopyOverItem(src_item, dest_item);
-    dest->AddItemToFolder(dest_item, src_item->folder_id());
+    scoped_ptr<AppListItem> dest_item(new AppListItem(src_item->id()));
+    CopyOverItem(src_item, dest_item.get());
+    dest->AddItemToFolder(dest_item.Pass(), src_item->folder_id());
   }
 }
 
@@ -236,7 +236,7 @@ FastShowPickler::UnpickleAppListModelForFastShow(Pickle* pickle) {
     if (!item)
       return scoped_ptr<AppListModel>();
     std::string folder_id = item->folder_id();
-    model->AddItemToFolder(item.release(), folder_id);
+    model->AddItemToFolder(item.Pass(), folder_id);
   }
 
   return model.Pass();

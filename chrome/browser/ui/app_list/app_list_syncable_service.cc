@@ -242,14 +242,14 @@ AppListSyncableService::GetSyncItem(const std::string& id) const {
   return NULL;
 }
 
-void AppListSyncableService::AddItem(AppListItem* app_item) {
-  SyncItem* sync_item = FindOrAddSyncItem(app_item);
+void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
+  SyncItem* sync_item = FindOrAddSyncItem(app_item.get());
   if (!sync_item)
     return;  // Item is not valid.
 
   DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
   std::string folder_id = sync_item->parent_id;
-  model_->AddItemToFolder(app_item, folder_id);
+  model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(

@@ -2743,6 +2743,9 @@
           ],
         }],
         ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_test_support',
+          ],
           'sources': [
             'browser/ui/app_list/extension_app_model_builder_unittest.cc',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',

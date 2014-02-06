@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/test/app_list_test_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 
@@ -76,46 +77,46 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  AppListItem* app1 = new AppListItem("abc");
+  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
   app1->SetTitleAndFullName("ht", "hello, there");
-  model.AddItem(app1);
+  model.AddItem(app1.Pass());
 
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  AppListItem* app1 = new AppListItem("abc");
+  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
   app1->SetTitleAndFullName("ht", "hello, there");
-  model.AddItem(app1);
+  model.AddItem(app1.Pass());
 
-  AppListItem* app2 = new AppListItem("abc2");
+  scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
   app2->SetTitleAndFullName("ht2", "hello, there 2");
-  model.AddItem(app2);
+  model.AddItem(app2.Pass());
 
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  AppListItem* app1 = new AppListItem("abc");
+  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(MakeImage(), true);
-  model.AddItem(app1);
+  model.AddItem(app1.Pass());
 
-  AppListItem* app2 = new AppListItem("abc2");
+  scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
   app2->SetTitleAndFullName("ht2", "hello, there 2");
-  model.AddItem(app2);
+  model.AddItem(app2.Pass());
 
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  AppListItem* app1 = new AppListItem("abc");
+  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
-  model.AddItem(app1);
+  model.AddItem(app1.Pass());
 
   DoConsistencyChecks(&model);
 }
