@@ -131,38 +131,36 @@ def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
     return {}
 
   goma_config = {}
-  # TODO(yyanagisawa): make try-except more explicit.
-  try:
-    gomacc_base = 'gomacc.exe' if os.name == 'nt' else 'gomacc'
-    # Search order of gomacc:
-    # --gomadir command argument -> GOMA_DIR env. -> PATH env.
-    search_path = []
-    # 1. --gomadir in the command argument.
-    if gomadir:
-      search_path.append(gomadir)
-    # 2. Use GOMA_DIR environment variable if exist.
-    goma_dir_env = os.environ.get('GOMA_DIR')
-    if goma_dir_env:
-      search_path.append(goma_dir_env)
-    # 3. Append PATH env.
-    path_env = os.environ.get('PATH')
-    if path_env:
-      search_path.extend(path_env.split(os.path.pathsep))
+  gomacc_base = 'gomacc.exe' if osname == 'win' else 'gomacc'
+  # Search order of gomacc:
+  # --gomadir command argument -> GOMA_DIR env. -> PATH env.
+  search_path = []
+  # 1. --gomadir in the command argument.
+  if gomadir:
+    search_path.append(gomadir)
+  # 2. Use GOMA_DIR environment variable if exist.
+  goma_dir_env = os.environ.get('GOMA_DIR')
+  if goma_dir_env:
+    search_path.append(goma_dir_env)
+  # 3. Append PATH env.
+  path_env = os.environ.get('PATH')
+  if path_env:
+    search_path.extend(path_env.split(os.path.pathsep))
 
-    for directory in search_path:
-      gomacc = os.path.join(directory, gomacc_base)
-      if os.path.isfile(gomacc):
-        port = subprocess.Popen(
-            [gomacc, 'port'], stdout=subprocess.PIPE).communicate()[0].strip()
-        if port:
-          status = urllib2.urlopen(
-              'http://127.0.0.1:%s/healthz' % port).read().strip()
-          if status == 'ok':
-            goma_config['gomacc'] = gomacc
-            break
-  except Exception:
-    # Anyway, fallbacks to non-goma mode.
-    pass
+  for directory in search_path:
+    gomacc = os.path.join(directory, gomacc_base)
+    if os.path.isfile(gomacc):
+      try:
+        port = int(subprocess.Popen(
+            [gomacc, 'port'], stdout=subprocess.PIPE).communicate()[0].strip())
+        status = urllib2.urlopen(
+            'http://127.0.0.1:%d/healthz' % port).read().strip()
+        if status == 'ok':
+          goma_config['gomacc'] = gomacc
+          break
+      except (OSError, ValueError, urllib2.URLError) as e:
+        # Try another gomacc in the search path.
+        self.Log('Strange gomacc %s found, try another one: %s' % (gomacc, e))
 
   if goma_config:
     default_value = False
