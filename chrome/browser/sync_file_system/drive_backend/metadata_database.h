@@ -282,7 +282,6 @@ class MetadataDatabase {
   void UpdateByDeletedRemoteFileList(const FileIDList& file_ids,
                                      const SyncStatusCallback& callback);
 
-  // TODO(tzik): Drop |change_id| parameter.
   // Adds new FileTracker and FileMetadata.  The database must not have
   // |resource| beforehand.
   // The newly added tracker under |parent_tracker_id| is active and non-dirty.

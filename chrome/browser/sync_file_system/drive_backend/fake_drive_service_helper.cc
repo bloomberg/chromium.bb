@@ -65,8 +65,6 @@ FakeDriveServiceHelper::~FakeDriveServiceHelper() {
 GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
     const std::string& title,
     std::string* folder_id) {
-  EXPECT_TRUE(folder_id);
-
   std::string root_folder_id = fake_drive_service_->GetRootResourceId();
   GDataErrorCode error = AddFolder(root_folder_id, title, folder_id);
   if (error != google_apis::HTTP_CREATED)
@@ -78,7 +76,7 @@ GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
       CreateResultReceiver(&error));
   base::RunLoop().RunUntilIdle();
 
-  if (error != google_apis::HTTP_NO_CONTENT)
+  if (error != google_apis::HTTP_NO_CONTENT && folder_id)
     return error;
   return google_apis::HTTP_CREATED;
 }
@@ -87,8 +85,6 @@ GDataErrorCode FakeDriveServiceHelper::AddFolder(
     const std::string& parent_folder_id,
     const std::string& title,
     std::string* folder_id) {
-  EXPECT_TRUE(folder_id);
-
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> folder;
   fake_drive_service_->AddNewDirectory(
@@ -97,7 +93,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFolder(
       CreateResultReceiver(&error, &folder));
   base::RunLoop().RunUntilIdle();
 
-  if (error == google_apis::HTTP_CREATED)
+  if (error == google_apis::HTTP_CREATED && folder_id)
     *folder_id = folder->resource_id();
   return error;
 }
@@ -107,7 +103,6 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
     const std::string& title,
     const std::string& content,
     std::string* file_id) {
-  EXPECT_TRUE(file_id);
   base::FilePath temp_file = WriteToTempFile(content);
 
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -120,7 +115,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
-  if (error == google_apis::HTTP_SUCCESS)
+  if (error == google_apis::HTTP_SUCCESS && file_id)
     *file_id = file->resource_id();
   return error;
 }

@@ -853,7 +853,7 @@ TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
   VerifyLocalFile(app_id, base::FilePath(FPL("parent1/file")), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
-  EXPECT_EQ(5u, CountMetadata());
+  EXPECT_EQ(5u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
@@ -898,7 +898,7 @@ TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
   VerifyLocalFile(app_id, base::FilePath(FPL("folder/file")), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
-  EXPECT_EQ(5u, CountMetadata());
+  EXPECT_EQ(5u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFolder) {
@@ -932,14 +932,13 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFolder) {
   VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
 
   EXPECT_EQ(4u, CountMetadata());
-  EXPECT_EQ(4u, CountMetadata());
+  EXPECT_EQ(4u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFolder) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
-  std::string app_root_folder_id = GetFileIDByPath(app_id, FPL(""));
 
   AddLocalFolder(app_id, FPL("conflict_to_pending_remote"));
   AddLocalFolder(app_id, FPL("conflict_to_existing_remote"));
@@ -970,7 +969,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFolder) {
   VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
 
   EXPECT_EQ(3u, CountMetadata());
-  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 }  // namespace drive_backend

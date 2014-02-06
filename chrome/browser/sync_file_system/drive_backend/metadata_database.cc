@@ -2029,10 +2029,10 @@ void MetadataDatabase::ForceActivateTrackerByPath(int64 parent_tracker_id,
                                                   leveldb::WriteBatch* batch) {
   DCHECK(ContainsKey(trackers_by_parent_and_title_, parent_tracker_id));
   DCHECK(ContainsKey(trackers_by_parent_and_title_[parent_tracker_id], title));
+  DCHECK(!trackers_by_file_id_[file_id].has_active());
 
   TrackerSet* same_path_trackers =
       &trackers_by_parent_and_title_[parent_tracker_id][title];
-  DCHECK(!trackers_by_file_id_[file_id].has_active());
 
   for (TrackerSet::iterator itr = same_path_trackers->begin();
        itr != same_path_trackers->end(); ++itr) {
