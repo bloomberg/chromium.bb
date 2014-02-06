@@ -2499,25 +2499,6 @@ bool HTMLMediaElement::canPlay() const
     return paused() || ended() || m_readyState < HAVE_METADATA;
 }
 
-double HTMLMediaElement::percentLoaded() const
-{
-    if (!m_player)
-        return 0;
-    double duration = m_player->duration();
-
-    if (!duration || std::isinf(duration))
-        return 0;
-
-    double buffered = 0;
-    RefPtr<TimeRanges> timeRanges = m_player->buffered();
-    for (unsigned i = 0; i < timeRanges->length(); ++i) {
-        double start = timeRanges->start(i, IGNORE_EXCEPTION);
-        double end = timeRanges->end(i, IGNORE_EXCEPTION);
-        buffered += end - start;
-    }
-    return buffered / duration;
-}
-
 void HTMLMediaElement::mediaPlayerDidAddTrack(WebInbandTextTrack* webTrack)
 {
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
