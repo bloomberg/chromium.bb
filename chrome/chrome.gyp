@@ -1082,8 +1082,6 @@
             ['OS=="win"', {
               'sources': [
                 'service/cloud_print/print_system_win.cc',
-                'service/cloud_print/print_system_win.h',
-                'service/cloud_print/print_system_xps_win.cc',
               ],
             }],
             ['toolkit_uses_gtk == 1', {
