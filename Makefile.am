@@ -485,6 +485,7 @@ weston_nested_CFLAGS = $(CLIENT_CFLAGS)
 
 weston_nested_client_SOURCES = clients/nested-client.c
 weston_nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+weston_nested_client_CFLAGS = $(CLIENT_CFLAGS)
 endif
 
 weston_eventdemo_SOURCES = clients/eventdemo.c
