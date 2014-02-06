@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebArrayBufferView.h"
 #include "v8/include/v8.h"
 
@@ -228,7 +229,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
   blink::WebArrayBuffer buffer =
       blink::WebArrayBuffer::create(value->GetSize(), 1);
   memcpy(buffer.data(), value->GetBuffer(), value->GetSize());
-  return buffer.toV8Value();
+  return blink::WebArrayBufferConverter::toV8Value(&buffer);
 }
 
 base::Value* V8ValueConverterImpl::FromV8ValueImpl(
@@ -357,7 +358,7 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
   size_t length = 0;
 
   scoped_ptr<blink::WebArrayBuffer> array_buffer(
-      blink::WebArrayBuffer::createFromV8Value(val));
+      blink::WebArrayBufferConverter::createFromV8Value(val));
   scoped_ptr<blink::WebArrayBufferView> view;
   if (array_buffer) {
     data = reinterpret_cast<char*>(array_buffer->data());

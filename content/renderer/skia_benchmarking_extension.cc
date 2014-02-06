@@ -16,6 +16,7 @@
 #include "gin/object_template_builder.h"
 #include "skia/ext/benchmarking_canvas.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
@@ -199,7 +200,8 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
               v8::Number::New(isolate, snapped_clip.width()));
   result->Set(v8::String::NewFromUtf8(isolate, "height"),
               v8::Number::New(isolate, snapped_clip.height()));
-  result->Set(v8::String::NewFromUtf8(isolate, "data"), buffer.toV8Value());
+  result->Set(v8::String::NewFromUtf8(isolate, "data"),
+              blink::WebArrayBufferConverter::toV8Value(&buffer));
 
   args->Return(result);
 }

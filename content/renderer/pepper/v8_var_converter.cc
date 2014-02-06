@@ -21,6 +21,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 
 using ppapi::ArrayBufferVar;
 using ppapi::ArrayVar;
@@ -143,7 +144,8 @@ bool GetOrCreateV8Value(v8::Isolate* isolate,
       }
       HostArrayBufferVar* host_buffer =
           static_cast<HostArrayBufferVar*>(buffer);
-      *result = host_buffer->webkit_buffer().toV8Value();
+      *result = blink::WebArrayBufferConverter::toV8Value(
+          &host_buffer->webkit_buffer());
       break;
     }
     case PP_VARTYPE_ARRAY:
@@ -213,7 +215,7 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
     *result = (new ArrayVar())->GetPPVar();
   } else if (val->IsObject()) {
     scoped_ptr<blink::WebArrayBuffer> web_array_buffer(
-        blink::WebArrayBuffer::createFromV8Value(val));
+        blink::WebArrayBufferConverter::createFromV8Value(val));
     if (web_array_buffer.get()) {
       scoped_refptr<HostArrayBufferVar> buffer_var(new HostArrayBufferVar(
           *web_array_buffer));
