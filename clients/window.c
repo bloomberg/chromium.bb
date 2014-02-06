@@ -3851,11 +3851,9 @@ handle_surface_ping(void *data, struct xdg_surface *xdg_surface, uint32_t serial
 
 static void
 handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
-			 uint32_t edges, int32_t width, int32_t height)
+			 int32_t width, int32_t height)
 {
 	struct window *window = data;
-
-	window->resize_edges = edges;
 
 	window_schedule_resize(window, width, height);
 }

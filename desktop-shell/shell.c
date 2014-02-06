@@ -134,6 +134,7 @@ struct shell_surface {
 	bool saved_size_valid;
 	bool saved_rotation_valid;
 	int unresponsive, grabbed;
+	uint32_t resize_edges;
 
 	struct {
 		struct weston_transform transform;
@@ -347,6 +348,7 @@ shell_grab_end(struct shell_grab *grab)
 	if (grab->shsurf) {
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
 		grab->shsurf->grabbed = 0;
+		grab->shsurf->resize_edges = 0;
 	}
 
 	weston_pointer_end_grab(grab->grab.pointer);
@@ -1691,6 +1693,7 @@ surface_resize(struct shell_surface *shsurf,
 	surface_subsurfaces_boundingbox(shsurf->surface, NULL, NULL,
 	                                &resize->width, &resize->height);
 
+	shsurf->resize_edges = edges;
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
 			 seat->pointer, edges);
 
@@ -3327,7 +3330,7 @@ xdg_send_configure(struct weston_surface *surface,
 
 	assert(shsurf);
 
-	xdg_surface_send_configure(shsurf->resource, edges, width, height);
+	xdg_surface_send_configure(shsurf->resource, width, height);
 }
 
 static const struct weston_shell_client xdg_client = {
@@ -4837,10 +4840,21 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	} else if (type_changed || sx != 0 || sy != 0 ||
 		   shsurf->last_width != es->width ||
 		   shsurf->last_height != es->height) {
-		shsurf->last_width = es->width;
-		shsurf->last_height = es->height;
 		float from_x, from_y;
 		float to_x, to_y;
+
+		if (shsurf->resize_edges) {
+			sx = 0;
+			sy = 0;
+		}
+
+		if (shsurf->resize_edges & WL_SHELL_SURFACE_RESIZE_LEFT)
+			sx = shsurf->last_width - es->width;
+		if (shsurf->resize_edges & WL_SHELL_SURFACE_RESIZE_TOP)
+			sy = shsurf->last_height - es->height;
+
+		shsurf->last_width = es->width;
+		shsurf->last_height = es->height;
 
 		weston_view_to_global_float(shsurf->view, 0, 0, &from_x, &from_y);
 		weston_view_to_global_float(shsurf->view, sx, sy, &to_x, &to_y);
