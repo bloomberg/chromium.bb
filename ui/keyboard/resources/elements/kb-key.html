@@ -5,7 +5,7 @@
   -->
 
 <polymer-element name="kb-key" extends="kb-key-base"
-    attributes="image imageSize keyCode keyName shiftModifier weight">
+    attributes="image keyCode keyName shiftModifier weight">
   <template>
     <style>
       :host {
@@ -14,12 +14,6 @@
          * "-webkit-box-flex: {{weight}}" once the regression is fixed
          * (https://github.com/Polymer/polymer/issues/270). */
         background-color: #3b3b3e;
-        /* TODO(rsadam): remove when {{}} regression is fixed */
-        background-image: none;
-        background-position: center center;
-        background-repeat: no-repeat;
-        /* TODO(rsadam): remove when {{}} regression is fixed */
-        background-size: 50%;
         border-radius: 2px;
         border-style: solid;
         border-width: 1px 0px;
@@ -29,6 +23,10 @@
       }
 
       ::part(key) {
+        background-image: none;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
         bottom: 0;
         height: 1.2em;
         left: 0;
@@ -38,6 +36,11 @@
         position: absolute;
         right: 0;
         top: 0;
+      }
+
+      :host[image]::part(key) {
+        height: 2em;
+        width: 1em;
       }
 
       ::part(hint) {
@@ -113,18 +116,9 @@
        */
       imageChanged: function() {
         if (!this.image)
-          this.style.backgroundImage = "none";
+          this.$.key.style.backgroundImage = "none";
         else
-          this.style.backgroundImage = "url(images/" + this.image + ".svg)";
-      },
-
-      /**
-       * Called when the image attribute changes. This is used to set the
-       * background image of the key.
-       * TODO(rsadam): Remove when polymer {{}} syntax regression is fixed.
-       */
-      imageSizeChanged: function() {
-        this.style.backgroundSize = this.imageSize;
+          this.$.key.style.backgroundImage = "url(images/" + this.image + ".svg)";
       },
 
       /**

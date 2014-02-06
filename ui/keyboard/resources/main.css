@@ -37,35 +37,26 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 .caps-locked kb-shift-key.dark,
 :not(kb-altkey-set) > .active {
   -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
-  border-bottom-color: #5b5b5b;
-  border-top-color: #a4a4a4;
-}
-
-.caps-locked kb-shift-key.dark,
-:not(kb-altkey-set) > .active:not(.dark){
   background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
   background-size: cover;
-}
-
-.caps-locked kb-shift-key,
-.active.dark {
-  background-color: #8b8b8b;
+  border-bottom-color: #5b5b5b;
+  border-top-color: #a4a4a4;
 }
 
 /**
  * The microphone key is handled separately from other images since the image
  * displayed changes depending on whether it's pressed or not.
  */
-.microphone {
+.microphone [part=key] {
   background-image: url('images/microphone.svg');
-  background-position: 4%;
-  background-size: 25%;
+  background-position: 10%;
 }
 
-.audio .microphone {
+.audio .microphone [part=key] {
   background-image: url('images/microphone-green.svg');
 }
 
-.search {
-  background-position: 4%;
+kb-key.search [part=key]{
+  margin-left: 0px;
+  width: 2em;
 }
