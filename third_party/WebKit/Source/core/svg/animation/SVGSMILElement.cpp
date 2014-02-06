@@ -1000,18 +1000,18 @@ void SVGSMILElement::endListChanged(SMILTime)
         m_timeContainer->notifyIntervalsChanged();
 }
 
-void SVGSMILElement::checkRestart(SMILTime elapsed)
+SVGSMILElement::RestartedInterval SVGSMILElement::maybeRestartInterval(SMILTime elapsed)
 {
     ASSERT(!m_isWaitingForFirstInterval);
     ASSERT(elapsed >= m_intervalBegin);
 
     Restart restart = this->restart();
     if (restart == RestartNever)
-        return;
+        return DidNotRestartInterval;
 
     if (elapsed < m_intervalEnd) {
         if (restart != RestartAlways)
-            return;
+            return DidNotRestartInterval;
         SMILTime nextBegin = findInstanceTime(Begin, m_intervalBegin, false);
         if (nextBegin < m_intervalEnd) {
             m_intervalEnd = nextBegin;
@@ -1019,8 +1019,11 @@ void SVGSMILElement::checkRestart(SMILTime elapsed)
         }
     }
 
-    if (elapsed >= m_intervalEnd)
-        resolveNextInterval();
+    if (elapsed >= m_intervalEnd) {
+        if (resolveNextInterval())
+            return DidRestartInterval;
+    }
+    return DidNotRestartInterval;
 }
 
 void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed)
@@ -1167,7 +1170,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 
     unsigned repeat = 0;
     float percent = calculateAnimationPercentAndRepeat(elapsed, repeat);
-    checkRestart(elapsed);
+    RestartedInterval restartedInterval = maybeRestartInterval(elapsed);
 
     ActiveState oldActiveState = m_activeState;
     m_activeState = determineActiveState(elapsed);
@@ -1178,7 +1181,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
         resetAnimatedType();
 
     if (animationIsContributing) {
-        if (oldActiveState == Inactive) {
+        if (oldActiveState == Inactive || restartedInterval == DidRestartInterval) {
             smilBeginEventSender().dispatchEventSoon(this);
             startedActiveInterval();
         }
@@ -1191,10 +1194,10 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
         m_lastRepeat = repeat;
     }
 
-    if (oldActiveState == Active && m_activeState != Active) {
+    if ((oldActiveState == Active && m_activeState != Active) || restartedInterval == DidRestartInterval) {
         smilEndEventSender().dispatchEventSoon(this);
         endedActiveInterval();
-        if (m_activeState != Frozen && this == resultElement)
+        if (restartedInterval == DidNotRestartInterval && m_activeState != Frozen && this == resultElement)
             clearAnimatedType(m_targetElement);
     }
 

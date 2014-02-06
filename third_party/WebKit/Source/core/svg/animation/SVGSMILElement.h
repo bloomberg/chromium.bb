@@ -149,7 +149,13 @@ private:
     void resolveInterval(bool first, SMILTime& beginResult, SMILTime& endResult) const;
     SMILTime resolveActiveEnd(SMILTime resolvedBegin, SMILTime resolvedEnd) const;
     SMILTime repeatingDuration() const;
-    void checkRestart(SMILTime elapsed);
+
+    enum RestartedInterval {
+        DidNotRestartInterval,
+        DidRestartInterval
+    };
+
+    RestartedInterval maybeRestartInterval(SMILTime elapsed);
     void beginListChanged(SMILTime eventTime);
     void endListChanged(SMILTime eventTime);
 
