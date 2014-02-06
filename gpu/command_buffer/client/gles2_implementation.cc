@@ -11,8 +11,8 @@
 #include <queue>
 #include <set>
 #include <limits>
-#include <stdio.h>
-#include <string.h>
+#include <sstream>
+#include <string>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include "gpu/command_buffer/client/buffer_tracker.h"
@@ -120,9 +120,9 @@ GLES2Implementation::GLES2Implementation(
   DCHECK(transfer_buffer);
   DCHECK(gpu_control);
 
-  char temp[128];
-  sprintf(temp, "%p", static_cast<void*>(this));
-  this_in_hex_ = std::string(temp);
+  std::stringstream ss;
+  ss << std::hex << this;
+  this_in_hex_ = ss.str();
 
   GPU_CLIENT_LOG_CODE_BLOCK({
     debug_ = CommandLine::ForCurrentProcess()->HasSwitch(

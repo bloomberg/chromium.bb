@@ -5,7 +5,7 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
-#include <stdio.h>
+#include <sstream>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
@@ -692,9 +692,11 @@ std::string GLES2Util::GetStringEnum(uint32 value) {
       return entry->name;
     }
   }
-  char buffer[20];
-  sprintf(buffer, (value < 0x10000) ? "0x%04x" : "0x%08x", value);
-  return buffer;
+  std::stringstream ss;
+  ss.fill('0');
+  ss.width(value < 0x10000 ? 4 : 8);
+  ss << std::hex << value;
+  return "0x" + ss.str();
 }
 
 std::string GLES2Util::GetStringError(uint32 value) {
