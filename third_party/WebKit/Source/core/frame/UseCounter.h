@@ -216,6 +216,7 @@ public:
         GetMatchedCSSRules,
         PrefixedGetImageDataHD,
         PrefixedPutImageDataHD,
+        PrefixedBackingStorePixelRatio,
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,

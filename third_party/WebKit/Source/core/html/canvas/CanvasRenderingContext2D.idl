@@ -166,7 +166,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RuntimeEnabled=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
 
-    readonly attribute float webkitBackingStorePixelRatio;
+    [DeprecateAs=PrefixedBackingStorePixelRatio] readonly attribute float webkitBackingStorePixelRatio;
 
     [ImplementedAs=imageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     attribute boolean imageSmoothingEnabled;
