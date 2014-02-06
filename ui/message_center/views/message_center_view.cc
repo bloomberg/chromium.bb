@@ -25,6 +25,7 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/views/bounded_scroll_view.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
@@ -36,8 +37,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -55,63 +54,6 @@ const int kAnimateClearingNextNotificationDelayMS = 40;
 const int kDefaultAnimationDurationMs = 120;
 const int kDefaultFrameRateHz = 60;
 }  // namespace
-
-// BoundedScrollView ///////////////////////////////////////////////////////////
-
-// A custom scroll view whose height has a minimum and maximum value and whose
-// scroll bar disappears when not needed.
-class BoundedScrollView : public views::ScrollView {
- public:
-  BoundedScrollView(int min_height, int max_height);
-
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
- private:
-  int min_height_;
-  int max_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoundedScrollView);
-};
-
-BoundedScrollView::BoundedScrollView(int min_height, int max_height)
-    : min_height_(min_height),
-      max_height_(max_height) {
-  set_notify_enter_exit_on_child(true);
-  set_background(
-      views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
-  SetVerticalScrollBar(new views::OverlayScrollBar(false));
-}
-
-gfx::Size BoundedScrollView::GetPreferredSize() {
-  gfx::Size size = contents()->GetPreferredSize();
-  size.SetToMax(gfx::Size(size.width(), min_height_));
-  size.SetToMin(gfx::Size(size.width(), max_height_));
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  return size;
-}
-
-int BoundedScrollView::GetHeightForWidth(int width) {
-  gfx::Insets insets = GetInsets();
-  width = std::max(0, width - insets.width());
-  int height = contents()->GetHeightForWidth(width) + insets.height();
-  return std::min(std::max(height, min_height_), max_height_);
-}
-
-void BoundedScrollView::Layout() {
-  int content_width = width();
-  int content_height = contents()->GetHeightForWidth(content_width);
-  if (content_height > height()) {
-    content_width = std::max(content_width - GetScrollBarWidth(), 0);
-    content_height = contents()->GetHeightForWidth(content_width);
-  }
-  if (contents()->bounds().size() != gfx::Size(content_width, content_height))
-    contents()->SetBounds(0, 0, content_width, content_height);
-  views::ScrollView::Layout();
-}
 
 class NoNotificationMessageView : public views::View {
  public:
@@ -296,7 +238,7 @@ void MessageListView::AddNotificationAt(MessageView* view, int i) {
 }
 
 void MessageListView::RemoveNotificationAt(int i) {
-  views::View* child = child_at(GetActualIndex(i));
+  views::View* child = child_at(i);
   if (GetContentsBounds().IsEmpty()) {
     delete child;
   } else {
@@ -312,8 +254,7 @@ void MessageListView::RemoveNotificationAt(int i) {
 }
 
 void MessageListView::UpdateNotificationAt(MessageView* view, int i) {
-  int actual_index = GetActualIndex(i);
-  views::View* child = child_at(actual_index);
+  views::View* child = child_at(i);
   if (animator_.get())
     animator_->StopAnimatingView(child);
   gfx::Rect old_bounds = child->bounds();
@@ -322,7 +263,7 @@ void MessageListView::UpdateNotificationAt(MessageView* view, int i) {
   if (deleted_when_done_.find(child) != deleted_when_done_.end())
     deleted_when_done_.erase(child);
   delete child;
-  AddChildViewAt(view, actual_index);
+  AddChildViewAt(view, i);
   view->SetBounds(old_bounds.x(), old_bounds.y(), old_bounds.width(),
                   view->GetHeightForWidth(old_bounds.width()));
   DoUpdateIfPossible();

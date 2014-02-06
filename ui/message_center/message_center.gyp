@@ -73,6 +73,8 @@
         'notifier_settings.h',
         'views/bounded_label.cc',
         'views/bounded_label.h',
+        'views/bounded_scroll_view.cc',
+        'views/bounded_scroll_view.h',
         'views/constants.h',
         'views/message_bubble_base.cc',
         'views/message_bubble_base.h',
@@ -117,6 +119,7 @@
           'dependencies': [
             '../events/events.gyp:events',
             '../views/views.gyp:views',
+            '../compositor/compositor.gyp:compositor',
           ],
         }, {
           'sources/': [
@@ -131,11 +134,6 @@
             'views/message_center_bubble.h',
             'views/message_popup_bubble.cc',
             'views/message_popup_bubble.h',
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../compositor/compositor.gyp:compositor',
           ],
         }],
         ['notifications==0', {  # Android and iOS.
@@ -220,6 +218,7 @@
           ],
           'sources': [
             'views/bounded_label_unittest.cc',
+            'views/bounded_scroll_view_unittest.cc',
             'views/message_center_view_unittest.cc',
             'views/message_popup_collection_unittest.cc',
             'views/notifier_settings_view_unittest.cc',
