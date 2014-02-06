@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
@@ -30,6 +31,14 @@ bool IsCertInCertificateList(const X509Certificate* cert,
   return false;
 }
 
+void SwapCertLists(CertificateList* destination,
+                   scoped_ptr<CertificateList> source) {
+  ASSERT_TRUE(destination);
+  ASSERT_TRUE(source);
+
+  destination->swap(*source);
+}
+
 }  // namespace
 
 class NSSCertDatabaseChromeOSTest : public testing::Test,
@@ -51,11 +60,13 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_1_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    db_1_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
     db_2_.reset(new NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
             user_2_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    db_2_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
 
     // Add observer to CertDatabase for checking that notifications from
     // NSSCertDatabaseChromeOS are proxied to the CertDatabase.
@@ -150,8 +161,8 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   // Get cert list for each user.
   CertificateList user_1_certlist;
   CertificateList user_2_certlist;
-  db_1_->ListCerts(&user_1_certlist);
-  db_2_->ListCerts(&user_2_certlist);
+  db_1_->ListCertsSync(&user_1_certlist);
+  db_2_->ListCertsSync(&user_2_certlist);
 
   // Check that the imported certs only shows up in the list for the user that
   // imported them.
@@ -170,6 +181,22 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   // EXPECT_EQ(certs_1[0]->os_cert_handle(), added_ca_[0]);
   // EXPECT_EQ(certs_2[0]->os_cert_handle(), added_ca_[1]);
   EXPECT_EQ(0U, added_.size());
+
+  // Tests that the new certs are loaded by async ListCerts method.
+  CertificateList user_1_certlist_async;
+  CertificateList user_2_certlist_async;
+  db_1_->ListCerts(
+      base::Bind(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
+  db_2_->ListCerts(
+      base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist_async));
+  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist_async));
+
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist_async));
+  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist_async));
 }
 
 // Test that ImportServerCerts imports the cert to the correct slot, and that
@@ -200,8 +227,8 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   // Get cert list for each user.
   CertificateList user_1_certlist;
   CertificateList user_2_certlist;
-  db_1_->ListCerts(&user_1_certlist);
-  db_2_->ListCerts(&user_2_certlist);
+  db_1_->ListCertsSync(&user_1_certlist);
+  db_2_->ListCertsSync(&user_2_certlist);
 
   // Check that the imported certs only shows up in the list for the user that
   // imported them.
@@ -217,6 +244,36 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   // fire. Is that correct?
   EXPECT_EQ(0U, added_ca_.size());
   EXPECT_EQ(0U, added_.size());
+
+  // Tests that the new certs are loaded by async ListCerts method.
+  CertificateList user_1_certlist_async;
+  CertificateList user_2_certlist_async;
+  db_1_->ListCerts(
+      base::Bind(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
+  db_2_->ListCerts(
+      base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist_async));
+  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist_async));
+
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist_async));
+  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist_async));
+}
+
+// Tests that There is no crash if the database is deleted while ListCerts
+// is being processed on the worker pool.
+TEST_F(NSSCertDatabaseChromeOSTest, NoCrashIfShutdownBeforeDoneOnWorkerPool) {
+  CertificateList certlist;
+  db_1_->ListCerts(base::Bind(&SwapCertLists, base::Unretained(&certlist)));
+  EXPECT_EQ(0U, certlist.size());
+
+  db_1_.reset();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_LT(0U, certlist.size());
 }
 
 }  // namespace net

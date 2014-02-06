@@ -6,7 +6,9 @@
 #define NET_CERT_NSS_CERT_DATABASE_CHROMEOS_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "crypto/scoped_nss_types.h"
+#include "net/base/net_export.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_profile_filter_chromeos.h"
 
@@ -19,7 +21,9 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   virtual ~NSSCertDatabaseChromeOS();
 
   // NSSCertDatabase implementation.
-  virtual void ListCerts(CertificateList* certs) OVERRIDE;
+  virtual void ListCertsSync(CertificateList* certs) OVERRIDE;
+  virtual void ListCerts(const NSSCertDatabase::ListCertsCallback& callback)
+      OVERRIDE;
   virtual crypto::ScopedPK11Slot GetPublicSlot() const OVERRIDE;
   virtual crypto::ScopedPK11Slot GetPrivateSlot() const OVERRIDE;
   virtual void ListModules(CryptoModuleList* modules, bool need_rw) const
@@ -30,6 +34,13 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   // TODO(mattm): handle trust setting correctly for certs in read-only slots.
 
  private:
+  // Certificate listing implementation used by |ListCerts| and |ListCertsSync|.
+  // The certificate list normally returned by NSSCertDatabase::ListCertsImpl
+  // is additionally filtered by |profile_filter|.
+  // Static so it may safely be used on the worker thread.
+  static void ListCertsImpl(const NSSProfileFilterChromeOS& profile_filter,
+                            CertificateList* certs);
+
   crypto::ScopedPK11Slot public_slot_;
   crypto::ScopedPK11Slot private_slot_;
   NSSProfileFilterChromeOS profile_filter_;

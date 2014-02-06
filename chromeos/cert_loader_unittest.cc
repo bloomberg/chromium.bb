@@ -57,7 +57,6 @@ class CertLoaderTest : public testing::Test,
     CertLoader::Initialize();
     cert_loader_ = CertLoader::Get();
     cert_loader_->AddObserver(this);
-    cert_loader_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
   }
 
   virtual void TearDown() {
@@ -108,6 +107,7 @@ class CertLoaderTest : public testing::Test,
     database->reset(new net::NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(user->username_hash()),
         private_slot.Pass()));
+    (*database)->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
   }
 
   int GetDbPrivateSlotId(net::NSSCertDatabase* db) {

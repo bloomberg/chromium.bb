@@ -60,12 +60,12 @@ class NetworkConnectionHandlerTest : public testing::Test {
         crypto::GetPrivateSlotForChromeOSUser(
             user_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
 
     TPMTokenLoader::InitializeForTest();
 
     CertLoader::Initialize();
     CertLoader* cert_loader = CertLoader::Get();
-    cert_loader->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
     cert_loader->force_hardware_backed_for_test();
 
     // Initialize DBusThreadManager with a stub implementation.

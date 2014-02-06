@@ -91,7 +91,8 @@ void CertificateManagerModel::Refresh() {
 
 void CertificateManagerModel::RefreshSlotsUnlocked() {
   DVLOG(1) << "refresh listing certs...";
-  cert_db_->ListCerts(&cert_list_);
+  // TODO(tbarzic): Use async |ListCerts|.
+  cert_db_->ListCertsSync(&cert_list_);
   observer_->CertificatesRefreshed();
   DVLOG(1) << "refresh finished";
 }

@@ -17,10 +17,6 @@
 #include "chromeos/chromeos_export.h"
 #include "net/cert/cert_database.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 class NSSCertDatabase;
 class X509Certificate;
@@ -64,13 +60,11 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
 
   // Starts the CertLoader with the NSS cert database.
-  // The CertLoader will _not_ take the ownership of the database.
+  // The CertLoader will _not_ take the ownership of the database, but it
+  // expects it to stay alive at least until the shutdown starts on the main
+  // thread. This assumes that |StartWithNSSDB| and other methods directly
+  // using |database_| are not called during shutdown.
   void StartWithNSSDB(net::NSSCertDatabase* database);
-
-  // Sets the task runner that any slow calls will be made from, e.g. calls
-  // to the NSS database. If not set, uses base::WorkerPool.
-  void SetSlowTaskRunnerForTest(
-      const scoped_refptr<base::TaskRunner>& task_runner);
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -89,7 +83,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   bool certificates_loaded() const { return certificates_loaded_; }
 
   // This will be empty until certificates_loaded() is true.
-  const net::CertificateList& cert_list() const { return cert_list_; }
+  const net::CertificateList& cert_list() const { return *cert_list_; }
 
   void force_hardware_backed_for_test() {
     force_hardware_backed_for_test_ = true;
@@ -104,7 +98,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   void LoadCertificates();
 
   // Called if a certificate load task is finished.
-  void UpdateCertificates(net::CertificateList* cert_list);
+  void UpdateCertificates(scoped_ptr<net::CertificateList> cert_list);
 
   void NotifyCertificatesLoaded(bool initial_load);
 
@@ -128,13 +122,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   bool force_hardware_backed_for_test_;
 
   // Cached Certificates loaded from the database.
-  net::CertificateList cert_list_;
+  scoped_ptr<net::CertificateList> cert_list_;
 
   base::ThreadChecker thread_checker_;
-
-  // TaskRunner that, if set, replaces base::WorkerPool. Should only be set in
-  // tests.
-  scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   base::WeakPtrFactory<CertLoader> weak_factory_;
 

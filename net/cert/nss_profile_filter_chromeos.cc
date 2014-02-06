@@ -4,9 +4,8 @@
 
 #include "net/cert/nss_profile_filter_chromeos.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 
@@ -35,7 +34,28 @@ std::string CertSlotsString(const scoped_refptr<X509Certificate>& cert) {
 
 NSSProfileFilterChromeOS::NSSProfileFilterChromeOS() {}
 
+NSSProfileFilterChromeOS::NSSProfileFilterChromeOS(
+    const NSSProfileFilterChromeOS& other) {
+  public_slot_.reset(other.public_slot_ ?
+      PK11_ReferenceSlot(other.public_slot_.get()) :
+      NULL);
+  private_slot_.reset(other.private_slot_ ?
+      PK11_ReferenceSlot(other.private_slot_.get()) :
+      NULL);
+}
+
 NSSProfileFilterChromeOS::~NSSProfileFilterChromeOS() {}
+
+NSSProfileFilterChromeOS& NSSProfileFilterChromeOS::operator=(
+    const NSSProfileFilterChromeOS& other) {
+  public_slot_.reset(other.public_slot_ ?
+      PK11_ReferenceSlot(other.public_slot_.get()) :
+      NULL);
+  private_slot_.reset(other.private_slot_ ?
+      PK11_ReferenceSlot(other.private_slot_.get()) :
+      NULL);
+  return *this;
+}
 
 void NSSProfileFilterChromeOS::Init(crypto::ScopedPK11Slot public_slot,
                                     crypto::ScopedPK11Slot private_slot) {

@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_NSS_PROFILE_FILTER_CHROMEOS
-#define NET_CERT_NSS_PROFILE_FILTER_CHROMEOS
+#ifndef NET_CERT_NSS_PROFILE_FILTER_CHROMEOS_H_
+#define NET_CERT_NSS_PROFILE_FILTER_CHROMEOS_H_
 
-#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/crypto_module.h"
-#include "net/cert/x509_certificate.h"
-
-namespace content {
-class ResourceContext;
-}  // namespace content
+#include "net/base/net_export.h"
 
 namespace net {
+
+class X509Certificate;
 
 class NET_EXPORT NSSProfileFilterChromeOS {
  public:
   NSSProfileFilterChromeOS();
+  NSSProfileFilterChromeOS(const NSSProfileFilterChromeOS& other);
   ~NSSProfileFilterChromeOS();
 
-  // Initialize with slot handles.
+  NSSProfileFilterChromeOS& operator=(const NSSProfileFilterChromeOS& other);
+
+  // Initializes the filter with slot handles.
   void Init(crypto::ScopedPK11Slot public_slot,
             crypto::ScopedPK11Slot private_slot);
 
@@ -51,10 +52,8 @@ class NET_EXPORT NSSProfileFilterChromeOS {
  private:
   crypto::ScopedPK11Slot public_slot_;
   crypto::ScopedPK11Slot private_slot_;
-
-  DISALLOW_COPY_AND_ASSIGN(NSSProfileFilterChromeOS);
 };
 
 }  // namespace net
 
-#endif  // NET_CERT_NSS_PROFILE_FILTER_CHROMEOS
+#endif  // NET_CERT_NSS_PROFILE_FILTER_CHROMEOS_H_

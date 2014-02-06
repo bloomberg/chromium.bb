@@ -64,6 +64,7 @@ class ClientCertResolverTest : public testing::Test {
         crypto::GetPrivateSlotForChromeOSUser(
             user_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
 
     DBusThreadManager::InitializeWithStub();
     service_test_ =
@@ -78,7 +79,6 @@ class ClientCertResolverTest : public testing::Test {
 
     CertLoader::Initialize();
     CertLoader* cert_loader_ = CertLoader::Get();
-    cert_loader_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
     cert_loader_->force_hardware_backed_for_test();
     cert_loader_->StartWithNSSDB(test_nssdb_.get());
   }

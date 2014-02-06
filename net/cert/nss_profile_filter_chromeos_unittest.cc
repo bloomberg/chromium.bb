@@ -76,6 +76,8 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
         crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()),
         private_slot_1.Pass());
 
+    profile_filter_1_copy_ = profile_filter_1_;
+
     crypto::ScopedPK11Slot private_slot_2(crypto::GetPrivateSlotForChromeOSUser(
         user_2_.username_hash(),
         base::Callback<void(crypto::ScopedPK11Slot)>()));
@@ -97,12 +99,14 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
   NSSProfileFilterChromeOS no_slots_profile_filter_;
   NSSProfileFilterChromeOS profile_filter_1_;
   NSSProfileFilterChromeOS profile_filter_2_;
+  NSSProfileFilterChromeOS profile_filter_1_copy_;
 };
 
 TEST_F(NSSProfileFilterChromeOSTest, TempCertAllowed) {
   EXPECT_EQ(NULL, certs_[0]->os_cert_handle()->slot);
   EXPECT_TRUE(no_slots_profile_filter_.IsCertAllowed(certs_[0]));
   EXPECT_TRUE(profile_filter_1_.IsCertAllowed(certs_[0]));
+  EXPECT_TRUE(profile_filter_1_copy_.IsCertAllowed(certs_[0]));
   EXPECT_TRUE(profile_filter_2_.IsCertAllowed(certs_[0]));
 }
 
@@ -111,6 +115,7 @@ TEST_F(NSSProfileFilterChromeOSTest, InternalSlotAllowed) {
   ASSERT_TRUE(internal_slot.get());
   EXPECT_TRUE(no_slots_profile_filter_.IsModuleAllowed(internal_slot.get()));
   EXPECT_TRUE(profile_filter_1_.IsModuleAllowed(internal_slot.get()));
+  EXPECT_TRUE(profile_filter_1_copy_.IsModuleAllowed(internal_slot.get()));
   EXPECT_TRUE(profile_filter_2_.IsModuleAllowed(internal_slot.get()));
 
   crypto::ScopedPK11Slot internal_key_slot(PK11_GetInternalKeySlot());
@@ -118,6 +123,7 @@ TEST_F(NSSProfileFilterChromeOSTest, InternalSlotAllowed) {
   EXPECT_TRUE(
       no_slots_profile_filter_.IsModuleAllowed(internal_key_slot.get()));
   EXPECT_TRUE(profile_filter_1_.IsModuleAllowed(internal_key_slot.get()));
+  EXPECT_TRUE(profile_filter_1_copy_.IsModuleAllowed(internal_key_slot.get()));
   EXPECT_TRUE(profile_filter_2_.IsModuleAllowed(internal_key_slot.get()));
 }
 
@@ -126,12 +132,14 @@ TEST_F(NSSProfileFilterChromeOSTest, RootCertsAllowed) {
   ASSERT_TRUE(root_certs_slot.get());
   EXPECT_TRUE(no_slots_profile_filter_.IsModuleAllowed(root_certs_slot.get()));
   EXPECT_TRUE(profile_filter_1_.IsModuleAllowed(root_certs_slot.get()));
+  EXPECT_TRUE(profile_filter_1_copy_.IsModuleAllowed(root_certs_slot.get()));
   EXPECT_TRUE(profile_filter_2_.IsModuleAllowed(root_certs_slot.get()));
 
   CertificateList root_certs(ListCertsInSlot(root_certs_slot.get()));
   ASSERT_FALSE(root_certs.empty());
   EXPECT_TRUE(no_slots_profile_filter_.IsCertAllowed(root_certs[0]));
   EXPECT_TRUE(profile_filter_1_.IsCertAllowed(root_certs[0]));
+  EXPECT_TRUE(profile_filter_1_copy_.IsCertAllowed(root_certs[0]));
   EXPECT_TRUE(profile_filter_2_.IsCertAllowed(root_certs[0]));
 }
 
@@ -167,7 +175,9 @@ TEST_F(NSSProfileFilterChromeOSTest, SoftwareSlots) {
   EXPECT_FALSE(no_slots_profile_filter_.IsCertAllowed(cert_2));
 
   EXPECT_TRUE(profile_filter_1_.IsCertAllowed(cert_1));
+  EXPECT_TRUE(profile_filter_1_copy_.IsCertAllowed(cert_1));
   EXPECT_FALSE(profile_filter_1_.IsCertAllowed(cert_2));
+  EXPECT_FALSE(profile_filter_1_copy_.IsCertAllowed(cert_2));
 
   EXPECT_FALSE(profile_filter_2_.IsCertAllowed(cert_1));
   EXPECT_TRUE(profile_filter_2_.IsCertAllowed(cert_2));

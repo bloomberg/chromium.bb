@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "crypto/scoped_nss_types.h"
@@ -18,6 +19,7 @@
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
+class TaskRunner;
 }
 template <class ObserverType> class ObserverListThreadSafe;
 
@@ -91,12 +93,21 @@ class NET_EXPORT NSSCertDatabase {
     DISTRUSTED_OBJ_SIGN   = 1 << 5,
   };
 
+  typedef base::Callback<void(scoped_ptr<CertificateList> certs)>
+      ListCertsCallback;
+
   // DEPRECATED: See http://crbug.com/329735.
   static NSSCertDatabase* GetInstance();
 
   // Get a list of unique certificates in the certificate database (one
   // instance of all certificates).
-  virtual void ListCerts(CertificateList* certs);
+  // DEPRECATED by |ListCerts|. See http://crbug.com/340460.
+  virtual void ListCertsSync(CertificateList* certs);
+
+  // Asynchronously get a list of unique certificates in the certificate
+  // database (one instance of all certificates). Note that the callback may be
+  // run even after the database is deleted.
+  virtual void ListCerts(const ListCertsCallback& callback);
 
   // Get the default slot for public key data.
   virtual crypto::ScopedPK11Slot GetPublicSlot() const;
@@ -209,9 +220,22 @@ class NET_EXPORT NSSCertDatabase {
   // on the same thread on which AddObserver() was called.
   void RemoveObserver(Observer* observer);
 
+  // Overrides task runner that's used for running slow tasks.
+  void SetSlowTaskRunnerForTest(
+      const scoped_refptr<base::TaskRunner>& task_runner);
+
  protected:
   NSSCertDatabase();
   virtual ~NSSCertDatabase();
+
+  // Certificate listing implementation used by |ListCerts| and |ListCertsSync|.
+  // Static so it may safely be used on the worker thread.
+  static void ListCertsImpl(CertificateList* certs);
+
+  // Gets task runner that should be used for slow tasks like certificate
+  // listing. Defaults to a base::WorkerPool runner, but may be overriden
+  // in tests (see SetSlowTaskRunnerForTest).
+  scoped_refptr<base::TaskRunner> GetSlowTaskRunner() const;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<NSSCertDatabase>;
@@ -220,6 +244,9 @@ class NET_EXPORT NSSCertDatabase {
   void NotifyObserversOfCertAdded(const X509Certificate* cert);
   void NotifyObserversOfCertRemoved(const X509Certificate* cert);
   void NotifyObserversOfCACertChanged(const X509Certificate* cert);
+
+  // Task runner that should be used in tests if set.
+  scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   const scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
 

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
@@ -18,16 +18,6 @@
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
-
-namespace {
-
-// Loads certificates from |cert_database| into |cert_list|.
-void LoadNSSCertificates(net::NSSCertDatabase* cert_database,
-                         net::CertificateList* cert_list) {
-  cert_database->ListCerts(cert_list);
-}
-
-}  // namespace
 
 static CertLoader* g_cert_loader = NULL;
 
@@ -61,6 +51,7 @@ CertLoader::CertLoader()
       certificates_update_running_(false),
       database_(NULL),
       force_hardware_backed_for_test_(false),
+      cert_list_(new net::CertificateList),
       weak_factory_(this) {
 }
 
@@ -82,11 +73,6 @@ void CertLoader::StartWithNSSDB(net::NSSCertDatabase* database) {
   net::CertDatabase::GetInstance()->AddObserver(this);
 
   LoadCertificates();
-}
-
-void CertLoader::SetSlowTaskRunnerForTest(
-    const scoped_refptr<base::TaskRunner>& task_runner) {
-  slow_task_runner_for_test_ = task_runner;
 }
 
 void CertLoader::AddObserver(CertLoader::Observer* observer) {
@@ -157,37 +143,21 @@ void CertLoader::LoadCertificates() {
     return;
   }
 
-  net::CertificateList* cert_list = new net::CertificateList;
   certificates_update_running_ = true;
   certificates_update_required_ = false;
 
-  base::TaskRunner* task_runner = slow_task_runner_for_test_.get();
-  if (!task_runner)
-    task_runner = base::WorkerPool::GetTaskRunner(true /* task is slow */);
-  task_runner->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(LoadNSSCertificates,
-                 // Create a copy of the database so it can be used on the
-                 // worker pool.
-                 // TODO(tbarzic): Make net::NSSCertDatabase::ListCerts async
-                 //     and change it to do the certificate listing on worker
-                 //     pool.
-                 base::Owned(new net::NSSCertDatabaseChromeOS(
-                     database_->GetPublicSlot(),
-                     database_->GetPrivateSlot())),
-                 cert_list),
-      base::Bind(&CertLoader::UpdateCertificates,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(cert_list)));
+  database_->ListCerts(
+      base::Bind(&CertLoader::UpdateCertificates, weak_factory_.GetWeakPtr()));
 }
 
-void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
+void CertLoader::UpdateCertificates(
+    scoped_ptr<net::CertificateList> cert_list) {
   CHECK(thread_checker_.CalledOnValidThread());
   DCHECK(certificates_update_running_);
   VLOG(1) << "UpdateCertificates: " << cert_list->size();
 
   // Ignore any existing certificates.
-  cert_list_.swap(*cert_list);
+  cert_list_ = cert_list.Pass();
 
   bool initial_load = !certificates_loaded_;
   certificates_loaded_ = true;
@@ -200,7 +170,7 @@ void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCertificatesLoaded(cert_list_, initial_load));
+                    OnCertificatesLoaded(*cert_list_, initial_load));
 }
 
 void CertLoader::OnCACertChanged(const net::X509Certificate* cert) {

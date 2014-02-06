@@ -8,11 +8,14 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +43,16 @@
 using base::ASCIIToUTF16;
 
 namespace net {
+
+namespace {
+
+void SwapCertList(CertificateList* destination,
+                  scoped_ptr<CertificateList> source) {
+  ASSERT_TRUE(destination);
+  destination->swap(*source);
+}
+
+}  // namespace
 
 class CertDatabaseNSSTest : public testing::Test {
  public:
@@ -127,11 +140,26 @@ class CertDatabaseNSSTest : public testing::Test {
   crypto::ScopedTestNSSDB test_nssdb_;
 };
 
+TEST_F(CertDatabaseNSSTest, ListCertsSync) {
+  // This test isn't terribly useful, though it will at least let valgrind test
+  // for leaks.
+  CertificateList certs;
+  cert_db_->ListCertsSync(&certs);
+  // The test DB is empty, but let's assume there will always be something in
+  // the other slots.
+  EXPECT_LT(0U, certs.size());
+}
+
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test
   // for leaks.
   CertificateList certs;
-  cert_db_->ListCerts(&certs);
+  cert_db_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
+  cert_db_->ListCerts(base::Bind(&SwapCertList, base::Unretained(&certs)));
+  EXPECT_EQ(0U, certs.size());
+
+  base::RunLoop().RunUntilIdle();
+
   // The test DB is empty, but let's assume there will always be something in
   // the other slots.
   EXPECT_LT(0U, certs.size());

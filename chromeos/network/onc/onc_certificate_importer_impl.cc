@@ -78,7 +78,8 @@ bool CertificateImporterImpl::ParseAndStoreCertificates(
 void CertificateImporterImpl::ListCertsWithNickname(const std::string& label,
                                                 net::CertificateList* result) {
   net::CertificateList all_certs;
-  net::NSSCertDatabase::GetInstance()->ListCerts(&all_certs);
+  // TODO(tbarzic): Use async |ListCerts|.
+  net::NSSCertDatabase::GetInstance()->ListCertsSync(&all_certs);
   result->clear();
   for (net::CertificateList::iterator iter = all_certs.begin();
        iter != all_certs.end(); ++iter) {

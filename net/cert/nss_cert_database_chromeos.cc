@@ -7,6 +7,12 @@
 #include <cert.h>
 #include <pk11pub.h>
 
+#include <algorithm>
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/location.h"
+#include "base/task_runner.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/x509_certificate.h"
 
@@ -22,18 +28,22 @@ NSSCertDatabaseChromeOS::NSSCertDatabaseChromeOS(
 
 NSSCertDatabaseChromeOS::~NSSCertDatabaseChromeOS() {}
 
-void NSSCertDatabaseChromeOS::ListCerts(CertificateList* certs) {
-  NSSCertDatabase::ListCerts(certs);
+void NSSCertDatabaseChromeOS::ListCertsSync(CertificateList* certs) {
+  ListCertsImpl(profile_filter_, certs);
+}
 
-  size_t pre_size = certs->size();
-  certs->erase(std::remove_if(
-                   certs->begin(),
-                   certs->end(),
-                   NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate(
-                       profile_filter_)),
-               certs->end());
-  DVLOG(1) << "filtered " << pre_size - certs->size() << " of " << pre_size
-           << " certs";
+void NSSCertDatabaseChromeOS::ListCerts(
+    const base::Callback<void(scoped_ptr<CertificateList> certs)>& callback) {
+  scoped_ptr<CertificateList> certs(new CertificateList());
+
+  // base::Pased will NULL out |certs|, so cache the underlying pointer here.
+  CertificateList* raw_certs = certs.get();
+  GetSlowTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&NSSCertDatabaseChromeOS::ListCertsImpl,
+                 profile_filter_,
+                 base::Unretained(raw_certs)),
+      base::Bind(callback, base::Passed(&certs)));
 }
 
 crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetPublicSlot() const {
@@ -60,6 +70,22 @@ void NSSCertDatabaseChromeOS::ListModules(CryptoModuleList* modules,
       modules->end());
   DVLOG(1) << "filtered " << pre_size - modules->size() << " of " << pre_size
            << " modules";
+}
+
+void NSSCertDatabaseChromeOS::ListCertsImpl(
+    const NSSProfileFilterChromeOS& profile_filter,
+    CertificateList* certs) {
+  NSSCertDatabase::ListCertsImpl(certs);
+
+  size_t pre_size = certs->size();
+  certs->erase(std::remove_if(
+                   certs->begin(),
+                   certs->end(),
+                   NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate(
+                       profile_filter)),
+               certs->end());
+  DVLOG(1) << "filtered " << pre_size - certs->size() << " of " << pre_size
+           << " certs";
 }
 
 }  // namespace net
