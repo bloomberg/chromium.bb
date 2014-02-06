@@ -29,6 +29,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using content::BrowserThread;
+
 namespace extensions {
 
 class FullStreamUIPolicyTest : public testing::Test {

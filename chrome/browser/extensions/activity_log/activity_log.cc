@@ -20,18 +20,22 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
@@ -46,6 +50,7 @@ namespace {
 
 using extensions::Action;
 using constants::kArgUrlPlaceholder;
+using content::BrowserThread;
 
 // If DOM API methods start with this string, we flag them as being of type
 // DomActionType::XHR.
@@ -393,10 +398,6 @@ ActivityLog::ActivityLog(Profile* profile)
       FROM_HERE,
       base::Bind(&ActivityLog::InitInstallTracker, base::Unretained(this)));
 
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
-  if (event_router)
-    event_router->SetEventDispatchObserver(this);
-
 // None of this should run on Android since the AL is behind ENABLE_EXTENSION
 // checks. However, UmaPolicy can't even compile on Android because it uses
 // BrowserList and related classes that aren't compiled for Android.
@@ -617,12 +618,27 @@ void ActivityLog::OnScriptsExecuted(
   }
 }
 
-void ActivityLog::OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details) {
-  scoped_refptr<Action> action = new Action(details->extension_id,
+void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
+                                       const std::string& event_name,
+                                       scoped_ptr<base::ListValue> event_args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_refptr<Action> action = new Action(extension_id,
                                             base::Time::Now(),
                                             Action::ACTION_API_EVENT,
-                                            details->event_name);
-  action->set_args(details->event_args.Pass());
+                                            event_name);
+  action->set_args(event_args.Pass());
+  LogAction(action);
+}
+
+void ActivityLog::OnApiFunctionCalled(const std::string& extension_id,
+                                      const std::string& api_name,
+                                      scoped_ptr<base::ListValue> args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_refptr<Action> action = new Action(extension_id,
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            api_name);
+  action->set_args(args.Pass());
   LogAction(action);
 }
 

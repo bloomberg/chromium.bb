@@ -15,7 +15,6 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
@@ -202,4 +201,5 @@ class ActivityDatabase {
 };
 
 }  // namespace extensions
+
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_DATABASE_H_

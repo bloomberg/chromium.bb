@@ -30,6 +30,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using content::BrowserThread;
+
 namespace extensions {
 
 class CountingPolicyTest : public testing::Test {
@@ -62,7 +64,7 @@ class CountingPolicyTest : public testing::Test {
   }
 
   // Wait for the task queue for the specified thread to empty.
-  void WaitOnThread(const content::BrowserThread::ID& thread) {
+  void WaitOnThread(const BrowserThread::ID& thread) {
     BrowserThread::PostTaskAndReply(
         thread,
         FROM_HERE,

@@ -15,19 +15,15 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
-#include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/extensions/install_observer.h"
-#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/dom_action_types.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
-#include "extensions/browser/event_router.h"
+#include "extensions/browser/api_activity_monitor.h"
 
 class Profile;
-using content::BrowserThread;
 
 namespace content {
 class BrowserContext;
@@ -39,12 +35,12 @@ class PrefRegistrySyncable;
 
 namespace extensions {
 class Extension;
-class ActivityLogPolicy;
+class InstallTracker;
 
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
 class ActivityLog : public BrowserContextKeyedService,
-                    public EventRouter::EventDispatchObserver,
+                    public ApiActivityMonitor,
                     public TabHelper::ScriptExecutionObserver,
                     public InstallObserver {
  public:
@@ -101,9 +97,15 @@ class ActivityLog : public BrowserContextKeyedService,
       const std::string& extension_id) OVERRIDE {}
   virtual void OnShutdown() OVERRIDE {}
 
-  // EventRouter::EventDispatchObserver
-  virtual void OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details)
-      OVERRIDE;
+  // ApiActivityMonitor
+  virtual void OnApiEventDispatched(
+      const std::string& extension_id,
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> event_args) OVERRIDE;
+  virtual void OnApiFunctionCalled(
+      const std::string& extension_id,
+      const std::string& api_name,
+      scoped_ptr<base::ListValue> event_args) OVERRIDE;
 
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;

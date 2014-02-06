@@ -21,6 +21,7 @@ class WebContents;
 
 namespace extensions {
 
+class ApiActivityMonitor;
 class AppSorting;
 class ExtensionSystem;
 
@@ -95,6 +96,11 @@ class ExtensionsBrowserClient {
   // Returns the embedder's JavaScriptDialogManager or NULL if the embedder
   // does not support JavaScript dialogs.
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
+
+  // Returns the embedder's ApiActivityMonitor for |context|. Returns NULL if
+  // the embedder does not monitor extension API activity.
+  virtual ApiActivityMonitor* GetApiActivityMonitor(
+      content::BrowserContext* context) = 0;
 
   // Returns the dependencies of ExtensionSystem. May return an empty list.
   virtual std::vector<BrowserContextKeyedServiceFactory*>

@@ -12,9 +12,6 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -30,8 +27,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
@@ -45,35 +44,34 @@ using extensions::Extension;
 using extensions::ExtensionAPI;
 using extensions::ExtensionSystem;
 using extensions::Feature;
+using content::BrowserThread;
 using content::RenderViewHost;
 
 namespace {
 
-void LogSuccess(const std::string& extension_id,
-                const std::string& api_name,
-                scoped_ptr<base::ListValue> args,
-                content::BrowserContext* browser_context) {
-  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
-  // running on the wrong thread, re-dispatch from the main thread.
+// Notifies the ApiActivityMonitor that an extension API function has been
+// called. May be called from any thread.
+void NotifyApiFunctionCalled(const std::string& extension_id,
+                             const std::string& api_name,
+                             scoped_ptr<base::ListValue> args,
+                             content::BrowserContext* browser_context) {
+  // The ApiActivityLogger can only be accessed from the main (UI) thread. If
+  // we're running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            base::Bind(&LogSuccess,
+                            base::Bind(&NotifyApiFunctionCalled,
                                        extension_id,
                                        api_name,
                                        base::Passed(&args),
                                        browser_context));
-  } else {
-    extensions::ActivityLog* activity_log =
-        extensions::ActivityLog::GetInstance(browser_context);
-    scoped_refptr<extensions::Action> action =
-        new extensions::Action(extension_id,
-                               base::Time::Now(),
-                               extensions::Action::ACTION_API_CALL,
-                               api_name);
-    action->set_args(args.Pass());
-    activity_log->LogAction(action);
+    return;
   }
+  extensions::ApiActivityMonitor* monitor =
+      extensions::ExtensionsBrowserClient::Get()->GetApiActivityMonitor(
+          browser_context);
+  if (monitor)
+    monitor->OnApiFunctionCalled(extension_id, api_name, args.Pass());
 }
 
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
@@ -278,10 +276,11 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
     scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
-    LogSuccess(extension->id(),
-               params.name,
-               args.Pass(),
-               static_cast<content::BrowserContext*>(browser_context));
+    NotifyApiFunctionCalled(
+        extension->id(),
+        params.name,
+        args.Pass(),
+        static_cast<content::BrowserContext*>(browser_context));
     function->Run();
   } else {
     function->OnQuotaExceeded(violation_error);
@@ -389,7 +388,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
-    LogSuccess(extension->id(), params.name, args.Pass(), browser_context_);
+    NotifyApiFunctionCalled(
+        extension->id(), params.name, args.Pass(), browser_context_);
     function->Run();
   } else {
     function->OnQuotaExceeded(violation_error);

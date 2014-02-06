@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -45,6 +46,35 @@ void DoNothing(ExtensionHost* host) {}
 // registered from its lazy background page.
 const char kFilteredEvents[] = "filtered_events";
 
+// Sends a notification about an event to the API activity monitor on the
+// UI thread. Can be called from any thread.
+void NotifyApiEventDispatched(void* browser_context_id,
+                              const std::string& extension_id,
+                              const std::string& event_name,
+                              scoped_ptr<ListValue> args) {
+  // The ApiActivityMonitor can only be accessed from the UI thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&NotifyApiEventDispatched,
+                   browser_context_id,
+                   extension_id,
+                   event_name,
+                   base::Passed(&args)));
+    return;
+  }
+
+  // Notify the ApiActivityMonitor about the event dispatch.
+  BrowserContext* context = static_cast<BrowserContext*>(browser_context_id);
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
+    return;
+  ApiActivityMonitor* monitor =
+      ExtensionsBrowserClient::Get()->GetApiActivityMonitor(context);
+  if (monitor)
+    monitor->OnApiEventDispatched(extension_id, event_name, args.Pass());
+}
+
 }  // namespace
 
 const char EventRouter::kRegisteredEvents[] = "events";
@@ -67,32 +97,6 @@ struct EventRouter::ListenerProcess {
 };
 
 // static
-void EventRouter::NotifyExtensionDispatchObserverOnUIThread(
-    void* browser_context_id,
-    scoped_ptr<EventDispatchInfo> details) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&NotifyExtensionDispatchObserverOnUIThread,
-                   browser_context_id, base::Passed(&details)));
-  } else {
-    BrowserContext* context =
-        reinterpret_cast<BrowserContext*>(browser_context_id);
-    if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
-      return;
-    ExtensionSystem* extension_system = ExtensionSystem::Get(context);
-    EventRouter* event_router = extension_system->event_router();
-    if (!event_router)
-      return;
-    if (event_router->event_dispatch_observer_) {
-      event_router->event_dispatch_observer_->OnWillDispatchEvent(
-          details.Pass());
-    }
-  }
-}
-
-// static
 void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            void* browser_context_id,
                                            const std::string& extension_id,
@@ -100,12 +104,10 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            ListValue* event_args,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
-  NotifyExtensionDispatchObserverOnUIThread(
-      browser_context_id,
-      make_scoped_ptr(new EventDispatchInfo(
-          extension_id,
-          event_name,
-          make_scoped_ptr(event_args->DeepCopy()))));
+  NotifyApiEventDispatched(browser_context_id,
+                           extension_id,
+                           event_name,
+                           make_scoped_ptr(event_args->DeepCopy()));
 
   ListValue args;
   args.Set(0, new base::StringValue(event_name));
@@ -160,8 +162,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
-      listeners_(this),
-      event_dispatch_observer_(NULL) {
+      listeners_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -207,11 +208,6 @@ void EventRouter::UnregisterObserver(Observer* observer) {
   }
   for (size_t i = 0; i < iters_to_remove.size(); ++i)
     observers_.erase(iters_to_remove[i]);
-}
-
-void EventRouter::SetEventDispatchObserver(EventDispatchObserver* observer) {
-  CHECK(!event_dispatch_observer_);
-  event_dispatch_observer_ = observer;
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
@@ -772,14 +768,5 @@ EventListenerInfo::EventListenerInfo(const std::string& event_name,
     : event_name(event_name),
       extension_id(extension_id),
       browser_context(browser_context) {}
-
-EventDispatchInfo::EventDispatchInfo(const std::string& extension_id,
-                                     const std::string& event_name,
-                                     scoped_ptr<ListValue> event_args)
-    : extension_id(extension_id),
-      event_name(event_name),
-      event_args(event_args.Pass()) {}
-
-EventDispatchInfo::~EventDispatchInfo() {}
 
 }  // namespace extensions

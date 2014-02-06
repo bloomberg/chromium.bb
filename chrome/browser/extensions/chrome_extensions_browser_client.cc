@@ -8,6 +8,7 @@
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -166,6 +167,12 @@ bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
 content::JavaScriptDialogManager*
 ChromeExtensionsBrowserClient::GetJavaScriptDialogManager() {
   return GetJavaScriptDialogManagerInstance();
+}
+
+ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
+    content::BrowserContext* context) {
+  // The ActivityLog monitors and records function calls and events.
+  return ActivityLog::GetInstance(context);
 }
 
 std::vector<BrowserContextKeyedServiceFactory*>

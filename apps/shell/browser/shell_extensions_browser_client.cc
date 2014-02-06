@@ -122,6 +122,12 @@ ShellExtensionsBrowserClient::GetJavaScriptDialogManager() {
   return NULL;
 }
 
+ApiActivityMonitor* ShellExtensionsBrowserClient::GetApiActivityMonitor(
+    BrowserContext* context) {
+  // app_shell doesn't monitor API function calls or events.
+  return NULL;
+}
+
 std::vector<BrowserContextKeyedServiceFactory*>
 ShellExtensionsBrowserClient::GetExtensionSystemDependencies() {
   return ShellExtensionSystem::GetDependencies();
