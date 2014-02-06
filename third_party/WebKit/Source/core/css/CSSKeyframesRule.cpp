@@ -128,7 +128,8 @@ void CSSKeyframesRule::insertRule(const String& ruleText, ExceptionState& except
         }
     }
 
-    BisonCSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
+    CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+    BisonCSSParser parser(context);
     RefPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);
     if (!keyframe)
         return;

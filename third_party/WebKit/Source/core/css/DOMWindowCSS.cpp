@@ -80,7 +80,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
 
 bool DOMWindowCSS::supports(const String& conditionText) const
 {
-    CSSParserContext context(HTMLStandardMode);
+    CSSParserContext context(HTMLStandardMode, 0);
     BisonCSSParser parser(context);
     return parser.parseSupportsCondition(conditionText);
 }

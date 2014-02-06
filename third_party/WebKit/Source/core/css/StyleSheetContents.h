@@ -45,7 +45,7 @@ class StyleRuleImport;
 
 class StyleSheetContents : public RefCounted<StyleSheetContents> {
 public:
-    static PassRefPtr<StyleSheetContents> create(const CSSParserContext& context = CSSParserContext(HTMLStandardMode))
+    static PassRefPtr<StyleSheetContents> create(const CSSParserContext& context)
     {
         return adoptRef(new StyleSheetContents(0, String(), context));
     }

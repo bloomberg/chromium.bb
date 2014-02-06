@@ -68,7 +68,8 @@ String CSSPageRule::selectorText() const
 
 void CSSPageRule::setSelectorText(const String& selectorText)
 {
-    BisonCSSParser parser(parserContext());
+    CSSParserContext context(parserContext(), 0);
+    BisonCSSParser parser(context);
     CSSSelectorList selectorList;
     parser.parseSelector(selectorText, selectorList);
     if (!selectorList.isValid())

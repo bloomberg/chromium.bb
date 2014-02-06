@@ -80,7 +80,7 @@ class BisonCSSParser {
     friend inline int cssyylex(void*, BisonCSSParser*);
 
 public:
-    BisonCSSParser(const CSSParserContext&, UseCounter* = 0);
+    BisonCSSParser(const CSSParserContext&);
 
     ~BisonCSSParser();
 
@@ -595,8 +595,6 @@ private:
     int colorIntFromValue(CSSParserValue*);
     double parsedDouble(CSSParserValue*, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
     bool isCalculation(CSSParserValue*);
-
-    UseCounter* m_useCounter;
 
     CSSTokenizer m_tokenizer;
 

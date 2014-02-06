@@ -184,7 +184,7 @@ private:
     bool m_hasSeenAnimationPropertyKeyword;
 };
 
-BisonCSSParser::BisonCSSParser(const CSSParserContext& context, UseCounter* counter)
+BisonCSSParser::BisonCSSParser(const CSSParserContext& context)
     : m_context(context)
     , m_important(false)
     , m_id(CSSPropertyInvalid)
@@ -206,7 +206,6 @@ BisonCSSParser::BisonCSSParser(const CSSParserContext& context, UseCounter* coun
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
     , m_inViewport(false)
-    , m_useCounter(counter)
     , m_tokenizer(*this)
 {
 #if YYDEBUG > 0
@@ -1129,7 +1128,7 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
 {
     ASSERT(!string.isEmpty());
 
-    CSSParserContext context(document);
+    CSSParserContext context(document, UseCounter::getFrom(&document));
 
     if (parseSimpleLengthValue(declaration, propertyID, string, important, context.mode()))
         return true;
@@ -1138,7 +1137,7 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
     if (parseKeywordValue(declaration, propertyID, string, important, context))
         return true;
 
-    BisonCSSParser parser(context, UseCounter::getFrom(&document));
+    BisonCSSParser parser(context);
     return parser.parseValue(declaration, propertyID, string, important, static_cast<StyleSheetContents*>(0));
 }
 
@@ -1150,7 +1149,7 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
     if (parseColorValue(declaration, propertyID, string, important, cssParserMode))
         return true;
 
-    CSSParserContext context(cssParserMode);
+    CSSParserContext context(cssParserMode, 0);
     if (contextStyleSheet) {
         context = contextStyleSheet->parserContext();
         context.setMode(cssParserMode);
@@ -1169,8 +1168,8 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
 {
     // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
 
-    if (m_useCounter)
-        m_useCounter->count(m_context, propertyID);
+    if (m_context.useCounter())
+        m_context.useCounter()->count(m_context, propertyID);
 
     setStyleSheet(contextStyleSheet);
 
@@ -1207,7 +1206,7 @@ bool BisonCSSParser::parseColor(RGBA32& color, const String& string, bool strict
     if (fastParseColor(color, string, strict))
         return true;
 
-    BisonCSSParser parser(HTMLStandardMode);
+    BisonCSSParser parser(strictCSSParserContext());
 
     // In case the fast-path parser didn't understand the color, try the full parser.
     if (!parser.parseColor(string))
@@ -1270,9 +1269,9 @@ void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& select
 PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
     Document& document = element->document();
-    CSSParserContext context = document.elementSheet()->contents()->parserContext();
+    CSSParserContext context = CSSParserContext(document.elementSheet()->contents()->parserContext(), UseCounter::getFrom(&document));
     context.setMode((element->isHTMLElement() && !document.inQuirksMode()) ? HTMLStandardMode : HTMLQuirksMode);
-    return BisonCSSParser(context, UseCounter::getFrom(&document)).parseDeclaration(string, document.elementSheet()->contents());
+    return BisonCSSParser(context).parseDeclaration(string, document.elementSheet()->contents());
 }
 
 PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
@@ -1674,8 +1673,8 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         return false;
 
     // We don't count the UA style sheet in our statistics.
-    if (m_useCounter)
-        m_useCounter->count(m_context, propId);
+    if (m_context.useCounter())
+        m_context.useCounter()->count(m_context, propId);
 
     if (!m_valueList)
         return false;
@@ -9837,8 +9836,8 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
 {
-    if (m_useCounter && specifiers->pseudoType() == CSSSelector::PseudoUserAgentCustomElement)
-        m_useCounter->count(UseCounter::CSSPseudoElementUserAgentCustomPseudo);
+    if (m_context.useCounter() && specifiers->pseudoType() == CSSSelector::PseudoUserAgentCustomElement)
+        m_context.useCounter()->count(UseCounter::CSSPseudoElementUserAgentCustomPseudo);
 
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
@@ -9888,8 +9887,8 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForContentPse
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector)
 {
-    if (m_useCounter)
-        m_useCounter->count(UseCounter::CSSPseudoElementPrefixedDistributed);
+    if (m_context.useCounter())
+        m_context.useCounter()->count(UseCounter::CSSPseudoElementPrefixedDistributed);
     CSSParserSelector* argumentSelector = distributedPseudoElementSelector->functionArgumentSelector();
     ASSERT(argumentSelector);
     ASSERT(!specifiers->isDistributedPseudoElement());
@@ -9964,8 +9963,8 @@ void BisonCSSParser::setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSele
 
 StyleRuleBase* BisonCSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
 {
-    if (m_useCounter)
-        m_useCounter->count(UseCounter::CSSWebkitRegionAtRule);
+    if (m_context.useCounter())
+        m_context.useCounter()->count(UseCounter::CSSWebkitRegionAtRule);
 
     if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules)
         return 0;

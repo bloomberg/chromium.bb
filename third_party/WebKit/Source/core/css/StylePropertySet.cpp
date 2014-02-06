@@ -342,13 +342,13 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
 {
     m_propertyVector.clear();
 
-    CSSParserContext context(cssParserMode());
+    CSSParserContext context(cssParserMode(), UseCounter::getFrom(contextStyleSheet));
     if (contextStyleSheet) {
         context = contextStyleSheet->parserContext();
         context.setMode(cssParserMode());
     }
 
-    BisonCSSParser parser(context, UseCounter::getFrom(contextStyleSheet));
+    BisonCSSParser parser(context);
     parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
 }
 

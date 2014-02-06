@@ -90,7 +90,7 @@ PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtr<StyleSheetConte
 
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
-    CSSParserContext parserContext(ownerNode->document(), baseURL, encoding);
+    CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
     RefPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
     return adoptRef(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
 }
@@ -282,7 +282,8 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is larger than the maximum index (" + String::number(length()) + ").");
         return 0;
     }
-    BisonCSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
+    CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(context);
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {

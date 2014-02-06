@@ -141,8 +141,7 @@ static bool allCompound(const CSSSelectorList& selectorList)
 void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
 {
     m_watchedCallbackSelectors.clear();
-    CSSParserContext context(UASheetMode);
-    BisonCSSParser parser(context);
+    BisonCSSParser parser(CSSParserContext(UASheetMode, 0));
 
     const CSSProperty callbackProperty(CSSPropertyInternalCallback, CSSPrimitiveValue::createIdentifier(CSSValueInternalPresence));
     const RefPtr<StylePropertySet> callbackPropertySet = ImmutableStylePropertySet::create(&callbackProperty, 1, UASheetMode);

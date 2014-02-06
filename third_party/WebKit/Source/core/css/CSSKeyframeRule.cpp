@@ -77,7 +77,7 @@ const Vector<double>& StyleKeyframe::keys() const
         // Keys can only be cleared by setting the key text from JavaScript
         // and this can never be null.
         ASSERT(!m_keyText.isNull());
-        m_keys = BisonCSSParser(HTMLStandardMode).parseKeyframeKeyList(m_keyText);
+        m_keys = BisonCSSParser(strictCSSParserContext()).parseKeyframeKeyList(m_keyText);
     }
     // If an invalid key string was set, m_keys may be empty.
     ASSERT(m_keys);

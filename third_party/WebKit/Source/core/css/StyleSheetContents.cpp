@@ -321,7 +321,8 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     bool hasValidMIMEType = false;
     String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
 
-    BisonCSSParser p(parserContext(), UseCounter::getFrom(this));
+    CSSParserContext context(parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(context);
     p.parseSheet(this, sheetText, TextPosition::minimumPosition(), 0, true);
 
     // If we're loading a stylesheet cross-origin, and the MIME type is not standard, require the CSS
@@ -343,7 +344,8 @@ bool StyleSheetContents::parseString(const String& sheetText)
 
 bool StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
 {
-    BisonCSSParser p(parserContext(), UseCounter::getFrom(this));
+    CSSParserContext context(parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(context);
     p.parseSheet(this, sheetText, startPosition, 0, createdByParser);
 
     return true;

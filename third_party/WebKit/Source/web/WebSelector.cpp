@@ -41,8 +41,7 @@ namespace blink {
 
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)
 {
-    CSSParserContext context(HTMLStandardMode);
-    BisonCSSParser parser(context);
+    BisonCSSParser parser(strictCSSParserContext());
     CSSSelectorList selectorList;
     parser.parseSelector(webSelector, selectorList);
 
