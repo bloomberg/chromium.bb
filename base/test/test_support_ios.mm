@@ -108,6 +108,10 @@ static char** g_argv;
 
 // Reads the redirected gtest output from a file and writes it to NSLog.
 - (void)writeOutputToNSLog {
+  // Close the redirected stdout and stderr files so that the content written to
+  // NSLog doesn't end up in these files.
+  fclose(stdout);
+  fclose(stderr);
   for (NSString* path in @[ [self stdoutPath], [self stderrPath]]) {
     NSString* content = [NSString stringWithContentsOfFile:path
                                                   encoding:NSUTF8StringEncoding
