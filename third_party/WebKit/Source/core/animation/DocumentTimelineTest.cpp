@@ -178,6 +178,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyEffectDoesNotTriggerStyleRecalc)
 TEST_F(AnimationDocumentTimelineTest, TriggerStyleRecalc)
 {
     timing.iterationDuration = 200;
+    timing.hasIterationDuration = true;
     timeline->play(Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
     document->animationClock().updateTime(100);
     EXPECT_TRUE(timeline->serviceAnimations());
@@ -217,18 +218,22 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
 TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
 {
     Timing timingForwardFill;
+    timingForwardFill.hasIterationDuration = true;
     timingForwardFill.iterationDuration = 2;
 
     Timing timingNoFill;
+    timingNoFill.hasIterationDuration = true;
     timingNoFill.iterationDuration = 2;
     timingNoFill.fillMode = Timing::FillModeNone;
 
     Timing timingBackwardFillDelay;
+    timingBackwardFillDelay.hasIterationDuration = true;
     timingBackwardFillDelay.iterationDuration = 1;
     timingBackwardFillDelay.fillMode = Timing::FillModeBackwards;
     timingBackwardFillDelay.startDelay = 1;
 
     Timing timingNoFillDelay;
+    timingNoFillDelay.hasIterationDuration = true;
     timingNoFillDelay.iterationDuration = 1;
     timingNoFillDelay.fillMode = Timing::FillModeNone;
     timingNoFillDelay.startDelay = 1;
@@ -259,6 +264,7 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
 {
+    timing.hasIterationDuration = true;
     timing.iterationDuration = 2;
     timing.startDelay = 5;
 

@@ -154,6 +154,7 @@ TEST_F(AnimationAnimationTest, CanSetDuration)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, duration);
 
+    EXPECT_TRUE(animation->specified().hasIterationDuration);
     EXPECT_EQ(duration, animation->specified().iterationDuration);
 }
 
@@ -168,7 +169,8 @@ TEST_F(AnimationAnimationTest, CanOmitSpecifiedDuration)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes);
 
-    EXPECT_TRUE(std::isnan(animation->specified().iterationDuration));
+    EXPECT_FALSE(animation->specified().hasIterationDuration);
+    EXPECT_EQ(0, animation->specified().iterationDuration);
 }
 
 TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
@@ -182,6 +184,7 @@ TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2);
 
+    EXPECT_TRUE(animation->specified().hasIterationDuration);
     EXPECT_EQ(0, animation->specified().iterationDuration);
 }
 
@@ -346,39 +349,56 @@ TEST_F(AnimationAnimationTest, TimingInputIterationDuration)
     v8::Context::Scope contextScope(context);
 
     Timing timing;
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
 
     applyTimingInputNumber(timing, isolate, "duration", 1.1);
     EXPECT_EQ(1.1, timing.iterationDuration);
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_TRUE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputNumber(timing, isolate, "duration", -1);
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "1");
     EXPECT_EQ(1, timing.iterationDuration);
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_TRUE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "Infinity");
     EXPECT_TRUE(std::isinf(timing.iterationDuration) && (timing.iterationDuration > 0));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_TRUE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "-Infinity");
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "NaN");
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "auto");
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 
     applyTimingInputString(timing, isolate, "duration", "rubbish");
-    EXPECT_TRUE(std::isnan(timing.iterationDuration));
-    timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(0, timing.iterationDuration);
+    EXPECT_FALSE(timing.hasIterationDuration);
+    timing.hasIterationDuration = false;
+    timing.iterationDuration = 0;
 }
 
 TEST_F(AnimationAnimationTest, TimingInputPlaybackRate)
@@ -547,7 +567,8 @@ TEST_F(AnimationAnimationTest, TimingInputEmpty)
     EXPECT_EQ(controlTiming.fillMode, updatedTiming.fillMode);
     EXPECT_EQ(controlTiming.iterationStart, updatedTiming.iterationStart);
     EXPECT_EQ(controlTiming.iterationCount, updatedTiming.iterationCount);
-    EXPECT_TRUE(std::isnan(updatedTiming.iterationDuration));
+    EXPECT_EQ(controlTiming.iterationDuration, updatedTiming.iterationDuration);
+    EXPECT_EQ(controlTiming.hasIterationDuration, updatedTiming.hasIterationDuration);
     EXPECT_EQ(controlTiming.playbackRate, updatedTiming.playbackRate);
     EXPECT_EQ(controlTiming.direction, updatedTiming.direction);
     EXPECT_EQ(*controlTiming.timingFunction.get(), *updatedTiming.timingFunction.get());

@@ -57,7 +57,8 @@ struct Timing {
         , fillMode(FillModeForwards)
         , iterationStart(0)
         , iterationCount(1)
-        , iterationDuration(std::numeric_limits<double>::quiet_NaN())
+        , hasIterationDuration(false)
+        , iterationDuration(0)
         , playbackRate(1)
         , direction(PlaybackDirectionNormal)
         , timingFunction(LinearTimingFunction::create())
@@ -70,7 +71,7 @@ struct Timing {
         ASSERT(std::isfinite(iterationStart));
         ASSERT(iterationStart >= 0);
         ASSERT(iterationCount >= 0);
-        ASSERT(std::isnan(iterationDuration) || iterationDuration >= 0);
+        ASSERT(iterationDuration >= 0);
         ASSERT(std::isfinite(playbackRate));
         ASSERT(timingFunction);
     }
@@ -79,6 +80,7 @@ struct Timing {
     FillMode fillMode;
     double iterationStart;
     double iterationCount;
+    bool hasIterationDuration;
     double iterationDuration;
     // FIXME: Add activeDuration.
     double playbackRate;
