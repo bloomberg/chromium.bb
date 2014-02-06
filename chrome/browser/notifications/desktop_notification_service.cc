@@ -26,6 +26,8 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -60,6 +62,116 @@ using message_center::NotifierId;
 using blink::WebTextDirection;
 
 const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
+
+// NotificationPermissionRequest ---------------------------------------
+
+class NotificationPermissionRequest : public PermissionBubbleRequest {
+ public:
+  NotificationPermissionRequest(
+      DesktopNotificationService* notification_service,
+      const GURL& origin,
+      base::string16 display_name,
+      int process_id,
+      int route_id,
+      int callback_context);
+  virtual ~NotificationPermissionRequest();
+
+  // PermissionBubbleDelegate:
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageTextFragment() const OVERRIDE;
+  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
+  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual void PermissionGranted() OVERRIDE;
+  virtual void PermissionDenied() OVERRIDE;
+  virtual void Cancelled() OVERRIDE;
+  virtual void RequestFinished() OVERRIDE;
+
+ private:
+  // The notification service to be used.
+  DesktopNotificationService* notification_service_;
+
+  // The origin we are asking for permissions on.
+  GURL origin_;
+
+  // The display name for the origin to be displayed.  Will be different from
+  // origin_ for extensions.
+  base::string16 display_name_;
+
+  // The callback information that tells us how to respond to javascript via
+  // the correct RenderView.
+  int process_id_;
+  int route_id_;
+  int callback_context_;
+
+  // Whether the user clicked one of the buttons.
+  bool action_taken_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionRequest);
+};
+
+NotificationPermissionRequest::NotificationPermissionRequest(
+    DesktopNotificationService* notification_service,
+    const GURL& origin,
+    base::string16 display_name,
+    int process_id,
+    int route_id,
+    int callback_context)
+    : notification_service_(notification_service),
+      origin_(origin),
+      display_name_(display_name),
+      process_id_(process_id),
+      route_id_(route_id),
+      callback_context_(callback_context),
+      action_taken_(false) {}
+
+NotificationPermissionRequest::~NotificationPermissionRequest() {}
+
+base::string16 NotificationPermissionRequest::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
+                                    display_name_);
+}
+
+base::string16
+NotificationPermissionRequest::GetMessageTextFragment() const {
+  return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSIONS_FRAGMENT);
+}
+
+base::string16
+NotificationPermissionRequest::GetAlternateAcceptButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_YES);
+}
+
+base::string16
+NotificationPermissionRequest::GetAlternateDenyButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_NO);
+}
+
+void NotificationPermissionRequest::PermissionGranted() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Allowed", 1);
+  notification_service_->GrantPermission(origin_);
+}
+
+void NotificationPermissionRequest::PermissionDenied() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Denied", 1);
+  notification_service_->DenyPermission(origin_);
+}
+
+void NotificationPermissionRequest::Cancelled() {
+}
+
+void NotificationPermissionRequest::RequestFinished() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
+
+  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
+  if (host)
+    host->DesktopNotificationPermissionRequestDone(callback_context_);
+
+  delete this;
+}
+
 
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
@@ -447,6 +559,15 @@ void DesktopNotificationService::RequestPermission(
   // so don't ask the cache.
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
+    if (PermissionBubbleManager::Enabled()) {
+      PermissionBubbleManager* bubble_manager =
+          PermissionBubbleManager::FromWebContents(contents);
+      bubble_manager->AddRequest(new NotificationPermissionRequest(this,
+              origin, DisplayNameForOriginInProcessId(origin, process_id),
+              process_id, route_id, callback_context));
+      return;
+    }
+
     // Show an info bar requesting permission.
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(contents);
@@ -455,9 +576,7 @@ void DesktopNotificationService::RequestPermission(
     // outside of a tab.
     if (infobar_service) {
       NotificationPermissionInfoBarDelegate::Create(
-          infobar_service,
-          DesktopNotificationServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(contents->GetBrowserContext())),
+          infobar_service, this,
           origin, DisplayNameForOriginInProcessId(origin, process_id),
           process_id, route_id, callback_context);
       return;

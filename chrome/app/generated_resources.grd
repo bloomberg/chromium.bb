@@ -12791,6 +12791,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for desktop notifications.">
         Allow <ph name="site">$1<ex>mail.google.com</ex></ph> to show desktop notifications?
       </message>
+      <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site would like to:' in a permissions request">
+        show desktop notifications
+      </message>
       <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
         Allow
       </message>
