@@ -710,6 +710,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
       render_view_.get(), routing_id);
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
                                                 child_frame_identifier);
+  parent->appendChild(web_frame);
   child_render_frame->SetWebFrame(web_frame);
 
   return web_frame;
@@ -754,6 +755,9 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   CHECK(it != g_frame_map.Get().end());
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
+
+  if (is_subframe)
+    frame->parent()->removeChild(frame);
 
   // |frame| is invalid after here.
   frame->close();
