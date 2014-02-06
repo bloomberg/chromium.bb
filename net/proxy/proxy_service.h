@@ -286,6 +286,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
     // Bypass the proxy because of any other error.
     ERROR_BYPASS,
 
+    // Bypass the proxy because responses appear not to be coming via it.
+    MISSING_VIA_HEADER,
+
     // This must always be last.
     BYPASS_EVENT_TYPE_MAX
   };

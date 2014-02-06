@@ -23265,6 +23265,7 @@ other types of suffix sets.
   <int value="1" label="Long bypass"/>
   <int value="2" label="Bypass due to internal server error"/>
   <int value="3" label="Bypass due to other error"/>
+  <int value="4" label="Bypass due to missing via header"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">
