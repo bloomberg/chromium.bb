@@ -57,7 +57,6 @@ class ImageDecoding(page_measurement.PageMeasurement):
 
     durations = [d.duration for d in decode_image_events]
     if not durations:
-      results.Add('ImageDecoding_avg', 'ms', 'unsupported')
       return
     image_decoding_avg = sum(durations) / len(durations)
     results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
