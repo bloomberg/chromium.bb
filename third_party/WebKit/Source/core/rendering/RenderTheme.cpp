@@ -440,19 +440,14 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
 
 String RenderTheme::extraDefaultStyleSheet()
 {
-    if (!RuntimeEnabledFeatures::dataListElementEnabled() && !RuntimeEnabledFeatures::dialogElementEnabled())
-        return String();
     StringBuilder runtimeCSS;
 
-    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        runtimeCSS.appendLiteral("datalist {display: none ;}");
+    runtimeCSS.appendLiteral("datalist {display: none ;}");
 
-        if (RuntimeEnabledFeatures::inputTypeColorEnabled()) {
-            runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
-            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
-            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
-        }
-    }
+    runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
+    runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
+    runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
+
     if (RuntimeEnabledFeatures::dialogElementEnabled()) {
         runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
         runtimeCSS.appendLiteral("dialog { position: absolute; left: 0; right: 0; width: -webkit-fit-content; height: -webkit-fit-content; margin: auto; border: solid; padding: 1em; background: white; color: black;}");

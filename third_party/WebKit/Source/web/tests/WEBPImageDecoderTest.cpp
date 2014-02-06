@@ -179,16 +179,7 @@ void testInvalidImage(const char* webpFile, bool parseErrorExpected)
 
 } // namespace
 
-class AnimatedWebPTests : public ::testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        // Enable animated WebP for all the tests.
-        WebCore::RuntimeEnabledFeatures::setAnimatedWebPEnabled(true);
-    }
-};
-
-TEST_F(AnimatedWebPTests, uniqueGenerationIDs)
+TEST(AnimatedWebPTests, uniqueGenerationIDs)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -204,7 +195,7 @@ TEST_F(AnimatedWebPTests, uniqueGenerationIDs)
     EXPECT_TRUE(generationID0 != generationID1);
 }
 
-TEST_F(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
+TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -246,7 +237,7 @@ TEST_F(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
-TEST_F(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackground)
+TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackground)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -289,7 +280,7 @@ TEST_F(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackgr
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
-TEST_F(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
+TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -332,7 +323,7 @@ TEST_F(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
-TEST_F(AnimatedWebPTests, parseAndDecodeByteByByte)
+TEST(AnimatedWebPTests, parseAndDecodeByteByByte)
 {
     const struct TestImage {
         const char* filename;
@@ -370,7 +361,7 @@ TEST_F(AnimatedWebPTests, parseAndDecodeByteByByte)
     }
 }
 
-TEST_F(AnimatedWebPTests, invalidImages)
+TEST(AnimatedWebPTests, invalidImages)
 {
     // ANMF chunk size is smaller than ANMF header size.
     testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp.webp", true);
@@ -378,7 +369,7 @@ TEST_F(AnimatedWebPTests, invalidImages)
     testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp3.webp", true);
 }
 
-TEST_F(AnimatedWebPTests, truncatedLastFrame)
+TEST(AnimatedWebPTests, truncatedLastFrame)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -394,7 +385,7 @@ TEST_F(AnimatedWebPTests, truncatedLastFrame)
     EXPECT_FALSE(frame);
 }
 
-TEST_F(AnimatedWebPTests, truncatedInBetweenFrame)
+TEST(AnimatedWebPTests, truncatedInBetweenFrame)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -408,7 +399,7 @@ TEST_F(AnimatedWebPTests, truncatedInBetweenFrame)
 }
 
 // Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
-TEST_F(AnimatedWebPTests, reproCrash)
+TEST(AnimatedWebPTests, reproCrash)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -430,7 +421,7 @@ TEST_F(AnimatedWebPTests, reproCrash)
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 }
 
-TEST_F(AnimatedWebPTests, progressiveDecode)
+TEST(AnimatedWebPTests, progressiveDecode)
 {
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
     ASSERT_TRUE(fullData.get());
@@ -479,7 +470,7 @@ TEST_F(AnimatedWebPTests, progressiveDecode)
     EXPECT_TRUE(match);
 }
 
-TEST_F(AnimatedWebPTests, frameIsCompleteAndDuration)
+TEST(AnimatedWebPTests, frameIsCompleteAndDuration)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -507,7 +498,7 @@ TEST_F(AnimatedWebPTests, frameIsCompleteAndDuration)
     EXPECT_EQ(1000.0, decoder->frameDurationAtIndex(2));
 }
 
-TEST_F(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
+TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -533,7 +524,7 @@ TEST_F(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
         EXPECT_EQ(kNotFound, decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
 }
 
-TEST_F(AnimatedWebPTests, randomFrameDecode)
+TEST(AnimatedWebPTests, randomFrameDecode)
 {
     testRandomFrameDecode("/LayoutTests/fast/images/resources/webp-animated.webp");
     testRandomFrameDecode("/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
@@ -541,7 +532,7 @@ TEST_F(AnimatedWebPTests, randomFrameDecode)
     testRandomFrameDecode("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
-TEST_F(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache)
+TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache)
 {
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/webp-animated.webp");
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
@@ -549,7 +540,7 @@ TEST_F(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache)
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
-TEST_F(AnimatedWebPTests, resumePartialDecodeAfterClearFrameBufferCache)
+TEST(AnimatedWebPTests, resumePartialDecodeAfterClearFrameBufferCache)
 {
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated-large.webp");
     ASSERT_TRUE(fullData.get());
@@ -580,7 +571,7 @@ TEST_F(AnimatedWebPTests, resumePartialDecodeAfterClearFrameBufferCache)
     EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
 }
 
-TEST_F(AnimatedWebPTests, decodeAfterReallocatingData)
+TEST(AnimatedWebPTests, decodeAfterReallocatingData)
 {
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated.webp");
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");

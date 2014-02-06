@@ -83,8 +83,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     OwnPtr<InputTypeFactoryMap> map = adoptPtr(new InputTypeFactoryMap);
     map->add(InputTypeNames::button, ButtonInputType::create);
     map->add(InputTypeNames::checkbox, CheckboxInputType::create);
-    if (RuntimeEnabledFeatures::inputTypeColorEnabled())
-        map->add(InputTypeNames::color, ColorInputType::create);
+    map->add(InputTypeNames::color, ColorInputType::create);
     map->add(InputTypeNames::date, DateInputType::create);
     map->add(InputTypeNames::datetime_local, DateTimeLocalInputType::create);
     map->add(InputTypeNames::email, EmailInputType::create);
@@ -102,8 +101,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::tel, TelephoneInputType::create);
     map->add(InputTypeNames::time, TimeInputType::create);
     map->add(InputTypeNames::url, URLInputType::create);
-    if (RuntimeEnabledFeatures::inputTypeWeekEnabled())
-        map->add(InputTypeNames::week, WeekInputType::create);
+    map->add(InputTypeNames::week, WeekInputType::create);
     // No need to register "text" because it is the default type.
     return map.release();
 }

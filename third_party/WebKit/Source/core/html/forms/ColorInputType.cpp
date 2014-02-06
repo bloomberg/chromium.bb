@@ -227,30 +227,25 @@ Color ColorInputType::currentColor()
 
 bool ColorInputType::shouldShowSuggestions() const
 {
-    if (RuntimeEnabledFeatures::dataListElementEnabled())
-        return element().fastHasAttribute(listAttr);
-
-    return false;
+    return element().fastHasAttribute(listAttr);
 }
 
 Vector<ColorSuggestion> ColorInputType::suggestions() const
 {
     Vector<ColorSuggestion> suggestions;
-    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        HTMLDataListElement* dataList = element().dataList();
-        if (dataList) {
-            RefPtr<HTMLCollection> options = dataList->options();
-            for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
-                if (!element().isValidValue(option->value()))
-                    continue;
-                Color color;
-                if (!color.setFromString(option->value()))
-                    continue;
-                ColorSuggestion suggestion(color, option->label().left(maxSuggestionLabelLength));
-                suggestions.append(suggestion);
-                if (suggestions.size() >= maxSuggestions)
-                    break;
-            }
+    HTMLDataListElement* dataList = element().dataList();
+    if (dataList) {
+        RefPtr<HTMLCollection> options = dataList->options();
+        for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
+            if (!element().isValidValue(option->value()))
+                continue;
+            Color color;
+            if (!color.setFromString(option->value()))
+                continue;
+            ColorSuggestion suggestion(color, option->label().left(maxSuggestionLabelLength));
+            suggestions.append(suggestion);
+            if (suggestions.size() >= maxSuggestions)
+                break;
         }
     }
     return suggestions;

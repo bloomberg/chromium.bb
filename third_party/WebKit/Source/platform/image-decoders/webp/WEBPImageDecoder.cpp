@@ -118,49 +118,41 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
     if (frame.status() == ImageFrame::FrameComplete)
         return &frame;
 
-    if (RuntimeEnabledFeatures::animatedWebPEnabled()) {
-        Vector<size_t> framesToDecode;
-        size_t frameToDecode = index;
-        do {
-            framesToDecode.append(frameToDecode);
-            frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-        } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
+    Vector<size_t> framesToDecode;
+    size_t frameToDecode = index;
+    do {
+        framesToDecode.append(frameToDecode);
+        frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
+    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
 
-        ASSERT(m_demux);
-        for (size_t i = framesToDecode.size(); i > 0; --i) {
-            size_t frameIndex = framesToDecode[i - 1];
-            if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(frameIndex))
-                return 0;
-            WebPIterator webpFrame;
-            if (!WebPDemuxGetFrame(m_demux, frameIndex + 1, &webpFrame))
-                return 0;
-            PlatformInstrumentation::willDecodeImage("WEBP");
-            decode(webpFrame.fragment.bytes, webpFrame.fragment.size, false, frameIndex);
-            PlatformInstrumentation::didDecodeImage();
-            WebPDemuxReleaseIterator(&webpFrame);
+    ASSERT(m_demux);
+    for (size_t i = framesToDecode.size(); i > 0; --i) {
+        size_t frameIndex = framesToDecode[i - 1];
+        if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(frameIndex))
+            return 0;
+        WebPIterator webpFrame;
+        if (!WebPDemuxGetFrame(m_demux, frameIndex + 1, &webpFrame))
+            return 0;
+        PlatformInstrumentation::willDecodeImage("WEBP");
+        decode(webpFrame.fragment.bytes, webpFrame.fragment.size, false, frameIndex);
+        PlatformInstrumentation::didDecodeImage();
+        WebPDemuxReleaseIterator(&webpFrame);
 
-            if (failed())
-                return 0;
+        if (failed())
+            return 0;
 
-            // We need more data to continue decoding.
-            if (m_frameBufferCache[frameIndex].status() != ImageFrame::FrameComplete)
-                break;
-        }
-
-        // It is also a fatal error if all data is received and we have decoded all
-        // frames available but the file is truncated.
-        if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() && m_demux && m_demuxState != WEBP_DEMUX_DONE)
-            setFailed();
-
-        frame.notifyBitmapIfPixelsChanged();
-        return &frame;
+        // We need more data to continue decoding.
+        if (m_frameBufferCache[frameIndex].status() != ImageFrame::FrameComplete)
+            break;
     }
 
-    ASSERT(!index);
-    PlatformInstrumentation::willDecodeImage("WEBP");
-    decode(reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size(), false, index);
-    PlatformInstrumentation::didDecodeImage();
-    return failed() ? 0 : &frame;
+    // It is also a fatal error if all data is received and we have decoded all
+    // frames available but the file is truncated.
+    if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() && m_demux && m_demuxState != WEBP_DEMUX_DONE)
+        setFailed();
+
+    frame.notifyBitmapIfPixelsChanged();
+    return &frame;
 }
 
 void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
@@ -178,8 +170,6 @@ int WEBPImageDecoder::repetitionCount() const
 
 bool WEBPImageDecoder::frameIsCompleteAtIndex(size_t index) const
 {
-    if (!RuntimeEnabledFeatures::animatedWebPEnabled())
-        return ImageDecoder::frameIsCompleteAtIndex(index);
     if (!m_demux || m_demuxState <= WEBP_DEMUX_PARSING_HEADER)
         return false;
     if (!(m_formatFlags & ANIMATION_FLAG))
@@ -220,8 +210,6 @@ bool WEBPImageDecoder::updateDemuxer()
     if (!ImageDecoder::isSizeAvailable()) {
         m_formatFlags = WebPDemuxGetI(m_demux, WEBP_FF_FORMAT_FLAGS);
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
-        if (hasAnimation && !RuntimeEnabledFeatures::animatedWebPEnabled())
-            return setFailed();
         if (!setSize(WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH), WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT)))
             return setFailed();
     }

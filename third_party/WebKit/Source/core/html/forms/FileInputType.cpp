@@ -146,7 +146,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     if (Chrome* chrome = this->chrome()) {
         FileChooserSettings settings;
         HTMLInputElement& input = element();
-        settings.allowsDirectoryUpload = RuntimeEnabledFeatures::directoryUploadEnabled() && input.fastHasAttribute(webkitdirectoryAttr);
+        settings.allowsDirectoryUpload = input.fastHasAttribute(webkitdirectoryAttr);
         settings.allowsMultipleFiles = settings.allowsDirectoryUpload || input.fastHasAttribute(multipleAttr);
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
@@ -218,7 +218,7 @@ PassRefPtr<FileList> FileInputType::createFileList(const Vector<FileChooserFileI
     // If a directory is being selected, the UI allows a directory to be chosen
     // and the paths provided here share a root directory somewhere up the tree;
     // we want to store only the relative paths from that point.
-    if (size && element().fastHasAttribute(webkitdirectoryAttr) && RuntimeEnabledFeatures::directoryUploadEnabled()) {
+    if (size && element().fastHasAttribute(webkitdirectoryAttr)) {
         // Find the common root path.
         String rootPath = directoryName(files[0].path);
         for (size_t i = 1; i < size; i++) {
@@ -339,7 +339,7 @@ bool FileInputType::receiveDroppedFiles(const DragData* dragData)
         return false;
 
     HTMLInputElement& input = element();
-    if (input.fastHasAttribute(webkitdirectoryAttr) && RuntimeEnabledFeatures::directoryUploadEnabled()) {
+    if (input.fastHasAttribute(webkitdirectoryAttr)) {
         receiveDropForDirectoryUpload(paths);
         return true;
     }

@@ -15,7 +15,6 @@
 // condition=ENABLE_NAME is used for wrapping features in compile-time
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 
-AnimatedWebP status=stable
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 BeforeLoad status=test
@@ -39,12 +38,9 @@ CSS3TextDecorations status=experimental
 CustomElements status=stable
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
-DataListElement status=stable
 DeviceMotion status=stable
 DeviceOrientation status=stable
-DevicePixelRatioIncludesZoom status=stable
 DialogElement status=experimental
-DirectoryUpload status=stable
 DirectWrite
 // FIXME: Remove this separate feature now that CustomElements are enabled
 EmbedderCustomElements
@@ -64,11 +60,8 @@ Geolocation status=stable
 HTMLImports status=test
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
-IndexedDB status=stable
 IndexedDBExperimental status=experimental
 InputModeAttribute status=test
-InputTypeColor status=stable
-InputTypeWeek status=stable
 LangAttributeAwareFormControlUI
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
@@ -100,7 +93,6 @@ RegionBasedColumns status=experimental
 RepaintAfterLayout
 
 RequestAutocomplete status=test
-RowSpanLogicalHeightSpreading status=stable
 ScriptedSpeech status=stable
 
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left

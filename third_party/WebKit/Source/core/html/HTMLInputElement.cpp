@@ -1822,20 +1822,18 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
     parameters.currentValue = value();
     parameters.doubleValue = m_inputType->valueAsDouble();
     parameters.isAnchorElementRTL = computedStyle()->direction() == RTL;
-    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        if (HTMLDataListElement* dataList = this->dataList()) {
-            RefPtr<HTMLCollection> options = dataList->options();
-            for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
-                if (!isValidValue(option->value()))
-                    continue;
-                DateTimeSuggestion suggestion;
-                suggestion.value = m_inputType->parseToNumber(option->value(), Decimal::nan()).toDouble();
-                if (std::isnan(suggestion.value))
-                    continue;
-                suggestion.localizedValue = localizeValue(option->value());
-                suggestion.label = option->value() == option->label() ? String() : option->label();
-                parameters.suggestions.append(suggestion);
-            }
+    if (HTMLDataListElement* dataList = this->dataList()) {
+        RefPtr<HTMLCollection> options = dataList->options();
+        for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
+            if (!isValidValue(option->value()))
+                continue;
+            DateTimeSuggestion suggestion;
+            suggestion.value = m_inputType->parseToNumber(option->value(), Decimal::nan()).toDouble();
+            if (std::isnan(suggestion.value))
+                continue;
+            suggestion.localizedValue = localizeValue(option->value());
+            suggestion.label = option->value() == option->label() ? String() : option->label();
+            parameters.suggestions.append(suggestion);
         }
     }
     return true;

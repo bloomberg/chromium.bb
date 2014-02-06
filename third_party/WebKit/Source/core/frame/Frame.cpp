@@ -740,8 +740,7 @@ double Frame::devicePixelRatio() const
         return 0;
 
     double ratio = m_host->deviceScaleFactor();
-    if (RuntimeEnabledFeatures::devicePixelRatioIncludesZoomEnabled())
-        ratio *= pageZoomFactor();
+    ratio *= pageZoomFactor();
     return ratio;
 }
 

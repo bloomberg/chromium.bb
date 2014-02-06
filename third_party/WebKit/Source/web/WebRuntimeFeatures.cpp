@@ -430,16 +430,6 @@ bool WebRuntimeFeatures::isWebMIDIEnabled()
     return RuntimeEnabledFeatures::webMIDIEnabled();
 }
 
-void WebRuntimeFeatures::enableDataListElement(bool enable)
-{
-    RuntimeEnabledFeatures::setDataListElementEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isDataListElementEnabled()
-{
-    return RuntimeEnabledFeatures::dataListElementEnabled();
-}
-
 void WebRuntimeFeatures::enableHTMLImports(bool enable)
 {
     RuntimeEnabledFeatures::setHTMLImportsEnabled(enable);

@@ -550,12 +550,10 @@ void BaseMultipleFieldsDateAndTimeInputType::updatePickerIndicatorVisibility()
         showPickerIndicator();
         return;
     }
-    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        if (element().hasValidDataListOptions())
-            showPickerIndicator();
-        else
-            hidePickerIndicator();
-    }
+    if (element().hasValidDataListOptions())
+        showPickerIndicator();
+    else
+        hidePickerIndicator();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::hidePickerIndicator()

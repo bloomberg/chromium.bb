@@ -41,7 +41,7 @@ interface HTMLInputElement : HTMLElement {
     [CustomElementCallbacks] attribute unsigned long height;
     attribute boolean indeterminate;
     [RuntimeEnabled=InputModeAttribute, Reflect] attribute DOMString inputMode;
-    [RuntimeEnabled=DataListElement] readonly attribute HTMLElement list;
+    readonly attribute HTMLElement list;
     [Reflect] attribute DOMString max;
     [RaisesException=Setter, CustomElementCallbacks] attribute long maxLength;
     [Reflect] attribute DOMString min;
@@ -91,7 +91,7 @@ interface HTMLInputElement : HTMLElement {
                            optional DOMString direction);
 
     // Non-standard attributes
-    [Reflect, RuntimeEnabled=DirectoryUpload] attribute boolean webkitdirectory;
+    [Reflect] attribute boolean webkitdirectory;
     [Reflect] attribute boolean incremental;
     [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitSpeech;
     [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitGrammar;

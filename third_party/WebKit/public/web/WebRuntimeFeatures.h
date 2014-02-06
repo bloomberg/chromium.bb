@@ -155,9 +155,6 @@ public:
     BLINK_EXPORT static void enableWebMIDI(bool);
     BLINK_EXPORT static bool isWebMIDIEnabled();
 
-    BLINK_EXPORT static void enableDataListElement(bool);
-    BLINK_EXPORT static bool isDataListElementEnabled();
-
     BLINK_EXPORT static void enableHTMLImports(bool);
     BLINK_EXPORT static bool isHTMLImportsEnabled();
 

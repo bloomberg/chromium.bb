@@ -652,32 +652,24 @@ int RenderTableSection::calcRowLogicalHeight()
                 if (current.inColSpan && cell->rowSpan() == 1)
                     continue;
 
-                if (RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled()) {
-                    if (cell->rowSpan() > 1) {
-                        // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
-                        if (lastRowSpanCell != cell && cell->rowIndex() == r) {
+                if (cell->rowSpan() > 1) {
+                    // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
+                    if (lastRowSpanCell != cell && cell->rowIndex() == r) {
 #ifndef NDEBUG
-                            ASSERT(!uniqueCells.contains(cell));
-                            uniqueCells.add(cell);
+                        ASSERT(!uniqueCells.contains(cell));
+                        uniqueCells.add(cell);
 #endif
 
-                            rowSpanCells.append(cell);
-                            lastRowSpanCell = cell;
+                        rowSpanCells.append(cell);
+                        lastRowSpanCell = cell;
 
-                            // Find out the baseline. The baseline is set on the first row in a rowSpan.
-                            updateBaselineForCell(cell, r, baselineDescent);
-                        }
-                        continue;
+                        // Find out the baseline. The baseline is set on the first row in a rowSpan.
+                        updateBaselineForCell(cell, r, baselineDescent);
                     }
-
-                    ASSERT(cell->rowSpan() == 1);
-                } else {
-                    // FIXME: We add all the logical row of a rowspan to the last rows
-                    // until crbug.com/78724 is fixed and the runtime flag removed.
-                    // This avoids propagating temporary regressions while we fix the bug.
-                    if ((cell->rowIndex() + cell->rowSpan() - 1) != r)
-                        continue;
+                    continue;
                 }
+
+                ASSERT(cell->rowSpan() == 1);
 
                 if (cell->hasOverrideHeight()) {
                     if (!statePusher.didPush()) {
@@ -690,20 +682,10 @@ int RenderTableSection::calcRowLogicalHeight()
                     cell->forceChildLayout();
                 }
 
-                if (RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled()) {
-                    m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
+                m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
 
-                    // Find out the baseline.
-                    updateBaselineForCell(cell, r, baselineDescent);
-                } else {
-                    // For row spanning cells, |r| is the last row in the span.
-                    unsigned cellStartRow = cell->rowIndex();
-
-                    m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[cellStartRow] + cell->logicalHeightForRowSizing());
-
-                    // Find out the baseline.
-                    updateBaselineForCell(cell, cellStartRow, baselineDescent);
-                }
+                // Find out the baseline.
+                updateBaselineForCell(cell, r, baselineDescent);
             }
         }
 
@@ -712,10 +694,8 @@ int RenderTableSection::calcRowLogicalHeight()
         m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r]);
     }
 
-    if (!rowSpanCells.isEmpty()) {
-        ASSERT(RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled());
+    if (!rowSpanCells.isEmpty())
         distributeRowSpanHeightToRows(rowSpanCells);
-    }
 
     ASSERT(!needsLayout());
 

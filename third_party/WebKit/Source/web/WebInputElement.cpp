@@ -169,10 +169,8 @@ bool WebInputElement::isMultiple() const
 
 WebElementCollection WebInputElement::dataListOptions() const
 {
-    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        if (HTMLDataListElement* dataList = toHTMLDataListElement(constUnwrap<HTMLInputElement>()->list()))
-            return WebElementCollection(dataList->options());
-    }
+    if (HTMLDataListElement* dataList = toHTMLDataListElement(constUnwrap<HTMLInputElement>()->list()))
+        return WebElementCollection(dataList->options());
     return WebElementCollection();
 }
 
