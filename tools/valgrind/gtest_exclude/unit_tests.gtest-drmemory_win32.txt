@@ -79,4 +79,4 @@ TabStripModelTest.FastShutdown
 NTPUserDataLoggerTest.TestLogging
 
 # http://crbug.com/340837
-ChromeBlacklistTrialTest.SetupFailed
+ChromeBlacklistTrialTest.*SetupFailed
