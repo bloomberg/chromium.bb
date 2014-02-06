@@ -13,6 +13,7 @@
       'SOURCES' : [
         'dbgprint.c',
         "devfs/dev_fs.cc",
+        "devfs/jspipe_node.cc",
         "devfs/tty_event_emitter.cc",
         "devfs/tty_node.cc",
         "dir_node.cc",
@@ -158,6 +159,7 @@
         "char_node.h",
         "dbgprint.h",
         "devfs/dev_fs.h",
+        "devfs/jspipe_node.h",
         "devfs/tty_event_emitter.h",
         "devfs/tty_node.h",
         "dir_node.h",

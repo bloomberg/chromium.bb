@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <string.h>
 
+#include "nacl_io/devfs/jspipe_node.h"
 #include "nacl_io/devfs/tty_node.h"
 #include "nacl_io/dir_node.h"
 #include "nacl_io/kernel_wrap_real.h"
@@ -297,14 +298,16 @@ Error DevFs::Rename(const Path& path, const Path& newpath) { return EPERM; }
 
 DevFs::DevFs() {}
 
-#define INITIALIZE_DEV_NODE(path, klass)                      \
-  error = root_->AddChild(path, ScopedNode(new klass(this))); \
-  if (error)                                                  \
+#define INITIALIZE_DEV_NODE(path, klass)   \
+  new_node = ScopedNode(new klass(this));  \
+  error = root_->AddChild(path, new_node); \
+  if (error)                               \
     return error;
 
-#define INITIALIZE_DEV_NODE_1(path, klass, arg)                    \
-  error = root_->AddChild(path, ScopedNode(new klass(this, arg))); \
-  if (error)                                                       \
+#define INITIALIZE_DEV_NODE_1(path, klass, arg) \
+  new_node = ScopedNode(new klass(this, arg));  \
+  error = root_->AddChild(path, new_node);      \
+  if (error)                                    \
     return error;
 
 Error DevFs::Init(const FsInitArgs& args) {
@@ -314,6 +317,7 @@ Error DevFs::Init(const FsInitArgs& args) {
 
   root_.reset(new DirNode(this));
 
+  ScopedNode new_node;
   INITIALIZE_DEV_NODE("/null", NullNode);
   INITIALIZE_DEV_NODE("/zero", ZeroNode);
   INITIALIZE_DEV_NODE("/urandom", UrandomNode);
@@ -325,6 +329,12 @@ Error DevFs::Init(const FsInitArgs& args) {
   INITIALIZE_DEV_NODE_1("/stdin", RealNode, 0);
   INITIALIZE_DEV_NODE_1("/stdout", RealNode, 1);
   INITIALIZE_DEV_NODE_1("/stderr", RealNode, 2);
+  INITIALIZE_DEV_NODE("/jspipe1", JSPipeNode);
+  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe1");
+  INITIALIZE_DEV_NODE("/jspipe2", JSPipeNode);
+  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe2");
+  INITIALIZE_DEV_NODE("/jspipe3", JSPipeNode);
+  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe3");
 
   return 0;
 }

@@ -12,7 +12,7 @@
  * struct (tioc_nacl_input_string), which contains a pointer to an array
  * of characters.
  */
-#define TIOCNACLINPUT  0xadcd02
+#define TIOCNACLINPUT 0xadcd02
 
 /*
  * ioctl to register an output handler with the tty node.  Will fail
@@ -24,6 +24,18 @@
  * if an error occured.
  */
 #define TIOCNACLOUTPUT 0xadcd03
+
+/*
+ * ioctl used to set a name for a JavaScript pipe.  The name
+ * is a string that is used to uniquely identify messages posted to and from
+ * JavaScript which signifies that the message is destined for a
+ * particular pipe device.  For this reason each device must have a
+ * unique prefix.  Until a prefix is set on a given pipe any I/O operations
+ * will return EIO.
+ */
+#define TIOCNACLPIPENAME 0xadcd04
+
+typedef char* tioc_nacl_jspipe_name;
 
 struct tioc_nacl_input_string {
   size_t length;

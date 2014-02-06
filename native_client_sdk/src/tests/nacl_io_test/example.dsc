@@ -39,6 +39,7 @@
         'host_resolver_test.cc',
         'html5_fs_test.cc',
         'http_fs_test.cc',
+        'jspipe_test.cc',
         'kernel_object_test.cc',
         'kernel_proxy_test.cc',
         'kernel_wrap_test.cc',
