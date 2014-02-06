@@ -317,6 +317,8 @@ public:
         EventSourceURL,
         WebSocketURL,
         UnsafeEvalBlocksCSSOM,
+        WorkerSubjectToCSP,
+        WorkerAllowedByChildBlockedByScript,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

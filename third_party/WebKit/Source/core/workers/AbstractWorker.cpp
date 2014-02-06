@@ -63,7 +63,7 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
         return KURL();
     }
 
-    if (executionContext()->contentSecurityPolicy() && !executionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
+    if (executionContext()->contentSecurityPolicy() && !executionContext()->contentSecurityPolicy()->allowWorkerContextFromSource(scriptURL)) {
         exceptionState.throwSecurityError("Access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
         return KURL();
     }

@@ -2017,6 +2017,21 @@ bool ContentSecurityPolicy::allowChildContextFromSource(const KURL& url, Content
     return isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus);
 }
 
+bool ContentSecurityPolicy::allowWorkerContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the impact of this backwards-incompatible change.
+    if (m_client->isDocument()) {
+        Document* document = static_cast<Document*>(m_client);
+        UseCounter::count(*document, UseCounter::WorkerSubjectToCSP);
+        if (isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, SuppressReport) && !isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, SuppressReport))
+            UseCounter::count(*document, UseCounter::WorkerAllowedByChildBlockedByScript);
+    }
+
+    return experimentalFeaturesEnabled() ?
+        isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus) :
+        isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, reportingStatus);
+}
+
 bool ContentSecurityPolicy::isActive() const
 {
     return !m_policies.isEmpty();

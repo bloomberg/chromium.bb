@@ -43,3 +43,23 @@ function iframeLoaded(expectBlock) {
 function injectFrameRedirectingTo(url, shouldBlock) {
     injectFrame("/security/contentSecurityPolicy/resources/redir.php?url=" + url, shouldBlock);
 }
+
+function injectWorker(url, expectBlock) {
+    window.onload = function() {
+        if (expectBlock == EXPECT_BLOCK)
+            shouldThrow("var w = new Worker('" + url + "');");
+        else
+            shouldNotThrow("var w = new Worker('" + url + "');");
+        finishJSTest();
+    };
+}
+
+function injectSharedWorker(url, expectBlock) {
+    window.onload = function() {
+        if (expectBlock == EXPECT_BLOCK)
+            shouldThrow("var w = new SharedWorker('" + url + "');");
+        else
+            shouldNotThrow("var w = new SharedWorker('" + url + "');");
+        finishJSTest();
+    };
+}
