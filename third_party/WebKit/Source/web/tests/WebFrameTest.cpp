@@ -3061,7 +3061,8 @@ private:
 };
 
 // This fails on Mac https://bugs.webkit.org/show_bug.cgi?id=108574
-#if OS(MACOSX)
+// Also failing on Android: http://crbug.com/341314
+#if OS(MACOSX) || OS(ANDROID)
 TEST_F(WebFrameTest, DISABLED_FindInPageMatchRects)
 #else
 TEST_F(WebFrameTest, FindInPageMatchRects)
