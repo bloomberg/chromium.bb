@@ -132,7 +132,6 @@ public:
         timing.fillMode = Timing::FillModeNone;
         timing.iterationStart = 0;
         timing.iterationCount = 1;
-        timing.hasIterationDuration = true;
         timing.iterationDuration = 1.0;
         timing.playbackRate = 1.0;
         timing.direction = Timing::PlaybackDirectionNormal;

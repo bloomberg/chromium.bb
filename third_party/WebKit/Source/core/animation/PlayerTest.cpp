@@ -72,7 +72,6 @@ protected:
     {
         Timing timing;
         timing.iterationDuration = duration;
-        timing.hasIterationDuration = true;
         timing.playbackRate = playbackRate;
         return Animation::create(0, 0, timing);
     }
@@ -452,7 +451,6 @@ TEST_F(AnimationPlayerTest, FinishRaisesException)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.hasIterationDuration = true;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     player->setSource(Animation::create(0, 0, timing).get());
     player->setCurrentTime(10);
@@ -616,7 +614,6 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
     Timing timing;
     timing.startDelay = 1;
     timing.iterationDuration = 1;
-    timing.hasIterationDuration = true;
     RefPtr<Animation> animation = Animation::create(0, 0, timing);
     player = Player::create(*timeline, animation.get());
     player->setStartTime(0);

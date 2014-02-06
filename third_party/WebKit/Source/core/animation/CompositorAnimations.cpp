@@ -318,7 +318,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if ((std::floor(timing.iterationCount) != timing.iterationCount) || timing.iterationCount <= 0)
         return false;
 
-    if (!timing.iterationDuration)
+    if (std::isnan(timing.iterationDuration) || !timing.iterationDuration)
         return false;
 
     // FIXME: Support other playback rates

@@ -129,13 +129,10 @@ void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
         timing.iterationCount = std::max<double>(iterationCount, 0);
 
     v8::Local<v8::Value> iterationDurationValue;
-    bool hasIterationDurationValue = timingInputDictionary.get("duration", iterationDurationValue);
-    if (hasIterationDurationValue) {
+    if (timingInputDictionary.get("duration", iterationDurationValue)) {
         double iterationDuration = iterationDurationValue->NumberValue();
-        if (!std::isnan(iterationDuration) && iterationDuration >= 0) {
+        if (!std::isnan(iterationDuration) && iterationDuration >= 0)
             timing.iterationDuration = iterationDuration;
-            timing.hasIterationDuration = true;
-        }
     }
 
     double playbackRate = 1;
@@ -228,10 +225,8 @@ PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionar
     RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
 
     Timing timing;
-    if (!std::isnan(timingInput)) {
-        timing.hasIterationDuration = true;
+    if (!std::isnan(timingInput))
         timing.iterationDuration = std::max<double>(timingInput, 0);
-    }
 
     return create(element, effect, timing);
 }

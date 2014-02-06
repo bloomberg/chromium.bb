@@ -268,10 +268,8 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
 {
     if (animationData->isDelaySet())
         timing.startDelay = animationData->delay();
-    if (animationData->isDurationSet()) {
+    if (animationData->isDurationSet())
         timing.iterationDuration = animationData->duration();
-        timing.hasIterationDuration = true;
-    }
     if (animationData->isIterationCountSet()) {
         if (animationData->iterationCount() == CSSAnimationData::IterationCountInfinite)
             timing.iterationCount = std::numeric_limits<double>::infinity();
@@ -322,7 +320,7 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
     timing.assertValid();
     ASSERT(!timing.iterationStart);
     ASSERT(timing.playbackRate == 1);
-    ASSERT(timing.iterationDuration >= 0 && std::isfinite(timing.iterationDuration));
+    ASSERT(!std::isinf(timing.iterationDuration));
 
     isPaused = animationData->isPlayStateSet() && animationData->playState() == AnimPlayStatePaused;
     return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();
@@ -755,7 +753,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* ti
         // between a single pair of samples. See http://crbug.com/275263. For
         // compatibility with the existing implementation, this event uses
         // the elapsedTime for the first iteration in question.
-        ASSERT(timedItem->specified().hasIterationDuration);
+        ASSERT(!std::isnan(timedItem->specified().iterationDuration));
         const double elapsedTime = timedItem->specified().iterationDuration * (previousIteration + 1);
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
         return;
