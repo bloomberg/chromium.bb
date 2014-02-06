@@ -633,16 +633,5 @@ hooks = [
          '.',
     'name':
          'gyp'
-},
-    {
-    'action':
-         [
-    'python',
-    'src/build/landmines.py'
-],
-    'pattern':
-         '.',
-    'name':
-         'landmines'
 }
 ]
