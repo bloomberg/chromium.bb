@@ -301,6 +301,7 @@ private:
             }
             yield();
         }
+        ThreadState::current()->cleanup();
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
     }

@@ -240,6 +240,7 @@ ThreadState::ThreadState()
     , m_noAllocationCount(0)
     , m_inGC(false)
     , m_heapContainsCache(new HeapContainsCache())
+    , m_isCleaningUp(false)
 {
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
@@ -283,6 +284,30 @@ void ThreadState::attach()
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new ThreadState();
     attachedThreads().add(state);
+}
+
+void ThreadState::cleanup()
+{
+    // From here on ignore all conservatively discovered
+    // pointers into the heap owned by this thread.
+    m_isCleaningUp = true;
+
+    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
+        m_cleanupTasks[i]->preCleanup();
+
+    // After this GC we expect heap to be empty because
+    // preCleanup tasks should have cleared all persistent
+    // handles that were externally owned.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    // Verify that all heaps are empty now.
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->assertEmpty();
+
+    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
+        m_cleanupTasks[i]->postCleanup();
+
+    m_cleanupTasks.clear();
 }
 
 void ThreadState::detach()
@@ -335,6 +360,10 @@ void ThreadState::trace(Visitor* visitor)
 
 bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
 {
+    // If thread is cleaning up ignore conservative pointers.
+    if (m_isCleaningUp)
+        return false;
+
     BaseHeapPage* page = heapPageFromAddress(address);
     if (page)
         return page->checkAndMarkPointer(visitor, address);

@@ -75,6 +75,31 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     ThreadState::current()->addInterruptor(m_interruptor.get());
 }
 
+// We need to postpone V8 Isolate destruction until the very end of
+// worker thread finalization when all objects on the worker heap
+// are destroyed.
+class IsolateCleanupTask : public ThreadState::CleanupTask {
+public:
+    static PassOwnPtr<IsolateCleanupTask> create(PassOwnPtr<gin::IsolateHolder> isolateHolder)
+    {
+        return adoptPtr(new IsolateCleanupTask(isolateHolder));
+    }
+
+    virtual void postCleanup()
+    {
+        v8::Isolate* isolate = m_isolateHolder->isolate();
+        V8PerIsolateData::dispose(isolate);
+        isolate->Exit();
+        m_isolateHolder.clear();
+        isolate->Dispose();
+    }
+
+private:
+    explicit IsolateCleanupTask(PassOwnPtr<gin::IsolateHolder> isolateHolder) : m_isolateHolder(isolateHolder)  { }
+
+    OwnPtr<gin::IsolateHolder> m_isolateHolder;
+};
+
 WorkerScriptController::~WorkerScriptController()
 {
     ThreadState::current()->removeInterruptor(m_interruptor.get());
@@ -87,11 +112,8 @@ WorkerScriptController::~WorkerScriptController()
     blink::Platform::current()->didStopWorkerRunLoop(blink::WebWorkerRunLoop(&m_workerGlobalScope.thread()->runLoop()));
 
     disposeContext();
-    V8PerIsolateData::dispose(isolate());
-    v8::Isolate* v8Isolate = isolate();
-    v8Isolate->Exit();
-    m_isolateHolder.clear();
-    v8Isolate->Dispose();
+
+    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolateHolder.release()));
 }
 
 void WorkerScriptController::disposeContext()

@@ -420,7 +420,6 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state)
     , m_firstPage(0)
     , m_firstLargeHeapObject(0)
     , m_biggestFreeListIndex(0)
-    , m_inFinalizeAll(false)
     , m_threadState(state)
     , m_pagePool(0)
 {
@@ -431,11 +430,8 @@ template<typename Header>
 ThreadHeap<Header>::~ThreadHeap()
 {
     clearFreeLists();
-    // FIXME: at the moment we can't finalize all objects owned by the
-    // main thread eagerly because there are tangled destruction order
-    // dependencies there.
     if (!ThreadState::isMainThread())
-        finalizeAll();
+        assertEmpty();
     deletePages();
 }
 
@@ -726,56 +722,27 @@ void ThreadHeap<Header>::sweep()
 }
 
 template<typename Header>
-void ThreadHeap<Header>::finalizeAll(const void* except)
+void ThreadHeap<Header>::assertEmpty()
 {
-    if (inFinalizeAll())
-        return;
-    setFinalizeAll(true);
-
     // No nested GCs are permitted. The thread is exiting.
     NoAllocationScope<AnyThread> noAllocation;
     makeConsistentForGC();
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
-        Address startOfGap = page->payload();
         Address end = page->end();
         Address headerAddress;
         for (headerAddress = page->payload(); headerAddress < end; ) {
             BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
-
-            if (basicHeader->isFree()) {
-                headerAddress += basicHeader->size();
-                continue;
-            }
-            // At this point we know this is a valid object of type Header
-            Header* header = static_cast<Header*>(basicHeader);
-
-            if (header->payload() == except) {
-                if (startOfGap != headerAddress)
-                    addToFreeList(startOfGap, headerAddress - startOfGap);
-                headerAddress += header->size();
-                startOfGap = headerAddress;
-                continue;
-            }
-
-            page->finalize(header);
-            headerAddress += header->size();
+            // Live object is potentially a dangling pointer from some root.
+            // Treat it as critical bug both in release and debug mode.
+            RELEASE_ASSERT(basicHeader->isFree());
+            headerAddress += basicHeader->size();
         }
         ASSERT(headerAddress == end);
-        if (startOfGap != end)
-            addToFreeList(startOfGap, end - startOfGap);
+        addToFreeList(page->payload(), end - page->payload());
     }
 
-    LargeHeapObject<Header>** previousNext = &m_firstLargeHeapObject;
-    for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
-        LargeHeapObject<Header>* next = current->next();
-        if (current->heapObjectHeader()->payload() != except)
-            freeLargeObject(current, previousNext);
-        else
-            previousNext = &current->m_next;
-        current = next;
-    }
-    setFinalizeAll(false);
+    RELEASE_ASSERT(!m_firstLargeHeapObject);
 }
 
 template<typename Header>

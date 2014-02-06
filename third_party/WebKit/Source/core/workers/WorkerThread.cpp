@@ -142,6 +142,10 @@ void WorkerThread::workerThread()
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
     m_workerGlobalScope = 0;
 
+    // Cleanup thread heap which causes all objects to be finalized.
+    // After this call thread heap must be empty.
+    ThreadState::current()->cleanup();
+
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();
 

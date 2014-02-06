@@ -34,6 +34,8 @@
 #include "heap/AddressSanitizer.h"
 #include "heap/HeapExport.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -192,6 +194,7 @@ private:
 };
 
 class HEAP_EXPORT ThreadState {
+    WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
     // When garbage collecting we need to know whether or not there
     // can be pointers to Blink GC managed objects on the stack for
@@ -219,6 +222,15 @@ public:
     // call thread can start using the garbage collected heap infrastructure.
     // It also has to periodically check for safepoints.
     static void attach();
+
+    // When ThreadState is detaching from non-main thread its
+    // heap is expected to be empty (because it is going away).
+    // Perform registered cleanup tasks and garbage collection
+    // to sweep away any objects that are left on this heap.
+    // We assert that nothing must remain after this cleanup.
+    // If assertion does not hold we crash as we are potentially
+    // in the dangling pointer situation.
+    void cleanup();
 
     // Disassociate attached ThreadState from the current thread. The thread
     // can no longer use the garbage collected heap after this call.
@@ -393,6 +405,24 @@ public:
     void addInterruptor(Interruptor*);
     void removeInterruptor(Interruptor*);
 
+    // CleanupTasks are executed when ThreadState performs
+    // cleanup before detaching.
+    class CleanupTask {
+    public:
+        virtual ~CleanupTask() { }
+
+        // Executed before the final GC.
+        virtual void preCleanup() { }
+
+        // Executed after the final GC. Thread heap is empty at this point.
+        virtual void postCleanup() { }
+    };
+
+    void addCleanupTask(PassOwnPtr<CleanupTask> cleanupTask)
+    {
+        m_cleanupTasks.append(cleanupTask);
+    }
+
     // Should only be called under protection of threadAttachMutex().
     const Vector<Interruptor*>& interruptors() const { return m_interruptors; }
 
@@ -487,6 +517,9 @@ private:
     HeapContainsCache* m_heapContainsCache;
     HeapStats m_stats;
     HeapStats m_statsAfterLastGC;
+
+    Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
+    bool m_isCleaningUp;
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;

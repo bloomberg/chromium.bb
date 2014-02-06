@@ -622,8 +622,7 @@ public:
     // (potentially with the exception of one object). This is used
     // during thread termination to make sure that all objects for the
     // dying thread are finalized.
-    virtual void finalizeAll(const void* except = 0) = 0;
-    virtual bool inFinalizeAll() = 0;
+    virtual void assertEmpty() = 0;
 
     virtual void clearFreeLists() = 0;
     virtual void clearMarks() = 0;
@@ -660,8 +659,7 @@ public:
     virtual BaseHeapPage* largeHeapObjectFromAddress(Address);
     virtual bool checkAndMarkLargeHeapObject(Visitor*, Address);
     virtual void sweep();
-    virtual void finalizeAll(const void* except = 0);
-    virtual bool inFinalizeAll() { return m_inFinalizeAll; }
+    virtual void assertEmpty();
     virtual void clearFreeLists();
     virtual void clearMarks();
 #ifndef NDEBUG
@@ -725,7 +723,6 @@ private:
     void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
-    void setFinalizeAll(bool finalizingAll) { m_inFinalizeAll = finalizingAll; }
     void freeLargeObject(LargeHeapObject<Header>*, LargeHeapObject<Header>**);
 
     void allocatePage(const GCInfo*);
@@ -740,7 +737,6 @@ private:
     LargeHeapObject<Header>* m_firstLargeHeapObject;
 
     int m_biggestFreeListIndex;
-    bool m_inFinalizeAll;
     ThreadState* m_threadState;
 
     // All FreeListEntries in the nth list have size >= 2^n.

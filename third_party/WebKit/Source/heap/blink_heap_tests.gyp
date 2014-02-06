@@ -66,14 +66,13 @@
       'target_name': 'blink_heap_run_all_tests',
       'type': 'static_library',
       'dependencies': [
+        '../wtf/wtf.gyp:wtf',
         '../config.gyp:unittest_config',
         '<(DEPTH)/base/base.gyp:test_support_base',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/base/base.gyp:test_support_base',
       ],
-      # Disable c4267 warnings until we fix size_t to int truncations. See wtf.gyp for details.
-      'msvs_disabled_warnings': [4267],
       'sources': [
         'RunAllTests.cpp',
       ]
