@@ -29,7 +29,7 @@ namespace proxy {
 // NaClIPCAdapter for use in NaCl.
 class PPAPI_PROXY_EXPORT SerializedHandle {
  public:
-  enum Type { INVALID, SHARED_MEMORY, SOCKET, CHANNEL_HANDLE, FILE };
+  enum Type { INVALID, SHARED_MEMORY, SOCKET, FILE };
   // Header contains the fields that we send in IPC messages, apart from the
   // actual handle. See comments on the SerializedHandle fields below.
   struct Header {
@@ -57,14 +57,13 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   // Create a shared memory handle.
   SerializedHandle(const base::SharedMemoryHandle& handle, uint32 size);
 
-  // Create a socket, channel or file handle.
+  // Create a socket or file handle.
   SerializedHandle(const Type type,
                    const IPC::PlatformFileForTransit& descriptor);
 
   Type type() const { return type_; }
   bool is_shmem() const { return type_ == SHARED_MEMORY; }
   bool is_socket() const { return type_ == SOCKET; }
-  bool is_channel_handle() const { return type_ == CHANNEL_HANDLE; }
   bool is_file() const { return type_ == FILE; }
   const base::SharedMemoryHandle& shmem() const {
     DCHECK(is_shmem());
@@ -75,7 +74,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     return size_;
   }
   const IPC::PlatformFileForTransit& descriptor() const {
-    DCHECK(is_socket() || is_channel_handle() || is_file());
+    DCHECK(is_socket() || is_file());
     return descriptor_;
   }
   int32 open_flags() const {
@@ -98,13 +97,6 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     shm_handle_ = base::SharedMemory::NULLHandle();
     size_ = 0;
   }
-  void set_channel_handle(const IPC::PlatformFileForTransit& descriptor) {
-    type_ = CHANNEL_HANDLE;
-
-    descriptor_ = descriptor;
-    shm_handle_ = base::SharedMemory::NULLHandle();
-    size_ = 0;
-  }
   void set_file_handle(const IPC::PlatformFileForTransit& descriptor,
                        int32 open_flags,
                        PP_Resource file_io) {
@@ -121,9 +113,6 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   }
   void set_null_socket() {
     set_socket(IPC::InvalidPlatformFileForTransit());
-  }
-  void set_null_channel_handle() {
-    set_channel_handle(IPC::InvalidPlatformFileForTransit());
   }
   void set_null_file_handle() {
     set_file_handle(IPC::InvalidPlatformFileForTransit(), 0, 0);
@@ -155,7 +144,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   base::SharedMemoryHandle shm_handle_;
   uint32 size_;
 
-  // This is valid if type == SOCKET || type == CHANNEL_HANDLE || type == FILE.
+  // This is valid if type == SOCKET || type == FILE.
   IPC::PlatformFileForTransit descriptor_;
 
   // The following fields are valid if type == FILE.

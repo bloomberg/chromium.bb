@@ -61,7 +61,6 @@ bool SerializedHandle::IsHandleValid() const {
     case SHARED_MEMORY:
       return base::SharedMemory::IsHandleValid(shm_handle_);
     case SOCKET:
-    case CHANNEL_HANDLE:
     case FILE:
       return !(IPC::InvalidPlatformFileForTransit() == descriptor_);
     case INVALID:
@@ -81,7 +80,6 @@ void SerializedHandle::Close() {
         base::SharedMemory::CloseHandle(shm_handle_);
         break;
       case SOCKET:
-      case CHANNEL_HANDLE:
       case FILE:
         base::PlatformFile file =
             IPC::PlatformFileForTransitToPlatformFile(descriptor_);
@@ -138,7 +136,6 @@ bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
       valid_type = true;
     }
     case SOCKET:
-    case CHANNEL_HANDLE:
     case INVALID:
       valid_type = true;
       break;

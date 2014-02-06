@@ -505,28 +505,6 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           )));
           break;
         }
-        case ppapi::proxy::SerializedHandle::CHANNEL_HANDLE: {
-          // Check that this came from a PpapiMsg_CreateNaClChannel message.
-          // This code here is only appropriate for that message.
-          DCHECK(msg.type() == PpapiMsg_CreateNaClChannel::ID);
-          IPC::ChannelHandle channel_handle =
-              IPC::Channel::GenerateVerifiedChannelID("nacl");
-          scoped_refptr<NaClIPCAdapter> ipc_adapter(
-              new NaClIPCAdapter(channel_handle, task_runner_.get()));
-          ipc_adapter->ConnectChannel();
-#if defined(OS_POSIX)
-          channel_handle.socket = base::FileDescriptor(
-              ipc_adapter->TakeClientFileDescriptor(), true);
-#endif
-          nacl_desc.reset(new NaClDescWrapper(ipc_adapter->MakeNaClDesc()));
-          // Send back a message that the channel was created.
-          scoped_ptr<IPC::Message> response(
-              new PpapiHostMsg_NaClChannelCreated(channel_handle));
-          task_runner_->PostTask(FROM_HERE,
-              base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,
-                         base::Passed(&response)));
-          break;
-        }
         case ppapi::proxy::SerializedHandle::FILE: {
           // Create the NaClDesc for the file descriptor. If quota checking is
           // required, wrap it in a NaClDescQuota.

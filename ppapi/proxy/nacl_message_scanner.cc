@@ -289,11 +289,6 @@ NaClMessageScanner::~NaClMessageScanner() {
 // message body, rather than passed in a separate FileDescriptorSet. Therefore,
 // on Windows, any message containing handles must be rewritten in the POSIX
 // format before we can send it to the NaCl plugin.
-//
-// On POSIX and Windows we have to rewrite PpapiMsg_CreateNaClChannel messages.
-// These contain a handle with an invalid (place holder) descriptor. We need to
-// locate this handle so it can be replaced with a valid one when the channel is
-// created.
 bool NaClMessageScanner::ScanMessage(
     const IPC::Message& msg,
     std::vector<SerializedHandle>* handles,
@@ -307,7 +302,7 @@ bool NaClMessageScanner::ScanMessage(
 #if defined(OS_WIN)
       true;
 #else
-      (msg.type() == PpapiMsg_CreateNaClChannel::ID);
+      false;
 #endif
 
   // We can't always tell from the message ID if rewriting is needed. Therefore,
@@ -319,7 +314,6 @@ bool NaClMessageScanner::ScanMessage(
       base::Bind(&NaClMessageScanner::AuditNestedMessage,
                  base::Unretained(this));
   switch (msg.type()) {
-    CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
     CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)

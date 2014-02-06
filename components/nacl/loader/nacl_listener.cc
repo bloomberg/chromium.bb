@@ -109,6 +109,28 @@ int AttachDebugExceptionHandler(const void* info, size_t info_size) {
 
 #endif
 
+// Creates the PPAPI IPC channel between the NaCl IRT and the host
+// (browser/renderer) process, and starts to listen it on the thread where
+// the given message_loop_proxy runs.
+// Also, creates and sets the corresponding NaClDesc to the given nap with
+// the FD #.
+void SetUpIPCAdapter(IPC::ChannelHandle* handle,
+                     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+                     struct NaClApp* nap,
+                     int nacl_fd) {
+  scoped_refptr<NaClIPCAdapter> ipc_adapter(
+      new NaClIPCAdapter(*handle, message_loop_proxy.get()));
+  ipc_adapter->ConnectChannel();
+#if defined(OS_POSIX)
+  handle->socket =
+      base::FileDescriptor(ipc_adapter->TakeClientFileDescriptor(), true);
+#endif
+
+  // Pass a NaClDesc to the untrusted side. This will hold a ref to the
+  // NaClIPCAdapter.
+  NaClAppSetDesc(nap, nacl_fd, ipc_adapter->MakeNaClDesc());
+}
+
 }  // namespace
 
 class BrowserValidationDBProxy : public NaClValidationDB {
@@ -249,6 +271,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
     return;
   }
+
   struct NaClApp *nap = NaClAppCreate();
   if (nap == NULL) {
     LOG(ERROR) << "NaClAppCreate() failed";
@@ -256,23 +279,21 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   }
 
   if (params.enable_ipc_proxy) {
-    // Create the initial PPAPI IPC channel between the NaCl IRT and the
-    // browser process. The IRT uses this channel to communicate with the
-    // browser and to create additional IPC channels to renderer processes.
-    IPC::ChannelHandle handle =
+    // Create the PPAPI IPC channels between the NaCl IRT and the hosts
+    // (browser/renderer) processes. The IRT uses these channels to communicate
+    // with the host and to initialize the IPC dispatchers.
+    IPC::ChannelHandle browser_handle =
         IPC::Channel::GenerateVerifiedChannelID("nacl");
-    scoped_refptr<NaClIPCAdapter> ipc_adapter(
-        new NaClIPCAdapter(handle, io_thread_.message_loop_proxy().get()));
-    ipc_adapter->ConnectChannel();
+    SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE);
 
-    // Pass a NaClDesc to the untrusted side. This will hold a ref to the
-    // NaClIPCAdapter.
-    NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, ipc_adapter->MakeNaClDesc());
-#if defined(OS_POSIX)
-    handle.socket = base::FileDescriptor(
-        ipc_adapter->TakeClientFileDescriptor(), true);
-#endif
-    if (!Send(new NaClProcessHostMsg_PpapiChannelCreated(handle)))
+    IPC::ChannelHandle renderer_handle =
+        IPC::Channel::GenerateVerifiedChannelID("nacl");
+    SetUpIPCAdapter(&renderer_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE + 1);
+
+    if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
+            browser_handle, renderer_handle)))
       LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
   }
 

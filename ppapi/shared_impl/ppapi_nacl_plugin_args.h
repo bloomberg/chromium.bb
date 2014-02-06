@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPAPI_CREATE_NACL_CHANNEL_ARGS_H
-#define PPAPI_SHARED_IMPL_PPAPI_CREATE_NACL_CHANNEL_ARGS_H
+#ifndef PPAPI_SHARED_IMPL_PPAPI_NACL_PLUGIN_ARGS_H
+#define PPAPI_SHARED_IMPL_PPAPI_NACL_PLUGIN_ARGS_H
 
 #include <string>
 #include <vector>
@@ -12,10 +12,10 @@
 
 namespace ppapi {
 
-struct PPAPI_SHARED_EXPORT PpapiNaClChannelArgs {
+struct PPAPI_SHARED_EXPORT PpapiNaClPluginArgs {
  public:
-  PpapiNaClChannelArgs();
-  ~PpapiNaClChannelArgs();
+  PpapiNaClPluginArgs();
+  ~PpapiNaClPluginArgs();
 
   bool off_the_record;
   PpapiPermissions permissions;
@@ -28,4 +28,4 @@ struct PPAPI_SHARED_EXPORT PpapiNaClChannelArgs {
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPAPI_CREATE_NACL_CHANNEL_ARGS_H
+#endif  // PPAPI_SHARED_IMPL_PPAPI_NACL_PLUGIN_ARGS_H

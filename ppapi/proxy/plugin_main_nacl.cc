@@ -20,6 +20,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#include "native_client/src/public/chrome_main.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/c/ppp.h"
@@ -44,10 +45,6 @@ LogFunctionMap g_log_function_mapping;
 
 #endif
 #include "ppapi/proxy/ppapi_messages.h"
-
-// This must match up with NACL_CHROME_INITIAL_IPC_DESC,
-// defined in sel_main_chrome.h
-#define NACL_IPC_FD 6
 
 using ppapi::proxy::PluginDispatcher;
 using ppapi::proxy::PluginGlobals;
@@ -92,8 +89,7 @@ class PpapiDispatcher : public ProxyChannel,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  void OnMsgCreateNaClChannel(const ppapi::PpapiNaClChannelArgs& args,
-                              SerializedHandle handle);
+  void OnMsgInitializeNaClDispatcher(const ppapi::PpapiNaClPluginArgs& args);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   void SetPpapiKeepAliveThrottleFromCommandLine();
@@ -109,8 +105,10 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
     : next_plugin_dispatcher_id_(0),
       message_loop_(io_loop),
       shutdown_event_(true, false) {
+  // The first FD (based on NACL_CHROME_DESC_BASE) is the IPC channel to the
+  // browser.
   IPC::ChannelHandle channel_handle(
-      "NaCl IPC", base::FileDescriptor(NACL_IPC_FD, false));
+      "NaCl IPC", base::FileDescriptor(NACL_CHROME_DESC_BASE, false));
   // We don't have/need a PID since handle sharing happens outside of the
   // NaCl sandbox.
   InitWithChannel(this, base::kNullProcessId, channel_handle,
@@ -189,30 +187,34 @@ PP_Resource PpapiDispatcher::CreateBrowserFont(
 
 bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiDispatcher, msg)
-    IPC_MESSAGE_HANDLER(PpapiMsg_CreateNaClChannel, OnMsgCreateNaClChannel)
+    IPC_MESSAGE_HANDLER(PpapiMsg_InitializeNaClDispatcher,
+                        OnMsgInitializeNaClDispatcher)
     // All other messages are simply forwarded to a PluginDispatcher.
     IPC_MESSAGE_UNHANDLED(OnPluginDispatcherMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
   return true;
 }
 
-void PpapiDispatcher::OnMsgCreateNaClChannel(
-    const ppapi::PpapiNaClChannelArgs& args,
-    SerializedHandle handle) {
+void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
+    const ppapi::PpapiNaClPluginArgs& args) {
   static bool command_line_and_logging_initialized = false;
-  if (!command_line_and_logging_initialized) {
-    CommandLine::Init(0, NULL);
-    for (size_t i = 0; i < args.switch_names.size(); ++i) {
-      DCHECK(i < args.switch_values.size());
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          args.switch_names[i], args.switch_values[i]);
-    }
-    logging::LoggingSettings settings;
-    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-    logging::InitLogging(settings);
-    SetPpapiKeepAliveThrottleFromCommandLine();
-    command_line_and_logging_initialized = true;
+  if (command_line_and_logging_initialized) {
+    LOG(FATAL) << "InitializeNaClDispatcher must be called once per plugin.";
+    return;
   }
+
+  command_line_and_logging_initialized = true;
+  CommandLine::Init(0, NULL);
+  for (size_t i = 0; i < args.switch_names.size(); ++i) {
+    DCHECK(i < args.switch_values.size());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        args.switch_names[i], args.switch_values[i]);
+  }
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
+  SetPpapiKeepAliveThrottleFromCommandLine();
+
   // Tell the process-global GetInterface which interfaces it can return to the
   // plugin.
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(
@@ -228,7 +230,10 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
       new PluginDispatcher(::PPP_GetInterface, args.permissions,
                            args.off_the_record);
   // The channel handle's true name is not revealed here.
-  IPC::ChannelHandle channel_handle("nacl", handle.descriptor());
+  // The second FD (based on NACL_CHROME_DESC_BASE) is the IPC channel to the
+  // renderer.
+  IPC::ChannelHandle channel_handle(
+      "nacl", base::FileDescriptor(NACL_CHROME_DESC_BASE + 1, false));
   if (!dispatcher->InitPluginWithChannel(this, base::kNullProcessId,
                                          channel_handle, false)) {
     delete dispatcher;

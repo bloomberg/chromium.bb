@@ -91,5 +91,6 @@ IPC_SYNC_MESSAGE_CONTROL2_2(NaClProcessMsg_ResolveFileToken,
 
 // Notify the browser process that the server side of the PPAPI channel was
 // created successfully.
-IPC_MESSAGE_CONTROL1(NaClProcessHostMsg_PpapiChannelCreated,
-                     IPC::ChannelHandle /* channel_handle */)
+IPC_MESSAGE_CONTROL2(NaClProcessHostMsg_PpapiChannelsCreated,
+                     IPC::ChannelHandle, /* browser_channel_handle */
+                     IPC::ChannelHandle /* renderer_channel_handle */)

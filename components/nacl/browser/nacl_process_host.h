@@ -95,24 +95,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   content::BrowserPpapiHost* browser_ppapi_host() { return ppapi_host_.get(); }
 
  private:
-  friend class PluginListener;
-
   // Internal class that holds the NaClHandle objecs so that
   // nacl_process_host.h doesn't include NaCl headers.  Needed since it's
   // included by src\content, which can't depend on the NaCl gyp file because it
   // depends on chrome.gyp (circular dependency).
   struct NaClInternal;
-
-  // PluginListener that forwards any messages from untrusted code that aren't
-  // handled by the PepperMessageFilter to us.
-  class PluginListener : public IPC::Listener {
-   public:
-    explicit PluginListener(NaClProcessHost* host);
-    virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-   private:
-    // Non-owning pointer so we can forward messages to the host.
-    NaClProcessHost* host_;
-  };
 
   bool LaunchNaClGdb();
 
@@ -176,14 +163,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                                    IPC::Message* reply_msg);
 #endif
 
-  // Called when the PPAPI IPC channel to the browser has been created.
-  void OnPpapiBrowserChannelCreated(const IPC::ChannelHandle& channel_handle);
-  // Called when the PPAPI IPC channel to the renderer has been created.
-  void OnPpapiRendererChannelCreated(const IPC::ChannelHandle& channel_handle);
-
-  // Called by PluginListener, so messages from the untrusted side of
-  // the IPC proxy can be handled.
-  bool OnUntrustedMessageForwarded(const IPC::Message& msg);
+  // Called when the PPAPI IPC channels to the browser/renderer have been
+  // created.
+  void OnPpapiChannelsCreated(
+      const IPC::ChannelHandle& browser_channel_handle,
+      const IPC::ChannelHandle& renderer_channel_handle);
 
   GURL manifest_url_;
   ppapi::PpapiPermissions permissions_;
@@ -230,8 +214,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Channel proxy to terminate the NaCl-Browser PPAPI channel.
   scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
-  // Plugin listener, to forward browser channel messages to us.
-  PluginListener ipc_plugin_listener_;
   // Browser host for plugin process.
   scoped_ptr<content::BrowserPpapiHost> ppapi_host_;
 

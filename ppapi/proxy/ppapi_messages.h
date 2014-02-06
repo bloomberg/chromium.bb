@@ -62,7 +62,7 @@
 #include "ppapi/shared_impl/file_growth.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
-#include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
+#include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -348,10 +348,10 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::SerializedNetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(mtu)
 IPC_STRUCT_TRAITS_END()
 
-// Only whitelisted switches passed through NaClChannelArgs.
+// Only whitelisted switches passed through PpapiNaClPluginArgs.
 // The list of switches can be found in:
-//   chrome/browser/nacl_host/nacl_process_host.cc
-IPC_STRUCT_TRAITS_BEGIN(ppapi::PpapiNaClChannelArgs)
+//   components/nacl/browser/nacl_process_host.cc
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PpapiNaClPluginArgs)
   IPC_STRUCT_TRAITS_MEMBER(off_the_record)
   IPC_STRUCT_TRAITS_MEMBER(permissions)
   IPC_STRUCT_TRAITS_MEMBER(switch_names)
@@ -381,12 +381,9 @@ IPC_MESSAGE_CONTROL3(PpapiMsg_CreateChannel,
                      int /* renderer_child_id */,
                      bool /* incognito */)
 
-// Creates a channel to talk to a renderer. This message is only used by the
-// NaCl IPC proxy. It is intercepted by NaClIPCAdapter, which creates the
-// actual channel and rewrites the message for the untrusted side.
-IPC_MESSAGE_CONTROL2(PpapiMsg_CreateNaClChannel,
-                     ppapi::PpapiNaClChannelArgs /* args */,
-                     ppapi::proxy::SerializedHandle /* channel_handle */)
+// Initializes the IPC dispatchers in the NaCl plugin.
+IPC_MESSAGE_CONTROL1(PpapiMsg_InitializeNaClDispatcher,
+                     ppapi::PpapiNaClPluginArgs /* args */)
 
 // Instructs the plugin process to crash.
 IPC_MESSAGE_CONTROL0(PpapiMsg_Crash)
@@ -749,8 +746,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
 // for some weird reason, but more likely that the plugin failed to load or
 // initialize properly.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
-                     IPC::ChannelHandle /* handle */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_NaClChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
 // Logs the given message to the console of all instances.
