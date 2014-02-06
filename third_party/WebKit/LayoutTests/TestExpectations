@@ -957,8 +957,6 @@ crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/331302 plugins/plugin-javascript-access.html [ NeedsManualRebaseline ]
 
-crbug.com/340455 editing/selection/4960116.html [ NeedsRebaseline ]
-
 crbug.com/340105 css3/selectors3/xhtml/css3-modsel-15c.xml [ NeedsManualRebaseline ]
 crbug.com/340105 css3/selectors3/xml/css3-modsel-15c.xml [ NeedsManualRebaseline ]
 crbug.com/340105 dom/svg/level3/xpath/XPathEvaluator_evaluate_NOT_SUPPORTED_ERR.svg [ NeedsManualRebaseline ]
