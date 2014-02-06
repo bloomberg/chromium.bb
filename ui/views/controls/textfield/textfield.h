@@ -280,8 +280,10 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnCandidateWindowHidden() OVERRIDE;
 
  protected:
-   // Returns the TextfieldModel's text/cursor/selection rendering model.
-   gfx::RenderText* GetRenderText() const;
+  // Returns the TextfieldModel's text/cursor/selection rendering model.
+  gfx::RenderText* GetRenderText() const;
+
+  gfx::Point last_click_location() const { return last_click_location_; }
 
   // Get the text from the selection clipboard.
   virtual base::string16 GetSelectionClipboardText() const;
