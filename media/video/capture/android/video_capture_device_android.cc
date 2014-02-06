@@ -236,20 +236,14 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   JNIEnv* env = AttachCurrentThread();
   int current_capture_colorspace =
       Java_VideoCapture_getColorspace(env, j_capture_.obj());
-  switch (current_capture_colorspace){
-  case ANDROID_IMAGEFORMAT_YV12:
-    return media::PIXEL_FORMAT_YV12;
-  case ANDROID_IMAGEFORMAT_NV21:
-    return media::PIXEL_FORMAT_NV21;
-  case ANDROID_IMAGEFORMAT_YUY2:
-    return media::PIXEL_FORMAT_YUY2;
-  case ANDROID_IMAGEFORMAT_NV16:
-  case ANDROID_IMAGEFORMAT_JPEG:
-  case ANDROID_IMAGEFORMAT_RGB_565:
-  case ANDROID_IMAGEFORMAT_UNKNOWN:
-    // NOTE(mcasas): NV16, JPEG, RGB565 not supported in VideoPixelFormat.
-  default:
-    return media::PIXEL_FORMAT_UNKNOWN;
+  switch (current_capture_colorspace) {
+    case ANDROID_IMAGEFORMAT_YV12:
+      return media::PIXEL_FORMAT_YV12;
+    case ANDROID_IMAGEFORMAT_NV21:
+      return media::PIXEL_FORMAT_NV21;
+    case ANDROID_IMAGEFORMAT_UNKNOWN:
+    default:
+      return media::PIXEL_FORMAT_UNKNOWN;
   }
 }
 

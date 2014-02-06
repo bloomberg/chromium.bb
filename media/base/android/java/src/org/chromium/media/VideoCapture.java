@@ -7,7 +7,6 @@ package org.chromium.media;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
-import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.opengl.GLES20;
@@ -30,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * are invoked by this owner, including the callback OnPreviewFrame().
  **/
 @JNINamespace("media")
-public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
+public class VideoCapture implements PreviewCallback {
     static class CaptureCapability {
         public int mWidth;
         public int mHeight;
@@ -96,7 +95,6 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     private Camera mCamera;
     public ReentrantLock mPreviewBufferLock = new ReentrantLock();
     private int mImageFormat = ImageFormat.YV12;
-    private byte[] mColorPlane = null;
     private Context mContext = null;
     // True when native code has started capture.
     private boolean mIsRunning = false;
@@ -133,8 +131,8 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     // Returns true on success, false otherwise.
     @CalledByNative
     public boolean allocate(int width, int height, int frameRate) {
-        Log.d(TAG, "allocate: requested width=" + width +
-              ", height=" + height + ", frameRate=" + frameRate);
+        Log.d(TAG, "allocate: requested (" + width + "x" + height + ")@" +
+                 frameRate + "fps");
         try {
             mCamera = Camera.open(mId);
         } catch (RuntimeException ex) {
@@ -142,133 +140,132 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             return false;
         }
 
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(mId, cameraInfo);
+        mCameraOrientation = cameraInfo.orientation;
+        mCameraFacing = cameraInfo.facing;
+        mDeviceOrientation = getDeviceOrientation();
+        Log.d(TAG, "allocate: orientation dev=" + mDeviceOrientation +
+                  ", cam=" + mCameraOrientation + ", facing=" + mCameraFacing);
+
+        Camera.Parameters parameters = mCamera.getParameters();
+
+        // Calculate fps.
+        List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
+        if (listFpsRange == null || listFpsRange.size() == 0) {
+            Log.e(TAG, "allocate: no fps range found");
+            return false;
+        }
+        int frameRateInMs = frameRate * 1000;
+        Iterator itFpsRange = listFpsRange.iterator();
+        int[] fpsRange = (int[]) itFpsRange.next();
+        // Use the first range as default.
+        int fpsMin = fpsRange[0];
+        int fpsMax = fpsRange[1];
+        int newFrameRate = (fpsMin + 999) / 1000;
+        while (itFpsRange.hasNext()) {
+            fpsRange = (int[]) itFpsRange.next();
+            if (fpsRange[0] <= frameRateInMs &&
+                frameRateInMs <= fpsRange[1]) {
+                fpsMin = fpsRange[0];
+                fpsMax = fpsRange[1];
+                newFrameRate = frameRate;
+                break;
+            }
+        }
+        frameRate = newFrameRate;
+        Log.d(TAG, "allocate: fps set to " + frameRate);
+
+        mCurrentCapability = new CaptureCapability();
+        mCurrentCapability.mDesiredFps = frameRate;
+
+        // Calculate size.
+        List<Camera.Size> listCameraSize =
+                parameters.getSupportedPreviewSizes();
+        int minDiff = Integer.MAX_VALUE;
+        int matchedWidth = width;
+        int matchedHeight = height;
+        Iterator itCameraSize = listCameraSize.iterator();
+        while (itCameraSize.hasNext()) {
+            Camera.Size size = (Camera.Size) itCameraSize.next();
+            int diff = Math.abs(size.width - width) +
+                       Math.abs(size.height - height);
+            Log.d(TAG, "allocate: support resolution (" +
+                  size.width + ", " + size.height + "), diff=" + diff);
+            // TODO(wjia): Remove this hack (forcing width to be multiple
+            // of 32) by supporting stride in video frame buffer.
+            // Right now, VideoCaptureController requires compact YV12
+            // (i.e., with no padding).
+            if (diff < minDiff && (size.width % 32 == 0)) {
+                minDiff = diff;
+                matchedWidth = size.width;
+                matchedHeight = size.height;
+            }
+        }
+        if (minDiff == Integer.MAX_VALUE) {
+            Log.e(TAG, "allocate: can not find a multiple-of-32 resolution");
+            return false;
+        }
+        mCurrentCapability.mWidth = matchedWidth;
+        mCurrentCapability.mHeight = matchedHeight;
+        // Hack to avoid certain capture resolutions under a minimum one,
+        // see http://crbug.com/305294
+        BuggyDeviceHack.applyMinDimensions(mCurrentCapability);
+
+        Log.d(TAG, "allocate: matched (" + mCurrentCapability.mWidth + "x" +
+                  mCurrentCapability.mHeight + ")");
+
+        mImageFormat = BuggyDeviceHack.getImageFormat();
+
+        if (parameters.isVideoStabilizationSupported()) {
+            Log.d(TAG, "Image stabilization supported, currently: "
+                  + parameters.getVideoStabilization() + ", setting it.");
+            parameters.setVideoStabilization(true);
+        } else {
+            Log.d(TAG, "Image stabilization not supported.");
+        }
+
+        parameters.setPreviewSize(mCurrentCapability.mWidth,
+                                  mCurrentCapability.mHeight);
+        parameters.setPreviewFormat(mImageFormat);
+        parameters.setPreviewFpsRange(fpsMin, fpsMax);
+        mCamera.setParameters(parameters);
+
+        // Set SurfaceTexture. Android Capture needs a SurfaceTexture even if
+        // it is not going to be used.
+        mGlTextures = new int[1];
+        // Generate one texture pointer and bind it as an external texture.
+        GLES20.glGenTextures(1, mGlTextures, 0);
+        GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, mGlTextures[0]);
+        // No mip-mapping with camera source.
+        GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        // Clamp to edge is only option.
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+        mSurfaceTexture = new SurfaceTexture(mGlTextures[0]);
+        mSurfaceTexture.setOnFrameAvailableListener(null);
+
         try {
-            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-            Camera.getCameraInfo(mId, cameraInfo);
-            mCameraOrientation = cameraInfo.orientation;
-            mCameraFacing = cameraInfo.facing;
-            mDeviceOrientation = getDeviceOrientation();
-            Log.d(TAG, "allocate: device orientation=" + mDeviceOrientation +
-                  ", camera orientation=" + mCameraOrientation +
-                  ", facing=" + mCameraFacing);
-
-            Camera.Parameters parameters = mCamera.getParameters();
-
-            // Calculate fps.
-            List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
-            if (listFpsRange == null || listFpsRange.size() == 0) {
-                Log.e(TAG, "allocate: no fps range found");
-                return false;
-            }
-            int frameRateInMs = frameRate * 1000;
-            Iterator itFpsRange = listFpsRange.iterator();
-            int[] fpsRange = (int[]) itFpsRange.next();
-            // Use the first range as default.
-            int fpsMin = fpsRange[0];
-            int fpsMax = fpsRange[1];
-            int newFrameRate = (fpsMin + 999) / 1000;
-            while (itFpsRange.hasNext()) {
-                fpsRange = (int[]) itFpsRange.next();
-                if (fpsRange[0] <= frameRateInMs &&
-                    frameRateInMs <= fpsRange[1]) {
-                    fpsMin = fpsRange[0];
-                    fpsMax = fpsRange[1];
-                    newFrameRate = frameRate;
-                    break;
-                }
-            }
-            frameRate = newFrameRate;
-            Log.d(TAG, "allocate: fps set to " + frameRate);
-
-            mCurrentCapability = new CaptureCapability();
-            mCurrentCapability.mDesiredFps = frameRate;
-
-            // Calculate size.
-            List<Camera.Size> listCameraSize =
-                    parameters.getSupportedPreviewSizes();
-            int minDiff = Integer.MAX_VALUE;
-            int matchedWidth = width;
-            int matchedHeight = height;
-            Iterator itCameraSize = listCameraSize.iterator();
-            while (itCameraSize.hasNext()) {
-                Camera.Size size = (Camera.Size) itCameraSize.next();
-                int diff = Math.abs(size.width - width) +
-                           Math.abs(size.height - height);
-                Log.d(TAG, "allocate: support resolution (" +
-                      size.width + ", " + size.height + "), diff=" + diff);
-                // TODO(wjia): Remove this hack (forcing width to be multiple
-                // of 32) by supporting stride in video frame buffer.
-                // Right now, VideoCaptureController requires compact YV12
-                // (i.e., with no padding).
-                if (diff < minDiff && (size.width % 32 == 0)) {
-                    minDiff = diff;
-                    matchedWidth = size.width;
-                    matchedHeight = size.height;
-                }
-            }
-            if (minDiff == Integer.MAX_VALUE) {
-                Log.e(TAG, "allocate: can not find a resolution whose width " +
-                           "is multiple of 32");
-                return false;
-            }
-            mCurrentCapability.mWidth = matchedWidth;
-            mCurrentCapability.mHeight = matchedHeight;
-            // Hack to avoid certain capture resolutions under a minimum one,
-            // see http://crbug.com/305294
-            BuggyDeviceHack.applyMinDimensions(mCurrentCapability);
-
-            Log.d(TAG, "allocate: matched width=" + mCurrentCapability.mWidth +
-                  ", height=" + mCurrentCapability.mHeight);
-
-            mImageFormat = BuggyDeviceHack.getImageFormat();
-
-            if (parameters.isVideoStabilizationSupported()) {
-                Log.d(TAG, "Image stabilization supported, currently: "
-                      + parameters.getVideoStabilization() + ", setting it.");
-                parameters.setVideoStabilization(true);
-            } else {
-                Log.d(TAG, "Image stabilization not supported.");
-            }
-
-            parameters.setPreviewSize(mCurrentCapability.mWidth,
-                                      mCurrentCapability.mHeight);
-            parameters.setPreviewFormat(mImageFormat);
-            parameters.setPreviewFpsRange(fpsMin, fpsMax);
-            mCamera.setParameters(parameters);
-
-            // Set SurfaceTexture.
-            mGlTextures = new int[1];
-            // Generate one texture pointer and bind it as an external texture.
-            GLES20.glGenTextures(1, mGlTextures, 0);
-            GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, mGlTextures[0]);
-            // No mip-mapping with camera source.
-            GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
-                    GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
-                    GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            // Clamp to edge is only option.
-            GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
-                    GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
-                    GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-            mSurfaceTexture = new SurfaceTexture(mGlTextures[0]);
-            mSurfaceTexture.setOnFrameAvailableListener(null);
-
             mCamera.setPreviewTexture(mSurfaceTexture);
-
-            int bufSize = mCurrentCapability.mWidth *
-                          mCurrentCapability.mHeight *
-                          ImageFormat.getBitsPerPixel(mImageFormat) / 8;
-            for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
-                byte[] buffer = new byte[bufSize];
-                mCamera.addCallbackBuffer(buffer);
-            }
-            mExpectedFrameSize = bufSize;
         } catch (IOException ex) {
             Log.e(TAG, "allocate: " + ex);
             return false;
         }
+
+        int bufSize = mCurrentCapability.mWidth *
+                      mCurrentCapability.mHeight *
+                      ImageFormat.getBitsPerPixel(mImageFormat) / 8;
+        for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
+            byte[] buffer = new byte[bufSize];
+            mCamera.addCallbackBuffer(buffer);
+        }
+        mExpectedFrameSize = bufSize;
 
         return true;
     }
@@ -295,14 +292,6 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
                 return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
             case ImageFormat.NV21:
                 return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV21;
-            case ImageFormat.YUY2:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YUY2;
-            case ImageFormat.NV16:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV16;
-            case ImageFormat.JPEG:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_JPEG;
-            case ImageFormat.RGB_565:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_RGB_565;
             case ImageFormat.UNKNOWN:
             default:
                 return AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
@@ -403,9 +392,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     }
 
     // TODO(wjia): investigate whether reading from texture could give better
-    // performance and frame rate.
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) { }
+    // performance and frame rate, using onFrameAvailable().
 
     private static class ChromiumCameraInfo {
         private final int mId;
