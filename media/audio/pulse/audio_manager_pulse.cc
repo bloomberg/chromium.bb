@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
+#if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
+#endif
 #include "media/audio/audio_parameters.h"
 #include "media/audio/pulse/pulse_input.h"
 #include "media/audio/pulse/pulse_output.h"
@@ -78,7 +80,9 @@ bool AudioManagerPulse::HasAudioInputDevices() {
 }
 
 void AudioManagerPulse::ShowAudioInputSettings() {
+#if defined(USE_ALSA)
   AudioManagerAlsa::ShowLinuxAudioInputSettings();
+#endif
 }
 
 void AudioManagerPulse::GetAudioDeviceNames(
