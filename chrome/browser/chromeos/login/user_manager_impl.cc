@@ -44,6 +44,8 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/managed_mode/chromeos/managed_user_password_service_factory.h"
+#include "chrome/browser/managed_mode/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -907,6 +909,12 @@ void UserManagerImpl::Observe(int type,
           !IsLoggedInAsGuest() &&
           !IsLoggedInAsKioskApp()) {
         Profile* profile = content::Details<Profile>(details).ptr();
+
+        if (IsLoggedInAsLocallyManagedUser())
+          ManagedUserPasswordServiceFactory::GetForProfile(profile);
+        if (IsLoggedInAsRegularUser())
+          ManagerPasswordServiceFactory::GetForProfile(profile);
+
         if (!profile->IsOffTheRecord()) {
           AuthSyncObserver* sync_observer =
               AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);

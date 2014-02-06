@@ -13,6 +13,11 @@ FakeSupervisedUserManager::FakeSupervisedUserManager()  {}
 FakeSupervisedUserManager::~FakeSupervisedUserManager() {
 }
 
+bool FakeSupervisedUserManager::HasSupervisedUsers(
+    const std::string& manager_id) const {
+  return false;
+}
+
 const User* FakeSupervisedUserManager::CreateUserRecord(
     const std::string& manager_id,
     const std::string& local_user_id,

@@ -75,6 +75,8 @@ const char kSchemaVersion[] = "SchemaVersion";
 const char kPasswordRevision[] = "PasswordRevision";
 const char kSalt[] = "PasswordSalt";
 const char kEncryptedPassword[] = "EncryptedPassword";
+const char kRequirePasswordUpdate[] = "RequirePasswordUpdate";
+const char kPasswordUpdateFile[] = "password.update";
 const int kMinPasswordRevision = 1;
 
 // static
@@ -127,6 +129,18 @@ std::string SupervisedUserManagerImpl::GenerateUserId() {
 
   g_browser_process->local_state()->CommitPendingWrite();
   return id;
+}
+
+bool SupervisedUserManagerImpl::HasSupervisedUsers(
+      const std::string& manager_id) const {
+  const UserList& users = owner_->GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if ((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
+      if (manager_id == GetManagerUserId((*it)->email()))
+        return true;
+    }
+  }
+  return false;
 }
 
 const User* SupervisedUserManagerImpl::CreateUserRecord(

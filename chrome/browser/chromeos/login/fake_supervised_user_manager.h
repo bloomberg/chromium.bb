@@ -17,6 +17,7 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
   FakeSupervisedUserManager();
   virtual ~FakeSupervisedUserManager();
 
+  virtual bool HasSupervisedUsers(const std::string& manager_id) const OVERRIDE;
   virtual const User* CreateUserRecord(
       const std::string& manager_id,
       const std::string& local_user_id,

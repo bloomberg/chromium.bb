@@ -6,9 +6,12 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
@@ -119,6 +122,14 @@ void SupervisedUserAuthentication::StorePasswordData(
 
 bool SupervisedUserAuthentication::PasswordNeedsMigration(
     const std::string& user_id) {
+  // Either we have password with old schema, or there is a password update.
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(user_id, &holder);
+  bool need_update;
+  if (holder.GetBoolean(kRequirePasswordUpdate, &need_update)) {
+    if (need_update)
+      return true;
+  }
   return GetPasswordSchema(user_id) < stable_schema_;
 }
 
@@ -143,6 +154,36 @@ void SupervisedUserAuthentication::SchedulePasswordMigration(
     const std::string& user_password,
     SupervisedUserLoginFlow* user_flow) {
   // TODO(antrim): Add actual migration code once cryptohome has required API.
+}
+
+bool SupervisedUserAuthentication::NeedPasswordChange(
+    const std::string& user_id,
+    const base::DictionaryValue* password_data) {
+  // TODO(antrim): Add actual code once cryptohome has required API.
+  return false;
+}
+
+void SupervisedUserAuthentication::ChangeSupervisedUserPassword(
+    const std::string& manager_id,
+    const std::string& master_key,
+    const std::string& supervised_user_id,
+    const base::DictionaryValue* password_data) {
+  // TODO(antrim): Add actual code once cryptohome has required API.
+}
+
+void SupervisedUserAuthentication::ScheduleSupervisedPasswordChange(
+    const std::string& supervised_user_id,
+    const base::DictionaryValue* password_data) {
+  const User* user = UserManager::Get()->FindUser(supervised_user_id);
+  base::FilePath profile_path = ProfileHelper::GetProfilePathByUserIdHash(
+      user->username_hash());
+  JSONFileValueSerializer serializer(profile_path.Append(kPasswordUpdateFile));
+  if (!serializer.Serialize(*password_data))
+    return;
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(supervised_user_id, &holder);
+  holder.SetBoolean(kRequirePasswordUpdate, true);
+  owner_->SetPasswordInformation(supervised_user_id, &holder);
 }
 
 }  // namespace chromeos

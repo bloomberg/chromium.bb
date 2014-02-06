@@ -58,6 +58,20 @@ class SupervisedUserAuthentication {
   void StorePasswordData(const std::string& user_id,
                          const base::DictionaryValue& password_data);
 
+  bool NeedPasswordChange(const std::string& user_id,
+                          const base::DictionaryValue* password_data);
+
+  // Called by manager.
+  void ChangeSupervisedUserPassword(const std::string& manager_id,
+                                    const std::string& master_key,
+                                    const std::string& supervised_user_id,
+                                    const base::DictionaryValue* password_data);
+
+  // Called by supervised user
+  void ScheduleSupervisedPasswordChange(
+      const std::string& supervised_user_id,
+      const base::DictionaryValue* password_data);
+
  private:
   SupervisedUserManager* owner_;
 

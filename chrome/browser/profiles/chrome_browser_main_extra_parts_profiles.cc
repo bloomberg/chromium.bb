@@ -139,6 +139,10 @@
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/managed_mode/chromeos/managed_user_password_service_factory.h"
+#include "chrome/browser/managed_mode/chromeos/manager_password_service_factory.h"
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -336,6 +340,10 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserServiceFactory::GetInstance();
   ManagedUserSyncServiceFactory::GetInstance();
+#if defined(OS_CHROMEOS)
+  ManagedUserPasswordServiceFactory::GetInstance();
+  ManagerPasswordServiceFactory::GetInstance();
+#endif
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();

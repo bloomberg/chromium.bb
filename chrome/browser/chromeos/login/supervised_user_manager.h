@@ -23,7 +23,10 @@ extern const char kSchemaVersion[];
 extern const char kPasswordRevision[];
 extern const char kSalt[];
 extern const char kEncryptedPassword[];
+extern const char kRequirePasswordUpdate[];
 extern const int kMinPasswordRevision;
+
+extern const char kPasswordUpdateFile[];
 
 // Base class for SupervisedUserManagerImpl - provides a mechanism for getting
 // and setting specific values for supervised users, as well as additional
@@ -35,6 +38,10 @@ class SupervisedUserManager {
 
   SupervisedUserManager() {}
   virtual ~SupervisedUserManager() {}
+
+  // Checks if given user have supervised users on this device.
+
+  virtual bool HasSupervisedUsers(const std::string& manager_id) const = 0;
 
   // Creates supervised user with given |display_name| and |local_user_id|
   // and persists that to user list. Also links this user identified by

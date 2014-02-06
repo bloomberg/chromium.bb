@@ -867,6 +867,14 @@
         'browser/chromeos/xinput_hierarchy_changed_event_listener.cc',
         'browser/chromeos/xinput_hierarchy_changed_event_listener.h',
         'browser/chromeos/xinput_hierarchy_changed_event_listener_aura.cc',
+        'browser/managed_mode/chromeos/managed_user_password_service.cc',
+        'browser/managed_mode/chromeos/managed_user_password_service.h',
+        'browser/managed_mode/chromeos/managed_user_password_service_factory.cc',
+        'browser/managed_mode/chromeos/managed_user_password_service_factory.h',
+        'browser/managed_mode/chromeos/manager_password_service.cc',
+        'browser/managed_mode/chromeos/manager_password_service.h',
+        'browser/managed_mode/chromeos/manager_password_service_factory.cc',
+        'browser/managed_mode/chromeos/manager_password_service_factory.h',
       ],
       'conditions': [
         ['enable_extensions==1', {
