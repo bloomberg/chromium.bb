@@ -160,13 +160,6 @@ RenderFrameImpl::~RenderFrameImpl() {
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
-// TODO(nasko): Overload the delete operator to overwrite the freed
-// RenderFrameImpl object and help detect potential use-after-free bug.
-// See https://crbug.com/245126#c34.
-void RenderFrameImpl::operator delete(void* ptr) {
-  memset(ptr, 0xAF, sizeof(RenderFrameImpl));
-}
-
 void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
   DCHECK(!frame_);
 
@@ -715,12 +708,8 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_.get(), routing_id);
-  // TODO(nasko): Over-conservative check for debugging.
-  CHECK(child_render_frame);
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
                                                 child_frame_identifier);
-  // TODO(nasko): Over-conservative check for debugging.
-  CHECK(web_frame);
   child_render_frame->SetWebFrame(web_frame);
 
   return web_frame;
@@ -735,14 +724,10 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // the parent frame.  This is different from createChildFrame() which is
   // called on the parent frame.
   CHECK(!is_detaching_);
-  // TODO(nasko): Remove all debug::Alias lines after diagnosing failures.
-  base::debug::Alias(frame);
 
   bool is_subframe = !!frame->parent();
-  base::debug::Alias(&is_subframe);
 
   int64 parent_frame_id = -1;
-  base::debug::Alias(&parent_frame_id);
   if (is_subframe)
     parent_frame_id = frame->parent()->identifier();
 

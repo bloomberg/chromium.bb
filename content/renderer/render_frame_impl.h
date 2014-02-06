@@ -77,9 +77,6 @@ class CONTENT_EXPORT RenderFrameImpl
       RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32));
 
   virtual ~RenderFrameImpl();
-  // TODO(nasko): Remove when no longer needed.
-  // See comment on the implementation of this method for more details.
-  void operator delete(void*);
 
   bool is_swapped_out() const {
     return is_swapped_out_;
