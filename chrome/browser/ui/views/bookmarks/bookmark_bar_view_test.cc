@@ -432,9 +432,10 @@ VIEW_TEST(BookmarkBarViewTest3, Submenus)
 // Observer that posts task upon the context menu creation.
 // This is necessary for Linux as the context menu has to check
 // the clipboard, which invokes the event loop.
-class ContextMenuNotificationObserver : public content::NotificationObserver {
+class BookmarkContextMenuNotificationObserver
+    : public content::NotificationObserver {
  public:
-  explicit ContextMenuNotificationObserver(const base::Closure& task)
+  explicit BookmarkContextMenuNotificationObserver(const base::Closure& task)
       : task_(task) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
@@ -454,7 +455,7 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::Closure task_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuNotificationObserver);
 };
 
 // Tests context menus by way of opening a context menu for a bookmark,
@@ -490,7 +491,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     // Right click on the first child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step3() {
@@ -512,7 +513,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest4, ContextMenus)
@@ -1044,7 +1045,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
     // Right click on the first child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step3() {
@@ -1081,7 +1082,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
@@ -1218,7 +1219,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     // Right click on the first child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step3() {
@@ -1265,7 +1266,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest13, ClickOnContextMenuSeparator)
@@ -1285,7 +1286,7 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
     views::TextButton* button = GetBookmarkButton(0);
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step2 will be invoked by ContextMenuNotificationObserver.
+    // Step2 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
  private:
@@ -1305,7 +1306,7 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest14, ContextMenus2)
@@ -1343,7 +1344,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     // Right click on the second child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step3() {
@@ -1382,7 +1383,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
   }
 
   int deleted_menu_id_;
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest15, MenuStaysVisibleAfterDelete)
@@ -1458,7 +1459,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step3() {
@@ -1486,7 +1487,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     observer_.set_task(CreateEventTask(this, &BookmarkBarViewTest17::Step4));
     MoveMouseAndPress(clickable_rect.CenterPoint(), ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step4 will be invoked by ContextMenuNotificationObserver.
+    // Step4 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   void Step4() {
@@ -1504,7 +1505,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
@@ -1791,7 +1792,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
     // Right click on the first child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(view, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+    // Step3 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
   // Confirm that context menu shows and click REMOVE menu.
@@ -1823,7 +1824,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  ContextMenuNotificationObserver observer_;
+  BookmarkContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest21, ContextMenusForEmptyFolder)

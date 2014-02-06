@@ -6,9 +6,12 @@
 #include "apps/shell_window_registry.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
+#include "chrome/browser/tab_contents/render_view_context_menu_test_util.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -250,9 +253,12 @@ class WebViewInteractiveTest
     return corner_;
   }
 
-  void SimulateRWHMouseClick(content::RenderWidgetHost* rwh, int x, int y) {
+  void SimulateRWHMouseClick(content::RenderWidgetHost* rwh,
+                             blink::WebMouseEvent::Button button,
+                             int x,
+                             int y) {
     blink::WebMouseEvent mouse_event;
-    mouse_event.button = blink::WebMouseEvent::ButtonLeft;
+    mouse_event.button = button;
     mouse_event.x = mouse_event.windowX = x;
     mouse_event.y = mouse_event.windowY = y;
     mouse_event.modifiers = 0;
@@ -327,7 +333,7 @@ class WebViewInteractiveTest
 
     gfx::Rect popup_bounds = popup_rwh->GetView()->GetViewBounds();
     // (2, 2) is expected to lie on the first datalist element.
-    SimulateRWHMouseClick(popup_rwh, 2, 2);
+    SimulateRWHMouseClick(popup_rwh, blink::WebMouseEvent::ButtonLeft, 2, 2);
 
     content::RenderViewHost* embedder_rvh =
         GetFirstShellWindowWebContents()->GetRenderViewHost();
@@ -763,3 +769,28 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              "web_view/pointerlock",
              NO_TEST_SERVER);
 }
+
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {
+  SetupTest("web_view/text_selection",
+            "/extensions/platform_apps/web_view/text_selection/guest.html");
+  ASSERT_TRUE(guest_web_contents());
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetPlatformAppWindow()));
+
+  // Wait until guest sees a context menu, select an arbitrary item (copy).
+  ExtensionTestMessageListener ctx_listener("MSG_CONTEXTMENU", false);
+  ContextMenuNotificationObserver menu_observer(IDC_CONTENT_CONTEXT_COPY);
+  SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost(),
+                        blink::WebMouseEvent::ButtonRight, 20, 20);
+  ASSERT_TRUE(ctx_listener.WaitUntilSatisfied());
+
+  // Now verify that the selection text propagates properly to RWHV.
+  content::RenderWidgetHostView* guest_rwhv =
+      guest_web_contents()->GetRenderWidgetHostView();
+  ASSERT_TRUE(guest_rwhv);
+  std::string selected_text = base::UTF16ToUTF8(guest_rwhv->GetSelectedText());
+  ASSERT_TRUE(selected_text.size() >= 10u);
+  ASSERT_EQ("AAAAAAAAAA", selected_text.substr(0, 10));
+}
+#endif

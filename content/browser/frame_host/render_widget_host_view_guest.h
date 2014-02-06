@@ -59,6 +59,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
+  virtual base::string16 GetSelectedText() const OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
