@@ -446,7 +446,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 // A custom button that allows for setting a background color when hovered over.
-@interface BackgroundColorHoverButton : HoverButton
+@interface BackgroundColorHoverButton : HoverImageButton
 @end
 
 @implementation BackgroundColorHoverButton
@@ -468,12 +468,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)setHoverState:(HoverState)state {
   [super setHoverState:state];
   bool isHighlighted = ([self hoverState] != kHoverStateNone);
+
   NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
       ui::NativeTheme::instance()->GetSystemColor(isHighlighted?
           ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor :
           ui::NativeTheme::kColorId_MenuBackgroundColor));
 
   [[self cell] setBackgroundColor:backgroundColor];
+
+  // When hovered, the button text should be white.
+  NSColor* textColor =
+      isHighlighted ? [NSColor whiteColor] : [NSColor blackColor];
+  base::scoped_nsobject<NSMutableParagraphStyle> textStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [textStyle setAlignment:NSLeftTextAlignment];
+
+  base::scoped_nsobject<NSAttributedString> attributedTitle(
+      [[NSAttributedString alloc]
+          initWithString:[self title]
+              attributes:@{ NSParagraphStyleAttributeName : textStyle,
+                            NSForegroundColorAttributeName : textColor }]);
+  [self setAttributedTitle:attributedTitle];
 }
 
 @end
@@ -508,10 +523,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)createGaiaEmbeddedView;
 
 // Creates a button with text given by |textResourceId|, an icon given by
-// |imageResourceId| and with |action|.
+// |imageResourceId| and with |action|. The icon |alternateImageResourceId| is
+// displayed in the button's hovered and pressed states.
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
                   textResourceId:(int)textResourceId
                  imageResourceId:(int)imageResourceId
+        alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action;
 
 // Creates a generic link button with |title| and an |action| positioned at
@@ -849,6 +866,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [self hoverButtonWithRect:viewRect
                  textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
                 imageResourceId:IDR_ICON_PROFILES_ADD_USER
+       alternateImageResourceId:IDR_ICON_PROFILES_ADD_USER_WHITE
                          action:@selector(showUserManager:)];
   viewRect.origin.y = NSMaxY([allUsersButton frame]);
 
@@ -856,6 +874,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [self hoverButtonWithRect:viewRect
                  textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
                 imageResourceId:IDR_ICON_PROFILES_ADD_USER
+       alternateImageResourceId:IDR_ICON_PROFILES_ADD_USER_WHITE
                          action:@selector(addNewProfile:)];
   viewRect.origin.y = NSMaxY([addUserButton frame]);
 
@@ -867,6 +886,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [self hoverButtonWithRect:viewRect
                  textResourceId:guestButtonText
                 imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
+       alternateImageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST_WHITE
                          action:guestButtonAction];
   rect.size.height = NSMaxY([guestButton frame]);
   base::scoped_nsobject<NSView> container([[NSView alloc]
@@ -962,13 +982,18 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
                   textResourceId:(int)textResourceId
                  imageResourceId:(int)imageResourceId
+        alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action  {
   base::scoped_nsobject<BackgroundColorHoverButton> button(
       [[BackgroundColorHoverButton alloc] initWithFrame:rect]);
 
   [button setTitle:l10n_util::GetNSString(textResourceId)];
-  [button setImage:ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      imageResourceId).ToNSImage()];
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  NSImage* alternateImage = rb->GetNativeImageNamed(
+      alternateImageResourceId).ToNSImage();
+  [button setDefaultImage:rb->GetNativeImageNamed(imageResourceId).ToNSImage()];
+  [button setHoverImage:alternateImage];
+  [button setPressedImage:alternateImage];
   [button setImagePosition:NSImageLeft];
   [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
