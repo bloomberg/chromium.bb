@@ -46,19 +46,14 @@ public:
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
     BLINK_EXPORT static void enableApplicationCache(bool);
-    BLINK_EXPORT static bool isApplicationCacheEnabled();
 
     BLINK_EXPORT static void enableDatabase(bool);
-    BLINK_EXPORT static bool isDatabaseEnabled();
 
     BLINK_EXPORT static void enableDeviceMotion(bool);
-    BLINK_EXPORT static bool isDeviceMotionEnabled();
 
     BLINK_EXPORT static void enableDeviceOrientation(bool);
-    BLINK_EXPORT static bool isDeviceOrientationEnabled();
 
     BLINK_EXPORT static void enableDialogElement(bool);
-    BLINK_EXPORT static bool isDialogElementEnabled();
 
     BLINK_EXPORT static void enableEncryptedMedia(bool);
     BLINK_EXPORT static bool isEncryptedMediaEnabled();
@@ -67,96 +62,67 @@ public:
     BLINK_EXPORT static bool isPrefixedEncryptedMediaEnabled();
 
     BLINK_EXPORT static void enableDirectWrite(bool);
-    BLINK_EXPORT static bool isDirectWriteEnabled();
 
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
-    BLINK_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
     BLINK_EXPORT static void enableFastTextAutosizing(bool);
-    BLINK_EXPORT static bool isFastTextAutosizingEnabled();
 
     BLINK_EXPORT static void enableFileSystem(bool);
-    BLINK_EXPORT static bool isFileSystemEnabled();
 
     BLINK_EXPORT static void enableFullscreen(bool);
-    BLINK_EXPORT static bool isFullscreenEnabled();
 
     BLINK_EXPORT static void enableGamepad(bool);
-    BLINK_EXPORT static bool isGamepadEnabled();
 
     BLINK_EXPORT static void enableGeolocation(bool);
-    BLINK_EXPORT static bool isGeolocationEnabled();
 
     BLINK_EXPORT static void enableLazyLayout(bool);
 
     BLINK_EXPORT static void enableLocalStorage(bool);
-    BLINK_EXPORT static bool isLocalStorageEnabled();
 
     BLINK_EXPORT static void enableMediaPlayer(bool);
-    BLINK_EXPORT static bool isMediaPlayerEnabled();
 
     BLINK_EXPORT static void enableWebKitMediaSource(bool);
-    BLINK_EXPORT static bool isWebKitMediaSourceEnabled();
 
     BLINK_EXPORT static void enableMediaSource(bool);
-    BLINK_EXPORT static bool isMediaSourceEnabled();
 
     BLINK_EXPORT static void enableMediaStream(bool);
-    BLINK_EXPORT static bool isMediaStreamEnabled();
 
     BLINK_EXPORT static void enableNotifications(bool);
-    BLINK_EXPORT static bool isNotificationsEnabled();
 
     BLINK_EXPORT static void enableNavigatorContentUtils(bool);
-    BLINK_EXPORT static bool isNavigatorContentUtilsEnabled();
 
     BLINK_EXPORT static void enableOrientationEvent(bool);
-    BLINK_EXPORT static bool isOrientationEventEnabled();
 
     BLINK_EXPORT static void enablePagePopup(bool);
-    BLINK_EXPORT static bool isPagePopupEnabled();
 
     BLINK_EXPORT static void enablePeerConnection(bool);
-    BLINK_EXPORT static bool isPeerConnectionEnabled();
 
     BLINK_EXPORT static void enableRequestAutocomplete(bool);
-    BLINK_EXPORT static bool isRequestAutocompleteEnabled();
 
     BLINK_EXPORT static void enableScriptedSpeech(bool);
-    BLINK_EXPORT static bool isScriptedSpeechEnabled();
 
     BLINK_EXPORT static void enableServiceWorker(bool);
-    BLINK_EXPORT static bool isServiceWorkerEnabled();
 
     BLINK_EXPORT static void enableSessionStorage(bool);
-    BLINK_EXPORT static bool isSessionStorageEnabled();
 
     BLINK_EXPORT static void enableSpeechInput(bool);
-    BLINK_EXPORT static bool isSpeechInputEnabled();
 
     BLINK_EXPORT static void enableSpeechSynthesis(bool);
-    BLINK_EXPORT static bool isSpeechSynthesisEnabled();
 
     BLINK_EXPORT static void enableTouch(bool);
-    BLINK_EXPORT static bool isTouchEnabled();
 
     BLINK_EXPORT static void enableTouchIconLoading(bool);
-    BLINK_EXPORT static bool isTouchIconLoadingEnabled();
 
     BLINK_EXPORT static void enableWebAnimationsCSS(bool);
     BLINK_EXPORT static void enableWebAnimationsSVG(bool);
 
     BLINK_EXPORT static void enableWebAudio(bool);
-    BLINK_EXPORT static bool isWebAudioEnabled();
 
     BLINK_EXPORT static void enableWebGLDraftExtensions(bool);
-    BLINK_EXPORT static bool isWebGLDraftExtensionsEnabled();
 
     BLINK_EXPORT static void enableWebMIDI(bool);
-    BLINK_EXPORT static bool isWebMIDIEnabled();
 
     BLINK_EXPORT static void enableHTMLImports(bool);
-    BLINK_EXPORT static bool isHTMLImportsEnabled();
 
     BLINK_EXPORT static void enableXSLT(bool);
 

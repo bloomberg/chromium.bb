@@ -33,10 +33,10 @@
 
 #include "DatabaseClientImpl.h"
 #include "LocalFileSystemClient.h"
+#include "RuntimeEnabledFeatures.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
-#include "WebRuntimeFeatures.h"
 #include "WebSettings.h"
 #include "WebView.h"
 #include "WorkerPermissionClient.h"
@@ -188,7 +188,7 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     // infrastructure.
     ASSERT(!m_webView);
     m_webView = WebView::create(0);
-    m_webView->settings()->setOfflineWebApplicationCacheEnabled(WebRuntimeFeatures::isApplicationCacheEnabled());
+    m_webView->settings()->setOfflineWebApplicationCacheEnabled(RuntimeEnabledFeatures::applicationCacheEnabled());
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
     m_mainFrame = WebFrame::create(this);
