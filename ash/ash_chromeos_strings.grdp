@@ -214,8 +214,8 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
   <message name="IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED" desc="Network error details in notifications: CONNECT_FAILED">
     Connect failed
   </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error details in notifications: BAD_PASSPHRASE">
-    Bad passphrase
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error details in notifications: BAD_PASSPHRASE. Error when a bad wifi password/passphrase is entered.">
+    Bad password
   </message>
   <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY" desc="Network error details in notifications: BAD_WEPKEY">
     Bad WEP key
