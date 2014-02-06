@@ -4,7 +4,6 @@
 
 #include "skia/ext/bitmap_platform_device_cairo.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkMallocPixelRef.h"
 
 #if defined(OS_OPENBSD)
 #include <cairo.h>
@@ -17,30 +16,28 @@ namespace skia {
 namespace {
 
 void CairoSurfaceReleaseProc(void*, void* context) {
-  if (context)
-    cairo_surface_destroy(static_cast<cairo_surface_t*>(context));
+  SkASSERT(context);
+  cairo_surface_destroy(static_cast<cairo_surface_t*>(context));
 }
 
-// Returns a SkPixelRef that is backed by a Cairo surface.  The
-// SkPixelRef takes ownership of the passed-in surface and will call
+// Back the destination bitmap by a Cairo surface.  The bitmap's
+// pixelRef takes ownership of the passed-in surface and will call
 // cairo_surface_destroy() upon destruction.
-SkPixelRef* CreateCairoSurfacePixelRef(cairo_surface_t* surface,
-                                       bool is_opaque) {
+bool InstallCairoSurfacePixels(SkBitmap* dst,
+                               cairo_surface_t* surface,
+                               bool is_opaque) {
+  SkASSERT(dst);
   if (!surface) {
-    return NULL;
+    return false;
   }
-  SkImageInfo info = {
-    cairo_image_surface_get_width(surface),
-    cairo_image_surface_get_height(surface),
-    kPMColor_SkColorType,
-    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
-  };
-  return SkMallocPixelRef::NewWithProc(info,
-                                       cairo_image_surface_get_stride(surface),
-                                       NULL,
-                                       cairo_image_surface_get_data(surface),
-                                       &CairoSurfaceReleaseProc,
-                                       static_cast<void*>(surface));
+  SkImageInfo info
+      = SkImageInfo::MakeN32Premul(cairo_image_surface_get_width(surface),
+                                   cairo_image_surface_get_height(surface));
+  return dst->installPixels(info,
+                            cairo_image_surface_get_data(surface),
+                            cairo_image_surface_get_stride(surface),
+                            &CairoSurfaceReleaseProc,
+                            static_cast<void*>(surface));
 }
 
 void LoadMatrixToContext(cairo_t* context, const SkMatrix& matrix) {
@@ -102,11 +99,10 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
     return NULL;
   }
 
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(CreateCairoSurfacePixelRef(surface,
-                                                                     is_opaque));
   SkBitmap bitmap;
-  bitmap.setConfig(pixel_ref->info(), cairo_image_surface_get_stride(surface));
-  bitmap.setPixelRef(pixel_ref.get());
+  if (!InstallCairoSurfacePixels(&bitmap, surface, is_opaque)) {
+    return NULL;
+  }
 
   // The device object will take ownership of the graphics context.
   return new BitmapPlatformDevice(bitmap, surface);
@@ -220,10 +216,7 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
     cairo_surface_destroy(surf);
     return false;
   }
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(CreateCairoSurfacePixelRef(surf, is_opaque));
-  bitmap_.setConfig(pixel_ref->info(), stride);
-  bitmap_.setPixelRef(pixel_ref.get());
-  return true;
+  return InstallCairoSurfacePixels(&bitmap_, surf, is_opaque);
 }
 
 }  // namespace skia
