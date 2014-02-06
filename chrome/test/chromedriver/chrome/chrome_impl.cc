@@ -64,8 +64,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
     // TODO(bustamante): Once Chrome builds < 1755 are no longer
     //   supported this check can be removed.
     int kBuildNumber = GetBuildNo();
-    if (kBuildNumber > 1704 && kBuildNumber < 1755 &&
-        view.type == WebViewInfo::kApp &&
+    if (kBuildNumber < 1755 && view.type == WebViewInfo::kApp &&
         view.url.find("_generated_background") != std::string::npos)
       continue;
 
