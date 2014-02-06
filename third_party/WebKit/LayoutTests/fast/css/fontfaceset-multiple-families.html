@@ -55,6 +55,8 @@ function onLoadingDone(e) {
     shouldBeTrue("document.fonts.check('10px TestFont1')");
     shouldBeTrue("document.fonts.check('10px TestFont2')");
     shouldBeTrue("document.fonts.check('10px TestFont1, TestFont2')");
+    shouldBeTrue("document.fonts.check('10px Times')");
+    shouldBeTrue("document.fonts.check('10px TestFont1, Times')");
 }
 
 function onLoadingError(e) {
@@ -67,6 +69,7 @@ function onLoadingError(e) {
     shouldBe('failedFonts', "['TestFont3', 'TestFont4']");
     shouldBeFalse("document.fonts.check('10px TestFont3')");
     shouldBeFalse("document.fonts.check('10px TestFont4')");
+    shouldBeFalse("document.fonts.check('10px TestFont4, Times')");
 }
 
 function finish() {

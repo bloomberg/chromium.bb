@@ -453,7 +453,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
-        if (!face || !face->checkFont(nullToSpace(text)))
+        if (face && !face->checkFont(nullToSpace(text)))
             return false;
     }
     return true;
