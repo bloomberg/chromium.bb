@@ -1888,6 +1888,8 @@ void RenderObject::setPseudoStyle(PassRefPtr<RenderStyle> pseudoStyle)
 
 inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const
 {
+    if (style()->hasBorder() || style()->hasOutline())
+        return true;
     for (const RenderObject* r = firstChild(); r; r = r->nextSibling()) {
         if (r->isText() && !toRenderText(r)->isAllCollapsibleWhitespace())
             return true;
