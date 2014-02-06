@@ -34504,6 +34504,7 @@ other types of suffix sets.
   <group name="exp8" label="Likelihood threshold experiment 8."/>
   <group name="exp9" label="Likelihood threshold experiment 9."/>
   <group name="gws" label="GWS triggered prerender."/>
+  <group name="instant" label="Instant search prerender."/>
   <group name="localpredictor" label="Local predictor triggered prerender."/>
   <group name="omnibox" label="Triggered from the omnibox."/>
   <group name="wash" label="Multiple sources could have triggered."/>
