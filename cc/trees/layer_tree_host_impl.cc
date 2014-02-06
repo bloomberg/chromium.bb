@@ -720,13 +720,11 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   bool root_surface_has_contributing_layers =
       !root_surface->layer_list().empty();
   if (root_surface_has_contributing_layers &&
-      root_surface_has_no_visible_damage) {
+      root_surface_has_no_visible_damage &&
+      active_tree_->LayersWithCopyOutputRequest().empty()) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
-    // A copy request should cause damage, so we should not have any copy
-    // requests in this case.
-    DCHECK_EQ(0u, active_tree_->LayersWithCopyOutputRequest().size());
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
     return DrawSwapReadbackResult::DRAW_SUCCESS;

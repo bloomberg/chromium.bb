@@ -252,7 +252,8 @@ gfx::RectF DirectRenderer::ComputeScissorRectForRenderPass(
     const DrawingFrame* frame) {
   gfx::RectF render_pass_scissor = frame->current_render_pass->output_rect;
 
-  if (frame->root_damage_rect == frame->root_render_pass->output_rect)
+  if (frame->root_damage_rect == frame->root_render_pass->output_rect ||
+      !frame->current_render_pass->copy_requests.empty())
     return render_pass_scissor;
 
   gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
