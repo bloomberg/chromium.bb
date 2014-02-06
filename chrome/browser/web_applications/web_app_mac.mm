@@ -16,6 +16,7 @@
 #include "base/mac/launch_services_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -33,12 +34,14 @@
 #import "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
 namespace {
@@ -249,6 +252,51 @@ base::FilePath GetLocalizableAppShortcutsSubdirName() {
   }
 }
 
+// Creates a canvas the same size as |overlay|, copies the appropriate
+// representation from |backgound| into it (according to Cocoa), then draws
+// |overlay| over it using NSCompositeSourceOver.
+NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
+  DCHECK(background);
+  NSInteger dimension = [overlay pixelsWide];
+  DCHECK_EQ(dimension, [overlay pixelsHigh]);
+  base::scoped_nsobject<NSBitmapImageRep> canvas([[NSBitmapImageRep alloc]
+      initWithBitmapDataPlanes:NULL
+                    pixelsWide:dimension
+                    pixelsHigh:dimension
+                 bitsPerSample:8
+               samplesPerPixel:4
+                      hasAlpha:YES
+                      isPlanar:NO
+                colorSpaceName:NSCalibratedRGBColorSpace
+                   bytesPerRow:0
+                  bitsPerPixel:0]);
+
+  // There isn't a colorspace name constant for sRGB, so retag.
+  NSBitmapImageRep* srgb_canvas = [canvas
+      bitmapImageRepByRetaggingWithColorSpace:[NSColorSpace sRGBColorSpace]];
+  canvas.reset([srgb_canvas retain]);
+
+  // Communicate the DIP scale (1.0). TODO(tapted): Investigate HiDPI.
+  [canvas setSize:NSMakeSize(dimension, dimension)];
+
+  NSGraphicsContext* drawing_context =
+      [NSGraphicsContext graphicsContextWithBitmapImageRep:canvas];
+  [NSGraphicsContext saveGraphicsState];
+  [NSGraphicsContext setCurrentContext:drawing_context];
+  [background drawInRect:NSMakeRect(0, 0, dimension, dimension)
+                fromRect:NSZeroRect
+               operation:NSCompositeCopy
+                fraction:1.0];
+  [overlay drawInRect:NSMakeRect(0, 0, dimension, dimension)
+             fromRect:NSZeroRect
+            operation:NSCompositeSourceOver
+             fraction:1.0
+       respectFlipped:NO
+                hints:0];
+  [NSGraphicsContext restoreGraphicsState];
+  return canvas.autorelease();
+}
+
 // Adds a localized strings file for the Chrome Apps directory using the current
 // locale. OSX will use this for the display name.
 // + Chrome Apps.localized (|apps_directory|)
@@ -275,6 +323,31 @@ void UpdateAppShortcutsSubdirLocalizedName(
       localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path
                  atomically:YES];
+
+  // Brand the folder with an embossed app launcher logo.
+  const int kBrandResourceIds[] = {
+    IDR_APPS_FOLDER_OVERLAY_16,
+    IDR_APPS_FOLDER_OVERLAY_32,
+    IDR_APPS_FOLDER_OVERLAY_128,
+    IDR_APPS_FOLDER_OVERLAY_512,
+  };
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* base_image = [NSImage imageNamed:NSImageNameFolder];
+  base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
+  for (size_t i = 0; i < arraysize(kBrandResourceIds); ++i) {
+    gfx::Image& image_rep = rb.GetNativeImageNamed(kBrandResourceIds[i]);
+    NSArray* image_reps = [image_rep.AsNSImage() representations];
+    DCHECK_EQ(1u, [image_reps count]);
+    NSImageRep* with_overlay = OverlayImageRep(base_image,
+                                               [image_reps objectAtIndex:0]);
+    DCHECK(with_overlay);
+    if (with_overlay)
+      [folder_icon_image addRepresentation:with_overlay];
+  }
+  [[NSWorkspace sharedWorkspace]
+      setIcon:folder_icon_image
+      forFile:base::mac::FilePathToNSString(apps_directory)
+      options:0];
 }
 
 void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
