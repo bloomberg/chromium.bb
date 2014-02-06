@@ -767,6 +767,7 @@ v8::Isolate* toIsolate(ExecutionContext* context)
 
 v8::Isolate* toIsolate(Frame* frame)
 {
+    ASSERT(frame);
     return frame->script().isolate();
 }
 

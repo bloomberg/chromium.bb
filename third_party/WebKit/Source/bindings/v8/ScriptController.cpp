@@ -82,6 +82,8 @@ namespace WebCore {
 
 bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
 {
+    if (!frame)
+        return false;
     v8::Isolate* isolate = toIsolate(frame);
     return !isolate->InContext() || BindingSecurity::shouldAllowAccessToFrame(isolate, frame);
 }
