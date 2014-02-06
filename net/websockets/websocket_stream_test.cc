@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -962,6 +963,23 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(request_info_);
+  EXPECT_FALSE(response_info_);
+}
+
+// Over-size response headers (> 256KB) should not cause a crash.  This is a
+// regression test for crbug.com/339456. It is based on the layout test
+// "cookie-flood.html".
+TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
+  std::string set_cookie_headers;
+  set_cookie_headers.reserve(45 * 10000);
+  for (int i = 0; i < 10000; ++i) {
+    set_cookie_headers +=
+        base::StringPrintf("Set-Cookie: WK-websocket-test-flood-%d=1\r\n", i);
+  }
+  CreateAndConnectStandard("ws://localhost/", "/", NoSubProtocols(),
+                           "http://localhost/", "", set_cookie_headers);
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
   EXPECT_FALSE(response_info_);
 }
 

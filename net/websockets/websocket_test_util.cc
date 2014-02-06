@@ -4,7 +4,11 @@
 
 #include "net/websockets/websocket_test_util.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/socket/socket_test_util.h"
 
@@ -66,7 +70,7 @@ std::string WebSocketStandardResponse(const std::string& extra_headers) {
 struct WebSocketDeterministicMockClientSocketFactoryMaker::Detail {
   std::string expect_written;
   std::string return_to_read;
-  MockRead read;
+  std::vector<MockRead> reads;
   MockWrite write;
   scoped_ptr<DeterministicSocketData> data;
   DeterministicMockClientSocketFactory factory;
@@ -87,21 +91,32 @@ WebSocketDeterministicMockClientSocketFactoryMaker::factory() {
 void WebSocketDeterministicMockClientSocketFactoryMaker::SetExpectations(
     const std::string& expect_written,
     const std::string& return_to_read) {
+  const size_t kHttpStreamParserBufferSize = 4096;
   // We need to extend the lifetime of these strings.
   detail_->expect_written = expect_written;
   detail_->return_to_read = return_to_read;
+  int sequence = 0;
   detail_->write = MockWrite(SYNCHRONOUS,
                              detail_->expect_written.data(),
                              detail_->expect_written.size(),
-                             0);
-  detail_->read = MockRead(SYNCHRONOUS,
-                           detail_->return_to_read.data(),
-                           detail_->return_to_read.size(),
-                           1);
+                             sequence++);
+  // HttpStreamParser reads 4KB at a time. We need to take this implementation
+  // detail into account if |return_to_read| is big enough.
+  for (size_t place = 0; place < detail_->return_to_read.size();
+       place += kHttpStreamParserBufferSize) {
+    detail_->reads.push_back(
+        MockRead(SYNCHRONOUS, detail_->return_to_read.data() + place,
+                 std::min(detail_->return_to_read.size() - place,
+                          kHttpStreamParserBufferSize),
+                 sequence++));
+  }
   scoped_ptr<DeterministicSocketData> socket_data(
-      new DeterministicSocketData(&detail_->read, 1, &detail_->write, 1));
+      new DeterministicSocketData(vector_as_array(&detail_->reads),
+                                  detail_->reads.size(),
+                                  &detail_->write,
+                                  1));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  socket_data->SetStop(2);
+  socket_data->SetStop(sequence);
   SetRawExpectations(socket_data.Pass());
 }
 
