@@ -6,7 +6,7 @@ package org.chromium.content.browser.test.util;
 
 import junit.framework.Assert;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentView;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
  * Collection of JavaScript utilities.
  */
 public class JavaScriptUtils {
-    private static final long EVALUATION_TIMEOUT_SECONDS = ScaleTimeout(5);
+    private static final long EVALUATION_TIMEOUT_SECONDS = scaleTimeout(5);
 
     /**
      * Executes the given snippet of JavaScript code within the given ContentView.

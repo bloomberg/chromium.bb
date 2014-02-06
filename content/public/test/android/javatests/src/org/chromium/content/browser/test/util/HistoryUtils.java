@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Instrumentation;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HistoryUtils {
 
-    protected static final long WAIT_TIMEOUT_SECONDS = ScaleTimeout(15);
+    protected static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(15);
 
     /**
      * Calls {@link ContentView#canGoBack()} on UI thread.

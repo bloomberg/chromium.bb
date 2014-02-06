@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -22,7 +22,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.util.List;
 
 public class InfoBarTest extends ChromiumTestShellTestBase {
-    private static final long MAX_TIMEOUT = ScaleTimeout(2000);
+    private static final long MAX_TIMEOUT = scaleTimeout(2000);
     private static final int CHECK_INTERVAL = 500;
     private static final String GEOLOCATION_PAGE =
             "chrome/test/data/geolocation/geolocation_on_load.html";

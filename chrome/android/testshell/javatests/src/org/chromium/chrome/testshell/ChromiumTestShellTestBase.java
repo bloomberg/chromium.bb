@@ -12,7 +12,7 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.util.Log;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ChromiumTestShellTestBase extends
         ActivityInstrumentationTestCase2<ChromiumTestShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
-    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = ScaleTimeout(10000);
+    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
     private static final String TAG = "ChromiumTestShellTestBase";
 
     public ChromiumTestShellTestBase() {

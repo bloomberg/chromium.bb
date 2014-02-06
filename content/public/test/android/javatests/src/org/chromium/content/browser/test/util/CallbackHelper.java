@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -123,7 +123,7 @@ import java.util.concurrent.TimeoutException;
  *
  */
 public class CallbackHelper {
-    protected static final long WAIT_TIMEOUT_SECONDS = ScaleTimeout(5);
+    protected static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(5);
 
     private final Object mLock = new Object();
     private int mCallCount = 0;

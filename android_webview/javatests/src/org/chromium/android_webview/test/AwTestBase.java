@@ -9,7 +9,7 @@ import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class AwTestBase
         extends ActivityInstrumentationTestCase2<AwTestRunnerActivity> {
-    protected static final long WAIT_TIMEOUT_MS = ScaleTimeout(15000);
+    protected static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);
     protected static final int CHECK_INTERVAL = 100;
     private static final String TAG = "AwTestBase";
 

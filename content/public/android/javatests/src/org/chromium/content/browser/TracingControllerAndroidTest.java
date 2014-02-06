@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -18,7 +18,7 @@ import java.io.File;
 
 public class TracingControllerAndroidTest extends ContentShellTestBase {
 
-    private static final long TIMEOUT_MILLIS = ScaleTimeout(30 * 1000);
+    private static final long TIMEOUT_MILLIS = scaleTimeout(30 * 1000);
 
     @MediumTest
     @Feature({"GPU"})

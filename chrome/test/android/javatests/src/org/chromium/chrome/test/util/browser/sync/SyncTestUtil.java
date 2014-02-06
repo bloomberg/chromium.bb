@@ -11,7 +11,7 @@ import android.util.Pair;
 
 import junit.framework.Assert;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -46,10 +46,10 @@ public final class SyncTestUtil {
             "oauth2:https://www.google.com/accounts/OAuthLogin";
     private static final String TAG = "SyncTestUtil";
 
-    public static final long UI_TIMEOUT_MS = ScaleTimeout(20000);
+    public static final long UI_TIMEOUT_MS = scaleTimeout(20000);
     public static final int CHECK_INTERVAL_MS = 250;
 
-    private static final long SYNC_WAIT_TIMEOUT_MS = ScaleTimeout(30 * 1000);
+    private static final long SYNC_WAIT_TIMEOUT_MS = scaleTimeout(30 * 1000);
     private static final int SYNC_CHECK_INTERVAL_MS = 250;
 
     public static final Pair<String, String> SYNC_SUMMARY_STATUS =

@@ -7,7 +7,7 @@ package org.chromium.android_webview.test;
 import android.os.Message;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.apache.http.util.EncodingUtils;
 import org.chromium.android_webview.AwContents;
@@ -56,7 +56,7 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
             "<html><head><title>Reload</title></head><body>HELLO</body></html>";
 
     // Server timeout in seconds. Used to detect dontResend case.
-    private static final long TIMEOUT = ScaleTimeout(3);
+    private static final long TIMEOUT = scaleTimeout(3);
 
     // The web server.
     private TestWebServer mServer;

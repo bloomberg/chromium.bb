@@ -14,7 +14,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.test.util.Feature;
@@ -26,7 +26,7 @@ import org.chromium.sync.signin.AccountManagerHelper;
 public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("something@gmail.com");
-    private static final long WAIT_FOR_LAUNCHER_MS = ScaleTimeout(10 * 1000);
+    private static final long WAIT_FOR_LAUNCHER_MS = scaleTimeout(10 * 1000);
     private static final long POLL_INTERVAL_MS = 100;
     private TestDelayedSyncController mController;
 

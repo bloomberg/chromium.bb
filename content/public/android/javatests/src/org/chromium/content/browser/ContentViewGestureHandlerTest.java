@@ -366,11 +366,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         });
 
         assertTrue(mMockMotionEventDelegate.mShowPressCalled.await(
-                ScalableTimeout.ScaleTimeout(ViewConfiguration.getTapTimeout() + 10),
+                ScalableTimeout.scaleTimeout(ViewConfiguration.getTapTimeout() + 10),
                 TimeUnit.MILLISECONDS));
 
         assertTrue(mMockMotionEventDelegate.mLongPressCalled.await(
-                ScalableTimeout.ScaleTimeout(ViewConfiguration.getLongPressTimeout()
+                ScalableTimeout.scaleTimeout(ViewConfiguration.getLongPressTimeout()
                         + ViewConfiguration.getTapTimeout() + 10),
                 TimeUnit.MILLISECONDS));
 
@@ -951,7 +951,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         });
 
         assertFalse(mMockMotionEventDelegate.mLongPressCalled.await(
-                ScalableTimeout.ScaleTimeout(ViewConfiguration.getLongPressTimeout()
+                ScalableTimeout.scaleTimeout(ViewConfiguration.getLongPressTimeout()
                         + ViewConfiguration.getTapTimeout() + 10),
                 TimeUnit.MILLISECONDS));
 
@@ -987,7 +987,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         });
 
         assertTrue(mMockMotionEventDelegate.mLongPressCalled.await(
-                ScalableTimeout.ScaleTimeout(ViewConfiguration.getLongPressTimeout()
+                ScalableTimeout.scaleTimeout(ViewConfiguration.getLongPressTimeout()
                         + ViewConfiguration.getTapTimeout() + 10),
                 TimeUnit.MILLISECONDS));
 
@@ -1027,7 +1027,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         final long longPressTimeoutMs = ViewConfiguration.getLongPressTimeout()
                 + ViewConfiguration.getTapTimeout() + 10;
         assertTrue(mMockMotionEventDelegate.mLongPressCalled.await(
-                ScalableTimeout.ScaleTimeout(longPressTimeoutMs), TimeUnit.MILLISECONDS));
+                ScalableTimeout.scaleTimeout(longPressTimeoutMs), TimeUnit.MILLISECONDS));
 
         assertEquals("A LONG_PRESS gesture should have been sent",
                 ContentViewGestureHandler.GESTURE_LONG_PRESS,

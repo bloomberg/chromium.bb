@@ -22,7 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.sync.signin.AccountManagerDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -67,7 +67,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private static final String TAG = "MockAccountManager";
 
-    private static final long WAIT_TIME_FOR_GRANT_BROADCAST_MS = ScaleTimeout(20000);
+    private static final long WAIT_TIME_FOR_GRANT_BROADCAST_MS = scaleTimeout(20000);
 
     static final String MUTEX_WAIT_ACTION =
             "org.chromium.sync.test.util.MockAccountManager.MUTEX_WAIT_ACTION";

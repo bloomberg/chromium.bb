@@ -6,7 +6,7 @@ package org.chromium.content.browser;
 
 import junit.framework.Assert;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
@@ -20,7 +20,7 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 import java.util.concurrent.TimeUnit;
 
 public class GestureDetectorResetTest extends ContentShellTestBase {
-    private static final long WAIT_TIMEOUT_SECONDS = ScaleTimeout(2);
+    private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
     private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>" +
             "<button id=\"button\" " +

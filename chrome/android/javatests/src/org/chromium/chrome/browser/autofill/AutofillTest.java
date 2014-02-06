@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.autofill;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
@@ -58,7 +58,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
 
     }
 
-    private static final long CALLBACK_TIMEOUT_MS = ScaleTimeout(4000);
+    private static final long CALLBACK_TIMEOUT_MS = scaleTimeout(4000);
     private static final int CHECK_INTERVAL_MS = 100;
 
     private class MockAutofillCallback implements AutofillPopupDelegate{

@@ -9,7 +9,7 @@ import android.app.Instrumentation;
 
 import junit.framework.Assert;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class UiUtils {
     // timeout to wait for runOnUiThread()
-    private static final long WAIT_FOR_RESPONSE_MS = ScaleTimeout(10000);
+    private static final long WAIT_FOR_RESPONSE_MS = scaleTimeout(10000);
 
     /**
      * Runs the runnable on the UI thread.

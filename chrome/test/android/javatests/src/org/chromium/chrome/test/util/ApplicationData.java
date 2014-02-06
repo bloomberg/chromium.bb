@@ -6,7 +6,7 @@ package org.chromium.chrome.test.util;
 
 import android.content.Context;
 
-import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public final class ApplicationData {
 
     private static final long MAX_CLEAR_APP_DATA_TIMEOUT_MS =
-        ScaleTimeout(TimeUnit.SECONDS.toMillis(3));
+        scaleTimeout(TimeUnit.SECONDS.toMillis(3));
     private static final long CLEAR_APP_DATA_POLL_INTERVAL_MS = MAX_CLEAR_APP_DATA_TIMEOUT_MS / 10;
 
     private ApplicationData() {}
