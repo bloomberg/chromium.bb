@@ -32,6 +32,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   // with various states of the manager.
 
   if (view_ && !bubble_showing_) {
+    view_->SetDelegate(this);
     view_->Show(requests_, accept_state_, customization_mode_);
     bubble_showing_ = true;
   }
