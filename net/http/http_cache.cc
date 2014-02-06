@@ -461,6 +461,14 @@ HttpNetworkSession* HttpCache::GetSession() {
   return network->GetSession();
 }
 
+scoped_ptr<HttpTransactionFactory>
+HttpCache::SetHttpNetworkTransactionFactoryForTesting(
+    scoped_ptr<HttpTransactionFactory> new_network_layer) {
+  scoped_ptr<HttpTransactionFactory> old_network_layer(network_layer_.Pass());
+  network_layer_ = new_network_layer.Pass();
+  return old_network_layer.Pass();
+}
+
 //-----------------------------------------------------------------------------
 
 int HttpCache::CreateBackend(disk_cache::Backend** backend,

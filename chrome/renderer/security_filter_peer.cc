@@ -93,6 +93,7 @@ void SecurityFilterPeer::OnReceivedData(const char* data,
 void SecurityFilterPeer::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
   NOTREACHED();
@@ -154,6 +155,7 @@ void BufferedPeer::OnReceivedData(const char* data,
 
 void BufferedPeer::OnCompletedRequest(int error_code,
                                       bool was_ignored_by_handler,
+                                      bool stale_copy_in_cache,
                                       const std::string& security_info,
                                       const base::TimeTicks& completion_time) {
   // Make sure we delete ourselves at the end of this call.
@@ -163,8 +165,9 @@ void BufferedPeer::OnCompletedRequest(int error_code,
   if (error_code != net::OK || !DataReady()) {
     // Pretend we failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false, security_info,
-                                       completion_time);
+    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
+                                       stale_copy_in_cache,
+                                       security_info, completion_time);
     return;
   }
 
@@ -174,7 +177,8 @@ void BufferedPeer::OnCompletedRequest(int error_code,
                                    static_cast<int>(data_.size()),
                                    -1);
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                     security_info, completion_time);
+                                     stale_copy_in_cache, security_info,
+                                     completion_time);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,6 +211,7 @@ void ReplaceContentPeer::OnReceivedData(const char* data,
 void ReplaceContentPeer::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
   webkit_glue::ResourceResponseInfo info;
@@ -220,6 +225,7 @@ void ReplaceContentPeer::OnCompletedRequest(
                                    -1);
   original_peer_->OnCompletedRequest(net::OK,
                                      false,
+                                     stale_copy_in_cache,
                                      security_info,
                                      completion_time);
 

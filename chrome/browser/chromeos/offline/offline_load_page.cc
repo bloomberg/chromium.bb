@@ -96,7 +96,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
     const std::string accept_languages =
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     LocalizedError::GetStrings(net::ERR_INTERNET_DISCONNECTED,
-                               net::kErrorDomain, url_, false, locale,
+                               net::kErrorDomain, url_, false, false, locale,
                                accept_languages, &error_strings);
     resource_id = IDR_OFFLINE_NET_LOAD_HTML;
   }

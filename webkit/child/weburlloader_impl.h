@@ -20,7 +20,8 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   virtual ~WebURLLoaderImpl();
 
   static blink::WebURLError CreateError(const blink::WebURL& unreachable_url,
-                                         int reason);
+                                        bool stale_copy_in_cache,
+                                        int reason);
   WEBKIT_CHILD_EXPORT static void PopulateURLResponse(
       const GURL& url,
       const ResourceResponseInfo& info,

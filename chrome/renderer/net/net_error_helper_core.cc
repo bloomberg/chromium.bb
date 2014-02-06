@@ -313,6 +313,7 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
       chrome_common_net::kDnsProbeErrorDomain);
   updated_error.reason = last_probe_status_;
   updated_error.unreachableURL = error.unreachableURL;
+  updated_error.staleCopyInCache = error.staleCopyInCache;
 
   return updated_error;
 }

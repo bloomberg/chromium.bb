@@ -395,7 +395,7 @@ WebData WebKitPlatformSupportImpl::parseDataURL(
 
 WebURLError WebKitPlatformSupportImpl::cancelledError(
     const WebURL& unreachableURL) const {
-  return WebURLLoaderImpl::CreateError(unreachableURL, net::ERR_ABORTED);
+  return WebURLLoaderImpl::CreateError(unreachableURL, false, net::ERR_ABORTED);
 }
 
 void WebKitPlatformSupportImpl::decrementStatsCounter(const char* name) {

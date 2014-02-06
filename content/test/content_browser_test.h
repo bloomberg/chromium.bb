@@ -28,6 +28,10 @@ class ContentBrowserTest : public BrowserTestBase {
   // BrowserTestBase:
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
+  // Must be called before or during setup.
+  void SetContentRendererClient(
+      scoped_ptr<ContentRendererClient> renderer_client);
+
  protected:
   // Creates a new window and loads about:blank.
   Shell* CreateBrowser();

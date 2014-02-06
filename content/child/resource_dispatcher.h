@@ -20,6 +20,8 @@
 #include "ipc/ipc_sender.h"
 #include "webkit/child/resource_loader_bridge.h"
 
+struct ResourceMsg_RequestCompleteData;
+
 namespace content {
 class ResourceDispatcherDelegate;
 struct ResourceResponseHead;
@@ -150,10 +152,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       int encoded_data_length);
   void OnRequestComplete(
       int request_id,
-      int error_code,
-      bool was_ignored_by_handler,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time);
+      const ResourceMsg_RequestCompleteData &request_complete_data);
 
   // Dispatch the message to one of the message response handlers.
   void DispatchMessage(const IPC::Message& message);

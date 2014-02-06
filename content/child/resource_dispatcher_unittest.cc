@@ -70,6 +70,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE {
     EXPECT_FALSE(complete_);
@@ -295,6 +296,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE {
   }
@@ -382,6 +384,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE {
   }

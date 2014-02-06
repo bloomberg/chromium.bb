@@ -245,6 +245,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE;
 
@@ -598,6 +599,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
   if (ftp_listing_delegate_) {
@@ -615,7 +617,9 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
   if (client_) {
     if (error_code != net::OK) {
-      client_->didFail(loader_, CreateError(request_.url(), error_code));
+      client_->didFail(loader_, CreateError(request_.url(),
+                                            stale_copy_in_cache,
+                                            error_code));
     } else {
       client_->didFinishLoading(
           loader_, (completion_time - TimeTicks()).InSecondsF());
@@ -669,7 +673,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(data.data(), data.size(), 0);
   }
 
-  OnCompletedRequest(error_code, false, info.security_info,
+  OnCompletedRequest(error_code, false, false, info.security_info,
                      base::TimeTicks::Now());
 }
 
@@ -685,11 +689,13 @@ WebURLLoaderImpl::~WebURLLoaderImpl() {
 }
 
 WebURLError WebURLLoaderImpl::CreateError(const WebURL& unreachable_url,
+                                          bool stale_copy_in_cache,
                                           int reason) {
   WebURLError error;
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = reason;
   error.unreachableURL = unreachable_url;
+  error.staleCopyInCache = stale_copy_in_cache;
   if (reason == net::ERR_ABORTED) {
     error.isCancellation = true;
   } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {

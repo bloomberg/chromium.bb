@@ -521,10 +521,7 @@ void ResourceDispatcher::FollowPendingRedirect(
 
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
-    int error_code,
-    bool was_ignored_by_handler,
-    const std::string& security_info,
-    const base::TimeTicks& browser_completion_time) {
+    const ResourceMsg_RequestCompleteData& request_complete_data) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
   SiteIsolationPolicy::OnRequestComplete(request_id);
 
@@ -540,17 +537,21 @@ void ResourceDispatcher::OnRequestComplete(
   if (delegate_) {
     ResourceLoaderBridge::Peer* new_peer =
         delegate_->OnRequestComplete(
-            request_info->peer, request_info->resource_type, error_code);
+            request_info->peer, request_info->resource_type,
+            request_complete_data.error_code);
     if (new_peer)
       request_info->peer = new_peer;
   }
 
   base::TimeTicks renderer_completion_time = ToRendererCompletionTime(
-      *request_info, browser_completion_time);
+      *request_info, request_complete_data.completion_time);
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
-  peer->OnCompletedRequest(error_code, was_ignored_by_handler, security_info,
+  peer->OnCompletedRequest(request_complete_data.error_code,
+                           request_complete_data.was_ignored_by_handler,
+                           request_complete_data.exists_in_cache,
+                           request_complete_data.security_info,
                            renderer_completion_time);
 }
 

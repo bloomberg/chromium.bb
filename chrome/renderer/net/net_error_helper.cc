@@ -126,6 +126,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(const blink::WebURLError& error,
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
+                               error.staleCopyInCache,
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
@@ -151,6 +152,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              error.domain.utf8(),
                              error.unreachableURL,
                              is_failed_post,
+                             error.staleCopyInCache,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),

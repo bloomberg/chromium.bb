@@ -335,8 +335,6 @@ void AsyncResourceHandler::OnResponseCompleted(
   CHECK(status.status() != net::URLRequestStatus::SUCCESS ||
         sent_received_response_msg_);
 
-  TimeTicks completion_time = TimeTicks::Now();
-
   int error_code = status.error();
   bool was_ignored_by_handler = info->WasIgnoredByHandler();
 
@@ -356,12 +354,14 @@ void AsyncResourceHandler::OnResponseCompleted(
     error_code = net::ERR_FAILED;
   }
 
+  ResourceMsg_RequestCompleteData request_complete_data;
+  request_complete_data.error_code = error_code;
+  request_complete_data.was_ignored_by_handler = was_ignored_by_handler;
+  request_complete_data.exists_in_cache = request()->response_info().was_cached;
+  request_complete_data.security_info = security_info;
+  request_complete_data.completion_time = TimeTicks::Now();
   info->filter()->Send(
-      new ResourceMsg_RequestComplete(request_id,
-                                      error_code,
-                                      was_ignored_by_handler,
-                                      security_info,
-                                      completion_time));
+      new ResourceMsg_RequestComplete(request_id, request_complete_data));
 }
 
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {

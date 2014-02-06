@@ -213,6 +213,24 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   IPC_STRUCT_MEMBER(bool, allow_download)
 IPC_STRUCT_END()
 
+// Parameters for a ResourceMsg_RequestComplete
+IPC_STRUCT_BEGIN(ResourceMsg_RequestCompleteData)
+  // The error code.
+  IPC_STRUCT_MEMBER(int, error_code)
+
+  // Was ignored by the request handler.
+  IPC_STRUCT_MEMBER(bool, was_ignored_by_handler)
+
+  // A copy of the data requested exists in the cache.
+  IPC_STRUCT_MEMBER(bool, exists_in_cache)
+
+  // Serialized security info; see content/common/ssl_status_serialization.h.
+  IPC_STRUCT_MEMBER(std::string, security_info)
+
+  // Time the request completed.
+  IPC_STRUCT_MEMBER(base::TimeTicks, completion_time)
+IPC_STRUCT_END()
+
 // Resource messages sent from the browser to the renderer.
 
 // Sent when the headers are available for a resource request.
@@ -274,12 +292,9 @@ IPC_MESSAGE_CONTROL3(ResourceMsg_DataDownloaded,
                      int /* encoded_data_length */)
 
 // Sent when the request has been completed.
-IPC_MESSAGE_CONTROL5(ResourceMsg_RequestComplete,
+IPC_MESSAGE_CONTROL2(ResourceMsg_RequestComplete,
                      int /* request_id */,
-                     int /* error_code */,
-                     bool /* was_ignored_by_handler */,
-                     std::string /* security info */,
-                     base::TimeTicks /* completion_time */)
+                     ResourceMsg_RequestCompleteData)
 
 // Resource messages sent from the renderer to the browser.
 

@@ -6,6 +6,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +27,11 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/failing_http_transaction_factory.h"
+#include "net/http/http_cache.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -82,6 +89,32 @@ class ErrorPageTest : public InProcessBrowserTest {
                                    HISTORY_NAVIGATE_FORWARD);
   }
 
+  // Confirms that the javascript variable indicating whether or not we have
+  // a stale copy in the cache has been set to |expected|.
+  bool ProbeStaleCopyValue(bool expected) {
+    const char* js_cache_probe =
+        "(function () {\n"
+        "  if ('staleCopyInCache' in templateData) {\n"
+        "    domAutomationController.send(\n"
+        "      templateData.staleCopyInCache ? 'yes' : 'no');\n"
+        "  } else {\n"
+        "    domAutomationController.send('absent');\n"
+        "  }\n"
+        "})();";
+
+    std::string result;
+    bool ret =
+        content::ExecuteScriptAndExtractString(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            js_cache_probe,
+            &result);
+    EXPECT_TRUE(ret);
+    if (!ret)
+      return false;
+    EXPECT_EQ(expected ? "yes" : "no", result);
+    return ((expected ? "yes" : "no") == result);
+  }
+
  protected:
   virtual void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
@@ -121,7 +154,6 @@ class ErrorPageTest : public InProcessBrowserTest {
   }
 };
 
-
 class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
  public:
   explicit TestFailProvisionalLoadObserver(content::WebContents* contents)
@@ -147,6 +179,19 @@ class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestFailProvisionalLoadObserver);
 };
+
+void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
+                                  net::Error error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::HttpCache* cache(
+      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
+  DCHECK(cache);
+  scoped_ptr<net::HttpTransactionFactory> factory(
+      new net::FailingHttpTransactionFactory(cache->GetSession(), error));
+  // Throw away old version; since this is a a browser test, we don't
+  // need to restore the old state.
+  cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
+}
 
 // See crbug.com/109669
 #if defined(USE_AURA) || defined(OS_WIN)
@@ -356,6 +401,47 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
       1);
 }
 
+// Checks that when an error occurs, the stale cache status of the page
+// is correctly transferred.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
+  ASSERT_TRUE(test_server()->Start());
+  // Load cache with entry with "nocache" set, to create stale
+  // cache.
+  GURL test_url(test_server()->GetURL("files/nocache.html"));
+  NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
+
+  // Reload same URL after forcing an error from the the network layer;
+  // confirm that the error page is told the cached copy exists.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      browser()->profile()->GetRequestContext();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
+                 // Note that we can't use an error that'll invoke the link
+                 // doctor.  In normal network error conditions that would
+                 // work (because the link doctor fetch would also fail,
+                 // putting us back in the main offline path), but
+                 // SetUrlRequestMocksEnabled() has also specfied a link
+                 // doctor mock, which will be accessible because it
+                 // won't go through the network cache.
+                 net::ERR_FAILED));
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      // With no link doctor load, there's only one navigation.
+      browser(), test_url, 1);
+  EXPECT_TRUE(ProbeStaleCopyValue(true));
+
+  // Clear the cache and reload the same URL; confirm the error page is told
+  // that there is no cached copy.
+  BrowsingDataRemover* remover =
+      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), test_url, 1);
+  EXPECT_TRUE(ProbeStaleCopyValue(false));
+}
+
 // Returns Javascript code that executes plain text search for the page.
 // Pass into content::ExecuteScriptAndExtractBool as |script| parameter.
 std::string GetTextContentContainsStringScript(
@@ -391,7 +477,7 @@ class AddressUnreachableProtocolHandler
 // requests.  ERR_NAME_NOT_RESOLVED is more typical, but need to use a different
 // error for the Link Doctor and the original page to validate the right page
 // is being displayed.
-class ErrorPageLinkDoctorFailTest : public InProcessBrowserTest {
+class ErrorPageLinkDoctorFailTest : public ErrorPageTest {
  public:
   // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -445,6 +531,41 @@ IN_PROC_BROWSER_TEST_F(ErrorPageLinkDoctorFailTest, LinkDoctorFail) {
       GetTextContentContainsStringScript("ERR_NAME_NOT_RESOLVED"),
       &result));
   EXPECT_TRUE(result);
+}
+
+// Checks that when an error occurs and a link doctor load fails, the stale
+// cache status of the page is correctly transferred.  Most logic copied
+// from StaleCacheStatus above.
+IN_PROC_BROWSER_TEST_F(ErrorPageLinkDoctorFailTest,
+                       StaleCacheStatusFailedLinkDoctor) {
+  ASSERT_TRUE(test_server()->Start());
+  // Load cache with entry with "nocache" set, to create stale
+  // cache.
+  GURL test_url(test_server()->GetURL("files/nocache.html"));
+  NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
+
+  // Reload same URL after forcing an error from the the network layer;
+  // confirm that the error page is told the cached copy exists.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      browser()->profile()->GetRequestContext();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
+                 net::ERR_CONNECTION_FAILED));
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), test_url, 2);
+  ProbeStaleCopyValue(true);
+
+  // Clear the cache and reload the same URL; confirm the error page is told
+  // that there is no cached copy.
+  BrowsingDataRemover* remover =
+      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), test_url, 2);
+  ProbeStaleCopyValue(false);
 }
 
 // A test fixture that simulates failing requests for an IDN domain name.

@@ -43,6 +43,7 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE;
 
@@ -75,6 +76,7 @@ class BufferedPeer : public SecurityFilterPeer {
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE;
 
@@ -119,6 +121,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
+      bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE;
 

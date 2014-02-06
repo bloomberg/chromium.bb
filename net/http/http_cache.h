@@ -195,6 +195,14 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   virtual HttpCache* GetCache() OVERRIDE;
   virtual HttpNetworkSession* GetSession() OVERRIDE;
 
+  // Resets the network layer to allow for tests that probe
+  // network changes (e.g. host unreachable).  The old network layer is
+  // returned to allow for filter patterns that only intercept
+  // some creation requests.  Note ownership exchange.
+  scoped_ptr<HttpTransactionFactory>
+      SetHttpNetworkTransactionFactoryForTesting(
+          scoped_ptr<HttpTransactionFactory> new_network_layer);
+
  protected:
   // Disk cache entry data indices.
   enum {
@@ -384,7 +392,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   const scoped_ptr<QuicServerInfoFactoryAdaptor> quic_server_info_factory_;
 
-  const scoped_ptr<HttpTransactionFactory> network_layer_;
+  scoped_ptr<HttpTransactionFactory> network_layer_;
+
   scoped_ptr<disk_cache::Backend> disk_cache_;
 
   // The set of active entries indexed by cache key.

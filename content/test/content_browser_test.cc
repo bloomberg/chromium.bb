@@ -55,8 +55,6 @@ ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  setup_called_ = true;
-
   shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
 
@@ -65,11 +63,16 @@ void ContentBrowserTest::SetUp() {
 
   SetUpCommandLine(command_line);
 
-  // Single-process mode is not set in BrowserMain, so process it explicitly,
-  // and set up renderer.
+  // Single-process mode is not set in BrowserMain, so if a subclass hasn't
+  // modified it yet, process it explicitly, and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    single_process_renderer_client_.reset(new ShellContentRendererClient);
+    if (!single_process_renderer_client_)
+      single_process_renderer_client_.reset(new ShellContentRendererClient());
     SetRendererClientForTesting(single_process_renderer_client_.get());
+  } else {
+    // Confirm no test has called SetContentRendererClient() without
+    // setting up single process mode.
+    DCHECK(!single_process_renderer_client_);
   }
 
 #if defined(OS_MACOSX)
@@ -88,6 +91,8 @@ void ContentBrowserTest::SetUp() {
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
   ui::InitializeInputMethodForTesting();
 #endif
+
+  setup_called_ = true;
 
   BrowserTestBase::SetUp();
 }
@@ -142,6 +147,14 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   }
 
   Shell::CloseAllWindows();
+}
+
+void ContentBrowserTest::SetContentRendererClient(
+    scoped_ptr<ContentRendererClient> renderer_client) {
+  // This routine must be called before SetUp().
+  DCHECK(!setup_called_);
+  DCHECK(!single_process_renderer_client_);
+  single_process_renderer_client_ = renderer_client.Pass();
 }
 
 Shell* ContentBrowserTest::CreateBrowser() {

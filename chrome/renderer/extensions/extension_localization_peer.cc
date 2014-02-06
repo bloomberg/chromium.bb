@@ -68,6 +68,7 @@ void ExtensionLocalizationPeer::OnReceivedData(const char* data,
 void ExtensionLocalizationPeer::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
   // Make sure we delete ourselves at the end of this call.
@@ -77,7 +78,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   if (error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false, security_info,
+    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
+                                       stale_copy_in_cache, security_info,
                                        completion_time);
     return;
   }
@@ -90,6 +92,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
                                    static_cast<int>(data_.size()),
                                    -1);
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
+                                     stale_copy_in_cache,
                                      security_info, completion_time);
 }
 

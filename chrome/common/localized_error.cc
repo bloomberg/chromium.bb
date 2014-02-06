@@ -494,6 +494,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
                                 const GURL& failed_url,
                                 bool is_post,
+                                bool stale_copy_in_cache,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 base::DictionaryValue* error_strings) {
@@ -558,6 +559,8 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString(
       "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
   error_strings->Set("summary", summary);
+  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
+
 #if defined(OS_CHROMEOS)
   error_strings->SetString(
       "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));

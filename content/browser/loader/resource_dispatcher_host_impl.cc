@@ -158,12 +158,15 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
     filter->Send(sync_result);
   } else {
     // Tell the renderer that this request was disallowed.
+    ResourceMsg_RequestCompleteData request_complete_data;
+    request_complete_data.error_code = net::ERR_ABORTED;
+    request_complete_data.was_ignored_by_handler = false;
+    request_complete_data.exists_in_cache = false;
+    // No security info needed, connection not established.
+    request_complete_data.completion_time = base::TimeTicks();
+
     filter->Send(new ResourceMsg_RequestComplete(
-        request_id,
-        net::ERR_ABORTED,
-        false,
-        std::string(),   // No security info needed, connection not established.
-        base::TimeTicks()));
+        request_id, request_complete_data));
   }
 }
 
