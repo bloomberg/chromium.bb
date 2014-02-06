@@ -4,20 +4,20 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class MockDelegate : public PermissionBubbleDelegate {
+class MockRequest : public PermissionBubbleRequest {
  public:
-  MockDelegate() : granted_(false), cancelled_(false), finished_(false) {}
-  virtual ~MockDelegate() {}
+  MockRequest() : granted_(false), cancelled_(false), finished_(false) {}
+  virtual ~MockRequest() {}
 
-  // PermissionBubbleDelegate:
+  // PermissionBubbleRequest:
   virtual base::string16 GetMessageText() const OVERRIDE {
     return base::ASCIIToUTF16("test");
   }
@@ -64,7 +64,7 @@ class MockView : public PermissionBubbleView {
   void Clear() {
     shown_ = false;
     delegate_ = NULL;
-    permission_delegates_.clear();
+    permission_requests_.clear();
     permission_states_.clear();
   }
 
@@ -74,11 +74,11 @@ class MockView : public PermissionBubbleView {
   }
 
   virtual void Show(
-      const std::vector<PermissionBubbleDelegate*>& delegates,
+      const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
       bool customization_state_) OVERRIDE {
     shown_ = true;
-    permission_delegates_ = delegates;
+    permission_requests_ = requests;
     permission_states_ = accept_state;
   }
 
@@ -88,7 +88,7 @@ class MockView : public PermissionBubbleView {
 
   bool shown_;
   Delegate* delegate_;
-  std::vector<PermissionBubbleDelegate*> permission_delegates_;
+  std::vector<PermissionBubbleRequest*> permission_requests_;
   std::vector<bool> permission_states_;
 };
 
@@ -107,8 +107,8 @@ class PermissionBubbleManagerTest : public testing::Test {
   }
 
  protected:
-  MockDelegate delegate1_;
-  MockDelegate delegate2_;
+  MockRequest request1_;
+  MockRequest request2_;
   MockView view_;
   scoped_ptr<PermissionBubbleManager> manager_;
 };
@@ -125,47 +125,47 @@ TEST_F(PermissionBubbleManagerTest, TestFlag) {
 }
 
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {
-  manager_->AddPermissionBubbleDelegate(&delegate1_);
+  manager_->AddRequest(&request1_);
   manager_->SetView(&view_);
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
-  ASSERT_EQ(static_cast<size_t>(1), view_.permission_delegates_.size());
-  EXPECT_EQ(&delegate1_, view_.permission_delegates_[0]);
+  ASSERT_EQ(static_cast<size_t>(1), view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
 
   ToggleAccept(0, true);
   Accept();
-  EXPECT_TRUE(delegate1_.granted_);
+  EXPECT_TRUE(request1_.granted_);
 }
 
 TEST_F(PermissionBubbleManagerTest, TwoRequests) {
-  manager_->AddPermissionBubbleDelegate(&delegate1_);
-  manager_->AddPermissionBubbleDelegate(&delegate2_);
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&request2_);
   manager_->SetView(&view_);
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
-  ASSERT_EQ(static_cast<size_t>(2), view_.permission_delegates_.size());
-  EXPECT_EQ(&delegate1_, view_.permission_delegates_[0]);
-  EXPECT_EQ(&delegate2_, view_.permission_delegates_[1]);
+  ASSERT_EQ(static_cast<size_t>(2), view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+  EXPECT_EQ(&request2_, view_.permission_requests_[1]);
 
   ToggleAccept(0, true);
   ToggleAccept(1, false);
   Accept();
-  EXPECT_TRUE(delegate1_.granted_);
-  EXPECT_FALSE(delegate2_.granted_);
+  EXPECT_TRUE(request1_.granted_);
+  EXPECT_FALSE(request2_.granted_);
 }
 
 TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
-  manager_->AddPermissionBubbleDelegate(&delegate1_);
-  manager_->AddPermissionBubbleDelegate(&delegate2_);
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&request2_);
   manager_->SetView(&view_);
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
-  ASSERT_EQ(static_cast<size_t>(2), view_.permission_delegates_.size());
-  EXPECT_EQ(&delegate1_, view_.permission_delegates_[0]);
-  EXPECT_EQ(&delegate2_, view_.permission_delegates_[1]);
+  ASSERT_EQ(static_cast<size_t>(2), view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+  EXPECT_EQ(&request2_, view_.permission_requests_[1]);
 
   ToggleAccept(0, true);
   ToggleAccept(1, false);
@@ -177,14 +177,14 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
 
   manager_->SetView(&view_);
   EXPECT_TRUE(view_.shown_);
-  ASSERT_EQ(static_cast<size_t>(2), view_.permission_delegates_.size());
-  EXPECT_EQ(&delegate1_, view_.permission_delegates_[0]);
-  EXPECT_EQ(&delegate2_, view_.permission_delegates_[1]);
+  ASSERT_EQ(static_cast<size_t>(2), view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+  EXPECT_EQ(&request2_, view_.permission_requests_[1]);
   EXPECT_TRUE(view_.permission_states_[0]);
   EXPECT_FALSE(view_.permission_states_[1]);
 
   Accept();
-  EXPECT_TRUE(delegate1_.granted_);
-  EXPECT_FALSE(delegate2_.granted_);
+  EXPECT_TRUE(request1_.granted_);
+  EXPECT_FALSE(request2_.granted_);
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
+#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
 
 #include "base/strings/string16.h"
 
@@ -15,9 +15,9 @@
 // Note that no particular guarantees are made about what exact UI surface
 // is presented to the user. The delegate may be coalesced with other bubble
 // requests, or depending on the situation, not shown at all.
-class PermissionBubbleDelegate {
+class PermissionBubbleRequest {
  public:
-  virtual ~PermissionBubbleDelegate() {}
+  virtual ~PermissionBubbleRequest() {}
 
   // Returns the full prompt text for this permission. This is the only text
   // that will be shown in the single-permission case and should be phrased
@@ -56,11 +56,11 @@ class PermissionBubbleDelegate {
   // be able to distinguish between an active refusal or an implicit refusal.
   virtual void Cancelled() = 0;
 
-  // The bubble this delegate was associated with was answered by the user.
-  // It is safe for the delegate to be deleted at this point -- it will receive
+  // The bubble this request was associated with was answered by the user.
+  // It is safe for the request to be deleted at this point -- it will receive
   // no further message from the permission bubble system. This method will
-  // eventually be called on every delegate which is not unregistered.
+  // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_

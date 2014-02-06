@@ -11,17 +11,17 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class PermissionBubbleDelegate;
+class PermissionBubbleRequest;
 
-// Provides access to permissions bubbles. Allows clients to add a delegate
+// Provides access to permissions bubbles. Allows clients to add a request
 // callback interface to the existing permission bubble configuration.
 // Depending on the situation and policy, that may add new UI to an existing
 // permission bubble, create and show a new permission bubble, or provide no
-// visible UI action at all. (In that case, the delegate will be immediately
+// visible UI action at all. (In that case, the request will be immediately
 // informed that the permission request failed.)
 //
 // A PermissionBubbleManager is associated with a particular WebContents.
-// Delegates attached to a particular WebContents' PBM must outlive it.
+// Requests attached to a particular WebContents' PBM must outlive it.
 //
 // The PermissionBubbleManager should be addressed on the UI thread.
 class PermissionBubbleManager
@@ -34,14 +34,10 @@ class PermissionBubbleManager
 
   virtual ~PermissionBubbleManager();
 
-  // Add a new consumer delegate to the permission bubble. Ownership of the
-  // delegate remains with the caller. The caller must arrange for the delegate
-  // to outlive the PermissionBubbleManager.
-  virtual void AddPermissionBubbleDelegate(PermissionBubbleDelegate* delegate);
-
-  // Remove a consumer delegate from the permission bubble.
-  virtual void RemovePermissionBubbleDelegate(
-      PermissionBubbleDelegate* delegate);
+  // Add a new request to the permission bubble. Ownership of the request
+  // remains with the caller. The caller must arrange for the request to
+  // outlive the PermissionBubbleManager.
+  virtual void AddRequest(PermissionBubbleRequest* request);
 
   // Set the active view for the permission bubble. If this is NULL, it
   // means the permission bubble is no longer showing.
@@ -58,7 +54,7 @@ class PermissionBubbleManager
       content::WebContents* web_contents) OVERRIDE;
 
   // PermissionBubbleView::Delegate:
-  virtual void ToggleAccept(int delegate_index, bool new_value) OVERRIDE;
+  virtual void ToggleAccept(int request_index, bool new_value) OVERRIDE;
   virtual void SetCustomizationMode() OVERRIDE;
   virtual void Accept() OVERRIDE;
   virtual void Deny() OVERRIDE;
@@ -73,7 +69,7 @@ class PermissionBubbleManager
   // Set to the UI surface to be used to display the permissions requests.
   PermissionBubbleView* view_;
 
-  std::vector<PermissionBubbleDelegate*> delegates_;
+  std::vector<PermissionBubbleRequest*> requests_;
   std::vector<bool> accept_state_;
   bool customization_mode_;
 };

@@ -542,7 +542,7 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(
     if (controller->DismissInfoBarAndTakeActionOnSettings())
       return;
     PermissionBubbleManager::FromWebContents(web_contents)->
-        AddPermissionBubbleDelegate(controller.release());
+        AddRequest(controller.release());
     return;
   }
 

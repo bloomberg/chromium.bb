@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/ui/website_settings/permission_bubble_delegate.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 class Profile;
@@ -22,7 +22,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class MediaStreamDevicesController : public PermissionBubbleDelegate {
+class MediaStreamDevicesController : public PermissionBubbleRequest {
  public:
   // Permissions for media stream types.
   enum Permission {
@@ -71,7 +71,7 @@ class MediaStreamDevicesController : public PermissionBubbleDelegate {
   void Accept(bool update_content_setting);
   void Deny(bool update_content_setting);
 
-  // PermissionBubbleDelegate:
+  // PermissionBubbleRequest:
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetMessageTextFragment() const OVERRIDE;
   virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;

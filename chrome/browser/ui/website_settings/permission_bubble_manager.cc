@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_delegate.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
@@ -16,43 +16,24 @@ bool PermissionBubbleManager::Enabled() {
       switches::kEnablePermissionsBubbles);
 }
 
-void PermissionBubbleManager::AddPermissionBubbleDelegate(
-    PermissionBubbleDelegate* delegate) {
-  // Don't re-add existing delegate.
-  std::vector<PermissionBubbleDelegate*>::iterator di;
-  for (di = delegates_.begin(); di != delegates_.end(); di++) {
-    if (*di == delegate)
+void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
+  // Don't re-add an existing request.
+  std::vector<PermissionBubbleRequest*>::iterator di;
+  for (di = requests_.begin(); di != requests_.end(); di++) {
+    if (*di == request)
       return;
   }
 
-  delegates_.push_back(delegate);
-  // TODO(gbillock): do we need to make default state a delegate property?
+  requests_.push_back(request);
+  // TODO(gbillock): do we need to make default state a request property?
   accept_state_.push_back(false);
 
   // TODO(gbillock): need significantly more complex logic here to deal
   // with various states of the manager.
 
   if (view_ && !bubble_showing_) {
-    view_->Show(delegates_, accept_state_, customization_mode_);
+    view_->Show(requests_, accept_state_, customization_mode_);
     bubble_showing_ = true;
-  }
-}
-
-void PermissionBubbleManager::RemovePermissionBubbleDelegate(
-    PermissionBubbleDelegate* delegate) {
-  std::vector<PermissionBubbleDelegate*>::iterator di;
-  std::vector<bool>::iterator ai;
-  for (di = delegates_.begin(), ai = accept_state_.begin();
-       di != delegates_.end(); di++, ai++) {
-    if (*di == delegate) {
-      if (bubble_showing_ && view_) {
-        // TODO(gbillock): Mark the delegate empty -- set to NULL probably.
-      } else {
-        delegates_.erase(di);
-        accept_state_.erase(ai);
-      }
-      return;
-    }
   }
 }
 
@@ -71,11 +52,11 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
 
   if (bubble_showing_) {
     view_->SetDelegate(this);
-    view_->Show(delegates_, accept_state_, customization_mode_);
-  } else if (!delegates_.empty()) {
+    view_->Show(requests_, accept_state_, customization_mode_);
+  } else if (!requests_.empty()) {
     bubble_showing_ = true;
     view_->SetDelegate(this);
-    view_->Show(delegates_, accept_state_, customization_mode_);
+    view_->Show(requests_, accept_state_, customization_mode_);
   } else {
     view_->Hide();
     return;
@@ -105,9 +86,9 @@ void PermissionBubbleManager::WebContentsDestroyed(
   // returning from this function is the only safe thing to do.
 }
 
-void PermissionBubbleManager::ToggleAccept(int delegate_index, bool new_value) {
-  DCHECK(delegate_index < static_cast<int>(accept_state_.size()));
-  accept_state_[delegate_index] = new_value;
+void PermissionBubbleManager::ToggleAccept(int request_index, bool new_value) {
+  DCHECK(request_index < static_cast<int>(accept_state_.size()));
+  accept_state_[request_index] = new_value;
 }
 
 void PermissionBubbleManager::SetCustomizationMode() {
@@ -115,10 +96,10 @@ void PermissionBubbleManager::SetCustomizationMode() {
 }
 
 void PermissionBubbleManager::Accept() {
-  std::vector<PermissionBubbleDelegate*>::iterator di;
+  std::vector<PermissionBubbleRequest*>::iterator di;
   std::vector<bool>::iterator ai;
-  for (di = delegates_.begin(), ai = accept_state_.begin();
-       di != delegates_.end(); di++, ai++) {
+  for (di = requests_.begin(), ai = accept_state_.begin();
+       di != requests_.end(); di++, ai++) {
     if (*ai)
       (*di)->PermissionGranted();
     else
@@ -128,24 +109,24 @@ void PermissionBubbleManager::Accept() {
 }
 
 void PermissionBubbleManager::Deny() {
-  std::vector<PermissionBubbleDelegate*>::iterator di;
-  for (di = delegates_.begin(); di != delegates_.end(); di++)
+  std::vector<PermissionBubbleRequest*>::iterator di;
+  for (di = requests_.begin(); di != requests_.end(); di++)
     (*di)->PermissionDenied();
   FinalizeBubble();
 }
 
 void PermissionBubbleManager::Closing() {
-  std::vector<PermissionBubbleDelegate*>::iterator di;
-  for (di = delegates_.begin(); di != delegates_.end(); di++)
+  std::vector<PermissionBubbleRequest*>::iterator di;
+  for (di = requests_.begin(); di != requests_.end(); di++)
     (*di)->Cancelled();
   FinalizeBubble();
 }
 
 void PermissionBubbleManager::FinalizeBubble() {
-  std::vector<PermissionBubbleDelegate*>::iterator di;
-  for (di = delegates_.begin(); di != delegates_.end(); di++)
+  std::vector<PermissionBubbleRequest*>::iterator di;
+  for (di = requests_.begin(); di != requests_.end(); di++)
     (*di)->RequestFinished();
-  delegates_.clear();
+  requests_.clear();
   accept_state_.clear();
 }
 

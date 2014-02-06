@@ -7,7 +7,7 @@
 
 #include <vector>
 
-class PermissionBubbleDelegate;
+class PermissionBubbleRequest;
 class PermissionBubbleManager;
 
 // This class is the platform-independent interface through which the permission
@@ -32,7 +32,7 @@ class PermissionBubbleView {
 
   // Causes the bubble to show up with the given contents.
   virtual void Show(
-      const std::vector<PermissionBubbleDelegate*>& delegates,
+      const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
       bool custommization_mode) = 0;
 
