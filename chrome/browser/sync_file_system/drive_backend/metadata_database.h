@@ -128,6 +128,11 @@ class MetadataDatabase {
     ACTIVATION_FAILED_SAME_PATH_TRACKER,
   };
 
+  enum UpdateOption {
+    UPDATE_TRACKER_FOR_UNSYNCED_FILE,
+    UPDATE_TRACKER_FOR_SYNCED_FILE,
+  };
+
   // The entry point of the MetadataDatabase for production code.
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
@@ -387,10 +392,12 @@ class MetadataDatabase {
                                        leveldb::WriteBatch* batch);
   void CreateTrackerForParentAndFileMetadata(const FileTracker& parent_tracker,
                                              const FileMetadata& file_metadata,
+                                             UpdateOption option,
                                              leveldb::WriteBatch* batch);
   void CreateTrackerInternal(const FileTracker& parent_tracker,
                              const std::string& file_id,
                              const FileDetails* details,
+                             UpdateOption option,
                              leveldb::WriteBatch* batch);
 
   void RemoveTracker(int64 tracker_id, leveldb::WriteBatch* batch);
@@ -400,6 +407,7 @@ class MetadataDatabase {
                              leveldb::WriteBatch* batch,
                              bool ignoring_same_title);
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
+                                  UpdateOption option,
                                   leveldb::WriteBatch* batch);
 
   void MarkSingleTrackerAsDirty(FileTracker* tracker,
@@ -435,6 +443,7 @@ class MetadataDatabase {
                                             leveldb::WriteBatch* batch);
   void UpdateByFileMetadata(const tracked_objects::Location& from_where,
                             scoped_ptr<FileMetadata> file,
+                            UpdateOption option,
                             leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
@@ -453,6 +462,11 @@ class MetadataDatabase {
   void AttachInitialAppRoot(const google_apis::FileResource& app_root_folder,
                             leveldb::WriteBatch* batch);
   void InsertFileTrackerToIndex(FileTracker* tracker);
+
+  void ForceActivateTrackerByPath(int64 parent_tracker_id,
+                                  const std::string& title,
+                                  const std::string& file_id,
+                                  leveldb::WriteBatch* batch);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::FilePath database_path_;

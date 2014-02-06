@@ -211,7 +211,6 @@ void ConflictResolver::RemoveNonPrimaryFiles(
   std::string etag = non_primary_file_ids_.back().second;
   non_primary_file_ids_.pop_back();
 
-  deleted_file_ids_.push_back(file_id);
   DCHECK_NE(target_file_id_, file_id);
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
