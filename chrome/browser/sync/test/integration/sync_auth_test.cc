@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -44,19 +45,49 @@ const char kEmptyOAuth2Token[] = "";
 
 const char kMalformedOAuth2Token[] = "{ \"foo\": ";
 
+class TestForAuthError : public StatusChangeChecker {
+ public:
+  explicit TestForAuthError(ProfileSyncService* service);
+  virtual ~TestForAuthError();
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+
+ private:
+  ProfileSyncService* service_;
+};
+
+TestForAuthError::TestForAuthError(ProfileSyncService* service)
+  : StatusChangeChecker("Testing for auth error"), service_(service) {}
+
+TestForAuthError::~TestForAuthError() {}
+
+bool TestForAuthError::IsExitConditionSatisfied() {
+  return !service_->HasUnsyncedItems() ||
+      (service_->GetSyncTokenStatus().last_get_token_error.state() !=
+       GoogleServiceAuthError::NONE);
+}
+
 class SyncAuthTest : public SyncTest {
  public:
-  SyncAuthTest() : SyncTest(SINGLE_CLIENT) {}
+  SyncAuthTest() : SyncTest(SINGLE_CLIENT), bookmark_index_(0) {}
   virtual ~SyncAuthTest() {}
 
-  // Helper function that adds a bookmark with index |bookmark_index| and waits
-  // for sync to complete. The return value indicates whether the sync cycle
-  // completed successfully (true) or encountered an auth error (false).
-  bool AddBookmarkAndWaitForSync(int bookmark_index) {
+  // Helper function that adds a bookmark and waits for either an auth error, or
+  // for the bookmark to be committed.  Returns true if it detects an auth
+  // error, false if the bookmark is committed successfully.
+  bool AttemptToTriggerAuthError() {
+    int bookmark_index = GetNextBookmarkIndex();
     std::wstring title = base::StringPrintf(L"Bookmark %d", bookmark_index);
     GURL url = GURL(base::StringPrintf("http://www.foo%d.com", bookmark_index));
     EXPECT_TRUE(AddURL(0, title, url) != NULL);
-    return GetClient(0)->AwaitCommitActivityCompletion();
+
+    // Run until the bookmark is committed or an auth error is encountered.
+    TestForAuthError checker_(GetClient(0)->service());
+    GetClient(0)->AwaitStatusChange(&checker_, "Attempt to trigger auth error");
+
+    GoogleServiceAuthError oauth_error =
+        GetClient(0)->service()->GetSyncTokenStatus().last_get_token_error;
+
+    return oauth_error.state() != GoogleServiceAuthError::NONE;
   }
 
   // Sets the authenticated state of the python sync server to |auth_state| and
@@ -82,6 +113,12 @@ class SyncAuthTest : public SyncTest {
   }
 
  private:
+  int GetNextBookmarkIndex() {
+    return bookmark_index_++;
+  }
+
+  int bookmark_index_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncAuthTest);
 };
 
@@ -92,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, Sanity) {
                                kValidOAuth2Token,
                                net::HTTP_OK,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
 }
 
 // Verify that ProfileSyncService continues trying to fetch access tokens
@@ -100,12 +137,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, Sanity) {
 // HTTP_INTERNAL_SERVER_ERROR (500) errors.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnInternalServerError500) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kValidOAuth2Token,
                                net::HTTP_INTERNAL_SERVER_ERROR,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_TRUE(
       GetClient(0)->service()->IsRetryingAccessTokenFetchForTest());
 }
@@ -115,12 +152,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnInternalServerError500) {
 // HTTP_FORBIDDEN (403) errors.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnHttpForbidden403) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kEmptyOAuth2Token,
                                net::HTTP_FORBIDDEN,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_TRUE(
       GetClient(0)->service()->IsRetryingAccessTokenFetchForTest());
 }
@@ -129,12 +166,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnHttpForbidden403) {
 // when OAuth2TokenService has encountered a URLRequestStatus of FAILED.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnRequestFailed) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kEmptyOAuth2Token,
                                net::HTTP_INTERNAL_SERVER_ERROR,
                                net::URLRequestStatus::FAILED);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_TRUE(
       GetClient(0)->service()->IsRetryingAccessTokenFetchForTest());
 }
@@ -143,12 +180,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnRequestFailed) {
 // when OAuth2TokenService receives a malformed token.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnMalformedToken) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kMalformedOAuth2Token,
                                net::HTTP_OK,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_TRUE(
       GetClient(0)->service()->IsRetryingAccessTokenFetchForTest());
 }
@@ -158,12 +195,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnMalformedToken) {
 // HTTP_BAD_REQUEST (400) response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidGrant) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kInvalidGrantOAuth2Token,
                                net::HTTP_BAD_REQUEST,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetClient(0)->service()->GetAuthError().state());
 }
@@ -173,12 +210,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidGrant) {
 // HTTP_BAD_REQUEST (400) response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidClient) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kInvalidClientOAuth2Token,
                                net::HTTP_BAD_REQUEST,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
             GetClient(0)->service()->GetAuthError().state());
 }
@@ -187,12 +224,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidClient) {
 // when when OAuth2TokenService has encountered a URLRequestStatus of CANCELED.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RequestCanceled) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AddBookmarkAndWaitForSync(1));
+  ASSERT_FALSE(AttemptToTriggerAuthError());
   SetAuthStateAndTokenResponse(AUTHENTICATED_FALSE,
                                kEmptyOAuth2Token,
                                net::HTTP_INTERNAL_SERVER_ERROR,
                                net::URLRequestStatus::CANCELED);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(2));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_EQ(GoogleServiceAuthError::REQUEST_CANCELED,
             GetClient(0)->service()->GetAuthError().state());
 }
@@ -249,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, TokenExpiry) {
                                kEmptyOAuth2Token,
                                net::HTTP_INTERNAL_SERVER_ERROR,
                                net::URLRequestStatus::SUCCESS);
-  ASSERT_FALSE(AddBookmarkAndWaitForSync(1));
+  ASSERT_TRUE(AttemptToTriggerAuthError());
   ASSERT_TRUE(
       GetClient(0)->service()->IsRetryingAccessTokenFetchForTest());
 
