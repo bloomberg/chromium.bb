@@ -3635,7 +3635,8 @@ class ArchiveStage(ArchivingStage):
       urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
-          dryrun=debug or not config['push_image'],
+          dryrun=not config['push_image'],
+          mock=debug,
           profile=self._run.options.profile or config['profile'],
           sign_types=sign_types)
       self._push_image_status_queue.put(urls)

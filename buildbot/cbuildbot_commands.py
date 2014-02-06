@@ -1312,7 +1312,7 @@ def UploadSymbols(buildroot, board, official, cnt, failed_list):
     cros_build_lib.PrintBuildbotStepWarnings()
 
 
-def PushImages(board, archive_url, dryrun, profile, sign_types=()):
+def PushImages(board, archive_url, dryrun, mock, profile, sign_types=()):
   """Push the generated image to the release bucket for signing."""
   # Log the equivalent command for debugging purposes.
   log_cmd = ['pushimage', '--board=%s' % board]
@@ -1330,7 +1330,7 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
   cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
 
   return pushimage.PushImage(archive_url, board, profile=profile,
-                             sign_types=sign_types, dry_run=dryrun)
+                             sign_types=sign_types, dry_run=dryrun, mock=mock)
 
 
 def BuildFactoryTestImage(buildroot, board, extra_env):

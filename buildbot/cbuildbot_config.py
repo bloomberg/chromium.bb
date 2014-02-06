@@ -85,7 +85,6 @@ def OverrideConfigForTrybot(build_config, options):
     if not options.remote_trybot:
       my_config['manifest'] = my_config['dev_manifest']
 
-    my_config['push_image'] = False
     my_config['signer_results'] = False
     my_config['paygen'] = False
     if options.hwtest:

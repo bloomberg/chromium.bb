@@ -362,7 +362,8 @@ ca-t3/pk-g4-4.0.1-r333
   def testPushImages(self):
     """Test PushImages Command."""
     m = self.PatchObject(pushimage, 'PushImage')
-    commands.PushImages(self._board, 'gs://foo/R34-1234.0.0', False, None)
+    commands.PushImages(self._board, 'gs://foo/R34-1234.0.0',
+                        False, False, None)
     self.assertEqual(m.call_count, 1)
 
   def testBuildImage(self):
