@@ -381,36 +381,6 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithID().get()));
 }
 
-TEST_F(WalletAddressTest, FromAutofillProfile) {
-  {
-    AutofillProfile profile(test::GetFullProfile());
-    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("tx"));
-    Address address(profile);
-    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
-  }
-
-  {
-    AutofillProfile profile(test::GetFullProfile());
-    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Texas"));
-    Address address(profile);
-    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
-  }
-
-  {
-    AutofillProfile profile(test::GetFullProfile());
-    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("TX"));
-    Address address(profile);
-    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
-  }
-
-  {
-    AutofillProfile profile(test::GetFullProfile());
-    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("txeas"));
-    Address address(profile);
-    EXPECT_TRUE(address.administrative_area_name().empty());
-  }
-}
-
 // Verifies that WalletAddress::GetInfo() can correctly return both country
 // codes and localized country names.
 TEST_F(WalletAddressTest, GetCountryInfo) {

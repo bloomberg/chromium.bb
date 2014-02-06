@@ -103,14 +103,10 @@ Address::Address(const AutofillProfile& profile)
       address_line_1_(profile.GetRawInfo(ADDRESS_HOME_LINE1)),
       address_line_2_(profile.GetRawInfo(ADDRESS_HOME_LINE2)),
       locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
+      administrative_area_name_(profile.GetRawInfo(ADDRESS_HOME_STATE)),
       postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
       phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
       is_complete_address_(true) {
-  state_names::GetNameAndAbbreviation(profile.GetRawInfo(ADDRESS_HOME_STATE),
-                                      NULL,
-                                      &administrative_area_name_);
-  StringToUpperASCII(&administrative_area_name_);
-
   if (!country_name_code_.empty())
     phone_object_ = i18n::PhoneObject(phone_number_, country_name_code_);
 }

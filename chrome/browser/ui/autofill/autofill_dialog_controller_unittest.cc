@@ -258,6 +258,9 @@ class MockAddressValidator : public AddressValidator {
           const AddressData& address,
           const AddressProblemFilter& filter,
           AddressProblems* problems));
+
+  MOCK_CONST_METHOD1(CanonicalizeAdministrativeArea,
+                     bool(AddressData* address_data));
 };
 
 class TestAutofillDialogController

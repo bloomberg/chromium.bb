@@ -119,6 +119,12 @@ class AddressValidator {
   virtual Status ValidateAddress(const AddressData& address,
                                  const AddressProblemFilter& filter,
                                  AddressProblems* problems) const = 0;
+
+  // Canonicalizes the administrative area in |address_data|. For example,
+  // "texas" changes to "TX". Returns true on success, otherwise leaves
+  // |address_data| alone and returns false.
+  virtual bool CanonicalizeAdministrativeArea(AddressData* address_data)
+      const = 0;
 };
 
 }  // namespace addressinput

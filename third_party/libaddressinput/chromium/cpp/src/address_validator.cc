@@ -188,6 +188,19 @@ class AddressValidatorImpl : public AddressValidator {
     return SUCCESS;
   }
 
+  virtual bool CanonicalizeAdministrativeArea(AddressData* address_data) const {
+    std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
+        rules_.find(address_data->country_code);
+    if (ruleset_it == rules_.end()) {
+      return false;
+    }
+    const Rule& rule =
+        ruleset_it->second->GetLanguageCodeRule(address_data->language_code);
+
+    return rule.CanonicalizeSubKey(address_data->administrative_area,
+                                   &address_data->administrative_area);
+  }
+
  private:
   // Called when CountryRulesAggregator::AggregateRules loads the |ruleset| for
   // the |country_code|.

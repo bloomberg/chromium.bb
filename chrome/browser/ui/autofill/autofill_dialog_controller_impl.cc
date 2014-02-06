@@ -60,6 +60,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -523,6 +524,37 @@ gfx::Image CvcIconForCreditCardType(const base::string16& credit_card_type) {
 ServerFieldType CountryTypeForSection(DialogSection section) {
   return section == SECTION_SHIPPING ? ADDRESS_HOME_COUNTRY :
                                        ADDRESS_BILLING_COUNTRY;
+}
+
+// profile.GetInfo() thunk.
+base::string16 GetInfoFromProfile(const AutofillProfile& profile,
+                                  const AutofillType& type) {
+  return profile.GetInfo(type, g_browser_process->GetApplicationLocale());
+}
+
+// Attempts to canonicalize the administrative area name in |profile| using the
+// rules in |validator|.
+void CanonicalizeState(const AddressValidator* validator,
+                       AutofillProfile* profile) {
+  base::string16 administrative_area;
+  DCHECK_EQ(!!validator, !!i18ninput::Enabled());
+  if (validator) {
+    AddressData address_data;
+    i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, *profile),
+                                 &address_data);
+    validator->CanonicalizeAdministrativeArea(&address_data);
+    administrative_area = base::UTF8ToUTF16(address_data.administrative_area);
+  } else {
+    // Temporary crutch for i18n-not-enabled case: works for US only.
+    state_names::GetNameAndAbbreviation(profile->GetRawInfo(ADDRESS_HOME_STATE),
+                                        NULL,
+                                        &administrative_area);
+    StringToUpperASCII(&administrative_area);
+  }
+
+  profile->SetInfo(AutofillType(ADDRESS_HOME_STATE),
+                   administrative_area,
+                   g_browser_process->GetApplicationLocale());
 }
 
 }  // namespace
@@ -1806,10 +1838,11 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
 
   AddressValidator::Status status = AddressValidator::SUCCESS;
   if (i18ninput::Enabled() && section != SECTION_CC) {
+    AutofillProfile profile;
+    FillFormGroupFromOutputs(inputs, &profile);
     AddressData address_data;
-    i18ninput::CreateAddressData(
-        base::Bind(&GetInfoFromInputs, base::ConstRef(inputs), section),
-        &address_data);
+    i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
+                                 &address_data);
 
     AddressProblems problems;
     status = GetValidator()->ValidateAddress(address_data,
@@ -3416,6 +3449,7 @@ scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
   AutofillProfile profile;
   base::string16 cvc;
   GetBillingInfoFromOutputs(output, &card, &cvc, &profile);
+  CanonicalizeState(validator_.get(), &profile);
 
   return scoped_ptr<wallet::Instrument>(
       new wallet::Instrument(card, cvc, profile));
@@ -3429,6 +3463,7 @@ scoped_ptr<wallet::Address>AutofillDialogControllerImpl::
 
   AutofillProfile profile;
   FillFormGroupFromOutputs(output, &profile);
+  CanonicalizeState(validator_.get(), &profile);
 
   return scoped_ptr<wallet::Address>(new wallet::Address(profile));
 }
