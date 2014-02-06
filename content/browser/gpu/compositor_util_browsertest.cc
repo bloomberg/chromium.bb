@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
 #if defined(USE_AURA)
   expected_mode = DELEGATED;
 #elif defined(OS_ANDROID)
-  expected_mode = THREADED;
+  expected_mode = DELEGATED;
 #elif defined(OS_MACOSX)
   expected_mode = THREADED;
   // Lion and SnowLeopard have compositing blacklisted when using the Apple
