@@ -43,10 +43,8 @@
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
-#include "modules/filesystem/DOMFileSystem.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
-#include "platform/JSONValues.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceError.h"
@@ -199,25 +197,6 @@ String InspectorFrontendHost::getSelectionBackgroundColor()
 String InspectorFrontendHost::getSelectionForegroundColor()
 {
     return RenderTheme::theme().activeSelectionForegroundColor().serialized();
-}
-
-PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String& fileSystemName, const String& rootURL)
-{
-    ExecutionContext* context = m_frontendPage->mainFrame()->document();
-    return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
-}
-
-void InspectorFrontendHost::upgradeDraggedFileSystemPermissions(DOMFileSystem* domFileSystem)
-{
-    if (!m_client)
-        return;
-    RefPtr<JSONObject> message = JSONObject::create();
-    message->setNumber("id", 0);
-    message->setString("method", "upgradeDraggedFileSystemPermissions");
-    RefPtr<JSONArray> params = JSONArray::create();
-    message->setArray("params", params);
-    params->pushString(domFileSystem->rootURL().string());
-    sendMessageToEmbedder(message->toJSONString());
 }
 
 bool InspectorFrontendHost::isUnderTest()

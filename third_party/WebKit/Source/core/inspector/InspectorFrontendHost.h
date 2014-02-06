@@ -37,7 +37,6 @@
 namespace WebCore {
 
 class ContextMenuItem;
-class DOMFileSystem;
 class Event;
 class FrontendMenuProvider;
 class InspectorFrontendClient;
@@ -69,10 +68,9 @@ public:
     String getSelectionBackgroundColor();
     String getSelectionForegroundColor();
 
-    PassRefPtr<DOMFileSystem> isolatedFileSystem(const String& fileSystemName, const String& rootURL);
-    void upgradeDraggedFileSystemPermissions(DOMFileSystem*);
-
     bool isUnderTest();
+
+    Page* frontendPage() { return m_frontendPage; }
 
 private:
     friend class FrontendMenuProvider;
