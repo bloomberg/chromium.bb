@@ -287,6 +287,18 @@ crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
+# Skia suppressions
+crbug.com/339090 svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsRebaseline ]
+crbug.com/339090 svg/W3C-SVG-1.1/text-path-01-b.svg [ NeedsRebaseline ]
+crbug.com/339806 fast/box-shadow/scaled-box-shadow.html [ NeedsRebaseline ]
+crbug.com/339806 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/339852 fast/borders/border-image-outset-in-shorthand.html [ NeedsRebaseline ]
+crbug.com/339852 fast/borders/border-image-outset.html [ NeedsRebaseline ]
+crbug.com/339852 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
+crbug.com/339852 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/339852 virtual/softwarecompositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+crbug.com/339852 fast/canvas/image-pattern-rotate.html [ NeedsRebaseline ]
+
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
