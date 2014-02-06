@@ -338,6 +338,10 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     // annotation.
     rich_notification_data.context_message = annotation;
 
+    // Set the clickable flag to change the cursor on hover if a valid
+    // destination is found.
+    rich_notification_data.clickable = GetDefaultDestinationUrl().is_valid();
+
     // If there is at least one person sending, use the first picture.
     // TODO(petewil): Someday combine multiple profile photos here.
     gfx::Image icon_bitmap = app_icon_bitmap_;

@@ -95,6 +95,8 @@ TEST_F(ChromeNotifierDelegateTest, ClickTest) {
   scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
       new notifier::ChromeNotifierDelegate(id, notifier()));
 
+  EXPECT_TRUE(delegate->HasClickedListener());
+
   // Set up an observer to wait for the navigation
   content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,

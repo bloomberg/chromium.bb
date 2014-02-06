@@ -22,31 +22,21 @@ ChromeNotifierDelegate::ChromeNotifierDelegate(
 
 ChromeNotifierDelegate::~ChromeNotifierDelegate() {}
 
-std::string ChromeNotifierDelegate::id() const {
-   return notification_id_;
+void ChromeNotifierDelegate::Close(bool by_user) {
+  if (by_user)
+    chrome_notifier_->MarkNotificationAsRead(notification_id_);
+
+  CollectAction(by_user ?
+      SYNCED_NOTIFICATION_ACTION_CLOSE_BY_USER :
+      SYNCED_NOTIFICATION_ACTION_CLOSE_BY_SYSTEM);
 }
 
-content::RenderViewHost* ChromeNotifierDelegate::GetRenderViewHost() const {
-    return NULL;
+bool ChromeNotifierDelegate::HasClickedListener() {
+  return GetClickDestination().is_valid();
 }
 
-void ChromeNotifierDelegate::CollectAction(SyncedNotificationActionType type) {
-  DCHECK(!notification_id_.empty());
-
-  UMA_HISTOGRAM_ENUMERATION("SyncedNotifications.Actions",
-                            type,
-                            SYNCED_NOTIFICATION_ACTION_COUNT);
-}
-
-
-// TODO(petewil) Add the ability to do URL actions also.
 void ChromeNotifierDelegate::Click() {
-  SyncedNotification* notification =
-      chrome_notifier_->FindNotificationById(notification_id_);
-  if (notification == NULL)
-    return;
-
-  GURL destination = notification->GetDefaultDestinationUrl();
+  GURL destination = GetClickDestination();
   NavigateToUrl(destination);
   chrome_notifier_->MarkNotificationAsRead(notification_id_);
 
@@ -54,7 +44,6 @@ void ChromeNotifierDelegate::Click() {
   CollectAction(SYNCED_NOTIFICATION_ACTION_CLICK);
 }
 
-// TODO(petewil) Add the ability to do URL actions also.
 void ChromeNotifierDelegate::ButtonClick(int button_index) {
   SyncedNotification* notification =
       chrome_notifier_->FindNotificationById(notification_id_);
@@ -66,6 +55,22 @@ void ChromeNotifierDelegate::ButtonClick(int button_index) {
 
   // Now record the UMA statistics for this action.
   CollectAction(SYNCED_NOTIFICATION_ACTION_BUTTON_CLICK);
+}
+
+std::string ChromeNotifierDelegate::id() const {
+  return notification_id_;
+}
+
+content::RenderViewHost* ChromeNotifierDelegate::GetRenderViewHost() const {
+  return NULL;
+}
+
+void ChromeNotifierDelegate::CollectAction(SyncedNotificationActionType type) {
+  DCHECK(!notification_id_.empty());
+
+  UMA_HISTOGRAM_ENUMERATION("SyncedNotifications.Actions",
+                            type,
+                            SYNCED_NOTIFICATION_ACTION_COUNT);
 }
 
 void ChromeNotifierDelegate::NavigateToUrl(const GURL& destination) const {
@@ -82,13 +87,13 @@ void ChromeNotifierDelegate::NavigateToUrl(const GURL& destination) const {
   displayer.browser()->window()->Activate();
 }
 
-void ChromeNotifierDelegate::Close(bool by_user) {
-  if (by_user)
-    chrome_notifier_->MarkNotificationAsRead(notification_id_);
+const GURL ChromeNotifierDelegate::GetClickDestination() const {
+  SyncedNotification* notification =
+      chrome_notifier_->FindNotificationById(notification_id_);
+  if (notification == NULL)
+    return GURL();
 
-  CollectAction(by_user ?
-      SYNCED_NOTIFICATION_ACTION_CLOSE_BY_USER :
-      SYNCED_NOTIFICATION_ACTION_CLOSE_BY_SYSTEM);
+  return notification->GetDefaultDestinationUrl();
 }
 
 }  // namespace notifier

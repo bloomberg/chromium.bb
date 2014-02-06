@@ -43,6 +43,7 @@ class ChromeNotifierDelegate : public NotificationDelegate {
   virtual void Display() OVERRIDE {}
   virtual void Error() OVERRIDE {}
   virtual void Close(bool by_user) OVERRIDE;
+  virtual bool HasClickedListener() OVERRIDE;
   virtual void Click() OVERRIDE;
   virtual void ButtonClick(int button_index) OVERRIDE;
   virtual std::string id() const OVERRIDE;
@@ -54,6 +55,7 @@ class ChromeNotifierDelegate : public NotificationDelegate {
  private:
   virtual ~ChromeNotifierDelegate();
   void NavigateToUrl(const GURL& destination) const;
+  const GURL GetClickDestination() const;
 
   const std::string notification_id_;
   ChromeNotifierService* const chrome_notifier_;
