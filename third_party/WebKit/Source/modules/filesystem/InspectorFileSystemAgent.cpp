@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorFileSystemAgent.h"
+#include "modules/filesystem/InspectorFileSystemAgent.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMImplementation.h"
@@ -41,7 +41,6 @@
 #include "core/frame/Frame.h"
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -596,9 +595,9 @@ bool DeleteEntryRequest::didDeleteEntry()
 } // anonymous namespace
 
 // static
-PassOwnPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(InspectorPageAgent* pageAgent)
+PassOwnPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(Page* page)
 {
-    return adoptPtr(new InspectorFileSystemAgent(pageAgent));
+    return adoptPtr(new InspectorFileSystemAgent(page));
 }
 
 InspectorFileSystemAgent::~InspectorFileSystemAgent()
@@ -696,12 +695,12 @@ void InspectorFileSystemAgent::restore()
     m_enabled = m_state->getBoolean(FileSystemAgentState::fileSystemAgentEnabled);
 }
 
-InspectorFileSystemAgent::InspectorFileSystemAgent(InspectorPageAgent* pageAgent)
+InspectorFileSystemAgent::InspectorFileSystemAgent(Page* page)
     : InspectorBaseAgent<InspectorFileSystemAgent>("FileSystem")
-    , m_pageAgent(pageAgent)
+    , m_page(page)
     , m_enabled(false)
 {
-    ASSERT(m_pageAgent);
+    ASSERT(m_page);
 }
 
 bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
@@ -715,7 +714,7 @@ bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
 
 ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(ErrorString* error, SecurityOrigin* origin)
 {
-    for (Frame* frame = m_pageAgent->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document() && frame->document()->securityOrigin()->isSameSchemeHostPort(origin))
             return frame->document();
     }

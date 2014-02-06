@@ -46,7 +46,6 @@
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorFileSystemAgent.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorIndexedDBAgent.h"
@@ -142,8 +141,6 @@ void InspectorController::initializeDeferredAgents()
     m_agents.append(InspectorCSSAgent::create(m_domAgent, m_pageAgent, resourceAgent));
 
     m_agents.append(InspectorIndexedDBAgent::create(injectedScriptManager, m_pageAgent));
-
-    m_agents.append(InspectorFileSystemAgent::create(m_pageAgent));
 
     m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
 

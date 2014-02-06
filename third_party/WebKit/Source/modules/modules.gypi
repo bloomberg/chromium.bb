@@ -323,6 +323,8 @@
       'filesystem/FileWriterSync.h',
       'filesystem/HTMLInputElementFileSystem.cpp',
       'filesystem/HTMLInputElementFileSystem.h',
+      'filesystem/InspectorFileSystemAgent.cpp',
+      'filesystem/InspectorFileSystemAgent.h',
       'filesystem/InspectorFrontendHostFileSystem.cpp',
       'filesystem/InspectorFrontendHostFileSystem.h',
       'filesystem/LocalFileSystem.cpp',

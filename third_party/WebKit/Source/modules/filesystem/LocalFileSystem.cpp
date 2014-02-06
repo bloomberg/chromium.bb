@@ -36,8 +36,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
+#include "core/inspector/InspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/FileSystemClient.h"
+#include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
@@ -116,6 +118,7 @@ LocalFileSystem* LocalFileSystem::from(ExecutionContext* context)
 void provideLocalFileSystemTo(Page* page, PassOwnPtr<FileSystemClient> client)
 {
     page->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
+    page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(page));
 }
 
 void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSystemClient> client)

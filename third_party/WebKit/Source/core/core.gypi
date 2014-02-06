@@ -1144,8 +1144,6 @@
             'inspector/InspectorDatabaseResource.h',
             'inspector/InspectorDebuggerAgent.cpp',
             'inspector/InspectorDebuggerAgent.h',
-            'inspector/InspectorFileSystemAgent.cpp',
-            'inspector/InspectorFileSystemAgent.h',
             'inspector/InspectorFrontendChannel.h',
             'inspector/InspectorFrontendHost.cpp',
             'inspector/InspectorFrontendHost.h',

@@ -37,13 +37,13 @@
 
 namespace WebCore {
 
-class InspectorPageAgent;
 class ExecutionContext;
+class Page;
 class SecurityOrigin;
 
 class InspectorFileSystemAgent FINAL : public InspectorBaseAgent<InspectorFileSystemAgent>, public InspectorBackendDispatcher::FileSystemCommandHandler {
 public:
-    static PassOwnPtr<InspectorFileSystemAgent> create(InspectorPageAgent*);
+    static PassOwnPtr<InspectorFileSystemAgent> create(Page*);
     virtual ~InspectorFileSystemAgent();
 
     virtual void enable(ErrorString*) OVERRIDE;
@@ -59,11 +59,11 @@ public:
     virtual void restore() OVERRIDE;
 
 private:
-    InspectorFileSystemAgent(InspectorPageAgent*);
+    InspectorFileSystemAgent(Page*);
     bool assertEnabled(ErrorString*);
     ExecutionContext* assertExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
 
-    InspectorPageAgent* m_pageAgent;
+    Page* m_page;
     bool m_enabled;
 };
 
