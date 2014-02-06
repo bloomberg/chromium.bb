@@ -361,8 +361,8 @@ void Window::Show() {
 }
 
 void Window::Hide() {
+  // RootWindow::OnVisibilityChanged will call ReleaseCapture.
   SetVisible(false);
-  ReleaseCapture();
 }
 
 bool Window::IsVisible() const {

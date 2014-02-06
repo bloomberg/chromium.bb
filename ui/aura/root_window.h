@@ -229,7 +229,9 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierarchy, via SetVisible(false) or being destroyed.
-  // |reason| specifies what triggered the hiding.
+  // |reason| specifies what triggered the hiding. Note that becoming invisible
+  // will cause a window to lose capture and some windows may destroy themselves
+  // on capture (like DragDropTracker).
   void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
 
   // Cleans up the state of gestures for all windows in |window| (including

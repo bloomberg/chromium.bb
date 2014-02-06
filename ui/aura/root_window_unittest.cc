@@ -1520,6 +1520,60 @@ TEST_F(RootWindowTest, EndingEventDoesntRetarget) {
   EXPECT_TRUE(filter2->events().empty());
 }
 
+namespace {
+
+// This class creates and manages a window which is destroyed as soon as
+// capture is lost. This is the case for the drag and drop capture window.
+class CaptureWindowTracker : public test::TestWindowDelegate {
+ public:
+  CaptureWindowTracker() {}
+  virtual ~CaptureWindowTracker() {}
+
+  void CreateCaptureWindow(aura::Window* root_window) {
+    capture_window_.reset(test::CreateTestWindowWithDelegate(
+        this, -1234, gfx::Rect(20, 20, 20, 20), root_window));
+    capture_window_->SetCapture();
+  }
+
+  void reset() {
+    capture_window_.reset();
+  }
+
+  virtual void OnCaptureLost() OVERRIDE {
+    capture_window_.reset();
+  }
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    TestWindowDelegate::OnWindowDestroyed();
+    capture_window_.reset();
+  }
+
+  aura::Window* capture_window() { return capture_window_.get(); }
+
+ private:
+  scoped_ptr<aura::Window> capture_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureWindowTracker);
+};
+
+}
+
+// Verifies handling loss of capture by the capture window being hidden.
+TEST_F(RootWindowTest, CaptureWindowHidden) {
+  CaptureWindowTracker capture_window_tracker;
+  capture_window_tracker.CreateCaptureWindow(root_window());
+  capture_window_tracker.capture_window()->Hide();
+  EXPECT_EQ(NULL, capture_window_tracker.capture_window());
+}
+
+// Verifies handling loss of capture by the capture window being destroyed.
+TEST_F(RootWindowTest, CaptureWindowDestroyed) {
+  CaptureWindowTracker capture_window_tracker;
+  capture_window_tracker.CreateCaptureWindow(root_window());
+  capture_window_tracker.reset();
+  EXPECT_EQ(NULL, capture_window_tracker.capture_window());
+}
+
 class ExitMessageLoopOnMousePress : public test::TestEventHandler {
  public:
   ExitMessageLoopOnMousePress() {}

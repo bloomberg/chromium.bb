@@ -256,12 +256,14 @@ void RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 
 void RootWindow::OnWindowDestroying(Window* window) {
   DispatchMouseExitToHidingWindow(window);
-  OnWindowHidden(window, WINDOW_DESTROYED);
-
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
     PostMouseMoveEventAfterWindowChange();
   }
+
+  // Hiding the window releases capture which can implicitly destroy the window
+  // so the window may no longer be valid after this call.
+  OnWindowHidden(window, WINDOW_DESTROYED);
 }
 
 void RootWindow::OnWindowBoundsChanged(Window* window,
@@ -295,11 +297,13 @@ void RootWindow::DispatchMouseExitAtPoint(const gfx::Point& point) {
 }
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
-  if (!is_visible)
-    OnWindowHidden(window, WINDOW_HIDDEN);
-
   if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
+
+  // Hiding the window releases capture which can implicitly destroy the window
+  // so the window may no longer be valid after this call.
+  if (!is_visible)
+    OnWindowHidden(window, WINDOW_HIDDEN);
 }
 
 void RootWindow::OnWindowTransformed(Window* window, bool contained_mouse) {
@@ -442,15 +446,26 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
   DCHECK(aura::client::GetCaptureWindow(window()) != window());
 
   DispatchMouseExitToHidingWindow(detached);
-  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN);
-
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
     PostMouseMoveEventAfterWindowChange();
   }
+
+  // Hiding the window releases capture which can implicitly destroy the window
+  // so the window may no longer be valid after this call.
+  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN);
 }
 
 void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
+  // If the window the mouse was pressed in becomes invisible, it should no
+  // longer receive mouse events.
+  if (invisible->Contains(mouse_pressed_handler_))
+    mouse_pressed_handler_ = NULL;
+  if (invisible->Contains(mouse_moved_handler_))
+    mouse_moved_handler_ = NULL;
+
+  CleanupGestureState(invisible);
+
   // Do not clear the capture, and the |event_dispatch_target_| if the
   // window is moving across root windows, because the target itself
   // is actually still visible and clearing them stops further event
@@ -458,26 +473,19 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
   // crbug.com/157583
   if (reason != WINDOW_MOVING) {
     Window* capture_window = aura::client::GetCaptureWindow(window());
-    // If the ancestor of the capture window is hidden,
-    // release the capture.
-    if (invisible->Contains(capture_window) && invisible != window())
-      capture_window->ReleaseCapture();
 
     if (invisible->Contains(event_dispatch_target_))
       event_dispatch_target_ = NULL;
 
     if (invisible->Contains(old_dispatch_target_))
       old_dispatch_target_ = NULL;
+
+    // If the ancestor of the capture window is hidden, release the capture.
+    // Note that this may delete the window so do not use capture_window
+    // after this.
+    if (invisible->Contains(capture_window) && invisible != window())
+      capture_window->ReleaseCapture();
   }
-
-  // If the ancestor of any event handler windows are invisible, release the
-  // pointer to those windows.
-  if (invisible->Contains(mouse_pressed_handler_))
-    mouse_pressed_handler_ = NULL;
-  if (invisible->Contains(mouse_moved_handler_))
-    mouse_moved_handler_ = NULL;
-
-  CleanupGestureState(invisible);
 }
 
 void RootWindow::CleanupGestureState(Window* window) {

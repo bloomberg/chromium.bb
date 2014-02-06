@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -21,6 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -95,6 +97,13 @@ aura::Window* GetCopyWindow(aura::Window* window) {
     }
   }
   return copy_window;
+}
+
+void CancelDrag(DragDropController* controller, bool* canceled) {
+  if (controller->IsDragDropInProgress()) {
+    *canceled = true;
+    controller->DragCancel();
+  }
 }
 
 }  // namespace
@@ -993,6 +1002,30 @@ TEST_F(WindowSelectorTest, RemoveDisplay) {
   EXPECT_TRUE(IsSelecting());
   UpdateDisplay("400x400");
   EXPECT_FALSE(IsSelecting());
+}
+
+// Tests starting overview during a drag and drop tracking operation.
+TEST_F(WindowSelectorTest, DragDropInProgress) {
+  bool drag_canceled_by_test = false;
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window(CreateWindow(bounds));
+  test::ShellTestApi shell_test_api(Shell::GetInstance());
+  ash::internal::DragDropController* drag_drop_controller =
+      shell_test_api.drag_drop_controller();
+  ui::OSExchangeData data;
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+      base::Bind(&WindowSelectorTest::ToggleOverview,
+                 base::Unretained(this)));
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+      base::Bind(&CancelDrag, drag_drop_controller, &drag_canceled_by_test));
+  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  drag_drop_controller->StartDragAndDrop(data, window->GetRootWindow(),
+      window.get(), gfx::Point(5, 5), ui::DragDropTypes::DRAG_MOVE,
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(drag_canceled_by_test);
+  ASSERT_TRUE(IsSelecting());
+  RunAllPendingInMessageLoop();
 }
 
 }  // namespace internal

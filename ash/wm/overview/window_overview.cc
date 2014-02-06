@@ -315,29 +315,41 @@ aura::Window* WindowOverview::GetTargetedWindow(aura::Window* window) {
 }
 
 void WindowOverview::HideAndTrackNonOverviewWindows() {
+  // Add the windows to hidden_windows first so that if any are destroyed
+  // while hiding them they are tracked.
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::const_iterator root_iter = root_windows.begin();
        root_iter != root_windows.end(); ++root_iter) {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
       aura::Window* container = Shell::GetContainer(*root_iter,
           kSwitchableWindowContainerIds[i]);
-      // Copy the children list as it can change during iteration.
-      aura::Window::Windows children(container->children());
-      for (aura::Window::Windows::const_iterator iter = children.begin();
-           iter != children.end(); ++iter) {
+      for (aura::Window::Windows::const_iterator iter =
+           container->children().begin(); iter != container->children().end();
+           ++iter) {
         if (GetTargetedWindow(*iter) || !(*iter)->IsVisible())
           continue;
-        ui::ScopedLayerAnimationSettings settings(
-            (*iter)->layer()->GetAnimator());
-        settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-            ScopedTransformOverviewWindow::kTransitionMilliseconds));
-        settings.SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-        (*iter)->Hide();
-        (*iter)->layer()->SetOpacity(0);
         hidden_windows_.Add(*iter);
       }
     }
+  }
+
+  // Copy the window list as it can change during iteration.
+  const aura::WindowTracker::Windows hidden_windows(hidden_windows_.windows());
+  for (aura::WindowTracker::Windows::const_iterator iter =
+       hidden_windows.begin(); iter != hidden_windows.end(); ++iter) {
+    if (!hidden_windows_.Contains(*iter))
+      continue;
+    ui::ScopedLayerAnimationSettings settings(
+        (*iter)->layer()->GetAnimator());
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        ScopedTransformOverviewWindow::kTransitionMilliseconds));
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    (*iter)->Hide();
+    // Hiding the window can result in it being destroyed.
+    if (!hidden_windows_.Contains(*iter))
+      continue;
+    (*iter)->layer()->SetOpacity(0);
   }
 }
 

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -18,13 +19,34 @@ namespace internal {
 
 namespace {
 
+// An activation delegate which disables activating the drag and drop window.
+class CaptureWindowActivationDelegate
+    : public aura::client::ActivationDelegate {
+ public:
+  CaptureWindowActivationDelegate() {}
+  virtual ~CaptureWindowActivationDelegate() {}
+
+  // aura::client::ActivationDelegate overrides:
+  virtual bool ShouldActivate() const OVERRIDE {
+    return false;
+  }
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureWindowActivationDelegate);
+};
+
 // Creates a window for capturing drag events.
 aura::Window* CreateCaptureWindow(aura::Window* context_root,
                                   aura::WindowDelegate* delegate) {
+  static CaptureWindowActivationDelegate* activation_delegate_instance = NULL;
+  if (!activation_delegate_instance)
+    activation_delegate_instance = new CaptureWindowActivationDelegate;
   aura::Window* window = new aura::Window(delegate);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(window, context_root, gfx::Rect());
+  aura::client::SetActivationDelegate(window, activation_delegate_instance);
   window->Show();
   DCHECK(window->bounds().size().IsEmpty());
   return window;
