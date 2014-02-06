@@ -71,6 +71,8 @@ DEFINE_WINDOW_PROPERTY_KEY(DesktopWindowTreeHostWin*, kDesktopWindowTreeHostKey,
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, public:
 
+bool DesktopWindowTreeHostWin::is_cursor_visible_ = true;
+
 DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
@@ -83,8 +85,7 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
       should_animate_window_close_(false),
       pending_close_(false),
       has_non_client_view_(false),
-      tooltip_(NULL),
-      is_cursor_visible_(true) {
+      tooltip_(NULL) {
 }
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {

@@ -273,8 +273,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // a reference.
   corewm::TooltipWin* tooltip_;
 
-  // State of the cursor.
-  bool is_cursor_visible_;
+  // Visibility of the cursor. On Windows we can have multiple root windows and
+  // the implementation of ::ShowCursor() is based on a counter, so making this
+  // member static ensures that ::ShowCursor() is always called exactly once
+  // whenever the cursor visibility state changes.
+  static bool is_cursor_visible_;
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
