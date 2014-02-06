@@ -51,7 +51,9 @@ bool IsSensitiveURL(const GURL& url) {
     // others.
     sensitive_chrome_url = sensitive_chrome_url ||
         EndsWith(url.host(), ".clients.google.com", true) ||
-        url.host() == "sb-ssl.google.com";
+        url.host() == "sb-ssl.google.com" ||
+        (url.host() ==  "chrome.google.com" &&
+             StartsWithASCII(url.path(), "/webstore", true));
   }
   GURL::Replacements replacements;
   replacements.ClearQuery();

@@ -85,7 +85,10 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
       "https://clients2.google.com/service/update2/crx",
       "http://www.gstatic.com/chrome/extensions/blacklist",
       "https://www.gstatic.com/chrome/extensions/blacklist",
-      "notregisteredscheme://www.foobar.com"
+      "notregisteredscheme://www.foobar.com",
+      "https://chrome.google.com/webstore/",
+      "https://chrome.google.com/webstore/"
+          "inlineinstall/detail/kcnhkahnjcbndmmehfkdnkjomaanaooo"
   };
   const char* non_sensitive_urls[] = {
       "http://www.google.com/"
