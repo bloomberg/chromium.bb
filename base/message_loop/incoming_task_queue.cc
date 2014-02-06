@@ -130,7 +130,8 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
   // delayed_run_time value) and for identifying the task in about:tracing.
   pending_task->sequence_num = next_sequence_num_++;
 
-  TRACE_EVENT_FLOW_BEGIN0("task", "MessageLoop::PostTask",
+  TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+      "MessageLoop::PostTask",
       TRACE_ID_MANGLE(message_loop_->GetTaskTraceID(*pending_task)));
 
   bool was_empty = incoming_queue_.empty();

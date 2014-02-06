@@ -71,7 +71,7 @@ MessagePumpGtk::~MessagePumpGtk() {
 }
 
 void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
-  UNSHIPPED_TRACE_EVENT1("task", "MessagePumpGtk::DispatchEvents",
+  UNSHIPPED_TRACE_EVENT1("toplevel", "MessagePumpGtk::DispatchEvents",
                          "type", EventToTypeString(event));
 
   WillProcessEvent(event);

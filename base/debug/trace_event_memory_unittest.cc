@@ -164,10 +164,10 @@ TEST_F(TraceMemoryTest, AppendHeapProfileLineAsTraceFormat) {
       AppendHeapProfileLineAsTraceFormat(input.str().c_str(), &output));
   EXPECT_EQ(kExpectedOutput, output);
 
-  // Input with with the category "task".
+  // Input with with the category "toplevel".
   // TODO(jamescook): Eliminate this special case and move the logic to the
   // trace viewer code.
-  const char kTaskCategory[] = "task";
+  const char kTaskCategory[] = "toplevel";
   const char kTaskName[] = "TaskName";
   std::ostringstream input2;
   input2 << "   68:     4195 [  1087:    98009] @ " << &kTaskCategory << " "

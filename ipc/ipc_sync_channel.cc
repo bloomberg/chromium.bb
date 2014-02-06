@@ -442,10 +442,10 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
   Logging* logger = Logging::GetInstance();
   std::string name;
   logger->GetMessageText(message->type(), &name, message, NULL);
-  TRACE_EVENT1("task", "SyncChannel::SendWithTimeout",
+  TRACE_EVENT1("toplevel", "SyncChannel::SendWithTimeout",
                "name", name);
 #else
-  TRACE_EVENT2("task", "SyncChannel::SendWithTimeout",
+  TRACE_EVENT2("toplevel", "SyncChannel::SendWithTimeout",
                "class", IPC_MESSAGE_ID_CLASS(message->type()),
                "line", IPC_MESSAGE_ID_LINE(message->type()));
 #endif

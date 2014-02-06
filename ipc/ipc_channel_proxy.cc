@@ -230,10 +230,10 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
   Logging* logger = Logging::GetInstance();
   std::string name;
   logger->GetMessageText(message.type(), &name, &message, NULL);
-  TRACE_EVENT1("task", "ChannelProxy::Context::OnDispatchMessage",
+  TRACE_EVENT1("toplevel", "ChannelProxy::Context::OnDispatchMessage",
                "name", name);
 #else
-  TRACE_EVENT2("task", "ChannelProxy::Context::OnDispatchMessage",
+  TRACE_EVENT2("toplevel", "ChannelProxy::Context::OnDispatchMessage",
                "class", IPC_MESSAGE_ID_CLASS(message.type()),
                "line", IPC_MESSAGE_ID_LINE(message.type()));
 #endif

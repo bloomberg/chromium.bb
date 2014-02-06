@@ -593,7 +593,8 @@ bool SequencedWorkerPool::Inner::PostTask(
     // The trace_id is used for identifying the task in about:tracing.
     sequenced.trace_id = trace_id_++;
 
-    TRACE_EVENT_FLOW_BEGIN0("task", "SequencedWorkerPool::PostTask",
+    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+        "SequencedWorkerPool::PostTask",
         TRACE_ID_MANGLE(GetTaskTraceID(sequenced, static_cast<void*>(this))));
 
     sequenced.sequence_task_number = LockedGetNextSequenceTaskNumber();
@@ -726,9 +727,10 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
       GetWorkStatus status =
           GetWork(&task, &wait_time, &delete_these_outside_lock);
       if (status == GET_WORK_FOUND) {
-        TRACE_EVENT_FLOW_END0("task", "SequencedWorkerPool::PostTask",
+        TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+            "SequencedWorkerPool::PostTask",
             TRACE_ID_MANGLE(GetTaskTraceID(task, static_cast<void*>(this))));
-        TRACE_EVENT2("task", "SequencedWorkerPool::ThreadLoop",
+        TRACE_EVENT2("toplevel", "SequencedWorkerPool::ThreadLoop",
                      "src_file", task.posted_from.file_name(),
                      "src_func", task.posted_from.function_name());
         int new_thread_id = WillRunWorkerTask(task);

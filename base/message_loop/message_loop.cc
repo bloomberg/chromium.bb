@@ -415,14 +415,14 @@ void MessageLoop::RunTask(const PendingTask& pending_task) {
   tracked_objects::TrackedTime start_time =
       tracked_objects::ThreadData::NowForStartOfRun(pending_task.birth_tally);
 
-  TRACE_EVENT_FLOW_END1("task", "MessageLoop::PostTask",
-      TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
+  TRACE_EVENT_FLOW_END1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+      "MessageLoop::PostTask", TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
       "queue_duration",
       (start_time - pending_task.EffectiveTimePosted()).InMilliseconds());
   // When tracing memory for posted tasks it's more valuable to attribute the
   // memory allocations to the source function than generically to "RunTask".
   TRACE_EVENT_WITH_MEMORY_TAG2(
-      "task", "MessageLoop::RunTask",
+      "toplevel", "MessageLoop::RunTask",
       pending_task.posted_from.function_name(),  // Name for memory tracking.
       "src_file", pending_task.posted_from.file_name(),
       "src_func", pending_task.posted_from.function_name());

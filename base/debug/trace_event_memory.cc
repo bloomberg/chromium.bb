@@ -409,9 +409,9 @@ bool AppendHeapProfileLineAsTraceFormat(const std::string& line,
 
     // TODO(jamescook): Report the trace category and name separately to the
     // trace viewer and allow it to decide what decorations to apply. For now
-    // just hard-code a decoration for posted tasks.
+    // just hard-code a decoration for posted tasks (toplevel).
     std::string trace_string(trace_name);
-    if (!strcmp(trace_category, "task"))
+    if (!strcmp(trace_category, "toplevel"))
       trace_string.append("->PostTask");
 
     // Some trace name strings have double quotes, convert them to single.
