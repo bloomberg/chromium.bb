@@ -228,7 +228,8 @@ Profile* ExtractProfileFromPath(const base::FilePath& path) {
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
     Profile* original_profile = profiles[i]->GetOriginalProfile();
-    if (original_profile == profiles[i]) {
+    if (original_profile == profiles[i] &&
+        !chromeos::ProfileHelper::IsSigninProfile(original_profile)) {
       const base::FilePath base = GetDriveMountPointPath(original_profile);
       if (base == path || base.IsParent(path))
         return original_profile;
