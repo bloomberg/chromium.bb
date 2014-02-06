@@ -224,7 +224,7 @@ bool V8WindowShell::initialize()
     }
 
     if (!isMainWorld) {
-        V8WindowShell* mainWindow = m_frame->script().existingWindowShell(mainThreadNormalWorld());
+        V8WindowShell* mainWindow = m_frame->script().existingWindowShell(DOMWrapperWorld::mainWorld());
         if (mainWindow && !mainWindow->context().IsEmpty())
             setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }

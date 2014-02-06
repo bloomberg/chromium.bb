@@ -127,7 +127,7 @@ v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> 
         return wrapper;
     if (!isolatedWorldForEnteredContext(isolate)) {
         if (Frame* frame = impl->frame())
-            frame->script().windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(DOMWrapperWorld::mainWorld())->updateDocumentWrapper(wrapper);
     }
     return wrapper;
 }
