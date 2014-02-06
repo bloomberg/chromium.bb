@@ -18,6 +18,12 @@
 
 namespace content {
 
+enum CoreAnimationStatus {
+  CORE_ANIMATION_DISABLED,
+  CORE_ANIMATION_ENABLED,
+};
+CoreAnimationStatus GetCoreAnimationStatus();
+
 class CompositingIOSurfaceShaderPrograms;
 
 class CompositingIOSurfaceContext
@@ -39,7 +45,7 @@ class CompositingIOSurfaceContext
   CompositingIOSurfaceShaderPrograms* shader_program_cache() const {
     return shader_program_cache_.get();
   }
-  NSOpenGLContext* nsgl_context() const { return nsgl_context_; }
+  NSOpenGLContext* nsgl_context() const;
   CGLContextObj cgl_context() const { return cgl_context_; }
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
   int window_number() const { return window_number_; }
@@ -54,6 +60,7 @@ class CompositingIOSurfaceContext
   CompositingIOSurfaceContext(
       int window_number,
       NSOpenGLContext* nsgl_context,
+      CGLContextObj clg_context_strong,
       CGLContextObj clg_context,
       bool is_vsync_disabled_,
       scoped_refptr<DisplayLinkMac> display_link,
@@ -62,7 +69,10 @@ class CompositingIOSurfaceContext
 
   int window_number_;
   base::scoped_nsobject<NSOpenGLContext> nsgl_context_;
-  CGLContextObj cgl_context_; // weak, backed by |nsgl_context_|
+  CGLContextObj cgl_context_strong_;
+  // Weak, backed by |nsgl_context_| or |cgl_context_strong_|.
+  CGLContextObj cgl_context_;
+
   bool is_vsync_disabled_;
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   bool can_be_shared_;

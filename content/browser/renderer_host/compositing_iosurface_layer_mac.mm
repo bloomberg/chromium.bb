@@ -23,6 +23,9 @@
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r {
   if (self = [super init]) {
     renderWidgetHostView_ = r;
+    context_ = content::CompositingIOSurfaceContext::Get(
+        content::CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
+    DCHECK(context_);
 
     ScopedCAActionDisabler disabler;
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -64,60 +67,15 @@
 // The remaining methods implement the CAOpenGLLayer interface.
 
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask {
-  std::vector<CGLPixelFormatAttribute> attribs;
-  attribs.push_back(kCGLPFADepthSize);
-  attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
-    attribs.push_back(kCGLPFAAllowOfflineRenderers);
-    attribs.push_back(static_cast<CGLPixelFormatAttribute>(1));
-  }
-  attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
-
-  GLint number_virtual_screens = 0;
-  CGLPixelFormatObj pixel_format = NULL;
-  CGLError error = CGLChoosePixelFormat(
-      &attribs.front(), &pixel_format, &number_virtual_screens);
-  if (error != kCGLNoError) {
-    LOG(ERROR) << "Failed to create pixel format for layer.";
-    CHECK(0);
-    return nil;
-  }
-  return pixel_format;
-}
-
-- (void)releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  if (!pixelFormat) {
-    CHECK(0);
-  }
-
-  CGLReleasePixelFormat(pixelFormat);
+  if (!context_)
+    return [super copyCGLPixelFormatForDisplayMask:mask];
+  return CGLRetainPixelFormat(CGLGetPixelFormat(context_->cgl_context()));
 }
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  if (!renderWidgetHostView_) {
-    CHECK(0);
-    LOG(ERROR) << "Cannot create layer context because there is no host.";
-    return nil;
-  }
-
-  context_ = renderWidgetHostView_->compositing_iosurface_context_;
-  if (!context_) {
-    CHECK(0);
-    LOG(ERROR) << "Cannot create layer context because host has no context.";
-    return nil;
-  }
-
-  return context_->cgl_context();
-}
-
-- (void)releaseCGLContext:(CGLContextObj)glContext {
-  if (!context_) {
-    CHECK(0);
-    return;
-  }
-
-  DCHECK(glContext == context_->cgl_context());
-  context_ = nil;
+  if (!context_)
+    return [super copyCGLContextForPixelFormat:pixelFormat];
+  return CGLRetainContext(context_->cgl_context());
 }
 
 - (void)drawInCGLContext:(CGLContextObj)glContext
@@ -126,14 +84,14 @@
              displayTime:(const CVTimeStamp*)timeStamp {
   TRACE_EVENT0("browser", "CompositingIOSurfaceLayer::drawInCGLContext");
 
-  if (!context_.get() || !renderWidgetHostView_ ||
+  if (!context_ ||
+      (context_ && context_->cgl_context() != glContext) ||
+      !renderWidgetHostView_ ||
       !renderWidgetHostView_->compositing_iosurface_) {
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     return;
   }
-
-  DCHECK(glContext == context_->cgl_context());
 
   // Cache a copy of renderWidgetHostView_ because it may be reset if
   // a software frame is received in GetBackingStore.
@@ -147,6 +105,7 @@
     cached_view->about_to_validate_and_paint_ = true;
     (void)cached_view->render_widget_host_->GetBackingStore(true);
     cached_view->about_to_validate_and_paint_ = false;
+    CGLSetCurrentContext(glContext);
   }
 
   // If a transition to software mode has occurred, this layer should be
@@ -159,7 +118,6 @@
   if ([self respondsToSelector:(@selector(contentsScale))])
     window_scale_factor = [self contentsScale];
 
-  CGLSetCurrentContext(glContext);
   if (!renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         context_,
         window_rect,

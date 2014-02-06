@@ -47,6 +47,7 @@ DisplayLinkMac::DisplayLinkMac(CVDisplayLinkRef display_link)
 DisplayLinkMac::~DisplayLinkMac() {
   if (CVDisplayLinkIsRunning(display_link_))
     CVDisplayLinkStop(display_link_);
+  CVDisplayLinkRelease(display_link_);
 }
 
 bool DisplayLinkMac::GetVSyncParameters(

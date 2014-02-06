@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -47,7 +46,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -80,19 +78,6 @@ using blink::WebInputEvent;
 using blink::WebInputEventFactory;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-
-enum CoreAnimationStatus {
-  CORE_ANIMATION_DISABLED,
-  CORE_ANIMATION_ENABLED,
-};
-
-static CoreAnimationStatus GetCoreAnimationStatus() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation)) {
-    return CORE_ANIMATION_ENABLED;
-  }
-  return CORE_ANIMATION_DISABLED;
-}
 
 // These are not documented, so use only after checking -respondsToSelector:.
 @interface NSApplication (UndocumentedSpeechMethods)
@@ -206,7 +191,8 @@ static float ScaleFactor(NSView* view) {
                               styleMask:windowStyle
                                 backing:bufferingType
                                   defer:deferCreation]) {
-    CHECK_EQ(CORE_ANIMATION_DISABLED, GetCoreAnimationStatus());
+    DCHECK_EQ(content::CORE_ANIMATION_DISABLED,
+              content::GetCoreAnimationStatus());
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
     [self startObservingClicks];
@@ -608,6 +594,9 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
 }
 
 void RenderWidgetHostViewMac::ClearBoundContextDrawable() {
+  if (use_core_animation_)
+    return;
+
   if (compositing_iosurface_context_ &&
       cocoa_view_ &&
       [[compositing_iosurface_context_->nsgl_context() view]
@@ -2785,7 +2774,8 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
     return;
 
   handlingGlobalFrameDidChange_ = YES;
-  if (renderWidgetHostView_->compositing_iosurface_context_) {
+  if (!renderWidgetHostView_->use_core_animation_ &&
+      renderWidgetHostView_->compositing_iosurface_context_) {
     [renderWidgetHostView_->compositing_iosurface_context_->nsgl_context()
         update];
   }
@@ -2908,8 +2898,6 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
   if (renderWidgetHostView_->last_frame_was_accelerated_ &&
       renderWidgetHostView_->compositing_iosurface_) {
     if (renderWidgetHostView_->allow_overlapping_views_) {
-      CHECK_EQ(CORE_ANIMATION_DISABLED, GetCoreAnimationStatus());
-
       // If overlapping views need to be allowed, punch a hole in the window
       // to expose the GL underlay.
       TRACE_EVENT2("gpu", "NSRectFill clear", "w", damagedRect.width(),

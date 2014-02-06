@@ -12,10 +12,55 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
+#include "content/public/common/content_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+namespace {
+
+template<typename T, void Release(T)>
+class ScopedCGLTypeRef {
+ public:
+  ScopedCGLTypeRef() : object_(NULL) {}
+
+  ~ScopedCGLTypeRef() {
+    if (object_)
+      Release(object_);
+    object_ = NULL;
+  }
+
+  // Only to be used for pass-by-pointer initialization. The object must have
+  // been reset to NULL prior to calling.
+  T* operator&() {
+    DCHECK(object_ == NULL);
+    return &object_;
+  }
+
+  operator T() const {
+    return object_;
+  }
+
+  T release() WARN_UNUSED_RESULT {
+    T object = object_;
+    object_ = NULL;
+    return object;
+  }
+
+ private:
+  T object_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedCGLTypeRef);
+};
+
+}
+
 namespace content {
+
+CoreAnimationStatus GetCoreAnimationStatus() {
+  static CoreAnimationStatus status =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCoreAnimation) ?
+          CORE_ANIMATION_ENABLED : CORE_ANIMATION_DISABLED;
+  return status;
+}
 
 // static
 scoped_refptr<CompositingIOSurfaceContext>
@@ -29,45 +74,90 @@ CompositingIOSurfaceContext::Get(int window_number) {
     return found->second;
   }
 
-  std::vector<NSOpenGLPixelFormatAttribute> attributes;
-  attributes.push_back(NSOpenGLPFADoubleBuffer);
-  // We don't need a depth buffer - try setting its size to 0...
-  attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
-    attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
-  attributes.push_back(0);
-
-  base::scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
-      [[NSOpenGLPixelFormat alloc] initWithAttributes:&attributes.front()]);
-  if (!glPixelFormat) {
-    LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
-    return NULL;
-  }
-
-  // Create all contexts in the same share group so that the textures don't
-  // need to be recreated when transitioning contexts.
-  NSOpenGLContext* share_context = nil;
-  if (!window_map()->empty())
-    share_context = window_map()->begin()->second->nsgl_context();
-  base::scoped_nsobject<NSOpenGLContext> nsgl_context(
-      [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
-                                 shareContext:share_context]);
-  if (!nsgl_context) {
-    LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
-    return NULL;
-  }
-
-  CGLContextObj cgl_context = (CGLContextObj)[nsgl_context CGLContextObj];
-  if (!cgl_context) {
-    LOG(ERROR) << "CGLContextObj failed";
-    return NULL;
-  }
-
-  // Draw at beam vsync.
   bool is_vsync_disabled =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
-  GLint swapInterval = is_vsync_disabled ? 0 : 1;
-  [nsgl_context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+
+  base::scoped_nsobject<NSOpenGLContext> nsgl_context;
+  ScopedCGLTypeRef<CGLContextObj, CGLReleaseContext> cgl_context_strong;
+  CGLContextObj cgl_context = NULL;
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_DISABLED) {
+    std::vector<NSOpenGLPixelFormatAttribute> attributes;
+    attributes.push_back(NSOpenGLPFADoubleBuffer);
+    // We don't need a depth buffer - try setting its size to 0...
+    attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
+    if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
+      attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
+    attributes.push_back(0);
+
+    base::scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
+        [[NSOpenGLPixelFormat alloc] initWithAttributes:&attributes.front()]);
+    if (!glPixelFormat) {
+      LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
+      return NULL;
+    }
+
+    // Create all contexts in the same share group so that the textures don't
+    // need to be recreated when transitioning contexts.
+    NSOpenGLContext* share_context = nil;
+    if (!window_map()->empty())
+      share_context = window_map()->begin()->second->nsgl_context();
+    nsgl_context.reset(
+        [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
+                                   shareContext:share_context]);
+    if (!nsgl_context) {
+      LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
+      return NULL;
+    }
+
+    // Grab the CGL context that the NSGL context is using. Explicitly
+    // retain it, so that it is not double-freed by the scoped type.
+    cgl_context = reinterpret_cast<CGLContextObj>(
+        [nsgl_context CGLContextObj]);
+    if (!cgl_context) {
+      LOG(ERROR) << "Failed to retrieve CGLContextObj from NSOpenGLContext";
+      return NULL;
+    }
+
+    // Force [nsgl_context flushBuffer] to wait for vsync.
+    GLint swapInterval = is_vsync_disabled ? 0 : 1;
+    [nsgl_context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+  } else {
+    CGLError error = kCGLNoError;
+
+    // Create the pixel format object for the context.
+    std::vector<CGLPixelFormatAttribute> attribs;
+    attribs.push_back(kCGLPFADepthSize);
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
+    if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+      attribs.push_back(kCGLPFAAllowOfflineRenderers);
+      attribs.push_back(static_cast<CGLPixelFormatAttribute>(1));
+    }
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
+    GLint number_virtual_screens = 0;
+    ScopedCGLTypeRef<CGLPixelFormatObj, CGLReleasePixelFormat> pixel_format;
+    error = CGLChoosePixelFormat(
+        &attribs.front(), &pixel_format, &number_virtual_screens);
+    if (error != kCGLNoError) {
+      LOG(ERROR) << "Failed to create pixel format object.";
+      return NULL;
+    }
+
+    // Create all contexts in the same share group so that the textures don't
+    // need to be recreated when transitioning contexts.
+    CGLContextObj share_context = NULL;
+    if (!window_map()->empty())
+      share_context = window_map()->begin()->second->cgl_context();
+    error = CGLCreateContext(
+        pixel_format, share_context, &cgl_context_strong);
+    if (error != kCGLNoError) {
+      LOG(ERROR) << "Failed to create context object.";
+      return NULL;
+    }
+    cgl_context = cgl_context_strong;
+
+    // Note that VSync is ignored because CoreAnimation will automatically
+    // rate limit draws.
+  }
 
   // Prepare the shader program cache. Precompile the shader programs
   // needed to draw the IO Surface for non-offscreen contexts.
@@ -98,6 +188,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
   return new CompositingIOSurfaceContext(
       window_number,
       nsgl_context.release(),
+      cgl_context_strong.release(),
       cgl_context,
       is_vsync_disabled,
       display_link,
@@ -117,12 +208,14 @@ void CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable() {
 CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     int window_number,
     NSOpenGLContext* nsgl_context,
+    CGLContextObj cgl_context_strong,
     CGLContextObj cgl_context,
     bool is_vsync_disabled,
     scoped_refptr<DisplayLinkMac> display_link,
     scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache)
     : window_number_(window_number),
       nsgl_context_(nsgl_context),
+      cgl_context_strong_(cgl_context_strong),
       cgl_context_(cgl_context),
       is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()),
@@ -148,6 +241,14 @@ CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
     if (found != window_map()->end())
       DCHECK(found->second != this);
   }
+  if (cgl_context_strong_)
+    CGLReleaseContext(cgl_context_strong_);
+}
+
+NSOpenGLContext* CompositingIOSurfaceContext::nsgl_context() const {
+  // This should not be called from any CoreAnimation paths.
+  CHECK(GetCoreAnimationStatus() == CORE_ANIMATION_DISABLED);
+  return nsgl_context_;
 }
 
 bool CompositingIOSurfaceContext::IsVendorIntel() {

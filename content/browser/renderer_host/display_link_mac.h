@@ -7,7 +7,6 @@
 
 #import <QuartzCore/CVDisplayLink.h>
 
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -43,7 +42,7 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
       void* context);
 
   // CVDisplayLink for querying VSync timing info.
-  base::ScopedCFTypeRef<CVDisplayLinkRef> display_link_;
+  CVDisplayLinkRef display_link_;
 
   // Timer for stopping the display link if it has not been queried in
   // the last second.

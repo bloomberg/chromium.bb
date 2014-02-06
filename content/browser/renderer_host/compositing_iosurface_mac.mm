@@ -404,11 +404,8 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
 
   bool result = true;
   if (flush_drawable) {
-    CGLError cgl_error =  CGLFlushDrawable(drawing_context->cgl_context());
-    if (cgl_error != kCGLNoError) {
-      LOG(ERROR) << "CGLFlushDrawable error in DrawIOSurface: " << cgl_error;
-      result = false;
-    }
+    TRACE_EVENT0("gpu", "flushBuffer");
+    [drawing_context->nsgl_context() flushBuffer];
   }
 
   // Check if any of the drawing calls result in an error.
