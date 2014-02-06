@@ -65,8 +65,6 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       continue;
     }
 
-    task->ScheduleOnOriginThread(this);
-
     CreateGraphNodeForImageRasterTask(
         task,
         task->dependencies(),

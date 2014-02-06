@@ -179,14 +179,15 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    DCHECK(!use_gpu_rasterization());
-    if (buffer_)
+    if (use_gpu_rasterization())
       return;
+    DCHECK(!buffer_);
     buffer_ = client->AcquireBufferForRaster(this, &stride_);
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    DCHECK(!use_gpu_rasterization());
+    if (use_gpu_rasterization())
+      return;
     buffer_ = NULL;
     client->OnRasterCompleted(this, analysis_);
   }
@@ -458,18 +459,28 @@ int g_num_raster_threads = 0;
 
 namespace internal {
 
-WorkerPoolTask::WorkerPoolTask() : did_complete_(false) {}
+WorkerPoolTask::WorkerPoolTask() : did_schedule_(false), did_complete_(false) {}
 
 WorkerPoolTask::~WorkerPoolTask() {
-  DCHECK_EQ(did_schedule_, did_complete_);
+  DCHECK(!did_schedule_);
   DCHECK(!did_run_ || did_complete_);
 }
+
+void WorkerPoolTask::WillSchedule() { DCHECK(!did_schedule_); }
+
+void WorkerPoolTask::DidSchedule() {
+  did_schedule_ = true;
+  did_complete_ = false;
+}
+
+bool WorkerPoolTask::HasBeenScheduled() const { return did_schedule_; }
 
 void WorkerPoolTask::WillComplete() { DCHECK(!did_complete_); }
 
 void WorkerPoolTask::DidComplete() {
   DCHECK(did_schedule_);
   DCHECK(!did_complete_);
+  did_schedule_ = false;
   did_complete_ = true;
 }
 
@@ -622,6 +633,19 @@ void RasterWorkerPool::SetTaskGraph(TaskGraph* graph) {
   TRACE_EVENT1(
       "cc", "RasterWorkerPool::SetTaskGraph", "num_tasks", graph->size());
 
+  for (internal::GraphNode::Map::iterator it = graph->begin();
+       it != graph->end();
+       ++it) {
+    internal::WorkerPoolTask* task =
+        static_cast<internal::WorkerPoolTask*>(it->first);
+
+    if (!task->HasBeenScheduled()) {
+      task->WillSchedule();
+      task->ScheduleOnOriginThread(this);
+      task->DidSchedule();
+    }
+  }
+
   g_task_graph_runner.Pointer()->SetTaskGraph(namespace_token_, graph);
 }
 
@@ -645,11 +669,16 @@ void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
     internal::RasterWorkerPoolTask* task = it->get();
     DCHECK(task->use_gpu_rasterization());
 
+    task->WillSchedule();
+    task->ScheduleOnOriginThread(this);
     task->DidSchedule();
+
     task->WillRun();
     task->RunOnOriginThread(resource_provider_, context_provider_);
     task->DidRun();
+
     task->WillComplete();
+    task->CompleteOnOriginThread(this);
     task->DidComplete();
 
     completed_gpu_raster_tasks_.push_back(task);
@@ -735,8 +764,6 @@ internal::GraphNode* RasterWorkerPool::CreateGraphNodeForRasterTask(
     const internal::Task::Vector& decode_tasks,
     unsigned priority,
     TaskGraph* graph) {
-  DCHECK(!raster_task->HasCompleted());
-
   internal::GraphNode* raster_node =
       CreateGraphNodeForTask(raster_task, priority, graph);
 

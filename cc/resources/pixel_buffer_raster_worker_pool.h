@@ -13,9 +13,7 @@
 
 namespace cc {
 
-class CC_EXPORT PixelBufferRasterWorkerPool
-    : public RasterWorkerPool,
-      public internal::WorkerPoolTaskClient {
+class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
  public:
   virtual ~PixelBufferRasterWorkerPool();
 

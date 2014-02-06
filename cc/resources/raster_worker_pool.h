@@ -47,6 +47,10 @@ class CC_EXPORT WorkerPoolTask : public Task {
   virtual void CompleteOnOriginThread(WorkerPoolTaskClient* client) = 0;
   virtual void RunReplyOnOriginThread() = 0;
 
+  void WillSchedule();
+  void DidSchedule();
+  bool HasBeenScheduled() const;
+
   void WillComplete();
   void DidComplete();
   bool HasCompleted() const;
@@ -56,6 +60,7 @@ class CC_EXPORT WorkerPoolTask : public Task {
   virtual ~WorkerPoolTask();
 
  private:
+  bool did_schedule_;
   bool did_complete_;
 };
 
@@ -107,7 +112,7 @@ class CC_EXPORT RasterWorkerPoolClient {
 };
 
 // A worker thread pool that runs raster tasks.
-class CC_EXPORT RasterWorkerPool {
+class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
  public:
   class CC_EXPORT Task {
    public:

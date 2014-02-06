@@ -13,8 +13,7 @@ namespace cc {
 
 namespace {
 
-class FakeRasterWorkerPool : public RasterWorkerPool,
-                             public internal::WorkerPoolTaskClient {
+class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
   FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
 

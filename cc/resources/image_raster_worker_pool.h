@@ -9,8 +9,7 @@
 
 namespace cc {
 
-class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
-                                        public internal::WorkerPoolTaskClient {
+class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
  public:
   virtual ~ImageRasterWorkerPool();
 

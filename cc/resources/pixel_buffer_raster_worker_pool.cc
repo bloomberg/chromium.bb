@@ -132,6 +132,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
       raster_task_states_.erase(state_it);
     } else {
+      DCHECK(!task->HasBeenScheduled());
       new_raster_task_states[task] = UNSCHEDULED;
       if (IsRasterTaskRequiredForActivation(task))
         raster_tasks_required_for_activation_.insert(task);
@@ -149,6 +150,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
     // Unscheduled task can be canceled.
     if (it->second == UNSCHEDULED) {
+      DCHECK(!task->HasBeenScheduled());
       DCHECK(std::find(completed_raster_tasks_.begin(),
                        completed_raster_tasks_.end(),
                        task) == completed_raster_tasks_.end());
@@ -525,6 +527,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
 
     // If raster has finished, just update |bytes_pending_upload|.
     if (state_it->second == UPLOADING) {
+      DCHECK(task->HasCompleted());
       bytes_pending_upload = new_bytes_pending_upload;
       continue;
     }
@@ -546,7 +549,6 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
                               ? REQUIRED_FOR_ACTIVATION_TYPE
                               : PREPAINT_TYPE;
 
-    task->ScheduleOnOriginThread(this);
     DCHECK(state_it->second == UNSCHEDULED || state_it->second == SCHEDULED);
     state_it->second = SCHEDULED;
 

@@ -28,10 +28,7 @@ class PerfTaskImpl : public internal::Task {
   // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
 
-  void Reset() {
-    did_schedule_ = false;
-    did_run_ = false;
-  }
+  void Reset() { did_run_ = false; }
 
  private:
   virtual ~PerfTaskImpl() {}

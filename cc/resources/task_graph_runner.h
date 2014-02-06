@@ -26,10 +26,8 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 
   virtual void RunOnWorkerThread(unsigned thread_index) = 0;
 
-  void DidSchedule();
   void WillRun();
   void DidRun();
-
   bool HasFinishedRunning() const;
 
  protected:
@@ -38,7 +36,6 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   Task();
   virtual ~Task();
 
-  bool did_schedule_;
   bool did_run_;
 };
 

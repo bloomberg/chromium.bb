@@ -14,14 +14,11 @@
 namespace cc {
 namespace internal {
 
-Task::Task() : did_schedule_(false), did_run_(false) {}
+Task::Task() : did_run_(false) {}
 
-Task::~Task() { DCHECK(!did_run_ || did_schedule_); }
-
-void Task::DidSchedule() { did_schedule_ = true; }
+Task::~Task() {}
 
 void Task::WillRun() {
-  DCHECK(did_schedule_);
   DCHECK(!did_run_);
 }
 
@@ -173,10 +170,6 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
 
       // Completed tasks should not exist in |new_pending_tasks|.
       DCHECK(!task->HasFinishedRunning());
-
-      // Call DidSchedule() to indicate that this task has been scheduled.
-      // Note: This is only for debugging purposes.
-      task->DidSchedule();
 
       if (!node->num_dependencies())
         task_namespace->ready_to_run_tasks.push_back(node);

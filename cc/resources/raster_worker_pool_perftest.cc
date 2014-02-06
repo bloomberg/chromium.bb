@@ -17,8 +17,7 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfRasterWorkerPool : public RasterWorkerPool,
-                             public internal::WorkerPoolTaskClient {
+class PerfRasterWorkerPool : public RasterWorkerPool {
  public:
   PerfRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
   virtual ~PerfRasterWorkerPool() {}

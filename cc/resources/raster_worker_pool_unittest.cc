@@ -56,11 +56,15 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
+    if (use_gpu_rasterization())
+      return;
     int stride;
     client->AcquireBufferForRaster(this, &stride);
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
+    if (use_gpu_rasterization())
+      return;
     client->OnRasterCompleted(this, PicturePileImpl::Analysis());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
