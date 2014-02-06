@@ -343,7 +343,7 @@ scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateOwnedTexture(
 }
 
 GLHelper* GpuProcessTransportFactory::GetGLHelper() {
-  if (!gl_helper_) {
+  if (!gl_helper_ && !per_compositor_data_.empty()) {
     scoped_refptr<cc::ContextProvider> provider =
         SharedMainThreadContextProvider();
     if (provider.get())
