@@ -209,6 +209,9 @@ class NavigationEntry {
   //     status code wasn't available.
   virtual void SetHttpStatusCode(int http_status_code) = 0;
   virtual int GetHttpStatusCode() const = 0;
+
+  // True if this entry is restored and hasn't been loaded.
+  virtual bool IsRestored() const = 0;
 };
 
 }  // namespace content

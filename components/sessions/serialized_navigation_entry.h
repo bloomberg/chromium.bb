@@ -155,6 +155,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   base::string16 search_terms_;
   GURL favicon_url_;
   int http_status_code_;
+  bool is_restored_;    // Not persisted.
 
   // Additional information.
   BlockedState blocked_state_;

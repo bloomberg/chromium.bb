@@ -136,4 +136,6 @@ message TabNavigation {
   optional int32 http_status_code = 20;
   // Referrer policy.
   optional int32 referrer_policy = 21;
+  // True if created from restored navigation entry that hasn't been loaded.
+  optional bool is_restored = 22;
 }

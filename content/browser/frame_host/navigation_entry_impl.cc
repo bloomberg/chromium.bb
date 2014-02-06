@@ -289,6 +289,10 @@ int NavigationEntryImpl::GetHttpStatusCode() const {
   return http_status_code_;
 }
 
+bool NavigationEntryImpl::IsRestored() const {
+  return restore_type_ != RESTORE_NONE;
+}
+
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {
   can_load_local_resources_ = allow;
 }

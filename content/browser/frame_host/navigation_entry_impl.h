@@ -86,6 +86,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual void ClearExtraData(const std::string& key) OVERRIDE;
   virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
   virtual int GetHttpStatusCode() const OVERRIDE;
+  virtual bool IsRestored() const OVERRIDE;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.

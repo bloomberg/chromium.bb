@@ -27,6 +27,7 @@ SerializedNavigationEntry::SerializedNavigationEntry()
       post_id_(-1),
       is_overriding_user_agent_(false),
       http_status_code_(0),
+      is_restored_(false),
       blocked_state_(STATE_INVALID) {}
 
 SerializedNavigationEntry::~SerializedNavigationEntry() {}
@@ -48,6 +49,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromNavigationEntry(
   navigation.original_request_url_ = entry.GetOriginalRequestURL();
   navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
   navigation.timestamp_ = entry.GetTimestamp();
+  navigation.is_restored_ = entry.IsRestored();
   // If you want to navigate a named frame in Chrome, you will first need to
   // add support for persisting it. It is currently only used for layout tests.
   CHECK(entry.GetFrameToNavigate().empty());
@@ -152,6 +154,8 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   DCHECK_EQ(0, sync_data.content_pack_categories_size());
 
   navigation.Sanitize();
+
+  navigation.is_restored_ = true;
 
   return navigation;
 }
@@ -329,6 +333,8 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
 
   Sanitize();
 
+  is_restored_ = true;
+
   return true;
 }
 
@@ -470,6 +476,8 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
        it != content_pack_categories_.end(); ++it) {
     sync_data.add_content_pack_categories(*it);
   }
+
+  sync_data.set_is_restored(is_restored_);
 
   return sync_data;
 }
