@@ -74,14 +74,14 @@ base::Time TranslateDownloadManager::GetSupportedLanguagesLastUpdated() {
 
 // static
 std::string TranslateDownloadManager::GetLanguageCode(
-    const std::string& chrome_locale) {
+    const std::string& language) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
   if (!language_list) {
     NOTREACHED();
-    return chrome_locale;
+    return language;
   }
 
-  return language_list->GetLanguageCode(chrome_locale);
+  return language_list->GetLanguageCode(language);
 }
 
 // static

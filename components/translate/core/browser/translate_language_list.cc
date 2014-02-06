@@ -146,16 +146,16 @@ void TranslateLanguageList::GetSupportedLanguages(
 }
 
 std::string TranslateLanguageList::GetLanguageCode(
-    const std::string& chrome_locale) {
+    const std::string& language) {
   // Only remove the country code for country specific languages we don't
   // support specifically yet.
-  if (IsSupportedLanguage(chrome_locale))
-    return chrome_locale;
+  if (IsSupportedLanguage(language))
+    return language;
 
-  size_t hypen_index = chrome_locale.find('-');
+  size_t hypen_index = language.find('-');
   if (hypen_index == std::string::npos)
-    return chrome_locale;
-  return chrome_locale.substr(0, hypen_index);
+    return language;
+  return language.substr(0, hypen_index);
 }
 
 bool TranslateLanguageList::IsSupportedLanguage(const std::string& language) {

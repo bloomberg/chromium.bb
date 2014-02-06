@@ -20,6 +20,7 @@
 #include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/common/url_constants.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,6 +66,7 @@ void GetTranslateLanguages(content::WebContents* web_contents,
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
   *source = translate_tab_helper->GetLanguageState().original_language();
+  *source = TranslateDownloadManager::GetLanguageCode(*source);
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

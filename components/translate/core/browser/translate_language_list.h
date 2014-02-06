@@ -34,8 +34,9 @@ class TranslateLanguageList {
   void GetSupportedLanguages(std::vector<std::string>* languages);
 
   // Returns the language code that can be used with the Translate method for a
-  // specified |chrome_locale|.
-  std::string GetLanguageCode(const std::string& chrome_locale);
+  // specified |language|. (ex. GetLanguageCode("en-US") will return "en", and
+  // GetLanguageCode("zh-CN") returns "zh-CN")
+  std::string GetLanguageCode(const std::string& language);
 
   // Returns true if |language| is supported by the translation server. It also
   // returns true against alpha languages.

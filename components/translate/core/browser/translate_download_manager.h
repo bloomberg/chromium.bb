@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRANSLATE_CORE_BROWER_TRANSLATE_DOWNLOAD_MANAGER_H_
-#define COMPONENTS_TRANSLATE_CORE_BROWER_TRANSLATE_DOWNLOAD_MANAGER_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_
 
 #include <string>
 
@@ -63,8 +63,9 @@ class TranslateDownloadManager {
   static base::Time GetSupportedLanguagesLastUpdated();
 
   // Returns the language code that can be used with the Translate method for a
-  // specified |chrome_locale|.
-  static std::string GetLanguageCode(const std::string& chrome_locale);
+  // specified |language|. (ex. GetLanguageCode("en-US") will return "en", and
+  // GetLanguageCode("zh-CN") returns "zh-CN")
+  static std::string GetLanguageCode(const std::string& language);
 
   // Returns true if |language| is supported by the translation server.
   static bool IsSupportedLanguage(const std::string& language);
@@ -86,4 +87,4 @@ class TranslateDownloadManager {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 
-#endif  // COMPONENTS_TRANSLATE_CORE_BROWER_TRANSLATE_DOWNLOAD_MANAGER_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_
