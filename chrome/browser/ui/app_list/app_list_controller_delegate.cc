@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -22,6 +23,7 @@
 #include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 
 using extensions::ExtensionRegistry;
 
@@ -69,6 +71,32 @@ bool AppListControllerDelegate::UserMayModifySettings(
       extensions::ExtensionSystem::Get(profile)->management_policy();
   return extension &&
          policy->UserMayModifySettings(extension, NULL);
+}
+
+bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
+  return app_list::switches::IsAppInfoEnabled();
+}
+
+void AppListControllerDelegate::DoShowAppInfoFlow(
+    Profile* profile,
+    const std::string& extension_id) {
+  DCHECK(CanDoShowAppInfoFlow());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  DCHECK(service);
+  const extensions::Extension* extension = service->GetInstalledExtension(
+      extension_id);
+  DCHECK(extension);
+
+  gfx::NativeWindow parent_window = GetAppListWindow();
+  if (!parent_window)
+    return;
+
+  OnShowExtensionPrompt();
+  ShowChromeAppInfoDialog(
+      parent_window, profile, extension,
+      base::Bind(&AppListControllerDelegate::OnCloseExtensionPrompt,
+                 base::Unretained(this)));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

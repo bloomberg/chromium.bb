@@ -32,6 +32,7 @@ enum CommandId {
   LAUNCH_NEW = 100,
   TOGGLE_PIN,
   CREATE_SHORTCUTS,
+  SHOW_APP_INFO,
   OPTIONS,
   UNINSTALL,
   REMOVE_FROM_FOLDER,
@@ -112,6 +113,11 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     if (controller_->CanDoCreateShortcutsFlow()) {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
+    }
+
+    if (controller_->CanDoShowAppInfoFlow()) {
+      menu_model_->AddItemWithStringId(SHOW_APP_INFO,
+                                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }
 
     if (!is_platform_app_) {
@@ -246,6 +252,8 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->PinApp(app_id_);
   } else if (command_id == CREATE_SHORTCUTS) {
     controller_->DoCreateShortcutsFlow(profile_, app_id_);
+  } else if (command_id == SHOW_APP_INFO) {
+    controller_->DoShowAppInfoFlow(profile_, app_id_);
   } else if (command_id >= USE_LAUNCH_TYPE_COMMAND_START &&
              command_id < USE_LAUNCH_TYPE_COMMAND_END) {
     extensions::LaunchType launch_type = static_cast<extensions::LaunchType>(

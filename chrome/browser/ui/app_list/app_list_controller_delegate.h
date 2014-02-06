@@ -81,6 +81,14 @@ class AppListControllerDelegate {
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) = 0;
 
+  // Whether the controller supports a Show App Info flow.
+  virtual bool CanDoShowAppInfoFlow();
+
+  // Show the dialog with the application's information. Call only if
+  // CanDoShowAppInfoFlow() returns true.
+  virtual void DoShowAppInfoFlow(Profile* profile,
+                                 const std::string& extension_id);
+
   // Handle the "create window" context menu items of Chrome App.
   // |incognito| is true to create an incognito window.
   virtual void CreateNewWindow(Profile* profile, bool incognito) = 0;

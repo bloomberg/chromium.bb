@@ -79,6 +79,10 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) OVERRIDE {
   }
+  virtual bool CanDoShowAppInfoFlow() OVERRIDE { return false; }
+  virtual void DoShowAppInfoFlow(Profile* profile,
+                                 const std::string& extension_id) OVERRIDE {
+  };
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE {}
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,

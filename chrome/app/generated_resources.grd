@@ -2179,6 +2179,24 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
 
+      <!-- "Application Information" dialog -->
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_APPLICATION_INFO_TITLE" desc="Title of the dialog that contains information about the current application.">
+          Application information
+        </message>
+        <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="Button in the Application Information Dialog that closes the dialog">
+          Close
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_APPLICATION_INFO_TITLE" desc="In Title Case: title of the dialog that contains information about the current application.">
+          Application Information
+        </message>
+        <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="In Title Case: Button in the Application Information Dialog that closes the dialog">
+          Close
+        </message>
+      </if>
+
       <!-- "Create application shortcuts" dialog -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
@@ -6707,6 +6725,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION" desc="Description of the flag to disable voice search in the app list.">
           Disable voice search in the app list. If disabled, user won't be able to search by speech.
         </message>
+        <message name="IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST" desc="Name of the flag to enable the app info context menu option in the app list.">
+          Enable app info dialog.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the app info context menu option in the app list.">
+          Enable the app info dialog. If enabled, the user will be able to select the 'App Info' context menu in the App Launcher to show the app info dialog for the selected app.
+        </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME" desc="Name of the flag to disable sync of user account image.">
         Disable avatar sync.
@@ -10131,7 +10155,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for manage extensions settings">
           Extensions
         </message>
-  
+
         <!-- Font settings -->
         <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
           Fonts and encoding
@@ -11278,6 +11302,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             Create shortcuts...
           </message>
         </if>
+        <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
+                 desc="Text for the context menu item that shows the application information. (In sentence case.)">
+          App info...
+        </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In sentence case.)">
           Open as pinned tab
@@ -11325,6 +11353,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             Create Shortcuts...
           </message>
         </if>
+        <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
+                 desc="Text for the context menu item that shows the application information. (In title case.)">
+          App Info...
+        </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In title case.)">
           Open as Pinned Tab

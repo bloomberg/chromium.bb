@@ -15,6 +15,9 @@ const char kEnableFolderUI[] = "enable-app-list-folder-ui";
 // If set, the voice search is disabled in app list UI.
 const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 
+// If set, the app info context menu item is available in the app list UI.
+const char kEnableAppInfo[] = "enable-app-list-app-info";
+
 bool IsFolderUIEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableFolderUI);
 }
@@ -26,6 +29,10 @@ bool IsVoiceSearchEnabled() {
 #else
   return false;
 #endif
+}
+
+bool IsAppInfoEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableAppInfo);
 }
 
 }  // namespcae switches
