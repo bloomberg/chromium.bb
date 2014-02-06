@@ -772,9 +772,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
 
-PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
-    int render_process_id);
-
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_

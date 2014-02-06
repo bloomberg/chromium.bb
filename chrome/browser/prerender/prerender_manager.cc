@@ -1670,23 +1670,6 @@ bool PrerenderManager::IsEnabled() const {
   return true;
 }
 
-PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
-    int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  // Each render process is guaranteed to only hold RenderViews owned by the
-  // same BrowserContext. This is enforced by
-  // RenderProcessHost::GetExistingProcessHost.
-  if (!render_process_host || !render_process_host->GetBrowserContext())
-    return NULL;
-  Profile* profile = Profile::FromBrowserContext(
-      render_process_host->GetBrowserContext());
-  if (!profile)
-    return NULL;
-  return PrerenderManagerFactory::GetInstance()->GetForProfile(profile);
-}
-
 void PrerenderManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
