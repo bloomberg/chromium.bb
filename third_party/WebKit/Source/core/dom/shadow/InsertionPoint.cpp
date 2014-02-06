@@ -143,11 +143,12 @@ bool InsertionPoint::canBeActive() const
 
 bool InsertionPoint::isActive() const
 {
+    if (!inDocument())
+        return false;
     if (!canBeActive())
         return false;
     ShadowRoot* shadowRoot = containingShadowRoot();
-    if (!shadowRoot)
-        return false;
+    ASSERT(shadowRoot);
     if (!hasTagName(shadowTag) || shadowRoot->descendantShadowElementCount() <= 1)
         return true;
 

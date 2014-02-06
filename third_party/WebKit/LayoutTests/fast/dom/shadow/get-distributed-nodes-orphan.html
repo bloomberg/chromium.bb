@@ -10,7 +10,7 @@
 <pre id="console"></pre>
 
 <script>
-description("getDistributedNodes() should work out of Document");
+description("getDistributedNodes() shouldn't work unless it is inDocument");
 
 function assertNodeList(nodeList, expectedNodes)
 {
@@ -32,31 +32,7 @@ host.appendChild(child);
 rootChild.appendChild(content);
 shadowRoot.appendChild(rootChild);
 
-debug('getDistributedNodes() should work out of Document');
-assertNodeList(content.getDistributedNodes(), [child]);
-debug('');
-
-debug('When a content element is disconnected from ShadowRoot, it should not work.');
-shadowRoot.removeChild(rootChild);
 assertNodeList(content.getDistributedNodes(), []);
-debug('');
-
-debug('Reprojection case');
-shadowRoot.appendChild(rootChild);
-var shadowRoot2 = rootChild.createShadowRoot();
-var content2 = document.createElement('content');
-var rootChildChild = document.createElement('div');
-shadowRoot2.appendChild(content2);
-rootChild.appendChild(rootChildChild);
-
-assertNodeList(content.getDistributedNodes(), [child]);
-assertNodeList(content2.getDistributedNodes(), [child, rootChildChild]);
-debug('');
-
-debug('rootChild is disconnected. Now content became inactive, so content element itself should be distributed.');
-shadowRoot.removeChild(rootChild);
-assertNodeList(content.getDistributedNodes(), []);
-assertNodeList(content2.getDistributedNodes(), [content, rootChildChild]);
 debug('');
 </script>
 </body>
