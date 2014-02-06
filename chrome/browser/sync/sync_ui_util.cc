@@ -35,6 +35,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif  // defined(OS_CHROMEOS)
+
 typedef GoogleServiceAuthError AuthError;
 
 namespace sync_ui_util {
@@ -47,8 +51,18 @@ namespace {
 base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style) {
-  base::string16 user_name =
-      base::UTF8ToUTF16(signin.GetAuthenticatedUsername());
+  std::string user_display_name = signin.GetAuthenticatedUsername();
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::IsInitialized()) {
+    // On CrOS user email is sanitized and then passed to the signin manager.
+    // Original email (containing dots) is stored as "display email".
+    user_display_name = chromeos::UserManager::Get()->
+        GetUserDisplayEmail(user_display_name);
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  base::string16 user_name = base::UTF8ToUTF16(user_display_name);
 
   if (!user_name.empty()) {
     if (!service || service->IsManaged()) {
