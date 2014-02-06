@@ -1492,6 +1492,9 @@ class ValidationPool(object):
         raw_changes = helper.Query(query, sort='lastUpdated')
         raw_changes.reverse()
 
+        # Reload the changes because the data in the Gerrit cache may be stale.
+        raw_changes = list(cls.ReloadChanges(raw_changes))
+
         # If we used a default query, verify the results match the query, to
         # prevent race conditions. Note, this filters using the conditions
         # of DEFAULT_CQ_READY_QUERY even if the tree is throttled. Since that
@@ -1899,7 +1902,8 @@ class ValidationPool(object):
 
     return errors.keys()
 
-  def ReloadChanges(self, changes):
+  @classmethod
+  def ReloadChanges(cls, changes):
     """Reload the specified |changes| from the server.
 
     Return the reloaded changes.

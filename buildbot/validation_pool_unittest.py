@@ -1312,7 +1312,8 @@ class MockValidationPool(partial_mock.PartialMock):
       self.max_submits -= 1
     return result
 
-  def ReloadChanges(self, _inst, changes):
+  @classmethod
+  def ReloadChanges(cls, changes):
     return changes
 
   RemoveCommitReady = None
