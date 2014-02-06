@@ -31,7 +31,9 @@ from mod_pywebsocket import msgutil
 
 
 def web_socket_do_extra_handshake(request):
-    for i in xrange(10000):
+    # Exact number of headers that will fit in 256KB. Above 256KB an
+    # ERR_RESPONSE_HEADERS_TOO_BIG error is triggered instead.
+    for i in xrange(5978):
         request.extra_headers.append(
             ('Set-Cookie', 'WK-websocket-test-flood-%d=1' % i))
 
