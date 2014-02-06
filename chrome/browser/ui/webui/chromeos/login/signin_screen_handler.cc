@@ -388,6 +388,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
+
+  builder->Add("runType", CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kFirstExecAfterBoot) ?  "firstExecAfterBoot" :
+                                        "notFirstExecAfterBoot");
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context) {

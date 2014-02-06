@@ -22,8 +22,6 @@ podrow.images-loading {
 .pod {
   -webkit-tap-highlight-color: transparent;
   -webkit-transform: scale3d(0.9, 0.9, 0.9);
-  -webkit-transition: -webkit-transform 180ms ease,
-                      opacity 180ms ease;
   background-color: white;
   border-radius: 2px;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
@@ -37,6 +35,11 @@ podrow.images-loading {
   vertical-align: middle;
   width: 160px;
   z-index: 0;
+}
+
+html[run=firstExecAfterBoot] .pod {
+  -webkit-transition: -webkit-transform 180ms ease,
+                      opacity 180ms ease;
 }
 
 .account-picker.flying-pods .pod {
