@@ -104,6 +104,11 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
         interface_name
         for interface_name, interface_info in interfaces_info.iteritems()
         if interface_info['is_callback_interface']))
+    v8_types.set_garbage_collected_types(set(
+        interface_name
+        for interface_name, interface_info in interfaces_info.iteritems()
+        if 'inherited_extended_attributes' in interface_info and
+            'GarbageCollected' in interface_info['inherited_extended_attributes']))
     v8_types.set_implemented_as_interfaces(dict(
         (interface_name, interface_info['implemented_as'])
         for interface_name, interface_info in interfaces_info.iteritems()

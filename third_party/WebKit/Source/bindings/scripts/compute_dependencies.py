@@ -414,19 +414,21 @@ def record_global_constructors_and_extended_attributes(idl_filename, global_cons
     idl_file_contents = get_file_contents(full_path)
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
 
+    # Record extended attributes
+    extended_attributes_by_interface[interface_name] = extended_attributes
+
     # Record global constructors
-    if not is_callback_interface_from_idl(idl_file_contents) and 'NoInterfaceObject' not in extended_attributes:
+    if (not is_callback_interface_from_idl(idl_file_contents) and
+        'NoInterfaceObject' not in extended_attributes):
         global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
         new_constructor_list = generate_constructor_attribute_list(interface_name, extended_attributes)
         for global_object in global_contexts:
             global_constructors[global_object].extend(new_constructor_list)
 
-    # Record parents and extended attributes for generating event names
+    # Record parents
     parent = get_parent_interface(idl_file_contents)
     if parent:
         parent_interfaces[interface_name] = parent
-    if parent or interface_name == 'Event':
-        extended_attributes_by_interface[interface_name] = extended_attributes
 
 
 def record_extended_attributes(idl_filename):
@@ -439,6 +441,11 @@ def record_extended_attributes(idl_filename):
 
 def generate_ancestors_and_inherited_extended_attributes(interface_name):
     interface_info = interfaces_info[interface_name]
+    interface_extended_attributes = extended_attributes_by_interface[interface_name]
+    inherited_extended_attributes = dict(
+            (key, value)
+            for key, value in interface_extended_attributes.iteritems()
+            if key in INHERITED_EXTENDED_ATTRIBUTES)
 
     def generate_ancestors(interface_name):
         while interface_name in parent_interfaces:
@@ -446,22 +453,17 @@ def generate_ancestors_and_inherited_extended_attributes(interface_name):
             yield interface_name
 
     ancestors = list(generate_ancestors(interface_name))
+    if not ancestors:
+        if inherited_extended_attributes:
+            interface_info['inherited_extended_attributes'] = inherited_extended_attributes
+        return
+
     interface_info['ancestors'] = ancestors
-
-    # Base interface (most distant ancestor) has no parent, and thus its
-    # extended attributes may not yet be recorded.
-    base_interface_name = ancestors[-1]
-    if base_interface_name not in extended_attributes_by_interface:
-        if base_interface_name not in interfaces_info:
-            # Absent for support files
-            return
-        base_interface_info = interfaces_info[base_interface_name]
-        base_interface_filename = base_interface_info['full_path']
-        record_extended_attributes(base_interface_filename)
-
-    inherited_extended_attributes = {}
     for ancestor in ancestors:
-        ancestor_extended_attributes = extended_attributes_by_interface[ancestor]
+        # Extended attributes are missing if an ancestor is an interface that
+        # we're not processing, notably real IDL files if only processing test
+        # IDL files, or generated support files.
+        ancestor_extended_attributes = extended_attributes_by_interface.get(ancestor, {})
         inherited_extended_attributes.update(dict(
             (key, value)
             for key, value in ancestor_extended_attributes.iteritems()
@@ -493,7 +495,7 @@ def parse_idl_files(idl_files, global_constructors_filenames):
         if generate_dependencies(idl_filename):
             record_global_constructors_and_extended_attributes(idl_filename, global_constructors)
 
-    for interface_name in parent_interfaces:
+    for interface_name in interfaces_info:
         generate_ancestors_and_inherited_extended_attributes(interface_name)
 
     # Add constructors on global objects to partial interfaces
