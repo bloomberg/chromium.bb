@@ -1008,8 +1008,7 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionState& except
     if (textField->hasTagName(inputTag))
         return toHTMLInputElement(textField)->lastChangeWasUserEdit();
 
-    // FIXME: We should be using hasTagName instead but Windows port doesn't link QualifiedNames properly.
-    if (textField->tagName() == "TEXTAREA")
+    if (textField->hasTagName(textareaTag))
         return toHTMLTextAreaElement(textField)->lastChangeWasUserEdit();
 
     exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a TEXTAREA.");
