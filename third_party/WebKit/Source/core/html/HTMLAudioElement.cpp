@@ -32,22 +32,22 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLAudioElement::HTMLAudioElement(Document& document, bool createdByParser)
-    : HTMLMediaElement(audioTag, document, createdByParser)
+HTMLAudioElement::HTMLAudioElement(Document& document)
+    : HTMLMediaElement(audioTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document, bool createdByParser)
+PassRefPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
 {
-    RefPtr<HTMLAudioElement> audioElement(adoptRef(new HTMLAudioElement(document, createdByParser)));
+    RefPtr<HTMLAudioElement> audioElement(adoptRef(new HTMLAudioElement(document)));
     audioElement->suspendIfNeeded();
     return audioElement.release();
 }
 
 PassRefPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
 {
-    RefPtr<HTMLAudioElement> audio = adoptRef(new HTMLAudioElement(document, false));
+    RefPtr<HTMLAudioElement> audio = adoptRef(new HTMLAudioElement(document));
     audio->setPreload(AtomicString("auto", AtomicString::ConstructFromLiteral));
     if (!src.isNull())
         audio->setSrc(src);

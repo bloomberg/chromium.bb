@@ -279,7 +279,7 @@ public:
     void setController(PassRefPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
 protected:
-    HTMLMediaElement(const QualifiedName&, Document&, bool);
+    HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
@@ -545,7 +545,6 @@ private:
     bool m_loadInitiatedByUserGesture : 1;
     bool m_completelyLoaded : 1;
     bool m_havePreparedToPlay : 1;
-    bool m_parsingInProgress : 1;
 
     bool m_tracksAreReady : 1;
     bool m_haveVisibleTextTrack : 1;

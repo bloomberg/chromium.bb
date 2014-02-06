@@ -39,7 +39,7 @@ class HTMLImageLoader;
 
 class HTMLVideoElement FINAL : public HTMLMediaElement {
 public:
-    static PassRefPtr<HTMLVideoElement> create(Document&, bool createdByParser = false);
+    static PassRefPtr<HTMLVideoElement> create(Document&);
 
     unsigned videoWidth() const;
     unsigned videoHeight() const;
@@ -66,7 +66,7 @@ public:
     KURL posterImageURL() const;
 
 private:
-    HTMLVideoElement(Document&, bool);
+    HTMLVideoElement(Document&);
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;

@@ -253,7 +253,7 @@ bool HTMLMediaElement::isMediaStreamURL(const String& url)
     return s_mediaStreamRegistry ? s_mediaStreamRegistry->contains(url) : false;
 }
 
-HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& document, bool createdByParser)
+HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , ActiveDOMObject(&document)
     , m_loadTimer(this, &HTMLMediaElement::loadTimerFired)
@@ -299,7 +299,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
-    , m_parsingInProgress(createdByParser)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
@@ -465,7 +464,6 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
 void HTMLMediaElement::finishParsingChildren()
 {
     HTMLElement::finishParsingChildren();
-    m_parsingInProgress = false;
 
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
@@ -2654,7 +2652,7 @@ void HTMLMediaElement::didAddTrack(HTMLTrackElement* trackElement)
 
     // Do not schedule the track loading until parsing finishes so we don't start before all tracks
     // in the markup have been added.
-    if (!m_parsingInProgress)
+    if (isFinishedParsingChildren())
         scheduleDelayedAction(LoadTextTrackResource);
 
     if (hasMediaControls())
