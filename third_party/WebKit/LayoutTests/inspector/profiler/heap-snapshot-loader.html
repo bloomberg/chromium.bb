@@ -116,13 +116,15 @@ function test()
         {
             function snapshotLoaded(profileHeader)
             {
-                function saveMock(url, data)
+                if (profileHeader.canSaveToFile())
+                    next();
+                else
+                    profileHeader.addEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, onCanSaveProfile, this);
+                function onCanSaveProfile()
                 {
                     InspectorTest.assertTrue(profileHeader.canSaveToFile());
                     next();
                 }
-                InspectorTest.override(InspectorFrontendHost, "save", saveMock);
-                profileHeader.saveToFile();
             }
 
             injectMockProfile(snapshotLoaded);
