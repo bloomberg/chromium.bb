@@ -440,7 +440,8 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
 
 void AppListView::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-  DCHECK(!signin_view_->visible());
+  if (signin_view_->visible() || !speech_view_)
+    return;
 
   bool recognizing = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||
                       new_state == SPEECH_RECOGNITION_IN_SPEECH);
