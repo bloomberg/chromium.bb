@@ -20,7 +20,8 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       message_pipe_(message_pipe.Pass()),
       incoming_receiver_(NULL),
       async_wait_id_(0),
-      error_(false) {
+      error_(false),
+      drop_writes_(false) {
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
   WaitToReadMore();
@@ -35,8 +36,37 @@ bool Connector::Accept(Message* message) {
   if (error_)
     return false;
 
-  WriteOne(message);
-  return !error_;
+  if (drop_writes_)
+    return true;
+
+  MojoResult rv = WriteMessageRaw(
+      message_pipe_.get(),
+      message->data,
+      message->data->header.num_bytes,
+      message->handles.empty() ? NULL :
+          reinterpret_cast<const MojoHandle*>(&message->handles[0]),
+      static_cast<uint32_t>(message->handles.size()),
+      MOJO_WRITE_MESSAGE_FLAG_NONE);
+
+  switch (rv) {
+    case MOJO_RESULT_OK:
+      // The handles were successfully transferred, so we don't need the message
+      // to track their lifetime any longer.
+      message->handles.clear();
+      break;
+    case MOJO_RESULT_FAILED_PRECONDITION:
+      // There's no point in continuing to write to this pipe since the other
+      // end is gone. Avoid writing any future messages. Hide write failures
+      // from the caller since we'd like them to continue consuming any backlog
+      // of incoming messages before regarding the message pipe as closed.
+      drop_writes_ = true;
+      break;
+    default:
+      // This particular write was rejected, presumably because of bad input.
+      // The pipe is not necessarily in a bad state.
+      return false;
+  }
+  return true;
 }
 
 // static
@@ -105,24 +135,6 @@ void Connector::ReadMore() {
 
     if (incoming_receiver_)
       incoming_receiver_->Accept(&message);
-  }
-}
-
-void Connector::WriteOne(Message* message) {
-  MojoResult rv = WriteMessageRaw(
-      message_pipe_.get(),
-      message->data,
-      message->data->header.num_bytes,
-      message->handles.empty() ? NULL :
-          reinterpret_cast<const MojoHandle*>(&message->handles[0]),
-      static_cast<uint32_t>(message->handles.size()),
-      MOJO_WRITE_MESSAGE_FLAG_NONE);
-  if (rv == MOJO_RESULT_OK) {
-    // The handles were successfully transferred, so we don't need the message
-    // to track their lifetime any longer.
-    message->handles.clear();
-  } else {
-    error_ = true;
   }
 }
 

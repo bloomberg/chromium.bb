@@ -36,14 +36,14 @@ class Connector : public MessageReceiver {
     incoming_receiver_ = receiver;
   }
 
-  // Sets the error handler to receives notifications when an error is
+  // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
   void set_error_handler(ErrorHandler* error_handler) {
     error_handler_ = error_handler;
   }
 
-  // Returns true if an error was encountered while reading from or writing to
-  // the message pipe.
+  // Returns true if an error was encountered while reading from the pipe or
+  // waiting to read from the pipe.
   bool encountered_error() const { return error_; }
 
   // MessageReceiver implementation:
@@ -55,7 +55,6 @@ class Connector : public MessageReceiver {
 
   void WaitToReadMore();
   void ReadMore();
-  void WriteOne(Message* message);
 
   ErrorHandler* error_handler_;
   MojoAsyncWaiter* waiter_;
@@ -65,6 +64,7 @@ class Connector : public MessageReceiver {
 
   MojoAsyncWaitID async_wait_id_;
   bool error_;
+  bool drop_writes_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };

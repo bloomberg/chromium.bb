@@ -154,22 +154,30 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
 }
 
 TEST_F(ConnectorTest, WriteToClosedPipe) {
-  // Leak this, so the closed handle isn't closed again.
-  MojoHandle mojo_handle = handle0_.get().value();
-  internal::Connector* connector0 = new internal::Connector(handle0_.Pass());
+  internal::Connector connector0(handle0_.Pass());
 
   const char kText[] = "hello world";
 
   Message message;
   AllocMessage(kText, &message);
 
-  // Close handle out from under the connection
-  MojoClose(mojo_handle);
+  // Close the other end of the pipe.
+  handle1_.reset();
 
-  bool ok = connector0->Accept(&message);
-  EXPECT_FALSE(ok);
+  // Not observed yet because we haven't spun the RunLoop yet.
+  EXPECT_FALSE(connector0.encountered_error());
 
-  EXPECT_TRUE(connector0->encountered_error());
+  // Write failures are not reported.
+  bool ok = connector0.Accept(&message);
+  EXPECT_TRUE(ok);
+
+  // Still not observed.
+  EXPECT_FALSE(connector0.encountered_error());
+
+  // Spin the RunLoop, and then we should start observing the closed pipe.
+  PumpMessages();
+
+  EXPECT_TRUE(connector0.encountered_error());
 }
 
 // Enable this test once MojoWriteMessage supports passing handles.
