@@ -28,7 +28,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservation
   typedef base::Callback<void(base::File::Error error)> StatusCallback;
 
   // Reclaims unused quota and reserves another |size| of quota.  So that the
-  // resulting new |remaining_quota| will be same as |size|.
+  // resulting new |remaining_quota_| will be same as |size| as far as available
+  // space is enough.  |remaining_quota_| may be less than |size| if there is
+  // not enough space available.
   // Invokes |callback| upon completion.
   void RefreshReservation(int64 size, const StatusCallback& callback);
 
@@ -67,12 +69,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservation
 
   static bool AdaptDidUpdateReservedQuota(
       const base::WeakPtr<QuotaReservation>& reservation,
-      int64 new_reserved_size,
+      int64 previous_size,
       const StatusCallback& callback,
-      base::File::Error error);
-  bool DidUpdateReservedQuota(int64 new_reserved_size,
+      base::File::Error error,
+      int64 delta);
+  bool DidUpdateReservedQuota(int64 previous_size,
                               const StatusCallback& callback,
-                              base::File::Error error);
+                              base::File::Error error,
+                              int64 delta);
 
   bool client_crashed_;
   bool running_refresh_request_;

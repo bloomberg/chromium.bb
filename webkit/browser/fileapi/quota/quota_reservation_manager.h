@@ -28,7 +28,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
  public:
   // Callback for ReserveQuota. When this callback returns false, ReserveQuota
   // operation should be reverted.
-  typedef base::Callback<bool(base::File::Error error)>
+  typedef base::Callback<bool(base::File::Error error, int64 delta)>
       ReserveQuotaCallback;
 
   // An abstraction of backing quota system.

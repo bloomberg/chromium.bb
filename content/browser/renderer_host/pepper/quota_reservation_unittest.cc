@@ -43,7 +43,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       const QuotaReservationManager::ReserveQuotaCallback& callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK));
+        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,

@@ -60,7 +60,8 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
       base::WeakPtr<QuotaReservationManager> reservation_manager,
       const GURL& origin,
       FileSystemType type,
-      base::File::Error error);
+      base::File::Error error,
+      int64 delta);
 
   typedef std::map<base::FilePath, OpenFileHandleContext*>
       OpenFileHandleContextByPath;

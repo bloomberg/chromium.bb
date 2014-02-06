@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/quota/quota_client.h"
@@ -39,7 +40,7 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   if (!delta) {
-    callback.Run(base::File::FILE_OK);
+    callback.Run(base::File::FILE_OK, 0);
     return;
   }
   DCHECK(quota_manager_proxy_);
@@ -104,22 +105,30 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(info.origin.is_valid());
+  DCHECK_LE(0, usage);
+  DCHECK_LE(0, quota);
   if (status != quota::kQuotaStatusOk) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
+    callback.Run(base::File::FILE_ERROR_FAILED, 0);
     return;
   }
 
-  if (quota < usage + info.delta) {
-    callback.Run(base::File::FILE_ERROR_NO_SPACE);
-    return;
+  QuotaReservationInfo normalized_info = info;
+  if (info.delta > 0) {
+    int64 new_usage =
+        base::saturated_cast<int64>(usage + static_cast<uint64>(info.delta));
+    if (quota < new_usage)
+      new_usage = quota;
+    normalized_info.delta = std::max(static_cast<int64>(0), new_usage - usage);
   }
 
-  ReserveQuotaInternal(info);
-  if (callback.Run(base::File::FILE_OK))
+  ReserveQuotaInternal(normalized_info);
+  if (callback.Run(base::File::FILE_OK, normalized_info.delta))
     return;
   // The requester could not accept the reserved quota. Revert it.
   ReserveQuotaInternal(
-      QuotaReservationInfo(info.origin, info.type, -info.delta));
+      QuotaReservationInfo(normalized_info.origin,
+                           normalized_info.type,
+                           -normalized_info.delta));
 }
 
 void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {

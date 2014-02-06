@@ -25,7 +25,7 @@ void QuotaReservation::RefreshReservation(
       origin(), type(), size - remaining_quota_,
       base::Bind(&QuotaReservation::AdaptDidUpdateReservedQuota,
                  weak_ptr_factory_.GetWeakPtr(),
-                 size, callback));
+                 remaining_quota_, callback));
 
   if (running_refresh_request_)
     remaining_quota_ = 0;
@@ -93,20 +93,22 @@ QuotaReservation::~QuotaReservation() {
 // static
 bool QuotaReservation::AdaptDidUpdateReservedQuota(
     const base::WeakPtr<QuotaReservation>& reservation,
-    int64 new_reserved_size,
+    int64 previous_size,
     const StatusCallback& callback,
-    base::File::Error error) {
+    base::File::Error error,
+    int64 delta) {
   if (!reservation)
     return false;
 
   return reservation->DidUpdateReservedQuota(
-      new_reserved_size, callback, error);
+      previous_size, callback, error, delta);
 }
 
 bool QuotaReservation::DidUpdateReservedQuota(
-    int64 new_reserved_size,
+    int64 previous_size,
     const StatusCallback& callback,
-    base::File::Error error) {
+    base::File::Error error,
+    int64 delta) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(running_refresh_request_);
   running_refresh_request_ = false;
@@ -117,7 +119,7 @@ bool QuotaReservation::DidUpdateReservedQuota(
   }
 
   if (error == base::File::FILE_OK)
-    remaining_quota_ = new_reserved_size;
+    remaining_quota_ = previous_size + delta;
   callback.Run(error);
   return true;
 }

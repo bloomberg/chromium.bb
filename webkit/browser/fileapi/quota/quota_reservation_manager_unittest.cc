@@ -53,7 +53,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
     on_memory_usage_ += delta;
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK));
+        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,

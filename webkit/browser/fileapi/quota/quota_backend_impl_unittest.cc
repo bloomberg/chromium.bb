@@ -23,9 +23,13 @@ const char kOrigin[] = "http://example.com";
 
 bool DidReserveQuota(bool accepted,
                      base::File::Error* error_out,
-                     base::File::Error error) {
+                     int64* delta_out,
+                     base::File::Error error,
+                     int64 delta) {
   DCHECK(error_out);
+  DCHECK(delta_out);
   *error_out = error;
+  *delta_out = delta;
   return accepted;
 }
 
@@ -51,7 +55,7 @@ class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
       int64 delta) OVERRIDE {
     ++storage_modified_count_;
     usage_ += delta;
-    ASSERT_LT(usage_, quota_);
+    ASSERT_LE(usage_, quota_);
   }
 
   virtual void GetUsageAndQuota(
@@ -150,18 +154,22 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(10000);
 
+  int64 delta = 0;
+
   const int64 kDelta1 = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend_->ReserveQuota(GURL(kOrigin), type, kDelta1,
-                         base::Bind(&DidReserveQuota, true, &error));
+                         base::Bind(&DidReserveQuota, true, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
+  EXPECT_EQ(kDelta1, delta);
   EXPECT_EQ(kDelta1, quota_manager_proxy_->usage());
 
   const int64 kDelta2 = -300;
   error = base::File::FILE_ERROR_FAILED;
   backend_->ReserveQuota(GURL(kOrigin), type, kDelta2,
-                         base::Bind(&DidReserveQuota, true, &error));
+                         base::Bind(&DidReserveQuota, true, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
+  EXPECT_EQ(kDelta2, delta);
   EXPECT_EQ(kDelta1 + kDelta2, quota_manager_proxy_->usage());
 
   EXPECT_EQ(2, quota_manager_proxy_->storage_modified_count());
@@ -172,14 +180,17 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(100);
 
+  int64 delta = 0;
+
   const int64 kDelta = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend_->ReserveQuota(GURL(kOrigin), type, kDelta,
-                         base::Bind(&DidReserveQuota, true, &error));
-  EXPECT_EQ(base::File::FILE_ERROR_NO_SPACE, error);
-  EXPECT_EQ(0, quota_manager_proxy_->usage());
+                         base::Bind(&DidReserveQuota, true, &error, &delta));
+  EXPECT_EQ(base::File::FILE_OK, error);
+  EXPECT_EQ(100, delta);
+  EXPECT_EQ(100, quota_manager_proxy_->usage());
 
-  EXPECT_EQ(0, quota_manager_proxy_->storage_modified_count());
+  EXPECT_EQ(1, quota_manager_proxy_->storage_modified_count());
 }
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
@@ -187,11 +198,14 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(10000);
 
+  int64 delta = 0;
+
   const int64 kDelta = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend_->ReserveQuota(GURL(kOrigin), type, kDelta,
-                         base::Bind(&DidReserveQuota, false, &error));
+                         base::Bind(&DidReserveQuota, false, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
+  EXPECT_EQ(kDelta, delta);
   EXPECT_EQ(0, quota_manager_proxy_->usage());
 
   EXPECT_EQ(2, quota_manager_proxy_->storage_modified_count());
