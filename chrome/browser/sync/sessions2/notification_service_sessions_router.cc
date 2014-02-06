@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "chrome/browser/sync/sessions2/sessions_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -89,6 +90,8 @@ void NotificationServiceSessionsRouter::Observe(
         return;
       if (handler_)
         handler_->OnLocalTabModified(tab);
+      if (!sessions_util::ShouldSyncTab(*tab))
+        return;
       break;
     }
     // Source<NavigationController>.
@@ -102,6 +105,8 @@ void NotificationServiceSessionsRouter::Observe(
         return;
       if (handler_)
         handler_->OnLocalTabModified(tab);
+      if (!sessions_util::ShouldSyncTab(*tab))
+        return;
       break;
     }
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {

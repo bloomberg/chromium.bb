@@ -297,12 +297,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   void AssociateTab(SyncedTabDelegate* const tab,
                     syncer::SyncChangeList* change_output);
 
-  // Control which local tabs we're interested in syncing.
-  // Ensures the profile matches sync's profile and that the tab has valid
-  // entries.
-  bool ShouldSyncTab(const SyncedTabDelegate& tab) const;
-  static bool ShouldSyncWindow(const SyncedWindowDelegate* window);
-
   // Set |session_tab| from |tab_delegate| and |mtime|.
   static void SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,

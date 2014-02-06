@@ -2323,6 +2323,8 @@
         'browser/sync/sessions2/session_data_type_controller2.h',
         'browser/sync/sessions2/sessions_sync_manager.cc',
         'browser/sync/sessions2/sessions_sync_manager.h',
+        'browser/sync/sessions2/sessions_util.cc',
+        'browser/sync/sessions2/sessions_util.h',
         'browser/sync/sessions2/synced_window_delegates_getter.cc',
         'browser/sync/sessions2/synced_window_delegates_getter.h',
         'browser/sync/sessions2/tab_node_pool2.cc',

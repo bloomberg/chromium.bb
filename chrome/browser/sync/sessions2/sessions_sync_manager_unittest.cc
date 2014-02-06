@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions2/sessions_util.h"
 #include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -443,27 +444,27 @@ TEST_F(SessionsSyncManagerTest, ValidTabs) {
 
   // A null entry shouldn't crash.
   tab.AppendEntry(NULL);
-  EXPECT_FALSE(manager()->ShouldSyncTab(tab));
+  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
   tab.reset();
 
   // A chrome:// entry isn't valid.
   content::NavigationEntry* entry(content::NavigationEntry::Create());
   entry->SetVirtualURL(GURL("chrome://preferences/"));
   tab.AppendEntry(entry);
-  EXPECT_FALSE(manager()->ShouldSyncTab(tab));
+  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
 
 
   // A file:// entry isn't valid, even in addition to another entry.
   content::NavigationEntry* entry2(content::NavigationEntry::Create());
   entry2->SetVirtualURL(GURL("file://bla"));
   tab.AppendEntry(entry2);
-  EXPECT_FALSE(manager()->ShouldSyncTab(tab));
+  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
 
   // Add a valid scheme entry to tab, making the tab valid.
   content::NavigationEntry* entry3(content::NavigationEntry::Create());
   entry3->SetVirtualURL(GURL("http://www.google.com"));
   tab.AppendEntry(entry3);
-  EXPECT_FALSE(manager()->ShouldSyncTab(tab));
+  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
 }
 
 // Make sure GetCurrentVirtualURL() returns the virtual URL of the pending

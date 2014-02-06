@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "chrome/browser/sync/sessions2/sessions_util.h"
 #include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
@@ -164,7 +165,8 @@ void SessionsSyncManager::AssociateWindows(
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    if (ShouldSyncWindow(*i) && (*i)->GetTabCount() && (*i)->HasWindow()) {
+    if (sessions_util::ShouldSyncWindow(*i) &&
+        (*i)->GetTabCount() && (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
       SessionID::id_type window_id = (*i)->GetSessionId();
       DVLOG(1) << "Associating window " << window_id << " with "
@@ -252,6 +254,9 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
                                        syncer::SyncChangeList* change_output) {
   DCHECK(tab->HasWebContents());
   SessionID::id_type tab_id = tab->GetSessionId();
+  if (tab->profile() != profile_)
+    return;
+
   if (tab->IsBeingDestroyed()) {
     // This tab is closing.
     TabLinksMap::iterator tab_iter = local_tab_map_.find(tab_id);
@@ -264,7 +269,8 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
     local_tab_map_.erase(tab_iter);
     return;
   }
-  if (!ShouldSyncTab(*tab))
+
+  if (!sessions_util::ShouldSyncTab(*tab))
     return;
 
   TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
@@ -370,49 +376,6 @@ void SessionsSyncManager::OnFaviconPageUrlsUpdated(
         favicon_cache_.OnPageFaviconUpdated(*i);
     }
   }
-}
-
-bool SessionsSyncManager::ShouldSyncTab(const SyncedTabDelegate& tab) const {
-  if (tab.profile() != profile_)
-    return false;
-
-  if (SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-          tab.GetWindowId()) == NULL) {
-    return false;
-  }
-
-  // Does the tab have a valid NavigationEntry?
-  if (tab.ProfileIsManaged() && tab.GetBlockedNavigations()->size() > 0)
-    return true;
-
-  int entry_count = tab.GetEntryCount();
-  if (entry_count == 0)
-    return false;  // This deliberately ignores a new pending entry.
-
-  int pending_index = tab.GetPendingEntryIndex();
-  bool found_valid_url = false;
-  for (int i = 0; i < entry_count; ++i) {
-    const content::NavigationEntry* entry = (i == pending_index) ?
-       tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
-    if (!entry)
-      return false;
-    const GURL& virtual_url = entry->GetVirtualURL();
-    if (virtual_url.is_valid() &&
-        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
-        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
-        !virtual_url.SchemeIsFile()) {
-      found_valid_url = true;
-    }
-  }
-  return found_valid_url;
-}
-
-// static.
-bool SessionsSyncManager::ShouldSyncWindow(
-    const SyncedWindowDelegate* window) {
-  if (window->IsApp())
-    return false;
-  return window->IsTypeTabbed() || window->IsTypePopup();
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
