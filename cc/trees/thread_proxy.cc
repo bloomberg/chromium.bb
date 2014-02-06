@@ -156,7 +156,9 @@ bool ThreadProxy::CompositeAndReadback(void* pixels, const gfx::Rect& rect) {
   }
 
   if (!layer_tree_host()->InitializeOutputSurfaceIfNeeded()) {
-    TRACE_EVENT0("cc", "CompositeAndReadback_EarlyOut_LR_Uninitialized");
+    TRACE_EVENT_INSTANT0("cc",
+                         "CompositeAndReadback_EarlyOut_LR_Uninitialized",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
@@ -800,7 +802,8 @@ void ThreadProxy::BeginMainFrame(
   if (main().defer_commits) {
     main().pending_deferred_commit = begin_main_frame_state.Pass();
     layer_tree_host()->DidDeferCommit();
-    TRACE_EVENT0("cc", "EarlyOut_DeferCommits");
+    TRACE_EVENT_INSTANT0(
+        "cc", "EarlyOut_DeferCommits", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
@@ -826,7 +829,7 @@ void ThreadProxy::BeginMainFrame(
     main().commit_requested = false;
     main().commit_request_sent_to_impl_thread = false;
 
-    TRACE_EVENT0("cc", "EarlyOut_NotVisible");
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
     bool did_handle = false;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -898,7 +901,7 @@ void ThreadProxy::BeginMainFrame(
   layer_tree_host()->WillCommit();
 
   if (!updated && can_cancel_this_commit) {
-    TRACE_EVENT0("cc", "EarlyOut_NoUpdates");
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     bool did_handle = true;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -983,7 +986,8 @@ void ThreadProxy::StartCommitOnImplThread(
   DCHECK(impl().scheduler->CommitPending());
 
   if (!impl().layer_tree_host_impl) {
-    TRACE_EVENT0("cc", "EarlyOut_NoLayerTree");
+    TRACE_EVENT_INSTANT0(
+        "cc", "EarlyOut_NoLayerTree", TRACE_EVENT_SCOPE_THREAD);
     completion->Signal();
     return;
   }

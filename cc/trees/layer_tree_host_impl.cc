@@ -1333,7 +1333,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   DCHECK(CanDraw());
 
   if (frame->has_no_damage) {
-    TRACE_EVENT0("cc", "EarlyOut_NoDamage");
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
     return;
