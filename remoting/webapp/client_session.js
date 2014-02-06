@@ -124,6 +124,9 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
       document.getElementById('send-keys-menu')
   );
 
+  /** @type {HTMLMediaElement} @private */
+  this.video_ = null;
+
   /** @type {HTMLElement} @private */
   this.resizeToClientButton_ =
       document.getElementById('screen-resize-to-client');
@@ -448,6 +451,26 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     this.applyRemapKeys_(true);
   }
 
+  // Enable MediaSource-based rendering if available.
+  if (remoting.settings.USE_MEDIA_SOURCE_RENDERING &&
+      this.plugin_.hasFeature(
+          remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
+    this.video_ = /** @type {HTMLMediaElement} */(
+        document.getElementById('mediasource-video-output'));
+    // Make sure that the <video> element is hidden until we get the first
+    // frame.
+    this.video_.style.width = '0px';
+    this.video_.style.height = '0px';
+
+    var renderer = new remoting.MediaSourceRenderer(this.video_);
+    this.plugin_.enableMediaSourceRendering(renderer);
+    /** @type {HTMLElement} */(document.getElementById('video-container'))
+        .classList.add('mediasource-rendering');
+  } else {
+    /** @type {HTMLElement} */(document.getElementById('video-container'))
+        .classList.remove('mediasource-rendering');
+  }
+
   /** @param {string} msg The IQ stanza to send. */
   this.plugin_.onOutgoingIqHandler = this.sendIq_.bind(this);
   /** @param {string} msg The message to log. */
@@ -493,6 +516,11 @@ remoting.ClientSession.prototype.removePlugin = function() {
 
   // In case the user had selected full-screen mode, cancel it now.
   document.webkitCancelFullScreen();
+
+  // Remove mediasource-rendering class from video-contained - this will also
+  // hide the <video> element.
+  /** @type {HTMLElement} */(document.getElementById('video-container'))
+      .classList.remove('mediasource-rendering');
 };
 
 /**
@@ -1095,13 +1123,18 @@ remoting.ClientSession.prototype.updateDimensions = function() {
     }
   }
 
-  var pluginWidth = desktopWidth * scale;
-  var pluginHeight = desktopHeight * scale;
+  var pluginWidth = Math.round(desktopWidth * scale);
+  var pluginHeight = Math.round(desktopHeight * scale);
+
+  if (this.video_) {
+    this.video_.style.width = pluginWidth + 'px';
+    this.video_.style.height = pluginHeight + 'px';
+  }
 
   // Resize the plugin if necessary.
   // TODO(wez): Handle high-DPI to high-DPI properly (crbug.com/135089).
-  this.plugin_.element().width = pluginWidth;
-  this.plugin_.element().height = pluginHeight;
+  this.plugin_.element().style.width = pluginWidth + 'px';
+  this.plugin_.element().style.height = pluginHeight + 'px';
 
   // Position the container.
   // Note that clientWidth/Height take into account scrollbars.

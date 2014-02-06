@@ -21,6 +21,7 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
+#include "remoting/client/plugin/media_source_video_renderer.h"
 #include "remoting/client/plugin/normalizing_input_filter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
@@ -68,6 +69,7 @@ struct ClientConfig;
 
 class ChromotingInstance :
       public ClientUserInterface,
+      public MediaSourceVideoRenderer::Delegate,
       public protocol::ClipboardStub,
       public protocol::CursorShapeStub,
       public pp::Instance {
@@ -204,6 +206,7 @@ class ChromotingInstance :
   void HandleRequestPairing(const base::DictionaryValue& data);
   void HandleExtensionMessage(const base::DictionaryValue& data);
   void HandleAllowMouseLockMessage();
+  void HandleEnableMediaSourceRendering();
 
   // Helper method called from Connect() to connect with parsed config.
   void ConnectWithConfig(const ClientConfig& config,
@@ -211,7 +214,16 @@ class ChromotingInstance :
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,
-                             scoped_ptr<base::DictionaryValue> data);
+                             const pp::VarDictionary& data);
+
+  // Same as above, but serializes messages to JSON before sending them.  This
+  // method is used for backward compatibility with older version of the webapp
+  // that expect to received most messages formatted using JSON.
+  //
+  // TODO(sergeyu): When all current versions of the webapp support raw messages
+  // remove this method and use PostChromotingMessage() instead.
+  void PostLegacyJsonMessage(const std::string& method,
+                       scoped_ptr<base::DictionaryValue> data);
 
   // Posts trapped keys to the web-app to handle.
   void SendTrappedKey(uint32 usb_keycode, bool pressed);
@@ -234,6 +246,13 @@ class ChromotingInstance :
   void FetchSecretFromDialog(
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback);
+
+  // MediaSourceVideoRenderer::Delegate implementation.
+  virtual void OnMediaSourceSize(const webrtc::DesktopSize& size,
+                                 const webrtc::DesktopVector& dpi) OVERRIDE;
+  virtual void OnMediaSourceShape(const webrtc::DesktopRegion& shape) OVERRIDE;
+  virtual void OnMediaSourceReset(const std::string& format) OVERRIDE;
+  virtual void OnMediaSourceData(uint8_t* buffer, size_t buffer_size) OVERRIDE;
 
   bool initialized_;
 
@@ -263,6 +282,11 @@ class ChromotingInstance :
   // PIN Fetcher.
   bool use_async_pin_dialog_;
   protocol::SecretFetchedCallback secret_fetched_callback_;
+
+  // Set to true if the webapp has requested to use MediaSource API for
+  // rendering. In that case all the encoded video will be passed to the
+  // webapp for decoding.
+  bool use_media_source_rendering_;
 
   base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher_;
 

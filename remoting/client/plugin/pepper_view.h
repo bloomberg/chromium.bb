@@ -64,12 +64,6 @@ class PepperView : public FrameConsumer {
     return source_size_;
   }
 
-  // Return the dimensions of the view in Density Independent Pixels (DIPs).
-  // Note that there may be multiple device pixels per DIP.
-  const webrtc::DesktopSize& get_view_size_dips() const {
-    return dips_size_;
-  }
-
  private:
   // Allocates a new frame buffer to supply to the FrameProducer to render into.
   // Returns NULL if the maximum number of buffers has already been allocated.

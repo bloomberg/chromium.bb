@@ -33,7 +33,7 @@
       'webapp/oauth2.js',
       'webapp/oauth2_api.js',
     ],
-    # Client JavaScript files..
+    # Client JavaScript files.
     'remoting_webapp_js_client_files': [
       'webapp/client_plugin.js',
       # TODO(garykac) For client_screen:
@@ -42,6 +42,7 @@
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/clipboard.js',
+      'webapp/media_source_renderer.js',
       'webapp/session_connector.js',
     ],
     # Remoting core JavaScript files.

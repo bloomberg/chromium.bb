@@ -85,12 +85,16 @@ Node.prototype.value;
 Node.prototype.style;
 
 
-/** @constructor
-    @param {function(Array.<MutationRecord>):void} callback */
+/**
+ * @constructor
+ * @param {function(Array.<MutationRecord>):void} callback
+ */
 var MutationObserver = function(callback) {};
 
-/** @param {Element} element
-    @param {Object} options */
+/**
+ * @param {Element} element
+ * @param {Object} options
+ */
 MutationObserver.prototype.observe = function(element, options) {};
 
 
@@ -109,3 +113,57 @@ MutationRecord.prototype.type;
 
 /** @type {{getRandomValues: function((Uint16Array|Uint8Array)):void}} */
 Window.prototype.crypto;
+
+
+/**
+ * @constructor
+ * @implements {EventTarget} */
+var EventTargetStub = function() {};
+
+/**
+ * @param {string} type
+ * @param {(EventListener|function(Event): (boolean|undefined|null))} listener
+ * @param {boolean=} opt_useCapture
+ */
+EventTargetStub.prototype.addEventListener =
+    function(type, listener, opt_useCapture) {}
+
+/**
+ * @param {string} type
+ * @param {(EventListener|function(Event): (boolean|undefined|null))} listener
+ * @param {boolean=} opt_useCapture
+ */
+EventTargetStub.prototype.removeEventListener =
+    function(type, listener, opt_useCapture) {}
+
+/**
+ * @param {Event} event
+ */
+EventTargetStub.prototype.dispatchEvent =
+    function(event) {}
+
+/**
+ * @constructor
+ * @extends {EventTargetStub}
+ */
+var SourceBuffer = function() {}
+
+/** @type {boolean} */
+SourceBuffer.prototype.updating;
+
+/**
+ * @param {ArrayBuffer} buffer
+ */
+SourceBuffer.prototype.appendBuffer = function(buffer) {}
+
+/**
+ * @constructor
+ * @extends {EventTargetStub}
+ */
+var MediaSource = function() {}
+
+/**
+ * @param {string} format
+ * @return {SourceBuffer}
+ */
+MediaSource.prototype.addSourceBuffer = function(format) {}

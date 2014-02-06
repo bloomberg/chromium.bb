@@ -43,6 +43,7 @@ remoting.ClientPlugin = function(plugin, onExtensionMessage) {
   this.onConnectionStatusUpdateHandler = function(state, error) {};
   /** @param {boolean} ready Connection ready state. */
   this.onConnectionReadyHandler = function(ready) {};
+
   /**
    * @param {string} tokenUrl Token-request URL, received from the host.
    * @param {string} hostPublicKey Public key for the host.
@@ -54,6 +55,9 @@ remoting.ClientPlugin = function(plugin, onExtensionMessage) {
   /** @param {!Array.<string>} capabilities The negotiated capabilities. */
   this.onSetCapabilitiesHandler = function (capabilities) {};
   this.fetchPinHandler = function (supportsPairing) {};
+
+  /** @type {remoting.MediaSourceRenderer} */
+  this.mediaSourceRenderer_ = null;
 
   /** @type {number} */
   this.pluginApiVersion_ = -1;
@@ -97,7 +101,8 @@ remoting.ClientPlugin.Feature = {
   THIRD_PARTY_AUTH: 'thirdPartyAuth',
   TRAP_KEY: 'trapKey',
   PINLESS_AUTH: 'pinlessAuth',
-  EXTENSION_MESSAGE: 'extensionMessage'
+  EXTENSION_MESSAGE: 'extensionMessage',
+  MEDIA_SOURCE_RENDERING: 'mediaSourceRendering'
 };
 
 /**
@@ -121,14 +126,18 @@ remoting.ClientPlugin.prototype.API_VERSION_ = 6;
 remoting.ClientPlugin.prototype.API_MIN_VERSION_ = 5;
 
 /**
- * @param {string} messageStr Message from the plugin.
+ * @param {string|{method:string, data:Object.<string,*>}}
+ *    rawMessage Message from the plugin.
+ * @private
  */
-remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
-  var message = /** @type {{method:string, data:Object.<string,string>}} */
-      jsonParseSafe(messageStr);
+remoting.ClientPlugin.prototype.handleMessage_ = function(rawMessage) {
+  var message =
+      /** @type {{method:string, data:Object.<string,*>}} */
+      ((typeof(rawMessage) == 'string') ? jsonParseSafe(rawMessage)
+                                        : rawMessage);
 
   if (!message || !('method' in message) || !('data' in message)) {
-    console.error('Received invalid message from the plugin: ' + messageStr);
+    console.error('Received invalid message from the plugin:', rawMessage);
     return;
   }
 
@@ -149,18 +158,18 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
     this.plugin.height = 0;
     if (typeof message.data['apiVersion'] != 'number' ||
         typeof message.data['apiMinVersion'] != 'number') {
-      console.error('Received invalid hello message: ' + messageStr);
+      console.error('Received invalid hello message:', rawMessage);
       return;
     }
     this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
 
     if (this.pluginApiVersion_ >= 7) {
       if (typeof message.data['apiFeatures'] != 'string') {
-        console.error('Received invalid hello message: ' + messageStr);
+        console.error('Received invalid hello message:', rawMessage);
         return;
       }
       this.pluginApiFeatures_ =
-          /** @type {Array.<string>} */ tokenize(message.data['apiFeatures']);
+          tokenize((/** @type {string} */ message.data['apiFeatures']));
 
       // Negotiate capabilities.
 
@@ -168,20 +177,22 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
       var requestedCapabilities = [];
       if ('requestedCapabilities' in message.data) {
         if (typeof message.data['requestedCapabilities'] != 'string') {
-          console.error('Received invalid hello message: ' + messageStr);
+          console.error('Received invalid hello message:', rawMessage);
           return;
         }
-        requestedCapabilities = tokenize(message.data['requestedCapabilities']);
+        requestedCapabilities = tokenize(
+            (/** @type {string} */ message.data['requestedCapabilities']));
       }
 
       /** @type {!Array.<string>} */
       var supportedCapabilities = [];
       if ('supportedCapabilities' in message.data) {
         if (typeof message.data['supportedCapabilities'] != 'string') {
-          console.error('Received invalid hello message: ' + messageStr);
+          console.error('Received invalid hello message:', rawMessage);
           return;
         }
-        supportedCapabilities = tokenize(message.data['supportedCapabilities']);
+        supportedCapabilities = tokenize(
+            (/** @type {string} */ message.data['requestedCapabilities']));
       }
 
       // At the moment the webapp does not recognize any of
@@ -213,22 +224,22 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
     }
   } else if (message.method == 'sendOutgoingIq') {
     if (typeof message.data['iq'] != 'string') {
-      console.error('Received invalid sendOutgoingIq message: ' + messageStr);
+      console.error('Received invalid sendOutgoingIq message:', rawMessage);
       return;
     }
-    this.onOutgoingIqHandler(message.data['iq']);
+    this.onOutgoingIqHandler((/** @type {string} */ message.data['iq']));
   } else if (message.method == 'logDebugMessage') {
     if (typeof message.data['message'] != 'string') {
-      console.error('Received invalid logDebugMessage message: ' + messageStr);
+      console.error('Received invalid logDebugMessage message:', rawMessage);
       return;
     }
-    this.onDebugMessageHandler(message.data['message']);
+    this.onDebugMessageHandler((/** @type {string} */ message.data['message']));
   } else if (message.method == 'onConnectionStatus') {
     if (typeof message.data['state'] != 'string' ||
         !remoting.ClientSession.State.hasOwnProperty(message.data['state']) ||
         typeof message.data['error'] != 'string') {
-      console.error('Received invalid onConnectionState message: ' +
-                    messageStr);
+      console.error('Received invalid onConnectionState message:',
+                    rawMessage);
       return;
     }
 
@@ -247,7 +258,7 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
   } else if (message.method == 'onDesktopSize') {
     if (typeof message.data['width'] != 'number' ||
         typeof message.data['height'] != 'number') {
-      console.error('Received invalid onDesktopSize message: ' + messageStr);
+      console.error('Received invalid onDesktopSize message:', rawMessage);
       return;
     }
     this.desktopWidth = /** @type {number} */ message.data['width'];
@@ -265,7 +276,7 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
         typeof message.data['decodeLatency'] != 'number' ||
         typeof message.data['renderLatency'] != 'number' ||
         typeof message.data['roundtripLatency'] != 'number') {
-      console.error('Received incorrect onPerfStats message: ' + messageStr);
+      console.error('Received incorrect onPerfStats message:', rawMessage);
       return;
     }
     this.perfStats_ =
@@ -277,8 +288,9 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
       return;
     }
     if (remoting.clipboard) {
-      remoting.clipboard.fromHost(message.data['mimeType'],
-                                  message.data['item']);
+      remoting.clipboard.fromHost(
+          (/** @type {string} */ message.data['mimeType']),
+          (/** @type {string} */ message.data['item']));
     }
   } else if (message.method == 'onFirstFrameReceived') {
     if (remoting.clientSession) {
@@ -313,7 +325,8 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
     }
 
     /** @type {!Array.<string>} */
-    var capabilities = tokenize(message.data['capabilities']);
+    var capabilities =
+        tokenize((/** @type {string} */ message.data['capabilities']));
     this.onSetCapabilitiesHandler(capabilities);
   } else if (message.method == 'fetchThirdPartyToken') {
     if (typeof message.data['tokenUrl'] != 'string' ||
@@ -352,6 +365,28 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(messageStr) {
                       message.data['type'] + ': ' + message.data['data']);
         }
     }
+  } else if (message.method == 'mediaSourceReset') {
+    if (typeof(message.data['format']) != 'string') {
+      console.error('Invalid mediaSourceReset message:', message.data);
+      return;
+    }
+    if (!this.mediaSourceRenderer_) {
+      console.error('Unexpected mediaSourceReset.');
+      return;
+    }
+    this.mediaSourceRenderer_.reset(
+        (/** @type {string} */ message.data['format']));
+  } else if (message.method == 'mediaSourceData') {
+    if (!(message.data['buffer'] instanceof ArrayBuffer)) {
+      console.error('Invalid mediaSourceData message:', message.data);
+      return;
+    }
+    if (!this.mediaSourceRenderer_) {
+      console.error('Unexpected mediaSourceData.');
+      return;
+    }
+    this.mediaSourceRenderer_.onIncomingData(
+        (/** @type {ArrayBuffer} */ message.data['buffer']));
   }
 };
 
@@ -565,8 +600,9 @@ remoting.ClientPlugin.prototype.notifyClientResolution =
  */
 remoting.ClientPlugin.prototype.pauseVideo =
     function(pause) {
-  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_VIDEO))
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_VIDEO)) {
     return;
+  }
   this.plugin.postMessage(JSON.stringify(
       { method: 'pauseVideo', data: { pause: pause }}));
 };
@@ -578,8 +614,9 @@ remoting.ClientPlugin.prototype.pauseVideo =
  */
 remoting.ClientPlugin.prototype.pauseAudio =
     function(pause) {
-  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_AUDIO))
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_AUDIO)) {
     return;
+  }
   this.plugin.postMessage(JSON.stringify(
       { method: 'pauseAudio', data: { pause: pause }}));
 };
@@ -655,6 +692,21 @@ remoting.ClientPlugin.prototype.sendClientMessage =
     { method: 'extensionMessage',
       data: { type: type, data: JSON.stringify(message) } }));
 
+};
+
+/**
+ * Request MediaStream-based rendering.
+ *
+ * @param {remoting.MediaSourceRenderer} mediaSourceRenderer
+ */
+remoting.ClientPlugin.prototype.enableMediaSourceRendering =
+    function(mediaSourceRenderer) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
+    return;
+  }
+  this.mediaSourceRenderer_ = mediaSourceRenderer;
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'enableMediaSourceRendering', data: {} }));
 };
 
 /**

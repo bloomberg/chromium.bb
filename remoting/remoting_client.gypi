@@ -25,6 +25,8 @@
         'client/plugin/chromoting_instance.h',
         'client/plugin/delegating_signal_strategy.cc',
         'client/plugin/delegating_signal_strategy.h',
+        'client/plugin/media_source_video_renderer.cc',
+        'client/plugin/media_source_video_renderer.h',
         'client/plugin/normalizing_input_filter.cc',
         'client/plugin/normalizing_input_filter.h',
         'client/plugin/normalizing_input_filter_cros.cc',
@@ -68,6 +70,7 @@
         'remoting_protocol',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+        '../third_party/libwebm/libwebm.gyp:libwebm',
       ],
       'sources': [
         'client/audio_decode_scheduler.cc',

@@ -39,6 +39,7 @@ found in the LICENSE file.
     <script src="identity.js"></script>
     <script src="l10n.js"></script>
     <script src="log_to_server.js"></script>
+    <script src="media_source_renderer.js"></script>
     <script src="menu_button.js"></script>
     <script src="oauth2.js"></script>
     <script src="oauth2_api.js"></script>
@@ -792,7 +793,10 @@ found in the LICENSE file.
       </div> <!-- session-toolbar -->
       <div class="vertically-centered">
         <div class="horizontally-centered">
-          <div id="client-plugin-container"></div>
+          <div id="video-container">
+            <video id="mediasource-video-output"></video>
+            <div id="client-plugin-container"></div>
+          </div>
         </div>
       </div>
     </div> <!-- session-mode -->
