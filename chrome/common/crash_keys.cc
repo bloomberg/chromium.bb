@@ -89,6 +89,8 @@ const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
 #if defined(OS_CHROMEOS)
 const char kNumberOfUsers[] = "num-users";
+
+const char kNameOfWindowWithDestroyedLayer[] = "window_destroyed_layer";
 #endif
 
 #if defined(OS_MACOSX)
@@ -143,6 +145,7 @@ size_t RegisterChromeCrashKeys() {
     { "subresource_url", kLargeSize },
 #if defined(OS_CHROMEOS)
     { kNumberOfUsers, kSmallSize },
+    { kNameOfWindowWithDestroyedLayer, kSmallSize },
 #endif
 #if defined(OS_MACOSX)
     { mac::kFirstNSException, kMediumSize },

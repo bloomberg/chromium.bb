@@ -7,10 +7,12 @@
 #include <math.h>
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -125,41 +127,85 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
                                       public aura::WindowObserver {
  public:
   explicit HidingWindowAnimationObserver(aura::Window* window)
-      : window_(window) {
-    window_->AddObserver(this);
+      : topmost_window_(window) {
+    topmost_window_->AddObserver(this);
+    observed_.insert(topmost_window_);
   }
   virtual ~HidingWindowAnimationObserver() {
     STLDeleteElements(&layers_);
+
+#if defined(OS_CHROMEOS)
+    // |topmost_window_| should either be not destroyed or |topmost_window_|
+    // and all of its children should be destroyed.
+    // TODO(pkotwicz): Remove CHECK once it has been determined whether a child
+    // window outliving the end of |topmost_window_|'s animation is the source
+    // of the crash in crbug.com/338788
+    if (!topmost_window_ && !observed_.empty()) {
+      aura::Window* first_observed = *observed_.begin();
+      std::string name = first_observed->name();
+      base::debug::SetCrashKeyValue("window_destroyed_layer", name);
+      CHECK(false);
+    }
+#endif  // defined(OS_CHROMEOS)
+
+    for (std::set<aura::Window*>::const_iterator it = observed_.begin();
+         it != observed_.end();
+         ++it) {
+      (*it)->RemoveObserver(this);
+    }
   }
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     // Window may have been destroyed by this point.
-    if (window_) {
+    if (topmost_window_) {
       aura::client::AnimationHost* animation_host =
-          aura::client::GetAnimationHost(window_);
+          aura::client::GetAnimationHost(topmost_window_);
       if (animation_host)
         animation_host->OnWindowHidingAnimationCompleted();
-      window_->RemoveObserver(this);
     }
     delete this;
   }
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    DCHECK_EQ(window, window_);
+    window->RemoveObserver(this);
+    observed_.erase(window);
+
+    if (window != topmost_window_)
+      return;
+
+    // We acquire the layers of all of |topmost_window_|'s children with the
+    // assumption that they will be destroyed by the time that the animation
+    // terminates. Observe |topmost_window_|'s children to verify the
+    // assumption.
+    ObserveAllChildren(topmost_window_);
+
     DCHECK(layers_.empty());
-    AcquireAllLayers(window_);
+    AcquireAllLayers(topmost_window_);
 
     // If the Widget has views with layers, then it is necessary to take
     // ownership of those layers too.
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+        topmost_window_);
     const views::Widget* const_widget = widget;
     if (widget && const_widget->GetRootView() && widget->GetContentsView())
       AcquireAllViewLayers(widget->GetContentsView());
-    window_->RemoveObserver(this);
-    window_ = NULL;
+    topmost_window_ = NULL;
+  }
+
+  // Starts observing all of the windows in a subtree rooted at |window|
+  // excluding |window|.
+  void ObserveAllChildren(aura::Window* window) {
+    for (aura::Window::Windows::const_iterator it = window->children().begin();
+         it != window->children().end();
+         ++it) {
+      aura::Window* child = *it;
+      child->AddObserver(this);
+      observed_.insert(child);
+      ObserveAllChildren(child);
+    }
   }
 
   void AcquireAllLayers(aura::Window* window) {
@@ -184,7 +230,11 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
     }
   }
 
-  aura::Window* window_;
+  aura::Window* topmost_window_;
+
+  // The set of windows observed by this class.
+  std::set<aura::Window*> observed_;
+
   std::vector<ui::Layer*> layers_;
 
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
