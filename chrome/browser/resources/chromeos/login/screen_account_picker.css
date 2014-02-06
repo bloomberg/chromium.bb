@@ -21,6 +21,11 @@
   right: -50%;
 }
 
+html[dir=rtl] #signin-banner-container2 {
+  left: -50%;
+  right: auto;
+}
+
 #signin-banner {
   background-color: rgba(0, 0, 0, 0.75);
   border-radius: 4px;
@@ -32,6 +37,11 @@
   position: relative;
   text-align: center;
   width: 722px; /* same as gaia-signin width. */
+}
+
+html[dir=rtl] #signin-banner {
+  left: auto;
+  right: -50%;
 }
 
 html[screen=user-adding] #signin-banner {

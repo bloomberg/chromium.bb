@@ -30,6 +30,7 @@ podrow.images-loading {
   cursor: pointer;
   display: flex;
   flex-flow: row;
+  outline: none;
   padding: 10px 10px 3px;
   position: absolute;
   vertical-align: middle;
@@ -75,6 +76,10 @@ podrow[ncolumns='6'] .pod {
 
 .pod.focused .user-image {
   opacity: 1;
+}
+
+.pod.not-focusable .user-image {
+  -webkit-filter: grayscale(100%);
 }
 
 .pod.init {
@@ -253,14 +258,59 @@ html[dir=rtl] .pod .capslock-hint {
   z-index: 1;
 }
 
+html[dir=rtl] .user-type-icon-area {
+  left: auto;
+  right: 0;
+}
+
 .user-type-icon-image {
   background-color: transparent;
-  background-image: url('chrome://theme/IDR_MANAGED_MODE_ICON');
   border: 0 !important;
   height: 16px;
   margin: 5px;
   padding: 0;
   width: 16px;
+}
+
+.user-type-icon-area.supervised .user-type-icon-image {
+  background-image: url('chrome://theme/IDR_MANAGED_MODE_ICON');
+}
+
+.user-type-icon-area.policy .user-type-icon-image {
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+}
+
+.user-type-icon-area.policy:hover ~ .user-type-bubble {
+  opacity: 1;
+  visibility: visible;
+}
+
+.user-type-bubble {
+  -webkit-transition: all 100ms ease-in-out;
+  background-color: white;
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  box-shadow: none;
+  font-size: 14px;
+  left: 5px;
+  margin: 0;
+  opacity: 0;
+  padding: 17px;
+  position: absolute;
+  top: 20px;
+  visibility: hidden;
+  width: 200px;
+  z-index: 1;
+}
+
+html[dir=rtl] .user-type-bubble {
+  left: auto;
+  right: 5px;
+}
+
+.user-type-bubble-header {
+  font-weight: bold;
+  margin-bottom: 14px;
 }
 
 html[dir=rtl] .action-box-area {
@@ -294,6 +344,11 @@ html[dir=rtl] .action-box-area {
   visibility: hidden;
   width: 220px;
   z-index: 1;
+}
+
+html[dir=rtl] .action-box-menu {
+  left: 5px;
+  right: auto;
 }
 
 .action-box-area.active ~ .action-box-menu {

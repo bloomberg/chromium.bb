@@ -275,10 +275,18 @@ cr.define('login', function() {
 
     /**
      * Gets user type icon area.
-     * @type {!HTMLInputElement}
+     * @type {!HTMLDivElement}
      */
     get userTypeIconAreaElement() {
       return this.querySelector('.user-type-icon-area');
+    },
+
+    /**
+     * Gets user type icon.
+     * @type {!HTMLDivElement}
+     */
+    get userTypeIconElement() {
+      return this.querySelector('.user-type-icon-image');
     },
 
     /**
@@ -378,6 +386,11 @@ cr.define('login', function() {
       this.signinButtonElement.hidden = !forceOnlineSignin;
 
       this.updateActionBoxArea();
+
+      this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
+        'passwordFieldAccessibleName', this.user_.emailAddress));
+
+      this.updateUserTypeIcon();
     },
 
     updateActionBoxArea: function() {
@@ -399,9 +412,28 @@ cr.define('login', function() {
 
       this.actionBoxMenuCommandElement.textContent =
           loadTimeData.getString('removeUser');
-      this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
-          'passwordFieldAccessibleName', this.user_.emailAddress));
-      this.userTypeIconAreaElement.hidden = !this.user_.locallyManagedUser;
+    },
+
+    updateUserTypeIcon: function() {
+      var isMultiProfilesUI =
+          (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
+
+      if (this.user_.locallyManagedUser) {
+        this.userTypeIconAreaElement.classList.add('supervised');
+        this.userTypeIconAreaElement.hidden = false;
+      } else if (isMultiProfilesUI && !this.user_.isMultiProfilesAllowed) {
+        // Mark user pod as not focusable.
+        this.classList.add('not-focusable');
+
+        this.userTypeIconAreaElement.classList.add('policy');
+        this.userTypeIconAreaElement.hidden = false;
+
+        this.querySelector('.mp-policy-title').hidden = false;
+        if (this.user_.multiProfilesPolicy == 'primary-only')
+          this.querySelector('.mp-policy-primary-only-msg').hidden = false;
+        else
+          this.querySelector('.mp-policy-not-allowed-msg').hidden = false;
+      }
     },
 
     /**
@@ -1349,6 +1381,14 @@ cr.define('login', function() {
      */
     focusPod: function(podToFocus, opt_force) {
       if (this.isFocused(podToFocus) && !opt_force) {
+        this.keyboardActivated_ = false;
+        return;
+      }
+
+      // Make sure that we don't focus pods that are not allowed to be focused.
+      // TODO(nkostylev): Fix various keyboard focus related issues caused
+      // by this approach. http://crbug.com/339042
+      if (podToFocus && podToFocus.classList.contains('not-focusable')) {
         this.keyboardActivated_ = false;
         return;
       }

@@ -196,7 +196,10 @@ void LocallyManagedUserCreationScreenHandler::Show() {
       continue;
     bool is_owner = ((*it)->email() == owner);
     base::DictionaryValue* user_dict = new base::DictionaryValue();
-    SigninScreenHandler::FillUserDictionary(*it, is_owner, user_dict);
+    SigninScreenHandler::FillUserDictionary(*it,
+                                            is_owner,
+                                            false /* is_signin_to_add */,
+                                            user_dict);
     users_list->Append(user_dict);
   }
   data->Set("managers", users_list.release());

@@ -123,6 +123,10 @@ void FakeUserManager::SaveUserDisplayName(
   }
 }
 
+MultiProfileUserController* FakeUserManager::GetMultiProfileUserController() {
+  return NULL;
+}
+
 SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {
   return supervised_user_manager_.get();
 }

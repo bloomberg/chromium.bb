@@ -15,6 +15,7 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
+class MultiProfileUserController;
 class RemoveUserDelegate;
 class UserImageManager;
 class SupervisedUserManager;
@@ -122,6 +123,7 @@ class UserManager {
 
   virtual ~UserManager();
 
+  virtual MultiProfileUserController* GetMultiProfileUserController() = 0;
   virtual UserImageManager* GetUserImageManager(const std::string& user_id) = 0;
   virtual SupervisedUserManager* GetSupervisedUserManager() = 0;
 

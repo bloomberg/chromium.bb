@@ -62,6 +62,7 @@ class UserManagerImpl
 
   // UserManager implementation:
   virtual void Shutdown() OVERRIDE;
+  virtual MultiProfileUserController* GetMultiProfileUserController() OVERRIDE;
   virtual UserImageManager* GetUserImageManager(
       const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;

@@ -1058,9 +1058,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       var pagesWithCancel = ['intro', 'manager', 'username', 'import-password',
           'error', 'import'];
-      var cancelButton = $('cancel-add-user-button');
-      cancelButton.hidden = pagesWithCancel.indexOf(visiblePage) < 0;
-      cancelButton.disabled = false;
+      $('login-header-bar').allowCancel =
+          pagesWithCancel.indexOf(visiblePage) > 0;
+      $('cancel-add-user-button').disabled = false;
 
       this.getScreenElement('import-link').hidden = true;
       this.getScreenElement('create-link').hidden = true;

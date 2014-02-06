@@ -9,6 +9,7 @@
 cr.define('login', function() {
   /**
    * Creates a header bar element.
+   *
    * @constructor
    * @extends {HTMLDivElement}
    */
@@ -47,10 +48,12 @@ cr.define('login', function() {
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
         login.AppsMenuButton.decorate($('show-apps-button'));
+      this.updateUI_();
     },
 
     /**
      * Tab index value for all button elements.
+     *
      * @type {number}
      */
     set buttonsTabIndex(tabIndex) {
@@ -62,6 +65,7 @@ cr.define('login', function() {
 
     /**
      * Disables the header bar and all of its elements.
+     *
      * @type {boolean}
      */
     set disabled(value) {
@@ -73,6 +77,7 @@ cr.define('login', function() {
 
     /**
      * Add user button click handler.
+     *
      * @private
      */
     handleAddUserClick_: function(e) {
@@ -85,6 +90,7 @@ cr.define('login', function() {
 
     /**
      * Cancel add user button click handler.
+     *
      * @private
      */
     handleCancelAddUserClick_: function(e) {
@@ -103,6 +109,7 @@ cr.define('login', function() {
 
     /**
      * Guest button click handler.
+     *
      * @private
      */
     handleGuestClick_: function(e) {
@@ -113,6 +120,7 @@ cr.define('login', function() {
 
     /**
      * Sign out button click handler.
+     *
      * @private
      */
     handleSignoutClick_: function(e) {
@@ -123,6 +131,7 @@ cr.define('login', function() {
 
     /**
      * Shutdown button click handler.
+     *
      * @private
      */
     handleShutdownClick_: function(e) {
@@ -132,6 +141,7 @@ cr.define('login', function() {
 
     /**
      * Cancel user adding button handler.
+     *
      * @private
      */
     handleCancelMultipleSignInClick_: function(e) {
@@ -141,6 +151,7 @@ cr.define('login', function() {
 
     /**
      * If true then "Browse as Guest" button is shown.
+     *
      * @type {boolean}
      */
     set showGuestButton(value) {
@@ -150,8 +161,9 @@ cr.define('login', function() {
 
     /**
      * Update current header bar UI.
-     * @type {number} state Current state of the sign-in screen
-     *                      (see SIGNIN_UI_STATE).
+     *
+     * @type {number} state Current state of the sign-in screen (see
+     *       SIGNIN_UI_STATE).
      */
     set signinUIState(state) {
       this.signinUIState_ = state;
@@ -160,6 +172,7 @@ cr.define('login', function() {
 
     /**
      * Whether the Cancel button is enabled during Gaia sign-in.
+     *
      * @type {boolean}
      */
     set allowCancel(value) {
@@ -169,6 +182,7 @@ cr.define('login', function() {
 
     /**
      * Update whether there are kiosk apps.
+     *
      * @type {boolean}
      */
     set hasApps(value) {
@@ -178,6 +192,7 @@ cr.define('login', function() {
 
     /**
      * Updates visibility state of action buttons.
+     *
      * @private
      */
     updateUI_: function() {
@@ -192,8 +207,11 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
+      var isLockScreen =
+          (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
 
-      $('add-user-button').hidden = !accountPickerIsActive || isMultiProfilesUI;
+      $('add-user-button').hidden =
+          !accountPickerIsActive || isMultiProfilesUI || isLockScreen;
       $('cancel-add-user-button').hidden = accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||
@@ -204,6 +222,8 @@ cr.define('login', function() {
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
           isMultiProfilesUI;
+      $('sign-out-user-item').hidden = !isLockScreen;
+
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
       $('apps-header-bar-item').hidden = !this.hasApps_ ||
@@ -216,6 +236,7 @@ cr.define('login', function() {
 
     /**
      * Animates Header bar to hide from the screen.
+     *
      * @param {function()} callback will be called once animation is finished.
      */
     animateOut: function(callback) {

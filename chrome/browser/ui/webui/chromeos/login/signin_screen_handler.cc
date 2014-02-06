@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -85,6 +86,8 @@ const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
 const char kKeyForceOnlineSignin[] = "forceOnlineSignin";
+const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
+const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
 
 // Max number of users to show.
 const size_t kMaxUsers = 18;
@@ -344,6 +347,14 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("supervisedUserExpiredTokenWarning",
                IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING);
   builder->Add("signinBannerText", IDS_LOGIN_USER_ADDING_BANNER);
+
+  // Multi-profiles related strings.
+  builder->Add("multiProfilesRestrictedPolicyTitle",
+               IDS_MULTI_PROFILES_RESTRICTED_POLICY_TITLE);
+  builder->Add("multiProfilesNotAllowedPolicyMsg",
+               IDS_MULTI_PROFILES_NOT_ALLOWED_POLICY_MSG);
+  builder->Add("multiProfilesPrimaryOnlyPolicyMsg",
+               IDS_MULTI_PROFILES_PRIMARY_ONLY_POLICY_MSG);
 
   // Strings used by password changed dialog.
   builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);
@@ -1179,6 +1190,7 @@ void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
 
 void SigninScreenHandler::FillUserDictionary(User* user,
                                              bool is_owner,
+                                             bool is_signin_to_add,
                                              base::DictionaryValue* user_dict) {
   const std::string& email = user->email();
   const bool is_public_account =
@@ -1208,6 +1220,20 @@ void SigninScreenHandler::FillUserDictionary(User* user,
   user_dict->SetInteger(kKeyForceOnlineSignin, force_online_signin);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
+
+  // Fill in multi-profiles related fields.
+  if (is_signin_to_add) {
+    MultiProfileUserController* multi_profile_user_controller =
+        UserManager::Get()->GetMultiProfileUserController();
+    std::string behavior =  multi_profile_user_controller->
+        GetCachedValue(user->email());
+    user_dict->SetBoolean(kKeyMultiProfilesAllowed,
+        multi_profile_user_controller->IsUserAllowedInSession(email) ==
+            MultiProfileUserController::ALLOWED);
+    user_dict->SetString(kKeyMultiProfilesPolicy, behavior);
+  } else {
+    user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
+  }
 
   if (is_public_account) {
     policy::BrowserPolicyConnectorChromeOS* policy_connector =
@@ -1250,20 +1276,16 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       base::DictionaryValue* user_dict = new base::DictionaryValue();
-      FillUserDictionary(*it, is_owner, user_dict);
+      FillUserDictionary(*it, is_owner, is_signin_to_add, user_dict);
       bool is_public_account =
           ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
       bool signed_in = (*it)->is_logged_in();
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
       // See http://crosbug.com/12723
-      user_dict->SetBoolean(kKeyCanRemove,
-                            !single_user &&
-                            !email.empty() &&
-                            !is_owner &&
-                            !is_public_account &&
-                            !signed_in &&
-                            !is_signin_to_add);
+      bool can_remove_user = !single_user && !email.empty() && !is_owner &&
+          !is_public_account && !signed_in && !is_signin_to_add;
+      user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
       // public accounts come first in the list
       if (is_public_account)

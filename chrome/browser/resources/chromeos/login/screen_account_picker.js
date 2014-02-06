@@ -78,7 +78,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     /* Cancel user adding if ESC was pressed.
      */
     cancel: function() {
-      if (Oobe.getInstance().displayType() == DISPLAY_TYPE.USER_ADDING)
+      if (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING)
         chrome.send('cancelUserAdding');
     },
 
@@ -101,13 +101,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       var podRow = $('pod-row');
       podRow.handleBeforeShow();
 
-      // If this is showing for the lock screen display the sign out button,
-      // hide the add user button and activate the locked user's pod.
-      var lockedPod = podRow.lockedPod;
-      $('add-user-header-bar-item').hidden = !!lockedPod;
-      var signOutUserItem = $('sign-out-user-item');
-      if (signOutUserItem)
-        signOutUserItem.hidden = !lockedPod;
       // In case of the preselected pod onShow will be called once pod
       // receives focus.
       if (!podRow.preselectedPod)

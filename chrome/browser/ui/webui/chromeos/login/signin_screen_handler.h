@@ -366,6 +366,7 @@ class SigninScreenHandler
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,
                                  bool is_owner,
+                                 bool is_signin_to_add,
                                  base::DictionaryValue* user_dict);
 
   // Sends user list to account picker.

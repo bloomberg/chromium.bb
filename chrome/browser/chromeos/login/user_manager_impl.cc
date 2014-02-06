@@ -269,6 +269,10 @@ void UserManagerImpl::Shutdown() {
   policy_observer_.reset();
 }
 
+MultiProfileUserController* UserManagerImpl::GetMultiProfileUserController() {
+  return multi_profile_user_controller_.get();
+}
+
 UserImageManager* UserManagerImpl::GetUserImageManager(
     const std::string& user_id) {
   UserImageManagerMap::iterator ui = user_image_managers_.find(user_id);
@@ -296,15 +300,34 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
     return UserList();
 
   UserList result;
+  int num_users_allowed = 0;
   const UserList& users = GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->GetType() == User::USER_TYPE_REGULAR &&
-        !(*it)->is_logged_in() &&
-        multi_profile_user_controller_->IsUserAllowedInSession(
-            (*it)->email())) {
-      result.push_back(*it);
+    if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in()) {
+      MultiProfileUserController::UserAllowedInSessionResult check =
+          multi_profile_user_controller_->
+              IsUserAllowedInSession((*it)->email());
+      if (check == MultiProfileUserController::
+              NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS) {
+        return UserList();
+      }
+
+      // Users with a policy that prevents them being added to a session will be
+      // shown in login UI but will be grayed out.
+      if (check == MultiProfileUserController::ALLOWED ||
+          check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS) {
+        result.push_back(*it);
+        if (check == MultiProfileUserController::ALLOWED)
+          num_users_allowed++;
+      }
     }
   }
+
+  // We only show multi-profiles sign in UI if there's at least one user that
+  // is allowed to be added to the session.
+  if (!num_users_allowed)
+    result.clear();
+
   return result;
 }
 

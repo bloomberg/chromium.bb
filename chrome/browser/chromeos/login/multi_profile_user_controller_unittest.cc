@@ -33,54 +33,54 @@ const char* kUsers[] = {"a@gmail.com", "b@gmail.com" };
 struct BehaviorTestCase {
   const char* primary;
   const char* secondary;
-  bool expected_allowed;
+  MultiProfileUserController::UserAllowedInSessionResult expected_allowed;
 };
 
 const BehaviorTestCase kBehaviorTestCases[] = {
   {
     MultiProfileUserController::kBehaviorUnrestricted,
     MultiProfileUserController::kBehaviorUnrestricted,
-    true,
+    MultiProfileUserController::ALLOWED,
   },
   {
     MultiProfileUserController::kBehaviorUnrestricted,
     MultiProfileUserController::kBehaviorPrimaryOnly,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorUnrestricted,
     MultiProfileUserController::kBehaviorNotAllowed,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorPrimaryOnly,
     MultiProfileUserController::kBehaviorUnrestricted,
-    true,
+    MultiProfileUserController::ALLOWED,
   },
   {
     MultiProfileUserController::kBehaviorPrimaryOnly,
     MultiProfileUserController::kBehaviorPrimaryOnly,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorPrimaryOnly,
     MultiProfileUserController::kBehaviorNotAllowed,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorNotAllowed,
     MultiProfileUserController::kBehaviorUnrestricted,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorNotAllowed,
     MultiProfileUserController::kBehaviorPrimaryOnly,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS,
   },
   {
     MultiProfileUserController::kBehaviorNotAllowed,
     MultiProfileUserController::kBehaviorNotAllowed,
-    false,
+    MultiProfileUserController::NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS,
   },
 };
 
@@ -211,7 +211,8 @@ TEST_F(MultiProfileUserControllerTest, AllAllowedBeforeLogin) {
   };
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     SetCachedBehavior(0, kTestCases[i]);
-    EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[0]))
+    EXPECT_EQ(MultiProfileUserController::ALLOWED,
+              controller()->IsUserAllowedInSession(kUsers[0]))
         << "Case " << i;
   }
 }
@@ -286,8 +287,13 @@ TEST_F(MultiProfileUserControllerTest, PrimaryBehaviorChange) {
 
     SetPrefBehavior(0, kBehaviorTestCases[i].primary);
     SetPrefBehavior(1, kBehaviorTestCases[i].secondary);
-    EXPECT_EQ(kBehaviorTestCases[i].expected_allowed,
-              user_not_allowed_count() == 0) << "Case " << i;
+    if (user_not_allowed_count() == 0) {
+      EXPECT_EQ(kBehaviorTestCases[i].expected_allowed,
+                MultiProfileUserController::ALLOWED) << "Case " << i;
+    } else {
+      EXPECT_NE(kBehaviorTestCases[i].expected_allowed,
+                MultiProfileUserController::ALLOWED) << "Case " << i;
+    }
   }
 }
 
@@ -296,7 +302,8 @@ TEST_F(MultiProfileUserControllerTest, NoSecondaryOwner) {
   LoginUser(0);
   SetOwner(1);
 
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY,
+            controller()->IsUserAllowedInSession(kUsers[1]));
 
   EXPECT_EQ(0, user_not_allowed_count());
   LoginUser(1);
@@ -308,8 +315,10 @@ TEST_F(MultiProfileUserControllerTest,
   // Verifies that any user can sign-in as the primary user, regardless of the
   // tainted state.
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
-  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[0]));
-  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::ALLOWED,
+            controller()->IsUserAllowedInSession(kUsers[0]));
+  EXPECT_EQ(MultiProfileUserController::ALLOWED,
+            controller()->IsUserAllowedInSession(kUsers[1]));
 }
 
 TEST_F(MultiProfileUserControllerTest,
@@ -322,9 +331,11 @@ TEST_F(MultiProfileUserControllerTest,
   // changed back to enabled.
   SetPrefBehavior(1, MultiProfileUserController::kBehaviorUnrestricted);
 
-  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[0]));
+  EXPECT_EQ(MultiProfileUserController::ALLOWED,
+            controller()->IsUserAllowedInSession(kUsers[0]));
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[0]));
+  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_POLICY_CERT_TAINTED,
+            controller()->IsUserAllowedInSession(kUsers[0]));
 }
 
 TEST_F(MultiProfileUserControllerTest,
@@ -340,9 +351,11 @@ TEST_F(MultiProfileUserControllerTest,
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(0), TestPolicyCertServiceFactory));
 
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
+            controller()->IsUserAllowedInSession(kUsers[1]));
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[1]);
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_POLICY_CERT_TAINTED,
+            controller()->IsUserAllowedInSession(kUsers[1]));
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
@@ -368,14 +381,16 @@ TEST_F(MultiProfileUserControllerTest,
   ASSERT_TRUE(service);
 
   EXPECT_FALSE(service->has_policy_certificates());
-  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::ALLOWED,
+            controller()->IsUserAllowedInSession(kUsers[1]));
 
   net::CertificateList certificates;
   certificates.push_back(new net::X509Certificate(
       "subject", "issuer", base::Time(), base::Time()));
   service->OnTrustAnchorsChanged(certificates);
   EXPECT_TRUE(service->has_policy_certificates());
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
+            controller()->IsUserAllowedInSession(kUsers[1]));
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
