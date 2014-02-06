@@ -278,7 +278,24 @@ base::Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
 }
 
 void SpdySessionPool::OnIPAddressChanged() {
-  CloseCurrentSessions(ERR_NETWORK_CHANGED);
+  WeakSessionList current_sessions = GetCurrentSessions();
+  for (WeakSessionList::const_iterator it = current_sessions.begin();
+       it != current_sessions.end(); ++it) {
+    if (!*it)
+      continue;
+
+    // For OSs that terminate TCP connections upon relevant network changes
+    // there is no need to explicitly close SpdySessions, instead simply mark
+    // the sessions as deprecated so they aren't reused.
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+    (*it)->MakeUnavailable();
+#else
+    (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                               "Closing current sessions.");
+    DCHECK(!*it);
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+    DCHECK(!IsSessionAvailable(*it));
+  }
   http_server_properties_->ClearAllSpdySettings();
 }
 

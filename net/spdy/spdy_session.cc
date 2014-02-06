@@ -1615,6 +1615,16 @@ void SpdySession::CloseSessionOnError(Error err,
   ignore_result(DoCloseSession(err, description));
 }
 
+void SpdySession::MakeUnavailable() {
+  if (availability_state_ < STATE_GOING_AWAY) {
+    availability_state_ = STATE_GOING_AWAY;
+    // |pool_| will be NULL when |InitializeWithSocket()| is in the
+    // call stack.
+    if (pool_)
+      pool_->MakeSessionUnavailable(GetWeakPtr());
+  }
+}
+
 base::Value* SpdySession::GetInfoAsValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
@@ -2371,13 +2381,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                  active_streams_.size(),
                  unclaimed_pushed_streams_.size(),
                  status));
-  if (availability_state_ < STATE_GOING_AWAY) {
-    availability_state_ = STATE_GOING_AWAY;
-    // |pool_| will be NULL when |InitializeWithSocket()| is in the
-    // call stack.
-    if (pool_)
-      pool_->MakeSessionUnavailable(GetWeakPtr());
-  }
+  MakeUnavailable();
   StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
   // This is to handle the case when we already don't have any active
   // streams (i.e., StartGoingAway() did nothing). Otherwise, we have

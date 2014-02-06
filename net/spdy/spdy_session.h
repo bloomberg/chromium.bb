@@ -356,6 +356,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |description| indicates the reason for the error.
   void CloseSessionOnError(Error err, const std::string& description);
 
+  // Mark this session as unavailable, meaning that it will not be used to
+  // service new streams. Unlike when a GOAWAY frame is received, this function
+  // will not close any streams.
+  void MakeUnavailable();
+
   // Retrieves information on the current state of the SPDY session as a
   // Value.  Caller takes possession of the returned value.
   base::Value* GetInfoAsValue() const;
