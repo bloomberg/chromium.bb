@@ -809,6 +809,9 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
       for (StreamVector::iterator iter = streams_.begin();
            iter != streams_.end();
            ++iter) {
+        if (!*iter)
+          continue;
+
         base::TimeDelta duration = (*iter)->GetElapsedTime();
         if (duration != kNoTimestamp() && duration > max_duration)
           max_duration = duration;

@@ -462,6 +462,16 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_AudioOnly) {
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
 
+TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_UnsupportedStream) {
+  // Verify that end of stream buffers are created and we don't crash
+  // if there are streams in the file that we don't support.
+  CreateDemuxer("vorbis_audio_wmv_video.mkv");
+  InitializeDemuxer();
+  set_duration_known(false);
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(1014)));
+  ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
+}
+
 TEST_F(FFmpegDemuxerTest, Seek) {
   // We're testing that the demuxer frees all queued packets when it receives
   // a Seek().
