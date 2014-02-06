@@ -47,6 +47,7 @@ class QuicStreamFactory::Job {
       HostResolver* host_resolver,
       const HostPortProxyPair& host_port_proxy_pair,
       bool is_https,
+      base::StringPiece method,
       CertVerifier* cert_verifier,
       const BoundNetLog& net_log);
 
@@ -84,6 +85,7 @@ class QuicStreamFactory::Job {
   SingleRequestHostResolver host_resolver_;
   const HostPortProxyPair host_port_proxy_pair_;
   bool is_https_;
+  bool is_post_;
   CertVerifier* cert_verifier_;
   const BoundNetLog net_log_;
   QuicClientSession* session_;
@@ -92,21 +94,21 @@ class QuicStreamFactory::Job {
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-QuicStreamFactory::Job::Job(
-    QuicStreamFactory* factory,
-    HostResolver* host_resolver,
-    const HostPortProxyPair& host_port_proxy_pair,
-    bool is_https,
-    CertVerifier* cert_verifier,
-    const BoundNetLog& net_log)
+QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
+                            HostResolver* host_resolver,
+                            const HostPortProxyPair& host_port_proxy_pair,
+                            bool is_https,
+                            base::StringPiece method,
+                            CertVerifier* cert_verifier,
+                            const BoundNetLog& net_log)
     : factory_(factory),
       host_resolver_(host_resolver),
       host_port_proxy_pair_(host_port_proxy_pair),
       is_https_(is_https),
+      is_post_(method == "POST"),
       cert_verifier_(cert_verifier),
       net_log_(net_log),
-      session_(NULL) {
-}
+      session_(NULL) {}
 
 QuicStreamFactory::Job::~Job() {
 }
@@ -189,17 +191,17 @@ QuicStreamRequest::~QuicStreamRequest() {
     factory_->CancelRequest(this);
 }
 
-int QuicStreamRequest::Request(
-    const HostPortProxyPair& host_port_proxy_pair,
-    bool is_https,
-    CertVerifier* cert_verifier,
-    const BoundNetLog& net_log,
-    const CompletionCallback& callback) {
+int QuicStreamRequest::Request(const HostPortProxyPair& host_port_proxy_pair,
+                               bool is_https,
+                               base::StringPiece method,
+                               CertVerifier* cert_verifier,
+                               const BoundNetLog& net_log,
+                               const CompletionCallback& callback) {
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
-  int rv = factory_->Create(host_port_proxy_pair, is_https, cert_verifier,
-                            net_log, this);
+  int rv = factory_->Create(
+      host_port_proxy_pair, is_https, method, cert_verifier, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_proxy_pair_ = host_port_proxy_pair;
     is_https_ = is_https;
@@ -312,6 +314,7 @@ QuicStreamFactory::~QuicStreamFactory() {
 
 int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
                               bool is_https,
+                              base::StringPiece method,
                               CertVerifier* cert_verifier,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
@@ -334,7 +337,7 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
   DCHECK(crypto_config);
 
   scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_proxy_pair,
-                              is_https, cert_verifier, net_log));
+                              is_https, method, cert_verifier, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
 

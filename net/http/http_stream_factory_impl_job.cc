@@ -760,8 +760,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     next_state_ = STATE_INIT_CONNECTION_COMPLETE;
     bool secure_quic = using_ssl_ || proxy_info_.is_quic();
     int rv = quic_request_.Request(
-        destination, secure_quic, session_->cert_verifier(), net_log_,
-        io_callback_);
+        destination, secure_quic, request_info_.method,
+        session_->cert_verifier(), net_log_, io_callback_);
     if (rv != OK) {
       // OK, there's no available QUIC session. Let |waiting_job_| resume
       // if it's paused.

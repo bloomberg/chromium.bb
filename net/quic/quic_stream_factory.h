@@ -51,6 +51,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // For http, |is_https| is false and |cert_verifier| can be null.
   int Request(const HostPortProxyPair& host_port_proxy_pair,
               bool is_https,
+              base::StringPiece method,
               CertVerifier* cert_verifier,
               const BoundNetLog& net_log,
               const CompletionCallback& callback);
@@ -105,6 +106,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // asynchronously.
   int Create(const HostPortProxyPair& host_port_proxy_pair,
              bool is_https,
+             base::StringPiece method,
              CertVerifier* cert_verifier,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);

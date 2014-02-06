@@ -104,9 +104,13 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     socket_factory_.AddSocketDataProvider(&socket_data);
 
     QuicStreamRequest request(&factory_);
-    EXPECT_EQ(ERR_IO_PENDING, request.Request(destination, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(destination,
+                              is_https_,
+                              "GET",
+                              cert_verifier_.get(),
+                              net_log_,
+                              callback_.callback()));
 
     EXPECT_EQ(OK, callback_.WaitForResult());
     scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -165,9 +169,13 @@ TEST_P(QuicStreamFactoryTest, Create) {
   socket_data.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -180,9 +188,13 @@ TEST_P(QuicStreamFactoryTest, Create) {
   // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
   // in streams on different sessions.
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(host_port_proxy_pair_, is_https_,
-                                 cert_verifier_.get(), net_log_,
-                                 callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
 
@@ -209,17 +221,25 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
       "mail.google.com", "192.168.0.1", "");
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(server2, is_https_,
-                                 cert_verifier_.get(), net_log_,
-                                 callback.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
@@ -253,17 +273,25 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
       "mail.google.com", "192.168.0.1", "");
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(server2, is_https_,
-                                 cert_verifier_.get(), net_log_,
-                                 callback.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
@@ -276,9 +304,13 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
   TestCompletionCallback callback3;
   QuicStreamRequest request3(&factory_);
-  EXPECT_EQ(OK, request3.Request(server2, is_https_,
-                                 cert_verifier_.get(), net_log_,
-                                 callback3.callback()));
+  EXPECT_EQ(OK,
+            request3.Request(server2,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback3.callback()));
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
   EXPECT_TRUE(stream3.get());
 
@@ -323,15 +355,25 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
 
   QuicStreamRequest request(&factory_);
   is_https_ = true;
-  EXPECT_EQ(OK, request.Request(server1, is_https_, cert_verifier_.get(),
-                                net_log_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(server1,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(server2, is_https_, cert_verifier_.get(),
-                                net_log_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
@@ -379,15 +421,25 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
 
   QuicStreamRequest request(&factory_);
   is_https_ = true;
-  EXPECT_EQ(OK, request.Request(server1, is_https_, cert_verifier_.get(),
-                                net_log_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(server1,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(server2, is_https_, cert_verifier_.get(),
-                                net_log_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
@@ -412,9 +464,13 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -434,9 +490,13 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   // Create a new request for the same destination and verify that a
   // new session is created.
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_.get(), net_log_,
-                                             callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
@@ -478,8 +538,11 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   // 2 * kDefaultMaxStreamsPerConnection.
   for (size_t i = 0; i < 2 * kDefaultMaxStreamsPerConnection; i++) {
     QuicStreamRequest request(&factory_);
-    int rv = request.Request(host_port_proxy_pair_, is_https_,
-                             cert_verifier_.get(), net_log_,
+    int rv = request.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
                              callback_.callback());
     if (i == 0) {
       EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -495,9 +558,13 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   }
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
-                                cert_verifier_.get(), net_log_,
-                                CompletionCallback()));
+  EXPECT_EQ(OK,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            CompletionCallback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream);
   EXPECT_EQ(ERR_IO_PENDING, stream->InitializeStream(
@@ -522,9 +589,13 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   host_resolver_.rules()->AddSimulatedFailure(kDefaultServerHostName);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
 
@@ -540,9 +611,13 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   socket_data.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(ERR_ADDRESS_IN_USE, callback_.WaitForResult());
 
@@ -558,9 +633,13 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   socket_factory_.AddSocketDataProvider(&socket_data);
   {
     QuicStreamRequest request(&factory_);
-    EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                              cert_verifier_.get(), net_log_,
-                                              callback_.callback()));
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(host_port_proxy_pair_,
+                              is_https_,
+                              "GET",
+                              cert_verifier_.get(),
+                              net_log_,
+                              callback_.callback()));
   }
 
   socket_data.StopAfter(1);
@@ -608,9 +687,13 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -628,9 +711,13 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_.get(), net_log_,
-                                             callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   stream = request2.ReleaseStream();
@@ -658,9 +745,13 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -679,9 +770,13 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_.get(), net_log_,
-                                             callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   stream = request2.ReleaseStream();
@@ -709,9 +804,13 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -730,9 +829,13 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_.get(), net_log_,
-                                             callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   stream = request2.ReleaseStream();
@@ -760,9 +863,13 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -781,9 +888,13 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_.get(), net_log_,
-                                             callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   stream = request2.ReleaseStream();
