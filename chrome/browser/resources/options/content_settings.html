@@ -411,11 +411,13 @@
             <span i18n-content="protectedContentEnable"></span>
           </label>
         </div>
+<if expr="pp_ifdef('chromeos')">
         <div class="settings-row">
           <button id="protected-content-exceptions"
               class="exceptions-list-button" contentType="protectedContent"
               i18n-content="manageExceptions"></button>
         </div>
+</if>
       </div>
     </section>
 </if>
