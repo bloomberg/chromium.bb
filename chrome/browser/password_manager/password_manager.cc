@@ -261,20 +261,6 @@ void PasswordManager::DidNavigateMainFrame(bool is_in_page) {
     pending_login_managers_.clear();
 }
 
-bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PasswordManager, message)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsParsed,
-                        OnPasswordFormsParsed)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsRendered,
-                        OnPasswordFormsRendered)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormSubmitted,
-                        OnPasswordFormSubmitted)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void PasswordManager::OnPasswordFormSubmitted(
     const PasswordForm& password_form) {
   ProvisionallySavePassword(password_form);

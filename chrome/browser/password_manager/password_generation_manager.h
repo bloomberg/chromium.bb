@@ -30,10 +30,6 @@ class RenderViewHost;
 class WebContents;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -69,8 +65,18 @@ class PasswordGenerationManager {
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
-  // TODO(blundell): Eliminate this method. crbug.com/340690
-  bool OnMessageReceived(const IPC::Message& message);
+  // Causes the password generation UI to be shown for the specified form.
+  // The popup will be anchored at |element_bounds|. The generated password
+  // will be no longer than |max_length|.
+  void OnShowPasswordGenerationPopup(const gfx::RectF& element_bounds,
+                                     int max_length,
+                                     const autofill::PasswordForm& form);
+
+  // Causes the password editing UI to be shown anchored at |element_bounds|.
+  void OnShowPasswordEditingPopup(const gfx::RectF& element_bounds);
+
+  // Hides any visible UI.
+  void OnHidePasswordGenerationPopup();
 
  private:
   friend class PasswordGenerationManagerTest;
@@ -87,19 +93,6 @@ class PasswordGenerationManager {
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
-
-  // Causes the password generation UI to be shown for the specified form.
-  // The popup will be anchored at |element_bounds|. The generated password
-  // will be no longer than |max_length|.
-  void OnShowPasswordGenerationPopup(const gfx::RectF& element_bounds,
-                                     int max_length,
-                                     const autofill::PasswordForm& form);
-
-  // Causes the password editing UI to be shown anchored at |element_bounds|.
-  void OnShowPasswordEditingPopup(const gfx::RectF& element_bounds);
-
-  // Hide any visible UI.
-  void OnHidePasswordGenerationPopup();
 
   // The WebContents instance associated with this instance. Scoped to the
   // lifetime of this class, as this class is indirectly a WCUD via

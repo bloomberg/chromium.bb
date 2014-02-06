@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/login/login_model.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "ipc/ipc_message_macros.h"
 
 class PasswordManagerDelegate;
 class PasswordManagerDriver;
@@ -27,10 +26,6 @@ class PrefRegistrySimple;
 
 namespace content {
 class WebContents;
-}
-
-namespace IPC {
-class Message;
 }
 
 namespace user_prefs {
@@ -88,19 +83,15 @@ class PasswordManager : public LoginModel {
   // Should be called when the user navigates the main frame.
   void DidNavigateMainFrame(bool is_in_page);
 
-  // TODO(blundell): Eliminate this method. crbug.com/340669
-  bool OnMessageReceived(const IPC::Message& message);
-
-  // TODO(isherman): This should not be public, but is currently being used by
-  // the LoginPrompt code.
+  // Handles password forms being parsed.
   void OnPasswordFormsParsed(
       const std::vector<autofill::PasswordForm>& forms);
+
+  // Handles password forms being rendered.
   void OnPasswordFormsRendered(
       const std::vector<autofill::PasswordForm>& visible_forms);
 
- protected:
-
-  // Handle notification that a password form was submitted.
+  // Handles a password form being submitted.
   virtual void OnPasswordFormSubmitted(
       const autofill::PasswordForm& password_form);
 

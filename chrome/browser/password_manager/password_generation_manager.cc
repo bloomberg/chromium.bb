@@ -25,7 +25,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ipc/ipc_message_macros.h"
 #include "ui/gfx/rect.h"
 
 PasswordGenerationManager::PasswordGenerationManager(
@@ -62,21 +61,6 @@ void PasswordGenerationManager::DetectAccountCreationForms(
     SendAccountCreationFormsToRenderer(web_contents_->GetRenderViewHost(),
                                        account_creation_forms);
   }
-}
-
-bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PasswordGenerationManager, message)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
-                        OnShowPasswordGenerationPopup)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordEditingPopup,
-                        OnShowPasswordEditingPopup)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_HidePasswordGenerationPopup,
-                        OnHidePasswordGenerationPopup)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 // In order for password generation to be enabled, we need to make sure:

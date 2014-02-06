@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/ssl_status.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/cert/cert_status_flags.h"
 
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
@@ -67,7 +68,28 @@ void ContentPasswordManagerDriver::DidNavigateMainFrame(
 
 bool ContentPasswordManagerDriver::OnMessageReceived(
     const IPC::Message& message) {
-  if (password_manager_.OnMessageReceived(message))
-    return true;
-  return password_generation_manager_.OnMessageReceived(message);
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PasswordManager, message)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormsParsed,
+                      &password_manager_,
+                      PasswordManager::OnPasswordFormsParsed)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormsRendered,
+                      &password_manager_,
+                      PasswordManager::OnPasswordFormsRendered)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormSubmitted,
+                      &password_manager_,
+                      PasswordManager::OnPasswordFormSubmitted)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordGenerationPopup,
+                      &password_generation_manager_,
+                      PasswordGenerationManager::OnShowPasswordGenerationPopup)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordEditingPopup,
+                      &password_generation_manager_,
+                      PasswordGenerationManager::OnShowPasswordEditingPopup)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_HidePasswordGenerationPopup,
+                      &password_generation_manager_,
+                      PasswordGenerationManager::OnHidePasswordGenerationPopup)
+  IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
 }
