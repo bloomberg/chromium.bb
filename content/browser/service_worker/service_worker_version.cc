@@ -156,7 +156,8 @@ void ServiceWorkerVersion::SendMessage(
     return;
   }
 
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(-1, message);
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
+      kInvalidRequestId, message);
   RunSoon(base::Bind(callback, status));
 }
 
@@ -198,7 +199,8 @@ bool ServiceWorkerVersion::DispatchFetchEvent(
   if (status() != RUNNING)
     return false;
   return embedded_worker_->SendMessage(
-      -1, ServiceWorkerMsg_FetchEvent(request)) == SERVICE_WORKER_OK;
+      kInvalidRequestId, ServiceWorkerMsg_FetchEvent(request))
+          == SERVICE_WORKER_OK;
 }
 
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {
