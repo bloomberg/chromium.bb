@@ -42,6 +42,7 @@
 
 using extensions::Extension;
 using extensions::ExtensionAPI;
+using extensions::ExtensionsBrowserClient;
 using extensions::ExtensionSystem;
 using extensions::Feature;
 using content::BrowserThread;
@@ -55,7 +56,7 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
                              const std::string& api_name,
                              scoped_ptr<base::ListValue> args,
                              content::BrowserContext* browser_context) {
-  // The ApiActivityLogger can only be accessed from the main (UI) thread. If
+  // The ApiActivityMonitor can only be accessed from the main (UI) thread. If
   // we're running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
@@ -67,9 +68,12 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
                                        browser_context));
     return;
   }
+  // The BrowserContext may become invalid after the task above is posted.
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
+    return;
+
   extensions::ApiActivityMonitor* monitor =
-      extensions::ExtensionsBrowserClient::Get()->GetApiActivityMonitor(
-          browser_context);
+      ExtensionsBrowserClient::Get()->GetApiActivityMonitor(browser_context);
   if (monitor)
     monitor->OnApiFunctionCalled(extension_id, api_name, args.Pass());
 }
