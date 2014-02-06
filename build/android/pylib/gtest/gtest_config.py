@@ -6,7 +6,6 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
-    'content_browsertests',
     'content_gl_tests',
 ]
 
@@ -16,22 +15,23 @@ EXPERIMENTAL_TEST_SUITES = [
 STABLE_TEST_SUITES = [
     'android_webview_unittests',
     'base_unittests',
+    'breakpad_unittests',
     'cc_unittests',
     'components_unittests',
+    'content_browsertests',
     'content_unittests',
     'gl_tests',
     'gpu_unittests',
     'ipc_tests',
     'media_unittests',
     'net_unittests',
+    'sandbox_linux_unittests',
     'sql_unittests',
     'sync_unit_tests',
     'ui_unittests',
     'unit_tests',
     'webkit_compositor_bindings_unittests',
     'webkit_unit_tests',
-    'breakpad_unittests',
-    'sandbox_linux_unittests',
 ]
 
 WEBRTC_CHROMIUM_TEST_SUITES = [

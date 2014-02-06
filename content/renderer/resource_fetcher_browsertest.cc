@@ -265,9 +265,28 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 };
 
+#if defined(OS_ANDROID)
+// Disable (http://crbug.com/248796).
+#define MAYBE_ResourceFetcher404 DISABLED_ResourceFetcher404
+#define MAYBE_ResourceFetcherDeletedInCallback \
+  DISABLED_ResourceFetcherDeletedInCallback
+#define MAYBE_ResourceFetcherTimeout DISABLED_ResourceFetcherTimeout
+#define MAYBE_ResourceFetcherDownload DISABLED_ResourceFetcherDownload
+// Disable (http://crbug.com/341142).
+#define MAYBE_ResourceFetcherPost DISABLED_ResourceFetcherPost
+#define MAYBE_ResourceFetcherSetHeader DISABLED_ResourceFetcherSetHeader
+#else
+#define MAYBE_ResourceFetcher404 ResourceFetcher404
+#define MAYBE_ResourceFetcherDeletedInCallback ResourceFetcherDeletedInCallback
+#define MAYBE_ResourceFetcherTimeout ResourceFetcherTimeout
+#define MAYBE_ResourceFetcherDownload ResourceFetcherDownload
+#define MAYBE_ResourceFetcherPost ResourceFetcherPost
+#define MAYBE_ResourceFetcherSetHeader ResourceFetcherSetHeader
+#endif
+
 // Test a fetch from the test server.
 // If this flakes, use http://crbug.com/51622.
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, MAYBE_ResourceFetcherDownload) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -279,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
                    base::Unretained(this), url));
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, MAYBE_ResourceFetcher404) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -302,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
                    base::Unretained(this)));
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, MAYBE_ResourceFetcherTimeout) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -316,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
                    base::Unretained(this), url));
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests,
+                       MAYBE_ResourceFetcherDeletedInCallback) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -331,8 +351,10 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
             base::Unretained(this), url));
 }
 
+
+
 // Test that ResourceFetchers can handle POSTs.
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, MAYBE_ResourceFetcherPost) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -347,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
 }
 
 // Test that ResourceFetchers can set headers.
-IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherSetHeader) {
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, MAYBE_ResourceFetcherSetHeader) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
