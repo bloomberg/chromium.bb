@@ -31,7 +31,7 @@
 
 namespace WTF {
 
-bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBufferView> >& neuteredViews)
+bool ArrayBuffer::transfer(ArrayBufferContents& result)
 {
     RefPtr<ArrayBuffer> keepAlive(this);
 
@@ -59,7 +59,6 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBuffe
         removeView(current);
         if (allViewsAreNeuterable || current->isNeuterable())
             current->neuter();
-        neuteredViews.append(current);
     }
 
     m_isNeutered = true;

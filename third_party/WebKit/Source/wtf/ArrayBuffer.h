@@ -60,7 +60,7 @@ public:
     void addView(ArrayBufferView*);
     void removeView(ArrayBufferView*);
 
-    bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
+    bool transfer(ArrayBufferContents&);
     bool isNeutered() { return m_isNeutered; }
 
     void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_contents.setDeallocationObserver(observer); }

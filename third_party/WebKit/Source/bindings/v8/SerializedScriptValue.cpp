@@ -2344,17 +2344,6 @@ inline void neuterBinding(ArrayBuffer* object)
     }
 }
 
-inline void neuterBinding(ArrayBufferView* object)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    Vector<DOMDataStore*>& allStores = V8PerIsolateData::from(isolate)->allStores();
-    for (size_t i = 0; i < allStores.size(); i++) {
-        v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBufferView>(object, isolate);
-        if (!wrapper.IsEmpty())
-            wrapper->SetIndexedPropertiesToExternalArrayData(0, v8::kExternalByteArray, 0);
-    }
-}
-
 PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::transferArrayBuffers(ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     ASSERT(arrayBuffers.size());
@@ -2370,21 +2359,17 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
     HashSet<ArrayBuffer*> visited;
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
-        Vector<RefPtr<ArrayBufferView> > neuteredViews;
-
         if (visited.contains(arrayBuffers[i].get()))
             continue;
         visited.add(arrayBuffers[i].get());
 
-        bool result = arrayBuffers[i]->transfer(contents->at(i), neuteredViews);
+        bool result = arrayBuffers[i]->transfer(contents->at(i));
         if (!result) {
             exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
             return nullptr;
         }
 
         neuterBinding(arrayBuffers[i].get());
-        for (size_t j = 0; j < neuteredViews.size(); j++)
-            neuterBinding(neuteredViews[j].get());
     }
     return contents.release();
 }
