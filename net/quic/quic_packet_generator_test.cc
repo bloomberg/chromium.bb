@@ -136,7 +136,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   }
 
   QuicRstStreamFrame* CreateRstStreamFrame() {
-    return new QuicRstStreamFrame(1, QUIC_STREAM_NO_ERROR);
+    return new QuicRstStreamFrame(1, QUIC_STREAM_NO_ERROR, 0);
   }
 
   QuicGoAwayFrame* CreateGoAwayFrame() {

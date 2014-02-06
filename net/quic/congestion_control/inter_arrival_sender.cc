@@ -39,7 +39,6 @@ InterArrivalSender::InterArrivalSender(const QuicClock* clock)
       state_machine_(new InterArrivalStateMachine(clock)),
       paced_sender_(new PacedSender(QuicBandwidth::FromKBytesPerSecond(
           kProbeBitrateKBytesPerSecond), max_segment_size_)),
-      accumulated_number_of_lost_packets_(0),
       bandwidth_usage_state_(kBandwidthSteady),
       back_down_time_(QuicTime::Zero()),
       back_down_bandwidth_(QuicBandwidth::Zero()),
@@ -148,26 +147,11 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     return;
   }
 
-  bool packet_loss_event = false;
-  if (accumulated_number_of_lost_packets_ !=
-      feedback.inter_arrival.accumulated_number_of_lost_packets) {
-    accumulated_number_of_lost_packets_ =
-        feedback.inter_arrival.accumulated_number_of_lost_packets;
-    packet_loss_event = true;
-  }
   InterArrivalState state = state_machine_->GetInterArrivalState();
 
   if (state == kInterArrivalStatePacketLoss ||
       state == kInterArrivalStateCompetingTcpFLow) {
-    if (packet_loss_event) {
-      if (!state_machine_->PacketLossEvent()) {
-        // Less than one RTT since last PacketLossEvent.
-        return;
-      }
-      EstimateBandwidthAfterLossEvent(feedback_receive_time);
-    } else {
-      EstimateNewBandwidth(feedback_receive_time, sent_bandwidth);
-    }
+    EstimateNewBandwidth(feedback_receive_time, sent_bandwidth);
     return;
   }
   EstimateDelayBandwidth(feedback_receive_time, sent_bandwidth);

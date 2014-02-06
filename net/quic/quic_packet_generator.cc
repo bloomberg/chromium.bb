@@ -51,6 +51,12 @@ QuicPacketGenerator::~QuicPacketGenerator() {
       case GOAWAY_FRAME:
         delete it->goaway_frame;
         break;
+      case WINDOW_UPDATE_FRAME:
+        delete it->window_update_frame;
+        break;
+      case BLOCKED_FRAME:
+        delete it->blocked_frame;
+        break;
       case NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot delete type: " << it->type;
     }

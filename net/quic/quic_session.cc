@@ -324,8 +324,9 @@ size_t QuicSession::WriteHeaders(QuicStreamId id,
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,
-                                QuicRstStreamErrorCode error) {
-  connection_->SendRstStream(id, error);
+                                QuicRstStreamErrorCode error,
+                                QuicStreamOffset bytes_written) {
+  connection_->SendRstStream(id, error, bytes_written);
   CloseStreamInner(id, true);
 }
 
@@ -523,7 +524,7 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
 
   if (goaway_sent_) {
     // We've already sent a GoAway
-    SendRstStream(stream_id, QUIC_STREAM_PEER_GOING_AWAY);
+    SendRstStream(stream_id, QUIC_STREAM_PEER_GOING_AWAY, 0);
     return NULL;
   }
 

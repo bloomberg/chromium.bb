@@ -115,8 +115,6 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
   switch (frame->type) {
     case kInterArrival: {
       dict->SetString("type", "InterArrival");
-      dict->SetInteger("accumulated_number_of_lost_packets",
-                       frame->inter_arrival.accumulated_number_of_lost_packets);
       base::ListValue* received = new base::ListValue();
       dict->Set("received_packets", received);
       for (TimeMap::const_iterator it =
@@ -135,8 +133,6 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
       break;
     case kTCP:
       dict->SetString("type", "TCP");
-      dict->SetInteger("accumulated_number_of_lost_packets",
-                       frame->tcp.accumulated_number_of_lost_packets);
       dict->SetInteger("receive_window", frame->tcp.receive_window);
       break;
   }

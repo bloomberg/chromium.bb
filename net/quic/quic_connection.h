@@ -177,8 +177,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 class NET_EXPORT_PRIVATE QuicConnection
     : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
-      public QuicPacketGenerator::DelegateInterface,
-      public QuicSentPacketManager::HelperInterface {
+      public QuicPacketGenerator::DelegateInterface {
  public:
   enum Force {
     NO_FORCE,
@@ -214,7 +213,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Send a stream reset frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
-                             QuicRstStreamErrorCode error);
+                             QuicRstStreamErrorCode error,
+                             QuicStreamOffset bytes_written);
 
   // Sends the connection close packet without affecting the state of the
   // connection.  This should only be called if the session is actively being
@@ -299,9 +299,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
-
-  // QuicSentPacketManager::HelperInterface
-  virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() OVERRIDE;
 
   // Accessors
   void set_visitor(QuicConnectionVisitorInterface* visitor) {
@@ -585,6 +582,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sends any packets which are a response to the last packet, including both
   // acks and pending writes if an ack opened the congestion window.
   void MaybeSendInResponseToPacket();
+
+  // Gets the least unacked sequence number, which is the next sequence number
+  // to be sent if there are no outstanding packets.
+  QuicPacketSequenceNumber GetLeastUnacked() const;
 
   // Get the FEC group associate with the last processed packet or NULL, if the
   // group has already been deleted.

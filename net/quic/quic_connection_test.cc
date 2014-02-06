@@ -77,8 +77,8 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
     return true;
   }
 
-  MOCK_METHOD4(RecordIncomingPacket,
-               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime, bool));
+  MOCK_METHOD3(RecordIncomingPacket,
+               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
 
  private:
   QuicCongestionFeedbackFrame* feedback_;
@@ -538,7 +538,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
         *send_algorithm_, TimeUntilSend(_, _, _, _)).WillRepeatedly(Return(
             QuicTime::Delta::Zero()));
     EXPECT_CALL(*receive_algorithm_,
-                RecordIncomingPacket(_, _, _, _)).Times(AnyNumber());
+                RecordIncomingPacket(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
@@ -2349,7 +2349,7 @@ TEST_F(QuicConnectionTest, WithQuicCongestionFeedbackFrame) {
 
 TEST_F(QuicConnectionTest, UpdateQuicCongestionFeedbackFrame) {
   SendAckPacketToPeer();
-  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _, _));
+  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
 }
@@ -2359,7 +2359,7 @@ TEST_F(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
   SendAckPacketToPeer();
   // Process an FEC packet, and revive the missing data packet
   // but only contact the receive_algorithm once.
-  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _, _));
+  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _));
   ProcessFecPacket(2, 1, true, !kEntropyFlag, NULL);
 }
 

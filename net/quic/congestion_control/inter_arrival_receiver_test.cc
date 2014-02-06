@@ -21,7 +21,7 @@ TEST_F(InterArrivalReceiverTest, SimpleReceiver) {
   QuicTime::Delta received_delta = QuicTime::Delta::FromMilliseconds(10);
   clock_.AdvanceTime(received_delta);
   QuicTime receive_timestamp = clock_.ApproximateNow();
-  receiver_.RecordIncomingPacket(1, 1, receive_timestamp, false);
+  receiver_.RecordIncomingPacket(1, 1, receive_timestamp);
 
   QuicCongestionFeedbackFrame feedback;
   ASSERT_FALSE(receiver_.GenerateCongestionFeedback(&feedback));
@@ -29,15 +29,14 @@ TEST_F(InterArrivalReceiverTest, SimpleReceiver) {
   clock_.AdvanceTime(received_delta);
   receive_timestamp = clock_.ApproximateNow();
   // Packet not received; but rather revived by FEC.
-  receiver_.RecordIncomingPacket(1, 2, receive_timestamp, true);
+  receiver_.RecordIncomingPacket(1, 2, receive_timestamp);
   clock_.AdvanceTime(received_delta);
   receive_timestamp = clock_.ApproximateNow();
-  receiver_.RecordIncomingPacket(1, 3, receive_timestamp, false);
+  receiver_.RecordIncomingPacket(1, 3, receive_timestamp);
 
   ASSERT_TRUE(receiver_.GenerateCongestionFeedback(&feedback));
 
   EXPECT_EQ(kInterArrival, feedback.type);
-  EXPECT_EQ(1, feedback.inter_arrival.accumulated_number_of_lost_packets);
   EXPECT_EQ(3u, feedback.inter_arrival.received_packet_times.size());
   TimeMap::iterator it = feedback.inter_arrival.received_packet_times.begin();
   EXPECT_EQ(1u, it->first);

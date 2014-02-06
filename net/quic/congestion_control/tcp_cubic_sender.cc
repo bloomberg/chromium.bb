@@ -40,7 +40,6 @@ TcpCubicSender::TcpCubicSender(
       reno_(reno),
       congestion_window_count_(0),
       receive_window_(kDefaultReceiveWindow),
-      last_received_accumulated_number_of_lost_packets_(0),
       bytes_in_flight_(0),
       prr_out_(0),
       prr_delivered_(0),
@@ -77,18 +76,6 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
     const SentPacketsMap& /*sent_packets*/) {
-  if (last_received_accumulated_number_of_lost_packets_ !=
-      feedback.tcp.accumulated_number_of_lost_packets) {
-    int recovered_lost_packets =
-        last_received_accumulated_number_of_lost_packets_ -
-        feedback.tcp.accumulated_number_of_lost_packets;
-    last_received_accumulated_number_of_lost_packets_ =
-        feedback.tcp.accumulated_number_of_lost_packets;
-    if (recovered_lost_packets > 0) {
-      // Assume the loss could be as late as the last acked packet.
-      OnPacketLost(largest_acked_sequence_number_, feedback_receive_time);
-    }
-  }
   receive_window_ = feedback.tcp.receive_window;
 }
 

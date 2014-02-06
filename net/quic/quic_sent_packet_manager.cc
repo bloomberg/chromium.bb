@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_ack_notifier_manager.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_utils_chromium.h"
 
 using std::make_pair;
@@ -62,16 +63,13 @@ COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
-QuicSentPacketManager::HelperInterface::~HelperInterface() {
-}
-
 QuicSentPacketManager::QuicSentPacketManager(bool is_server,
-                                             HelperInterface* helper,
                                              const QuicClock* clock,
+                                             QuicConnectionStats* stats,
                                              CongestionFeedbackType type)
     : is_server_(is_server),
-      helper_(helper),
       clock_(clock),
+      stats_(stats),
       send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
       rtt_sample_(QuicTime::Delta::Infinite()),
       pending_crypto_packet_count_(0),
@@ -394,6 +392,9 @@ QuicSentPacketManager::MarkPacketHandled(
   QuicPacketSequenceNumber newest_transmission = *previous_transmissions_it;
   TransmissionInfo* transmission_info =
       FindOrNull(unacked_packets_, newest_transmission);
+  if (newest_transmission != sequence_number) {
+    ++stats_->packets_spuriously_retransmitted;
+  }
   if (newest_transmission == sequence_number) {
     DiscardPacket(newest_transmission);
   } else if (HasCryptoHandshake(*transmission_info)) {
@@ -505,9 +506,8 @@ size_t QuicSentPacketManager::GetNumRetransmittablePackets() const {
 QuicPacketSequenceNumber
 QuicSentPacketManager::GetLeastUnackedSentPacket() const {
   if (unacked_packets_.empty()) {
-    // If there are no unacked packets, set the least unacked packet to
-    // the sequence number of the next packet sent.
-    return helper_->GetNextPacketSequenceNumber();
+    // If there are no unacked packets, return 0.
+    return 0;
   }
 
   return unacked_packets_.begin()->first;
@@ -567,14 +567,17 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
   // The TLP alarm is always set to run for under an RTO.
   switch (GetRetransmissionMode()) {
     case HANDSHAKE_MODE:
+      ++stats_->crypto_retransmit_count;
       RetransmitCryptoPackets();
       return;
     case TLP_MODE:
       // If no tail loss probe can be sent, because there are no retransmittable
       // packets, execute a conventional RTO to abandon old packets.
+      ++stats_->tlp_count;
       RetransmitOldestPacket();
       return;
     case RTO_MODE:
+      ++stats_->rto_count;
       RetransmitAllPackets();
       return;
   }
@@ -692,7 +695,6 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     const QuicTime& ack_receive_time) {
   // Go through all pending packets up to the largest observed and see if any
   // need to be retransmitted or lost.
-  size_t num_retransmitted = 0;
   UnackedPacketMap::iterator it = unacked_packets_.begin();
   while (it != unacked_packets_.end() &&
          it->first <= received_info.largest_observed) {
@@ -734,17 +736,14 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
       continue;
     }
 
-    // TODO(ianswett): OnPacketLost is also called from TCPCubicSender when
-    // an FEC packet is lost, but FEC loss information should be shared among
-    // congestion managers.  Additionally, if it's expected the FEC packet may
-    // repair the loss, it should be recorded as a loss to the congestion
-    // manager, but not retransmitted until it's known whether the FEC packet
-    // arrived.
+    // TODO(ianswett): If it's expected the FEC packet may repair the loss, it
+    // should be recorded as a loss to the send algorithm, but not retransmitted
+    // until it's known whether the FEC packet arrived.
+    ++stats_->packets_lost;
     send_algorithm_->OnPacketLost(sequence_number, ack_receive_time);
     OnPacketAbandoned(it);
 
     if (transmission_info.retransmittable_frames) {
-      ++num_retransmitted;
       MarkForRetransmission(sequence_number, NACK_RETRANSMISSION);
       ++it;
     } else {
@@ -848,6 +847,7 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       QuicTime min_timeout = clock_->ApproximateNow().Add(
           SmoothedRtt().Multiply(1.5));
       QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
+
       return QuicTime::Max(min_timeout, rto_timeout);
     }
   }
@@ -889,19 +889,20 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
 
 const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   QuicTime::Delta retransmission_delay = send_algorithm_->RetransmissionDelay();
+  // TODO(rch): This code should move to |send_algorithm_|.
   if (retransmission_delay.IsZero()) {
     // We are in the initial state, use default timeout values.
     retransmission_delay =
         QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+  } else if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {
+    retransmission_delay =
+        QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs);
   }
+
   // Calculate exponential back off.
   retransmission_delay = retransmission_delay.Multiply(
       1 << min<size_t>(consecutive_rto_count_, kMaxRetransmissions));
 
-  // TODO(rch): This code should move to |send_algorithm_|.
-  if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {
-    return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs);
-  }
   if (retransmission_delay.ToMilliseconds() > kMaxRetransmissionTimeMs) {
     return QuicTime::Delta::FromMilliseconds(kMaxRetransmissionTimeMs);
   }

@@ -41,8 +41,13 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint64 bytes_retransmitted;
   uint32 packets_retransmitted;
 
+  uint32 packets_spuriously_retransmitted;
+  uint32 packets_lost;
+
   uint32 packets_revived;
   uint32 packets_dropped;  // duplicate or less than least unacked.
+  uint32 crypto_retransmit_count;
+  uint32 tlp_count;
   uint32 rto_count;
 
   uint32 rtt;  // In microseconds

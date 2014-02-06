@@ -27,8 +27,7 @@ bool FixRateReceiver::GenerateCongestionFeedback(
 void FixRateReceiver::RecordIncomingPacket(
     QuicByteCount /*bytes*/,
     QuicPacketSequenceNumber /*sequence_number*/,
-    QuicTime /*timestamp*/,
-    bool /*recovered*/) {
+    QuicTime /*timestamp*/) {
   // Nothing to do for this simple implementation.
 }
 

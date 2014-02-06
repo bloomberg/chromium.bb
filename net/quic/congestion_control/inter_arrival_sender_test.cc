@@ -5,7 +5,6 @@
 #include "net/quic/congestion_control/inter_arrival_sender.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +59,6 @@ class InterArrivalSenderTest : public ::testing::Test {
   void SendDelaySpikeFeedbackMessage(QuicTime::Delta spike_time) {
     QuicCongestionFeedbackFrame feedback;
     feedback.type = kInterArrival;
-    feedback.inter_arrival.accumulated_number_of_lost_packets = 0;
     receive_clock_.AdvanceTime(spike_time);
     QuicTime receive_time = receive_clock_.ApproximateNow();
     feedback.inter_arrival.received_packet_times.insert(
@@ -84,7 +82,6 @@ class InterArrivalSenderTest : public ::testing::Test {
                                    QuicTime::Delta delta_even) {
     QuicCongestionFeedbackFrame feedback;
     feedback.type = kInterArrival;
-    feedback.inter_arrival.accumulated_number_of_lost_packets = 0;
     for (int i = 0; i < n; ++i) {
       if (feedback_sequence_number_ % 2) {
         receive_clock_.AdvanceTime(delta_even);

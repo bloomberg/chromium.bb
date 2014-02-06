@@ -75,8 +75,8 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
     return false;
   }
 
-  MOCK_METHOD4(RecordIncomingPacket,
-               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime, bool));
+  MOCK_METHOD3(RecordIncomingPacket,
+               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
 };
 
 // Subclass of QuicHttpStream that closes itself when the first piece of data
@@ -177,7 +177,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
     receive_algorithm_ = new TestReceiveAlgorithm();
-    EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _, _)).
+    EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _)).
         Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, _, _, _, _)).WillRepeatedly(Return(true));

@@ -121,7 +121,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
   virtual void SendRstStream(QuicStreamId id,
-                             QuicRstStreamErrorCode error) OVERRIDE;
+                             QuicRstStreamErrorCode error,
+                             QuicStreamOffset bytes_written) OVERRIDE;
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
   virtual void OnCryptoHandshakeMessageSent(
       const CryptoHandshakeMessage& message) OVERRIDE;

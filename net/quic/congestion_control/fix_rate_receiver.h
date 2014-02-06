@@ -30,8 +30,7 @@ class NET_EXPORT_PRIVATE FixRateReceiver : public ReceiveAlgorithmInterface {
   // Implements ReceiveAlgorithmInterface.
   virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
-                                    QuicTime timestamp,
-                                    bool recovered) OVERRIDE;
+                                    QuicTime timestamp) OVERRIDE;
  private:
   friend class test::FixRateReceiverPeer;
 

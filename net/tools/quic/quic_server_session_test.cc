@@ -136,7 +136,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   MarkHeadersReadForStream(stream_id);
 
   // Send a reset.
-  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR);
+  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -150,7 +150,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
 TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
   // Send a reset.
-  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR);
+  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -208,7 +208,7 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   MarkHeadersReadForStream(stream_id);
 
   // Send a reset.
-  QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR);
+  QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR, 0);
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data

@@ -449,6 +449,31 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  QuicConnectionStats stats =
+      client_->client()->session()->connection()->GetStats();
+  // TODO(rtenneti): Enable packets_lost check after bug(12887145) is fixed.
+  // EXPECT_EQ(0u, stats.packets_lost);
+  // EXPECT_EQ(0u, stats.rto_count);
+}
+
+TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {
+  ASSERT_TRUE(Initialize());
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(1000));
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // 1 Mb body.
+  string body;
+  GenerateBody(&body, 100 * 1024);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  QuicConnectionStats stats =
+      client_->client()->session()->connection()->GetStats();
+  EXPECT_EQ(0u, stats.packets_lost);
 }
 
 TEST_P(EndToEndTest, LargePostWithPacketLoss) {
@@ -808,7 +833,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   // Transmit the cancel, and ensure the connection is torn down properly.
   SetPacketLossPercentage(0);
   QuicStreamId stream_id = negotiated_version_ > QUIC_VERSION_12 ? 5 : 3;
-  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED);
+  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
 
   // WaitForEvents waits 50ms and returns true if there are outstanding
   // requests.

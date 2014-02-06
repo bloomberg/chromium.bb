@@ -183,7 +183,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_inorder_packet_(0),
-      sent_packet_manager_(is_server, this, clock_, kTCP),
+      sent_packet_manager_(is_server, clock_, &stats_, kTCP),
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
       connected_(true),
@@ -737,10 +737,16 @@ bool QuicConnection::ShouldLastPacketInstigateAck() {
   // send, send an ack to raise the high water mark.
   if (!last_ack_frames_.empty() &&
       !last_ack_frames_.back().received_info.missing_packets.empty()) {
-    return sent_packet_manager_.GetLeastUnackedSentPacket() >
+    return GetLeastUnacked() >
         *last_ack_frames_.back().received_info.missing_packets.begin();
   }
   return false;
+}
+
+QuicPacketSequenceNumber QuicConnection::GetLeastUnacked() const {
+  return sent_packet_manager_.HasUnackedPackets() ?
+      sent_packet_manager_.GetLeastUnackedSentPacket() :
+      packet_creator_.sequence_number() + 1;
 }
 
 void QuicConnection::MaybeSendInResponseToPacket() {
@@ -829,11 +835,12 @@ QuicConsumedData QuicConnection::SendStreamData(
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,
-                                   QuicRstStreamErrorCode error) {
+                                   QuicRstStreamErrorCode error,
+                                   QuicStreamOffset bytes_written) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, true);
   packet_generator_.AddControlFrame(
-      QuicFrame(new QuicRstStreamFrame(id, error)));
+      QuicFrame(new QuicRstStreamFrame(id, error, bytes_written)));
 }
 
 const QuicConnectionStats& QuicConnection::GetStats() {
@@ -1294,10 +1301,6 @@ bool QuicConnection::OnSerializedPacket(
                            NOT_RETRANSMISSION);
 }
 
-QuicPacketSequenceNumber QuicConnection::GetNextPacketSequenceNumber() {
-  return packet_creator_.sequence_number() + 1;
-}
-
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
@@ -1327,7 +1330,7 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
 }
 
 void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
-  sent_info->least_unacked = sent_packet_manager_.GetLeastUnackedSentPacket();
+  sent_info->least_unacked = GetLeastUnacked();
   sent_info->entropy_hash = sent_entropy_manager_.EntropyHash(
       sent_info->least_unacked - 1);
 }
@@ -1352,8 +1355,6 @@ void QuicConnection::OnRetransmissionTimeout() {
   if (!sent_packet_manager_.HasUnackedPackets()) {
     return;
   }
-
-  ++stats_.rto_count;
 
   sent_packet_manager_.OnRetransmissionTimeout();
 

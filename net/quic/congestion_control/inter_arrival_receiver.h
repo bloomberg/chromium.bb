@@ -26,14 +26,10 @@ class NET_EXPORT_PRIVATE InterArrivalReceiver
 
   virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
-                                    QuicTime timestamp,
-                                    bool revived) OVERRIDE;
+                                    QuicTime timestamp) OVERRIDE;
   // End implementation of ReceiveAlgorithmInterface.
 
  private:
-  // We need to keep track of FEC recovered packets.
-  int accumulated_number_of_recoverd_lost_packets_;
-
   // The set of received packets since the last feedback was sent, along with
   // their arrival times.
   TimeMap received_packet_times_;

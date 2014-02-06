@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/iovec.h"
 #include "net/quic/quic_protocol.h"
 

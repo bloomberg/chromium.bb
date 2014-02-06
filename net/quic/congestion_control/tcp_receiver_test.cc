@@ -22,16 +22,14 @@ class QuicTcpReceiverTest : public ::testing::Test {
 TEST_F(QuicTcpReceiverTest, SimpleReceiver) {
   QuicCongestionFeedbackFrame feedback;
   QuicTime timestamp(QuicTime::Zero());
-  receiver_->RecordIncomingPacket(1, 1, timestamp, false);
+  receiver_->RecordIncomingPacket(1, 1, timestamp);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kTCP, feedback.type);
   EXPECT_EQ(256000u, feedback.tcp.receive_window);
-  EXPECT_EQ(0, feedback.tcp.accumulated_number_of_lost_packets);
-  receiver_->RecordIncomingPacket(1, 2, timestamp, true);
+  receiver_->RecordIncomingPacket(1, 2, timestamp);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kTCP, feedback.type);
   EXPECT_EQ(256000u, feedback.tcp.receive_window);
-  EXPECT_EQ(1, feedback.tcp.accumulated_number_of_lost_packets);
 }
 
 }  // namespace test

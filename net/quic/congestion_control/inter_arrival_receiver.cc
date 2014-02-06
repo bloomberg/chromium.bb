@@ -8,8 +8,7 @@
 
 namespace net {
 
-InterArrivalReceiver::InterArrivalReceiver()
-    : accumulated_number_of_recoverd_lost_packets_(0) {
+InterArrivalReceiver::InterArrivalReceiver() {
 }
 
 InterArrivalReceiver::~InterArrivalReceiver() {
@@ -22,8 +21,6 @@ bool InterArrivalReceiver::GenerateCongestionFeedback(
     return false;
   }
   feedback->type = kInterArrival;
-  feedback->inter_arrival.accumulated_number_of_lost_packets =
-      accumulated_number_of_recoverd_lost_packets_;
 
   // Copy our current receive set to our feedback message, we will not resend
   // this data if it is lost.
@@ -37,11 +34,7 @@ bool InterArrivalReceiver::GenerateCongestionFeedback(
 void InterArrivalReceiver::RecordIncomingPacket(
     QuicByteCount /*bytes*/,
     QuicPacketSequenceNumber sequence_number,
-    QuicTime timestamp,
-    bool revived) {
-  if (revived) {
-    ++accumulated_number_of_recoverd_lost_packets_;
-  }
+    QuicTime timestamp) {
   received_packet_times_.insert(std::make_pair(sequence_number, timestamp));
 }
 

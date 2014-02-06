@@ -54,6 +54,8 @@ const uint8 kPublicHeaderSequenceNumberShift = 4;
 // ResetStream        : 0b 00000001 (0x01)
 // ConnectionClose    : 0b 00000010 (0x02)
 // GoAway             : 0b 00000011 (0x03)
+// WindowUpdate       : 0b 00000100 (0x04)
+// Blocked            : 0b 00000101 (0x05)
 //
 // Special Frame Types encode both a Frame Type and corresponding flags
 // all in the Frame Type byte. Currently defined Special Frame Types are:
@@ -143,6 +145,15 @@ bool CanTruncate(
 
 }  // namespace
 
+bool QuicFramerVisitorInterface::OnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& frame) {
+  return true;
+}
+
+bool QuicFramerVisitorInterface::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  return true;
+}
+
 QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
                        QuicTime creation_time,
                        bool is_server)
@@ -186,9 +197,15 @@ size_t QuicFramer::GetMinAckFrameSize(
 }
 
 // static
-size_t QuicFramer::GetMinRstStreamFrameSize() {
-  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicErrorCodeSize +
-      kQuicErrorDetailsLengthSize;
+size_t QuicFramer::GetMinRstStreamFrameSize(QuicVersion quic_version) {
+  if (quic_version > QUIC_VERSION_13) {
+    return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
+           kQuicMaxStreamOffsetSize + kQuicErrorCodeSize +
+           kQuicErrorDetailsLengthSize;
+  } else {
+    return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicErrorCodeSize +
+           kQuicErrorDetailsLengthSize;
+  }
 }
 
 // static
@@ -200,6 +217,16 @@ size_t QuicFramer::GetMinConnectionCloseFrameSize() {
 size_t QuicFramer::GetMinGoAwayFrameSize() {
   return kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicErrorDetailsLengthSize +
       kQuicMaxStreamIdSize;
+}
+
+// static
+size_t QuicFramer::GetWindowUpdateFrameSize() {
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
+}
+
+// static
+size_t QuicFramer::GetBlockedFrameSize() {
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize;
 }
 
 // static
@@ -368,6 +395,30 @@ SerializedPacket QuicFramer::BuildDataPacket(
       case GOAWAY_FRAME:
         if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
           LOG(DFATAL) << "AppendGoAwayFrame failed";
+          return kNoPacket;
+        }
+        break;
+      case WINDOW_UPDATE_FRAME:
+        if (quic_version_ > QUIC_VERSION_13) {
+          if (!AppendWindowUpdateFrame(*frame.window_update_frame, &writer)) {
+            LOG(DFATAL) << "AppendWindowUpdateFrame failed";
+            return kNoPacket;
+          }
+        } else {
+          LOG(DFATAL) << "Attempt to add a WindowUpdateFrame in "
+                      << QuicVersionToString(quic_version_);
+          return kNoPacket;
+        }
+        break;
+      case BLOCKED_FRAME:
+        if (quic_version_ > QUIC_VERSION_13) {
+          if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
+            LOG(DFATAL) << "AppendBlockedFrame failed";
+            return kNoPacket;
+          }
+        } else {
+          LOG(DFATAL) << "Attempt to add a BlockedFrame in "
+                      << QuicVersionToString(quic_version_);
           return kNoPacket;
         }
         break;
@@ -1138,6 +1189,44 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         continue;
       }
 
+      case WINDOW_UPDATE_FRAME: {
+        if (quic_version_ > QUIC_VERSION_13) {
+          QuicWindowUpdateFrame window_update_frame;
+          if (!ProcessWindowUpdateFrame(&window_update_frame)) {
+            return RaiseError(QUIC_INVALID_WINDOW_UPDATE_DATA);
+          }
+          if (!visitor_->OnWindowUpdateFrame(window_update_frame)) {
+            DVLOG(1) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+        } else {
+          LOG(DFATAL) << "Trying to read a WindowUpdateFrame in "
+                      << QuicVersionToString(quic_version_);
+          return RaiseError(QUIC_INTERNAL_ERROR);
+        }
+        continue;
+      }
+
+      case BLOCKED_FRAME: {
+        if (quic_version_ > QUIC_VERSION_13) {
+          QuicBlockedFrame blocked_frame;
+          if (!ProcessBlockedFrame(&blocked_frame)) {
+            return RaiseError(QUIC_INVALID_BLOCKED_DATA);
+          }
+          if (!visitor_->OnBlockedFrame(blocked_frame)) {
+            DVLOG(1) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+        } else {
+          LOG(DFATAL) << "Trying to read a BlockedFrame in "
+                      << QuicVersionToString(quic_version_);
+          return RaiseError(QUIC_INTERNAL_ERROR);
+        }
+        continue;
+      }
+
       default:
         set_detailed_error("Illegal frame type.");
         DLOG(WARNING) << "Illegal frame type: "
@@ -1325,8 +1414,9 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     case kInterArrival: {
       CongestionFeedbackMessageInterArrival* inter_arrival =
           &frame->inter_arrival;
+      uint16 unused_accumulated_number_of_lost_packets;
       if (!reader_->ReadUInt16(
-              &inter_arrival->accumulated_number_of_lost_packets)) {
+              &unused_accumulated_number_of_lost_packets)) {
         set_detailed_error(
             "Unable to read accumulated number of lost packets.");
         return false;
@@ -1389,7 +1479,8 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     }
     case kTCP: {
       CongestionFeedbackMessageTCP* tcp = &frame->tcp;
-      if (!reader_->ReadUInt16(&tcp->accumulated_number_of_lost_packets)) {
+      uint16 unused_accumulated_number_of_lost_packets;
+      if (!reader_->ReadUInt16(&unused_accumulated_number_of_lost_packets)) {
         set_detailed_error(
             "Unable to read accumulated number of lost packets.");
         return false;
@@ -1418,6 +1509,13 @@ bool QuicFramer::ProcessRstStreamFrame(QuicRstStreamFrame* frame) {
   if (!reader_->ReadUInt32(&frame->stream_id)) {
     set_detailed_error("Unable to read stream_id.");
     return false;
+  }
+
+  if (quic_version_ > QUIC_VERSION_13) {
+    if (!reader_->ReadUInt64(&frame->byte_offset)) {
+      set_detailed_error("Unable to read rst stream sent byte offset.");
+      return false;
+    }
   }
 
   uint32 error_code;
@@ -1496,6 +1594,29 @@ bool QuicFramer::ProcessGoAwayFrame(QuicGoAwayFrame* frame) {
     return false;
   }
   frame->reason_phrase = reason_phrase.as_string();
+
+  return true;
+}
+
+bool QuicFramer::ProcessWindowUpdateFrame(QuicWindowUpdateFrame* frame) {
+  if (!reader_->ReadUInt32(&frame->stream_id)) {
+    set_detailed_error("Unable to read stream_id.");
+    return false;
+  }
+
+  if (!reader_->ReadUInt64(&frame->byte_offset)) {
+    set_detailed_error("Unable to read window byte_offset.");
+    return false;
+  }
+
+  return true;
+}
+
+bool QuicFramer::ProcessBlockedFrame(QuicBlockedFrame* frame) {
+  if (!reader_->ReadUInt32(&frame->stream_id)) {
+    set_detailed_error("Unable to read stream_id.");
+    return false;
+  }
 
   return true;
 }
@@ -1705,13 +1826,17 @@ size_t QuicFramer::ComputeFrameLength(
       return len;
     }
     case RST_STREAM_FRAME:
-      return GetMinRstStreamFrameSize() +
+      return GetMinRstStreamFrameSize(quic_version_) +
           frame.rst_stream_frame->error_details.size();
     case CONNECTION_CLOSE_FRAME:
       return GetMinConnectionCloseFrameSize() +
           frame.connection_close_frame->error_details.size();
     case GOAWAY_FRAME:
       return GetMinGoAwayFrameSize() + frame.goaway_frame->reason_phrase.size();
+    case WINDOW_UPDATE_FRAME:
+      return GetWindowUpdateFrameSize();
+    case BLOCKED_FRAME:
+      return GetBlockedFrameSize();
     case PADDING_FRAME:
       DCHECK(false);
       return 0;
@@ -1976,8 +2101,8 @@ bool QuicFramer::AppendQuicCongestionFeedbackFrame(
     case kInterArrival: {
       const CongestionFeedbackMessageInterArrival& inter_arrival =
           frame.inter_arrival;
-      if (!writer->WriteUInt16(
-              inter_arrival.accumulated_number_of_lost_packets)) {
+      // accumulated_number_of_lost_packets is removed.  Always write 0.
+      if (!writer->WriteUInt16(0)) {
         return false;
       }
       DCHECK_GE(numeric_limits<uint8>::max(),
@@ -2040,7 +2165,8 @@ bool QuicFramer::AppendQuicCongestionFeedbackFrame(
       DCHECK_LE(tcp.receive_window, 1u << 20);
       // Simple bit packing, don't send the 4 least significant bits.
       uint16 receive_window = static_cast<uint16>(tcp.receive_window >> 4);
-      if (!writer->WriteUInt16(tcp.accumulated_number_of_lost_packets)) {
+      // accumulated_number_of_lost_packets is removed.  Always write 0.
+      if (!writer->WriteUInt16(0)) {
         return false;
       }
       if (!writer->WriteUInt16(receive_window)) {
@@ -2060,6 +2186,12 @@ bool QuicFramer::AppendRstStreamFrame(
         QuicDataWriter* writer) {
   if (!writer->WriteUInt32(frame.stream_id)) {
     return false;
+  }
+
+  if (quic_version_ > QUIC_VERSION_13) {
+    if (!writer->WriteUInt64(frame.byte_offset)) {
+      return false;
+    }
   }
 
   uint32 error_code = static_cast<uint32>(frame.error_code);
@@ -2097,6 +2229,27 @@ bool QuicFramer::AppendGoAwayFrame(const QuicGoAwayFrame& frame,
     return false;
   }
   if (!writer->WriteStringPiece16(frame.reason_phrase)) {
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
+                                         QuicDataWriter* writer) {
+  uint32 stream_id = static_cast<uint32>(frame.stream_id);
+  if (!writer->WriteUInt32(stream_id)) {
+    return false;
+  }
+  if (!writer->WriteUInt64(frame.byte_offset)) {
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendBlockedFrame(const QuicBlockedFrame& frame,
+                                    QuicDataWriter* writer) {
+  uint32 stream_id = static_cast<uint32>(frame.stream_id);
+  if (!writer->WriteUInt32(stream_id)) {
     return false;
   }
   return true;

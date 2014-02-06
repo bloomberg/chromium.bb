@@ -46,7 +46,7 @@ TEST_F(FixRateTest, ReceiverAPI) {
   QuicCongestionFeedbackFrame feedback;
   QuicTime timestamp(QuicTime::Zero());
   receiver_->SetBitrate(QuicBandwidth::FromKBytesPerSecond(300));
-  receiver_->RecordIncomingPacket(1, 1, timestamp, false);
+  receiver_->RecordIncomingPacket(1, 1, timestamp);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kFixRate, feedback.type);
   EXPECT_EQ(300000u, feedback.fix_rate.bitrate.ToBytesPerSecond());

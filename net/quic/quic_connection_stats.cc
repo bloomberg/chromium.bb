@@ -17,8 +17,12 @@ QuicConnectionStats::QuicConnectionStats()
       stream_bytes_received(0),
       bytes_retransmitted(0),
       packets_retransmitted(0),
+      packets_spuriously_retransmitted(0),
+      packets_lost(0),
       packets_revived(0),
       packets_dropped(0),
+      crypto_retransmit_count(0),
+      tlp_count(0),
       rto_count(0),
       rtt(0),
       estimated_bandwidth(0) {
@@ -35,9 +39,14 @@ ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
      << ", stream bytes received: " << s.stream_bytes_received
      << ", bytes retransmitted: " << s.bytes_retransmitted
      << ", packets retransmitted: " << s.packets_retransmitted
+     << ", packets_spuriously_retransmitted: "
+     << s.packets_spuriously_retransmitted
+     << ", packets lost: " << s.packets_lost
      << ", packets revived: " << s.packets_revived
      << ", packets dropped:" << s.packets_dropped
+     << ", crypto retransmit count: " << s.crypto_retransmit_count
      << ", rto count: " << s.rto_count
+     << ", tlp count: " << s.tlp_count
      << ", rtt(us): " << s.rtt
      << ", estimated_bandwidth: " << s.estimated_bandwidth
      << "}\n";

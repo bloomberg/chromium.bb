@@ -73,8 +73,9 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD2(SendConnectionCloseWithDetails, void(
       QuicErrorCode error,
       const std::string& details));
-  MOCK_METHOD2(SendRstStream, void(QuicStreamId id,
-                                   QuicRstStreamErrorCode error));
+  MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
+                                   QuicRstStreamErrorCode error,
+                                   QuicStreamOffset bytes_written));
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const std::string& reason));

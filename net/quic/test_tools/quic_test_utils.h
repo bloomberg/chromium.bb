@@ -244,12 +244,10 @@ class MockHelper : public QuicConnectionHelperInterface {
  public:
   MockHelper();
   virtual ~MockHelper();
-
-  MOCK_METHOD1(SetConnection, void(QuicConnection* connection));
-  const QuicClock* GetClock() const;
-  QuicRandom* GetRandomGenerator();
+  virtual const QuicClock* GetClock() const OVERRIDE;
+  virtual QuicRandom* GetRandomGenerator() OVERRIDE;
+  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
   void AdvanceTime(QuicTime::Delta delta);
-  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
 
  private:
   MockClock clock_;
@@ -282,13 +280,13 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
   MOCK_METHOD2(SendConnectionCloseWithDetails, void(QuicErrorCode error,
                                                     const string& details));
-  MOCK_METHOD2(SendRstStream, void(QuicStreamId id,
-                                   QuicRstStreamErrorCode error));
+  MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
+                                   QuicRstStreamErrorCode error,
+                                   QuicStreamOffset bytes_written));
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason));
   MOCK_METHOD0(OnCanWrite, bool());
-  MOCK_CONST_METHOD0(HasPendingHandshake, bool());
 
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
@@ -331,11 +329,6 @@ class MockSession : public QuicSession {
  public:
   explicit MockSession(QuicConnection* connection);
   virtual ~MockSession();
-
-  MOCK_METHOD4(OnPacket, bool(const IPEndPoint& self_address,
-                              const IPEndPoint& peer_address,
-                              const QuicPacketHeader& header,
-                              const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
@@ -354,7 +347,6 @@ class MockSession : public QuicSession {
   MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
                                              bool fin,
                                              size_t frame_len));
-  MOCK_METHOD0(IsHandshakeComplete, bool());
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
   using QuicSession::ActivateStream;

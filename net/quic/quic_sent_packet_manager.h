@@ -32,6 +32,7 @@ class QuicSentPacketManagerPeer;
 
 class QuicClock;
 class QuicConfig;
+struct QuicConnectionStats;
 
 // Class which tracks the set of packets sent on a QUIC connection and contains
 // a send algorithm to decide when to send new packets.  It keeps track of any
@@ -58,18 +59,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicSequenceNumberLength sequence_number_length;
   };
 
-  // Interface which provides callbacks that the manager needs.
-  class NET_EXPORT_PRIVATE HelperInterface {
-   public:
-    virtual ~HelperInterface();
-
-    // Called to return the sequence number of the next packet to be sent.
-    virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() = 0;
-  };
-
   QuicSentPacketManager(bool is_server,
-                        HelperInterface* helper,
                         const QuicClock* clock,
+                        QuicConnectionStats* stats,
                         CongestionFeedbackType congestion_type);
   virtual ~QuicSentPacketManager();
 
@@ -121,10 +113,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the number of unacked packets which have retransmittable frames.
   size_t GetNumRetransmittablePackets() const;
 
-  // Returns the smallest sequence number of a sent packet which has not been
-  // acked by the peer.  Excludes any packets which have been retransmitted
-  // with a new sequence number. If all packets have been acked, returns the
-  // sequence number of the next packet that will be sent.
+  // Returns the smallest sequence number of a serialized packet which has not
+  // been acked by the peer.  If there are no unacked packets, returns 0.
   QuicPacketSequenceNumber GetLeastUnackedSentPacket() const;
 
   // Returns the set of sequence numbers of all unacked packets.
@@ -314,14 +304,13 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Tracks if the connection was created by the server.
   bool is_server_;
 
-  HelperInterface* helper_;
-
   // An AckNotifier can register to be informed when ACKs have been received for
   // all packets that a given block of data was sent in. The AckNotifierManager
   // maintains the currently active notifiers.
   AckNotifierManager ack_notifier_manager_;
 
   const QuicClock* clock_;
+  QuicConnectionStats* stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   // Tracks the send time, size, and nack count of sent packets.  Packets are
   // removed after 5 seconds and they've been removed from pending_packets_.

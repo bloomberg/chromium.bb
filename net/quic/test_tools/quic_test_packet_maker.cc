@@ -37,7 +37,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
   header.fec_flag = false;
   header.fec_group = 0;
 
-  QuicRstStreamFrame rst(stream_id, error_code);
+  QuicRstStreamFrame rst(stream_id, error_code, 0);
   return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(&rst)));
 }
 
@@ -66,13 +66,12 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   if (send_feedback) {
     QuicCongestionFeedbackFrame feedback;
     feedback.type = kTCP;
-    feedback.tcp.accumulated_number_of_lost_packets = 0;
     feedback.tcp.receive_window = 256000;
 
     frames.push_back(QuicFrame(&feedback));
   }
 
-  QuicRstStreamFrame rst(stream_id, error_code);
+  QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
 
   QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
@@ -119,7 +118,6 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
 
   QuicCongestionFeedbackFrame feedback;
   feedback.type = kTCP;
-  feedback.tcp.accumulated_number_of_lost_packets = 0;
   feedback.tcp.receive_window = 256000;
 
   QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);

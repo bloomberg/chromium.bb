@@ -121,6 +121,14 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a GoAwayFrame has been parsed.
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
 
+  // Called when a WindowUpdateFrame has been parsed.
+  // TODO(rjshade): Make this abstract, and implement in subclasses.
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+
+  // Called when a BlockedFrame has been parsed.
+  // TODO(rjshade): Make this abstract, and implement in subclasses.
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame);
+
   // Called when FEC data has been parsed.
   virtual void OnFecData(const QuicFecData& fec) = 0;
 
@@ -241,12 +249,16 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicSequenceNumberLength sequence_number_length,
       QuicSequenceNumberLength largest_observed_length);
   // Size in bytes of all reset stream frame without the error details.
-  static size_t GetMinRstStreamFrameSize();
+  static size_t GetMinRstStreamFrameSize(QuicVersion quic_version);
   // Size in bytes of all connection close frame fields without the error
   // details and the missing packets from the enclosed ack frame.
   static size_t GetMinConnectionCloseFrameSize();
   // Size in bytes of all GoAway frame fields without the reason phrase.
   static size_t GetMinGoAwayFrameSize();
+  // Size in bytes of all WindowUpdate frame fields.
+  static size_t GetWindowUpdateFrameSize();
+  // Size in bytes of all Blocked frame fields.
+  static size_t GetBlockedFrameSize();
   // The maximum number of nacks which can be transmitted in a single ack packet
   // without exceeding kDefaultMaxPacketSize.
   static size_t GetMaxUnackedPackets(QuicPacketHeader header);
@@ -396,6 +408,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessRstStreamFrame(QuicRstStreamFrame* frame);
   bool ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame);
   bool ProcessGoAwayFrame(QuicGoAwayFrame* frame);
+  bool ProcessWindowUpdateFrame(QuicWindowUpdateFrame* frame);
+  bool ProcessBlockedFrame(QuicBlockedFrame* frame);
 
   bool DecryptPayload(const QuicPacketHeader& header,
                       const QuicEncryptedPacket& packet);
@@ -425,6 +439,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   static AckFrameInfo GetAckFrameInfo(const QuicAckFrame& frame);
 
+  // The Append* methods attempt to write the provided header or frame using the
+  // |writer|, and return true if successful.
   bool AppendPacketHeader(const QuicPacketHeader& header,
                           QuicDataWriter* writer);
   bool AppendTypeByte(const QuicFrame& frame,
@@ -444,6 +460,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
                                   QuicDataWriter* builder);
   bool AppendGoAwayFrame(const QuicGoAwayFrame& frame, QuicDataWriter* writer);
+  bool AppendWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
+                               QuicDataWriter* writer);
+  bool AppendBlockedFrame(const QuicBlockedFrame& frame,
+                          QuicDataWriter* writer);
+
   bool RaiseError(QuicErrorCode error);
 
   void set_error(QuicErrorCode error) {

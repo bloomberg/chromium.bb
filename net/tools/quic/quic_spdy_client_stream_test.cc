@@ -82,7 +82,7 @@ TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_EQ(200u, stream_->headers().parsed_response_code());
 
   EXPECT_CALL(*connection_,
-              SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
+              SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD, 0));
   stream_->ProcessData(large_body.c_str(), large_body.size());
 
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());

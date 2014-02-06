@@ -30,12 +30,9 @@ class NET_EXPORT_PRIVATE ReceiveAlgorithmInterface {
   // bytes: is the packet size in bytes including IP headers.
   // sequence_number: is the unique sequence number from the QUIC packet header.
   // timestamp: is the sent timestamp from the QUIC packet header.
-  // revived: is set if the packet is lost and then recovered with help of FEC
-  // (Forward Error Correction) packet(s).
   virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
-                                    QuicTime timestamp,
-                                    bool revived) = 0;
+                                    QuicTime timestamp) = 0;
 };
 
 }  // namespace net

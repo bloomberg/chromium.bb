@@ -149,10 +149,17 @@ enum IsHandshake {
 };
 
 enum QuicFrameType {
+  // Regular frame types. The values set here cannot change without the
+  // introduction of a new QUIC version.
   PADDING_FRAME = 0,
-  RST_STREAM_FRAME,
-  CONNECTION_CLOSE_FRAME,
-  GOAWAY_FRAME,
+  RST_STREAM_FRAME = 1,
+  CONNECTION_CLOSE_FRAME = 2,
+  GOAWAY_FRAME = 3,
+  WINDOW_UPDATE_FRAME = 4,
+  BLOCKED_FRAME = 5,
+
+  // STREAM, ACK, and CONGESTION_FEEDBACK frames are special frames. They are
+  // encoded differently on the wire and their values do not need to be stable.
   STREAM_FRAME,
   ACK_FRAME,
   CONGESTION_FEEDBACK_FRAME,
@@ -248,7 +255,8 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_12 = 12,
-  QUIC_VERSION_13 = 13,  // Current version.
+  QUIC_VERSION_13 = 13,
+  QUIC_VERSION_14 = 14,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -258,7 +266,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_13,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_14,
+                                                     QUIC_VERSION_13,
                                                      QUIC_VERSION_12};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
@@ -363,6 +372,10 @@ enum QuicErrorCode {
   QUIC_INVALID_CONNECTION_CLOSE_DATA = 7,
   // GOAWAY frame data is malformed.
   QUIC_INVALID_GOAWAY_DATA = 8,
+  // WINDOW_UPDATE frame data is malformed.
+  QUIC_INVALID_WINDOW_UPDATE_DATA = 57,
+  // BLOCKED frame data is malformed.
+  QUIC_INVALID_BLOCKED_DATA = 58,
   // ACK frame data is malformed.
   QUIC_INVALID_ACK_DATA = 9,
   // CONGESTION_FEEDBACK frame data is malformed.
@@ -411,6 +424,8 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_FRAME = 50,
   // We received invalid data on the headers stream.
   QUIC_INVALID_HEADERS_STREAM_DATA = 56,
+  // The peer violated the flow control protocol.
+  QUIC_FLOW_CONTROL_ERROR = 59,
 
   // Crypto errors.
 
@@ -466,7 +481,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 57,
+  QUIC_LAST_ERROR = 60,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -501,9 +516,9 @@ struct NET_EXPORT_PRIVATE QuicPacketHeader {
 };
 
 struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
-  QuicPublicResetPacket() {}
-  explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header)
-      : public_header(header) {}
+  QuicPublicResetPacket();
+  explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header);
+
   QuicPacketPublicHeader public_header;
   QuicPublicResetNonceProof nonce_proof;
   QuicPacketSequenceNumber rejected_sequence_number;
@@ -564,6 +579,7 @@ typedef std::map<QuicPacketSequenceNumber, QuicTime> TimeMap;
 struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
   ReceivedPacketInfo();
   ~ReceivedPacketInfo();
+
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const ReceivedPacketInfo& s);
 
@@ -610,9 +626,9 @@ void NET_EXPORT_PRIVATE InsertMissingPacketsBetween(
 struct NET_EXPORT_PRIVATE SentPacketInfo {
   SentPacketInfo();
   ~SentPacketInfo();
+
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const SentPacketInfo& s);
-
   // Entropy hash of all packets up to, but not including, the least unacked
   // packet.
   QuicPacketEntropyHash entropy_hash;
@@ -621,7 +637,7 @@ struct NET_EXPORT_PRIVATE SentPacketInfo {
 };
 
 struct NET_EXPORT_PRIVATE QuicAckFrame {
-  QuicAckFrame() {}
+  QuicAckFrame();
   // Testing convenience method to construct a QuicAckFrame with all packets
   // from least_unacked to largest_observed acked.
   QuicAckFrame(QuicPacketSequenceNumber largest_observed,
@@ -645,14 +661,15 @@ enum CongestionFeedbackType {
 };
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {
-  uint16 accumulated_number_of_lost_packets;
+  CongestionFeedbackMessageTCP();
+
   QuicByteCount receive_window;
 };
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageInterArrival {
   CongestionFeedbackMessageInterArrival();
   ~CongestionFeedbackMessageInterArrival();
-  uint16 accumulated_number_of_lost_packets;
+
   // The set of received packets since the last feedback was sent, along with
   // their arrival times.
   TimeMap received_packet_times;
@@ -679,11 +696,10 @@ struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
 };
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
-  QuicRstStreamFrame() {}
-  QuicRstStreamFrame(QuicStreamId stream_id, QuicRstStreamErrorCode error_code)
-      : stream_id(stream_id), error_code(error_code) {
-    DCHECK_LE(error_code, std::numeric_limits<uint8>::max());
-  }
+  QuicRstStreamFrame();
+  QuicRstStreamFrame(QuicStreamId stream_id,
+                     QuicRstStreamErrorCode error_code,
+                     QuicStreamOffset bytes_written);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicRstStreamFrame& r);
@@ -691,9 +707,17 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
   QuicStreamId stream_id;
   QuicRstStreamErrorCode error_code;
   std::string error_details;
+
+  // Used to update flow control windows. On termination of a stream, both
+  // endpoints must inform the peer of the number of bytes they have sent on
+  // that stream. This can be done through normal termination (data packet with
+  // FIN) or through a RST.
+  QuicStreamOffset byte_offset;
 };
 
 struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
+  QuicConnectionCloseFrame();
+
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicConnectionCloseFrame& c);
 
@@ -702,7 +726,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
 };
 
 struct NET_EXPORT_PRIVATE QuicGoAwayFrame {
-  QuicGoAwayFrame() {}
+  QuicGoAwayFrame();
   QuicGoAwayFrame(QuicErrorCode error_code,
                   QuicStreamId last_good_stream_id,
                   const std::string& reason);
@@ -713,6 +737,43 @@ struct NET_EXPORT_PRIVATE QuicGoAwayFrame {
   QuicErrorCode error_code;
   QuicStreamId last_good_stream_id;
   std::string reason_phrase;
+};
+
+// Flow control updates per-stream and at the connection levoel.
+// Based on SPDY's WINDOW_UPDATE frame, but uses an absolute byte offset rather
+// than a window delta.
+// TODO(rjshade): A possible future optimization is to make stream_id and
+//                byte_offset variable length, similar to stream frames.
+struct NET_EXPORT_PRIVATE QuicWindowUpdateFrame {
+  QuicWindowUpdateFrame() {}
+  QuicWindowUpdateFrame(QuicStreamId stream_id, QuicStreamOffset byte_offset);
+
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicWindowUpdateFrame& w);
+
+  // The stream this frame applies to.  0 is a special case meaning the overall
+  // connection rather than a specific stream.
+  QuicStreamId stream_id;
+
+  // Byte offset in the stream or connection. The receiver of this frame must
+  // not send data which would result in this offset being exceeded.
+  QuicStreamOffset byte_offset;
+};
+
+// The BLOCKED frame is used to indicate to the remote endpoint that this
+// endpoint believes itself to be flow-control blocked but otherwise ready to
+// send data. The BLOCKED frame is purely advisory and optional.
+// Based on SPDY's BLOCKED frame (undocumented as of 2014-01-28).
+struct NET_EXPORT_PRIVATE QuicBlockedFrame {
+  QuicBlockedFrame() {}
+  explicit QuicBlockedFrame(QuicStreamId stream_id);
+
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicBlockedFrame& b);
+
+  // The stream this frame applies to.  0 is a special case meaning the overall
+  // connection rather than a specific stream.
+  QuicStreamId stream_id;
 };
 
 // EncryptionLevel enumerates the stages of encryption that a QUIC connection
@@ -728,35 +789,16 @@ enum EncryptionLevel {
 };
 
 struct NET_EXPORT_PRIVATE QuicFrame {
-  QuicFrame() {}
-  explicit QuicFrame(QuicPaddingFrame* padding_frame)
-      : type(PADDING_FRAME),
-        padding_frame(padding_frame) {
-  }
-  explicit QuicFrame(QuicStreamFrame* stream_frame)
-      : type(STREAM_FRAME),
-        stream_frame(stream_frame) {
-  }
-  explicit QuicFrame(QuicAckFrame* frame)
-      : type(ACK_FRAME),
-        ack_frame(frame) {
-  }
-  explicit QuicFrame(QuicCongestionFeedbackFrame* frame)
-      : type(CONGESTION_FEEDBACK_FRAME),
-        congestion_feedback_frame(frame) {
-  }
-  explicit QuicFrame(QuicRstStreamFrame* frame)
-      : type(RST_STREAM_FRAME),
-        rst_stream_frame(frame) {
-  }
-  explicit QuicFrame(QuicConnectionCloseFrame* frame)
-      : type(CONNECTION_CLOSE_FRAME),
-        connection_close_frame(frame) {
-  }
-  explicit QuicFrame(QuicGoAwayFrame* frame)
-      : type(GOAWAY_FRAME),
-        goaway_frame(frame) {
-  }
+  QuicFrame();
+  explicit QuicFrame(QuicPaddingFrame* padding_frame);
+  explicit QuicFrame(QuicStreamFrame* stream_frame);
+  explicit QuicFrame(QuicAckFrame* frame);
+  explicit QuicFrame(QuicCongestionFeedbackFrame* frame);
+  explicit QuicFrame(QuicRstStreamFrame* frame);
+  explicit QuicFrame(QuicConnectionCloseFrame* frame);
+  explicit QuicFrame(QuicGoAwayFrame* frame);
+  explicit QuicFrame(QuicWindowUpdateFrame* frame);
+  explicit QuicFrame(QuicBlockedFrame* frame);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicFrame& frame);
@@ -770,6 +812,8 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicRstStreamFrame* rst_stream_frame;
     QuicConnectionCloseFrame* connection_close_frame;
     QuicGoAwayFrame* goaway_frame;
+    QuicWindowUpdateFrame* window_update_frame;
+    QuicBlockedFrame* blocked_frame;
   };
 };
 
@@ -787,16 +831,8 @@ struct NET_EXPORT_PRIVATE QuicFecData {
 
 class NET_EXPORT_PRIVATE QuicData {
  public:
-  QuicData(const char* buffer, size_t length)
-      : buffer_(buffer),
-        length_(length),
-        owns_buffer_(false) {}
-
-  QuicData(char* buffer, size_t length, bool owns_buffer)
-      : buffer_(buffer),
-        length_(length),
-        owns_buffer_(owns_buffer) {}
-
+  QuicData(const char* buffer, size_t length);
+  QuicData(char* buffer, size_t length, bool owns_buffer);
   virtual ~QuicData();
 
   base::StringPiece AsStringPiece() const {
@@ -854,13 +890,7 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
              QuicGuidLength guid_length,
              bool includes_version,
              QuicSequenceNumberLength sequence_number_length,
-             bool is_fec_packet)
-      : QuicData(buffer, length, owns_buffer),
-        buffer_(buffer),
-        is_fec_packet_(is_fec_packet),
-        guid_length_(guid_length),
-        includes_version_(includes_version),
-        sequence_number_length_(sequence_number_length) {}
+             bool is_fec_packet);
 
   char* buffer_;
   const bool is_fec_packet_;
@@ -873,11 +903,8 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
 
 class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
  public:
-  QuicEncryptedPacket(const char* buffer, size_t length)
-      : QuicData(buffer, length) {}
-
-  QuicEncryptedPacket(char* buffer, size_t length, bool owns_buffer)
-      : QuicData(buffer, length, owns_buffer) {}
+  QuicEncryptedPacket(const char* buffer, size_t length);
+  QuicEncryptedPacket(char* buffer, size_t length, bool owns_buffer);
 
   // Clones the packet into a new packet which owns the buffer.
   QuicEncryptedPacket* Clone() const;
@@ -941,10 +968,9 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
 };
 
 // A struct for functions which consume data payloads and fins.
-struct QuicConsumedData {
-  QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
-      : bytes_consumed(bytes_consumed),
-        fin_consumed(fin_consumed) {}
+struct NET_EXPORT_PRIVATE QuicConsumedData {
+  QuicConsumedData(size_t bytes_consumed, bool fin_consumed);
+
   // By default, gtest prints the raw bytes of an object. The bool data
   // member causes this object to have padding bytes, which causes the
   // default gtest object printer to read uninitialize memory. So we need
@@ -968,9 +994,7 @@ enum WriteStatus {
 // A struct used to return the result of write calls including either the number
 // of bytes written or the error code, depending upon the status.
 struct NET_EXPORT_PRIVATE WriteResult {
-  WriteResult(WriteStatus status, int bytes_written_or_error_code) :
-    status(status), bytes_written(bytes_written_or_error_code) {
-  }
+  WriteResult(WriteStatus status, int bytes_written_or_error_code);
 
   WriteStatus status;
   union {

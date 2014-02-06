@@ -89,9 +89,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Receiver side advertised window.
   QuicByteCount receive_window_;
 
-  // Receiver side advertised packet loss.
-  int last_received_accumulated_number_of_lost_packets_;
-
   // Bytes in flight, aka bytes on the wire.
   QuicByteCount bytes_in_flight_;
 

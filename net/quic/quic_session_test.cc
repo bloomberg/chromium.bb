@@ -479,7 +479,7 @@ TEST_P(QuicSessionTest, SendGoAway) {
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
   EXPECT_TRUE(session_.goaway_sent());
 
-  EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY));
+  EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY, 0));
   EXPECT_FALSE(session_.GetIncomingDataStream(3u));
 }
 
@@ -508,8 +508,8 @@ TEST_P(QuicSessionTest, ZombieStream) {
   // Reset the stream, but since the headers have not been decompressed
   // it will become a zombie and will continue to process data
   // until the headers are decompressed.
-  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED));
-  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED);
+  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0));
+  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0);
 
   EXPECT_EQ(1u, session.GetNumOpenStreams());
 
@@ -551,8 +551,8 @@ TEST_P(QuicSessionTest, ZombieStreamConnectionClose) {
   // Reset the stream, but since the headers have not been decompressed
   // it will become a zombie and will continue to process data
   // until the headers are decompressed.
-  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED));
-  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED);
+  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0));
+  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0);
 
   EXPECT_EQ(1u, session.GetNumOpenStreams());
 
@@ -577,7 +577,7 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
         QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED));
   }
 
-  QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR);
+  QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
 }

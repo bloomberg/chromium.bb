@@ -329,8 +329,9 @@ void QuicClientSession::CloseStream(QuicStreamId stream_id) {
 }
 
 void QuicClientSession::SendRstStream(QuicStreamId id,
-                                      QuicRstStreamErrorCode error) {
-  QuicSession::SendRstStream(id, error);
+                                      QuicRstStreamErrorCode error,
+                                      QuicStreamOffset bytes_written) {
+  QuicSession::SendRstStream(id, error, bytes_written);
   OnClosedStream();
 }
 

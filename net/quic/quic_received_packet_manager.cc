@@ -68,7 +68,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   // Don't update the receive algorithm for revived packets.
   if (!revived) {
     receive_algorithm_->RecordIncomingPacket(
-        bytes, sequence_number, receipt_time, revived);
+        bytes, sequence_number, receipt_time);
   }
 }
 

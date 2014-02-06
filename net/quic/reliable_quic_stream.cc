@@ -101,7 +101,7 @@ void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
   DCHECK_NE(QUIC_STREAM_NO_ERROR, error);
   stream_error_ = error;
   // Sending a RstStream results in calling CloseStream.
-  session()->SendRstStream(id(), error);
+  session()->SendRstStream(id(), error, stream_bytes_written_);
 }
 
 void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
