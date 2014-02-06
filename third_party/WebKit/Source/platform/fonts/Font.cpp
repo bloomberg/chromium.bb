@@ -39,8 +39,6 @@ namespace WebCore {
 
 CodePath Font::s_codePath = AutoPath;
 
-TypesettingFeatures Font::s_defaultTypesettingFeatures = 0;
-
 // ============================================================================================
 // Font Implementation (Cross-Platform Portion)
 // ============================================================================================
@@ -48,7 +46,6 @@ TypesettingFeatures Font::s_defaultTypesettingFeatures = 0;
 Font::Font()
     : m_letterSpacing(0)
     , m_wordSpacing(0)
-    , m_typesettingFeatures(0)
 {
 }
 
@@ -56,7 +53,6 @@ Font::Font(const FontDescription& fd, float letterSpacing, float wordSpacing)
     : m_fontDescription(fd)
     , m_letterSpacing(letterSpacing)
     , m_wordSpacing(wordSpacing)
-    , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
 
@@ -65,7 +61,6 @@ Font::Font(const Font& other)
     , m_fontFallbackList(other.m_fontFallbackList)
     , m_letterSpacing(other.m_letterSpacing)
     , m_wordSpacing(other.m_wordSpacing)
-    , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
 
@@ -75,7 +70,6 @@ Font& Font::operator=(const Font& other)
     m_fontFallbackList = other.m_fontFallbackList;
     m_letterSpacing = other.m_letterSpacing;
     m_wordSpacing = other.m_wordSpacing;
-    m_typesettingFeatures = other.m_typesettingFeatures;
     return *this;
 }
 
@@ -107,7 +101,6 @@ void Font::update(PassRefPtr<FontSelector> fontSelector) const
     if (!m_fontFallbackList)
         m_fontFallbackList = FontFallbackList::create();
     m_fontFallbackList->invalidate(fontSelector);
-    m_typesettingFeatures = computeTypesettingFeatures();
 }
 
 void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
@@ -120,7 +113,7 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
 
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
+    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = ComplexPath;
 
     if (codePathToUse != ComplexPath)
@@ -136,7 +129,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
+    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = ComplexPath;
 
     if (codePathToUse != ComplexPath)
@@ -157,7 +150,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
             glyphOverflow = 0;
     }
 
-    bool hasKerningOrLigatures = typesettingFeatures() & (Kerning | Ligatures);
+    bool hasKerningOrLigatures = fontDescription().typesettingFeatures() & (Kerning | Ligatures);
     bool hasWordSpacingOrLetterSpacing = wordSpacing() || letterSpacing();
     float* cacheEntry = m_fontFallbackList->widthCache().add(run, std::numeric_limits<float>::quiet_NaN(), hasKerningOrLigatures, hasWordSpacingOrLetterSpacing, glyphOverflow);
     if (cacheEntry && !std::isnan(*cacheEntry))
@@ -192,7 +185,7 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 
     CodePath codePathToUse = codePath(run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && typesettingFeatures() && (from || to != run.length()))
+    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (from || to != run.length()))
         codePathToUse = ComplexPath;
 
     if (codePathToUse != ComplexPath)
@@ -204,7 +197,7 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyphs) const
 {
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePath(run) != ComplexPath && !typesettingFeatures())
+    if (codePath(run) != ComplexPath && !fontDescription().typesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
@@ -231,16 +224,6 @@ void Font::setCodePath(CodePath p)
 CodePath Font::codePath()
 {
     return s_codePath;
-}
-
-void Font::setDefaultTypesettingFeatures(TypesettingFeatures typesettingFeatures)
-{
-    s_defaultTypesettingFeatures = typesettingFeatures;
-}
-
-TypesettingFeatures Font::defaultTypesettingFeatures()
-{
-    return s_defaultTypesettingFeatures;
 }
 
 CodePath Font::codePath(const TextRun& run) const

@@ -63,7 +63,7 @@ public:
     static bool supportsTypesettingFeatures(const Font& font)
     {
 
-        return !font.typesettingFeatures();
+        return !font.fontDescription().typesettingFeatures();
     }
 
     const Font* m_font;

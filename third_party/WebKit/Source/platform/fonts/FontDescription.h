@@ -34,6 +34,7 @@
 #include "platform/fonts/FontTraitsMask.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
+#include "platform/fonts/TypesettingFeatures.h"
 #include "platform/text/NonCJKGlyphOrientation.h"
 #include "wtf/MathExtras.h"
 
@@ -98,6 +99,7 @@ public:
         , m_syntheticBold(false)
         , m_syntheticItalic(false)
         , m_subpixelTextPosition(s_useSubpixelTextPositioning)
+        , m_typesettingFeatures(s_defaultTypesettingFeatures)
     {
     }
 
@@ -157,13 +159,13 @@ public:
 #else
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
 #endif
-    void setKerning(Kerning kerning) { m_kerning = kerning; }
-    void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; }
+    void setKerning(Kerning kerning) { m_kerning = kerning; updateTypesettingFeatures(); }
+    void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; updateTypesettingFeatures(); }
     void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; }
     void setHistoricalLigaturesState(LigaturesState historicalLigaturesState) { m_historicalLigaturesState = historicalLigaturesState; }
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
-    void setTextRenderingMode(TextRenderingMode rendering) { m_textRendering = rendering; }
+    void setTextRenderingMode(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
     void setIsSpecifiedFont(bool isSpecifiedFont) { m_isSpecifiedFont = isSpecifiedFont; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
     void setNonCJKGlyphOrientation(NonCJKGlyphOrientation orientation) { m_nonCJKGlyphOrientation = orientation; }
@@ -174,12 +176,19 @@ public:
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
     void setTraitsMask(FontTraitsMask);
 
+    TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
+
     static void setSubpixelPositioning(bool b) { s_useSubpixelTextPositioning = b; }
     static bool subpixelPositioning() { return s_useSubpixelTextPositioning; }
+
+    static void setDefaultTypesettingFeatures(TypesettingFeatures);
+    static TypesettingFeatures defaultTypesettingFeatures();
 
 private:
     FontFamily m_familyList; // The list of font families to be used.
     RefPtr<FontFeatureSettings> m_featureSettings;
+
+    void updateTypesettingFeatures() const;
 
     float m_specifiedSize;   // Specified CSS value. Independent of rendering issues such as integer
                              // rounding, minimum font sizes, and zooming.
@@ -215,6 +224,10 @@ private:
     unsigned m_syntheticBold : 1;
     unsigned m_syntheticItalic : 1;
     unsigned m_subpixelTextPosition : 1;
+
+    mutable unsigned m_typesettingFeatures : 2; // TypesettingFeatures
+
+    static TypesettingFeatures s_defaultTypesettingFeatures;
 
     static bool s_useSubpixelTextPositioning;
 };

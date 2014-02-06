@@ -538,7 +538,7 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
 {
     WidthIterator it(this, run, fallbackFonts, glyphOverflow);
     GlyphBuffer glyphBuffer;
-    it.advance(run.length(), (typesettingFeatures() & (Kerning | Ligatures)) ? &glyphBuffer : 0);
+    it.advance(run.length(), (fontDescription().typesettingFeatures() & (Kerning | Ligatures)) ? &glyphBuffer : 0);
 
     if (glyphOverflow) {
         glyphOverflow->top = max<int>(glyphOverflow->top, ceilf(-it.minGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));

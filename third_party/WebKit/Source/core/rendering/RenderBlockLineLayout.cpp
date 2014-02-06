@@ -439,7 +439,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     }
     float measuredWidth = 0;
 
-    bool kerningIsEnabled = font.typesettingFeatures() & Kerning;
+    bool kerningIsEnabled = font.fontDescription().typesettingFeatures() & Kerning;
 
 #if OS(MACOSX)
     // FIXME: Having any font feature settings enabled can lead to selection gaps on

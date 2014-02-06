@@ -43,7 +43,7 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     , m_runWidthSoFar(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
     , m_finalRoundingWidth(0)
-    , m_typesettingFeatures(font->typesettingFeatures())
+    , m_typesettingFeatures(font->fontDescription().typesettingFeatures())
     , m_fallbackFonts(fallbackFonts)
     , m_accountForGlyphBounds(accountForGlyphBounds)
     , m_maxGlyphBoundingBoxY(numeric_limits<float>::min())

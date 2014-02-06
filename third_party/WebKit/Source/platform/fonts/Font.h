@@ -29,7 +29,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/TypesettingFeatures.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "wtf/HashMap.h"
@@ -108,8 +107,6 @@ public:
     void setLetterSpacing(float s) { m_letterSpacing = s; }
     bool isFixedPitch() const;
 
-    TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
-
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }
     float spaceWidth() const { return primaryFont()->spaceWidth() + m_letterSpacing; }
@@ -170,9 +167,6 @@ public:
     static CodePath codePath();
     static CodePath s_codePath;
 
-    static void setDefaultTypesettingFeatures(TypesettingFeatures);
-    static TypesettingFeatures defaultTypesettingFeatures();
-
     FontSelector* fontSelector() const;
 
     FontFallbackList* fontList() const { return m_fontFallbackList.get(); }
@@ -185,55 +179,10 @@ private:
         return m_fontFallbackList && m_fontFallbackList->loadingCustomFonts();
     }
 
-    TypesettingFeatures computeTypesettingFeatures() const
-    {
-        TextRenderingMode textRenderingMode = m_fontDescription.textRenderingMode();
-        TypesettingFeatures features = s_defaultTypesettingFeatures;
-
-        switch (textRenderingMode) {
-        case AutoTextRendering:
-            break;
-        case OptimizeSpeed:
-            features &= ~(Kerning | Ligatures);
-            break;
-        case GeometricPrecision:
-        case OptimizeLegibility:
-            features |= Kerning | Ligatures;
-            break;
-        }
-
-        switch (m_fontDescription.kerning()) {
-        case FontDescription::NoneKerning:
-            features &= ~Kerning;
-            break;
-        case FontDescription::NormalKerning:
-            features |= Kerning;
-            break;
-        case FontDescription::AutoKerning:
-            break;
-        }
-
-        switch (m_fontDescription.commonLigaturesState()) {
-        case FontDescription::DisabledLigaturesState:
-            features &= ~Ligatures;
-            break;
-        case FontDescription::EnabledLigaturesState:
-            features |= Ligatures;
-            break;
-        case FontDescription::NormalLigaturesState:
-            break;
-        }
-
-        return features;
-    }
-
-    static TypesettingFeatures s_defaultTypesettingFeatures;
-
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;
     float m_letterSpacing;
     float m_wordSpacing;
-    mutable unsigned m_typesettingFeatures : 2; // (TypesettingFeatures) Caches values computed from m_fontDescription.
 };
 
 inline Font::~Font()

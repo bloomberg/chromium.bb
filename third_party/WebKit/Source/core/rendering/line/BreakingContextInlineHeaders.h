@@ -644,7 +644,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
-    float wordTrailingSpaceWidth = (font.typesettingFeatures() & Kerning) ?
+    float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
         font.width(RenderBlockFlow::constructTextRun(
             renderText, font, &space, 1, style,
             textDirectionFromUnicode(m_resolver.position().direction()))) + wordSpacing
