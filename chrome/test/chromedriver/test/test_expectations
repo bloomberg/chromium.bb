@@ -151,9 +151,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # http://crbug.com/156390
     'DragAndDropTest.*',
 
-    # Flick touch events are not yet implemented.
-    'TouchFlickTest.*',
-
     # Scrolling touch events are not supported.
     'TouchScrollTest.*',
 

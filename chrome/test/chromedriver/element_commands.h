@@ -76,6 +76,14 @@ Status ExecuteTouchSingleTap(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Touch flick starting on the element.
+Status ExecuteFlick(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Clear a TEXTAREA or text INPUT element's value.
 Status ExecuteClearElement(
     Session* session,

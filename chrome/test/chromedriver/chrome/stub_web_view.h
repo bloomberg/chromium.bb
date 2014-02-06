@@ -48,6 +48,7 @@ class StubWebView : public WebView {
                                     std::string* out_frame) OVERRIDE;
   virtual Status DispatchMouseEvents(
       const std::list<MouseEvent>& events, const std::string& frame) OVERRIDE;
+  virtual Status DispatchTouchEvent(const TouchEvent& event) OVERRIDE;
   virtual Status DispatchTouchEvents(
       const std::list<TouchEvent>& events) OVERRIDE;
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;

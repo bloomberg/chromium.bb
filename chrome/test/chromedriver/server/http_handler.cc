@@ -495,7 +495,7 @@ HttpHandler::HttpHandler(
                      base::Bind(&UnimplementedCommand)),
       CommandMapping(kPost,
                      "session/:sessionId/touch/flick",
-                     base::Bind(&UnimplementedCommand)),
+                     WrapToCommand("TouchFlick", base::Bind(&ExecuteFlick))),
       CommandMapping(kPost,
                      "session/:sessionId/log",
                      WrapToCommand("GetLog", base::Bind(&ExecuteGetLog))),

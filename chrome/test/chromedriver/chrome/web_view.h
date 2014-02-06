@@ -102,6 +102,9 @@ class WebView {
   virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events,
                                      const std::string& frame) = 0;
 
+  // Dispatch a single touch event.
+  virtual Status DispatchTouchEvent(const TouchEvent& event) = 0;
+
   // Dispatch a sequence of touch events.
   virtual Status DispatchTouchEvents(const std::list<TouchEvent>& events) = 0;
 

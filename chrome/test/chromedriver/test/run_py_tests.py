@@ -7,11 +7,12 @@
 
 import base64
 import json
+import math
 import optparse
-import subprocess
 import os
-import sys
 import socket
+import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -75,6 +76,7 @@ _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
     'ChromeDriverTest.testSingleTapElement',
     'ChromeDriverTest.testTouchDownUpElement',
+    'ChromeDriverTest.testTouchFlickElement',
     'ChromeDriverTest.testTouchMovedElement',
     'ChromeDriverAndroidTest.*',
 ]
@@ -419,6 +421,34 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     loc = div.GetLocation()
     self._driver.TouchDown(loc['x'], loc['y'])
     self._driver.TouchUp(loc['x'], loc['y'])
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testTouchFlickElement(self):
+    dx = 3
+    dy = 4
+    speed = 5
+    flickTouchEventsPerSecond = 30
+    moveEvents = int(
+        math.sqrt(dx * dx + dy * dy) * flickTouchEventsPerSecond / speed)
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("touchstart", function() {'
+        '  div.innerHTML = "preMove0";'
+        '});'
+        'div.addEventListener("touchmove", function() {'
+        '  res = div.innerHTML.match(/preMove(\d+)/);'
+        '  if (res != null) {'
+        '    div.innerHTML = "preMove" + (parseInt(res[1], 10) + 1);'
+        '  }'
+        '});'
+        'div.addEventListener("touchend", function() {'
+        '  if (div.innerHTML == "preMove' + str(moveEvents) + '") {'
+        '    div.innerHTML = "new<br>";'
+        '  }'
+        '});'
+        'return div;')
+    self._driver.TouchFlick(div, dx, dy, speed)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testTouchMovedElement(self):

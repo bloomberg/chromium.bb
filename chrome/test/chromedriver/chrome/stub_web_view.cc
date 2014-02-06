@@ -77,6 +77,10 @@ Status StubWebView::DispatchMouseEvents(const std::list<MouseEvent>& events,
   return Status(kOk);
 }
 
+Status StubWebView::DispatchTouchEvent(const TouchEvent& event) {
+  return Status(kOk);
+}
+
 Status StubWebView::DispatchTouchEvents(const std::list<TouchEvent>& events) {
   return Status(kOk);
 }
