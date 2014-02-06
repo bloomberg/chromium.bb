@@ -77,18 +77,37 @@ void OpenBrowserWindowForProfile(
   if (BrowserList::GetInstance(desktop_type)->size() == 0)
     is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
 
+  // If |always_create| is false, and we have a |callback| to run, check
+  // whether a browser already exists so that we can run the callback. We don't
+  // want to rely on the observer listening to OnBrowserSetLastActive in this
+  // case, as you could manually activate an incorrect browser and trigger
+  // a false positive.
+  if (!always_create) {
+    Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    if (browser) {
+      browser->window()->Activate();
+      if (!callback.is_null())
+        callback.Run();
+      return;
+    }
+  }
+
   // If there is a callback, create an observer to make sure it is only
   // run when the browser has been completely created.
   scoped_ptr<BrowserAddedObserver> browser_added_observer;
   if (!callback.is_null())
     browser_added_observer.reset(new BrowserAddedObserver(callback));
 
+  // We already dealt with the case when |always_create| was false and a browser
+  // existed, which means that here a browser definitely needs to be created.
+  // Passing true for |always_create| means we won't duplicate the code that
+  // tries to find a browser.
   profiles::FindOrCreateNewWindowForProfile(
       profile,
       is_process_startup,
       is_first_run,
       desktop_type,
-      always_create);
+      true);
 }
 
 }  // namespace

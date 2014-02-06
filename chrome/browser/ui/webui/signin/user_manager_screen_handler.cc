@@ -299,7 +299,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
   profiles::SwitchToProfile(path,
                             desktop_type_,
-                            true,
+                            false,  /* reuse any existing windows */
                             base::Bind(&chrome::HideUserManager),
                             ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
