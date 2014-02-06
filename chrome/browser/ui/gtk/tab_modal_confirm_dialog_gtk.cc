@@ -36,7 +36,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
       closing_(false) {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
-      base::UTF16ToUTF8(delegate->GetMessage()).c_str());
+      base::UTF16ToUTF8(delegate->GetDialogMessage()).c_str());
   gfx::Image* icon = delegate->GetIcon();
   GtkWidget* image = icon ? gtk_image_new_from_pixbuf(icon->ToGdkPixbuf())
                           : gtk_image_new_from_stock(GTK_STOCK_DIALOG_QUESTION,
