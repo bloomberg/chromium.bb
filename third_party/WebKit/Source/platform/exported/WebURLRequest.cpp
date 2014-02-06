@@ -176,6 +176,7 @@ WebString WebURLRequest::httpHeaderField(const WebString& name) const
 
 void WebURLRequest::setHTTPHeaderField(const WebString& name, const WebString& value)
 {
+    RELEASE_ASSERT(!equalIgnoringCase(name, "referer"));
     m_private->m_resourceRequest->setHTTPHeaderField(name, value);
 }
 

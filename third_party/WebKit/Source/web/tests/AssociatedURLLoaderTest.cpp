@@ -208,7 +208,10 @@ public:
         WebURLRequest request;
         request.initialize();
         request.setURL(toKURL("http://www.test.com/success.html"));
-        request.setHTTPHeaderField(WebString::fromUTF8(headerField), WebString::fromUTF8(headerValue));
+        if (equalIgnoringCase(WebString::fromUTF8(headerField), "referer"))
+            request.setHTTPReferrer(WebString::fromUTF8(headerValue), blink::WebReferrerPolicyDefault);
+        else
+            request.setHTTPHeaderField(WebString::fromUTF8(headerField), WebString::fromUTF8(headerValue));
         WebURLLoaderOptions options;
         options.untrustedHTTP = true;
         CheckFails(request, options);
