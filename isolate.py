@@ -39,7 +39,7 @@ from utils import file_path
 from utils import tools
 
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 
 class ExecutionError(Exception):
@@ -1055,20 +1055,13 @@ def CMDarchive(parser, args):
   cache via isolateserver.py.
   """
   add_subdir_option(parser)
-  parser.add_option(
-      '-I', '--isolate-server', metavar='URL',
-      default=os.environ.get('ISOLATE_SERVER', ''),
-      help='URL of the isolate server')
-  parser.add_option(
-      '--namespace', metavar='NAME', default='default-gzip',
-      help='Namespace to use on the isolate server')
+  isolateserver.add_isolate_server_options(parser)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
+  isolateserver.process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  if not options.isolate_server:
-    parser.error('--isolate-server is required.')
   cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False

@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to a server."""
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 import functools
 import hashlib
@@ -20,6 +20,7 @@ import tempfile
 import threading
 import time
 import urllib
+import urlparse
 import zlib
 
 from third_party import colorama
@@ -2041,6 +2042,34 @@ def CMDdownload(parser, args):
   return 0
 
 
+def add_isolate_server_options(parser):
+  """Adds --isolate-server and --namespace options to parser."""
+  parser.add_option(
+      '-I', '--isolate-server',
+      metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
+      help='URL of the Isolate Server to use or path to a remote directory. '
+           'Defaults to the environment variable ISOLATE_SERVER if set.')
+  parser.add_option(
+      '--namespace', default='default-gzip',
+      help='The namespace to use on the Isolate Server, default: %default')
+
+
+def process_isolate_server_options(parser, options):
+  """Processes the --isolate-server option and aborts if not specified.
+
+  If ambivalent, accepts non-URLs.
+  """
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
+  if file_path.is_url(options.isolate_server):
+    parts = urlparse.urlparse(options.isolate_server)
+    if parts.query:
+      parser.error('--isolate-server doesn\'t support query parameter.')
+    if parts.fragment:
+      parser.error('--isolate-server doesn\'t support fragment in the url.')
+    options.isolate_server = options.isolate_server.rstrip('/')
+
+
 class OptionParserIsolateServer(tools.OptionParserWithLogging):
   def __init__(self, **kwargs):
     tools.OptionParserWithLogging.__init__(
@@ -2048,21 +2077,13 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
         version=__version__,
         prog=os.path.basename(sys.modules[__name__].__file__),
         **kwargs)
-    self.add_option(
-        '-I', '--isolate-server',
-        metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
-        help='Isolate server to use')
-    self.add_option(
-        '--namespace', default='default-gzip',
-        help='The namespace to use on the server, default: %default')
+    add_isolate_server_options(self)
     auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
-    options.isolate_server = options.isolate_server.rstrip('/')
-    if not options.isolate_server:
-      self.error('--isolate-server is required.')
+    process_isolate_server_options(self, options)
     auth.process_auth_options(self, options)
     return options, args
 

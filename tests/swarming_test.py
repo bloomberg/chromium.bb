@@ -439,6 +439,7 @@ def chromium_tasks(retrieval_url):
         u'python', u'run_isolated.zip',
         u'--hash', FILE_HASH,
         u'--isolate-server', retrieval_url,
+        u'--namespace', u'default-gzip',
       ],
       u'decorate_output': False,
       u'test_name': u'Run Test',
@@ -514,6 +515,7 @@ class ManifestTest(TestCase):
     dimensions = {'os': 'Windows'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
+        namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         shards=2,
@@ -544,6 +546,7 @@ class ManifestTest(TestCase):
     dimensions = {'os': 'Linux'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
+        namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         shards=1,
@@ -571,6 +574,7 @@ class ManifestTest(TestCase):
     dimensions = {'os': 'Linux'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
+        namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         shards=1,
@@ -602,6 +606,7 @@ class ManifestTest(TestCase):
     result = swarming.process_manifest(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
+        namespace='default',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         shards=1,
@@ -623,6 +628,7 @@ class ManifestTest(TestCase):
     result = swarming.process_manifest(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
+        namespace='default',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         shards=1,
@@ -647,7 +653,7 @@ class ManifestTest(TestCase):
       with open(isolated, 'w') as f:
         f.write(content)
       hash_value = swarming.isolated_to_hash(
-          'http://localhost:1', isolated, hashlib.sha1, False)
+          'http://localhost:1', 'default', isolated, hashlib.sha1, False)
     finally:
       os.remove(isolated)
     self.assertEqual(expected_hash, hash_value)
@@ -657,8 +663,8 @@ class ManifestTest(TestCase):
             sys.executable,
             os.path.join(ROOT_DIR, 'isolate.py'),
             'archive',
-            '--isolate-server',
-            'http://localhost:1',
+            '--isolate-server', 'http://localhost:1',
+            '--namespace', 'default',
             '--isolated',
             isolated,
           ],

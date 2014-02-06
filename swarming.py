@@ -55,11 +55,12 @@ class Manifest(object):
   Also includes code to zip code and upload itself.
   """
   def __init__(
-      self, isolate_server, isolated_hash, task_name, shards, env,
+      self, isolate_server, namespace, isolated_hash, task_name, shards, env,
       dimensions, working_dir, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
+        namespace - isolate server namespace to use.
         isolated_hash - The manifest's sha-1 that the slave is going to fetch.
         task_name - The name to give the task request.
         shards - The number of swarming shards to request.
@@ -72,6 +73,10 @@ class Manifest(object):
         algo - hashing algorithm used.
     """
     self.isolate_server = isolate_server
+    self.namespace = namespace
+    # The reason is that swarm_bot doesn't understand compressed data yet. So
+    # the data to be downloaded by swarm_bot is in 'default', independent of
+    # what run_isolated.py is going to fetch.
     self.storage = isolateserver.get_storage(isolate_server, 'default')
 
     self.isolated_hash = isolated_hash
@@ -290,6 +295,7 @@ def chromium_setup(manifest):
     'python', run_test_name,
     '--hash', manifest.isolated_hash,
     '--isolate-server', manifest.isolate_server,
+    '--namespace', manifest.namespace,
   ]
   if manifest.verbose or manifest.profile:
     # Have it print the profiling section.
@@ -309,16 +315,17 @@ def googletest_setup(env, shards):
   return env
 
 
-def archive(isolate_server, isolated, algo, verbose):
+def archive(isolate_server, namespace, isolated, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
+  logging.info('archive(%s, %s, %s)', isolate_server, namespace, isolated)
   tempdir = None
   try:
-    logging.info('archive(%s, %s)', isolate_server, isolated)
     cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'isolate.py'),
       'archive',
       '--isolate-server', isolate_server,
+      '--namespace', namespace,
       '--isolated', isolated,
     ]
     cmd.extend(['--verbose'] * verbose)
@@ -332,12 +339,13 @@ def archive(isolate_server, isolated, algo, verbose):
 
 
 def process_manifest(
-    swarming, isolate_server, isolated_hash, task_name, shards,
+    swarming, isolate_server, namespace, isolated_hash, task_name, shards,
     dimensions, env, working_dir, verbose, profile, priority, algo):
   """Processes the manifest file and send off the swarming task request."""
   try:
     manifest = Manifest(
         isolate_server=isolate_server,
+        namespace=namespace,
         isolated_hash=isolated_hash,
         task_name=task_name,
         shards=shards,
@@ -380,13 +388,13 @@ def process_manifest(
   return 0
 
 
-def isolated_to_hash(isolate_server, arg, algo, verbose):
+def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
   """Archives a .isolated file if needed.
 
   Returns the file hash to trigger.
   """
   if arg.endswith('.isolated'):
-    file_hash = archive(isolate_server, arg, algo, verbose)
+    file_hash = archive(isolate_server, namespace, arg, algo, verbose)
     if not file_hash:
       tools.report_error('Archival failure %s' % arg)
       return None
@@ -401,6 +409,7 @@ def isolated_to_hash(isolate_server, arg, algo, verbose):
 def trigger(
     swarming,
     isolate_server,
+    namespace,
     file_hash_or_isolated,
     task_name,
     shards,
@@ -412,7 +421,7 @@ def trigger(
     priority):
   """Sends off the hash swarming task requests."""
   file_hash = isolated_to_hash(
-      isolate_server, file_hash_or_isolated, hashlib.sha1, verbose)
+      isolate_server, namespace, file_hash_or_isolated, hashlib.sha1, verbose)
   if not file_hash:
     return 1
   env = googletest_setup(env, shards)
@@ -421,6 +430,7 @@ def trigger(
   return process_manifest(
       swarming=swarming,
       isolate_server=isolate_server,
+      namespace=namespace,
       isolated_hash=file_hash,
       task_name=task_name,
       shards=shards,
@@ -478,10 +488,7 @@ def collect(url, task_name, timeout, decorate):
 
 def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
-  parser.server_group.add_option(
-      '-I', '--isolate-server',
-      metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
-      help='Isolate server to use')
+  isolateserver.add_isolate_server_options(parser)
 
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
   parser.filter_group.add_option(
@@ -515,9 +522,7 @@ def add_trigger_options(parser):
 
 
 def process_trigger_options(parser, options, args):
-  options.isolate_server = options.isolate_server.rstrip('/')
-  if not options.isolate_server:
-    parser.error('--isolate-server is required.')
+  isolateserver.process_isolate_server_options(parser, options)
   if not options.task_name:
     parser.error(
         '--task-name is required. It should be <base_name>/<OS>/<isolated>')
@@ -577,6 +582,7 @@ def CMDrun(parser, args):
     result = trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server,
+        namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
         shards=options.shards,
@@ -624,6 +630,7 @@ def CMDtrigger(parser, args):
     return trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server,
+        namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
         dimensions=options.dimensions,

@@ -8,7 +8,7 @@
 Keeps a local cache.
 """
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 import ctypes
 import logging
@@ -714,61 +714,53 @@ def main(args):
       version=__version__,
       log_file=RUN_ISOLATED_LOG_FILE)
 
-  group = optparse.OptionGroup(parser, 'Data source')
-  group.add_option(
+  data_group = optparse.OptionGroup(parser, 'Data source')
+  data_group.add_option(
       '-s', '--isolated',
       metavar='FILE',
       help='File/url describing what to map or run')
-  group.add_option(
+  data_group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
-  group.add_option(
-      '-I', '--isolate-server',
-      metavar='URL', default='',
-      help='Isolate server to use')
-  group.add_option(
-      '-n', '--namespace',
-      default='default-gzip',
-      help='namespace to use when using isolateserver, default: %default')
-  parser.add_option_group(group)
+  isolateserver.add_isolate_server_options(data_group)
+  parser.add_option_group(data_group)
 
-  group = optparse.OptionGroup(parser, 'Cache management')
-  group.add_option(
+  cache_group = optparse.OptionGroup(parser, 'Cache management')
+  cache_group.add_option(
       '--cache',
       default='cache',
       metavar='DIR',
       help='Cache directory, default=%default')
-  group.add_option(
+  cache_group.add_option(
       '--max-cache-size',
       type='int',
       metavar='NNN',
       default=20*1024*1024*1024,
       help='Trim if the cache gets larger than this value, default=%default')
-  group.add_option(
+  cache_group.add_option(
       '--min-free-space',
       type='int',
       metavar='NNN',
       default=2*1024*1024*1024,
       help='Trim if disk free space becomes lower than this value, '
            'default=%default')
-  group.add_option(
+  cache_group.add_option(
       '--max-items',
       type='int',
       metavar='NNN',
       default=100000,
       help='Trim if more than this number of items are in the cache '
            'default=%default')
-  parser.add_option_group(group)
+  parser.add_option_group(cache_group)
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
+  isolateserver.process_isolate_server_options(data_group, options)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
-  if not options.isolate_server:
-    parser.error('--isolate-server is required.')
 
   options.cache = os.path.abspath(options.cache)
   policies = CachePolicies(
