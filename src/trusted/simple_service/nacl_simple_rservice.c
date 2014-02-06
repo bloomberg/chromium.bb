@@ -238,7 +238,6 @@ int NaClSimpleRevServiceConnectAndSpawnHandlerCb(
      */
     NaClLog(3, "NaClSimpleRevServiceConnectAndSpawnHandler: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) rev_conn);
-    rev_conn->thread = NULL;
     return -NACL_ABI_EAGAIN;
   }
   /* thread owns rev_conn */
