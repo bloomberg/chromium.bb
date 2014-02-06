@@ -82,7 +82,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 #if defined(OS_WIN)
-#include "content/browser/renderer_host/backing_store_win.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
 #if defined(OS_ANDROID)
@@ -860,7 +859,14 @@ void RenderMessageFilter::OnGetAudioHardwareConfig(
 #if defined(OS_WIN)
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (BackingStoreWin::ColorManagementEnabled())
+  static bool enabled = false;
+  static bool checked = false;
+  if (!checked) {
+    checked = true;
+    const CommandLine& command = *CommandLine::ForCurrentProcess();
+    enabled = command.HasSwitch(switches::kEnableMonitorProfile);
+  }
+  if (enabled)
     return;
   *profile = g_color_profile.Get().profile();
 }

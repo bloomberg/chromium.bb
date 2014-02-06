@@ -98,7 +98,7 @@
             }],
           ]
         }],
-        ['OS == "win" and use_aura==1', {
+        ['OS == "win"', {
           'sources!': [
             # We still want the _win entry point for sandbox, etc.
             'app/chrome_exe_main_aura.cc',

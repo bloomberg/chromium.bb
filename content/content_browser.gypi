@@ -803,8 +803,6 @@
     'browser/renderer_host/backing_store_mac.mm',
     'browser/renderer_host/backing_store_manager.cc',
     'browser/renderer_host/backing_store_manager.h',
-    'browser/renderer_host/backing_store_win.cc',
-    'browser/renderer_host/backing_store_win.h',
     'browser/renderer_host/clipboard_message_filter.cc',
     'browser/renderer_host/clipboard_message_filter.h',
     'browser/renderer_host/clipboard_message_filter_mac.mm',
@@ -974,7 +972,6 @@
     'browser/renderer_host/native_web_keyboard_event_aura.cc',
     'browser/renderer_host/native_web_keyboard_event_gtk.cc',
     'browser/renderer_host/native_web_keyboard_event_mac.mm',
-    'browser/renderer_host/native_web_keyboard_event_win.cc',
     'browser/renderer_host/overscroll_configuration.cc',
     'browser/renderer_host/overscroll_controller.cc',
     'browser/renderer_host/overscroll_controller.h',
@@ -1577,7 +1574,6 @@
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
         ['exclude', '^browser/renderer_host/input/touchpad_tap_suppression_controller.cc'],
-        ['exclude', '^browser/renderer_host/native_web_keyboard_event_win.cc'],
       ],
     }, {
       'sources/': [
