@@ -2352,9 +2352,6 @@ sub GenerateOverloadedFunction
 static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 END
-    $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
-    $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
-
     foreach my $overload (@{$function->{overloads}}) {
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($overload);
         $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
