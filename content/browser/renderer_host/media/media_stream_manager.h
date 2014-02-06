@@ -182,13 +182,14 @@ class CONTENT_EXPORT MediaStreamManager
   // too late. (see http://crbug.com/247525#c14).
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  // Sends log messages to the render processes making device requests, to be
-  // used by the webrtcLoggingPrivate API if requested.
+  // Sends log messages to the render process hosts whose corresponding render
+  // processes are making device requests, to be used by the
+  // webrtcLoggingPrivate API if requested.
   void AddLogMessageOnIOThread(const std::string& message);
 
   // Adds |message| to native logs for outstanding device requests, for use by
-  // render processes requesting logging from webrtcLoggingPrivate API. Safe to
-  // call from any thread.
+  // render processes hosts whose corresponding render processes are requesting
+  // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
 
  protected:
@@ -316,9 +317,9 @@ class CONTENT_EXPORT MediaStreamManager
   void TranslateDeviceIdToSourceId(DeviceRequest* request,
                                    MediaStreamDevice* device);
 
-  // Helper method that sends log messages to the render processes in
-  // |render_process_ids|, to be used by the webrtcLoggingPrivate API if
-  // requested.
+  // Helper method that sends log messages to the render process hosts whose
+  // corresponding render processes are in |render_process_ids|, to be used by
+  // the webrtcLoggingPrivate API if requested.
   void AddLogMessageOnUIThread(const std::set<int>& render_process_ids,
                                const std::string& message);
 

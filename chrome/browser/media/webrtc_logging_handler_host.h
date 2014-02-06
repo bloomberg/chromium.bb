@@ -103,7 +103,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // Handles log message requests from both renderer process.
+  // Handles log message requests from renderer process.
   void OnAddLogMessage(const std::string& message);
   void OnLoggingStoppedInRenderer();
 
