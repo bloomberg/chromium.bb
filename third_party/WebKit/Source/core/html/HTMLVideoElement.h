@@ -28,6 +28,10 @@
 
 #include "core/html/HTMLMediaElement.h"
 
+namespace blink {
+class WebGraphicsContext3D;
+}
+
 namespace WebCore {
 
 class ExceptionState;
@@ -55,7 +59,7 @@ public:
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
     // See more details at MediaPlayer::copyVideoTextureToPlatformTexture() defined in Source/WebCore/platform/graphics/MediaPlayer.h.
-    bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY);
+    bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return displayMode() == Poster || displayMode() == PosterWaitingForVideo; }
 

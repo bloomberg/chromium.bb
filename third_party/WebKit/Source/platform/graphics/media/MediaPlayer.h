@@ -33,6 +33,7 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
+class WebGraphicsContext3D;
 class WebContentDecryptionModule;
 class WebInbandTextTrack;
 class WebLayer;
@@ -159,7 +160,7 @@ public:
     virtual bool didLoadingProgress() const = 0;
 
     virtual void paint(GraphicsContext*, const IntRect&) = 0;
-    virtual bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
+    virtual bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
 
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;

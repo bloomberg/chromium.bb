@@ -30,6 +30,7 @@
 #include "SkSurface.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "web/tests/MockWebGraphicsContext3D.h"
@@ -51,6 +52,25 @@ public:
     MOCK_METHOD0(flush, void(void));
     MOCK_METHOD0(createTexture, unsigned(void));
     MOCK_METHOD1(deleteTexture, void(unsigned));
+};
+
+class MockWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
+public:
+    MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d)
+        : m_context3d(context3d) { }
+
+    WebGraphicsContext3D* context3d()
+    {
+        return m_context3d;
+    }
+
+    GrContext* grContext()
+    {
+        return 0;
+    }
+
+private:
+    WebGraphicsContext3D* m_context3d;
 };
 
 class Canvas2DLayerBridgePtr {
@@ -77,14 +97,13 @@ protected:
     void fullLifecycleTest()
     {
         MockCanvasContext mainMock;
-        RefPtr<GraphicsContext3D> mainContext = GraphicsContext3D::createContextSupport(&mainMock);
-
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         {
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainContext.release(), canvas.release(), 0, NonOpaque)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), 0, NonOpaque)));
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

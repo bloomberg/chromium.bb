@@ -56,6 +56,7 @@ class WebHelperPlugin;
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
+class WebGraphicsContext3D;
 
 // This class serves as a bridge between WebCore::MediaPlayer and
 // blink::WebMediaPlayer.
@@ -119,7 +120,7 @@ public:
     virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
     virtual bool didLoadingProgress() const OVERRIDE;
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
-    virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
+    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
     virtual bool didPassCORSAccessCheck() const OVERRIDE;
@@ -152,7 +153,7 @@ private:
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
     // texture internally. It should be removed and replaced by the normal paint path.
     // https://code.google.com/p/skia/issues/detail?id=1189
-    void paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const WebCore::IntRect& rect, uint8_t alpha);
+    void paintOnAndroid(WebCore::GraphicsContext*, WebGraphicsContext3D*, const WebCore::IntRect&, uint8_t alpha);
     SkBitmap m_bitmap;
 #endif
 

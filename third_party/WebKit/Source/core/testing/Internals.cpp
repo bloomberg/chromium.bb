@@ -123,9 +123,10 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "platform/graphics/filters/FilterOperations.h"
-#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/PassOwnPtr.h"
@@ -2324,14 +2325,15 @@ bool Internals::isSelectPopupVisible(Node* node)
 
 bool Internals::loseSharedGraphicsContext3D()
 {
-    RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
-    if (!sharedContext)
+    OwnPtr<blink::WebGraphicsContext3DProvider> sharedProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!sharedProvider)
         return false;
-    sharedContext->webContext()->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
+    blink::WebGraphicsContext3D* sharedContext = sharedProvider->context3d();
+    sharedContext->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
     // To prevent tests that call loseSharedGraphicsContext3D from being
     // flaky, we call finish so that the context is guaranteed to be lost
     // synchronously (i.e. before returning).
-    sharedContext->webContext()->finish();
+    sharedContext->finish();
     return true;
 }
 

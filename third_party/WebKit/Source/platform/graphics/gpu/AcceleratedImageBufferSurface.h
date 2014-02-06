@@ -32,6 +32,7 @@
 #define AcceleratedImageBufferSurface_h
 
 #include "platform/graphics/ImageBufferSurface.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -49,6 +50,7 @@ public:
 
 private:
     OwnPtr<SkCanvas> m_canvas;
+    OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
 };
 
 

@@ -33,10 +33,10 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/Canvas2DLayerManager.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 
 using blink::WebExternalTextureLayer;
 using blink::WebGraphicsContext3D;
@@ -49,10 +49,8 @@ enum {
 
 namespace WebCore {
 
-static PassRefPtr<SkSurface> createSkSurface(GraphicsContext3D* context3D, const IntSize& size, int msaaSampleCount = 0)
+static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount = 0)
 {
-    ASSERT(!context3D->webContext()->isContextLost());
-    GrContext* gr = context3D->grContext();
     if (!gr)
         return 0;
     gr->resetContext();
@@ -67,21 +65,21 @@ static PassRefPtr<SkSurface> createSkSurface(GraphicsContext3D* context3D, const
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
-    RefPtr<GraphicsContext3D> context = SharedGraphicsContext3D::get();
-    if (!context)
+    OwnPtr<blink::WebGraphicsContext3DProvider> contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!contextProvider)
         return 0;
-    RefPtr<SkSurface> surface(createSkSurface(context.get(), size, msaaSampleCount));
+    RefPtr<SkSurface> surface(createSkSurface(contextProvider->grContext(), size, msaaSampleCount));
     if (!surface)
         return 0;
     RefPtr<Canvas2DLayerBridge> layerBridge;
     OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
-    layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), msaaSampleCount, opacityMode));
+    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), canvas.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassOwnPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
     : m_canvas(canvas)
-    , m_context(context)
+    , m_contextProvider(contextProvider)
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
     , m_didRecordDrawCommand(false)
@@ -97,6 +95,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_releasedMailboxInfoIndex(InvalidMailboxIndex)
 {
     ASSERT(m_canvas);
+    ASSERT(m_contextProvider);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
@@ -301,7 +300,7 @@ blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
     if (m_layer) {
         isValid(); // To ensure rate limiter is disabled if context is lost.
     }
-    return m_context->webContext();
+    return m_contextProvider->context3d();
 }
 
 bool Canvas2DLayerBridge::isValid()
@@ -309,17 +308,20 @@ bool Canvas2DLayerBridge::isValid()
     ASSERT(m_layer);
     if (m_destructionInProgress)
         return false;
-    if (m_context->webContext()->isContextLost() || !m_surfaceIsValid) {
+    if (m_contextProvider->context3d()->isContextLost() || !m_surfaceIsValid) {
         // Attempt to recover.
+        blink::WebGraphicsContext3D* sharedContext = 0;
         m_layer->clearTexture();
         m_mailboxes.clear();
-        RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
-        if (!sharedContext || sharedContext->webContext()->isContextLost()) {
+        m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+        if (m_contextProvider)
+            sharedContext = m_contextProvider->context3d();
+
+        if (!sharedContext || sharedContext->isContextLost()) {
             m_surfaceIsValid = false;
         } else {
-            m_context = sharedContext;
             IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
-            RefPtr<SkSurface> surface(createSkSurface(m_context.get(), size, m_msaaSampleCount));
+            RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount));
             if (surface.get()) {
                 m_canvas->setSurface(surface.get());
                 m_surfaceIsValid = true;
@@ -394,7 +396,7 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     webContext->bindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
     // we must dirty the context.
-    m_context->grContext()->resetContext(kTextureBinding_GrGLBackendState);
+    m_contextProvider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
 
     // set m_parentLayerBridge to make sure 'this' stays alive as long as it has
     // live mailboxes

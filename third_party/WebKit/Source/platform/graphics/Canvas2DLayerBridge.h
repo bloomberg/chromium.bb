@@ -42,6 +42,7 @@
 
 namespace blink {
 class WebGraphicsContext3D;
+class WebGraphicsContext3DProvider;
 }
 
 class Canvas2DLayerBridgeTest;
@@ -90,13 +91,13 @@ public:
     void beginDestruction();
 
 protected:
-    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
+    Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
     bool releasedMailboxHasExpired();
 
     OwnPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
-    RefPtr<GraphicsContext3D> m_context;
+    OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
     bool m_didRecordDrawCommand;

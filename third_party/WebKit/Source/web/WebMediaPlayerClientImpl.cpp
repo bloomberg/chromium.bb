@@ -23,12 +23,13 @@
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/skia/GaneshUtils.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebContentDecryptionModule.h"
-#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebRect.h"
@@ -40,7 +41,6 @@
 #include "GrTypes.h"
 #include "SkCanvas.h"
 #include "SkGrPixelRef.h"
-#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #endif
 
 
@@ -450,8 +450,10 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
         // paint the video frame into the context.
 #if OS(ANDROID)
         if (m_loadType != WebMediaPlayer::LoadTypeMediaStream) {
-            RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-            paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
+            OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+            if (!provider)
+                return;
+            paintOnAndroid(context, provider->context3d(), rect, context->getNormalizedAlpha());
             return;
         }
 #endif
@@ -460,16 +462,16 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
     }
 }
 
-bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY)
+bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY)
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    WebGraphicsContext3D* webGraphicsContext3D = context->webContext();
-    if (!context->supportsExtension("GL_CHROMIUM_copy_texture") || !context->supportsExtension("GL_CHROMIUM_flipy")
-        || !context->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !webGraphicsContext3D->makeContextCurrent())
+    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
+    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
+        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
 
-    return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, type, premultiplyAlpha, flipY);
+    return m_webMediaPlayer->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);
 }
 
 void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)
@@ -557,28 +559,30 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
 }
 
 #if OS(ANDROID)
-void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const IntRect& rect, uint8_t alpha)
+void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, WebGraphicsContext3D* context3D, const IntRect& rect, uint8_t alpha)
 {
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
-    WebGraphicsContext3D* webGraphicsContext3D = context3D->webContext();
-
-    if (!context3D->supportsExtension("GL_CHROMIUM_copy_texture") || !context3D->supportsExtension("GL_CHROMIUM_flipy")
-        || !webGraphicsContext3D->makeContextCurrent())
+    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context3D);
+    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
+        || !context3D->makeContextCurrent())
         return;
 
     // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES
     // which is not supported by Skia yet. The bitmap's size needs to be the same as the video and use naturalSize() here.
     // Check if we could reuse existing texture based bitmap.
     // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
-    if (!ensureTextureBackedSkBitmap(context3D->grContext(), m_bitmap, naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
+    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!provider)
+        return;
+    if (!ensureTextureBackedSkBitmap(provider->grContext(), m_bitmap, naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
         return;
 
     // Copy video texture to bitmap texture.
     WebCanvas* canvas = context->canvas();
     unsigned textureId = static_cast<unsigned>((m_bitmap.getTexture())->getTextureHandle());
-    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE, true, false))
+    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(context3D, textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE, true, false))
         return;
 
     // Draw the texture based bitmap onto the Canvas. If the canvas is hardware based, this will do a GPU-GPU texture copy. If the canvas is software based,

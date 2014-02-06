@@ -3494,14 +3494,14 @@ void WebGLRenderingContext::texImage2D(GLenum target, GLint level, GLenum intern
     if (GL_TEXTURE_2D == target && texture) {
         if (!canvas->is3D()) {
             ImageBuffer* buffer = canvas->buffer();
-            if (buffer && buffer->copyToPlatformTexture(*m_contextSupport.get(), texture->object(), internalformat, type,
+            if (buffer && buffer->copyToPlatformTexture(m_context.get(), texture->object(), internalformat, type,
                 level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
             }
         } else {
             WebGLRenderingContext* gl = toWebGLRenderingContext(canvas->renderingContext());
-            if (gl && gl->m_drawingBuffer->copyToPlatformTexture(*m_contextSupport.get(), texture->object(), internalformat, type,
+            if (gl && gl->m_drawingBuffer->copyToPlatformTexture(m_context.get(), texture->object(), internalformat, type,
                 level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
@@ -3541,7 +3541,7 @@ void WebGLRenderingContext::texImage2D(GLenum target, GLint level, GLenum intern
     // Otherwise, it will fall back to the normal SW path.
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     if (GL_TEXTURE_2D == target && texture) {
-        if (video->copyVideoTextureToPlatformTexture(m_contextSupport.get(), texture->object(), level, type, internalformat, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+        if (video->copyVideoTextureToPlatformTexture(m_context.get(), texture->object(), level, type, internalformat, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
             return;
         }

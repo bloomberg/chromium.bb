@@ -33,6 +33,11 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/OwnPtr.h"
+
+namespace blink {
+class WebGraphicsContext3DProvider;
+}
 
 namespace WebCore {
 
@@ -58,6 +63,7 @@ private:
     // This raw-pixel based SkBitmap works as a cache at CPU side to avoid heavy cost
     // on readback from GPU side to CPU side in some cases.
     SkBitmap m_cachedBitmap;
+    OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
 };
 
 

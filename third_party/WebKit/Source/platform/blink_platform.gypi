@@ -525,8 +525,6 @@
       'graphics/gpu/AcceleratedImageBufferSurface.h',
       'graphics/gpu/DrawingBuffer.cpp',
       'graphics/gpu/DrawingBuffer.h',
-      'graphics/gpu/SharedGraphicsContext3D.cpp',
-      'graphics/gpu/SharedGraphicsContext3D.h',
       'graphics/gpu/WebGLImageBufferSurface.cpp',
       'graphics/gpu/WebGLImageBufferSurface.h',
       'graphics/media/MediaPlayer.cpp',

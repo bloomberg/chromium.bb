@@ -30,7 +30,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/Image.h"
-#include "platform/weborigin/KURL.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "wtf/HashMap.h"
@@ -39,7 +38,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 // FIXME: Find a better way to avoid the name confliction for NO_ERROR.
@@ -47,11 +45,8 @@
 #undef NO_ERROR
 #endif
 
-class GrContext;
-
 namespace blink {
 class WebGraphicsContext3D;
-class WebGraphicsContext3DProvider;
 }
 
 namespace WebCore {
@@ -66,16 +61,7 @@ public:
     // is not owned by the GraphicsContext3D
     static PassRefPtr<GraphicsContext3D> createContextSupport(blink::WebGraphicsContext3D* webContext);
 
-    // Callers must make the context current before using it AND check that the context was created successfully
-    // via ContextLost before using the context in any way. Once made current on a thread, the context cannot
-    // be used on any other thread.
-    // This creation method is obsolete and should not be used by new code. They will be removed soon.
-    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider>);
-
     ~GraphicsContext3D();
-
-    GrContext* grContext();
-    blink::WebGraphicsContext3D* webContext() const { return m_impl; }
 
     //----------------------------------------------------------------------
     // Helpers for texture uploading and pixel readback.
@@ -225,7 +211,6 @@ public:
     static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
 private:
-    GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider>);
     GraphicsContext3D(blink::WebGraphicsContext3D* webContext);
 
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
@@ -238,12 +223,10 @@ private:
 
     void initializeExtensions();
 
-    OwnPtr<blink::WebGraphicsContext3DProvider> m_provider;
     blink::WebGraphicsContext3D* m_impl;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
-    GrContext* m_grContext;
 };
 
 } // namespace WebCore

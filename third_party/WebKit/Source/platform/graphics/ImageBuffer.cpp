@@ -40,7 +40,6 @@
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
-#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/skia/JPEGImageEncoder.h"
@@ -48,6 +47,7 @@
 #include "platform/image-encoders/skia/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/Base64.h"
@@ -132,18 +132,17 @@ blink::WebLayer* ImageBuffer::platformLayer() const
     return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& contextSupport, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_surface->isAccelerated() || !platformLayer() || !isValid())
         return false;
 
-    blink::WebGraphicsContext3D* context = contextSupport.webContext();
-
     if (!context->makeContextCurrent())
         return false;
 
-    if (!contextSupport.supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport.supportsExtension("GL_CHROMIUM_flipy")
-        || !contextSupport.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
+    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
+        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
@@ -174,12 +173,15 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 {
     if (!drawingBuffer)
         return false;
-    RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
+    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!provider)
+        return false;
+    blink::WebGraphicsContext3D* context3D = provider->context3d();
     Platform3DObject tex = m_surface->getBackingTexture();
     if (!context3D || !tex)
         return false;
     m_surface->invalidateCachedBitmap();
-    return drawingBuffer->copyToPlatformTexture(*(context3D.get()), tex, GL_RGBA,
+    return drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false);
 }
 

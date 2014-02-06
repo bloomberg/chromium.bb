@@ -309,7 +309,7 @@ void DrawingBuffer::initialize(const IntSize& size)
     reset(size);
 }
 
-bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& contextSupport, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_context || !m_context->makeContextCurrent())
         return false;
@@ -325,12 +325,12 @@ bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& contextSupport, Pla
     }
     Platform3DObject sourceTexture = m_colorBuffer;
 
-    blink::WebGraphicsContext3D* context = contextSupport.webContext();
-
     if (!context->makeContextCurrent())
         return false;
-    if (!contextSupport.supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport.supportsExtension("GL_CHROMIUM_flipy")
-        || !contextSupport.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+
+    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
+    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
+        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     bool unpackPremultiplyAlphaNeeded = false;

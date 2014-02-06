@@ -29,30 +29,17 @@
 
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/CheckedInt.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 
 #include "public/platform/WebGraphicsContext3D.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
 
 namespace WebCore {
-
-GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider)
-    : m_provider(provider)
-    , m_impl(m_provider->context3d())
-    , m_initializedAvailableExtensions(false)
-    , m_grContext(m_provider->grContext())
-{
-}
 
 GraphicsContext3D::GraphicsContext3D(blink::WebGraphicsContext3D* webContext)
     : m_impl(webContext)
     , m_initializedAvailableExtensions(false)
-    , m_grContext(0)
 {
 }
 
@@ -64,18 +51,6 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3D::createContextSupport(blink::Web
 {
     RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext));
     return context.release();
-}
-
-// This creation method is obsolete and should not be used by new code. They will be removed soon.
-PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider)
-{
-    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(provider));
-    return context.release();
-}
-
-GrContext* GraphicsContext3D::grContext()
-{
-    return m_grContext;
 }
 
 bool GraphicsContext3D::computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent)

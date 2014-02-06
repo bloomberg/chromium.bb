@@ -31,15 +31,21 @@
 #include "config.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
-#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
     : ImageBufferSurface(size, opacityMode)
 {
-    GrContext* grContext = SharedGraphicsContext3D::get()->grContext();
+    m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!m_contextProvider)
+        return;
+    GrContext* grContext = m_contextProvider->grContext();
     if (!grContext)
         return;
     RefPtr<SkGpuDevice> device = adoptRef(new SkGpuDevice(grContext, SkBitmap::kARGB_8888_Config, size.width(), size.height(), msaaSampleCount));
