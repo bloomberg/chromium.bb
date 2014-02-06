@@ -1997,8 +1997,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we get the right PPLT histograms for client redirect prerenders
 // and navigations when the referring page is Google.
+// Flaky: https://crbug.com/341570
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderLocationReplaceGWSHistograms) {
+                       DISABLED_PrerenderLocationReplaceGWSHistograms) {
   DisableJavascriptCalls();
   UMAHistogramHelper histograms;
 
