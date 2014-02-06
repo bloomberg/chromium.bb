@@ -191,7 +191,8 @@ static const size_t kMaxFreeableSpans = 16;
 // These two byte values match tcmalloc.
 static const unsigned char kUninitializedByte = 0xAB;
 static const unsigned char kFreedByte = 0xCD;
-static const uint64_t kCookieValue = 0xDEADBEEFDEADBEEFull;
+static const uint32_t kCookieValue = 0xDEADBEEFu;
+static const size_t kCookieSize = 16; // Handles alignment up to XMM instructions on Intel.
 #endif
 
 struct PartitionBucket;
@@ -326,8 +327,8 @@ ALWAYS_INLINE size_t partitionCookieSizeAdjustAdd(size_t size)
 {
 #ifndef NDEBUG
     // Add space for cookies, checking for integer overflow.
-    ASSERT(size + (2 * sizeof(uint64_t)) > size);
-    size += 2 * sizeof(uint64_t);
+    ASSERT(size + (2 * kCookieSize) > size);
+    size += 2 * kCookieSize;
 #endif
     return size;
 }
@@ -336,8 +337,8 @@ ALWAYS_INLINE size_t partitionCookieSizeAdjustSubtract(size_t size)
 {
 #ifndef NDEBUG
     // Remove space for cookies.
-    ASSERT(size >= 2 * sizeof(uint64_t));
-    size -= 2 * sizeof(uint64_t);
+    ASSERT(size >= 2 * kCookieSize);
+    size -= 2 * kCookieSize;
 #endif
     return size;
 }
@@ -346,9 +347,27 @@ ALWAYS_INLINE void* partitionCookieFreePointerAdjust(void* ptr)
 {
 #ifndef NDEBUG
     // The value given to the application is actually just after the cookie.
-    ptr = static_cast<uint64_t*>(ptr) - 1;
+    ptr = static_cast<char*>(ptr) - kCookieSize;
 #endif
     return ptr;
+}
+
+ALWAYS_INLINE void partitionCookieWriteValue(void* ptr)
+{
+#ifndef NDEBUG
+    uint32_t* cookiePtr = reinterpret_cast<uint32_t*>(ptr);
+    for (size_t i = 0; i < kCookieSize / sizeof(kCookieValue); ++i, ++cookiePtr)
+        *cookiePtr = kCookieValue;
+#endif
+}
+
+ALWAYS_INLINE void partitionCookieCheckValue(void* ptr)
+{
+#ifndef NDEBUG
+    uint32_t* cookiePtr = reinterpret_cast<uint32_t*>(ptr);
+    for (size_t i = 0; i < kCookieSize / sizeof(kCookieValue); ++i, ++cookiePtr)
+        ASSERT(*cookiePtr == kCookieValue);
+#endif
 }
 
 ALWAYS_INLINE char* partitionSuperPageToMetadataArea(char* ptr)
@@ -433,11 +452,10 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
     page = partitionPointerToPage(ret);
     size_t bucketSize = page->bucket->slotSize;
     memset(ret, kUninitializedByte, bucketSize);
-    *(static_cast<uint64_t*>(ret)) = kCookieValue;
-    void* retEnd = static_cast<char*>(ret) + bucketSize;
-    *(static_cast<uint64_t*>(retEnd) - 1) = kCookieValue;
+    partitionCookieWriteValue(ret);
+    partitionCookieWriteValue(reinterpret_cast<char*>(ret) + bucketSize - kCookieSize);
     // The value given to the application is actually just after the cookie.
-    ret = static_cast<uint64_t*>(ret) + 1;
+    ret = static_cast<char*>(ret) + kCookieSize;
 #endif
     return ret;
 }
@@ -464,9 +482,8 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     // If these asserts fire, you probably corrupted memory.
 #ifndef NDEBUG
     size_t bucketSize = page->bucket->slotSize;
-    void* ptrEnd = static_cast<char*>(ptr) + bucketSize;
-    ASSERT(*(static_cast<uint64_t*>(ptr)) == kCookieValue);
-    ASSERT(*(static_cast<uint64_t*>(ptrEnd) - 1) == kCookieValue);
+    partitionCookieCheckValue(ptr);
+    partitionCookieCheckValue(reinterpret_cast<char*>(ptr) + bucketSize - kCookieSize);
     memset(ptr, kFreedByte, bucketSize);
 #endif
     ASSERT(page->numAllocatedSlots);
