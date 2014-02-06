@@ -30,7 +30,7 @@
 
     function addShadowDOM() {
         var targetDiv = document.getElementById("sandbox");
-        var root = internals.ensureShadowRoot(targetDiv);
+        var root = targetDiv.createShadowRoot();
         var shadowDiv = document.createElement("div");
         shadowDiv.style.width = "20px";
         shadowDiv.style.height = "20px";
@@ -43,7 +43,7 @@
 
     function runTests()
     {
-        if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestContextMenuNode && internals.ensureShadowRoot) {
+        if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestContextMenuNode) {
             description('Test touch adjustment for context-menu gestures on a shadow-DOM element.');
             addShadowDOM();
             // Test that a long press centered on a shadow-DOM element does not crash.

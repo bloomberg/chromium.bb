@@ -26,7 +26,7 @@ function testChangeSelect1(callIfDone) {
 
     // Create shadow tree.
     var content = createContentWithSelect('.c1');
-    var sr = internals.ensureShadowRoot(root);
+    var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText("BEFORE"));
     sr.appendChild(content);
     sr.appendChild(createSpanWithText("AFTER"));
@@ -54,7 +54,7 @@ function testChangeSelect2(callIfDone) {
 
     // Create shadow tree.
     var content = createContentWithSelect('.c1');
-    var sr = internals.ensureShadowRoot(root);
+    var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText("BEFORE"));
     sr.appendChild(content);
     sr.appendChild(createSpanWithText("AFTER"));
@@ -82,7 +82,7 @@ function testChangeSelectToEmpty(callIfDone) {
 
     // Create shadow tree.
     var content = createContentWithSelect('.c1');
-    var sr = internals.ensureShadowRoot(root);
+    var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText("BEFORE"));
     sr.appendChild(content);
     sr.appendChild(createSpanWithText("AFTER"));
@@ -112,7 +112,7 @@ function testChangeSelectToFallback(callIfDone) {
     var content = createContentWithSelect('.c1');
     content.innerHTML = "<span>FALLBACK</span>"
 
-    var sr = internals.ensureShadowRoot(root);
+    var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText("BEFORE"));
     sr.appendChild(content);
     sr.appendChild(createSpanWithText("AFTER"));
@@ -142,7 +142,7 @@ function testChangeSelectFromFallback(callIfDone) {
     var content = createContentWithSelect('div');
     content.innerHTML = "<span>FALLBACK</span>"
 
-    var sr = internals.ensureShadowRoot(root);
+    var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText("BEFORE"));
     sr.appendChild(content);
     sr.appendChild(createSpanWithText("AFTER"));

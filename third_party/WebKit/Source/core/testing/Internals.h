@@ -95,7 +95,6 @@ public:
     size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionState&) const;
     PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
 
-    ShadowRoot* ensureShadowRoot(Element* host, ExceptionState&);
     ShadowRoot* shadowRoot(Element* host, ExceptionState&);
     ShadowRoot* youngestShadowRoot(Element* host, ExceptionState&);
     ShadowRoot* oldestShadowRoot(Element* host, ExceptionState&);

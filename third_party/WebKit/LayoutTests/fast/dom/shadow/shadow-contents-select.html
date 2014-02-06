@@ -9,7 +9,7 @@
 </style>
 <script>
 function appendShadow(target, select) {
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
 
     var child0 = document.createElement("span");
     child0.innerHTML = "Hello,";

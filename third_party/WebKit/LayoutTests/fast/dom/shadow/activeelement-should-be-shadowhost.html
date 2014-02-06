@@ -28,12 +28,9 @@ function assertActiveElement(doc, expected) {
 if (window.testRunner) {
     testRunner.dumpAsText();
 
-  function shadowRoot(shadowHost) {
-    return internals.ensureShadowRoot(shadowHost);
-  }
-
   function appendChildToShadow(shadowHost, child) {
-    return shadowRoot(shadowHost).appendChild(child)
+    var shadowRoot = shadowHost.shadowRoot || shadowHost.createShadowRoot();
+    return shadowRoot.appendChild(child)
   }
 
   function appendShadowHost(doc, parent) {
@@ -70,7 +67,7 @@ if (window.testRunner) {
   var input1 = appendChildToShadow(shadow1, doc1.createElement('input'));
 
   var shadow2 = appendShadowHost(doc0);
-  var shadow2_1 = appendShadowHost(doc0, shadowRoot(shadow2));
+  var shadow2_1 = appendShadowHost(doc0, shadow2.createShadowRoot());
   var input2 = appendChildToShadow(shadow2_1, doc0.createElement('input'));
 
   var shadow3 = appendShadowHost(doc0);

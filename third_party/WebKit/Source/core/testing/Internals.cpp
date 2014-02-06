@@ -624,19 +624,6 @@ PassRefPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisited
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-ShadowRoot* Internals::ensureShadowRoot(Element* host, ExceptionState& exceptionState)
-{
-    if (!host) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element provided is invalid.");
-        return 0;
-    }
-
-    if (ElementShadow* shadow = host->shadow())
-        return shadow->youngestShadowRoot();
-
-    return host->createShadowRoot(exceptionState).get();
-}
-
 ShadowRoot* Internals::shadowRoot(Element* host, ExceptionState& exceptionState)
 {
     // FIXME: Internals::shadowRoot() in tests should be converted to youngestShadowRoot() or oldestShadowRoot().

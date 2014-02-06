@@ -14,14 +14,12 @@
     <script>
         if (!window.internals)
             debug("windows.internals not found!");
-        else if (!window.internals.ensureShadowRoot)
-            debug("windows.internals.ensureShadowRoot not found!");
         else if (!window.internals.numberOfScopedHTMLStyleChildren)
             debug("windows.internals.numberOfScopedHTMLStyleChildren not found!");
         else {
             var ref = document.getElementById('ref');
             var host = document.getElementById('host');
-            var sr = internals.ensureShadowRoot(host);
+            var sr = host.createShadowRoot();
             var style = document.createElement('style');
             style.setAttribute('scoped', 'scoped');
 

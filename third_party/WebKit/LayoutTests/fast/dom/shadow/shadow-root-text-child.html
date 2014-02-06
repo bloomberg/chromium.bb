@@ -7,7 +7,7 @@ function testShouldNotCrash()
         return;
     window.testRunner.dumpAsText();
     var root = document.createElement("div");
-    var shadow = internals.ensureShadowRoot(root);
+    var shadow = root.createShadowRoot();
     var shadowBuilder = document.createElement("div");
     shadowBuilder.innerHTML = "<div></div>x";
     while (shadowBuilder.firstChild)

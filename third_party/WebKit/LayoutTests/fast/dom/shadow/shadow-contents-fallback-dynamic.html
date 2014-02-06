@@ -59,7 +59,7 @@ function createSpanWithText(text) {
 }
 
 function appendShadow(target, select) {
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
 
     var content = internals.createContentElement();
     content.setAttribute('select', select);
@@ -71,7 +71,7 @@ function appendShadow(target, select) {
 }
 
 function appendShadowDeep(target, select) {
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
 
     var child = document.createElement("span");
     {
@@ -348,7 +348,7 @@ function testContentInContent(callIfDone) {
     target.appendChild(createSpanWithText('S1'));
     target.appendChild(createSpanWithText('S2'));
 
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
     var content1 = internals.createContentElement();
     content1.setAttribute('select', 'div');
 
@@ -379,7 +379,7 @@ function testContentInContentFallback(callIfDone) {
     target.appendChild(createSpanWithText('S1'));
     target.appendChild(createSpanWithText('S2'));
 
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
     var content1 = internals.createContentElement();
     content1.setAttribute('select', 'div');
 
@@ -410,7 +410,7 @@ function testContentInContentFallbackDirect(callIfDone) {
     target.appendChild(createSpanWithText('S1'));
     target.appendChild(createSpanWithText('S2'));
 
-    var root = internals.ensureShadowRoot(target);
+    var root = target.createShadowRoot();
     var content1 = internals.createContentElement();
     content1.setAttribute('select', 'div');
     root.appendChild(content1);

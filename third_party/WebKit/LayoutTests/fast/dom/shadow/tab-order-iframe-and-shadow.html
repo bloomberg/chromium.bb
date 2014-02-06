@@ -27,7 +27,7 @@ if (window.testRunner) {
         var shadowHost = doc.createElement('p');
         shadowHost.id = 'host-01';
         shadowHost.tabIndex = -1;
-        var shadow = internals.ensureShadowRoot(shadowHost);
+        var shadow = shadowHost.createShadowRoot();
         doc.body.appendChild(shadowHost);
         shadow.appendChild(createTextInputElement(doc, 'input-03', 0));
     }
@@ -49,7 +49,7 @@ if (window.testRunner) {
             var shadowHost = doc.createElement('p');
             shadowHost.id = 'host-02';
             shadowHost.tabIndex = 1;
-            var shadow = internals.ensureShadowRoot(shadowHost);
+            var shadow = shadowHost.createShadowRoot();
             doc.body.appendChild(shadowHost);
 
             shadow.appendChild(createTextInputElement(doc, 'input-08', 0));

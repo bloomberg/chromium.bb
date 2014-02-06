@@ -17,7 +17,7 @@ if (window.internals) {
         var p = document.createElement('p');
         ps.push(p);
 
-        var shadow = internals.ensureShadowRoot(p);
+        var shadow = p.createShadowRoot();
         shadow.tattoo = 'I <3 WebKit';
         shadow = null;
     }

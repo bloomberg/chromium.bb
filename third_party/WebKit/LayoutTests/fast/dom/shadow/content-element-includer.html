@@ -29,7 +29,7 @@ shouldBe("includerFor(childOfElementWithoutShadow)", "null");
 
 var elementWithShadow = document.createElement("div");
 container.appendChild(elementWithShadow);
-var shadowRootOfElementWithShadow = internals.ensureShadowRoot(elementWithShadow);
+var shadowRootOfElementWithShadow = elementWithShadow.createShadowRoot();
 shadowRootOfElementWithShadow.appendChild(document.createElement("div")); // Gives non-content child.
 var childOfElementWithShadow = document.createElement("span");
 elementWithShadow.appendChild(childOfElementWithShadow);
@@ -38,7 +38,7 @@ shouldBe("includerFor(childOfElementWithShadow)", "null");
 
 var elementWithShadowContent = document.createElement("div");
 container.appendChild(elementWithShadowContent);
-var shadowRootOfElementWithShadowContent = internals.ensureShadowRoot(elementWithShadowContent);
+var shadowRootOfElementWithShadowContent = elementWithShadowContent.createShadowRoot();
 var shadowContentOfElementWithShadowContent = internals.createContentElement();
 shadowRootOfElementWithShadowContent.appendChild(shadowContentOfElementWithShadowContent);
 var childOfElementWithShadowContent = document.createElement("span");
@@ -63,7 +63,7 @@ elementWithShadow.removeChild(movingChild);
 // Moving to another content-full tree
 var anotherElementWithShadowContent = document.createElement("div");
 container.appendChild(anotherElementWithShadowContent);
-var anotherShadowRootOfElementWithShadowContent = internals.ensureShadowRoot(anotherElementWithShadowContent);
+var anotherShadowRootOfElementWithShadowContent = anotherElementWithShadowContent.createShadowRoot();
 var anotherShadowContentOfElementWithShadowContent = internals.createContentElement();
 anotherShadowRootOfElementWithShadowContent.appendChild(anotherShadowContentOfElementWithShadowContent);
 

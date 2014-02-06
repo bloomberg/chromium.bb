@@ -80,7 +80,7 @@ function createTargetTree(contentHtml, shadowHtml)
     var content = createTreeFrom(contentHtml);
     var shadow = createTreeFrom(shadowHtml);
     var host = document.createElement("blockquote");
-    var shadowRoot = internals.ensureShadowRoot(host);
+    var shadowRoot = host.createShadowRoot();
     moveChildren(content, host);
     moveChildren(shadow, shadowRoot); 
     return host;

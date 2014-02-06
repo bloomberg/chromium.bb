@@ -38,7 +38,7 @@
 
     function addShadowDOM() {
         var targetDiv = document.getElementById("targetDiv");
-        var root = internals.ensureShadowRoot(targetDiv);
+        var root = targetDiv.createShadowRoot();
         var shadowDiv = document.createElement("div");
         shadowDiv.style.width = "20px";
         shadowDiv.style.height = "20px";
@@ -91,7 +91,7 @@
 
     function runTests()
     {
-        if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestClickableNode && internals.ensureShadowRoot) {
+        if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestClickableNode) {
             description('Test the case where a clickable target contains a shadow-DOM element.  The adjusted point should snap to the location of the shadow-DOM element if close enough to the original touch position.')
             addShadowDOM();
             runTouchTests();

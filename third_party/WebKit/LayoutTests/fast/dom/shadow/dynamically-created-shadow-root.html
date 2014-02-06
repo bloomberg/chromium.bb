@@ -8,7 +8,7 @@ Can only run within DRT.
 <script>
 if (window.internals) {
     var host1 = document.querySelector('#host1');
-    var shadowRoot = window.internals.ensureShadowRoot(host1);
+    var shadowRoot = host1.createShadowRoot();
     shadowRoot.appendChild(document.createTextNode('Shadow should be rendered.'));
 }
 </script>
