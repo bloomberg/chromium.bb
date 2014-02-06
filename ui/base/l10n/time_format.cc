@@ -28,9 +28,9 @@ using base::TimeDelta;
 
 namespace {
 
-static const char kFallbackFormatSuffixShort[] = "}";
-static const char kFallbackFormatSuffixLeft[] = " left}";
 static const char kFallbackFormatSuffixAgo[] = " ago}";
+static const char kFallbackFormatSuffixLeft[] = " left}";
+static const char kFallbackFormatSuffixDuration[] = "}";
 
 // Contains message IDs for various time units and pluralities.
 struct MessageIDs {
@@ -39,22 +39,26 @@ struct MessageIDs {
 };
 
 // Message IDs for different time formats.
-static const MessageIDs kTimeShortMessageIDs = { {
+static const MessageIDs kTimeElapsedMessageIDs = { {
   {
-    IDS_TIME_SECS_DEFAULT, IDS_TIME_SEC_SINGULAR, IDS_TIME_SECS_ZERO,
-    IDS_TIME_SECS_TWO, IDS_TIME_SECS_FEW, IDS_TIME_SECS_MANY
+    IDS_TIME_ELAPSED_SECS_DEFAULT, IDS_TIME_ELAPSED_SEC_SINGULAR,
+    IDS_TIME_ELAPSED_SECS_ZERO, IDS_TIME_ELAPSED_SECS_TWO,
+    IDS_TIME_ELAPSED_SECS_FEW, IDS_TIME_ELAPSED_SECS_MANY
   },
   {
-    IDS_TIME_MINS_DEFAULT, IDS_TIME_MIN_SINGULAR, IDS_TIME_MINS_ZERO,
-    IDS_TIME_MINS_TWO, IDS_TIME_MINS_FEW, IDS_TIME_MINS_MANY
+    IDS_TIME_ELAPSED_MINS_DEFAULT, IDS_TIME_ELAPSED_MIN_SINGULAR,
+    IDS_TIME_ELAPSED_MINS_ZERO, IDS_TIME_ELAPSED_MINS_TWO,
+    IDS_TIME_ELAPSED_MINS_FEW, IDS_TIME_ELAPSED_MINS_MANY
   },
   {
-    IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOUR_SINGULAR, IDS_TIME_HOURS_ZERO,
-    IDS_TIME_HOURS_TWO, IDS_TIME_HOURS_FEW, IDS_TIME_HOURS_MANY
+    IDS_TIME_ELAPSED_HOURS_DEFAULT, IDS_TIME_ELAPSED_HOUR_SINGULAR,
+    IDS_TIME_ELAPSED_HOURS_ZERO, IDS_TIME_ELAPSED_HOURS_TWO,
+    IDS_TIME_ELAPSED_HOURS_FEW, IDS_TIME_ELAPSED_HOURS_MANY
   },
   {
-    IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAY_SINGULAR, IDS_TIME_DAYS_ZERO,
-    IDS_TIME_DAYS_TWO, IDS_TIME_DAYS_FEW, IDS_TIME_DAYS_MANY
+    IDS_TIME_ELAPSED_DAYS_DEFAULT, IDS_TIME_ELAPSED_DAY_SINGULAR,
+    IDS_TIME_ELAPSED_DAYS_ZERO, IDS_TIME_ELAPSED_DAYS_TWO,
+    IDS_TIME_ELAPSED_DAYS_FEW, IDS_TIME_ELAPSED_DAYS_MANY
   }
 } };
 
@@ -104,6 +108,25 @@ static const MessageIDs kTimeRemainingLongMessageIDs = { {
   }
 } };
 
+static const MessageIDs kTimeDurationShortMessageIDs = { {
+  {
+    IDS_TIME_SECS_DEFAULT, IDS_TIME_SEC_SINGULAR, IDS_TIME_SECS_ZERO,
+    IDS_TIME_SECS_TWO, IDS_TIME_SECS_FEW, IDS_TIME_SECS_MANY
+  },
+  {
+    IDS_TIME_MINS_DEFAULT, IDS_TIME_MIN_SINGULAR, IDS_TIME_MINS_ZERO,
+    IDS_TIME_MINS_TWO, IDS_TIME_MINS_FEW, IDS_TIME_MINS_MANY
+  },
+  {
+    IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOUR_SINGULAR, IDS_TIME_HOURS_ZERO,
+    IDS_TIME_HOURS_TWO, IDS_TIME_HOURS_FEW, IDS_TIME_HOURS_MANY
+  },
+  {
+    IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAY_SINGULAR, IDS_TIME_DAYS_ZERO,
+    IDS_TIME_DAYS_TWO, IDS_TIME_DAYS_FEW, IDS_TIME_DAYS_MANY
+  }
+} };
+
 static const MessageIDs kTimeDurationLongMessageIDs = { {
   {
     IDS_TIME_DURATION_LONG_SECS_DEFAULT, IDS_TIME_DURATION_LONG_SEC_SINGULAR,
@@ -127,107 +150,85 @@ static const MessageIDs kTimeDurationLongMessageIDs = { {
   }
 } };
 
-static const MessageIDs kTimeElapsedMessageIDs = { {
-  {
-    IDS_TIME_ELAPSED_SECS_DEFAULT, IDS_TIME_ELAPSED_SEC_SINGULAR,
-    IDS_TIME_ELAPSED_SECS_ZERO, IDS_TIME_ELAPSED_SECS_TWO,
-    IDS_TIME_ELAPSED_SECS_FEW, IDS_TIME_ELAPSED_SECS_MANY
-  },
-  {
-    IDS_TIME_ELAPSED_MINS_DEFAULT, IDS_TIME_ELAPSED_MIN_SINGULAR,
-    IDS_TIME_ELAPSED_MINS_ZERO, IDS_TIME_ELAPSED_MINS_TWO,
-    IDS_TIME_ELAPSED_MINS_FEW, IDS_TIME_ELAPSED_MINS_MANY
-  },
-  {
-    IDS_TIME_ELAPSED_HOURS_DEFAULT, IDS_TIME_ELAPSED_HOUR_SINGULAR,
-    IDS_TIME_ELAPSED_HOURS_ZERO, IDS_TIME_ELAPSED_HOURS_TWO,
-    IDS_TIME_ELAPSED_HOURS_FEW, IDS_TIME_ELAPSED_HOURS_MANY
-  },
-  {
-    IDS_TIME_ELAPSED_DAYS_DEFAULT, IDS_TIME_ELAPSED_DAY_SINGULAR,
-    IDS_TIME_ELAPSED_DAYS_ZERO, IDS_TIME_ELAPSED_DAYS_TWO,
-    IDS_TIME_ELAPSED_DAYS_FEW, IDS_TIME_ELAPSED_DAYS_MANY
-  }
-} };
-
 // Different format types.
 enum FormatType {
-  FORMAT_SHORT,
+  FORMAT_ELAPSED,
   FORMAT_REMAINING,
   FORMAT_REMAINING_LONG,
+  FORMAT_DURATION_SHORT,
   FORMAT_DURATION_LONG,
-  FORMAT_ELAPSED,
 };
 
 class TimeFormatter {
   public:
     const std::vector<icu::PluralFormat*>& formatter(FormatType format_type) {
       switch (format_type) {
-        case FORMAT_SHORT:
-          return short_formatter_.get();
+        case FORMAT_ELAPSED:
+          return time_elapsed_formatter_.get();
         case FORMAT_REMAINING:
           return time_left_formatter_.get();
         case FORMAT_REMAINING_LONG:
           return time_left_long_formatter_.get();
+        case FORMAT_DURATION_SHORT:
+          return time_duration_short_formatter_.get();
         case FORMAT_DURATION_LONG:
           return time_duration_long_formatter_.get();
-        case FORMAT_ELAPSED:
-          return time_elapsed_formatter_.get();
         default:
           NOTREACHED();
-          return short_formatter_.get();
+          return time_duration_short_formatter_.get();
       }
     }
   private:
     static const MessageIDs& GetMessageIDs(FormatType format_type) {
       switch (format_type) {
-        case FORMAT_SHORT:
-          return kTimeShortMessageIDs;
+        case FORMAT_ELAPSED:
+          return kTimeElapsedMessageIDs;
         case FORMAT_REMAINING:
           return kTimeRemainingMessageIDs;
         case FORMAT_REMAINING_LONG:
           return kTimeRemainingLongMessageIDs;
+        case FORMAT_DURATION_SHORT:
+          return kTimeDurationShortMessageIDs;
         case FORMAT_DURATION_LONG:
           return kTimeDurationLongMessageIDs;
-        case FORMAT_ELAPSED:
-          return kTimeElapsedMessageIDs;
         default:
           NOTREACHED();
-          return kTimeShortMessageIDs;
+          return kTimeDurationShortMessageIDs;
       }
     }
 
     static const char* GetFallbackFormatSuffix(FormatType format_type) {
       switch (format_type) {
-        case FORMAT_SHORT:
-          return kFallbackFormatSuffixShort;
+        case FORMAT_ELAPSED:
+          return kFallbackFormatSuffixAgo;
         case FORMAT_REMAINING:
         case FORMAT_REMAINING_LONG:
           return kFallbackFormatSuffixLeft;
-        case FORMAT_ELAPSED:
-          return kFallbackFormatSuffixAgo;
+        case FORMAT_DURATION_SHORT:
+        case FORMAT_DURATION_LONG:
+          return kFallbackFormatSuffixDuration;
         default:
           NOTREACHED();
-          return kFallbackFormatSuffixShort;
+          return kFallbackFormatSuffixDuration;
       }
     }
 
     TimeFormatter() {
-      BuildFormats(FORMAT_SHORT, &short_formatter_);
+      BuildFormats(FORMAT_ELAPSED, &time_elapsed_formatter_);
       BuildFormats(FORMAT_REMAINING, &time_left_formatter_);
       BuildFormats(FORMAT_REMAINING_LONG, &time_left_long_formatter_);
+      BuildFormats(FORMAT_DURATION_SHORT, &time_duration_short_formatter_);
       BuildFormats(FORMAT_DURATION_LONG, &time_duration_long_formatter_);
-      BuildFormats(FORMAT_ELAPSED, &time_elapsed_formatter_);
     }
     ~TimeFormatter() {
     }
     friend struct base::DefaultLazyInstanceTraits<TimeFormatter>;
 
-    ScopedVector<icu::PluralFormat> short_formatter_;
+    ScopedVector<icu::PluralFormat> time_elapsed_formatter_;
     ScopedVector<icu::PluralFormat> time_left_formatter_;
     ScopedVector<icu::PluralFormat> time_left_long_formatter_;
+    ScopedVector<icu::PluralFormat> time_duration_short_formatter_;
     ScopedVector<icu::PluralFormat> time_duration_long_formatter_;
-    ScopedVector<icu::PluralFormat> time_elapsed_formatter_;
     static void BuildFormats(FormatType format_type,
                              ScopedVector<icu::PluralFormat>* time_formats);
     static icu::PluralFormat* createFallbackFormat(
@@ -358,7 +359,7 @@ base::string16 TimeFormat::TimeRemainingLong(const TimeDelta& delta) {
 
 // static
 base::string16 TimeFormat::TimeDurationShort(const TimeDelta& delta) {
-  return FormatTimeImpl(delta, FORMAT_SHORT);
+  return FormatTimeImpl(delta, FORMAT_DURATION_SHORT);
 }
 
 // static
