@@ -124,7 +124,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
                     !driver_->DidLastPageLoadEncounterSSLErrors());
   PasswordFormManager* manager = new PasswordFormManager(
-      delegate_->GetProfile(), this, driver_, form, ssl_valid);
+      delegate_->GetProfile(), this, web_contents_, form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -283,7 +283,7 @@ void PasswordManager::OnPasswordFormsParsed(
 
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
     PasswordFormManager* manager = new PasswordFormManager(
-        delegate_->GetProfile(), this, driver_, *iter, ssl_valid);
+        delegate_->GetProfile(), this, web_contents_, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     // Avoid prompting the user for access to a password if they don't have
