@@ -253,6 +253,11 @@
         },
       },
       'conditions': [
+        ['OS=="mac"', {
+          'sources/': [
+            ['exclude', 'WebTestThemeEngineMock.cpp'],
+          ],
+        }],
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
