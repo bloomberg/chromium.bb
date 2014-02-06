@@ -81,6 +81,10 @@ bool BookmarkDataTypeController::StartModels() {
 // Cleanup for our extra registrar usage.
 void BookmarkDataTypeController::CleanUpState() {
   registrar_.RemoveAll();
+  if (bookmark_model_ && installed_bookmark_observer_) {
+    bookmark_model_->RemoveObserver(this);
+    installed_bookmark_observer_ = false;
+  }
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
