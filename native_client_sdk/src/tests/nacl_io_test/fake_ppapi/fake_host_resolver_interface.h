@@ -7,13 +7,12 @@
 
 #include <ppapi/c/ppb_host_resolver.h>
 
+#include <netinet/in.h>
+#include <string>
+#include <vector>
+
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/macros.h"
-
-// This fake resolver only know how to resolve this one
-// host to this one IP address.
-#define FAKE_HOSTNAME "example.com"
-#define FAKE_IP 0x01020304
 
 class FakePepperInterface;
 class FakeVarManager;
@@ -27,13 +26,16 @@ class FakeHostResolverInterface : public nacl_io::HostResolverInterface {
   virtual int32_t Resolve(PP_Resource,
                           const char*,
                           uint16_t,
-                          const PP_HostResolver_Hint*,
+                          const PP_HostResolver_Hint* hints,
                           PP_CompletionCallback);
 
   virtual PP_Var GetCanonicalName(PP_Resource);
   virtual uint32_t GetNetAddressCount(PP_Resource);
   virtual PP_Resource GetNetAddress(PP_Resource, uint32_t);
 
+  std::string fake_hostname;
+  std::vector<struct sockaddr_in> fake_addresses_v4;
+  std::vector<struct sockaddr_in6> fake_addresses_v6;
  private:
   FakePepperInterface* ppapi_;
 

@@ -120,6 +120,10 @@ sighandler_t ki_sigset(int signum, sighandler_t handler);
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_bind(int fd, const struct sockaddr* addr, socklen_t len);
 int ki_connect(int fd, const struct sockaddr* addr, socklen_t len);
+void ki_freeaddrinfo(struct addrinfo *res);
+int ki_getaddrinfo(const char *node, const char *service,
+                   const struct addrinfo *hints,
+                   struct addrinfo **res);
 struct hostent* ki_gethostbyname(const char* name);
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len);

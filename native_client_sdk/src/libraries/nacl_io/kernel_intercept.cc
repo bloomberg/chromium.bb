@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "nacl_io/dbgprint.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/osmman.h"
@@ -398,6 +399,17 @@ int ki_connect(int fd, const struct sockaddr* addr, socklen_t len) {
 struct hostent* ki_gethostbyname(const char* name) {
   ON_NOSYS_RETURN(NULL);
   return s_kp->gethostbyname(name);
+}
+
+int ki_getaddrinfo(const char *node, const char *service,
+                const struct addrinfo *hints,
+                struct addrinfo **res) {
+  ON_NOSYS_RETURN(EAI_SYSTEM);
+  return s_kp->getaddrinfo(node, service, hints, res);
+}
+
+void ki_freeaddrinfo(struct addrinfo *res) {
+  s_kp->freeaddrinfo(res);
 }
 
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len) {

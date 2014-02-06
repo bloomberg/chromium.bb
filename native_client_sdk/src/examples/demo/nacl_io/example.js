@@ -230,6 +230,24 @@ function getcwdResult(dirname) {
   common.logMessage('getcwd: ' + dirname + '.');
 }
 
+function getaddrinfo(e) {
+  var name = document.getElementById('getaddrinfoName').value;
+  var family = document.getElementById('getaddrinfoFamily').value;
+  nacl_module.postMessage(makeCall('getaddrinfo', name, family));
+}
+
+function getaddrinfoResult(name, addr_type) {
+  common.logMessage('getaddrinfo returned successfully');
+  common.logMessage('ai_cannonname = ' + name + '.');
+  var count = 1;
+  for (var i = 1; i < arguments.length; i+=2) {
+    var msg = 'Address number ' + count + ' = ' + arguments[i] +
+              ' (' + arguments[i+1] + ')';
+    common.logMessage(msg);
+    count += 1;
+  }
+}
+
 function gethostbyname(e) {
   var name = document.getElementById('gethostbynameName').value;
   nacl_module.postMessage(makeCall('gethostbyname', name));

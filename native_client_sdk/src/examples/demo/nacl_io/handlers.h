@@ -26,6 +26,7 @@ int HandleRmdir(int num_params, char** params, char** output);
 int HandleChdir(int num_params, char** params, char** output);
 int HandleGetcwd(int num_params, char** params, char** output);
 
+int HandleGetaddrinfo(int num_params, char** params, char** output);
 int HandleGethostbyname(int num_params, char** params, char** output);
 int HandleConnect(int num_params, char** params, char** output);
 int HandleSend(int num_params, char** params, char** output);

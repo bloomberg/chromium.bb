@@ -15,10 +15,16 @@ namespace {
 
 class FakeNetAddressResource : public FakeResource {
  public:
-  explicit FakeNetAddressResource(PP_NetAddress_IPv4 addr) : address(addr) {}
+  explicit FakeNetAddressResource(PP_NetAddress_IPv4 addr)
+      : is_v6(false), address(addr) {}
+  explicit FakeNetAddressResource(PP_NetAddress_IPv6 addr)
+      : is_v6(true), address_v6(addr) {}
+
   static const char* classname() { return "FakeNetAddressResource"; }
 
+  bool is_v6;
   PP_NetAddress_IPv4 address;
+  PP_NetAddress_IPv6 address_v6;
 };
 
 }  // namespace
@@ -46,9 +52,11 @@ PP_Resource FakeNetAddressInterface::CreateFromIPv6Address(
   if (instance != ppapi_->GetInstance())
     return 0;
 
-  // TODO(sbc): implement
-  assert(false);
-  return 0;
+  FakeNetAddressResource* addr_resource = new FakeNetAddressResource(*address);
+  PP_Resource rtn = CREATE_RESOURCE(ppapi_->resource_manager(),
+                                    FakeNetAddressResource,
+                                    addr_resource);
+  return rtn;
 }
 
 PP_Bool FakeNetAddressInterface::IsNetAddress(PP_Resource address) {
@@ -59,7 +67,15 @@ PP_Bool FakeNetAddressInterface::IsNetAddress(PP_Resource address) {
   return PP_TRUE;
 }
 
-PP_NetAddress_Family FakeNetAddressInterface::GetFamily(PP_Resource) {
+PP_NetAddress_Family FakeNetAddressInterface::GetFamily(PP_Resource address) {
+  FakeNetAddressResource* address_resource =
+      ppapi_->resource_manager()->Get<FakeNetAddressResource>(address);
+  if (address_resource == NULL)
+    return PP_NETADDRESS_FAMILY_UNSPECIFIED;
+
+  if (address_resource->is_v6)
+    return PP_NETADDRESS_FAMILY_IPV6;
+
   return PP_NETADDRESS_FAMILY_IPV4;
 }
 
@@ -70,15 +86,25 @@ PP_Bool FakeNetAddressInterface::DescribeAsIPv4Address(
   if (address_resource == NULL)
     return PP_FALSE;
 
+  if (address_resource->is_v6)
+    return PP_FALSE;
+
   *target = address_resource->address;
   return PP_TRUE;
 }
 
 PP_Bool FakeNetAddressInterface::DescribeAsIPv6Address(
-    PP_Resource adddress, PP_NetAddress_IPv6* taret) {
-  // TODO(sbc): implement
-  assert(false);
-  return PP_FALSE;
+    PP_Resource address, PP_NetAddress_IPv6* target) {
+  FakeNetAddressResource* address_resource =
+      ppapi_->resource_manager()->Get<FakeNetAddressResource>(address);
+  if (address_resource == NULL)
+    return PP_FALSE;
+
+  if (!address_resource->is_v6)
+    return PP_FALSE;
+
+  *target = address_resource->address_v6;
+  return PP_TRUE;
 }
 
 PP_Var FakeNetAddressInterface::DescribeAsString(PP_Resource, PP_Bool) {

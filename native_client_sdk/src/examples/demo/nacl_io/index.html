@@ -184,6 +184,7 @@ found in the LICENSE file.
   <div>
     <span>
       <input type="radio" id="radiogethostbyname" name="group">gethostbyname
+      <input type="radio" id="radiogetaddrinfo" name="group">getaddrinfo
       <input type="radio" id="radioconnect" name="group">connect
       <input type="radio" id="radiosend" name="group">send
       <input type="radio" id="radiorecv" name="group">recv
@@ -195,6 +196,18 @@ found in the LICENSE file.
       Hostname:
       <input type="text" id="gethostbynameName" value="google.com">
       <button>gethostbyname</button>
+    </span>
+  </div>
+  <div class="function" id="getaddrinfo" hidden>
+    <span>
+      Hostname:
+      <input type="text" id="getaddrinfoName" value="google.com">
+      <select id="getaddrinfoFamily">
+        <option>AF_INET</option>
+        <option>AF_INET6</option>
+        <option>AF_UNSPEC</option>
+      </select>
+      <button>getaddrinfo</button>
     </span>
   </div>
   <div class="function" id="connect" hidden>

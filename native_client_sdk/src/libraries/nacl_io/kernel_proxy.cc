@@ -1264,6 +1264,16 @@ int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
   return 0;
 }
 
+void KernelProxy::freeaddrinfo(struct addrinfo *res) {
+  return host_resolver_.freeaddrinfo(res);
+}
+
+int KernelProxy::getaddrinfo(const char* node, const char* service,
+                             const struct addrinfo* hints,
+                             struct addrinfo** res) {
+  return host_resolver_.getaddrinfo(node, service, hints, res);
+}
+
 struct hostent* KernelProxy::gethostbyname(const char* name) {
   return host_resolver_.gethostbyname(name);
 }

@@ -4,6 +4,7 @@
 
 #include "nacl_io/host_resolver.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,6 +13,75 @@
 #include "nacl_io/pepper_interface.h"
 
 #ifdef PROVIDES_SOCKET_API
+
+namespace {
+
+void HintsToPPHints(const addrinfo* hints, PP_HostResolver_Hint* pp_hints) {
+  memset(pp_hints, 0, sizeof(*pp_hints));
+
+  if (hints->ai_family == AF_INET)
+    pp_hints->family = PP_NETADDRESS_FAMILY_IPV4;
+  else if (hints->ai_family == AF_INET6)
+    pp_hints->family = PP_NETADDRESS_FAMILY_IPV6;
+
+  if (hints->ai_flags & AI_CANONNAME)
+    pp_hints->flags = PP_HOSTRESOLVER_FLAG_CANONNAME;
+}
+
+void CreateAddrInfo(const addrinfo* hints,
+                    struct sockaddr* addr,
+                    const char* name,
+                    addrinfo** list_start,
+                    addrinfo** list_end) {
+  addrinfo* ai = static_cast<addrinfo*>(malloc(sizeof(addrinfo)));
+  memset(ai, 0, sizeof(*ai));
+
+  if (hints && hints->ai_socktype)
+    ai->ai_socktype = hints->ai_socktype;
+  else
+    ai->ai_socktype = SOCK_STREAM;
+
+  if (hints && hints->ai_protocol)
+    ai->ai_protocol = hints->ai_protocol;
+
+  if (name)
+    ai->ai_canonname = strdup(name);
+
+  switch (addr->sa_family) {
+    case AF_INET6: {
+      sockaddr_in6* in =
+          static_cast<sockaddr_in6*>(malloc(sizeof(sockaddr_in6)));
+      *in = *(sockaddr_in6*)addr;
+      ai->ai_family = AF_INET6;
+      ai->ai_addr = reinterpret_cast<sockaddr*>(in);
+      ai->ai_addrlen = sizeof(*in);
+      break;
+    }
+    case AF_INET: {
+      sockaddr_in* in =
+          static_cast<sockaddr_in*>(malloc(sizeof(sockaddr_in)));
+      *in = *(sockaddr_in*)addr;
+      ai->ai_family = AF_INET;
+      ai->ai_addr = reinterpret_cast<sockaddr*>(in);
+      ai->ai_addrlen = sizeof(*in);
+      break;
+    }
+    default:
+      assert(0);
+      return;
+  }
+
+  if (*list_start == NULL) {
+    *list_start = ai;
+    *list_end = ai;
+    return;
+  }
+
+  (*list_end)->ai_next = ai;
+  *list_end = ai;
+}
+
+}  // namespace
 
 namespace nacl_io {
 
@@ -29,74 +99,54 @@ void HostResolver::Init(PepperInterface* ppapi) {
 struct hostent* HostResolver::gethostbyname(const char* name) {
   h_errno = NETDB_INTERNAL;
 
-  if (NULL == ppapi_)
-    return NULL;
-
-  HostResolverInterface* resolver_interface =
-      ppapi_->GetHostResolverInterface();
-  VarInterface* var_interface = ppapi_->GetVarInterface();
-  NetAddressInterface* netaddr_iface = ppapi_->GetNetAddressInterface();
-
-  if (NULL == resolver_interface ||
-      NULL == netaddr_iface ||
-      NULL == var_interface)
-    return NULL;
-
-  ScopedResource resolver(ppapi_,
-                          resolver_interface->Create(ppapi_->GetInstance()));
-
-  struct PP_CompletionCallback callback;
-  callback.func = NULL;
-  struct PP_HostResolver_Hint hint;
-  hint.family = PP_NETADDRESS_FAMILY_IPV4;
-  hint.flags = PP_HOSTRESOLVER_FLAG_CANONNAME;
-
-  int err = resolver_interface->Resolve(resolver.pp_resource(),
-                                        name, 0, &hint, callback);
+  struct addrinfo* ai;
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_CANONNAME;
+  hints.ai_family = AF_INET;
+  int err = getaddrinfo(name, NULL, &hints, &ai);
   if (err) {
     switch (err) {
-    case PP_ERROR_NOACCESS:
-      h_errno = NO_RECOVERY;
-      break;
-    case PP_ERROR_NAME_NOT_RESOLVED:
-      h_errno = HOST_NOT_FOUND;
-      break;
-    default:
-      h_errno = NETDB_INTERNAL;
-      break;
+      case EAI_SYSTEM:
+        h_errno = NO_RECOVERY;
+        break;
+      case EAI_NONAME:
+        h_errno = HOST_NOT_FOUND;
+        break;
+      default:
+        h_errno = NETDB_INTERNAL;
+        break;
     }
     return NULL;
   }
 
   // We use a single hostent struct for all calls to to gethostbyname
   // (as explicitly permitted by the spec - gethostbyname is NOT supposed to
-  // be threadsafe!), so the first thing we do is free all the malloced data
-  // left over from the last call.
+  // be threadsafe!).  However by using a lock around all the global data
+  // manipulation we can at least ensure that the call doesn't crash.
+  AUTO_LOCK(gethostbyname_lock_);
+
+  // The first thing we do is free any malloced data left over from
+  // the last call.
   hostent_cleanup();
 
-  PP_Var name_var =
-    resolver_interface->GetCanonicalName(resolver.pp_resource());
-  if (PP_VARTYPE_STRING != name_var.type)
-    return NULL;
-
-  uint32_t len;
-  const char* name_ptr = var_interface->VarToUtf8(name_var, &len);
-  if (NULL == name_ptr)
-    return NULL;
-  if (0 == len) {
-    // Sometimes GetCanonicalName gives up more easily than gethostbyname should
-    // (for example, it returns "" when asked to resolve "localhost"), so if we
-    // get an empty string we copy over the input string instead.
-    len = strlen(name);
-    name_ptr = name;
+  switch (ai->ai_family) {
+    case AF_INET:
+      hostent_.h_addrtype = AF_INET;
+      hostent_.h_length = sizeof(in_addr);
+      break;
+    case AF_INET6:
+      hostent_.h_addrtype = AF_INET6;
+      hostent_.h_length = sizeof(in6_addr);
+      break;
+    default:
+      return NULL;
   }
-  hostent_.h_name = static_cast<char*>(malloc(len + 1));
-  if (NULL == hostent_.h_name)
-    return NULL;
-  memcpy(hostent_.h_name, name_ptr, len);
-  hostent_.h_name[len] = '\0';
 
-  var_interface->Release(name_var);
+  if (ai->ai_canonname != NULL)
+    hostent_.h_name = strdup(ai->ai_canonname);
+  else
+    hostent_.h_name = strdup(name);
 
   // Aliases aren't supported at the moment, so we just make an empty list.
   hostent_.h_aliases = static_cast<char**>(malloc(sizeof(char*)));
@@ -104,59 +154,245 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
     return NULL;
   hostent_.h_aliases[0] = NULL;
 
-  ScopedResource addr(ppapi_);
-  addr.Reset(resolver_interface->GetNetAddress(resolver.pp_resource(), 0));
-  if (!PP_ToBool(netaddr_iface->IsNetAddress(addr.pp_resource())))
-    return NULL;
-
-  switch (netaddr_iface->GetFamily(addr.pp_resource())) {
-    case PP_NETADDRESS_FAMILY_IPV4:
-      hostent_.h_addrtype = AF_INET;
-      hostent_.h_length = 4;
-      break;
-    case PP_NETADDRESS_FAMILY_IPV6:
-      hostent_.h_addrtype = AF_INET6;
-      hostent_.h_length = 16;
-      break;
-    default:
-      return NULL;
+  // Count number of address in list
+  int num_addresses = 0;
+  struct addrinfo* current = ai;
+  while (current != NULL) {
+    // Only count address that have the same type as first address
+    if (current->ai_family == hostent_.h_addrtype)
+      num_addresses++;
+    current = current->ai_next;
   }
 
-  const uint32_t num_addresses =
-    resolver_interface->GetNetAddressCount(resolver.pp_resource());
-  if (0 == num_addresses)
-    return NULL;
-  hostent_.h_addr_list =
-    static_cast<char**>(calloc(num_addresses + 1, sizeof(char*)));
+  // Allocate address list
+  hostent_.h_addr_list = static_cast<char**>(calloc(num_addresses + 1,
+                                                    sizeof(char*)));
   if (NULL == hostent_.h_addr_list)
     return NULL;
 
-  for (uint32_t i = 0; i < num_addresses; i++) {
-    addr.Reset(resolver_interface->GetNetAddress(resolver.pp_resource(), i));
-    if (!PP_ToBool(netaddr_iface->IsNetAddress(addr.pp_resource())))
-      return NULL;
-    if (AF_INET == hostent_.h_addrtype) {
-      struct PP_NetAddress_IPv4 addr_struct;
-      if (!netaddr_iface->DescribeAsIPv4Address(addr.pp_resource(),
-                                                &addr_struct))
-        return NULL;
-      hostent_.h_addr_list[i] = static_cast<char*>(malloc(hostent_.h_length));
-      if (NULL == hostent_.h_addr_list[i])
-        return NULL;
-      memcpy(hostent_.h_addr_list[i], addr_struct.addr, hostent_.h_length);
-    } else { // IPv6
-      struct PP_NetAddress_IPv6 addr_struct;
-      if (!netaddr_iface->DescribeAsIPv6Address(addr.pp_resource(),
-                                                &addr_struct))
-        return NULL;
-      hostent_.h_addr_list[i] = static_cast<char*>(malloc(hostent_.h_length));
-      if (NULL == hostent_.h_addr_list[i])
-        return NULL;
-      memcpy(hostent_.h_addr_list[i], addr_struct.addr, hostent_.h_length);
+  // Copy all addresses of the relevant family.
+  current = ai;
+  char** hostent_addr = hostent_.h_addr_list;
+  while (current != NULL) {
+    if (current->ai_family != hostent_.h_addrtype) {
+      current = current->ai_next;
+      continue;
+    }
+    *hostent_addr = static_cast<char*>(malloc(hostent_.h_length));
+    switch (current->ai_family) {
+      case AF_INET: {
+        sockaddr_in* in = reinterpret_cast<sockaddr_in*>(current->ai_addr);
+        memcpy(*hostent_addr, &in->sin_addr.s_addr, hostent_.h_length);
+        break;
+      }
+      case AF_INET6: {
+        sockaddr_in6* in6 = reinterpret_cast<sockaddr_in6*>(current->ai_addr);
+        memcpy(*hostent_addr, &in6->sin6_addr.s6_addr, hostent_.h_length);
+        break;
+      }
+    }
+    current = current->ai_next;
+    hostent_addr++;
+  }
+
+  freeaddrinfo(ai);
+  return &hostent_;
+}
+
+void HostResolver::freeaddrinfo(struct addrinfo *res) {
+  while (res) {
+    struct addrinfo* cur = res;
+    res = res->ai_next;
+    free(cur->ai_addr);
+    free(cur->ai_canonname);
+    free(cur);
+  }
+}
+
+int HostResolver::getaddrinfo(const char* node, const char* service,
+                              const struct addrinfo* hints_in,
+                              struct addrinfo** result) {
+  *result = NULL;
+  struct addrinfo* end = NULL;
+
+  if (node == NULL && service == NULL)
+    return EAI_NONAME;
+
+  // Check the service name (port).  Currently we only handle numeric
+  // services.
+  long port = 0;
+  if (service != NULL) {
+    char* cp;
+    port = strtol(service, &cp, 10);
+    if (port > 0 && port <= 65535 && *cp == '\0') {
+      port = htons(port);
+    } else {
+      return EAI_SERVICE;
     }
   }
 
-  return &hostent_;
+  struct addrinfo default_hints;
+  memset(&default_hints, 0, sizeof(default_hints));
+  const struct addrinfo* hints = hints_in ? hints_in : &default_hints;
+
+  // Verify values passed in hints structure
+  switch (hints->ai_family) {
+    case AF_INET6:
+    case AF_INET:
+    case AF_UNSPEC:
+      break;
+    default:
+      return EAI_FAMILY;
+  }
+
+  struct sockaddr_in addr_in;
+  memset(&addr_in, 0, sizeof(addr_in));
+  addr_in.sin_family = AF_INET;
+  addr_in.sin_port = port;
+
+  struct sockaddr_in6 addr_in6;
+  memset(&addr_in6, 0, sizeof(addr_in6));
+  addr_in6.sin6_family = AF_INET6;
+  addr_in6.sin6_port = port;
+
+  if (node) {
+    // Handle numeric node name.
+    if (hints->ai_family == AF_INET || hints->ai_family == AF_UNSPEC) {
+      in_addr in;
+      if (inet_pton(AF_INET, node, &in)) {
+        addr_in.sin_addr = in;
+        CreateAddrInfo(hints, (sockaddr*)&addr_in, node, result, &end);
+        return 0;
+      }
+    }
+
+    if (hints->ai_family == AF_INET6 || hints->ai_family == AF_UNSPEC) {
+      in6_addr in6;
+      if (inet_pton(AF_INET6, node, &in6)) {
+        addr_in6.sin6_addr = in6;
+        CreateAddrInfo(hints, (sockaddr*)&addr_in6, node, result, &end);
+        return 0;
+      }
+    }
+  }
+
+  // Handle AI_PASSIVE (used for listening sockets, e.g. INADDR_ANY)
+  if (node == NULL && (hints->ai_flags & AI_PASSIVE)) {
+    if (hints->ai_family == AF_INET6 || hints->ai_family == AF_UNSPEC) {
+      const in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+      memcpy(&addr_in6.sin6_addr.s6_addr, &in6addr_any, sizeof(in6addr_any));
+      CreateAddrInfo(hints, (sockaddr*)&addr_in6, NULL, result, &end);
+    }
+
+    if (hints->ai_family == AF_INET || hints->ai_family == AF_UNSPEC) {
+      addr_in.sin_addr.s_addr = INADDR_ANY;
+      CreateAddrInfo(hints, (sockaddr*)&addr_in, NULL, result, &end);
+    }
+    return 0;
+  }
+
+  if (NULL == ppapi_)
+    return EAI_SYSTEM;
+
+  // Use PPAPI interface to resolve nodename
+  HostResolverInterface* resolver_iface = ppapi_->GetHostResolverInterface();
+  VarInterface* var_interface = ppapi_->GetVarInterface();
+  NetAddressInterface* netaddr_iface = ppapi_->GetNetAddressInterface();
+
+  if (NULL == resolver_iface || NULL == var_interface || NULL == netaddr_iface)
+    return EAI_SYSTEM;
+
+  ScopedResource scoped_resolver(ppapi_,
+                                 resolver_iface->Create(ppapi_->GetInstance()));
+  PP_Resource resolver = scoped_resolver.pp_resource();
+
+  struct PP_HostResolver_Hint pp_hints;
+  HintsToPPHints(hints, &pp_hints);
+
+  int err = resolver_iface->Resolve(resolver,
+                                    node,
+                                    0,
+                                    &pp_hints,
+                                    PP_BlockUntilComplete());
+  if (err) {
+    switch (err) {
+      case PP_ERROR_NOACCESS:
+        return EAI_SYSTEM;
+      case PP_ERROR_NAME_NOT_RESOLVED:
+        return EAI_NONAME;
+      default:
+        return EAI_SYSTEM;
+    }
+  }
+
+  char* canon_name = NULL;
+  if (hints->ai_flags & AI_CANONNAME) {
+    PP_Var name_var = resolver_iface->GetCanonicalName(resolver);
+    if (PP_VARTYPE_STRING == name_var.type) {
+      uint32_t len = 0;
+      const char* tmp = var_interface->VarToUtf8(name_var, &len);
+      // For some reason GetCanonicalName alway returns an empty
+      // string so this condition is never true.
+      // TODO(sbc): investigate this issue with PPAPI team.
+      if (len > 0) {
+        // Copy and NULL-terminate the UTF8 string var.
+        canon_name = static_cast<char*>(malloc(len+1));
+        strncpy(canon_name, tmp, len);
+        canon_name[len] = '\0';
+      }
+    }
+    if (!canon_name)
+      canon_name = strdup(node);
+    var_interface->Release(name_var);
+  }
+
+  int num_addresses = resolver_iface->GetNetAddressCount(resolver);
+  if (0 == num_addresses)
+    return EAI_NODATA;
+
+  // Convert address to sockaddr struct.
+  for (int i = 0; i < num_addresses; i++) {
+    ScopedResource addr(ppapi_, resolver_iface->GetNetAddress(resolver, i));
+    PP_Resource resource = addr.pp_resource();
+    assert(resource != 0);
+    assert(PP_ToBool(netaddr_iface->IsNetAddress(resource)));
+    struct sockaddr* sockaddr = NULL;
+    switch (netaddr_iface->GetFamily(resource)) {
+      case PP_NETADDRESS_FAMILY_IPV4: {
+        struct PP_NetAddress_IPv4 pp_addr;
+        if (!netaddr_iface->DescribeAsIPv4Address(resource, &pp_addr)) {
+          assert(false);
+          break;
+        }
+        memcpy(&addr_in.sin_addr.s_addr, pp_addr.addr, sizeof(in_addr_t));
+        sockaddr = (struct sockaddr*)&addr_in;
+        break;
+      }
+      case PP_NETADDRESS_FAMILY_IPV6: {
+        struct PP_NetAddress_IPv6 pp_addr;
+        if (!netaddr_iface->DescribeAsIPv6Address(resource, &pp_addr)) {
+          assert(false);
+          break;
+        }
+        memcpy(&addr_in6.sin6_addr.s6_addr, pp_addr.addr,
+               sizeof(in6_addr));
+        sockaddr = (struct sockaddr*)&addr_in6;
+        break;
+      }
+      default:
+        return EAI_SYSTEM;
+    }
+
+    if (sockaddr != NULL)
+      CreateAddrInfo(hints, sockaddr, canon_name, result, &end);
+
+    if (canon_name) {
+      free(canon_name);
+      canon_name = NULL;
+    }
+  }
+
+  return 0;
 }
 
 // Frees all of the deep pointers in a hostent struct. Called between uses of

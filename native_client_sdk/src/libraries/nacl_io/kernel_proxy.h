@@ -159,6 +159,10 @@ class KernelProxy : protected KernelObject {
   virtual int bind(int fd, const struct sockaddr* addr, socklen_t len);
   virtual int connect(int fd, const struct sockaddr* addr, socklen_t len);
   virtual struct hostent* gethostbyname(const char* name);
+  virtual void freeaddrinfo(struct addrinfo *res);
+  virtual int getaddrinfo(const char* node, const char* service,
+                          const struct addrinfo* hints,
+                          struct addrinfo** res);
   virtual int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int getsockopt(int fd,

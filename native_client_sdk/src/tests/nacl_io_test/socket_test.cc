@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 
 #include <map>
-#include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -259,17 +258,6 @@ TEST_F(SocketTest, Socketpair) {
   EXPECT_LT(ki_socketpair(AF_INET6, SOCK_STREAM, 0, sv), 0);
   EXPECT_EQ(errno, EPROTONOSUPPORT);
 }
-
-// These utility functions are only used for newlib (glibc provides its own
-// implementations of these functions).
-#if !defined(__GLIBC__)
-
-TEST(SocketUtilityFunctions, Hstrerror) {
-  EXPECT_STREQ(hstrerror(2718),
-               "Unknown error in gethostbyname: 2718.");
-}
-
-#endif  // !defined(__GLIBC__)
 
 TEST(SocketUtilityFunctions, Htonl) {
   uint32_t host_long = 0x44332211;

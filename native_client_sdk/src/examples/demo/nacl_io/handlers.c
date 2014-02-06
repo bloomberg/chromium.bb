@@ -784,6 +784,84 @@ int HandleGetcwd(int num_params, char** params, char** output) {
   return 0;
 }
 
+int HandleGetaddrinfo(int num_params, char** params, char** output) {
+  int output_len;
+  int current_pos;
+
+  if (num_params != 2) {
+    *output = PrintfToNewString("getaddrinfo takes 2 parameters.");
+    return 1;
+  }
+
+  const char* name = params[0];
+  const char* family = params[1];
+
+  struct addrinfo *ai;
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_CANONNAME;
+  if (!strcmp(family, "AF_INET"))
+    hints.ai_family = AF_INET;
+  else if (!strcmp(family, "AF_INET6"))
+    hints.ai_family = AF_INET6;
+  else if (!strcmp(family, "AF_UNSPEC"))
+    hints.ai_family = AF_UNSPEC;
+  else {
+    *output = PrintfToNewString("getaddrinfo uknown family: %s", family);
+    return 1;
+  }
+
+  int rtn = getaddrinfo(name, NULL, &hints, &ai);
+  if (rtn != 0) {
+    *output = PrintfToNewString("getaddrinfo failed, error is \"%s\"",
+                                gai_strerror(rtn));
+    return 2;
+  }
+
+
+  output_len = strlen("getaddrinfo") + strlen(ai->ai_canonname) + 3;
+
+  struct addrinfo *current = ai;
+  while (current) {
+    output_len += 2 + INET6_ADDRSTRLEN + strlen("AF_INET6");
+    current = current->ai_next;
+  }
+
+  char* out = (char*)calloc(output_len, 1);
+  if (!out) {
+    *output = PrintfToNewString("out of memory.");
+    return 3;
+  }
+
+  snprintf(out, output_len, "getaddrinfo\1%s", ai->ai_canonname);
+
+  current_pos = strlen(out);
+  current = ai;
+  while (current) {
+    out[current_pos] = '\1';
+    current_pos++;
+    const char* tmp = NULL;
+    if (ai->ai_family == AF_INET6) {
+      struct sockaddr_in6* in6 = (struct sockaddr_in6*)current->ai_addr;
+      tmp = inet_ntop(ai->ai_family, &in6->sin6_addr.s6_addr,
+                      out+current_pos, output_len-current_pos);
+    } else if (ai->ai_family == AF_INET) {
+      struct sockaddr_in* in = (struct sockaddr_in*)current->ai_addr;
+      tmp = inet_ntop(ai->ai_family, &in->sin_addr,
+                      out+current_pos, output_len-current_pos);
+    }
+    current_pos += strlen(tmp);
+
+    const char* addr_type = ai->ai_family == AF_INET ? "AF_INET" : "AF_INET6";
+    current_pos += sprintf(out + current_pos, "\1%s", addr_type);
+    current = current->ai_next;
+  }
+
+  *output = out;
+  freeaddrinfo(ai);
+  return 0;
+}
+
 /**
  * Handle a call to gethostbyname() made by JavaScript.
  *
