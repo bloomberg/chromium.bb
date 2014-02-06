@@ -150,11 +150,8 @@ FileError FileCache::Store(const std::string& id,
   if (!FreeDiskSpaceIfNeededFor(file_size))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  FileCacheEntry cache_entry;
-  storage_->GetCacheEntry(id, &cache_entry);
-
-  // If file is dirty or mounted, return error.
-  if (cache_entry.is_dirty() || mounted_files_.count(id))
+  // If file is mounted, return error.
+  if (mounted_files_.count(id))
     return FILE_ERROR_IN_USE;
 
   base::FilePath dest_path = GetCacheFilePath(id);
@@ -179,6 +176,8 @@ FileError FileCache::Store(const std::string& id,
   }
 
   // Now that file operations have completed, update metadata.
+  FileCacheEntry cache_entry;
+  storage_->GetCacheEntry(id, &cache_entry);
   cache_entry.set_md5(md5);
   cache_entry.set_is_present(true);
   if (md5.empty())

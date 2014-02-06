@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -208,19 +209,26 @@ FileError UpdateLocalStateForDownloadFile(
     base::FilePath* cache_file_path) {
   DCHECK(cache);
 
+  // Downloaded file should be deleted on errors.
+  base::ScopedClosureRunner file_deleter(base::Bind(
+      base::IgnoreResult(&base::DeleteFile),
+      downloaded_file_path, false /* recursive */));
+
   FileError error = GDataToFileError(gdata_error);
-  if (error != FILE_ERROR_OK) {
-    base::DeleteFile(downloaded_file_path, false /* recursive */);
+  if (error != FILE_ERROR_OK)
     return error;
-  }
+
+  // Do not overwrite locally edited file with server side contents.
+  FileCacheEntry cache_entry;
+  if (cache->GetCacheEntry(local_id, &cache_entry) && cache_entry.is_dirty())
+    return FILE_ERROR_IN_USE;
 
   // Here the download is completed successfully, so store it into the cache.
   error = cache->Store(local_id, md5, downloaded_file_path,
                        internal::FileCache::FILE_OPERATION_MOVE);
-  if (error != FILE_ERROR_OK) {
-    base::DeleteFile(downloaded_file_path, false /* recursive */);
+  if (error != FILE_ERROR_OK)
     return error;
-  }
+  base::Closure unused_file_deleter_closure = file_deleter.Release();
 
   return cache->GetFile(local_id, cache_file_path);
 }
