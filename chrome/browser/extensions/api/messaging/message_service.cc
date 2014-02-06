@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -119,14 +120,9 @@ static base::StaticAtomicSequenceNumber g_channel_id_overflow_count;
 static content::RenderProcessHost* GetExtensionProcess(
     Profile* profile, const std::string& extension_id) {
   SiteInstance* site_instance =
-      ExtensionSystem::Get(profile)->process_manager()->
-          GetSiteInstanceForURL(
-              Extension::GetBaseURLFromExtensionId(extension_id));
-
-  if (!site_instance->HasProcess())
-    return NULL;
-
-  return site_instance->GetProcess();
+      ExtensionSystem::Get(profile)->process_manager()->GetSiteInstanceForURL(
+          Extension::GetBaseURLFromExtensionId(extension_id));
+  return site_instance->HasProcess() ? site_instance->GetProcess() : NULL;
 }
 
 }  // namespace
@@ -152,12 +148,12 @@ void MessageService::AllocatePortIdPair(int* port1, int* port2) {
 
   // Sanity checks to make sure our channel<->port converters are correct.
   DCHECK(IS_OPENER_PORT_ID(port1_id));
-  DCHECK(GET_OPPOSITE_PORT_ID(port1_id) == port2_id);
-  DCHECK(GET_OPPOSITE_PORT_ID(port2_id) == port1_id);
-  DCHECK(GET_CHANNEL_ID(port1_id) == GET_CHANNEL_ID(port2_id));
-  DCHECK(GET_CHANNEL_ID(port1_id) == channel_id);
-  DCHECK(GET_CHANNEL_OPENER_ID(channel_id) == port1_id);
-  DCHECK(GET_CHANNEL_RECEIVERS_ID(channel_id) == port2_id);
+  DCHECK_EQ(GET_OPPOSITE_PORT_ID(port1_id), port2_id);
+  DCHECK_EQ(GET_OPPOSITE_PORT_ID(port2_id), port1_id);
+  DCHECK_EQ(GET_CHANNEL_ID(port1_id), GET_CHANNEL_ID(port2_id));
+  DCHECK_EQ(GET_CHANNEL_ID(port1_id), channel_id);
+  DCHECK_EQ(GET_CHANNEL_OPENER_ID(channel_id), port1_id);
+  DCHECK_EQ(GET_CHANNEL_RECEIVERS_ID(channel_id), port2_id);
 
   *port1 = port1_id;
   *port2 = port2_id;
@@ -300,9 +296,10 @@ void MessageService::OpenChannelToExtension(
   GURL source_url_for_tab;
 
   if (source_contents && ExtensionTabUtil::GetTabId(source_contents) >= 0) {
-    // Platform apps can be sent messages, but don't have a Tab concept.
-    if (!target_extension->is_platform_app())
-      source_tab.reset(ExtensionTabUtil::CreateTabValue(source_contents));
+    // Only the tab id is useful to platform apps for internal use. The
+    // unnecessary bits will be stripped out in
+    // MessagingBindings::DispatchOnConnect().
+    source_tab.reset(ExtensionTabUtil::CreateTabValue(source_contents));
     source_url_for_tab = source_url;
   }
 
@@ -323,7 +320,9 @@ void MessageService::OpenChannelToExtension(
   if (include_tls_channel_id) {
     pending_tls_channel_id_channels_[GET_CHANNEL_ID(params->receiver_port_id)]
         = PendingMessagesQueue();
-    property_provider_.GetDomainBoundCert(profile, params->source_url,
+    property_provider_.GetDomainBoundCert(
+        profile,
+        source_url,
         base::Bind(&MessageService::GotDomainBoundCert,
                    weak_factory_.GetWeakPtr(),
                    base::Passed(make_scoped_ptr(params))));
@@ -551,8 +550,7 @@ void MessageService::CloseChannelImpl(
   channels_.erase(channel_iter);
 }
 
-void MessageService::PostMessage(
-    int source_port_id, const Message& message) {
+void MessageService::PostMessage(int source_port_id, const Message& message) {
   int channel_id = GET_CHANNEL_ID(source_port_id);
   MessageChannelMap::iterator iter = channels_.find(channel_id);
   if (iter == channels_.end()) {

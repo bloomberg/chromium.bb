@@ -587,6 +587,12 @@ void Dispatcher::OnDispatchOnConnect(
     const base::DictionaryValue& source_tab,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
+  DCHECK(!ContainsKey(port_to_tab_id_map_, target_port_id));
+  DCHECK_EQ(1, target_port_id % 2);  // target renderer ports have odd IDs.
+  int sender_tab_id = -1;
+  source_tab.GetInteger("id", &sender_tab_id);
+  port_to_tab_id_map_[target_port_id] = sender_tab_id;
+
   MessagingBindings::DispatchOnConnect(
       v8_context_set_.GetAll(),
       target_port_id, channel_name, source_tab,
@@ -597,6 +603,14 @@ void Dispatcher::OnDispatchOnConnect(
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
                                   const Message& message) {
+  scoped_ptr<RequestSender::ScopedTabID> scoped_tab_id;
+  std::map<int, int>::const_iterator it =
+      port_to_tab_id_map_.find(target_port_id);
+  if (it != port_to_tab_id_map_.end()) {
+    scoped_tab_id.reset(new RequestSender::ScopedTabID(request_sender(),
+                                                       it->second));
+  }
+
   MessagingBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
@@ -1663,6 +1677,13 @@ void Dispatcher::InvokeModuleSystemMethod(
           background_view->GetRoutingID()));
     }
   }
+}
+
+void Dispatcher::ClearPortData(int port_id) {
+  // Only the target port side has entries in |port_to_tab_id_map_|. If
+  // |port_id| is a source port, std::map::erase() will just silently fail
+  // here as a no-op.
+  port_to_tab_id_map_.erase(port_id);
 }
 
 }  // namespace extensions

@@ -509,6 +509,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_extension(extension);
   function->set_profile_id(profile);
   function->set_response_callback(callback);
+  function->set_source_tab_id(params.source_tab_id);
 
   return function;
 }

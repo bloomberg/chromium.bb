@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/blob_reader.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -539,8 +540,16 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
   const std::string& app_id = GetExtension()->id();
   WebContents* contents = GetWebContents(render_view_host(), profile, app_id);
   if (!contents) {
-    SendResponse(false);
-    return;
+    // When the request originated from a background page, but there is no app
+    // window open, check to see if it originated from a tab and display the
+    // dialog in that tab.
+    bool found_tab = extensions::ExtensionTabUtil::GetTabById(
+        source_tab_id(), profile, profile->IsOffTheRecord(),
+        NULL, NULL, &contents, NULL);
+    if (!found_tab || !contents) {
+      SendResponse(false);
+      return;
+    }
   }
 
   if (!user_gesture()) {
@@ -691,7 +700,7 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const Extension* extension = GetExtension();
-  MediaGalleriesPreferences * preferences =
+  MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
   if (MediaGalleriesScanResultDialogController::ScanResultCountForExtension(
           preferences, extension) == 0) {

@@ -143,6 +143,8 @@ class Dispatcher : public content::RenderProcessObserver {
       const base::ListValue& args,
       bool user_gesture);
 
+  void ClearPortData(int port_id);
+
  private:
   friend class ::ChromeRenderViewTest;
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
@@ -308,6 +310,9 @@ class Dispatcher : public content::RenderProcessObserver {
   // The platforms system font family and size;
   std::string system_font_family_;
   std::string system_font_size_;
+
+  // Mapping of port IDs to tabs. If there is no tab, the value would be -1.
+  std::map<int, int> port_to_tab_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

@@ -26,7 +26,22 @@ struct PendingRequest {
   RequestSender::Source* source;
 };
 
-RequestSender::RequestSender(Dispatcher* dispatcher) : dispatcher_(dispatcher) {
+RequestSender::ScopedTabID::ScopedTabID(RequestSender* request_sender,
+                                        int tab_id)
+    : request_sender_(request_sender),
+      tab_id_(tab_id),
+      previous_tab_id_(request_sender->source_tab_id_) {
+  request_sender_->source_tab_id_ = tab_id;
+}
+
+RequestSender::ScopedTabID::~ScopedTabID() {
+  DCHECK_EQ(tab_id_, request_sender_->source_tab_id_);
+  request_sender_->source_tab_id_ = previous_tab_id_;
+}
+
+RequestSender::RequestSender(Dispatcher* dispatcher)
+    : dispatcher_(dispatcher),
+      source_tab_id_(-1) {
 }
 
 RequestSender::~RequestSender() {
@@ -90,6 +105,7 @@ void RequestSender::StartRequest(Source* source,
   params.arguments.Swap(value_args);
   params.extension_id = context->GetExtensionID();
   params.source_url = source_url;
+  params.source_tab_id = source_tab_id_;
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =

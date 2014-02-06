@@ -192,6 +192,9 @@ class ExtensionFunction
     response_callback_ = callback;
   }
 
+  void set_source_tab_id(int source_tab_id) { source_tab_id_ = source_tab_id; }
+  int source_tab_id() const { return source_tab_id_; }
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
 
@@ -264,6 +267,10 @@ class ExtensionFunction
   // The callback to run once the function has done execution.
   ResponseCallback response_callback_;
 
+  // The ID of the tab triggered this function call, or -1 if there is no tab.
+  int source_tab_id_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
 

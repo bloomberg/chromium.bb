@@ -37,7 +37,7 @@ class UIThreadExtensionFunction::RenderHostTracker
  public:
   explicit RenderHostTracker(UIThreadExtensionFunction* function)
       : content::WebContentsObserver(
-            function->render_view_host() ? 
+            function->render_view_host() ?
                 WebContents::FromRenderViewHost(function->render_view_host()) :
                 WebContents::FromRenderFrameHost(
                     function->render_frame_host())),
@@ -77,7 +77,9 @@ ExtensionFunction::ExtensionFunction()
       include_incognito_(false),
       user_gesture_(false),
       bad_message_(false),
-      histogram_value_(extensions::functions::UNKNOWN) {}
+      histogram_value_(extensions::functions::UNKNOWN),
+      source_tab_id_(-1) {
+}
 
 ExtensionFunction::~ExtensionFunction() {
 }
@@ -157,8 +159,11 @@ void ExtensionFunction::SendResponseImpl(bool success) {
 }
 
 UIThreadExtensionFunction::UIThreadExtensionFunction()
-    : render_view_host_(NULL), render_frame_host_(NULL), context_(NULL),
-      delegate_(NULL) {}
+    : render_view_host_(NULL),
+      render_frame_host_(NULL),
+      context_(NULL),
+      delegate_(NULL) {
+}
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && render_view_host())

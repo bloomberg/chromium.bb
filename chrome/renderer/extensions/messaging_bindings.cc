@@ -47,6 +47,8 @@
 using content::RenderThread;
 using content::V8ValueConverter;
 
+namespace extensions {
+
 namespace {
 
 struct ExtensionData {
@@ -57,19 +59,19 @@ struct ExtensionData {
   std::map<int, PortData> ports;  // port ID -> data
 };
 
-static base::LazyInstance<ExtensionData> g_extension_data =
+base::LazyInstance<ExtensionData> g_extension_data =
     LAZY_INSTANCE_INITIALIZER;
 
-static bool HasPortData(int port_id) {
+bool HasPortData(int port_id) {
   return g_extension_data.Get().ports.find(port_id) !=
       g_extension_data.Get().ports.end();
 }
 
-static ExtensionData::PortData& GetPortData(int port_id) {
+ExtensionData::PortData& GetPortData(int port_id) {
   return g_extension_data.Get().ports[port_id];
 }
 
-static void ClearPortData(int port_id) {
+void ClearPortData(int port_id) {
   g_extension_data.Get().ports.erase(port_id);
 }
 
@@ -77,11 +79,10 @@ const char kPortClosedError[] = "Attempting to use a disconnected port object";
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
 
-class ExtensionImpl : public extensions::ChromeV8Extension {
+class ExtensionImpl : public ChromeV8Extension {
  public:
-  explicit ExtensionImpl(extensions::Dispatcher* dispatcher,
-                         extensions::ChromeV8Context* context)
-      : extensions::ChromeV8Extension(dispatcher, context) {
+  ExtensionImpl(Dispatcher* dispatcher, ChromeV8Context* context)
+      : ChromeV8Extension(dispatcher, context) {
     RouteFunction("CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
     RouteFunction("PortAddRef",
@@ -96,6 +97,11 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   }
 
   virtual ~ExtensionImpl() {}
+
+  void ClearPortDataAndNotifyDispatcher(int port_id) {
+    ClearPortData(port_id);
+    dispatcher()->ClearPortData(port_id);
+  }
 
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -117,9 +123,8 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     renderview->Send(new ExtensionHostMsg_PostMessage(
         renderview->GetRoutingID(), port_id,
-        extensions::Message(
-            *v8::String::Utf8Value(args[1]),
-            blink::WebUserGestureIndicator::isProcessingUserGesture())));
+        Message(*v8::String::Utf8Value(args[1]),
+                blink::WebUserGestureIndicator::isProcessingUserGesture())));
   }
 
   // Forcefully disconnects a port.
@@ -140,7 +145,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
           new ExtensionHostMsg_CloseChannel(port_id, std::string()));
     }
 
-    ClearPortData(port_id);
+    ClearPortDataAndNotifyDispatcher(port_id);
   }
 
   // A new port has been created for a context.  This occurs both when script
@@ -167,7 +172,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       // Send via the RenderThread because the RenderView might be closing.
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_CloseChannel(port_id, std::string()));
-      ClearPortData(port_id);
+      ClearPortDataAndNotifyDispatcher(port_id);
     }
   }
 
@@ -210,8 +215,8 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       callback->Call(context->Global(), 0, NULL);
     }
 
-    extensions::ScopedPersistent<v8::Object> object_;
-    extensions::ScopedPersistent<v8::Function> callback_;
+    ScopedPersistent<v8::Object> object_;
+    ScopedPersistent<v8::Function> callback_;
     v8::Isolate* isolate_;
 
     DISALLOW_COPY_AND_ASSIGN(GCCallback);
@@ -231,8 +236,6 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 };
 
 }  // namespace
-
-namespace extensions {
 
 ChromeV8Extension* MessagingBindings::Get(
     Dispatcher* dispatcher,
@@ -272,13 +275,14 @@ void MessagingBindings::DispatchOnConnect(
       continue;
 
     v8::Handle<v8::Value> tab = v8::Null(isolate);
-    if (!source_tab.empty())
-      tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
-
     v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
-    if ((*it)->extension()) {
+    const Extension* extension = (*it)->extension();
+    if (extension) {
+      if (!source_tab.empty() && !extension->is_platform_app())
+        tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
+
       ExternallyConnectableInfo* externally_connectable =
-          ExternallyConnectableInfo::Get((*it)->extension());
+          ExternallyConnectableInfo::Get(extension);
       if (externally_connectable &&
           externally_connectable->accepts_tls_channel_id) {
         tls_channel_id_value =
@@ -290,23 +294,31 @@ void MessagingBindings::DispatchOnConnect(
     }
 
     v8::Handle<v8::Value> arguments[] = {
+      // portId
       v8::Integer::New(isolate, target_port_id),
+      // channelName
       v8::String::NewFromUtf8(isolate,
                               channel_name.c_str(),
                               v8::String::kNormalString,
                               channel_name.size()),
-      tab, v8::String::NewFromUtf8(isolate,
-                                   source_extension_id.c_str(),
-                                   v8::String::kNormalString,
-                                   source_extension_id.size()),
+      // sourceTab
+      tab,
+      // sourceExtensionId
+      v8::String::NewFromUtf8(isolate,
+                              source_extension_id.c_str(),
+                              v8::String::kNormalString,
+                              source_extension_id.size()),
+      // targetExtensionId
       v8::String::NewFromUtf8(isolate,
                               target_extension_id.c_str(),
                               v8::String::kNormalString,
                               target_extension_id.size()),
+      // sourceUrl
       v8::String::NewFromUtf8(isolate,
                               source_url_spec.c_str(),
                               v8::String::kNormalString,
                               source_url_spec.size()),
+      // tlsChannelId
       tls_channel_id_value,
     };
 
