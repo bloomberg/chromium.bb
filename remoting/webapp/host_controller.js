@@ -11,15 +11,9 @@ var remoting = remoting || {};
 remoting.HostController = function() {
   /** @return {remoting.HostPlugin} */
   var createPluginForMe2Me = function() {
-    var plugin = remoting.HostSession.createPlugin();
     /** @type {HTMLElement} @private */
     var container = document.getElementById('daemon-plugin-container');
-    container.appendChild(plugin);
-    if (plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
-      container.removeChild(plugin);
-      return null;
-    }
-    return plugin;
+    return remoting.createNpapiPlugin(container);
   };
 
   /** @type {remoting.HostDispatcher} @private */

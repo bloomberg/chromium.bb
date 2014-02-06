@@ -102,19 +102,6 @@ remoting.HostSetupDialog = function(hostController) {
   this.pinConfirm_ = document.getElementById('daemon-pin-confirm');
   this.pinErrorDiv_ = document.getElementById('daemon-pin-error-div');
   this.pinErrorMessage_ = document.getElementById('daemon-pin-error-message');
-  this.continueInstallButton_ = document.getElementById(
-      'host-config-install-continue');
-  this.cancelInstallButton_ = document.getElementById(
-      'host-config-install-dismiss');
-  this.retryInstallButton_ = document.getElementById(
-      'host-config-install-retry');
-
-  this.continueInstallButton_.addEventListener(
-      'click', this.onInstallDialogOk.bind(this), false);
-  this.cancelInstallButton_.addEventListener(
-      'click', this.hide.bind(this), false);
-  this.retryInstallButton_.addEventListener(
-      'click', this.onInstallDialogRetry.bind(this), false);
 
   /** @type {remoting.HostSetupFlow} */
   this.flow_ = new remoting.HostSetupFlow([remoting.HostSetupFlow.State.NONE]);
@@ -329,7 +316,6 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
   } else if (state == remoting.HostSetupFlow.State.ASK_PIN) {
     remoting.setMode(remoting.AppMode.HOST_SETUP_ASK_PIN);
   } else if (state == remoting.HostSetupFlow.State.INSTALL_HOST) {
-    remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
     this.installHost_();
   } else if (state == remoting.HostSetupFlow.State.STARTING_HOST) {
     showProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
@@ -361,33 +347,41 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
 };
 
 /**
- * Installs Host component.
+ * Shows the prompt that asks the user to install the host.
  */
 remoting.HostSetupDialog.prototype.installHost_ = function() {
-  var hostPackageUrl = '';
-  switch (navigator.platform) {
-    case 'Win32':
-      hostPackageUrl = 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/chromeremotedesktophost.msi';
-      break;
-    case 'MacIntel':
-      hostPackageUrl = 'https://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
-      break;
-    case 'Linux x86_64':
-      hostPackageUrl = 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb';
-      break;
-    case 'Linux i386':
-      hostPackageUrl = 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_i386.deb';
-      break;
-    default:
-      // We never expect to get in this state. Host controls should not be shown
-      // on unsupported platform.
-      this.flow_.switchToErrorState(remoting.Error.UNEXPECTED);
-      this.updateState_();
-      return;
+  /** @type {remoting.HostSetupDialog} */
+  var that = this;
+  /** @type {remoting.HostSetupFlow} */
+  var flow = this.flow_;
+
+  var onDone = function() {
+    that.hostController_.getLocalHostState(onHostState);
+  };
+
+  /** @param {remoting.Error} error */
+  var onError = function(error) {
+    flow.switchToErrorState(error);
   }
 
-  // Start downloading the package.
-  window.location = hostPackageUrl;
+  /** @param {remoting.HostController.State} state */
+  var onHostState = function(state) {
+    // Verify if the host has been installed. If not then try to prompt the user
+    // again.
+    var installed =
+        state != remoting.HostController.State.NOT_INSTALLED &&
+        state != remoting.HostController.State.INSTALLING;
+    if (installed) {
+      that.flow_.switchToNextStep();
+      that.updateState_();
+    } else {
+      hostInstallDialog.tryAgain();
+    }
+  }
+
+  /** @type {remoting.HostInstallDialog} */
+  var hostInstallDialog = new remoting.HostInstallDialog();
+  hostInstallDialog.show(onDone, onError);
 }
 
 /**
@@ -566,41 +560,6 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
     }
   }
   return true;
-};
-
-/**
- * @return {void} Nothing.
- */
-remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
-  this.continueInstallButton_.disabled = true;
-  this.cancelInstallButton_.disabled = true;
-
-  /** @type {remoting.HostSetupDialog} */
-  var that = this;
-
-  /** @param {remoting.HostController.State} state */
-  var onHostState = function(state) {
-    that.continueInstallButton_.disabled = false;
-    that.cancelInstallButton_.disabled = false;
-    var installed =
-        state != remoting.HostController.State.NOT_INSTALLED &&
-        state != remoting.HostController.State.INSTALLING;
-    if (installed) {
-      that.flow_.switchToNextStep();
-      that.updateState_();
-    } else {
-      remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
-    }
-  };
-
-  this.hostController_.getLocalHostState(onHostState);
-};
-
-/**
- * @return {void} Nothing.
- */
-remoting.HostSetupDialog.prototype.onInstallDialogRetry = function() {
-  remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
 };
 
 /** @type {remoting.HostSetupDialog} */

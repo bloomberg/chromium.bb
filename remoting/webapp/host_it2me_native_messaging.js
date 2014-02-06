@@ -59,19 +59,19 @@ remoting.HostIt2MeNativeMessaging = function() {
   this.onHostStarted_ = function() {};
 
   /**
-   * @type {function():void} Called if Native Messaging is not supported or the
-   *     It2Me Native Messaging host is not installed.
+   * Called if Native Messaging host has failed to start.
+   * @param {remoting.Error} error
    * @private
    * */
-  this.onHostInitFailed_ = function() {};
+  this.onHostInitFailed_ = function(error) {};
 
   /**
-   * @type {function():void} Called if the It2Me Native Messaging host sends a
-   *     malformed message: missing required attributes, attributes with
-   *     incorrect types, etc.
+   * Called if the It2Me Native Messaging host sends a malformed message:
+   * missing required attributes, attributes with incorrect types, etc.
+   * @param {remoting.Error} error
    * @private
    */
-  this.onError_ = function() {};
+  this.onError_ = function(error) {};
 
   /**
    * @type {function(remoting.HostSession.State):void}
@@ -94,9 +94,10 @@ remoting.HostIt2MeNativeMessaging = function() {
  *
  * @param {function():void} onHostStarted Called after successful
  *     initialization.
- * @param {function():void} onHostInitFailed Called if cannot connect to host.
- * @param {function():void} onError Called on host error after successfully
- *     connecting to the host.
+ * @param {function(remoting.Error):void} onHostInitFailed Called if cannot
+ *      connect to host.
+ * @param {function(remoting.Error):void} onError Called on host error after
+ *     successfully connecting to the host.
  * @return {void}
  */
 remoting.HostIt2MeNativeMessaging.prototype.initialize =
@@ -114,7 +115,7 @@ remoting.HostIt2MeNativeMessaging.prototype.initialize =
   } catch (err) {
     console.log('Native Messaging initialization failed: ',
                 /** @type {*} */ (err));
-    onHostInitFailed();
+    onHostInitFailed(remoting.Error.UNEXPECTED);
     return;
   }
 };
@@ -148,7 +149,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
   /** @type {string} */
   var type = message['type'];
   if (!checkType_('type', type, 'string')) {
-    this.onError_();
+    this.onError_(remoting.Error.UNEXPECTED);
     return;
   }
 
@@ -164,7 +165,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
         // "helloReponse".
         this.onHostStarted_();
       } else {
-        this.onError_();
+        this.onError_(remoting.Error.UNEXPECTED);
       }
       break;
 
@@ -184,7 +185,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
       /** @type {string} */
       var stateString = message['state'];
       if (!checkType_('stateString', stateString, 'string')) {
-        this.onError_();
+        this.onError_(remoting.Error.UNEXPECTED);
         break;
       }
 
@@ -198,14 +199,14 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
           /** @type {string} */
           var accessCode = message['accessCode'];
           if (!checkType_('accessCode', accessCode, 'string')) {
-            this.onError_();
+            this.onError_(remoting.Error.UNEXPECTED);
             break;
           }
 
           /** @type {number} */
           var accessCodeLifetime = message['accessCodeLifetime'];
           if (!checkType_('accessCodeLifetime', accessCodeLifetime, 'number')) {
-            this.onError_();
+            this.onError_(remoting.Error.UNEXPECTED);
             break;
           }
 
@@ -218,7 +219,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
           if (checkType_('client', client, 'string')) {
             this.onConnected_(client);
           } else {
-            this.onError_();
+            this.onError_(remoting.Error.UNEXPECTED);
           }
           break;
       }
@@ -231,7 +232,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
       if (checkType_('natTraversalEnabled', natTraversalEnabled, 'boolean')) {
         this.onNatPolicyChanged_(natTraversalEnabled);
       } else {
-        this.onError_();
+        this.onError_(remoting.Error.UNEXPECTED);
       }
       break;
 
@@ -240,12 +241,12 @@ remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
       var description = message['description'];
       // Ignore the return value.
       checkType_('description', description, 'string');
-      this.onError_();
+      this.onError_(remoting.Error.UNEXPECTED);
       break;
 
     default:
       console.error('Unexpected native message: ', message);
-      this.onError_();
+      this.onError_(remoting.Error.UNEXPECTED);
   }
 };
 
@@ -316,11 +317,15 @@ remoting.HostIt2MeNativeMessaging.prototype.onConnected_ =
  */
 remoting.HostIt2MeNativeMessaging.prototype.onHostDisconnect_ = function() {
   if (!this.initialized_) {
+    var error = (chrome.runtime.lastError.message ==
+                 remoting.NATIVE_MESSAGING_HOST_NOT_FOUND_ERROR)
+                    ? remoting.Error.MISSING_PLUGIN
+                    : remoting.Error.UNEXPECTED;
     console.error('Native Messaging initialization failed.');
-    this.onHostInitFailed_();
+    this.onHostInitFailed_(error);
   } else {
     console.error('Native Messaging port disconnected.');
-    this.onError_();
+    this.onError_(remoting.Error.UNEXPECTED);
   }
 }
 

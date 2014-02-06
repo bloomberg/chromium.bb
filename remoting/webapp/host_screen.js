@@ -22,38 +22,92 @@ var lastShareWasCancelled_ = false;
 /**
  * Start a host session. This is the main entry point for the host screen,
  * called directly from the onclick action of a button on the home screen.
+ * It first verifies that the native host components are installed and asks
+ * to install them if necessary.
  */
 remoting.tryShare = function() {
-  console.log('Attempting to share...');
-  remoting.identity.callWithToken(remoting.tryShareWithToken_,
-                                  remoting.showErrorMessage);
+  /** @type {remoting.HostIt2MeDispatcher} */
+  var hostDispatcher = new remoting.HostIt2MeDispatcher();
+
+  /** @type {remoting.HostInstallDialog} */
+  var hostInstallDialog = null;
+
+  var tryInitializeDispatcher = function() {
+    hostDispatcher.initialize(createPluginForIt2Me,
+                              onDispatcherInitialized,
+                              onDispatcherInitializationFailed);
+  }
+
+ /** @return {remoting.HostPlugin} */
+  var createPluginForIt2Me = function() {
+    return remoting.createNpapiPlugin(
+        document.getElementById('host-plugin-container'));
+  }
+
+  var onDispatcherInitialized = function () {
+    remoting.startHostUsingDispatcher_(hostDispatcher);
+  }
+
+  /** @param {remoting.Error} error */
+  var onDispatcherInitializationFailed = function(error) {
+    if (error != remoting.Error.MISSING_PLUGIN) {
+      showShareError_(error);
+      return;
+    }
+
+    // If we failed to initialize dispatcher then prompt the user to install the
+    // host.
+    if (hostInstallDialog == null) {
+      hostInstallDialog = new remoting.HostInstallDialog();
+
+      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog)
+          .show(tryInitializeDispatcher, onInstallPromptError);
+    } else {
+      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).tryAgain();
+    }
+  }
+
+  /** @param {remoting.Error} error */
+  var onInstallPromptError = function(error) {
+    if (error == remoting.Error.CANCELLED) {
+      remoting.setMode(remoting.AppMode.HOME);
+    } else {
+      showShareError_(error);
+    }
+  }
+
+  tryInitializeDispatcher();
 };
 
 /**
+ * @param {remoting.HostIt2MeDispatcher} hostDispatcher An initialized
+ *     HostIt2MeDispatcher.
+ */
+remoting.startHostUsingDispatcher_ = function(hostDispatcher) {
+  console.log('Attempting to share...');
+  remoting.identity.callWithToken(
+      remoting.tryShareWithToken_.bind(null, hostDispatcher),
+      remoting.showErrorMessage);
+}
+
+/**
+ * @param {remoting.HostIt2MeDispatcher} hostDispatcher An initialized
+ *     HostIt2MeDispatcher.
  * @param {string} token The OAuth access token.
  * @private
  */
-remoting.tryShareWithToken_ = function(token) {
+remoting.tryShareWithToken_ = function(hostDispatcher, token) {
   lastShareWasCancelled_ = false;
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
-  var div = document.getElementById('host-plugin-container');
-  // TODO(weitaosu): Unlike the npapi plugin, the it2me native messaging host
-  // can be long-lived and will create an it2me host on demand.  We should also
-  // keep the HostSession and HostIt2MeDispatcher object alive to avoid repeated
-  // creation of the native messaging host.
   remoting.hostSession = new remoting.HostSession();
-  remoting.hostSession.createDispatcherAndConnect(
-      document.getElementById('host-plugin-container'),
-      /** @type {string} */(remoting.identity.getCachedEmail()),
-      token,
-      onHostStateChanged_,
-      onNatTraversalPolicyChanged_,
-      logDebugInfo_,
-      it2meConnectFailed_);
+  var email = /** @type {string} */remoting.identity.getCachedEmail();
+  remoting.hostSession.connect(
+      hostDispatcher, email, token, onHostStateChanged_,
+      onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
 };
 
 /**

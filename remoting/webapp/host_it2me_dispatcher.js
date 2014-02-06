@@ -9,6 +9,8 @@
  * NativeMessaging is supported. Since the test for NativeMessaging support is
  * asynchronous, the connection is attemped on either the the NativeMessaging
  * host or the NPAPI plugin once the test is complete.
+ *
+ * TODO(sergeyu): Remove this class once the NPAPI plugin is dropped.
  */
 
 'use strict';
@@ -20,17 +22,75 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.HostIt2MeDispatcher = function() {
-  /** @type {remoting.HostIt2MeNativeMessaging} @private */
-  this.nativeMessagingHost_ = new remoting.HostIt2MeNativeMessaging();
+  /**
+   * @type {remoting.HostIt2MeNativeMessaging}
+   * @private */
+  this.nativeMessagingHost_ = null;
 
-  /** @type {remoting.HostPlugin} @private */
+  /**
+   * @type {remoting.HostPlugin}
+   * @private */
   this.npapiHost_ = null;
+
+  /**
+   * @param {remoting.Error} error
+   * @private */
+  this.onErrorHandler_ = function(error) {}
 };
 
 /**
  * @param {function():remoting.HostPlugin} createPluginCallback Callback to
  *     instantiate the NPAPI plugin when NativeMessaging is determined to be
  *     unsupported.
+ * @param {function():void} onDone Callback to be called after initialization
+ *     has finished successfully.
+ * @param {function(remoting.Error):void} onError Callback to invoke if neither
+ *     the native messaging host nor the NPAPI plugin works.
+ */
+remoting.HostIt2MeDispatcher.prototype.initialize =
+    function(createPluginCallback, onDone, onError) {
+  /** @type {remoting.HostIt2MeDispatcher} */
+  var that = this;
+
+  function onNativeMessagingStarted() {
+    console.log('Native Messaging supported.');
+    onDone();
+  }
+
+  /**
+   * @param {remoting.Error} error
+   */
+  function onNativeMessagingFailed(error) {
+    console.log('Native Messaging unsupported, falling back to NPAPI.');
+
+    that.nativeMessagingHost_ = null;
+    that.npapiHost_ = createPluginCallback();
+
+    // TODO(weitaosu): is there a better way to check whether NPAPI plugin is
+    // supported?
+    if (that.npapiHost_) {
+      onDone();
+    } else {
+      onError(error);
+    }
+  }
+
+  this.nativeMessagingHost_ = new remoting.HostIt2MeNativeMessaging();
+  this.nativeMessagingHost_.initialize(onNativeMessagingStarted,
+                                       onNativeMessagingFailed,
+                                       this.onNativeMessagingError_.bind(this));
+}
+
+/**
+ * @param {remoting.Error} error
+ */
+remoting.HostIt2MeDispatcher.prototype.onNativeMessagingError_ =
+    function(error) {
+  this.nativeMessagingHost_ = null;
+  this.onErrorHandler_(error);
+}
+
+/**
  * @param {string} email The user's email address.
  * @param {string} authServiceWithToken Concatenation of the auth service
  *     (e.g. oauth2) and the access token.
@@ -46,44 +106,32 @@ remoting.HostIt2MeDispatcher = function() {
  *     XMPP server
  * @param {string} directoryBotJid XMPP JID for the remoting directory server
  *     bot.
- * @param {function():void} onError Callback to invoke if neither the native
- *     messaging host nor the npapi plugin works.
+ * @param {function(remoting.Error):void} onError Callback to invoke in case of
+ *     an error.
  */
-remoting.HostIt2MeDispatcher.prototype.initAndConnect =
-    function(createPluginCallback, email, authServiceWithToken, onStateChanged,
+remoting.HostIt2MeDispatcher.prototype.connect =
+    function(email, authServiceWithToken, onStateChanged,
              onNatPolicyChanged, logDebugInfo, xmppServerAddress,
              xmppServerUseTls, directoryBotJid, onError) {
-  /** @type {remoting.HostIt2MeDispatcher} */
-  var that = this;
-
-  function onNativeMessagingStarted() {
-    console.log('Native Messaging supported.');
-    that.nativeMessagingHost_.connect(
+  this.onErrorHandler_ = onError;
+  if (this.nativeMessagingHost_) {
+    this.nativeMessagingHost_.connect(
         email, authServiceWithToken, onStateChanged, onNatPolicyChanged,
         xmppServerAddress, xmppServerUseTls, directoryBotJid);
+  } else if (this.npapiHost_) {
+    this.npapiHost_.xmppServerAddress = xmppServerAddress;
+    this.npapiHost_.xmppServerUseTls = xmppServerUseTls;
+    this.npapiHost_.directoryBotJid = directoryBotJid;
+    this.npapiHost_.onStateChanged = onStateChanged;
+    this.npapiHost_.onNatTraversalPolicyChanged = onNatPolicyChanged;
+    this.npapiHost_.logDebugInfo = logDebugInfo;
+    this.npapiHost_.localize(chrome.i18n.getMessage);
+    this.npapiHost_.connect(email, authServiceWithToken);
+  } else {
+    console.error(
+        'remoting.HostIt2MeDispatcher.connect() without initialization.');
+    onError(remoting.Error.UNEXPECTED);
   }
-
-  function onNativeMessagingFailed() {
-    console.log('Native Messaging unsupported, falling back to NPAPI.');
-    that.npapiHost_ = createPluginCallback();
-    // TODO(weitaosu): is there a better way to check whether NPAPI plugin is
-    // supported?
-    if (that.npapiHost_.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
-      that.npapiHost_.xmppServerAddress = xmppServerAddress;
-      that.npapiHost_.xmppServerUseTls = xmppServerUseTls;
-      that.npapiHost_.directoryBotJid = directoryBotJid;
-      that.npapiHost_.onStateChanged = onStateChanged;
-      that.npapiHost_.onNatTraversalPolicyChanged = onNatPolicyChanged;
-      that.npapiHost_.logDebugInfo = logDebugInfo;
-      that.npapiHost_.localize(chrome.i18n.getMessage);
-      that.npapiHost_.connect(email, authServiceWithToken);
-    } else {
-      onError();
-    }
-  }
-
-  this.nativeMessagingHost_.initialize(
-      onNativeMessagingStarted, onNativeMessagingFailed, onError);
 };
 
 /**

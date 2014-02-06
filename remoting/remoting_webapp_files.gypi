@@ -84,6 +84,7 @@
     'remoting_webapp_js_ui_host_control_files': [
       'webapp/host_screen.js',
       'webapp/host_setup_dialog.js',
+      'webapp/host_install_dialog.js',
       'webapp/paired_client_manager.js',
     ],
     # UI files for displaying (in the client) info about available hosts.

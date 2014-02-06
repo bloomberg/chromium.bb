@@ -26,6 +26,7 @@ found in the LICENSE file.
     <script src="host.js"></script>
     <script src="host_controller.js"></script>
     <script src="host_dispatcher.js"></script>
+    <script src="host_install_dialog.js"></script>
     <script src="host_it2me_dispatcher.js"></script>
     <script src="host_it2me_native_messaging.js"></script>
     <script src="host_list.js"></script>
@@ -274,7 +275,7 @@ found in the LICENSE file.
          hidden></div>
 
     <div class="dialog-container"
-         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings"
+         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
          hidden>
 
       <div class="box-spacer"></div>
@@ -375,27 +376,33 @@ found in the LICENSE file.
                     i18n-content="OK"></button>
           </div>
         </div>
-        <div data-ui-mode="home.host-setup.install" hidden>
+      </div> <!-- host-setup-dialog -->
+
+      <div id="host-install-dialog"
+           class="kd-modaldialog"
+           data-ui-mode="home.host-install">
+        <div data-ui-mode="home.host-install.prompt" hidden>
           <div class="message" i18n-content="HOST_SETUP_INSTALL"></div>
           <div class="button-row">
-            <button id="host-config-install-continue"
+            <button id="host-install-continue"
                     autofocus="autofocus"
                     i18n-content="OK"></button>
-            <button id="host-config-install-dismiss"
+            <button id="host-install-dismiss"
                     i18n-content="CANCEL"></button>
           </div>
         </div>
-        <div data-ui-mode="home.host-setup.install-pending" hidden>
+        <div data-ui-mode="home.host-install.pending" hidden>
           <div class="message"
                i18n-content="HOST_SETUP_INSTALL_PENDING"></div>
           <div class="button-row">
-            <button id="host-config-install-retry"
+            <button id="host-install-retry"
                     autofocus="autofocus"
                     i18n-content="OK"></button>
           </div>
         </div>
-      </div> <!-- host-setup-dialog -->
+      </div> <!-- host-install-dialog -->
 
+      <!-- It2Me Sharing -->
       <div id="host-dialog"
            class="kd-modaldialog"
            data-ui-mode="home.host">

@@ -150,6 +150,29 @@ function isIT2MeSupported_() {
   return !remoting.runningOnChromeOS();
 }
 
+/**
+ * Create an instance of the NPAPI plugin.
+ * @param {Element} container The element to add the plugin to.
+ * @return {remoting.HostPlugin} The new plugin instance or null if it failed to
+ *     load.
+ */
+remoting.createNpapiPlugin = function(container) {
+  var plugin = document.createElement('embed');
+  plugin.type = remoting.settings.PLUGIN_MIMETYPE;
+  // Hiding the plugin means it doesn't load, so make it size zero instead.
+  plugin.width = 0;
+  plugin.height = 0;
+  container.appendChild(plugin);
+
+  // Verify if the plugin was loaded successfully.
+  if (!plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
+    container.removeChild(plugin);
+    return null;
+  }
+
+  return /** @type {remoting.HostPlugin} */ (plugin);
+};
+
 // TODO(sergeyu): We want to show Me2Me host controls only on some Linux
 // distributions that we know work properly with the chromoting host. Implement
 // dome detection mechanism and apply it here.

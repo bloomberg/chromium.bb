@@ -53,21 +53,9 @@ remoting.HostSession.stateFromString = function(stateString) {
 }
 
 /**
- * Create an instance of the host plugin.
- * @return {remoting.HostPlugin} The new plugin instance.
- */
-remoting.HostSession.createPlugin = function() {
-  var plugin = document.createElement('embed');
-  plugin.type = remoting.settings.PLUGIN_MIMETYPE;
-  // Hiding the plugin means it doesn't load, so make it size zero instead.
-  plugin.width = 0;
-  plugin.height = 0;
-  return /** @type {remoting.HostPlugin} */ (plugin);
-};
-
-/**
- * Create the host dispatcher and initiate a connection.
- * @param {Element} container The parent element to which to add the plugin.
+ * Initiates a connection.
+ * @param {remoting.HostIt2MeDispatcher}  hostDispatcher It2Me host dispatcher
+ *     to use.
  * @param {string} email The user's email address.
  * @param {string} accessToken A valid OAuth2 access token.
  * @param {function(remoting.HostSession.State):void} onStateChanged
@@ -76,25 +64,16 @@ remoting.HostSession.createPlugin = function() {
  *     for notification of changes to the NAT traversal policy.
  * @param {function(string):void} logDebugInfo Callback allowing the plugin
  *     to log messages to the debug log.
- * @param {function():void} onError Callback to invoke if neither the native
- *     messaging host nor the npapi plugin works.
- * @return {void} Nothing.
+ * @param {function():void} onError Callback to invoke in case of an error.
  */
-remoting.HostSession.prototype.createDispatcherAndConnect =
-    function(container, email, accessToken, onStateChanged,
+remoting.HostSession.prototype.connect =
+    function(hostDispatcher, email, accessToken, onStateChanged,
              onNatTraversalPolicyChanged, logDebugInfo, onError) {
-  /** @type {remoting.HostIt2MeDispatcher} @private */
-  this.hostDispatcher_ = new remoting.HostIt2MeDispatcher();
+  /** @private */
+  this.hostDispatcher_ = hostDispatcher;
 
-  /** @return {remoting.HostPlugin} */
-  var createPluginForIt2Me = function() {
-    var plugin = remoting.HostSession.createPlugin();
-    container.appendChild(plugin);
-    return plugin;
-  };
-
-  this.hostDispatcher_.initAndConnect(
-      createPluginForIt2Me, email, 'oauth2:' + accessToken,
+  this.hostDispatcher_.connect(
+      email, 'oauth2:' + accessToken,
       onStateChanged, onNatTraversalPolicyChanged, logDebugInfo,
       remoting.settings.XMPP_SERVER_ADDRESS,
       remoting.settings.XMPP_SERVER_USE_TLS,
