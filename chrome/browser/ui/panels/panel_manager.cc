@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
-#if defined(TOOLKIT_GTK)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "ui/base/x/x11_util.h"
@@ -106,7 +106,7 @@ void PanelManager::SetDisplaySettingsProviderForTesting(
 
 // static
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
-#if defined(TOOLKIT_GTK)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   // If --enable-panels is on, always use panels on Linux.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels))
     return true;
@@ -122,7 +122,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
       wm_type != ui::WM_XFWM4) {
     return false;
   }
-#endif  // TOOLKIT_GTK
+#endif  // USE_X11 && !OS_CHROMEOS
 
 #if defined(OS_WIN)
   // No panels in Metro mode.
@@ -151,7 +151,7 @@ bool PanelManager::IsPanelStackingEnabled() {
 
 // static
 bool PanelManager::CanUseSystemMinimize() {
-#if defined(TOOLKIT_GTK)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   static base::nix::DesktopEnvironment desktop_env =
       base::nix::DESKTOP_ENVIRONMENT_OTHER;
   if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_OTHER) {
