@@ -40,6 +40,8 @@
 #include "{{filename}}"
 {% endfor %}
 
+{% set pass_ref_ptr = 'PassRefPtrWillBeRawPtr' if is_garbage_collected else
+                      'PassRefPtr' %}
 namespace WebCore {
 
 {% if has_event_constructor %}
@@ -61,8 +63,8 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
-    static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void derefObject(void*);
     {% if has_visit_dom_wrapper %}
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     {% endif %}
@@ -129,13 +131,20 @@ public:
     {% if has_custom_legacy_call_as_function %}
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
+    {# Custom internal fields #}
     {% set custom_internal_field_counter = 0 %}
+    {# persistentHandleIndex must be the first field, if it is present #}
+    {% if is_garbage_collected %}
+    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+    {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
+    {% endif %}
     {% if is_event_target and not is_node %}
     {# Event listeners on DOM nodes are explicitly supported in the GC controller. #}
-    static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
+    static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
     {% endif %}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+    {# End custom internal fields #}
     static inline void* toInternalPointer({{cpp_class}}* impl)
     {
         {% if parent_interface %}
@@ -177,7 +186,7 @@ public:
 private:
     {% if not has_custom_to_v8 %}
     friend v8::Handle<v8::Object> wrap({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<{{cpp_class}}>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper({{pass_ref_ptr}}<{{cpp_class}}>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     {% endif %}
 };
 
@@ -271,25 +280,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
 }
 {% endif %}{# has_custom_to_v8 #}
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<{{cpp_class}} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8({{pass_ref_ptr}}<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class}} > impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class}} > impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class}} > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }

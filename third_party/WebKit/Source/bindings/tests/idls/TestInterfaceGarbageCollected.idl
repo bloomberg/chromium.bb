@@ -29,9 +29,9 @@
  */
 
 [
+    Constructor(DOMString str),
     GarbageCollected,
-    Constructor(DOMString str)
-] interface TestGarbageCollectedInterface {
-    attribute TestGarbageCollectedInterface attr1;
-    void func(TestGarbageCollectedInterface arg);
+] interface TestInterfaceGarbageCollected {
+    attribute TestInterfaceGarbageCollected attr1;
+    void func(TestInterfaceGarbageCollected arg);
 };

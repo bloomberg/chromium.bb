@@ -48,6 +48,7 @@ INTERFACE_H_INCLUDES = set([
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8DOMWrapper.h',
     'bindings/v8/WrapperTypeInfo.h',
+    'heap/Handle.h',
 ])
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
@@ -134,6 +135,7 @@ def generate_interface(interface):
         'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
+        'is_garbage_collected': 'GarbageCollected' in extended_attributes,  # [GarbageCollected]
         'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
