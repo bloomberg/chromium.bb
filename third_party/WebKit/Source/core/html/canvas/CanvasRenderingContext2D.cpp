@@ -506,17 +506,6 @@ void CanvasRenderingContext2D::setLineDash(const Vector<float>& dash)
     applyLineDash();
 }
 
-void CanvasRenderingContext2D::setWebkitLineDash(const Vector<float>& dash)
-{
-    if (!lineDashSequenceIsValid(dash))
-        return;
-
-    realizeSaves();
-    modifiableState().m_lineDash = dash;
-
-    applyLineDash();
-}
-
 float CanvasRenderingContext2D::lineDashOffset() const
 {
     return state().m_lineDashOffset;
@@ -530,16 +519,6 @@ void CanvasRenderingContext2D::setLineDashOffset(float offset)
     realizeSaves();
     modifiableState().m_lineDashOffset = offset;
     applyLineDash();
-}
-
-float CanvasRenderingContext2D::webkitLineDashOffset() const
-{
-    return lineDashOffset();
-}
-
-void CanvasRenderingContext2D::setWebkitLineDashOffset(float offset)
-{
-    setLineDashOffset(offset);
 }
 
 void CanvasRenderingContext2D::applyLineDash() const

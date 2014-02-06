@@ -91,12 +91,9 @@ public:
 
     const Vector<float>& getLineDash() const;
     void setLineDash(const Vector<float>&);
-    void setWebkitLineDash(const Vector<float>&);
 
     float lineDashOffset() const;
     void setLineDashOffset(float);
-    float webkitLineDashOffset() const;
-    void setWebkitLineDashOffset(float);
 
     float shadowOffsetX() const;
     void setShadowOffsetX(float);
