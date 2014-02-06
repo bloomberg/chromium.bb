@@ -301,7 +301,7 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
   // Rule values.
-  static const char kReorderForLegalDefaultMatchRuleEnabled[];
+  static const char kReorderForLegalDefaultMatchRuleDisabled[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

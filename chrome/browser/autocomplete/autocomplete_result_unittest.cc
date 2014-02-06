@@ -457,15 +457,6 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     { 3, 0, 1000 }
   };
 
-  std::map<std::string, std::string> params;
-  // Enable reorder for omnibox inputs on the user's home page.
-  params[std::string(OmniboxFieldTrial::kReorderForLegalDefaultMatchRule) +
-         ":3:*"] = OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled;
-  ASSERT_TRUE(chrome_variations::AssociateVariationParams(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-
   {
     // Check that reorder doesn't do anything if the top result
     // is already a legal default match (which is the default from

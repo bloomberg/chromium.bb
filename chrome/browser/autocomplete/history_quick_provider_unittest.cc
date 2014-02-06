@@ -301,12 +301,6 @@ void HistoryQuickProviderTest::RunTest(const base::string16 text,
   } else {
     // When the top scorer is not inline-able autocomplete offset must be npos.
     EXPECT_TRUE(ac_matches_[0].inline_autocompletion.empty());
-    // Also, the score must be too low to be inlineable.
-    // TODO(mpearson): when the controller reorders for inlining, there's no
-    // longer any connection between scores and what's inlineable / allowed
-    // to be the default match.  Remove this test.
-    EXPECT_LT(ac_matches_[0].relevance,
-              AutocompleteResult::kLowestDefaultScore);
   }
 }
 

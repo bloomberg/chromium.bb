@@ -376,8 +376,8 @@ OmniboxFieldTrial::GetUndemotableTopTypes(
 bool OmniboxFieldTrial::ReorderForLegalDefaultMatch(
     AutocompleteInput::PageClassification current_page_classification) {
   return OmniboxFieldTrial::GetValueForRuleInContext(
-      kReorderForLegalDefaultMatchRule, current_page_classification) ==
-      kReorderForLegalDefaultMatchRuleEnabled;
+      kReorderForLegalDefaultMatchRule, current_page_classification) !=
+      kReorderForLegalDefaultMatchRuleDisabled;
 }
 
 void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
@@ -456,8 +456,8 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled[] =
-    "ReorderForLegalDefaultMatch";
+const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleDisabled[] =
+    "DontReorderForLegalDefaultMatch";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";
