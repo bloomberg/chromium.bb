@@ -57,7 +57,7 @@ class ManagedModeURLFilter
   // Returns true if the URL has a standard scheme. Only URLs with standard
   // schemes are filtered.
   // This method is public for testing.
-  static bool HasStandardScheme(const GURL& url);
+  static bool HasFilteredScheme(const GURL& url);
 
   // Returns true if the |host| matches the pattern. A pattern is a hostname
   // with one or both of the following modifications:

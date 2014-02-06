@@ -55,8 +55,12 @@ TEST_F(ManagedModeURLFilterTest, Basic) {
   EXPECT_TRUE(IsURLWhitelisted("https://x.mail.google.com/"));
   EXPECT_TRUE(IsURLWhitelisted("http://x.y.google.com/a/b"));
   EXPECT_FALSE(IsURLWhitelisted("http://youtube.com/"));
+
   EXPECT_TRUE(IsURLWhitelisted("bogus://youtube.com/"));
   EXPECT_TRUE(IsURLWhitelisted("chrome://youtube.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("chrome://extensions/"));
+  EXPECT_TRUE(IsURLWhitelisted("chrome-extension://foo/main.html"));
+  EXPECT_TRUE(IsURLWhitelisted("file:///home/chronos/user/Downloads/img.jpg"));
 }
 
 TEST_F(ManagedModeURLFilterTest, Inactive) {
@@ -183,21 +187,28 @@ TEST_F(ManagedModeURLFilterTest, Canonicalization) {
   EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/?bar=baz#ref"));
 }
 
-TEST_F(ManagedModeURLFilterTest, HasStandardScheme) {
+TEST_F(ManagedModeURLFilterTest, HasFilteredScheme) {
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("http://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("http://example.com")));
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("https://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("https://example.com")));
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("ftp://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("ftp://example.com")));
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("gopher://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("gopher://example.com")));
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("ws://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("ws://example.com")));
   EXPECT_TRUE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("wss://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("wss://example.com")));
+
   EXPECT_FALSE(
-      ManagedModeURLFilter::HasStandardScheme(GURL("wtf://example.com")));
+      ManagedModeURLFilter::HasFilteredScheme(GURL("file://example.com")));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HasFilteredScheme(GURL("filesystem://80cols.com")));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HasFilteredScheme(GURL("chrome://example.com")));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HasFilteredScheme(GURL("wtf://example.com")));
 }
 
 TEST_F(ManagedModeURLFilterTest, HostMatchesPattern) {
