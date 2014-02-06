@@ -23,6 +23,9 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/test/test_views_delegate.h"
+#include "ui/views/views_delegate.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/test/wm_test_helper.h"
 
 using content::BrowserContext;
@@ -38,6 +41,27 @@ namespace {
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::RendererStartupHelperFactory::GetInstance();
 }
+
+// A ViewsDelegate to attach new unparented windows to app_shell's root window.
+class ShellViewsDelegate : public views::TestViewsDelegate {
+ public:
+  explicit ShellViewsDelegate(aura::Window* root_window)
+      : root_window_(root_window) {}
+  virtual ~ShellViewsDelegate() {}
+
+  // views::ViewsDelegate implementation.
+  virtual void OnBeforeWidgetInit(
+      views::Widget::InitParams* params,
+      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
+    if (!params->parent)
+      params->parent = root_window_;
+  }
+
+ private:
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
+};
 
 }  // namespace
 
@@ -90,6 +114,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       browser_context_.get());
 
   CreateRootWindow();
+  CreateViewsDelegate();
 
   const std::string kAppSwitch = "app";
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -113,6 +138,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  DestroyViewsDelegate();
   DestroyRootWindow();
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
@@ -148,6 +174,17 @@ void ShellBrowserMainParts::DestroyRootWindow() {
   wm_test_helper_->root_window()->PrepareForShutdown();
   wm_test_helper_.reset();
   ui::ShutdownInputMethodForTesting();
+}
+
+void ShellBrowserMainParts::CreateViewsDelegate() {
+  DCHECK(!views::ViewsDelegate::views_delegate);
+  views::ViewsDelegate::views_delegate =
+      new ShellViewsDelegate(wm_test_helper_->root_window()->window());
+}
+
+void ShellBrowserMainParts::DestroyViewsDelegate() {
+  delete views::ViewsDelegate::views_delegate;
+  views::ViewsDelegate::views_delegate = NULL;
 }
 
 void ShellBrowserMainParts::CreateExtensionSystem() {

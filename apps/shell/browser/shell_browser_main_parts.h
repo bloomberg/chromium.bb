@@ -70,6 +70,10 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   // Closes and destroys the root window hosting the app.
   void DestroyRootWindow();
 
+  // Window placement is controlled by a ViewsDelegate.
+  void CreateViewsDelegate();
+  void DestroyViewsDelegate();
+
   // Creates and initializes the ExtensionSystem.
   void CreateExtensionSystem();
 
