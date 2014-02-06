@@ -1903,7 +1903,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 // This version navigates to the page which issues the redirection, rather
 // than the final destination page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectNavigateToFirst) {
+                       PrerenderClientRedirectNavigateToFirst) {
   PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,
                    2);
@@ -1945,7 +1945,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // This version navigates to the final destination page, rather than the
 // page which does the redirection via a mouse click.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-    DISABLED_PrerenderClientRedirectNavigateToSecondViaClick) {
+                       PrerenderClientRedirectNavigateToSecondViaClick) {
   GURL prerender_url = test_server()->GetURL(
       CreateClientRedirect("files/prerender/prerender_page.html"));
   GURL destination_url = test_server()->GetURL(
@@ -1970,7 +1970,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
 // Checks that client-issued redirects within an iframe in a prerendered
 // page will not count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectInIframe) {
+                       PrerenderClientRedirectInIframe) {
   std::string redirect_path = CreateClientRedirect(
       "/files/prerender/prerender_embedded_content.html");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
