@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_provider.h"
@@ -177,8 +178,16 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
       matches_.push_back(ShortcutToACMatch(
           it->second, relevance, term_string, fixed_up_term_string,
           input.prevent_inline_autocomplete()));
+      matches_.back().ComputeStrippedDestinationURL(profile_);
     }
   }
+  // Remove duplicates.
+  std::sort(matches_.begin(), matches_.end(),
+            &AutocompleteMatch::DestinationSortFunc);
+  matches_.erase(std::unique(matches_.begin(), matches_.end(),
+                             &AutocompleteMatch::DestinationsEqual),
+                 matches_.end());
+  // Find best matches.
   std::partial_sort(matches_.begin(),
       matches_.begin() +
           std::min(AutocompleteProvider::kMaxMatches, matches_.size()),

@@ -168,6 +168,14 @@ struct TestShortcutInfo {
     "Page With Space; Input with Space", "0,0",
     content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "",
     1, 100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F7", "duplicate", "http://duplicate.com",
+    "http://duplicate.com/", "Duplicate", "0,1", "Duplicate", "0,1",
+    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1,
+    100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F8", "dupl", "http://duplicate.com",
+    "http://duplicate.com/", "Duplicate", "0,1", "Duplicate", "0,1",
+    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1,
+    100 },
 };
 
 }  // namespace
@@ -495,6 +503,16 @@ TEST_F(ShortcutsProviderTest, MultiMatch) {
   expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
       "http://www.cnn.com/index.html", false));
   RunTest(text, false, expected_urls, "http://slashdot.org/", base::string16());
+}
+
+TEST_F(ShortcutsProviderTest, RemoveDuplicates) {
+  base::string16 text(ASCIIToUTF16("dupl"));
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://duplicate.com/", true));
+  // Make sure the URL only appears once in the output list.
+  RunTest(text, false, expected_urls, "http://duplicate.com/",
+          ASCIIToUTF16("icate.com"));
 }
 
 TEST_F(ShortcutsProviderTest, TypedCountMatches) {
