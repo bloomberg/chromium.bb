@@ -31,7 +31,7 @@
   'variables': {
     'jni_generator': '<(DEPTH)/base/android/jni_generator/jni_generator.py',
     'jni_generator_jarjar_file%': '',
-    'jni_generator_ptr_type%': 'int',
+    'jni_generator_ptr_type%': 'long',
     # A comma separated string of include files.
     'jni_generator_includes%': (
         'base/android/jni_generator/jni_generator_helper.h'
