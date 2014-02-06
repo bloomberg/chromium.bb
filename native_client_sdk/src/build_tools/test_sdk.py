@@ -124,7 +124,8 @@ def main(args):
   parser = optparse.OptionParser(description=__doc__, usage=usage)
   parser.add_option('--experimental', help='build experimental tests',
                     action='store_true')
-  parser.add_option('--verbose', help='Verbose output', action='store_true')
+  parser.add_option('--verbose', '-v', help='Verbose output',
+                    action='store_true')
 
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect

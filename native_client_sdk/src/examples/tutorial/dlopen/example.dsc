@@ -6,7 +6,7 @@
       'TYPE': 'main',
       'SOURCES': ['dlopen.cc'],
       'DEPS': ['nacl_io', 'ppapi_cpp'],
-      'LIBS': ['dl', 'ppapi', 'pthread']
+      'LIBS': ['nacl_io', 'ppapi_cpp', 'ppapi', 'dl', 'pthread']
     },
     {
       'NAME' : 'eightball',

@@ -10,7 +10,7 @@
       ],
       'CFLAGS': ['-fno-omit-frame-pointer'],
       'DEPS' : ['error_handling'],
-      'LIBS' : ['ppapi', 'pthread']
+      'LIBS' : ['error_handling', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

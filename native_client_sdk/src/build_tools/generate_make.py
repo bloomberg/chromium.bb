@@ -182,6 +182,35 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
     buildbot_common.CopyFile(src_file, dst_file)
 
 
+def ModifyDescInPlace(desc):
+  """Perform post-load processing on .dsc file data.
+
+  Currently this consists of:
+  - Add -Wall to CXXFLAGS
+  - Synthesize SEL_LDR_LIBS and SEL_LDR_DEPS by stripping
+    down LIBS and DEPS (removing certain ppapi-only libs).
+  """
+
+  ppapi_only_libs = ['ppapi_simple']
+
+  for target in desc['TARGETS']:
+    target.setdefault('CXXFLAGS', [])
+    target['CXXFLAGS'].insert(0, '-Wall')
+
+    def filter_out(key):
+      value = target.get(key, [])
+      if type(value) == dict:
+        value = dict(value)
+        for key in value.keys():
+          value[key] = [v for v in value[key] if v not in ppapi_only_libs]
+      else:
+        value = [v for v in value if v not in ppapi_only_libs]
+      return value
+
+    target['SEL_LDR_LIBS'] = filter_out('LIBS')
+    target['SEL_LDR_DEPS'] = filter_out('DEPS')
+
+
 def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
                    first_toolchain=False):
   if not configs:
@@ -222,9 +251,8 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   tools = [tool for tool in toolchains if tool in desc['TOOLS']]
   if first_toolchain:
     tools = [tools[0]]
-  for target in desc['TARGETS']:
-    target.setdefault('CXXFLAGS', [])
-    target['CXXFLAGS'].insert(0, '-Wall')
+
+  ModifyDescInPlace(desc)
 
   template_dict = {
     'desc': desc,
@@ -232,6 +260,7 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
     'pre': desc.get('PRE', ''),
     'post': desc.get('POST', ''),
     'tools': tools,
+    'sel_ldr': desc.get('SEL_LDR'),
     'targets': desc['TARGETS'],
   }
   RunTemplateFileIfChanged(template, make_path, template_dict)

@@ -7,7 +7,7 @@
       'TYPE' : 'main',
       'SOURCES' : ['hello_world.c'],
       'DEPS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp'],
-      'LIBS': ['ppapi', 'pthread']
+      'LIBS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

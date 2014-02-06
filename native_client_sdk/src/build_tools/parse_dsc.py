@@ -148,7 +148,10 @@ def ValidateFormat(src, dsc_format):
 
 def LoadProject(filename):
   with open(filename, 'r') as descfile:
-    desc = eval(descfile.read(), {}, {})
+    try:
+      desc = eval(descfile.read(), {}, {})
+    except Exception as e:
+      raise ValidationError(e)
   if desc.get('DISABLE', False):
     return None
   ValidateFormat(desc, DSC_FORMAT)
