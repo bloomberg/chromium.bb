@@ -7,5 +7,5 @@ window.addEventListener('resize', function(e) {
     return;
   }
   var msg = ['resize', document.body.clientWidth, document.body.clientHeight];
-  embedder.channel.postMessage(JSON.stringify(msg), '*');
+  embedder.postMessage(JSON.stringify(msg), '*');
 });

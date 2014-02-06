@@ -406,33 +406,7 @@ void BrowserPluginGuest::LoadURLWithParams(const GURL& url,
                                            const Referrer& referrer,
                                            PageTransition transition_type,
                                            WebContents* web_contents) {
-  // Do not allow navigating a guest to schemes other than known safe schemes.
-  // This will block the embedder trying to load unwanted schemes, e.g.
-  // chrome://settings.
-  bool scheme_is_blocked =
-      (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
-          url.scheme()) &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
-          url.scheme())) ||
-      url.SchemeIs(kJavaScriptScheme);
-  bool can_commit =
-      GetContentClient()->browser()->CanCommitURL(
-          GetWebContents()->GetRenderProcessHost(), url);
-  if (scheme_is_blocked || !url.is_valid() || !can_commit) {
-    if (delegate_) {
-      // TODO(fsamuel): Need better error reporting here.
-      std::string error_type;
-      base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",
-                        &error_type);
-      delegate_->LoadAbort(true /* is_top_level */, url, error_type);
-    }
-    return;
-  }
-
-  GURL validated_url(url);
-  GetWebContents()->GetRenderProcessHost()->FilterURL(false, &validated_url);
-
-  NavigationController::LoadURLParams load_url_params(validated_url);
+  NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = referrer;
   load_url_params.transition_type = transition_type;
   load_url_params.extra_headers = std::string();
@@ -630,10 +604,9 @@ void BrowserPluginGuest::Initialize(
   // update the BrowserPlugin's corresponding 'name' attribute.
   // TODO(fsamuel): Remove this once http://crbug.com/169110 is addressed.
   renderer_prefs->report_frame_name_changes = true;
-  // Top-level guest-initiated navigations are all plumbed through
-  // BrowserPluginGuest::OpenURLFromTab. There, it is determined whether a
-  // particular navigation will be allowed to proceed or whether it is aborted.
-  renderer_prefs->browser_handles_all_top_level_requests = true;
+  // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
+  // navigations still continue to function inside the app.
+  renderer_prefs->browser_handles_all_top_level_requests = false;
   // Disable "client blocked" error page for browser plugin.
   renderer_prefs->disable_client_blocked_error_page = true;
 
@@ -855,12 +828,14 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
     PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
     if (it == opener()->pending_new_windows_.end())
       return NULL;
-    const NewWindowInfo& old_info = it->second;
-    it->second = NewWindowInfo(params.url, old_info.name);
+    const NewWindowInfo& old_target_url = it->second;
+    NewWindowInfo new_window_info(params.url, old_target_url.name);
+    new_window_info.changed = new_window_info.url != old_target_url.url;
+    it->second = new_window_info;
     return NULL;
   }
   if (params.disposition == CURRENT_TAB) {
-    // This can happen for cross-site redirects and top-level frame navigations.
+    // This can happen for cross-site redirects.
     LoadURLWithParams(params.url, params.referrer, params.transition, source);
     return source;
   }
@@ -1277,10 +1252,15 @@ void BrowserPluginGuest::Attach(
     new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
   }
 
-  // Grab the URL for the initial navigation.
+  // We need to do a navigation here if the target URL has changed between
+  // the time the WebContents was created and the time it was attached.
+  // We also need to do an initial navigation if a RenderView was never
+  // created for the new window in cases where there is no referrer.
   PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
   if (it != opener()->pending_new_windows_.end()) {
-    params.src = it->second.url.spec();
+    const NewWindowInfo& new_window_info = it->second;
+    if (new_window_info.changed || !has_render_view_)
+      params.src = it->second.url.spec();
   } else {
     NOTREACHED();
   }
@@ -1472,11 +1452,32 @@ void BrowserPluginGuest::OnNavigateGuest(
     const std::string& src) {
   GURL url = delegate_ ? delegate_->ResolveURL(src) : GURL(src);
 
+  // Do not allow navigating a guest to schemes other than known safe schemes.
+  // This will block the embedder trying to load unwanted schemes, e.g.
+  // chrome://settings.
+  bool scheme_is_blocked =
+      (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
+          url.scheme()) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
+          url.scheme())) ||
+      url.SchemeIs(kJavaScriptScheme);
+  if (scheme_is_blocked || !url.is_valid()) {
+    if (delegate_) {
+      std::string error_type;
+      base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",
+                        &error_type);
+      delegate_->LoadAbort(true /* is_top_level */, url, error_type);
+    }
+    return;
+  }
+
+  GURL validated_url(url);
+  GetWebContents()->GetRenderProcessHost()->FilterURL(false, &validated_url);
   // As guests do not swap processes on navigation, only navigations to
   // normal web URLs are supported.  No protocol handlers are installed for
   // other schemes (e.g., WebUI or extensions), and no permissions or bindings
   // can be granted to the guest process.
-  LoadURLWithParams(url, Referrer(), PAGE_TRANSITION_AUTO_TOPLEVEL,
+  LoadURLWithParams(validated_url, Referrer(), PAGE_TRANSITION_AUTO_TOPLEVEL,
                     GetWebContents());
 }
 
