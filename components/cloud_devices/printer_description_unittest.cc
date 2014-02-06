@@ -192,7 +192,7 @@ const char kMultyDefaultCdd[] =
 const char kCjt[] =
 "{"
 "  'version': '1.0',"
-"  'printer': {"
+"  'print': {"
 "    'color': {"
 "      'type': 'STANDARD_MONOCHROME'"
 "    },"
@@ -249,7 +249,7 @@ const char kDefaultCjt[] =
 const char kBadVersionCjt[] =
 "{"
 "  'version': '1.1',"
-"  'printer': {"
+"  'print': {"
 "  }"
 "}";
 

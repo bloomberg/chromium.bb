@@ -39,7 +39,7 @@ bool ListCapability<Option, Traits>::LoadFrom(
     const CloudDeviceDescription& description) {
   Reset();
   const base::ListValue* options =
-      description.GetListItem(Traits::GetItemPath());
+      description.GetListItem(Traits::GetCapabilityPath());
   if (!options)
     return false;
   for (size_t i = 0; i < options->GetSize(); ++i) {
@@ -59,7 +59,7 @@ void ListCapability<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
   base::ListValue* options_list =
-      description->CreateListItem(Traits::GetItemPath());
+      description->CreateListItem(Traits::GetCapabilityPath());
   for (size_t i = 0; i < options_.size(); ++i) {
     base::DictionaryValue* option_value = new base::DictionaryValue;
     options_list->Append(option_value);
@@ -91,7 +91,7 @@ bool SelectionCapability<Option, Traits>::LoadFrom(
     const CloudDeviceDescription& description) {
   Reset();
   const base::DictionaryValue* item =
-      description.GetItem(Traits::GetItemPath());
+      description.GetItem(Traits::GetCapabilityPath());
   if (!item)
     return false;
   const base::ListValue* options = NULL;
@@ -119,8 +119,8 @@ void SelectionCapability<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
   base::ListValue* options_list = new base::ListValue;
-  description->CreateItem(Traits::GetItemPath())->Set(json::kKeyOption,
-                                                          options_list);
+  description->CreateItem(Traits::GetCapabilityPath())->Set(json::kKeyOption,
+                                                            options_list);
   for (size_t i = 0; i < options_.size(); ++i) {
     base::DictionaryValue* option_value = new base::DictionaryValue;
     options_list->Append(option_value);
@@ -143,7 +143,7 @@ bool BooleanCapability<Traits>::LoadFrom(
     const CloudDeviceDescription& description) {
   Reset();
   const base::DictionaryValue* dict =
-      description.GetItem(Traits::GetItemPath());
+      description.GetItem(Traits::GetCapabilityPath());
   if (!dict)
     return false;
   default_value_ = Traits::kDefault;
@@ -154,7 +154,8 @@ bool BooleanCapability<Traits>::LoadFrom(
 template <class Traits>
 void BooleanCapability<Traits>::SaveTo(
     CloudDeviceDescription* description) const {
-  base::DictionaryValue* dict = description->CreateItem(Traits::GetItemPath());
+  base::DictionaryValue* dict =
+      description->CreateItem(Traits::GetCapabilityPath());
   if (default_value_ != Traits::kDefault)
     dict->SetBoolean(json::kKeyDefault, default_value_);
 }
@@ -162,13 +163,13 @@ void BooleanCapability<Traits>::SaveTo(
 template <class Traits>
 bool EmptyCapability<Traits>::LoadFrom(
     const CloudDeviceDescription& description) {
-  return description.GetItem(Traits::GetItemPath()) != NULL;
+  return description.GetItem(Traits::GetCapabilityPath()) != NULL;
 }
 
 template <class Traits>
 void EmptyCapability<Traits>::SaveTo(
     CloudDeviceDescription* description) const {
-  description->CreateItem(Traits::GetItemPath());
+  description->CreateItem(Traits::GetCapabilityPath());
 }
 
 template <class Option, class Traits>
@@ -189,7 +190,7 @@ bool TicketItem<Option, Traits>::LoadFrom(
     const CloudDeviceDescription& description) {
   Reset();
   const base::DictionaryValue* option_value =
-      description.GetItem(Traits::GetItemPath());
+      description.GetItem(Traits::GetTicketItemPath());
   if (!option_value)
     return false;
   Option option;
@@ -203,7 +204,7 @@ template <class Option, class Traits>
 void TicketItem<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
-  Traits::Save(value(), description->CreateItem(Traits::GetItemPath()));
+  Traits::Save(value(), description->CreateItem(Traits::GetTicketItemPath()));
 }
 
 }  // namespace cloud_devices

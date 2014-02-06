@@ -21,6 +21,7 @@ namespace {
 
 const int32 kMaxPageNumber = 1000000;
 
+const char kSectionPrint[] = "print";
 const char kSectionPrinter[] = "printer";
 
 const char kCustomName[] = "custom_display_name";
@@ -468,8 +469,15 @@ bool Interval::operator==(const Interval& other) const {
 template<const char* kName>
 class ItemsTraits {
  public:
-  static std::string GetItemPath() {
+  static std::string GetCapabilityPath() {
     std::string result = kSectionPrinter;
+    result += '.';
+    result += kName;
+    return result;
+  }
+
+  static std::string GetTicketItemPath() {
+    std::string result = kSectionPrint;
     result += '.';
     result += kName;
     return result;
