@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env python
 
 ## repo default configuration
 ##
@@ -19,19 +19,11 @@ REPO_REV='stable'
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-magic='--calling-python-from-/bin/sh--'
-"""exec" python -E "$0" "$@" """#$magic"
-if __name__ == '__main__':
-  import sys
-  if sys.argv[-1] == '#%s' % magic:
-    del sys.argv[-1]
-del magic
-
 # increment this whenever we make important changes to this script
-VERSION = (1, 18)
+VERSION = (1, 21)
 
 # increment this if the MAINTAINER_KEYS block is modified
-KEYRING_VERSION = (1,2)
+KEYRING_VERSION = (1, 3)
 MAINTAINER_KEYS = """
 
      Repo Maintainer <repo@android.kernel.org>
@@ -80,32 +72,32 @@ TACbBS+Up3RpfYVfd63c1cDdlru13pQAn3NQy/SN858MkxN+zym86UBgOad2
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-mQENBFBiLPwBCACvISTASOgFXwADw2GYRH2I2z9RvYkYoZ6ThTTNlMXbbYYKO2Wo
-a9LQDNW0TbCEekg5UKk0FD13XOdWaqUt4Gtuvq9c43GRSjMO6NXH+0BjcQ8vUtY2
-/W4CYUevwdo4nQ1+1zsOCu1XYe/CReXq0fdugv3hgmRmh3sz1soo37Q44W2frxxg
-U7Rz3Da4FjgAL0RQ8qndD+LwRHXTY7H7wYM8V/3cYFZV7pSodd75q3MAXYQLf0ZV
-QR1XATu5l1QnXrxgHvz7MmDwb1D+jX3YPKnZveaukigQ6hDHdiVcePBiGXmk8LZC
-2jQkdXeF7Su1ZYpr2nnEHLJ6vOLcCpPGb8gDABEBAAG0H0NvbmxleSBPd2VucyA8
-Y2NvM0BhbmRyb2lkLmNvbT6JATgEEwECACIFAlBiLPwCGwMGCwkIBwMCBhUIAgkK
-CwQWAgMBAh4BAheAAAoJEBkmlFUziHGkHVkH/2Hks2Cif5i2xPtv2IFZcjL42joU
-T7lO5XFqUYS9ZNHpGa/V0eiPt7rHoO16glR83NZtwlrq2cSN89i9HfOhMYV/qLu8
-fLCHcV2muw+yCB5s5bxnI5UkToiNZyBNqFkcOt/Kbj9Hpy68A1kmc6myVEaUYebq
-2Chx/f3xuEthan099t746v1K+/6SvQGDNctHuaMr9cWdxZtHjdRf31SQRc99Phe5
-w+ZGR/ebxNDKRK9mKgZT8wVFHlXerJsRqWIqtx1fsW1UgLgbpcpe2MChm6B5wTu0
-s1ltzox3l4q71FyRRPUJxXyvGkDLZWpK7EpiHSCOYq/KP3HkKeXU3xqHpcG5AQ0E
-UGIs/AEIAKzO/7lO9cB6dshmZYo8Vy/b7aGicThE+ChcDSfhvyOXVdEM2GKAjsR+
-rlBWbTFX3It301p2HwZPFEi9nEvJxVlqqBiW0bPmNMkDRR55l2vbWg35wwkg6RyE
-Bc5/TQjhXI2w8IvlimoGoUff4t3JmMOnWrnKSvL+5iuRj12p9WmanCHzw3Ee7ztf
-/aU/q+FTpr3DLerb6S8xbv86ySgnJT6o5CyL2DCWRtnYQyGVi0ZmLzEouAYiO0hs
-z0AAu28Mj+12g2WwePRz6gfM9rHtI37ylYW3oT/9M9mO9ei/Bc/1D7Dz6qNV+0vg
-uSVJxM2Bl6GalHPZLhHntFEdIA6EdoUAEQEAAYkBHwQYAQIACQUCUGIs/AIbDAAK
-CRAZJpRVM4hxpNfkB/0W/hP5WK/NETXBlWXXW7JPaWO2c5kGwD0lnj5RRmridyo1
-vbm5PdM91jOsDQYqRu6YOoYBnDnEhB2wL2bPh34HWwwrA+LwB8hlcAV2z1bdwyfl
-3R823fReKN3QcvLHzmvZPrF4Rk97M9UIyKS0RtnfTWykRgDWHIsrtQPoNwsXrWoT
-9LrM2v+1+9mp3vuXnE473/NHxmiWEQH9Ez+O/mOxQ7rSOlqGRiKq/IBZCfioJOtV
-fTQeIu/yASZnsLBqr6SJEGwYBoWcyjG++k4fyw8ocOAo4uGDYbxgN7yYfNQ0OH7o
-V6pfUgqKLWa/aK7/N1ZHnPdFLD8Xt0Dmy4BPwrKC
-=O7am
+mQENBFHRvc8BCADFg45Xx/y6QDC+T7Y/gGc7vx0ww7qfOwIKlAZ9xG3qKunMxo+S
+hPCnzEl3cq+6I1Ww/ndop/HB3N3toPXRCoN8Vs4/Hc7by+SnaLFnacrm+tV5/OgT
+V37Lzt8lhay1Kl+YfpFwHYYpIEBLFV9knyfRXS/428W2qhdzYfvB15/AasRmwmor
+py4NIzSs8UD/SPr1ihqNCdZM76+MQyN5HMYXW/ALZXUFG0pwluHFA7hrfPG74i8C
+zMiP7qvMWIl/r/jtzHioH1dRKgbod+LZsrDJ8mBaqsZaDmNJMhss9g76XvfMyLra
+9DI9/iFuBpGzeqBv0hwOGQspLRrEoyTeR6n1ABEBAAG0H0NvbmxleSBPd2VucyA8
+Y2NvM0BhbmRyb2lkLmNvbT6JATgEEwECACIFAlHRvc8CGwMGCwkIBwMCBhUIAgkK
+CwQWAgMBAh4BAheAAAoJEGe35EhpKzgsP6AIAJKJmNtn4l7hkYHKHFSo3egb6RjQ
+zEIP3MFTcu8HFX1kF1ZFbrp7xqurLaE53kEkKuAAvjJDAgI8mcZHP1JyplubqjQA
+xvv84gK+OGP3Xk+QK1ZjUQSbjOpjEiSZpRhWcHci3dgOUH4blJfByHw25hlgHowd
+a/2PrNKZVcJ92YienaxxGjcXEUcd0uYEG2+rwllQigFcnMFDhr9B71MfalRHjFKE
+fmdoypqLrri61YBc59P88Rw2/WUpTQjgNubSqa3A2+CKdaRyaRw+2fdF4TdR0h8W
+zbg+lbaPtJHsV+3mJC7fq26MiJDRJa5ZztpMn8su20gbLgi2ShBOaHAYDDi5AQ0E
+UdG9zwEIAMoOBq+QLNozAhxOOl5GL3StTStGRgPRXINfmViTsihrqGCWBBUfXlUE
+OytC0mYcrDUQev/8ToVoyqw+iGSwDkcSXkrEUCKFtHV/GECWtk1keyHgR10YKI1R
+mquSXoubWGqPeG1PAI74XWaRx8UrL8uCXUtmD8Q5J7mDjKR5NpxaXrwlA0bKsf2E
+Gp9tu1kKauuToZhWHMRMqYSOGikQJwWSFYKT1KdNcOXLQF6+bfoJ6sjVYdwfmNQL
+Ixn8QVhoTDedcqClSWB17VDEFDFa7MmqXZz2qtM3X1R/MUMHqPtegQzBGNhRdnI2
+V45+1Nnx/uuCxDbeI4RbHzujnxDiq70AEQEAAYkBHwQYAQIACQUCUdG9zwIbDAAK
+CRBnt+RIaSs4LNVeB/0Y2pZ8I7gAAcEM0Xw8drr4omg2fUoK1J33ozlA/RxeA/lJ
+I3KnyCDTpXuIeBKPGkdL8uMATC9Z8DnBBajRlftNDVZS3Hz4G09G9QpMojvJkFJV
+By+01Flw/X+eeN8NpqSuLV4W+AjEO8at/VvgKr1AFvBRdZ7GkpI1o6DgPe7ZqX+1
+dzQZt3e13W0rVBb/bUgx9iSLoeWP3aq/k+/GRGOR+S6F6BBSl0SQ2EF2+dIywb1x
+JuinEP+AwLAUZ1Bsx9ISC0Agpk2VeHXPL3FGhroEmoMvBzO0kTFGyoeT7PR/BfKv
++H/g3HsL2LOB9uoIm8/5p2TTU5ttYCXMHhQZ81AY
+=AUp4
 -----END PGP PUBLIC KEY BLOCK-----
 
      Stefan Zager <szager@chromium.org>
@@ -141,19 +133,51 @@ wOoatwfzpiTIPGbocUEPL+pS0O/Xy8SINxFMCud3zA==
 """
 
 GIT = 'git'                     # our git command
-MIN_GIT_VERSION = (1, 5, 4)     # minimum supported git version
+MIN_GIT_VERSION = (1, 7, 2)     # minimum supported git version
 repodir = '.repo'               # name of repo's private directory
 S_repo = 'repo'                 # special repo repository
 S_manifests = 'manifests'       # special manifest repository
 REPO_MAIN = S_repo + '/main.py' # main script
+MIN_PYTHON_VERSION = (2, 6)     # minimum supported python version
 
 
+import errno
 import optparse
 import os
 import re
+import stat
 import subprocess
 import sys
-import urllib2
+
+if sys.version_info[0] == 3:
+  import urllib.request
+  import urllib.error
+else:
+  import imp
+  import urllib2
+  urllib = imp.new_module('urllib')
+  urllib.request = urllib2
+  urllib.error = urllib2
+
+
+def _print(*objects, **kwargs):
+  sep = kwargs.get('sep', ' ')
+  end = kwargs.get('end', '\n')
+  out = kwargs.get('file', sys.stdout)
+  out.write(sep.join(objects) + end)
+
+
+# Python version check
+ver = sys.version_info
+if ver[0] == 3:
+  _print('warning: Python 3 support is currently experimental. YMMV.\n'
+         'Please use Python 2.6 - 2.7 instead.',
+         file=sys.stderr)
+if (ver[0], ver[1]) < MIN_PYTHON_VERSION:
+  _print('error: Python version %s unsupported.\n'
+         'Please use Python 2.6 - 2.7 instead.'
+         % sys.version.split(' ')[0], file=sys.stderr)
+  sys.exit(1)
 
 home_dot_repo = os.path.expanduser('~/.repoconfig')
 gpg_dir = os.path.join(home_dot_repo, 'gnupg')
@@ -180,16 +204,22 @@ group.add_option('-m', '--manifest-name',
                  help='initial manifest file', metavar='NAME.xml')
 group.add_option('--mirror',
                  dest='mirror', action='store_true',
-                 help='mirror the forrest')
+                 help='create a replica of the remote repositories '
+                      'rather than a client working directory')
 group.add_option('--reference',
                  dest='reference',
                  help='location of mirror directory', metavar='DIR')
 group.add_option('--depth', type='int', default=None,
                  dest='depth',
                  help='create a shallow clone with given depth; see git clone')
+group.add_option('--archive',
+                 dest='archive', action='store_true',
+                 help='checkout an archive instead of a git repository for '
+                      'each project. See git archive.')
 group.add_option('-g', '--groups',
                  dest='groups', default='default',
-                 help='restrict manifest projects to ones with a specified group',
+                 help='restrict manifest projects to ones with specified '
+                      'group(s) [default|all|G1,G2,G3|G4,-G5,-G6]',
                  metavar='GROUP')
 group.add_option('-p', '--platform',
                  dest='platform', default="auto",
@@ -242,17 +272,16 @@ def _Init(args):
   if branch.startswith('refs/heads/'):
     branch = branch[len('refs/heads/'):]
   if branch.startswith('refs/'):
-    print >>sys.stderr, "fatal: invalid branch name '%s'" % branch
+    _print("fatal: invalid branch name '%s'" % branch, file=sys.stderr)
     raise CloneFailure()
 
-  if not os.path.isdir(repodir):
-    try:
-      os.mkdir(repodir)
-    except OSError as e:
-      print >>sys.stderr, \
-            'fatal: cannot make %s directory: %s' % (
-            repodir, e.strerror)
-      # Don't faise CloneFailure; that would delete the
+  try:
+    os.mkdir(repodir)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      _print('fatal: cannot make %s directory: %s'
+             % (repodir, e.strerror), file=sys.stderr)
+      # Don't raise CloneFailure; that would delete the
       # name. Instead exit immediately.
       #
       sys.exit(1)
@@ -275,9 +304,23 @@ def _Init(args):
     _Checkout(dst, branch, rev, opt.quiet)
   except CloneFailure:
     if opt.quiet:
-      print >>sys.stderr, \
-        'fatal: repo init failed; run without --quiet to see why'
+      _print('fatal: repo init failed; run without --quiet to see why',
+             file=sys.stderr)
     raise
+
+
+def ParseGitVersion(ver_str):
+  if not ver_str.startswith('git version '):
+    return None
+
+  num_ver_str = ver_str[len('git version '):].strip().split('-')[0]
+  to_tuple = []
+  for num_str in num_ver_str.split('.')[:3]:
+    if num_str.isdigit():
+      to_tuple.append(int(num_str))
+    else:
+      to_tuple.append(0)
+  return tuple(to_tuple)
 
 
 def _CheckGitVersion():
@@ -285,27 +328,26 @@ def _CheckGitVersion():
   try:
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   except OSError as e:
-    print >>sys.stderr
-    print >>sys.stderr, "fatal: '%s' is not available" % GIT
-    print >>sys.stderr, 'fatal: %s' % e
-    print >>sys.stderr
-    print >>sys.stderr, 'Please make sure %s is installed'\
-                        ' and in your path.' % GIT
+    _print(file=sys.stderr)
+    _print("fatal: '%s' is not available" % GIT, file=sys.stderr)
+    _print('fatal: %s' % e, file=sys.stderr)
+    _print(file=sys.stderr)
+    _print('Please make sure %s is installed and in your path.' % GIT,
+           file=sys.stderr)
     raise CloneFailure()
 
   ver_str = proc.stdout.read().strip()
   proc.stdout.close()
   proc.wait()
 
-  if not ver_str.startswith('git version '):
-    print >>sys.stderr, 'error: "%s" unsupported' % ver_str
+  ver_act = ParseGitVersion(ver_str)
+  if ver_act is None:
+    _print('error: "%s" unsupported' % ver_str, file=sys.stderr)
     raise CloneFailure()
 
-  ver_str = ver_str[len('git version '):].strip()
-  ver_act = tuple(map(lambda x: int(x), ver_str.split('.')[0:3]))
   if ver_act < MIN_GIT_VERSION:
-    need = '.'.join(map(lambda x: str(x), MIN_GIT_VERSION))
-    print >>sys.stderr, 'fatal: git %s or later required' % need
+    need = '.'.join(map(str, MIN_GIT_VERSION))
+    _print('fatal: git %s or later required' % need, file=sys.stderr)
     raise CloneFailure()
 
 
@@ -321,29 +363,27 @@ def NeedSetupGnuPG():
   if not kv:
     return True
 
-  kv = tuple(map(lambda x: int(x), kv.split('.')))
+  kv = tuple(map(int, kv.split('.')))
   if kv < KEYRING_VERSION:
     return True
   return False
 
 
 def SetupGnuPG(quiet):
-  if not os.path.isdir(home_dot_repo):
-    try:
-      os.mkdir(home_dot_repo)
-    except OSError as e:
-      print >>sys.stderr, \
-            'fatal: cannot make %s directory: %s' % (
-            home_dot_repo, e.strerror)
+  try:
+    os.mkdir(home_dot_repo)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      _print('fatal: cannot make %s directory: %s'
+             % (home_dot_repo, e.strerror), file=sys.stderr)
       sys.exit(1)
 
-  if not os.path.isdir(gpg_dir):
-    try:
-      os.mkdir(gpg_dir, 0700)
-    except OSError as e:
-      print >>sys.stderr, \
-            'fatal: cannot make %s directory: %s' % (
-            gpg_dir, e.strerror)
+  try:
+    os.mkdir(gpg_dir, stat.S_IRWXU)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      _print('fatal: cannot make %s directory: %s' % (gpg_dir, e.strerror),
+             file=sys.stderr)
       sys.exit(1)
 
   env = os.environ.copy()
@@ -356,21 +396,21 @@ def SetupGnuPG(quiet):
                             stdin = subprocess.PIPE)
   except OSError as e:
     if not quiet:
-      print >>sys.stderr, 'warning: gpg (GnuPG) is not available.'
-      print >>sys.stderr, 'warning: Installing it is strongly encouraged.'
-      print >>sys.stderr
+      _print('warning: gpg (GnuPG) is not available.', file=sys.stderr)
+      _print('warning: Installing it is strongly encouraged.', file=sys.stderr)
+      _print(file=sys.stderr)
     return False
 
   proc.stdin.write(MAINTAINER_KEYS)
   proc.stdin.close()
 
   if proc.wait() != 0:
-    print >>sys.stderr, 'fatal: registering repo maintainer keys failed'
+    _print('fatal: registering repo maintainer keys failed', file=sys.stderr)
     sys.exit(1)
-  print
+  _print()
 
   fd = open(os.path.join(home_dot_repo, 'keyring-version'), 'w')
-  fd.write('.'.join(map(lambda x: str(x), KEYRING_VERSION)) + '\n')
+  fd.write('.'.join(map(str, KEYRING_VERSION)) + '\n')
   fd.close()
   return True
 
@@ -386,7 +426,7 @@ def _SetConfig(local, name, value):
 def _InitHttp():
   handlers = []
 
-  mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+  mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
   try:
     import netrc
     n = netrc.netrc()
@@ -396,20 +436,20 @@ def _InitHttp():
       mgr.add_password(p[1], 'https://%s/' % host, p[0], p[2])
   except:
     pass
-  handlers.append(urllib2.HTTPBasicAuthHandler(mgr))
-  handlers.append(urllib2.HTTPDigestAuthHandler(mgr))
+  handlers.append(urllib.request.HTTPBasicAuthHandler(mgr))
+  handlers.append(urllib.request.HTTPDigestAuthHandler(mgr))
 
   if 'http_proxy' in os.environ:
     url = os.environ['http_proxy']
-    handlers.append(urllib2.ProxyHandler({'http': url, 'https': url}))
+    handlers.append(urllib.request.ProxyHandler({'http': url, 'https': url}))
   if 'REPO_CURL_VERBOSE' in os.environ:
-    handlers.append(urllib2.HTTPHandler(debuglevel=1))
-    handlers.append(urllib2.HTTPSHandler(debuglevel=1))
-  urllib2.install_opener(urllib2.build_opener(*handlers))
+    handlers.append(urllib.request.HTTPHandler(debuglevel=1))
+    handlers.append(urllib.request.HTTPSHandler(debuglevel=1))
+  urllib.request.install_opener(urllib.request.build_opener(*handlers))
 
 def _Fetch(url, local, src, quiet):
   if not quiet:
-    print >>sys.stderr, 'Get %s' % url
+    _print('Get %s' % url, file=sys.stderr)
 
   cmd = [GIT, 'fetch']
   if quiet:
@@ -454,20 +494,20 @@ def _DownloadBundle(url, local, quiet):
   dest = open(os.path.join(local, '.git', 'clone.bundle'), 'w+b')
   try:
     try:
-      r = urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
-      if e.code == 404:
+      r = urllib.request.urlopen(url)
+    except urllib.error.HTTPError as e:
+      if e.code in [403, 404]:
         return False
-      print >>sys.stderr, 'fatal: Cannot get %s' % url
-      print >>sys.stderr, 'fatal: HTTP error %s' % e.code
+      _print('fatal: Cannot get %s' % url, file=sys.stderr)
+      _print('fatal: HTTP error %s' % e.code, file=sys.stderr)
       raise CloneFailure()
-    except urllib2.URLError as e:
-      print >>sys.stderr, 'fatal: Cannot get %s' % url
-      print >>sys.stderr, 'fatal: error %s' % e.reason
+    except urllib.error.URLError as e:
+      _print('fatal: Cannot get %s' % url, file=sys.stderr)
+      _print('fatal: error %s' % e.reason, file=sys.stderr)
       raise CloneFailure()
     try:
       if not quiet:
-        print >>sys.stderr, 'Get %s' % url
+        _print('Get %s' % url, file=sys.stderr)
       while True:
         buf = r.read(8192)
         if buf == '':
@@ -491,24 +531,23 @@ def _Clone(url, local, quiet):
   try:
     os.mkdir(local)
   except OSError as e:
-    print >>sys.stderr, \
-          'fatal: cannot make %s directory: %s' \
-          % (local, e.strerror)
+    _print('fatal: cannot make %s directory: %s' % (local, e.strerror),
+           file=sys.stderr)
     raise CloneFailure()
 
   cmd = [GIT, 'init', '--quiet']
   try:
     proc = subprocess.Popen(cmd, cwd = local)
   except OSError as e:
-    print >>sys.stderr
-    print >>sys.stderr, "fatal: '%s' is not available" % GIT
-    print >>sys.stderr, 'fatal: %s' % e
-    print >>sys.stderr
-    print >>sys.stderr, 'Please make sure %s is installed'\
-                        ' and in your path.' % GIT
+    _print(file=sys.stderr)
+    _print("fatal: '%s' is not available" % GIT, file=sys.stderr)
+    _print('fatal: %s' % e, file=sys.stderr)
+    _print(file=sys.stderr)
+    _print('Please make sure %s is installed and in your path.' % GIT,
+          file=sys.stderr)
     raise CloneFailure()
   if proc.wait() != 0:
-    print >>sys.stderr, 'fatal: could not create %s' % local
+    _print('fatal: could not create %s' % local, file=sys.stderr)
     raise CloneFailure()
 
   _InitHttp()
@@ -536,21 +575,18 @@ def _Verify(cwd, branch, quiet):
   proc.stderr.close()
 
   if proc.wait() != 0 or not cur:
-    print >>sys.stderr
-    print >>sys.stderr,\
-      "fatal: branch '%s' has not been signed" \
-      % branch
+    _print(file=sys.stderr)
+    _print("fatal: branch '%s' has not been signed" % branch, file=sys.stderr)
     raise CloneFailure()
 
   m = re.compile(r'^(.*)-[0-9]{1,}-g[0-9a-f]{1,}$').match(cur)
   if m:
     cur = m.group(1)
     if not quiet:
-      print >>sys.stderr
-      print >>sys.stderr, \
-        "info: Ignoring branch '%s'; using tagged release '%s'" \
-        % (branch, cur)
-      print >>sys.stderr
+      _print(file=sys.stderr)
+      _print("info: Ignoring branch '%s'; using tagged release '%s'"
+            % (branch, cur), file=sys.stderr)
+      _print(file=sys.stderr)
 
   env = os.environ.copy()
   env['GNUPGHOME'] = gpg_dir.encode()
@@ -568,10 +604,10 @@ def _Verify(cwd, branch, quiet):
   proc.stderr.close()
 
   if proc.wait() != 0:
-    print >>sys.stderr
-    print >>sys.stderr, out
-    print >>sys.stderr, err
-    print >>sys.stderr
+    _print(file=sys.stderr)
+    _print(out, file=sys.stderr)
+    _print(err, file=sys.stderr)
+    _print(file=sys.stderr)
     raise CloneFailure()
   return '%s^0' % cur
 
@@ -625,7 +661,7 @@ def _ParseArguments(args):
   opt = _Options()
   arg = []
 
-  for i in xrange(0, len(args)):
+  for i in range(len(args)):
     a = args[i]
     if a == '-h' or a == '--help':
       opt.help = True
@@ -638,7 +674,7 @@ def _ParseArguments(args):
 
 
 def _Usage():
-  print >>sys.stderr,\
+  _print(
 """usage: repo COMMAND [ARGS]
 
 repo is not yet installed.  Use "repo init" to install it here.
@@ -649,7 +685,7 @@ The most commonly used repo commands are:
   help      Display detailed help on a command
 
 For access to the full online help, install repo ("repo init").
-"""
+""", file=sys.stderr)
   sys.exit(1)
 
 
@@ -659,25 +695,23 @@ def _Help(args):
       init_optparse.print_help()
       sys.exit(0)
     else:
-      print >>sys.stderr,\
-      "error: '%s' is not a bootstrap command.\n"\
-      '        For access to online help, install repo ("repo init").'\
-      % args[0]
+      _print("error: '%s' is not a bootstrap command.\n"
+             '        For access to online help, install repo ("repo init").'
+             % args[0], file=sys.stderr)
   else:
     _Usage()
   sys.exit(1)
 
 
 def _NotInstalled():
-  print >>sys.stderr,\
-'error: repo is not installed.  Use "repo init" to install it here.'
+  _print('error: repo is not installed.  Use "repo init" to install it here.',
+         file=sys.stderr)
   sys.exit(1)
 
 
 def _NoCommands(cmd):
-  print >>sys.stderr,\
-"""error: command '%s' requires repo to be installed first.
-       Use "repo init" to install it here.""" % cmd
+  _print("""error: command '%s' requires repo to be installed first.
+         Use "repo init" to install it here.""" % cmd, file=sys.stderr)
   sys.exit(1)
 
 
@@ -714,7 +748,7 @@ def _SetDefaultsTo(gitdir):
   proc.stderr.close()
 
   if proc.wait() != 0:
-    print >>sys.stderr, 'fatal: %s has no current branch' % gitdir
+    _print('fatal: %s has no current branch' % gitdir, file=sys.stderr)
     sys.exit(1)
 
 
@@ -755,8 +789,8 @@ def main(orig_args):
   if my_main:
     repo_main = my_main
 
-  ver_str = '.'.join(map(lambda x: str(x), VERSION))
-  me = [repo_main,
+  ver_str = '.'.join(map(str, VERSION))
+  me = [sys.executable, repo_main,
         '--repo-dir=%s' % rel_repo_dir,
         '--wrapper-version=%s' % ver_str,
         '--wrapper-path=%s' % wrapper_path,
@@ -764,10 +798,10 @@ def main(orig_args):
   me.extend(orig_args)
   me.extend(extra_args)
   try:
-    os.execv(repo_main, me)
+    os.execv(sys.executable, me)
   except OSError as e:
-    print >>sys.stderr, "fatal: unable to start %s" % repo_main
-    print >>sys.stderr, "fatal: %s" % e
+    _print("fatal: unable to start %s" % repo_main, file=sys.stderr)
+    _print("fatal: %s" % e, file=sys.stderr)
     sys.exit(148)
 
 
