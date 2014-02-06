@@ -160,6 +160,10 @@ cr.define('cr.ui.login', function() {
      * Hides/shows header (Shutdown/Add User/Cancel buttons).
      * @param {boolean} hidden Whether header is hidden.
      */
+    get headerHidden() {
+      return $('login-header-bar').hidden;
+    },
+
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
     },

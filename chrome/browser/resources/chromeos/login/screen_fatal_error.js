@@ -18,10 +18,10 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
     callback_: null,
 
     /**
-     * Saved hidden status of 'progress-dots'.
-     * @type {boolean}
+     * Saved UI states to restore when this screen hides.
+     * @type {Object}
      */
-    savedProgressDotsHidden_: null,
+    savedUIStates_: {},
 
     /** @override */
     decorate: function() {
@@ -29,8 +29,24 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
           'click', this.onDismiss_.bind(this));
     },
 
+    /** @override */
     get defaultControl() {
       return $('fatal-error-dismiss-button');
+    },
+
+    /** @override */
+    onBeforeShow: function() {
+      this.savedUIStates_.progressDotHidden = $('progress-dots').hidden;
+      $('progress-dots').hidden = true;
+
+      this.savedUIStates_.headerHidden = Oobe.getInstance().headerHidden;
+      Oobe.getInstance().headerHidden = true;
+    },
+
+    /** @override */
+    onBeforeHide: function() {
+      $('progress-dots').hidden = this.savedUIStates_.progressDotHidden;
+      Oobe.getInstance().headerHidden = this.savedUIStates_.headerHidden;
     },
 
     /**
@@ -38,7 +54,6 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
      */
     onDismiss_: function() {
       this.callback_();
-      $('progress-dots').hidden = this.savedProgressDotsHidden_;
     },
 
     /**
@@ -47,13 +62,8 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
      *     screen is dismissed.
      */
     show: function(callback) {
-      Oobe.getInstance().headerHidden = true;
       this.callback_ = callback;
-
       Oobe.showScreen({id: SCREEN_FATAL_ERROR});
-
-      this.savedProgressDotsHidden_ = $('progress-dots').hidden;
-      $('progress-dots').hidden = true;
     }
   };
 });
