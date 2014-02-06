@@ -42,4 +42,4 @@ IPC_MESSAGE_CONTROL5(QuotaHostMsg_RequestStorageQuota,
                      int /* request_id */,
                      GURL /* origin_url */,
                      quota::StorageType /* type */,
-                     int64 /* requested_size */)
+                     uint64 /* requested_size */)

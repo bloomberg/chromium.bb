@@ -55,6 +55,12 @@ const int64 QuotaManager::kNoLimit = kint64max;
 
 const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
 
+// Cap size for per-host persistent quota determined by the histogram.
+// This is a bit lax value because the histogram says nothing about per-host
+// persistent storage usage and we determined by global persistent storage
+// usage that is less than 10GB for almost all users.
+const int64 QuotaManager::kPerHostPersistentQuotaLimit = 10 * 1024 * kMBytes;
+
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
 
 // Preserve kMinimumPreserveForSystem disk space for system book-keeping
@@ -1038,9 +1044,15 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
     callback.Run(kQuotaErrorNotSupported, 0);
     return;
   }
+
   if (new_quota < 0) {
     callback.Run(kQuotaErrorInvalidModification, -1);
     return;
+  }
+
+  if (kPerHostPersistentQuotaLimit < new_quota) {
+    // Cap the requested size at the per-host quota limit.
+    new_quota = kPerHostPersistentQuotaLimit;
   }
 
   if (db_disabled_) {

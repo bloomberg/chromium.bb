@@ -50,7 +50,7 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
       int request_id,
       const GURL& origin_url,
       quota::StorageType type,
-      int64 requested_size);
+      uint64 requested_size);
 
   // The ID of this process.
   int process_id_;

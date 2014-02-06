@@ -229,6 +229,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
   // utilized by a single host (ie. 5 for 20%).
   static const int kPerHostTemporaryPortion;
 
+  static const int64 kPerHostPersistentQuotaLimit;
+
   static const char kDatabaseName[];
 
   static const int64 kMinimumPreserveForSystem;

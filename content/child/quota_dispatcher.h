@@ -73,7 +73,7 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   void RequestStorageQuota(int render_view_id,
                            const GURL& gurl,
                            quota::StorageType type,
-                           int64 requested_size,
+                           uint64 requested_size,
                            Callback* callback);
 
   // Creates a new Callback instance for WebStorageQuotaCallbacks.

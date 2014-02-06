@@ -962,10 +962,17 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
   GetPersistentHostQuota("foo.com");
   SetPersistentHostQuota("foo.com", 200);
   GetPersistentHostQuota("foo.com");
-  SetPersistentHostQuota("foo.com", 300000000000ll);
+  SetPersistentHostQuota("foo.com", QuotaManager::kPerHostPersistentQuotaLimit);
   GetPersistentHostQuota("foo.com");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(300000000000ll, quota());
+  EXPECT_EQ(QuotaManager::kPerHostPersistentQuotaLimit, quota());
+
+  // Persistent quota should be capped at the per-host quota limit.
+  SetPersistentHostQuota("foo.com",
+                         QuotaManager::kPerHostPersistentQuotaLimit + 100);
+  GetPersistentHostQuota("foo.com");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(QuotaManager::kPerHostPersistentQuotaLimit, quota());
 }
 
 TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {

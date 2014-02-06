@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/common/quota_messages.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "net/base/net_util.h"
@@ -102,24 +103,26 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
                          int request_id,
                          const GURL& origin,
                          StorageType type,
-                         int64 requested_quota,
+                         uint64 requested_quota,
                          int render_view_id)
       : RequestDispatcher(dispatcher_host, request_id),
         origin_(origin),
         type_(type),
         current_usage_(0),
         current_quota_(0),
-        requested_quota_(requested_quota),
+        requested_quota_(0),
         render_view_id_(render_view_id),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    // Convert the requested size from uint64 to int64 since the quota backend
+    // requires int64 values.
+    // TODO(nhiroki): The backend should accept uint64 values.
+    requested_quota_ = base::saturated_cast<int64>(requested_quota);
+    DCHECK_GT(requested_quota_, 0);
+  }
   virtual ~RequestQuotaDispatcher() {}
 
   void Start() {
     DCHECK(dispatcher_host());
-    if (requested_quota_ < 0) {
-      DidFinish(quota::kQuotaErrorInvalidModification, 0, 0);
-      return;
-    }
 
     DCHECK(type_ == quota::kStorageTypeTemporary ||
            type_ == quota::kStorageTypePersistent ||
@@ -210,7 +213,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   const StorageType type_;
   int64 current_usage_;
   int64 current_quota_;
-  const int64 requested_quota_;
+  int64 requested_quota_;
   const int render_view_id_;
   base::WeakPtrFactory<self_type> weak_factory_;
 };
@@ -255,7 +258,7 @@ void QuotaDispatcherHost::OnRequestStorageQuota(
     int request_id,
     const GURL& origin,
     StorageType type,
-    int64 requested_size) {
+    uint64 requested_size) {
   if (type != quota::kStorageTypeTemporary &&
       type != quota::kStorageTypePersistent) {
     // Unsupported storage types.

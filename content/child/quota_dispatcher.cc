@@ -134,7 +134,7 @@ void QuotaDispatcher::RequestStorageQuota(
     int render_view_id,
     const GURL& origin_url,
     StorageType type,
-    int64 requested_size,
+    uint64 requested_size,
     Callback* callback) {
   DCHECK(callback);
   DCHECK(CurrentWorkerId() == 0);
