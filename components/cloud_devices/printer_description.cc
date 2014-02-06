@@ -394,6 +394,10 @@ Dpi::Dpi() : horizontal(0), vertical(0) {}
 Dpi::Dpi(int32 horizontal, int32 vertical)
     : horizontal(horizontal), vertical(vertical) {}
 
+bool Dpi::IsValid() const {
+  return horizontal > 0 && vertical > 0;
+}
+
 bool Dpi::operator==(const Dpi& other) const {
   return horizontal == other.horizontal && vertical == other.vertical;
 }
@@ -589,7 +593,7 @@ class MarginsTraits : public NoValueValidation,
 class DpiTraits : public ItemsTraits<kOptionDpi> {
  public:
   static bool IsValid(const Dpi& option) {
-    return option.horizontal && option.vertical > 0;
+    return option.IsValid();
   }
 
   static bool Load(const base::DictionaryValue& dict, Dpi* option) {
@@ -685,7 +689,7 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
   static void Save(const Media& option, base::DictionaryValue* dict) {
     if (option.type != CUSTOM_MEDIA)
       dict->SetString(kKeyName, TypeToString(kMediaDefinitions, option.type));
-    if (!option.custom_display_name.empty())
+    if (!option.custom_display_name.empty() || option.type == CUSTOM_MEDIA)
       dict->SetString(kCustomName, option.custom_display_name);
     if (option.width_um > 0)
       dict->SetInteger(kMediaWidth, option.width_um);

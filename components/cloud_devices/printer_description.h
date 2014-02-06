@@ -84,6 +84,7 @@ struct Dpi {
   Dpi();
   Dpi(int32 horizontal, int32 vertical);
 
+  bool IsValid() const;
   bool operator==(const Dpi& other) const;
   bool operator!=(const Dpi& other) const {
     return !(*this == other);
