@@ -94,7 +94,7 @@ bool OriginIsOmnibox(Origin origin) {
                               histogram_name)
 
 #define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, HISTOGRAM, \
-                                    histogram_name) { \
+                                    histogram_name) do { \
   { \
     /* Do not rename.  HISTOGRAM expects a local variable "name". */           \
     std::string name = ComposeHistogramName(std::string(), histogram_name);    \
@@ -136,7 +136,7 @@ bool OriginIsOmnibox(Origin origin) {
   } else { \
     HISTOGRAM; \
   } \
-}
+} while (0)
 
 PrerenderHistograms::PrerenderHistograms()
     : last_experiment_id_(kNoExperiment),
@@ -213,7 +213,7 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 }
 
 // Helper macro for histograms.
-#define RECORD_PLT(tag, perceived_page_load_time) { \
+#define RECORD_PLT(tag, perceived_page_load_time) \
   PREFIXED_HISTOGRAM( \
       tag, origin, \
       UMA_HISTOGRAM_CUSTOM_TIMES( \
@@ -221,8 +221,7 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
         perceived_page_load_time, \
         base::TimeDelta::FromMilliseconds(10), \
         base::TimeDelta::FromSeconds(60), \
-        100)); \
-}
+        100))
 
 // Summary of all histograms Perceived PLT histograms:
 // (all prefixed PerceivedPLT)
@@ -250,8 +249,8 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
     Origin origin,
     base::TimeDelta perceived_page_load_time,
-    bool was_prerender,
-    bool was_complete_prerender, const GURL& url) {
+    NavigationType navigation_type,
+    const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   bool within_window = WithinWindow();
@@ -259,11 +258,12 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
-  if (was_prerender || was_complete_prerender) {
-    if (was_prerender)
+  if (navigation_type != NAVIGATION_TYPE_NORMAL) {
+    DCHECK(navigation_type == NAVIGATION_TYPE_WOULD_HAVE_BEEN_PRERENDERED ||
+           navigation_type == NAVIGATION_TYPE_PRERENDERED);
+    RECORD_PLT("PerceivedPLTMatchedComplete", perceived_page_load_time);
+    if (navigation_type == NAVIGATION_TYPE_PRERENDERED)
       RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
-    if (was_complete_prerender)
-      RECORD_PLT("PerceivedPLTMatchedComplete", perceived_page_load_time);
     seen_any_pageload_ = true;
     seen_pageload_started_after_prerender_ = true;
   } else if (within_window) {

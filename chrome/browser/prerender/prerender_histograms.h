@@ -17,6 +17,18 @@
 
 namespace prerender {
 
+// Navigation type for histograms.
+enum NavigationType {
+  // A normal completed navigation.
+  NAVIGATION_TYPE_NORMAL,
+  // A completed navigation or swap that began as a prerender.
+  NAVIGATION_TYPE_PRERENDERED,
+  // A normal completed navigation in the control group or with a control
+  // prerender that would have been prerendered.
+  NAVIGATION_TYPE_WOULD_HAVE_BEEN_PRERENDERED,
+  NAVIGATION_TYPE_MAX,
+};
+
 // PrerenderHistograms is responsible for recording all prerender specific
 // histograms for PrerenderManager.  It keeps track of the type of prerender
 // currently underway (based on the PrerenderOrigin of the most recent
@@ -34,8 +46,7 @@ class PrerenderHistograms {
   // load may have started prior to navigation due to prerender hints.
   void RecordPerceivedPageLoadTime(Origin origin,
                                    base::TimeDelta perceived_page_load_time,
-                                   bool was_prerender,
-                                   bool was_complete_prerender,
+                                   NavigationType navigation_type,
                                    const GURL& url);
 
   // Records, in a histogram, the percentage of the page load time that had

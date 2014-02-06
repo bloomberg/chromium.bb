@@ -8,6 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/prerender/prerender_histograms.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -74,6 +76,9 @@ class PrerenderTabHelper
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
+  // Called when a control prerender is resolved. Applies to the next load.
+  void WouldHavePrerenderedNextLoad(Origin origin);
+
  private:
   PrerenderTabHelper(content::WebContents* web_contents,
                      PasswordManager* password_manager);
@@ -84,17 +89,35 @@ class PrerenderTabHelper
   void RecordEventIfLoggedInURLResult(Event event, scoped_ptr<bool> is_present,
                                       scoped_ptr<bool> lookup_succeeded);
 
+  void RecordPerceivedPageLoadTime(
+      base::TimeDelta perceived_page_load_time,
+      double fraction_plt_elapsed_at_swap_in);
+
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
 
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
 
-  // Returns whether the WebContents being observed was prerendered.
-  bool IsPrerendered();
+  // The type the current pending navigation, if there is one. If the tab is a
+  // prerender before swap, the value is always NAVIGATION_TYPE_PRERENDERED,
+  // even if the prerender is not currently loading.
+  NavigationType navigation_type_;
+
+  // If |navigation_type_| is not NAVIGATION_TYPE_NORMAL, the origin of the
+  // relevant prerender. Otherwise, ORIGIN_NONE.
+  Origin origin_;
+
+  // True if the next load will be associated with a control prerender. This
+  // extra state is needed because control prerenders are resolved before the
+  // actual load begins. |next_load_origin_| gives the origin of the control
+  // prerender.
+  bool next_load_is_control_prerender_;
+  Origin next_load_origin_;
 
   // System time at which the current load was started for the purpose of
-  // the perceived page load time (PPLT).
+  // the perceived page load time (PPLT). If null, there is no current
+  // load.
   base::TimeTicks pplt_load_start_;
 
   // System time at which the actual pageload started (pre-swapin), if

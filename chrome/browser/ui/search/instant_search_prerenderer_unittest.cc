@@ -16,6 +16,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -42,6 +43,7 @@ using prerender::PrerenderContents;
 using prerender::PrerenderHandle;
 using prerender::PrerenderManager;
 using prerender::PrerenderManagerFactory;
+using prerender::PrerenderTabHelper;
 
 class DummyPrerenderContents : public PrerenderContents {
  public:
@@ -117,6 +119,8 @@ void DummyPrerenderContents::StartPrerendering(
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(
       content::WebContents::CreateParams(profile_),
       session_storage_namespace_map_));
+  PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
+      prerender_contents_.get(), NULL);
   content::NavigationController::LoadURLParams params(url_);
   prerender_contents_->GetController().LoadURLWithParams(params);
   SearchTabHelper::CreateForWebContents(prerender_contents_.get());

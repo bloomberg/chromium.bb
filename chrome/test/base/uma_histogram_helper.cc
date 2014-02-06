@@ -49,12 +49,12 @@ void UMAHistogramHelper::ExpectTotalCount(
     base::HistogramBase::Count count) {
   base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram(name);
-  EXPECT_NE(static_cast<base::HistogramBase*>(NULL), histogram)
-      << "Histogram \"" << name << "\" does not exist.";
-
   if (histogram) {
     scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
     CheckTotalCount(name, count, *samples);
+  } else {
+    // No histogram means there were zero samples.
+    EXPECT_EQ(count, 0) << "Histogram \"" << name << "\" does not exist.";
   }
 }
 
