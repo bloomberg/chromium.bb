@@ -946,9 +946,14 @@ void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
   // they are aborted if not serviced during draw.
   DCHECK(IsActiveTree());
 
-  DCHECK(std::find(layers_with_copy_output_request_.begin(),
-                   layers_with_copy_output_request_.end(),
-                   layer) == layers_with_copy_output_request_.end());
+  // DCHECK(std::find(layers_with_copy_output_request_.begin(),
+  //                 layers_with_copy_output_request_.end(),
+  //                 layer) == layers_with_copy_output_request_.end());
+  // TODO(danakj): Remove this once crash is found crbug.com/309777
+  for (size_t i = 0; i < layers_with_copy_output_request_.size(); ++i) {
+    CHECK(layers_with_copy_output_request_[i] != layer)
+        << i << " of " << layers_with_copy_output_request_.size();
+  }
   layers_with_copy_output_request_.push_back(layer);
 }
 
@@ -963,6 +968,12 @@ void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
       layer);
   DCHECK(it != layers_with_copy_output_request_.end());
   layers_with_copy_output_request_.erase(it);
+
+  // TODO(danakj): Remove this once crash is found crbug.com/309777
+  for (size_t i = 0; i < layers_with_copy_output_request_.size(); ++i) {
+    CHECK(layers_with_copy_output_request_[i] != layer)
+        << i << " of " << layers_with_copy_output_request_.size();
+  }
 }
 
 const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
