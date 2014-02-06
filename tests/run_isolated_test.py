@@ -18,7 +18,7 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import run_isolated
-
+import test_utils
 from depot_tools import auto_stub
 
 
@@ -58,16 +58,18 @@ class RunIsolatedTest(auto_stub.TestCase):
     shutil.rmtree(self.tempdir)
     super(RunIsolatedTest, self).tearDown()
 
-  def assertFileMode(self, filepath, mlinux, mosx, mwin):
-    # Note that it depends on umask.
+  def assertFileMode(self, filepath, mode, umask=None):
+    umask = test_utils.umask() if umask is None else umask
     actual = os.stat(filepath).st_mode
-    if sys.platform == 'win32':
-      expected = mwin
-    elif sys.platform == 'darwin':
-      expected = mosx
-    else:
-      expected = mlinux
-    self.assertEqual(expected, actual, (filepath, oct(expected), oct(actual)))
+    expected = mode & ~umask
+    self.assertEqual(
+        expected,
+        actual,
+        (filepath, oct(expected), oct(actual), oct(umask)))
+
+  def assertMaskedFileMode(self, filepath, mode):
+    """It's usually when the file was first marked read only."""
+    self.assertFileMode(filepath, mode, 0 if sys.platform == 'win32' else 077)
 
   @property
   def run_test_temp_dir(self):
@@ -84,19 +86,6 @@ class RunIsolatedTest(auto_stub.TestCase):
     """Shortcut for joining path with self.run_test_temp_dir."""
     return os.path.join(self.run_test_temp_dir, *args)
 
-  def test_umask(self):
-    # Check assumptions about umask. Anyone can override umask so this test is
-    # bound to be brittle. In practice if it fails, it means assertFileMode()
-    # will have to be updated accordingly.
-    umask = os.umask(0)
-    os.umask(umask)
-    if sys.platform == 'darwin':
-      self.assertEqual(oct(022), oct(umask))
-    elif sys.platform == 'win32':
-      self.assertEqual(oct(0), oct(umask))
-    else:
-      self.assertEqual(oct(02), oct(umask))
-
   def test_delete_wd_rf(self):
     # Confirms that a RO file in a RW directory can be deleted on non-Windows.
     dir_foo = os.path.join(self.tempdir, 'foo')
@@ -105,8 +94,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     write_content(file_bar, 'bar')
     run_isolated.set_read_only(dir_foo, False)
     run_isolated.set_read_only(file_bar, True)
-    self.assertFileMode(dir_foo, 040775, 040755, 040777)
-    self.assertFileMode(file_bar, 0100400, 0100400, 0100444)
+    self.assertFileMode(dir_foo, 040777)
+    self.assertMaskedFileMode(file_bar, 0100444)
     if sys.platform == 'win32':
       # On Windows, a read-only file can't be deleted.
       with self.assertRaises(OSError):
@@ -122,8 +111,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     write_content(file_bar, 'bar')
     run_isolated.set_read_only(dir_foo, True)
     run_isolated.set_read_only(file_bar, False)
-    self.assertFileMode(dir_foo, 040500, 040500, 040555)
-    self.assertFileMode(file_bar, 0100664, 0100644, 0100666)
+    self.assertMaskedFileMode(dir_foo, 040555)
+    self.assertFileMode(file_bar, 0100666)
     if sys.platform == 'win32':
       # A read-only directory has a convoluted meaning on Windows, it means that
       # the directory is "personalized". This is used as a signal by Windows
@@ -145,8 +134,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     write_content(file_bar, 'bar')
     run_isolated.set_read_only(dir_foo, True)
     run_isolated.set_read_only(file_bar, True)
-    self.assertFileMode(dir_foo, 040500, 040500, 040555)
-    self.assertFileMode(file_bar, 0100400, 0100400, 0100444)
+    self.assertMaskedFileMode(dir_foo, 040555)
+    self.assertMaskedFileMode(file_bar, 0100444)
     with self.assertRaises(OSError):
       # It fails for different reason depending on the OS. See the test cases
       # above.
@@ -161,11 +150,11 @@ class RunIsolatedTest(auto_stub.TestCase):
     os.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
     run_isolated.hardlink(file_bar, file_link)
-    self.assertFileMode(file_bar, 0100664, 0100644, 0100666)
-    self.assertFileMode(file_link, 0100664, 0100644, 0100666)
+    self.assertFileMode(file_bar, 0100666)
+    self.assertFileMode(file_link, 0100666)
     run_isolated.set_read_only(file_bar, True)
-    self.assertFileMode(file_bar, 0100400, 0100400, 0100444)
-    self.assertFileMode(file_link, 0100400, 0100400, 0100444)
+    self.assertMaskedFileMode(file_bar, 0100444)
+    self.assertMaskedFileMode(file_link, 0100444)
     # This is bad news for Windows; on Windows, the file must be writeable to be
     # deleted, but the file node is modified. This means that every hard links
     # must be reset to be read-only after deleting one of the hard link

@@ -4,6 +4,7 @@
 
 import os
 
+_UMASK = None
 
 class EnvVars(object):
   """Context manager for environment variables.
@@ -23,3 +24,12 @@ class EnvVars(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     os.environ = self._backup
+
+
+def umask():
+  """Returns current process umask without modifying it."""
+  global _UMASK
+  if _UMASK is None:
+    _UMASK = os.umask(0777)
+    os.umask(_UMASK)
+  return _UMASK
