@@ -5,17 +5,27 @@
 #include "media/midi/midi_manager_alsa.h"
 
 #include <alsa/asoundlib.h>
+#include <stdlib.h>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/midi/midi_port_info.h"
 
 namespace media {
+
+namespace {
+
+const size_t kReceiveBufferSize = 4096;
+const unsigned short kPollEventMask = POLLIN | POLLERR | POLLNVAL;
+
+}  // namespace
 
 class MidiManagerAlsa::MidiDeviceInfo
     : public base::RefCounted<MidiDeviceInfo> {
@@ -50,7 +60,7 @@ class MidiManagerAlsa::MidiDeviceInfo
     ssize_t result = snd_rawmidi_write(
         midi_out_, reinterpret_cast<const void*>(&data[0]), data.size());
     if (static_cast<size_t>(result) != data.size()) {
-      // TODO(toyoshim): Disconnect and reopen the device.
+      // TODO(toyoshim): Handle device disconnection.
       LOG(ERROR) << "snd_rawmidi_write fails: " << strerror(-result);
     }
     base::MessageLoop::current()->PostTask(
@@ -59,7 +69,38 @@ class MidiManagerAlsa::MidiDeviceInfo
                    base::Unretained(client), data.size()));
   }
 
+  // Read input data from a MIDI input device which is ready to read through
+  // the ALSA library. Called from EventLoop() and read data will be sent to
+  // blink through MIDIManager base class.
+  size_t Receive(uint8* data, size_t length) {
+    return snd_rawmidi_read(midi_in_, reinterpret_cast<void*>(data), length);
+  }
+
   const MidiPortInfo& GetMidiPortInfo() const { return port_info_; }
+
+  // Get the number of descriptors which is required to call poll() on the
+  // device. The ALSA library always returns 1 here now, but it may be changed
+  // in the future.
+  int GetPollDescriptorsCount() {
+    return snd_rawmidi_poll_descriptors_count(midi_in_);
+  }
+
+  // Following API initializes pollfds for polling the device, and returns the
+  // number of descriptors they are initialized. It must be the same value with
+  // snd_rawmidi_poll_descriptors_count().
+  int SetupPollDescriptors(struct pollfd* pfds, unsigned int count) {
+    return snd_rawmidi_poll_descriptors(midi_in_, pfds, count);
+  }
+
+  unsigned short GetPollDescriptorsRevents(struct pollfd* pfds) {
+    unsigned short revents;
+    snd_rawmidi_poll_descriptors_revents(midi_in_,
+                                         pfds,
+                                         GetPollDescriptorsCount(),
+                                         &revents);
+    return revents;
+  }
+
   bool IsOpened() const { return opened_; }
 
  private:
@@ -80,7 +121,10 @@ class MidiManagerAlsa::MidiDeviceInfo
 };
 
 MidiManagerAlsa::MidiManagerAlsa()
-    : send_thread_("MidiSendThread") {
+    : send_thread_("MidiSendThread"),
+      event_thread_("MidiEventThread") {
+  for (size_t i = 0; i < arraysize(pipe_fd_); ++i)
+    pipe_fd_[i] = -1;
 }
 
 bool MidiManagerAlsa::Initialize() {
@@ -141,10 +185,31 @@ bool MidiManagerAlsa::Initialize() {
     }
     snd_ctl_close(handle);
   }
+
+  if (pipe(pipe_fd_) < 0) {
+    DPLOG(ERROR) << "pipe() failed";
+    return false;
+  }
+  event_thread_.Start();
+  event_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiManagerAlsa::EventReset, base::Unretained(this)));
+
   return true;
 }
 
 MidiManagerAlsa::~MidiManagerAlsa() {
+  // Send a shutdown message to awake |event_thread_| from poll().
+  if (pipe_fd_[1] >= 0)
+    HANDLE_EINTR(write(pipe_fd_[1], "Q", 1));
+
+  // Stop receiving messages.
+  event_thread_.Stop();
+
+  for (int i = 0; i < 2; ++i) {
+    if (pipe_fd_[i] >= 0)
+      close(pipe_fd_[i]);
+  }
   send_thread_.Stop();
 }
 
@@ -171,6 +236,76 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
       FROM_HERE,
       base::Bind(&MidiDeviceInfo::Send, device, client, data),
       delay);
+}
+
+void MidiManagerAlsa::EventReset() {
+  CHECK(pipe_fd_[0] >= 0);
+
+  // Sum up descriptors which are needed to poll input devices and a shutdown
+  // message.
+  // Keep the first one descriptor for a shutdown message.
+  size_t poll_fds_size = 1;
+  for (size_t i = 0; i < in_devices_.size(); ++i)
+    poll_fds_size += in_devices_[i]->GetPollDescriptorsCount();
+  poll_fds_.resize(poll_fds_size);
+
+  // Setup struct pollfd to poll input MIDI devices and a shutdown message.
+  // The first pollfd is for a shutdown message.
+  poll_fds_[0].fd = pipe_fd_[0];
+  poll_fds_[0].events = kPollEventMask;
+  int fds_index = 1;
+  for (size_t i = 0; i < in_devices_.size(); ++i) {
+    fds_index += in_devices_[i]->SetupPollDescriptors(
+        &poll_fds_[fds_index], poll_fds_.size() - fds_index);
+  }
+
+  event_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
+}
+
+void MidiManagerAlsa::EventLoop() {
+  if (HANDLE_EINTR(poll(&poll_fds_[0], poll_fds_.size(), -1)) < 0) {
+    DPLOG(ERROR) << "Couldn't poll(). Stop to poll input MIDI devices.";
+    // TODO(toyoshim): Handle device disconnection, and try to reconnect?
+    return;
+  }
+
+  // Check timestamp as soon as possible because the API requires accurate
+  // timestamp as possible. It will be useful for recording MIDI events.
+  base::TimeTicks now = base::TimeTicks::HighResNow();
+
+  // Is this thread going to be shutdown?
+  if (poll_fds_[0].revents & kPollEventMask)
+    return;
+
+  // Read available incoming MIDI data.
+  int fds_index = 1;
+  uint8 buffer[kReceiveBufferSize];
+  // TODO(toyoshim): Revisit if the following conversion is the best way.
+  base::TimeDelta timestamp_delta =
+      base::TimeDelta::FromInternalValue(now.ToInternalValue());
+  double timestamp = timestamp_delta.InSecondsF();
+
+  for (size_t i = 0; i < in_devices_.size(); ++i) {
+    unsigned short revents =
+        in_devices_[i]->GetPollDescriptorsRevents(&poll_fds_[fds_index]);
+    if (revents & (POLLERR | POLLNVAL)) {
+      // TODO(toyoshim): Handle device disconnection.
+      LOG(ERROR) << "snd_rawmidi_descriptors_revents fails";
+      poll_fds_[fds_index].events = 0;
+    }
+    if (revents & POLLIN) {
+      size_t read_size = in_devices_[i]->Receive(buffer, kReceiveBufferSize);
+      ReceiveMidiData(i, buffer, read_size, timestamp);
+    }
+    fds_index += in_devices_[i]->GetPollDescriptorsCount();
+  }
+
+  // Do again.
+  event_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
 }
 
 MidiManager* MidiManager::Create() {
