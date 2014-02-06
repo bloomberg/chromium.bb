@@ -82,8 +82,6 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
-    if (!enabled())
-        return;
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -122,8 +120,6 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
 {
-    if (!enabled())
-        return;
 #ifndef NDEBUG
     if (block->isRenderView())
         m_blocksThatHaveBegunLayout.clear();

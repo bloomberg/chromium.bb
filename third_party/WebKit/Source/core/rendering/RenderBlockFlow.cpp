@@ -343,9 +343,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
-    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
-    if (textAutosizer)
-        textAutosizer->beginLayout(this);
+    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(document(), this);
 
     if (childrenInline())
         layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);
@@ -450,9 +448,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         else
             repaintOverflow();
     }
-
-    if (textAutosizer)
-        textAutosizer->endLayout(this);
 
     clearNeedsLayout();
     return true;

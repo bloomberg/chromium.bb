@@ -63,11 +63,28 @@ public:
 
     void record(const RenderBlock*);
     void destroy(const RenderBlock*);
-
-    void beginLayout(RenderBlock*);
-    void endLayout(RenderBlock*);
-
     void inflateListItem(RenderListItem*, RenderListMarker*);
+
+    class LayoutScope {
+    public:
+        explicit LayoutScope(Document& document, RenderBlock* block)
+        {
+            m_textAutosizer = document.fastTextAutosizer();
+            if (m_textAutosizer) {
+                m_block = block;
+                m_textAutosizer->beginLayout(m_block);
+            }
+        }
+
+        ~LayoutScope()
+        {
+            if (m_textAutosizer)
+                m_textAutosizer->endLayout(m_block);
+        }
+    private:
+        FastTextAutosizer* m_textAutosizer;
+        RenderBlock* m_block;
+    };
 
 private:
     struct Cluster {
@@ -124,6 +141,8 @@ private:
 
     explicit FastTextAutosizer(const Document*);
 
+    void beginLayout(RenderBlock*);
+    void endLayout(RenderBlock*);
     void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo(RenderView*);
