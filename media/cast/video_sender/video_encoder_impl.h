@@ -55,7 +55,6 @@ class VideoEncoderImpl : public VideoEncoder {
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:
-
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   CodecDynamicConfig dynamic_config_;

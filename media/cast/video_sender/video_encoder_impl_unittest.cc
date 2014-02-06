@@ -21,8 +21,8 @@ namespace cast {
 using testing::_;
 
 namespace {
-class TestVideoEncoderCallback :
-    public base::RefCountedThreadSafe<TestVideoEncoderCallback>  {
+class TestVideoEncoderCallback
+    : public base::RefCountedThreadSafe<TestVideoEncoderCallback> {
  public:
   TestVideoEncoderCallback() {}
 
@@ -56,6 +56,8 @@ class TestVideoEncoderCallback :
   uint8 expected_frame_id_;
   uint8 expected_last_referenced_frame_id_;
   base::TimeTicks expected_capture_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVideoEncoderCallback);
 };
 }  // namespace
 
@@ -78,8 +80,8 @@ class VideoEncoderImplTest : public ::testing::Test {
     video_config_.max_number_of_video_buffers_used = 3;
     video_config_.codec = transport::kVp8;
     gfx::Size size(video_config_.width, video_config_.height);
-    video_frame_ =  media::VideoFrame::CreateFrame(VideoFrame::I420,
-        size, gfx::Rect(size), size, base::TimeDelta());
+    video_frame_ = media::VideoFrame::CreateFrame(
+        VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(video_frame_, 123);
   }
 
@@ -88,10 +90,15 @@ class VideoEncoderImplTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     testing_clock_ = new base::SimpleTestTickClock();
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
-    cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_,
-        task_runner_, GetDefaultCastSenderLoggingConfig());
+    cast_environment_ =
+        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            GetDefaultCastSenderLoggingConfig());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -100,8 +107,8 @@ class VideoEncoderImplTest : public ::testing::Test {
   }
 
   void Configure(uint8 max_unacked_frames) {
-    video_encoder_.reset(new VideoEncoderImpl(cast_environment_, video_config_,
-       max_unacked_frames));
+    video_encoder_.reset(new VideoEncoderImpl(
+        cast_environment_, video_config_, max_unacked_frames));
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -112,6 +119,8 @@ class VideoEncoderImplTest : public ::testing::Test {
   scoped_refptr<media::VideoFrame> video_frame_;
 
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoEncoderImplTest);
 };
 
 TEST_F(VideoEncoderImplTest, EncodePattern30fpsRunningOutOfAck) {
@@ -124,22 +133,22 @@ TEST_F(VideoEncoderImplTest, EncodePattern30fpsRunningOutOfAck) {
   base::TimeTicks capture_time;
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-  frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   capture_time += base::TimeDelta::FromMilliseconds(33);
   video_encoder_->LatestFrameIdToReference(0);
   test_video_encoder_callback_->SetExpectedResult(false, 1, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-      frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   capture_time += base::TimeDelta::FromMilliseconds(33);
   video_encoder_->LatestFrameIdToReference(1);
   test_video_encoder_callback_->SetExpectedResult(false, 2, 1, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-      frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(2);
@@ -147,15 +156,15 @@ TEST_F(VideoEncoderImplTest, EncodePattern30fpsRunningOutOfAck) {
   for (int i = 3; i < 6; ++i) {
     capture_time += base::TimeDelta::FromMilliseconds(33);
     test_video_encoder_callback_->SetExpectedResult(false, i, 2, capture_time);
-    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-        frame_encoded_callback));
+    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
     task_runner_->RunTasks();
   }
 }
 
 // TODO(pwestin): Re-enabled after redesign the encoder to control number of
 // frames in flight.
-TEST_F(VideoEncoderImplTest,DISABLED_EncodePattern60fpsRunningOutOfAck) {
+TEST_F(VideoEncoderImplTest, DISABLED_EncodePattern60fpsRunningOutOfAck) {
   video_config_.max_number_of_video_buffers_used = 1;
   Configure(6);
 
@@ -166,22 +175,22 @@ TEST_F(VideoEncoderImplTest,DISABLED_EncodePattern60fpsRunningOutOfAck) {
 
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(0);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 1, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(1);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 2, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(2);
@@ -189,8 +198,8 @@ TEST_F(VideoEncoderImplTest,DISABLED_EncodePattern60fpsRunningOutOfAck) {
   for (int i = 3; i < 9; ++i) {
     capture_time += base::TimeDelta::FromMilliseconds(33);
     test_video_encoder_callback_->SetExpectedResult(false, i, 2, capture_time);
-    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-        frame_encoded_callback));
+    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
     task_runner_->RunTasks();
   }
 }
@@ -208,44 +217,44 @@ TEST_F(VideoEncoderImplTest,
 
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(0);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 1, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(1);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 2, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(2);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 3, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-        frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(3);
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(false, 4, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-              frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   video_encoder_->LatestFrameIdToReference(4);
 
   for (int i = 5; i < 17; ++i) {
     test_video_encoder_callback_->SetExpectedResult(false, i, 4, capture_time);
-    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-        frame_encoded_callback));
+    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
     task_runner_->RunTasks();
   }
 }

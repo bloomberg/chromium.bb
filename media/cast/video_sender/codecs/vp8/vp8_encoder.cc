@@ -19,6 +19,13 @@ namespace cast {
 
 static const uint32 kMinIntra = 300;
 
+static int ComputeMaxNumOfRepeatedBuffes(uint8 max_unacked_frames) {
+  if (max_unacked_frames > kNumberOfVp8VideoBuffers)
+    return (max_unacked_frames - 1) / kNumberOfVp8VideoBuffers;
+
+  return 0;
+}
+
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
                        uint8 max_unacked_frames)
     : cast_config_(video_config),
@@ -26,8 +33,7 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
           cast_config_.max_number_of_video_buffers_used ==
           kNumberOfVp8VideoBuffers),
       max_number_of_repeated_buffers_in_a_row_(
-          (max_unacked_frames > kNumberOfVp8VideoBuffers) ?
-          ((max_unacked_frames - 1) / kNumberOfVp8VideoBuffers) : 0),
+          ComputeMaxNumOfRepeatedBuffes(max_unacked_frames)),
       key_frame_requested_(true),
       timestamp_(0),
       last_encoded_frame_id_(kStartFrameId),
@@ -36,7 +42,8 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
   // internal state of the encoder, ideally the encoder will tell if we can
   // send another frame.
   DCHECK(!use_multiple_video_buffers_ ||
-         max_number_of_repeated_buffers_in_a_row_ == 0) <<  "Invalid config";
+         max_number_of_repeated_buffers_in_a_row_ == 0)
+      << "Invalid config";
 
   // VP8 have 3 buffers available for prediction, with
   // max_number_of_video_buffers_used set to 1 we maximize the coding efficiency
@@ -46,7 +53,8 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
   // propagation.
   DCHECK(cast_config_.max_number_of_video_buffers_used == 1 ||
          cast_config_.max_number_of_video_buffers_used ==
-             kNumberOfVp8VideoBuffers) << "Invalid argument";
+             kNumberOfVp8VideoBuffers)
+      << "Invalid argument";
 
   thread_checker_.DetachFromThread();
 }
@@ -64,8 +72,8 @@ void Vp8Encoder::Initialize() {
   // Creating a wrapper to the image - setting image data to NULL. Actual
   // pointer will be set during encode. Setting align to 1, as it is
   // meaningless (actual memory is not allocated).
-  raw_image_ = vpx_img_wrap(NULL, IMG_FMT_I420, cast_config_.width,
-                            cast_config_.height, 1, NULL);
+  raw_image_ = vpx_img_wrap(
+      NULL, IMG_FMT_I420, cast_config_.width, cast_config_.height, 1, NULL);
 
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
     acked_frame_buffers_[i] = true;
@@ -95,8 +103,8 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
     config_->g_error_resilient = 1;
   }
 
-  if (cast_config_.width * cast_config_.height > 640 * 480
-      && number_of_cores >= 2) {
+  if (cast_config_.width * cast_config_.height > 640 * 480 &&
+      number_of_cores >= 2) {
     config_->g_threads = 2;  // 2 threads for qHD/HD.
   } else {
     config_->g_threads = 1;  // 1 thread for VGA or less.
@@ -120,10 +128,8 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
   uint32 rc_max_intra_target = MaxIntraTarget(config_->rc_buf_optimal_sz);
   vpx_codec_flags_t flags = 0;
   // TODO(mikhal): Tune settings.
-  if (vpx_codec_enc_init(encoder_.get(),
-                         vpx_codec_vp8_cx(),
-                         config_.get(),
-                         flags)) {
+  if (vpx_codec_enc_init(
+          encoder_.get(), vpx_codec_vp8_cx(), config_.get(), flags)) {
     DCHECK(false) << "vpx_codec_enc_init() failed.";
     encoder_.reset();
     return;
@@ -131,8 +137,8 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
   vpx_codec_control(encoder_.get(), VP8E_SET_STATIC_THRESHOLD, 1);
   vpx_codec_control(encoder_.get(), VP8E_SET_NOISE_SENSITIVITY, 0);
   vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, -6);
-  vpx_codec_control(encoder_.get(), VP8E_SET_MAX_INTRA_BITRATE_PCT,
-                    rc_max_intra_target);
+  vpx_codec_control(
+      encoder_.get(), VP8E_SET_MAX_INTRA_BITRATE_PCT, rc_max_intra_target);
 }
 
 bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -183,7 +189,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   timestamp_ += duration;
 
   // Get encoded frame.
-  const vpx_codec_cx_pkt_t *pkt = NULL;
+  const vpx_codec_cx_pkt_t* pkt = NULL;
   vpx_codec_iter_t iter = NULL;
   size_t total_size = 0;
   while ((pkt = vpx_codec_get_cx_data(encoder_.get(), &iter)) != NULL) {
@@ -193,8 +199,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       encoded_image->data.insert(
           encoded_image->data.end(),
           static_cast<const uint8*>(pkt->data.frame.buf),
-          static_cast<const uint8*>(pkt->data.frame.buf) +
-              pkt->data.frame.sz);
+          static_cast<const uint8*>(pkt->data.frame.buf) + pkt->data.frame.sz);
       if (pkt->data.frame.flags & VPX_FRAME_IS_KEY) {
         encoded_image->key_frame = true;
       } else {
@@ -203,7 +208,8 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     }
   }
   // Don't update frame_id for zero size frames.
-  if (total_size == 0) return true;
+  if (total_size == 0)
+    return true;
 
   // Populate the encoded frame.
   encoded_image->codec = transport::kVp8;
@@ -233,12 +239,14 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
 }
 
 void Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
-  if (!use_multiple_video_buffers_) return;
+  if (!use_multiple_video_buffers_)
+    return;
 
   // We need to reference something.
   DCHECK(acked_frame_buffers_[kAltRefBuffer] ||
          acked_frame_buffers_[kGoldenBuffer] ||
-         acked_frame_buffers_[kLastBuffer]) << "Invalid state";
+         acked_frame_buffers_[kLastBuffer])
+      << "Invalid state";
 
   if (!acked_frame_buffers_[kAltRefBuffer]) {
     *flags |= VP8_EFLAG_NO_REF_ARF;
@@ -252,7 +260,8 @@ void Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
 }
 
 uint32 Vp8Encoder::GetLatestFrameIdToReference() {
-  if (!use_multiple_video_buffers_) return last_encoded_frame_id_;
+  if (!use_multiple_video_buffers_)
+    return last_encoded_frame_id_;
 
   int latest_frame_id_to_reference = -1;
   if (acked_frame_buffers_[kAltRefBuffer]) {
@@ -317,7 +326,8 @@ Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
 
 void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
                                      vpx_codec_flags_t* flags) {
-  if (!use_multiple_video_buffers_) return;
+  if (!use_multiple_video_buffers_)
+    return;
 
   // Update at most one buffer, except for key-frames.
   switch (buffer_to_update) {
@@ -345,7 +355,8 @@ void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
 void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   uint32 new_bitrate_kbit = new_bitrate / 1000;
-  if (config_->rc_target_bitrate == new_bitrate_kbit) return;
+  if (config_->rc_target_bitrate == new_bitrate_kbit)
+    return;
 
   config_->rc_target_bitrate = new_bitrate_kbit;
 
@@ -357,7 +368,8 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
 
 void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!use_multiple_video_buffers_) return;
+  if (!use_multiple_video_buffers_)
+    return;
 
   VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
@@ -383,7 +395,7 @@ uint32 Vp8Encoder::MaxIntraTarget(uint32 optimal_buffer_size_ms) const {
 
   float scale_parameter = 0.5;
   uint32 target_pct = optimal_buffer_size_ms * scale_parameter *
-      cast_config_.max_frame_rate / 10;
+                      cast_config_.max_frame_rate / 10;
 
   // Don't go below 3 times the per frame bandwidth.
   return std::max(target_pct, kMinIntra);

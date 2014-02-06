@@ -56,4 +56,3 @@ class VideoEncoder {
 }  // namespace media
 
 #endif  // MEDIA_CAST_VIDEO_SENDER_VIDEO_ENCODER_H_
-

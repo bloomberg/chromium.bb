@@ -31,6 +31,8 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
 
  private:
   VideoSender* video_sender_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtcpVideoSenderFeedback);
 };
 
 class LocalRtpVideoSenderStatistics : public RtpSenderStatistics {
@@ -70,6 +72,8 @@ class LocalRtpVideoSenderStatistics : public RtpSenderStatistics {
   transport::RtcpSenderInfo sender_info_;
   base::TimeTicks time_sent_;
   uint32 rtp_timestamp_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpVideoSenderStatistics);
 };
 
 VideoSender::VideoSender(
@@ -369,10 +373,9 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
         video_encoder_->SetBitRate(new_bitrate);
       }
     }
+    // We only count duplicate ACKs when we have sent newer frames.
     if (static_cast<uint32>(last_acked_frame_id_) ==
-            cast_feedback.ack_frame_id_
-            // We only count duplicate ACKs when we have sent newer frames.
-        &&
+            cast_feedback.ack_frame_id_ &&
         IsNewerFrameId(last_sent_frame_id_, last_acked_frame_id_)) {
       duplicate_ack_++;
     } else {

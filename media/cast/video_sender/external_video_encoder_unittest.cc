@@ -23,8 +23,8 @@ namespace cast {
 using testing::_;
 
 namespace {
-class TestVideoEncoderCallback :
-    public base::RefCountedThreadSafe<TestVideoEncoderCallback>  {
+class TestVideoEncoderCallback
+    : public base::RefCountedThreadSafe<TestVideoEncoderCallback> {
  public:
   TestVideoEncoderCallback() {}
 
@@ -58,9 +58,10 @@ class TestVideoEncoderCallback :
   uint8 expected_frame_id_;
   uint8 expected_last_referenced_frame_id_;
   base::TimeTicks expected_capture_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVideoEncoderCallback);
 };
 }  // namespace
-
 
 class ExternalVideoEncoderTest : public ::testing::Test {
  protected:
@@ -81,25 +82,28 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     video_config_.max_number_of_video_buffers_used = 3;
     video_config_.codec = transport::kVp8;
     gfx::Size size(video_config_.width, video_config_.height);
-    video_frame_ =  media::VideoFrame::CreateFrame(VideoFrame::I420,
-        size, gfx::Rect(size), size, base::TimeDelta());
+    video_frame_ = media::VideoFrame::CreateFrame(
+        VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(video_frame_, 123);
-  }
 
-  virtual ~ExternalVideoEncoderTest() {}
-
-  virtual void SetUp() {
     testing_clock_ = new base::SimpleTestTickClock();
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
-    cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
-        GetDefaultCastSenderLoggingConfig());
+    cast_environment_ =
+        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            GetDefaultCastSenderLoggingConfig());
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment_,
         video_config_,
         new test::FakeGpuVideoAcceleratorFactories(task_runner_)));
   }
+
+  virtual ~ExternalVideoEncoderTest() {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
@@ -108,6 +112,8 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_refptr<media::VideoFrame> video_frame_;
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalVideoEncoderTest);
 };
 
 TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
@@ -120,16 +126,16 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   base::TimeTicks capture_time;
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
-  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-  frame_encoded_callback));
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
 
   for (int i = 0; i < 6; ++i) {
     capture_time += base::TimeDelta::FromMilliseconds(33);
-    test_video_encoder_callback_->SetExpectedResult(false, i + 1, i,
-                                                    capture_time);
-    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(video_frame_, capture_time,
-                                                 frame_encoded_callback));
+    test_video_encoder_callback_->SetExpectedResult(
+        false, i + 1, i, capture_time);
+    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
     task_runner_->RunTasks();
   }
   // We need to run the task to cleanup the GPU instance.

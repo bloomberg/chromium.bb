@@ -25,8 +25,7 @@ const int kNumberOfVp8VideoBuffers = 3;
 
 class Vp8Encoder {
  public:
-  Vp8Encoder(const VideoSenderConfig& video_config,
-             uint8 max_unacked_frames);
+  Vp8Encoder(const VideoSenderConfig& video_config, uint8 max_unacked_frames);
 
   ~Vp8Encoder();
 
@@ -91,6 +90,8 @@ class Vp8Encoder {
 
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(Vp8Encoder);
 };
 
 }  // namespace cast

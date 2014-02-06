@@ -54,9 +54,8 @@ class VideoSender : public base::NonThreadSafe,
   // The closure callback is called from the video encoder thread as soon as
   // the encoder is done with the frame; it does not mean that the encoded frame
   // has been sent out.
-  void InsertRawVideoFrame(
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time);
+  void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                           const base::TimeTicks& capture_time);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);

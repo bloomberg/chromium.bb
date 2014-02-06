@@ -24,8 +24,11 @@ void LogFrameEncodedEvent(const base::TimeTicks& now,
                           scoped_refptr<CastEnvironment> cast_environment,
                           const base::TimeTicks& capture_time) {
   DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
-  cast_environment->Logging()->InsertFrameEvent(now, kVideoFrameEncoded,
-      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
+  cast_environment->Logging()->InsertFrameEvent(
+      now,
+      kVideoFrameEncoded,
+      GetVideoRtpTimestamp(capture_time),
+      kFrameIdUnknown);
 }
 
 void InitializeVp8EncoderOnEncoderThread(
@@ -56,7 +59,8 @@ void EncodeVideoFrameOnEncoderThread(
 
   base::TimeTicks now = environment->Clock()->NowTicks();
   environment->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
+      CastEnvironment::MAIN,
+      FROM_HERE,
       base::Bind(LogFrameEncodedEvent, now, environment, capture_time));
 
   if (!retval) {
@@ -68,13 +72,11 @@ void EncodeVideoFrameOnEncoderThread(
     return;
   }
   environment->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
+      CastEnvironment::MAIN,
+      FROM_HERE,
       base::Bind(
-          frame_encoded_callback,
-          base::Passed(&encoded_frame),
-          capture_time));
+          frame_encoded_callback, base::Passed(&encoded_frame), capture_time));
 }
-
 }  // namespace
 
 VideoEncoderImpl::VideoEncoderImpl(
@@ -87,12 +89,11 @@ VideoEncoderImpl::VideoEncoderImpl(
       skip_count_(0) {
   if (video_config.codec == transport::kVp8) {
     vp8_encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
-    cast_environment_->PostTask(
-        CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-        base::Bind(
-            &InitializeVp8EncoderOnEncoderThread,
-            cast_environment,
-            vp8_encoder_.get()));
+    cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER,
+                                FROM_HERE,
+                                base::Bind(&InitializeVp8EncoderOnEncoderThread,
+                                           cast_environment,
+                                           vp8_encoder_.get()));
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.
   }
@@ -106,7 +107,8 @@ VideoEncoderImpl::~VideoEncoderImpl() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (vp8_encoder_) {
     cast_environment_->PostTask(
-        CastEnvironment::VIDEO_ENCODER, FROM_HERE,
+        CastEnvironment::VIDEO_ENCODER,
+        FROM_HERE,
         base::Bind(&base::DeletePointer<Vp8Encoder>, vp8_encoder_.release()));
   }
 }
@@ -116,7 +118,8 @@ bool VideoEncoderImpl::EncodeVideoFrame(
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_config_.codec != transport::kVp8) return false;
+  if (video_config_.codec != transport::kVp8)
+    return false;
 
   if (skip_next_frame_) {
     ++skip_count_;
@@ -126,16 +129,20 @@ bool VideoEncoderImpl::EncodeVideoFrame(
   }
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameSentToEncoder,
-      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
-  cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-      base::Bind(&EncodeVideoFrameOnEncoderThread,
-                 cast_environment_,
-                 vp8_encoder_.get(),
-                 video_frame,
-                 capture_time,
-                 dynamic_config_,
-                 frame_encoded_callback));
+  cast_environment_->Logging()->InsertFrameEvent(
+      now,
+      kVideoFrameSentToEncoder,
+      GetVideoRtpTimestamp(capture_time),
+      kFrameIdUnknown);
+  cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER,
+                              FROM_HERE,
+                              base::Bind(&EncodeVideoFrameOnEncoderThread,
+                                         cast_environment_,
+                                         vp8_encoder_.get(),
+                                         video_frame,
+                                         capture_time,
+                                         dynamic_config_,
+                                         frame_encoded_callback));
 
   dynamic_config_.key_frame_requested = false;
   return true;
@@ -161,9 +168,7 @@ void VideoEncoderImpl::LatestFrameIdToReference(uint32 frame_id) {
   dynamic_config_.latest_frame_id_to_reference = frame_id;
 }
 
-int VideoEncoderImpl::NumberOfSkippedFrames() const {
-  return skip_count_;
-}
+int VideoEncoderImpl::NumberOfSkippedFrames() const { return skip_count_; }
 
 }  //  namespace cast
 }  //  namespace media
