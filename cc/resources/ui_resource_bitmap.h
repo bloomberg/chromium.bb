@@ -44,14 +44,13 @@ class CC_EXPORT UIResourceBitmap {
   // User must ensure that |skbitmap| is immutable.  The SkBitmap Format should
   // be 32-bit RGBA.
   explicit UIResourceBitmap(const SkBitmap& skbitmap);
-  UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref, gfx::Size size);
+  explicit UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref);
   ~UIResourceBitmap();
 
  private:
   friend class AutoLockUIResourceBitmap;
 
   void Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
-              gfx::Size size,
               UIResourceFormat format);
 
   skia::RefPtr<SkPixelRef> pixel_ref_;
