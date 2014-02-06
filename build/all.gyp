@@ -1199,6 +1199,15 @@
           ],
         },
       ],  # targets
+    }, {
+      # TODO(thakis): Remove this once the linux gtk bot no longer references
+      # it (probably after the first aura release on linux), see r249162
+      'targets': [
+        {
+          'target_name': 'aura_builder',
+          'type': 'none',
+        },
+      ],  # targets
     }], # "use_aura==1"
     ['test_isolation_mode != "noop"', {
       'targets': [
