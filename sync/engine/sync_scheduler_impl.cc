@@ -777,14 +777,15 @@ void SyncSchedulerImpl::TypeUnthrottle(base::TimeTicks unthrottle_time) {
   NotifyThrottledTypesChanged(nudge_tracker_.GetThrottledTypes());
 
   if (nudge_tracker_.IsAnyTypeThrottled()) {
+    const base::TimeTicks now = base::TimeTicks::Now();
     base::TimeDelta time_until_next_unthrottle =
-        nudge_tracker_.GetTimeUntilNextUnthrottle(unthrottle_time);
+        nudge_tracker_.GetTimeUntilNextUnthrottle(now);
     type_unthrottle_timer_.Start(
         FROM_HERE,
         time_until_next_unthrottle,
         base::Bind(&SyncSchedulerImpl::TypeUnthrottle,
                    weak_ptr_factory_.GetWeakPtr(),
-                   unthrottle_time + time_until_next_unthrottle));
+                   now + time_until_next_unthrottle));
   }
 
   // Maybe this is a good time to run a nudge job.  Let's try it.
