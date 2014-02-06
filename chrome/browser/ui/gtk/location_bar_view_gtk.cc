@@ -1709,11 +1709,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       current_tab_id_(-1),
       window_(NULL),
       accel_group_(NULL),
-      preview_enabled_(false),
-      scoped_icon_animation_observer_(
-          page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetWebContents())),
-          this) {
+      preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
                               extensions::IconsInfo::kPageActionIconMaxSize,
@@ -1972,8 +1968,4 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnGtkAccelerator(
   event.type = GDK_BUTTON_PRESS;
   event.button = 1;
   return view->OnButtonPressed(view->widget(), &event);
-}
-
-void LocationBarViewGtk::PageActionViewGtk::OnIconChanged() {
-  UpdateVisibility(owner_->GetWebContents(), current_url_);
 }

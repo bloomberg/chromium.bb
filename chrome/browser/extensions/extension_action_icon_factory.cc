@@ -53,7 +53,7 @@ void ExtensionActionIconFactory::OnExtensionIconImageChanged(IconImage* image) {
 
 gfx::Image ExtensionActionIconFactory::GetIcon(int tab_id) {
   gfx::ImageSkia base_icon = GetBaseIconFromAction(tab_id);
-  return action_->ApplyAttentionAndAnimation(base_icon, tab_id);
+  return gfx::Image(base_icon);
 }
 
 gfx::ImageSkia ExtensionActionIconFactory::GetBaseIconFromAction(int tab_id) {

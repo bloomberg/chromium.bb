@@ -25,8 +25,7 @@ class WebContents;
 
 class PageActionDecoration : public ImageDecoration,
                              public ExtensionActionIconFactory::Observer,
-                             public content::NotificationObserver,
-                             public ExtensionAction::IconAnimation::Observer {
+                             public content::NotificationObserver {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
                        Browser* browser,
@@ -68,9 +67,6 @@ class PageActionDecoration : public ImageDecoration,
   // Show the popup in the frame, with the given URL.
   void ShowPopup(const NSRect& frame, const GURL& popup_url);
 
-  // Overridden from ExtensionAction::IconAnimation::Observer.
-  virtual void OnIconChanged() OVERRIDE;
-
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -111,10 +107,6 @@ class PageActionDecoration : public ImageDecoration,
   // icon is briefly shown even if it hasn't been enabled by its
   // extension.
   bool preview_enabled_;
-
-  // Fade-in animation for the icon with observer scoped to this.
-  ExtensionAction::IconAnimation::ScopedObserver
-      scoped_icon_animation_observer_;
 
   // Used to register for notifications received by
   // NotificationObserver.

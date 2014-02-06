@@ -41,11 +41,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       browser_(browser),
       current_tab_id_(-1),
       preview_enabled_(false),
-      popup_(NULL),
-      scoped_icon_animation_observer_(
-          page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetWebContents())),
-          this) {
+      popup_(NULL) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
@@ -225,10 +221,6 @@ void PageActionImageView::OnIconUpdated() {
   WebContents* web_contents = owner_->GetWebContents();
   if (web_contents)
     UpdateVisibility(web_contents, current_url_);
-}
-
-void PageActionImageView::OnIconChanged() {
-  OnIconUpdated();
 }
 
 void PageActionImageView::PaintChildren(gfx::Canvas* canvas) {

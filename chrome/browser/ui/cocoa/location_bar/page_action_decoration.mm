@@ -52,11 +52,7 @@ PageActionDecoration::PageActionDecoration(
       browser_(browser),
       page_action_(page_action),
       current_tab_id_(-1),
-      preview_enabled_(false),
-      scoped_icon_animation_observer_(
-          page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetWebContents())),
-          this) {
+      preview_enabled_(false) {
   const Extension* extension = browser->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
@@ -228,11 +224,6 @@ void PageActionDecoration::ShowPopup(const NSRect& frame,
                          anchoredAt:anchor
                       arrowLocation:info_bubble::kTopRight
                             devMode:NO];
-}
-
-void PageActionDecoration::OnIconChanged() {
-  UpdateVisibility(owner_->GetWebContents(), current_url_);
-  owner_->RedrawDecoration(this);
 }
 
 void PageActionDecoration::Observe(

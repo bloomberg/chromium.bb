@@ -214,8 +214,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   class PageActionViewGtk :
        public ExtensionActionIconFactory::Observer,
        public content::NotificationObserver,
-       public ExtensionContextMenuModel::PopupDelegate,
-       public ExtensionAction::IconAnimation::Observer {
+       public ExtensionContextMenuModel::PopupDelegate {
    public:
     PageActionViewGtk(LocationBarViewGtk* owner, ExtensionAction* page_action);
     virtual ~PageActionViewGtk();
@@ -270,9 +269,6 @@ class LocationBarViewGtk : public OmniboxEditController,
                                      GdkModifierType modifier,
                                      void* user_data);
 
-    // ExtensionAction::IconAnimationDelegate implementation.
-    virtual void OnIconChanged() OVERRIDE;
-
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
 
@@ -315,10 +311,6 @@ class LocationBarViewGtk : public OmniboxEditController,
     // The context menu view and model for this extension action.
     scoped_ptr<MenuGtk> context_menu_;
     scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
-
-    // Fade-in animation for the icon with observer scoped to this.
-    ExtensionAction::IconAnimation::ScopedObserver
-        scoped_icon_animation_observer_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
   };

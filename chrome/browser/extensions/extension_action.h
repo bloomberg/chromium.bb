@@ -42,64 +42,6 @@ class ExtensionAction {
   // parameter.
   static const int kDefaultTabId;
 
-  // A fade-in animation.
-  class IconAnimation : public gfx::LinearAnimation {
-   public:
-    // Observes changes to icon animation state.
-    class Observer {
-     public:
-      virtual void OnIconChanged() = 0;
-
-     protected:
-      virtual ~Observer() {}
-    };
-
-    // A holder for an IconAnimation with a scoped observer.
-    class ScopedObserver {
-     public:
-      ScopedObserver(const base::WeakPtr<IconAnimation>& icon_animation,
-                     Observer* observer);
-      ~ScopedObserver();
-
-      // Gets the icon animation, or NULL if the reference has expired.
-      const IconAnimation* icon_animation() const {
-        return icon_animation_.get();
-      }
-
-     private:
-      base::WeakPtr<IconAnimation> icon_animation_;
-      Observer* observer_;
-
-      DISALLOW_COPY_AND_ASSIGN(ScopedObserver);
-    };
-
-    virtual ~IconAnimation();
-
-    // Returns the icon derived from the current animation state applied to
-    // |icon|. Ownership remains with this.
-    const SkBitmap& Apply(const SkBitmap& icon) const;
-
-    void AddObserver(Observer* observer);
-    void RemoveObserver(Observer* observer);
-
-   private:
-    IconAnimation();
-
-    base::WeakPtr<IconAnimation> AsWeakPtr();
-
-    // gfx::LinearAnimation implementation.
-    virtual void AnimateToState(double state) OVERRIDE;
-
-    // Device we use to paint icons to.
-    mutable scoped_ptr<SkBaseDevice> device_;
-
-    ObserverList<Observer> observers_;
-
-    base::WeakPtrFactory<IconAnimation> weak_ptr_factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(IconAnimation);
-  };
-
   ExtensionAction(const std::string& extension_id,
                   extensions::ActionInfo::Type action_type,
                   const extensions::ActionInfo& manifest_data);
@@ -156,11 +98,6 @@ class ExtensionAction {
 
   // Set this action's icon bitmap on a specific tab.
   void SetIcon(int tab_id, const gfx::Image& image);
-
-  // Applies the attention and animation image transformations registered for
-  // the tab on the provided icon.
-  gfx::Image ApplyAttentionAndAnimation(const gfx::ImageSkia& icon,
-                                        int tab_id) const;
 
   // Gets the icon that has been set using |SetIcon| for the tab.
   gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
@@ -245,16 +182,7 @@ class ExtensionAction {
                                   int tab_id,
                                   const gfx::Size& spacing) const;
 
-  // Gets a weak reference to the icon animation for a tab, if any. The
-  // reference will only have a value while the animation is running.
-  base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
-
  private:
-  // If the icon animation is running on tab |tab_id|, applies it to
-  // |orig| and returns the result. Otherwise, just returns |orig|.
-  gfx::ImageSkia ApplyIconAnimation(int tab_id,
-                                    const gfx::ImageSkia& orig) const;
-
   // Returns width of the current icon for tab_id.
   // TODO(tbarzic): The icon selection is done in ExtensionActionIconFactory.
   // We should probably move this there too.
@@ -319,13 +247,6 @@ class ExtensionAction {
   // Maps tab_id to the number of active (applied-but-not-reverted)
   // declarativeContent.ShowPageAction actions.
   std::map<int, int> declarative_show_count_;
-
-  // IconAnimations are destroyed by a delayed task on the UI message loop so
-  // that even if the Extension and ExtensionAction are destroyed on a non-UI
-  // thread, the animation will still only be touched from the UI thread.  This
-  // causes the WeakPtr in this map to become NULL.  GetIconAnimation() removes
-  // NULLs to prevent the map from growing without bound.
-  mutable std::map<int, base::WeakPtr<IconAnimation> > icon_animation_;
 
   // ExtensionIconSet containing paths to bitmaps from which default icon's
   // image representations will be selected.

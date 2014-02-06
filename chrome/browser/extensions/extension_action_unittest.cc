@@ -44,8 +44,6 @@ TEST(ExtensionActionTest, Visibility) {
   action.SetIsVisible(100, true);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
-  EXPECT_FALSE(action.GetIconAnimation(100))
-      << "Page actions should not animate.";
 
   action.ClearAllValuesForTab(100);
   ASSERT_FALSE(action.GetIsVisible(1));

@@ -33,8 +33,7 @@ class PageActionImageView : public views::ImageView,
                             public ExtensionContextMenuModel::PopupDelegate,
                             public views::WidgetObserver,
                             public views::ContextMenuController,
-                            public ExtensionActionIconFactory::Observer,
-                            public ExtensionAction::IconAnimation::Observer {
+                            public ExtensionActionIconFactory::Observer {
  public:
   PageActionImageView(LocationBarView* owner,
                       ExtensionAction* page_action,
@@ -82,9 +81,6 @@ class PageActionImageView : public views::ImageView,
   void ExecuteAction(ExtensionPopup::ShowAction show_action);
 
  private:
-  // Overridden from ExtensionAction::IconAnimation::Observer:
-  virtual void OnIconChanged() OVERRIDE;
-
   // Overridden from View.
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
@@ -132,10 +128,6 @@ class PageActionImageView : public views::ImageView,
   scoped_ptr<ui::Accelerator> page_action_keybinding_;
 
   scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // Fade-in animation for the icon with observer scoped to this.
-  ExtensionAction::IconAnimation::ScopedObserver
-      scoped_icon_animation_observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PageActionImageView);
 };
