@@ -36,6 +36,7 @@
           '<(PRODUCT_DIR)/pyproto/',
           'tools/testserver/',
         ],
+        'read_only': 1,
       },
     }],
     ['OS=="linux" and component=="shared_library"', {
