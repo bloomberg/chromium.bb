@@ -284,7 +284,7 @@ public class SyncStatusHelper {
                 mCachedSettings.getSyncAutomatically(account);
         }
 
-        notifyObservers();
+        notifyObserversIfAccountSettingsChanged();
         return returnValue;
     }
 
@@ -317,7 +317,7 @@ public class SyncStatusHelper {
             returnValue = mCachedSettings.getSyncAutomatically(account);
         }
 
-        notifyObservers();
+        notifyObserversIfAccountSettingsChanged();
         return returnValue;
     }
 
@@ -344,7 +344,7 @@ public class SyncStatusHelper {
             mCachedSettings.setSyncAutomatically(account, true);
         }
 
-        notifyObservers();
+        notifyObserversIfAccountSettingsChanged();
     }
 
     /**
@@ -357,7 +357,7 @@ public class SyncStatusHelper {
             mCachedSettings.setSyncAutomatically(account, false);
         }
 
-        notifyObservers();
+        notifyObserversIfAccountSettingsChanged();
     }
 
     /**
@@ -398,12 +398,18 @@ public class SyncStatusHelper {
         public void onStatusChanged(int which) {
             if (ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS == which) {
                 // Sync settings have changed; update our in-memory caches
-                updateMasterSyncAutomaticallySetting();
                 synchronized (mCachedSettings) {
                     mCachedSettings.updateSyncSettingsForAccount(
                             ChromeSigninController.get(mApplicationContext).getSignedInUser());
                 }
-                notifyObservers();
+
+                boolean oldMasterSyncEnabled = isMasterSyncAutomaticallyEnabled();
+                updateMasterSyncAutomaticallySetting();
+                boolean didMasterSyncChanged =
+                        oldMasterSyncEnabled != isMasterSyncAutomaticallyEnabled();
+                // Notify observers if MasterSync or account level settings change.
+                if (didMasterSyncChanged || getAndClearDidUpdateStatus())
+                    notifyObservers();
             }
         }
     }
@@ -436,8 +442,13 @@ public class SyncStatusHelper {
         return didGetStatusUpdate;
     }
 
+    private void notifyObserversIfAccountSettingsChanged() {
+        if (getAndClearDidUpdateStatus()) {
+            notifyObservers();
+        }
+    }
+
     private void notifyObservers() {
-        if (!getAndClearDidUpdateStatus()) return;
         for (SyncSettingsChangedObserver observer : mObservers) {
             observer.syncSettingsChanged();
         }
