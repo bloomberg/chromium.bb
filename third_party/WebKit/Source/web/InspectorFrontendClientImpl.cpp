@@ -116,7 +116,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     'requestFileSystems',"
             "     'save',"
             "     'searchInPath',"
-            "     'setContentsInsets',"
+            "     'setContentsResizingStrategy',"
             "     'setIsDocked',"
             "     'stopIndexing']);"
             ""
