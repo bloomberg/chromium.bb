@@ -142,6 +142,22 @@ bool IsNonBrowserProcess() {
   return (command_line && wcsstr(command_line, L"--type"));
 }
 
+// Record that the thunk setup completed succesfully and close the registry
+// key handle since it is no longer needed.
+void RecordSuccessfulThunkSetup(HKEY* key) {
+  if (key != NULL) {
+    DWORD blacklist_state = blacklist::BLACKLIST_SETUP_RUNNING;
+    ::RegSetValueEx(*key,
+                    blacklist::kBeaconState,
+                    0,
+                    REG_DWORD,
+                    reinterpret_cast<LPBYTE>(&blacklist_state),
+                    sizeof(blacklist_state));
+    ::RegCloseKey(*key);
+    key = NULL;
+  }
+}
+
 }  // namespace
 
 namespace blacklist {
@@ -238,7 +254,7 @@ bool ResetBeacon() {
 
 int BlacklistSize() {
   int size = -1;
-  while(blacklist::g_troublesome_dlls[++size] != NULL);
+  while (blacklist::g_troublesome_dlls[++size] != NULL) {}
 
   return size;
 }
@@ -248,7 +264,7 @@ bool AddDllToBlacklist(const wchar_t* dll_name) {
   // We need to leave one space at the end for the null pointer.
   if (blacklist_size + 1 >= kTroublesomeDllsMaxCount)
     return false;
-  for (int i=0; i < blacklist_size; ++i) {
+  for (int i = 0; i < blacklist_size; ++i) {
     if (!_wcsicmp(g_troublesome_dlls[i], dll_name))
       return true;
   }
@@ -306,6 +322,30 @@ bool Initialize(bool force) {
   // Tells the resolver to patch already patched functions.
   const bool kRelaxed = true;
 
+  // Record that we are starting the thunk setup code.
+  HKEY key = NULL;
+  DWORD disposition = 0;
+  LONG result = ::RegCreateKeyEx(HKEY_CURRENT_USER,
+                                 kRegistryBeaconPath,
+                                 0,
+                                 NULL,
+                                 REG_OPTION_NON_VOLATILE,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE,
+                                 NULL,
+                                 &key,
+                                 &disposition);
+  if (result == ERROR_SUCCESS) {
+    DWORD blacklist_state = BLACKLIST_THUNK_SETUP;
+    ::RegSetValueEx(key,
+                    kBeaconState,
+                    0,
+                    REG_DWORD,
+                    reinterpret_cast<LPBYTE>(&blacklist_state),
+                    sizeof(blacklist_state));
+  } else {
+    key = NULL;
+  }
+
   // Create a thunk via the appropriate ServiceResolver instance.
   sandbox::ServiceResolverThunk* thunk;
 #if defined(_WIN64)
@@ -332,8 +372,10 @@ bool Initialize(bool force) {
   if (!VirtualProtect(&g_thunk_storage,
                       sizeof(g_thunk_storage),
                       PAGE_EXECUTE_READWRITE,
-                      &old_protect))
+                      &old_protect)) {
+    RecordSuccessfulThunkSetup(&key);
     return false;
+  }
 
   thunk->AllowLocalPatches();
 
@@ -354,6 +396,8 @@ bool Initialize(bool force) {
                                         sizeof(g_thunk_storage),
                                         PAGE_EXECUTE_READ,
                                         &old_protect);
+
+  RecordSuccessfulThunkSetup(&key);
 
   return NT_SUCCESS(ret) && page_executable;
 }

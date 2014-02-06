@@ -27,6 +27,12 @@ enum BlacklistState {
   // The blacklist setup code is running. If this is still set at startup,
   // it means the last setup crashed.
   BLACKLIST_SETUP_RUNNING,
+  // The blacklist thunk setup code is running. If this is still set at startup,
+  // it means the last setup crashed during thunk setup.
+  BLACKLIST_THUNK_SETUP,
+  // The blacklist code is currently intercepting MapViewOfSection. If this is
+  // still set at startup, it means we crashed during interception.
+  BLACKLIST_INTERCEPTING,
   // Always keep this at the end.
   BLACKLIST_STATE_MAX,
 };

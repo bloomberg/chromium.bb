@@ -224,8 +224,8 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
       g_nt_unmap_view_of_section_func(process, *base);
       ret = STATUS_UNSUCCESSFUL;
     }
-
   }
+
   return ret;
 }
 
