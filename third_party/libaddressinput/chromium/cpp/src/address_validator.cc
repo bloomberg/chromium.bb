@@ -155,13 +155,11 @@ class AddressValidatorImpl : public AddressValidator {
       // Validate the field values, e.g. state names in US.
       AddressField sub_field_type =
           static_cast<AddressField>(ruleset->field() + 1);
-      const std::string& sub_field = address.GetFieldValue(sub_field_type);
-      const std::vector<std::string>& sub_keys = rule.GetSubKeys();
-      if (!sub_field.empty() &&
-          !sub_keys.empty() &&
+      std::string sub_key;
+      const std::string& user_input = address.GetFieldValue(sub_field_type);
+      if (!user_input.empty() &&
           FilterAllows(filter, sub_field_type, AddressProblem::UNKNOWN_VALUE) &&
-          std::find(sub_keys.begin(), sub_keys.end(), sub_field) ==
-              sub_keys.end()) {
+          !rule.CanonicalizeSubKey(user_input, &sub_key)) {
         problems->push_back(AddressProblem(
             sub_field_type,
             AddressProblem::UNKNOWN_VALUE,
@@ -184,7 +182,7 @@ class AddressValidatorImpl : public AddressValidator {
             country_rule.GetInvalidPostalCodeMessageId()));
       }
 
-      ruleset = ruleset->GetSubRegionRuleset(sub_field);
+      ruleset = ruleset->GetSubRegionRuleset(sub_key);
     }
 
     return SUCCESS;

@@ -54,6 +54,7 @@
         'chromium/chrome_storage_impl.cc',
         'chromium/chrome_storage_impl.h',
         'chromium/json.cc',
+        'chromium/string_compare.cc',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_data.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_field.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_problem.h',
@@ -91,6 +92,7 @@
         '<(libaddressinput_dir)/cpp/src/util/md5.cc',
         '<(libaddressinput_dir)/cpp/src/util/md5.h',
         '<(libaddressinput_dir)/cpp/src/util/stl_util.h',
+        '<(libaddressinput_dir)/cpp/src/util/string_compare.h',
         '<(libaddressinput_dir)/cpp/src/util/string_split.cc',
         '<(libaddressinput_dir)/cpp/src/util/string_split.h',
       ],
@@ -99,8 +101,11 @@
       ],
       'dependencies': [
         'libaddressinput_strings',
-        '<(DEPTH)/third_party/re2/re2.gyp:re2',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/third_party/re2/re2.gyp:re2',
       ],
       'direct_dependent_settings': {
         'defines': [
@@ -123,6 +128,7 @@
       ],
       'sources': [
         'chromium/chrome_downloader_impl_unittest.cc',
+        'chromium/chrome_rule_test.cc',
         'chromium/chrome_storage_impl_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/address_data_test.cc',
         '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',

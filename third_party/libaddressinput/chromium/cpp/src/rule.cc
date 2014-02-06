@@ -26,6 +26,7 @@
 #include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "util/json.h"
+#include "util/string_compare.h"
 #include "util/string_split.h"
 
 namespace i18n {
@@ -276,6 +277,11 @@ void Rule::ParseJsonRule(const Json& json_rule) {
     SplitString(value, kSeparator, &sub_keys_);
   }
 
+  if (json_rule.GetStringValueForKey("sub_names", &value)) {
+    SplitString(value, kSeparator, &sub_names_);
+  }
+  assert(sub_names_.size() == sub_keys_.size());
+
   if (json_rule.GetStringValueForKey("languages", &value)) {
     SplitString(value, kSeparator, &languages_);
   }
@@ -312,6 +318,30 @@ int Rule::GetInvalidFieldMessageId(AddressField field) const {
     default:
       return IDS_LIBADDRESSINPUT_I18N_INVALID_ENTRY;
   }
+}
+
+bool Rule::CanonicalizeSubKey(const std::string& user_input,
+                              std::string* sub_key) const {
+  if (sub_keys_.empty()) {
+    *sub_key = user_input;
+    return true;
+  }
+
+  for (size_t i = 0; i < sub_keys_.size(); ++i) {
+    if (LooseStringCompare(sub_keys_[i], user_input)) {
+      *sub_key = sub_keys_[i];
+      return true;
+    }
+  }
+
+  for (size_t i = 0; i < sub_names_.size(); ++i) {
+    if (LooseStringCompare(sub_names_[i], user_input)) {
+      *sub_key = sub_keys_[i];
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace addressinput

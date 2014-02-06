@@ -50,9 +50,7 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
  private:
   // LoadRulesDelegate implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) {
-    EXPECT_TRUE(success);
-  }
+                                              bool success) {}
 };
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
@@ -148,10 +146,39 @@ TEST_F(AddressValidatorTest, BasicValidation) {
   EXPECT_EQ(
       AddressValidator::SUCCESS,
       validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
 
-  // TODO(estade): this should be EXPECT_TRUE(problems.empty()). Postal code
-  // validation is broken at the moment.
-  EXPECT_EQ(1U, problems.size());
+  // The display name works as well as the key.
+  address.administrative_area = "Texas";
+  problems.clear();
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
+
+  // Ignore capitalization.
+  address.administrative_area = "tx";
+  problems.clear();
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
+
+  // Ignore capitalization.
+  address.administrative_area = "teXas";
+  problems.clear();
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
+
+  // Ignore diacriticals.
+  address.administrative_area = "T\u00E9xas";
+  problems.clear();
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
+  EXPECT_TRUE(problems.empty());
 }
 
 TEST_F(AddressValidatorTest, BasicValidationFailure) {

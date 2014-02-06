@@ -129,10 +129,16 @@ class Rule {
   // Returns the error message string identifier for an invalid |field|.
   int GetInvalidFieldMessageId(AddressField field) const;
 
+  // Outputs the sub key for a given user input. For example, Texas will map to
+  // TX.
+  bool CanonicalizeSubKey(const std::string& user_input,
+                          std::string* sub_key) const;
+
  private:
   std::vector<std::vector<FormatElement> > format_;
   std::vector<AddressField> required_;
   std::vector<std::string> sub_keys_;
+  std::vector<std::string> sub_names_;
   std::vector<std::string> languages_;
   std::string language_;
   std::string postal_code_format_;

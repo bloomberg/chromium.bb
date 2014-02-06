@@ -45,6 +45,7 @@
         'src/time_to_string.cc',
         'src/util/json.cc',
         'src/util/md5.cc',
+        'src/util/string_compare.cc',
         'src/util/string_split.cc',
       ],
       'defines': [
