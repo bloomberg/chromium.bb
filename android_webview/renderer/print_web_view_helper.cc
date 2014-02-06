@@ -676,14 +676,10 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
 blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
     blink::WebFrame* parent,
     const blink::WebString& name) {
-  blink::WebFrame* frame = blink::WebFrame::create(this);
-  parent->appendChild(frame);
-  return frame;
+  return blink::WebFrame::create(this);
 }
 
 void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame) {
-  if (frame->parent())
-    frame->parent()->removeChild(frame);
   frame->close();
 }
 
