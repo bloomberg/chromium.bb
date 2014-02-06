@@ -212,17 +212,17 @@
         // Checks for horizontal swipe.
         if (Math.abs(this.offset_x) > MIN_SWIPE_DIST_X) {
           if (this.offset_x > 0) {
-            direction |= SWIPE_DIRECTION.RIGHT;
+            direction |= SwipeDirection.RIGHT;
           } else {
-            direction |= SWIPE_DIRECTION.LEFT;
+            direction |= SwipeDirection.LEFT;
           }
         }
         // Checks for vertical swipe.
         if (Math.abs(this.offset_y) > MIN_SWIPE_DIST_Y) {
           if (this.offset_y < 0) {
-            direction |= SWIPE_DIRECTION.UP;
+            direction |= SwipeDirection.UP;
           } else {
-            direction |= SWIPE_DIRECTION.DOWN;
+            direction |= SwipeDirection.DOWN;
           }
         }
         return direction;
@@ -417,7 +417,7 @@
         if (!direction)
           console.error("Swipe direction cannot be: " + direction);
         // Triggers swipe editting if it's a purely horizontal swipe.
-        if (!(direction & (SWIPE_DIRECTION.UP | SWIPE_DIRECTION.DOWN))) {
+        if (!(direction & (SwipeDirection.UP | SwipeDirection.DOWN))) {
           // Nothing to do if the swipe has ended.
           if (detail.endSwipe)
             return;
@@ -432,7 +432,7 @@
           return;
         }
         // Triggers swipe hintText if it's a purely vertical swipe.
-        if (!(direction & (SWIPE_DIRECTION.LEFT | SWIPE_DIRECTION.RIGHT))) {
+        if (!(direction & (SwipeDirection.LEFT | SwipeDirection.RIGHT))) {
           // Check if event is relevant to us.
           if ((!detail.endSwipe) || (detail.isComplex))
             return;

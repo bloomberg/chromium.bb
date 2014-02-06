@@ -176,11 +176,7 @@
    * Callback function for when the window is resized.
    */
   var onResize = function() {
-    var bounds = exports.getKeyboardBounds();
-    var height =  (bounds.width > ASPECT_RATIO * bounds.height) ?
-        bounds.height : Math.floor(bounds.width / ASPECT_RATIO);
     var keyboard = $('keyboard');
-    keyboard.style.fontSize = (height / FONT_SIZE_RATIO / ROW_LENGTH) + 'px';
     keyboard.stale = true;
     var keyset = keyboard.activeKeyset;
     if (keyset)
@@ -531,10 +527,8 @@
    */
   function realignKeyset(keyset, params) {
     var rows = keyset.querySelectorAll('kb-row').array();
-    var maxSize = getKeyboardBounds();
-    var height =  (maxSize.width > ASPECT_RATIO * maxSize.height) ?
-      maxSize.height : Math.floor(maxSize.width / ASPECT_RATIO);
-    keyset.style.fontSize = (height / FONT_SIZE_RATIO / rows.length) + 'px';
+    keyset.style.fontSize = (params.availableHeight /
+      FONT_SIZE_RATIO / rows.length) + 'px';
 
     var heightOffset  = 0;
     for (var i = 0; i < rows.length; i++) {
