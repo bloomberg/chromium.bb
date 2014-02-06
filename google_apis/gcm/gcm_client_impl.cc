@@ -28,6 +28,36 @@ namespace gcm {
 
 namespace {
 
+// Backoff policy. Shared across reconnection logic and checkin/registration
+// retries.
+// TODO(zea): consider sharing/synchronizing the scheduling of backoff retries
+// themselves.
+const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential back-off in ms.
+  15000,  // 15 seconds.
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.5,  // 50%.
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 60 * 5, // 5 minutes.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
+
 // Indicates a message type of the received message.
 enum MessageType {
   UNKNOWN,           // Undetermined type.
@@ -134,7 +164,10 @@ void GCMClientImpl::Initialize(
     DCHECK(network_session_params);
     network_session_ = new net::HttpNetworkSession(*network_session_params);
     connection_factory_.reset(new ConnectionFactoryImpl(
-        GURL(kMCSEndpoint), network_session_, net_log_.net_log()));
+        GURL(kMCSEndpoint),
+        kDefaultBackoffPolicy,
+        network_session_,
+        net_log_.net_log()));
     mcs_client_.reset(new MCSClient(clock_.get(),
                                     connection_factory_.get(),
                                     gcm_store_.get()));

@@ -132,7 +132,10 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
 
 TestConnectionFactoryImpl::TestConnectionFactoryImpl(
     const base::Closure& finished_callback)
-    : ConnectionFactoryImpl(GURL(kMCSEndpoint), NULL, NULL),
+    : ConnectionFactoryImpl(GURL(kMCSEndpoint),
+                            net::BackoffEntry::Policy(),
+                            NULL,
+                            NULL),
       connect_result_(net::ERR_UNEXPECTED),
       num_expected_attempts_(0),
       connections_fulfilled_(true),

@@ -51,6 +51,32 @@
 namespace gcm {
 namespace {
 
+const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential back-off in ms.
+  15000,  // 15 seconds.
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.5,  // 50%.
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 60 * 5, // 5 minutes.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
+
 // Default values used to communicate with the check-in server.
 const char kChromeVersion[] = "Chrome MCS Probe";
 const int64 kUserSerialNumber = 1;
@@ -273,6 +299,7 @@ void MCSProbe::Start() {
   connection_factory_.reset(
       new ConnectionFactoryImpl(GURL("https://" + net::HostPortPair(
                                     server_host_, server_port_).ToString()),
+                                kDefaultBackoffPolicy,
                                 network_session_,
                                 &net_log_));
   gcm_store_.reset(

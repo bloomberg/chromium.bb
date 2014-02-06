@@ -29,40 +29,15 @@ const int kReadTimeoutMs = 30000;  // 30 seconds.
 // as if it was transient).
 const int kConnectionResetWindowSecs = 10;  // 10 seconds.
 
-// Backoff policy.
-const net::BackoffEntry::Policy kConnectionBackoffPolicy = {
-  // Number of initial errors (in sequence) to ignore before applying
-  // exponential back-off rules.
-  0,
-
-  // Initial delay for exponential back-off in ms.
-  10000,  // 10 seconds.
-
-  // Factor by which the waiting time will be multiplied.
-  2,
-
-  // Fuzzing percentage. ex: 10% will spread requests randomly
-  // between 90%-100% of the calculated time.
-  0.5,  // 50%.
-
-  // Maximum amount of time we are willing to delay our request in ms.
-  1000 * 60 * 5, // 5 minutes.
-
-  // Time to keep an entry from being discarded even when it
-  // has no significant state, -1 to never discard.
-  -1,
-
-  // Don't use initial delay unless the last request was an error.
-  false,
-};
-
 }  // namespace
 
 ConnectionFactoryImpl::ConnectionFactoryImpl(
     const GURL& mcs_endpoint,
+    const net::BackoffEntry::Policy& backoff_policy,
     scoped_refptr<net::HttpNetworkSession> network_session,
     net::NetLog* net_log)
   : mcs_endpoint_(mcs_endpoint),
+    backoff_policy_(backoff_policy),
     network_session_(network_session),
     net_log_(net_log),
     connecting_(false),
@@ -78,8 +53,8 @@ void ConnectionFactoryImpl::Initialize(
     const ConnectionHandler::ProtoSentCallback& write_callback) {
   DCHECK(!connection_handler_);
 
-  previous_backoff_ = CreateBackoffEntry(&kConnectionBackoffPolicy);
-  backoff_entry_ = CreateBackoffEntry(&kConnectionBackoffPolicy);
+  previous_backoff_ = CreateBackoffEntry(&backoff_policy_);
+  backoff_entry_ = CreateBackoffEntry(&backoff_policy_);
   request_builder_ = request_builder;
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);

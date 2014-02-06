@@ -30,6 +30,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
  public:
   ConnectionFactoryImpl(
       const GURL& mcs_endpoint,
+      const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
       net::NetLog* net_log);
   virtual ~ConnectionFactoryImpl();
@@ -79,6 +80,9 @@ class GCM_EXPORT ConnectionFactoryImpl :
  private:
   // The MCS endpoint to make connections to.
   const GURL mcs_endpoint_;
+
+  // The backoff policy to use.
+  const net::BackoffEntry::Policy backoff_policy_;
 
   // ---- net:: components for establishing connections. ----
   // Network session for creating new connections.
