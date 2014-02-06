@@ -895,8 +895,9 @@ static void CompareSkBitmapAndRun(const base::Closure& callback,
   callback.Run();
 }
 
-// http://crbug.com/171744
-#if defined(OS_MACOSX)
+// Mac: http://crbug.com/171744
+// Under ubercomp, GetBackingStore is not possible in the guest renderer.
+#if defined(OS_MACOSX) || defined(USE_AURA)
 #define MAYBE_GetBackingStore DISABLED_GetBackingStore
 #else
 #define MAYBE_GetBackingStore GetBackingStore

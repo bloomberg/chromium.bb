@@ -215,6 +215,7 @@ const Experiment::Choice kLCDTextChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, cc::switches::kDisableLCDText, ""}
 };
 
+#ifndef USE_AURA
 const Experiment::Choice kDelegatedRendererChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -222,6 +223,7 @@ const Experiment::Choice kDelegatedRendererChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kDisableDelegatedRenderer, ""}
 };
+#endif
 
 const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -448,7 +450,11 @@ const Experiment kExperiments[] = {
     "force-compositing-mode-2",
     IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME,
     IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION,
+#if !defined(USE_AURA)
     kOsLinux,
+#else
+    0,
+#endif
     ENABLE_DISABLE_VALUE_TYPE(switches::kForceCompositingMode,
                               switches::kDisableForceCompositingMode)
   },
@@ -456,7 +462,11 @@ const Experiment kExperiments[] = {
     "threaded-compositing-mode",
     IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME,
     IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION,
+#if !defined(USE_AURA)
     kOsLinux,
+#else
+    0,
+#endif
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableThreadedCompositing,
                               switches::kDisableThreadedCompositing)
   },
@@ -1455,16 +1465,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     MULTI_VALUE_TYPE(kLCDTextChoices)
   },
+#ifndef USE_AURA
   {
     "delegated-renderer",
     IDS_FLAGS_DELEGATED_RENDERER_NAME,
     IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION,
-#ifdef USE_AURA
-    kOsWin | kOsLinux |
-#endif
-    kOsAndroid | kOsCrOS,
+    kOsAndroid,
     MULTI_VALUE_TYPE(kDelegatedRendererChoices)
   },
+#endif
   {
     "enable-websocket-experimental-implementation",
     IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_NAME,
