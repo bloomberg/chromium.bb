@@ -4662,6 +4662,9 @@ Battery full
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME" desc="Text to be spoken when focus is set to the sign-in button in the public account user pod.">
     Enter public session
   </message>
+  <message name="IDS_LOGIN_CONFIRM_KIOSK_DIAGNOSTIC_FORMAT" desc="Text to be shown on a dialog to confirm launching kiosk app in diagnostic mode.">
+    Are you sure you want to launch "<ph name="APP_NAME">$1<ex>Kiosk App</ex></ph>" in diagnostic mode?
+  </message>
 
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">

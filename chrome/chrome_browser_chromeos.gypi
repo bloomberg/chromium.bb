@@ -139,6 +139,8 @@
         'browser/chromeos/app_mode/kiosk_app_manager_observer.h',
         'browser/chromeos/app_mode/kiosk_app_update_service.cc',
         'browser/chromeos/app_mode/kiosk_app_update_service.h',
+        'browser/chromeos/app_mode/kiosk_diagnosis_runner.cc',
+        'browser/chromeos/app_mode/kiosk_diagnosis_runner.h',
         'browser/chromeos/app_mode/kiosk_profile_loader.cc',
         'browser/chromeos/app_mode/kiosk_profile_loader.h',
         'browser/chromeos/app_mode/startup_app_launcher.cc',

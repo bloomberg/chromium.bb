@@ -141,6 +141,53 @@ class ScopedCanConfigureNetwork {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanConfigureNetwork);
 };
 
+// Helper class to wait until a js condition becomes true.
+class JsConditionWaiter {
+ public:
+  JsConditionWaiter(content::WebContents* web_contents,
+                    const std::string& js)
+      : web_contents_(web_contents),
+        js_(js) {
+  }
+
+  void Wait() {
+    if (CheckJs())
+      return;
+
+    base::RepeatingTimer<JsConditionWaiter> check_timer;
+    check_timer.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(10),
+        this,
+        &JsConditionWaiter::OnTimer);
+
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
+ private:
+  bool CheckJs() {
+    bool result;
+    CHECK(content::ExecuteScriptAndExtractBool(
+        web_contents_,
+        "window.domAutomationController.send(!!(" + js_ + "));",
+        &result));
+    return result;
+  }
+
+  void OnTimer() {
+    DCHECK(runner_);
+    if (CheckJs())
+      runner_->Quit();
+  }
+
+  content::WebContents* web_contents_;
+  const std::string js_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
+};
+
 }  // namespace
 
 // Helper class that monitors app windows to wait for a window to appear.
@@ -246,7 +293,7 @@ class KioskTest : public OobeBaseTest {
     KioskAppManager::Get()->SetAutoLaunchApp(kTestKioskApp);
   }
 
-  void StartAppLaunchFromLoginScreen(const base::Closure& network_setup_cb) {
+  void PrepareAppLaunch() {
     EnableConsumerKioskMode();
 
     // Start UI, find menu entry for this app and launch it.
@@ -266,6 +313,10 @@ class KioskTest : public OobeBaseTest {
         content::NotificationService::AllSources());
     ReloadKioskApps();
     apps_loaded_signal.Wait();
+  }
+
+  void StartAppLaunchFromLoginScreen(const base::Closure& network_setup_cb) {
+    PrepareAppLaunch();
 
     if (!network_setup_cb.is_null())
       network_setup_cb.Run();
@@ -466,6 +517,31 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   signal.Wait();
   EXPECT_EQ(chromeos::KioskAppLaunchError::USER_CANCEL,
             chromeos::KioskAppLaunchError::Get());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AppsMenuButton.runAppForTesting",
+      base::StringValue(kTestKioskApp),
+      base::FundamentalValue(true));
+
+  content::WebContents* login_contents = GetLoginUI()->GetWebContents();
+
+  JsConditionWaiter(login_contents,
+                    "$('show-apps-button').confirmDiagnosticMode_").Wait();
+
+  ASSERT_TRUE(content::ExecuteScript(
+      login_contents,
+      "(function() {"
+         "var e = new Event('click');"
+         "$('show-apps-button').confirmDiagnosticMode_."
+             "okButton_.dispatchEvent(e);"
+      "})();"));
+
+  WaitForAppLaunchSuccess();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {

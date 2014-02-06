@@ -1480,8 +1480,9 @@ void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
       Profile::FromWebUI(web_ui())->GetRequestContext()));
 }
 
-void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id) {
-  delegate_->LoginAsKioskApp(app_id);
+void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,
+                                               bool diagnostic_mode) {
+  delegate_->LoginAsKioskApp(app_id, diagnostic_mode);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -134,6 +135,16 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
   if (succeeded) {
     SystemLogsResponse* response = new SystemLogsResponse;
     std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
+
+    if (last_used.empty() &&
+        chromeos::UserManager::IsInitialized() &&
+        chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
+      // Use the kiosk app profile explicitly because kiosk session does not
+      // open any browsers thus ProfileManager::GetLastOpenedProfiles returns
+      // an empty |last_used|.
+      last_used.push_back(ProfileManager::GetActiveUserProfile());
+    }
+
     content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&DebugDaemonLogSource::ReadUserLogFiles,

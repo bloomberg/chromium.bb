@@ -851,7 +851,7 @@ void WizardController::AutoLaunchKioskApp() {
   std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
   CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
 
-  host_->StartAppLaunch(app_id);
+  host_->StartAppLaunch(app_id, false /* diagnostic_mode */);
 }
 
 // static

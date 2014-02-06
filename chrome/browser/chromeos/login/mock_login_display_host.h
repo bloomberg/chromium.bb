@@ -43,7 +43,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(ResumeSignInScreen, void(void));
   MOCK_METHOD0(OnPreferencesChanged, void(void));
   MOCK_METHOD0(PrewarmAuthentication, void(void));
-  MOCK_METHOD1(StartAppLaunch, void(const std::string&));
+  MOCK_METHOD2(StartAppLaunch, void(const std::string&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

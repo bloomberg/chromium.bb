@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
@@ -177,9 +178,11 @@ class StartupAppLauncher::AppUpdateChecker
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
+                                       bool diagnostic_mode,
                                        StartupAppLauncher::Delegate* delegate)
     : profile_(profile),
       app_id_(app_id),
+      diagnostic_mode_(diagnostic_mode),
       delegate_(delegate),
       install_attempted_(false),
       ready_to_launch_(false) {
@@ -336,6 +339,9 @@ void StartupAppLauncher::LaunchApp() {
       content::NotificationService::NoDetails());
 
   OnLaunchSuccess();
+
+  if (diagnostic_mode_)
+    KioskDiagnosisRunner::Run(profile_, app_id_);
 }
 
 void StartupAppLauncher::OnLaunchSuccess() {

@@ -183,7 +183,8 @@ void AppLaunchSigninScreen::Signout() {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::LoginAsKioskApp(const std::string& app_id) {
+void AppLaunchSigninScreen::LoginAsKioskApp(const std::string& app_id,
+                                            bool diagnostic_mode) {
   NOTREACHED();
 }
 

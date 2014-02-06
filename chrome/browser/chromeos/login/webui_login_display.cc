@@ -379,8 +379,9 @@ void WebUILoginDisplay::Signout() {
   delegate_->Signout();
 }
 
-void WebUILoginDisplay::LoginAsKioskApp(const std::string& app_id) {
-  delegate_->LoginAsKioskApp(app_id);
+void WebUILoginDisplay::LoginAsKioskApp(const std::string& app_id,
+                                        bool diagnostic_mode) {
+  delegate_->LoginAsKioskApp(app_id, diagnostic_mode);
 }
 
 void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {

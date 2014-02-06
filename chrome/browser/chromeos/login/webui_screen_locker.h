@@ -93,7 +93,8 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void ResyncUserData() OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void Signout() OVERRIDE;
-  virtual void LoginAsKioskApp(const std::string& app_id) OVERRIDE;
+  virtual void LoginAsKioskApp(const std::string& app_id,
+                               bool diagnostic_mode) OVERRIDE;
 
   // content::NotificationObserver (via WebUILoginView) implementation.
   virtual void Observe(int type,

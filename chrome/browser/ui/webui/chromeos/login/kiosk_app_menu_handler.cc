@@ -38,6 +38,15 @@ void KioskAppMenuHandler::GetLocalizedStrings(
   localized_strings->SetString(
       "showApps",
       l10n_util::GetStringUTF16(IDS_KIOSK_APPS_BUTTON));
+  localized_strings->SetString(
+      "confirmKioskAppDiagnosticModeFormat",
+      l10n_util::GetStringUTF16(IDS_LOGIN_CONFIRM_KIOSK_DIAGNOSTIC_FORMAT));
+  localized_strings->SetString(
+      "confirmKioskAppDiagnosticModeYes",
+      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
+  localized_strings->SetString(
+      "confirmKioskAppDiagnosticModeNo",
+      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
 }
 
 void KioskAppMenuHandler::RegisterMessages() {

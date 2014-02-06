@@ -657,7 +657,8 @@ void LoginDisplayHostImpl::PrewarmAuthentication() {
                  pointer_factory_.GetWeakPtr()));
 }
 
-void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id) {
+void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
+                                          bool diagnostic_mode) {
   LOG(WARNING) << "Login WebUI >> start app launch.";
   SetStatusAreaVisible(false);
   finalize_animation_type_ = ANIMATION_FADE_OUT;
@@ -667,7 +668,7 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id) {
   login_view_->set_should_emit_login_prompt_visible(false);
 
   app_launch_controller_.reset(new AppLaunchController(
-      app_id, this, GetOobeUI()));
+      app_id, diagnostic_mode, this, GetOobeUI()));
 
   app_launch_controller_->StartAppLaunch();
 }
@@ -1105,7 +1106,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         chromeos::KioskAppManager::Get()->GetAutoLaunchApp();
-    display_host->StartAppLaunch(auto_launch_app_id);
+    display_host->StartAppLaunch(auto_launch_app_id,
+                                 false /* diagnostic_mode */);
     return;
   }
 

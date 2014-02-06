@@ -17,8 +17,11 @@ namespace chromeos {
 class AppLaunchManager : public StartupAppLauncher::Delegate {
  public:
   AppLaunchManager(Profile* profile, const std::string& app_id)
-      : startup_app_launcher_(new StartupAppLauncher(profile, app_id, this)) {
-  }
+      : startup_app_launcher_(
+            new StartupAppLauncher(profile,
+                                   app_id,
+                                   false /* diagnostic_mode */,
+                                   this)) {}
 
   void Start() {
     startup_app_launcher_->Initialize();

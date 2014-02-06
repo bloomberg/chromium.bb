@@ -67,7 +67,8 @@ class LoginDisplay : public RemoveUserDelegate {
     virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
     // Login to kiosk mode for app with |app_id|.
-    virtual void LoginAsKioskApp(const std::string& app_id) = 0;
+    virtual void LoginAsKioskApp(const std::string& app_id,
+                                 bool diagnostic_mode) = 0;
 
     // Notify the delegate when the sign-in UI is finished loading.
     virtual void OnSigninScreenReady() = 0;
@@ -174,7 +175,7 @@ class LoginDisplay : public RemoveUserDelegate {
   virtual void ShowSigninUI(const std::string& email) = 0;
 
   gfx::Rect background_bounds() const { return background_bounds_; }
-  void set_background_bounds(const gfx::Rect background_bounds){
+  void set_background_bounds(const gfx::Rect& background_bounds) {
     background_bounds_ = background_bounds;
   }
 

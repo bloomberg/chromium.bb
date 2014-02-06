@@ -74,17 +74,55 @@ cr.define('login', function() {
       }, 500);
     },
 
-    findAndRunAppForTesting: function(id) {
+    findAndRunAppForTesting: function(id, opt_diagnostic_mode) {
       this.showMenu(true);
       for (var i = 0; i < this.menu.menuItems.length; i++) {
         var menuNode = this.menu.menuItems[i];
         if (menuNode.appId == id) {
           var activationEvent = cr.doc.createEvent('Event');
           activationEvent.initEvent('activate', true, true);
+
+          if (opt_diagnostic_mode) {
+            var fakeCtrlEnterEvent = cr.doc.createEvent('KeyboardEvent');
+            fakeCtrlEnterEvent.initKeyboardEvent('keypress', true, true, null,
+                                                 'Enter', 0,
+                                                 true, false, false, false);
+            activationEvent.originalEvent = fakeCtrlEnterEvent;
+          }
+
           menuNode.dispatchEvent(activationEvent);
           break;
         }
       }
+    },
+
+    /**
+     * Launch the app. If |diagnosticMode| is true, ask user to confirm.
+     * @param {Object} app App data.
+     * @param {boolean} diagnosticMode Whether to run the app in diagnostic
+     *     mode.
+     */
+    launchApp_: function(app, diagnosticMode) {
+      if (!diagnosticMode) {
+        chrome.send('launchKioskApp', [app.id, false]);
+        return;
+      }
+
+      if (!this.confirmDiagnosticMode_) {
+        this.confirmDiagnosticMode_ =
+            new cr.ui.dialogs.ConfirmDialog(document.body);
+        this.confirmDiagnosticMode_.setOkLabel(
+            loadTimeData.getString('confirmKioskAppDiagnosticModeYes'));
+        this.confirmDiagnosticMode_.setCancelLabel(
+            loadTimeData.getString('confirmKioskAppDiagnosticModeNo'));
+      }
+
+      this.confirmDiagnosticMode_.show(
+          loadTimeData.getStringF('confirmKioskAppDiagnosticModeFormat',
+                                  app.label),
+          function() {
+            chrome.send('launchKioskApp', [app.id, true]);
+          });
     },
 
     /**
@@ -96,9 +134,10 @@ cr.define('login', function() {
       var menuItem = this.menu.addMenuItem(app);
       menuItem.classList.add('apps-menu-item');
       menuItem.appId = app.id;
-      menuItem.addEventListener('activate', function() {
-        chrome.send('launchKioskApp', [app.id]);
-      });
+      menuItem.addEventListener('activate', function(e) {
+        var diagnosticMode = e.originalEvent && e.originalEvent.ctrlKey;
+        this.launchApp_(app, diagnosticMode);
+      }.bind(this));
     }
   };
 
@@ -130,9 +169,11 @@ cr.define('login', function() {
   /**
    * Runs app with a given id from the list of loaded apps.
    * @param {!string} id of an app to run.
+   * @param {boolean=} opt_diagnostic_mode Whether to run the app in diagnostic
+   *     mode.  Default is false.
    */
-  AppsMenuButton.runAppForTesting = function(id) {
-    $('show-apps-button').findAndRunAppForTesting(id);
+  AppsMenuButton.runAppForTesting = function(id, opt_diagnostic_mode) {
+    $('show-apps-button').findAndRunAppForTesting(id, opt_diagnostic_mode);
   };
 
   return {

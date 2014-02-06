@@ -53,6 +53,7 @@ class StartupAppLauncher
 
   StartupAppLauncher(Profile* profile,
                      const std::string& app_id,
+                     bool diagnostic_mode,
                      Delegate* delegate);
 
   virtual ~StartupAppLauncher();
@@ -107,6 +108,7 @@ class StartupAppLauncher
 
   Profile* profile_;
   const std::string app_id_;
+  const bool diagnostic_mode_;
   Delegate* delegate_;
   bool install_attempted_;
   bool ready_to_launch_;

@@ -85,7 +85,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
-  virtual void LoginAsKioskApp(const std::string& app_id) OVERRIDE;
+  virtual void LoginAsKioskApp(const std::string& app_id,
+                               bool diagnostic_mode) OVERRIDE;
   virtual void OnSigninScreenReady() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;

@@ -558,8 +558,9 @@ void ExistingUserController::LoginAsPublicAccount(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
 
-void ExistingUserController::LoginAsKioskApp(const std::string& app_id) {
-  host_->StartAppLaunch(app_id);
+void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
+                                             bool diagnostic_mode) {
+  host_->StartAppLaunch(app_id, diagnostic_mode);
 }
 
 void ExistingUserController::OnSigninScreenReady() {

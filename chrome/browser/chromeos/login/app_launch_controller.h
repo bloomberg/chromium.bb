@@ -39,6 +39,7 @@ class AppLaunchController
   typedef base::Callback<bool()> ReturnBoolCallback;
 
   AppLaunchController(const std::string& app_id,
+                      bool diagnostic_mode,
                       LoginDisplayHost* host,
                       OobeDisplay* oobe_display);
 
@@ -107,6 +108,7 @@ class AppLaunchController
 
   Profile* profile_;
   const std::string app_id_;
+  const bool diagnostic_mode_;
   LoginDisplayHost* host_;
   OobeDisplay* oobe_display_;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;

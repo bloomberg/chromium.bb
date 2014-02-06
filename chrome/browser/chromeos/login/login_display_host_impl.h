@@ -79,7 +79,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void ResumeSignInScreen() OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void PrewarmAuthentication() OVERRIDE;
-  virtual void StartAppLaunch(const std::string& app_id) OVERRIDE;
+  virtual void StartAppLaunch(const std::string& app_id,
+                              bool diagnostic_mode) OVERRIDE;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();

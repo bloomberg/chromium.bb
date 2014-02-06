@@ -84,10 +84,12 @@ class AppLaunchController::AppWindowWatcher
 // AppLaunchController
 
 AppLaunchController::AppLaunchController(const std::string& app_id,
+                                         bool diagnostic_mode,
                                          LoginDisplayHost* host,
                                          OobeDisplay* oobe_display)
     : profile_(NULL),
       app_id_(app_id),
+      diagnostic_mode_(diagnostic_mode),
       host_(host),
       oobe_display_(oobe_display),
       app_launch_splash_screen_actor_(
@@ -206,7 +208,8 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   profile_ = profile;
 
   kiosk_profile_loader_.reset();
-  startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_, this));
+  startup_app_launcher_.reset(
+      new StartupAppLauncher(profile_, app_id_, diagnostic_mode_, this));
   startup_app_launcher_->Initialize();
 }
 
