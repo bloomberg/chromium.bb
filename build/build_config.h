@@ -50,6 +50,8 @@
 #elif defined(__sun)
 #define OS_SOLARIS 1
 #define TOOLKIT_GTK
+#elif defined(__QNXNTO__)
+#define OS_QNX 1
 #else
 #error Please add support for your platform in build/build_config.h
 #endif
@@ -68,7 +70,7 @@
 // more specific macro.
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) ||     \
     defined(OS_OPENBSD) || defined(OS_SOLARIS) || defined(OS_ANDROID) ||  \
-    defined(OS_NACL)
+    defined(OS_NACL) || defined(OS_QNX)
 #define OS_POSIX 1
 #endif
 

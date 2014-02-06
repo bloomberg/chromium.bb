@@ -249,6 +249,7 @@ _VALID_OS_MACROS = (
     'OS_NACL',
     'OS_OPENBSD',
     'OS_POSIX',
+    'OS_QNX',
     'OS_SOLARIS',
     'OS_WIN',
 )

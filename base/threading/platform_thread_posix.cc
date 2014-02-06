@@ -150,7 +150,7 @@ PlatformThreadId PlatformThread::CurrentId() {
   return syscall(__NR_gettid);
 #elif defined(OS_ANDROID)
   return gettid();
-#elif defined(OS_SOLARIS)
+#elif defined(OS_SOLARIS) || defined(OS_QNX)
   return pthread_self();
 #elif defined(OS_NACL) && defined(__GLIBC__)
   return pthread_self();

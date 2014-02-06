@@ -9,6 +9,10 @@
 #ifndef BASE_ATOMICOPS_INTERNALS_ARM_GCC_H_
 #define BASE_ATOMICOPS_INTERNALS_ARM_GCC_H_
 
+#if defined(OS_QNX)
+#include <sys/cpuinline.h>
+#endif
+
 namespace base {
 namespace subtle {
 
@@ -40,10 +44,15 @@ namespace subtle {
 //
 
 inline void MemoryBarrier() {
-  // Note: This is a function call, which is also an implicit compiler
-  // barrier.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Note: This is a function call, which is also an implicit compiler barrier.
   typedef void (*KernelMemoryBarrierFunc)();
   ((KernelMemoryBarrierFunc)0xffff0fa0)();
+#elif defined(OS_QNX)
+  __cpu_membarrier();
+#else
+#error MemoryBarrier() is not implemented on this platform.
+#endif
 }
 
 // An ARM toolchain would only define one of these depending on which
