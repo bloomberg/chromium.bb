@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -125,7 +125,7 @@ void AppWindowCreateFunction::SendDelayedResponse() {
 
 bool AppWindowCreateFunction::RunImpl() {
   // Don't create app window if the system is shutting down.
-  if (g_browser_process->IsShuttingDown())
+  if (extensions::ExtensionsBrowserClient::Get()->IsShuttingDown())
     return false;
 
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
