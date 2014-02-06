@@ -7,5 +7,6 @@
   "systemInfo_cpu.html": "system_cpu.html",
   "systemInfo_display.html": "system_display.html",
   "systemInfo_memory.html": "system_memory.html",
+  "webview.html": "tags/webview.html",
   "webview_tag.html": "tags/webview.html"
 }
