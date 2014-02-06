@@ -3839,8 +3839,10 @@ void HTMLMediaElement::setControllerInternal(PassRefPtr<MediaController> control
 
     m_mediaController = controller;
 
-    if (m_mediaController)
+    if (m_mediaController) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementControllerNotNull);
         m_mediaController->addMediaElement(this);
+    }
 
     if (hasMediaControls())
         mediaControls()->setMediaController(m_mediaController ? m_mediaController.get() : static_cast<MediaControllerInterface*>(this));
