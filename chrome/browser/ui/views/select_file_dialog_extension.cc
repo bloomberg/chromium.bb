@@ -349,8 +349,7 @@ void SelectFileDialogExtension::SelectFileImpl(
         fallback_path.Append(default_path.BaseName()),
         file_manager::kFileManagerAppId,
         &selection_url)) {
-      LOG(ERROR) << "Unable to resolve the selection URL.";
-      return;
+      DVLOG(1) << "Unable to resolve the selection URL.";
     }
   }
 
@@ -367,9 +366,8 @@ void SelectFileDialogExtension::SelectFileImpl(
             fallback_path,
             file_manager::kFileManagerAppId,
             &current_directory_url)) {
-      LOG(ERROR) << "Unable to resolve the current directory URL for: "
-                 << fallback_path.value();
-      return;
+      DVLOG(1) << "Unable to resolve the current directory URL for: "
+               << fallback_path.value();
     }
   }
 
