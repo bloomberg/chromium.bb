@@ -1411,16 +1411,7 @@ TEST_F(FileUtilTest, CopyDirectoryACL) {
   FilePath dst_file = dst.Append(FILE_PATH_LITERAL("src.txt"));
   EXPECT_TRUE(CopyDirectory(src, dst, true));
 
-#if defined(OS_WIN)
-  // While the source file had RO bit set, the copied file doesn't.
   ASSERT_FALSE(IsReadOnly(dst_file));
-#elif defined(OS_MACOSX)
-  // On OSX, file mode is copied.
-  ASSERT_TRUE(IsReadOnly(dst_file));
-#else
-  // On other POSIX, file mode is not copied.
-  ASSERT_FALSE(IsReadOnly(dst_file));
-#endif
 }
 
 TEST_F(FileUtilTest, CopyFile) {
@@ -1479,17 +1470,7 @@ TEST_F(FileUtilTest, CopyFileACL) {
   ASSERT_TRUE(CopyFile(src, dst));
   EXPECT_EQ(file_contents, ReadTextFile(dst));
 
-#if defined(OS_WIN)
-  // While the source file had RO bit set, the copied file doesn't. Other file
-  // modes are copied.
   ASSERT_FALSE(IsReadOnly(dst));
-#elif defined(OS_MACOSX)
-  // On OSX, file mode is copied.
-  ASSERT_TRUE(IsReadOnly(dst));
-#else
-  // On other POSIX, file mode is not copied.
-  ASSERT_FALSE(IsReadOnly(dst));
-#endif
 }
 
 // file_util winds up using autoreleased objects on the Mac, so this needs

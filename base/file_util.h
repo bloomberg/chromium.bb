@@ -98,8 +98,8 @@ BASE_EXPORT bool ReplaceFile(const FilePath& from_path,
 // Copies a single file. Use CopyDirectory to copy directories.
 // This function fails if either path contains traversal components ('..').
 //
-// This function keeps the metadata on OSX and on Windows. The read only bit on
-// Windows is not kept.
+// This function keeps the metadata on Windows. The read only bit on Windows is
+// not kept.
 BASE_EXPORT bool CopyFile(const FilePath& from_path, const FilePath& to_path);
 
 // Copies the given path, and optionally all subdirectories and their contents
