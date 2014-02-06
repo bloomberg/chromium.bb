@@ -1808,7 +1808,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnDropChannelCalledOnce) {
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
 
   EXPECT_CALL(*event_interface_,
-              OnDropChannel(kWebSocketErrorAbnormalClosure, "Abnormal Closure"))
+              OnDropChannel(kWebSocketErrorAbnormalClosure, ""))
       .Times(1);
 
   CreateChannelAndConnectSuccessfully();

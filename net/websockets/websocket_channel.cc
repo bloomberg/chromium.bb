@@ -504,7 +504,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
       stream_->Close();
       DCHECK_NE(CLOSED, state_);
       state_ = CLOSED;
-      return DoDropChannel(kWebSocketErrorAbnormalClosure, "Abnormal Closure");
+      return DoDropChannel(kWebSocketErrorAbnormalClosure, "");
   }
 }
 
@@ -567,7 +567,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       DCHECK_NE(CLOSED, state_);
       state_ = CLOSED;
       uint16 code = kWebSocketErrorAbnormalClosure;
-      std::string reason = "Abnormal Closure";
+      std::string reason = "";
       if (closing_code_ != 0) {
         code = closing_code_;
         reason = closing_reason_;
@@ -871,8 +871,7 @@ void WebSocketChannel::CloseTimeout() {
   stream_->Close();
   DCHECK_NE(CLOSED, state_);
   state_ = CLOSED;
-  AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure,
-                            "Abnormal Closure"));
+  AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure, ""));
   // |this| has been deleted.
 }
 
