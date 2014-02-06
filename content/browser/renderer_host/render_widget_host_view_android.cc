@@ -847,6 +847,14 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   // to schedule a Draw immediately when it sees the texture layer invalidation.
   UpdateContentViewCoreFrameMetadata(frame->metadata);
 
+  if (layer_ && layer_->layer_tree_host()) {
+    for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+      scoped_ptr<cc::SwapPromise> swap_promise(
+          new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
+      layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+    }
+  }
+
   if (frame->delegated_frame_data) {
     DCHECK(UsingDelegatedRenderer());
 
@@ -883,14 +891,6 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 
   texture_size_in_layer_ = frame->gl_frame_data->size;
   ComputeContentsSize(frame->metadata);
-
-  if (layer_->layer_tree_host()) {
-    for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
-      scoped_ptr<cc::SwapPromise> swap_promise(
-          new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
-      layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
-    }
-  }
 
   BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
   frame_evictor_->SwappedFrame(!host_->is_hidden());
