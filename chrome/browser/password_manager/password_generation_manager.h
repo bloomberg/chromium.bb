@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_GENERATION_MANAGER_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_GENERATION_MANAGER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/rect.h"
 
 class PasswordManager;
@@ -23,6 +23,15 @@ class PasswordGenerator;
 class PasswordGenerationPopupControllerImpl;
 class PasswordGenerationPopupObserver;
 struct PasswordForm;
+}
+
+namespace content {
+class RenderViewHost;
+class WebContents;
+}
+
+namespace IPC {
+class Message;
 }
 
 namespace user_prefs {
@@ -42,7 +51,7 @@ class PrefRegistrySyncable;
 // This class is used to determine what forms we should offer to generate
 // passwords for and manages the popup which is created if the user chooses to
 // generate a password.
-class PasswordGenerationManager : public content::WebContentsObserver {
+class PasswordGenerationManager {
  public:
   PasswordGenerationManager(content::WebContents* contents,
                             PasswordManagerDelegate* delegate);
@@ -60,11 +69,11 @@ class PasswordGenerationManager : public content::WebContentsObserver {
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
+  // TODO(blundell): Eliminate this method. crbug.com/340690
+  bool OnMessageReceived(const IPC::Message& message);
+
  private:
   friend class PasswordGenerationManagerTest;
-
-  // WebContentsObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Determines current state of password generation
   bool IsGenerationEnabled() const;
@@ -91,6 +100,12 @@ class PasswordGenerationManager : public content::WebContentsObserver {
 
   // Hide any visible UI.
   void OnHidePasswordGenerationPopup();
+
+  // The WebContents instance associated with this instance. Scoped to the
+  // lifetime of this class, as this class is indirectly a WCUD via
+  // PasswordManagerDelegateImpl.
+  // TODO(blundell): Eliminate this ivar. crbug.com/340675
+  content::WebContents* web_contents_;
 
   // Observer for password generation popup.
   autofill::PasswordGenerationPopupObserver* observer_;

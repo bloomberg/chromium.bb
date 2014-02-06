@@ -67,5 +67,7 @@ void ContentPasswordManagerDriver::DidNavigateMainFrame(
 
 bool ContentPasswordManagerDriver::OnMessageReceived(
     const IPC::Message& message) {
-  return password_manager_.OnMessageReceived(message);
+  if (password_manager_.OnMessageReceived(message))
+    return true;
+  return password_generation_manager_.OnMessageReceived(message);
 }

@@ -31,7 +31,7 @@
 PasswordGenerationManager::PasswordGenerationManager(
     content::WebContents* contents,
     PasswordManagerDelegate* delegate)
-    : content::WebContentsObserver(contents),
+    : web_contents_(contents),
       observer_(NULL),
       delegate_(delegate),
       driver_(delegate->GetDriver()) {}
@@ -59,7 +59,7 @@ void PasswordGenerationManager::DetectAccountCreationForms(
     }
   }
   if (!account_creation_forms.empty() && IsGenerationEnabled()) {
-    SendAccountCreationFormsToRenderer(web_contents()->GetRenderViewHost(),
+    SendAccountCreationFormsToRenderer(web_contents_->GetRenderViewHost(),
                                        account_creation_forms);
   }
 }
@@ -83,11 +83,11 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
 // (1) Password sync is enabled, and
 // (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
-  if (!web_contents())
+  if (!web_contents_)
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 
   if (!driver_->GetPasswordManager()->IsSavingEnabled()) {
     DVLOG(2) << "Generation disabled because password saving is disabled";
@@ -120,7 +120,7 @@ void PasswordGenerationManager::SendAccountCreationFormsToRenderer(
 gfx::RectF PasswordGenerationManager::GetBoundsInScreenSpace(
     const gfx::RectF& bounds) {
   gfx::Rect client_area;
-  web_contents()->GetView()->GetContainerBounds(&client_area);
+  web_contents_->GetView()->GetContainerBounds(&client_area);
   return bounds + client_area.OffsetFromOrigin();
 }
 
@@ -145,8 +145,8 @@ void PasswordGenerationManager::OnShowPasswordGenerationPopup(
           password_generator_.get(),
           driver_->GetPasswordManager(),
           observer_,
-          web_contents(),
-          web_contents()->GetView()->GetNativeView());
+          web_contents_,
+          web_contents_->GetView()->GetNativeView());
   popup_controller_->Show();
 #endif  // #if defined(USE_AURA)
 }
