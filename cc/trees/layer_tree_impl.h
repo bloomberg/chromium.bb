@@ -58,6 +58,8 @@ class CC_EXPORT LayerTreeImpl {
   }
   virtual ~LayerTreeImpl();
 
+  void Shutdown();
+
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;

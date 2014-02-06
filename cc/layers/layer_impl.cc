@@ -237,8 +237,8 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
 
 void LayerImpl::TakeCopyRequestsAndTransformToTarget(
     ScopedPtrVector<CopyOutputRequest>* requests) {
-  if (copy_requests_.empty())
-    return;
+  DCHECK(!copy_requests_.empty());
+  DCHECK(layer_tree_impl()->IsActiveTree());
 
   size_t first_inserted_request = requests->size();
   requests->insert_and_take(requests->end(), copy_requests_);
@@ -257,8 +257,7 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
                                  request_in_content_space));
   }
 
-  if (layer_tree_impl()->IsActiveTree())
-    layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
+  layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
 }
 
 void LayerImpl::CreateRenderSurface() {

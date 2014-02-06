@@ -99,8 +99,11 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
 LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
-  root_layer_.reset();
+  DCHECK(!root_layer_);
+  DCHECK(layers_with_copy_output_request_.empty());
 }
+
+void LayerTreeImpl::Shutdown() { root_layer_.reset(); }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   if (inner_viewport_scroll_layer_)

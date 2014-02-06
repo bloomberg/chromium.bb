@@ -134,6 +134,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   }
 
   void PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests);
+  // Can only be called when the layer has a copy request.
   void TakeCopyRequestsAndTransformToTarget(
       ScopedPtrVector<CopyOutputRequest>* request);
   bool HasCopyRequest() const { return !copy_requests_.empty(); }

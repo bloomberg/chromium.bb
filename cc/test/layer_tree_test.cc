@@ -655,9 +655,7 @@ void LayerTreeTest::RunTest(bool threaded,
   }
 
   base::MessageLoop::current()->Run();
-  if (layer_tree_host_ && layer_tree_host_->root_layer())
-    layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
-  layer_tree_host_.reset();
+  DestroyLayerTreeHost();
 
   timeout_.Cancel();
 
@@ -709,6 +707,12 @@ int LayerTreeTest::LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl)
     return impl->active_tree()->source_frame_number();
   // Source frames start at 0, so this is invalid.
   return -1;
+}
+
+void LayerTreeTest::DestroyLayerTreeHost() {
+  if (layer_tree_host_ && layer_tree_host_->root_layer())
+    layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
+  layer_tree_host_.reset();
 }
 
 }  // namespace cc

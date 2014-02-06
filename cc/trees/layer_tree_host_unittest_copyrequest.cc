@@ -899,5 +899,76 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestDestroyBeforeCopy);
 
+class LayerTreeHostCopyRequestTestShutdownBeforeCopy
+    : public LayerTreeHostCopyRequestTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    root_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostCopyRequestTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    callback_count_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(result->IsEmpty());
+    ++callback_count_;
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::DidActivate,
+                   base::Unretained(this)));
+  }
+
+  void DidActivate() {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1: {
+        EXPECT_EQ(0, callback_count_);
+        // Put a copy request on the layer, but then don't allow any
+        // drawing to take place.
+        scoped_ptr<CopyOutputRequest> request =
+            CopyOutputRequest::CreateRequest(
+                base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::
+                                CopyOutputCallback,
+                           base::Unretained(this)));
+        copy_layer_->RequestCopyOfOutput(request.Pass());
+
+        layer_tree_host()->SetViewportSize(gfx::Size());
+        break;
+      }
+      case 2:
+        DestroyLayerTreeHost();
+        // End the test after the copy result has had a chance to get back to
+        // the main thread.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::EndTest,
+                       base::Unretained(this)));
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(1, callback_count_); }
+
+  int callback_count_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostCopyRequestTestShutdownBeforeCopy);
+
 }  // namespace
 }  // namespace cc

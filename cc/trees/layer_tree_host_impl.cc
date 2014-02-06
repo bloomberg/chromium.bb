@@ -296,6 +296,11 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // The layer trees must be destroyed before the layer tree host. We've
   // made a contract with our animation controllers that the registrar
   // will outlive them, and we must make good.
+  if (recycle_tree_)
+    recycle_tree_->Shutdown();
+  if (pending_tree_)
+    pending_tree_->Shutdown();
+  active_tree_->Shutdown();
   recycle_tree_.reset();
   pending_tree_.reset();
   active_tree_.reset();
