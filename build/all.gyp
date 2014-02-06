@@ -657,6 +657,7 @@
           'type': 'none',
           'dependencies': [
             '../chrome/chrome.gyp:chrome',
+            '../v8/src/d8.gyp:d8',
 
             # We refer to content_shell directly rather than blink_tests
             # because we don't want the _unittests binaries.
