@@ -13,13 +13,10 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
-#include "components/autofill/content/common/autofill_messages.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/password_form.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 
 using autofill::FormStructure;
 using autofill::PasswordForm;
@@ -28,7 +25,7 @@ using base::Time;
 
 PasswordFormManager::PasswordFormManager(Profile* profile,
                                          PasswordManager* password_manager,
-                                         content::WebContents* web_contents,
+                                         PasswordManagerDriver* driver,
                                          const PasswordForm& observed_form,
                                          bool ssl_valid)
     : best_matches_deleter_(&best_matches_),
@@ -39,7 +36,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       preferred_match_(NULL),
       state_(PRE_MATCHING_PHASE),
       profile_(profile),
-      web_contents_(web_contents),
+      driver_(driver),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted) {
@@ -367,8 +364,9 @@ void PasswordFormManager::OnRequestDone(
     return;
   }
 
-  // If not blacklisted, send a message to allow password generation.
-  SendNotBlacklistedToRenderer();
+  // If not blacklisted, inform the driver that password generation is allowed
+  // for |observed_form_|.
+  driver_->AllowPasswordGenerationForForm(&observed_form_);
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
@@ -396,7 +394,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     // No result means that we visit this site the first time so we don't need
     // to check whether this site is blacklisted or not. Just send a message
     // to allow password generation.
-    SendNotBlacklistedToRenderer();
+    driver_->AllowPasswordGenerationForForm(&observed_form_);
     return;
   }
   OnRequestDone(results);
@@ -572,13 +570,12 @@ void PasswordFormManager::CheckForAccountCreationForm(
     if (!pending.form_data.fields.empty() &&
         pending_structure.FormSignature() !=
             observed_structure.FormSignature()) {
-      autofill::AutofillDriverImpl* driver =
-          autofill::AutofillDriverImpl::FromWebContents(web_contents_);
-      if (driver && driver->autofill_manager()) {
+      autofill::AutofillManager* autofill_manager;
+      if ((autofill_manager = driver_->GetAutofillManager())) {
         // Note that this doesn't guarantee that the upload succeeded, only that
         // |pending.form_data| is considered uploadable.
-        bool success = driver->autofill_manager()->UploadPasswordGenerationForm(
-            pending.form_data);
+        bool success =
+            autofill_manager->UploadPasswordGenerationForm(pending.form_data);
         UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
       }
     }
@@ -644,10 +641,4 @@ void PasswordFormManager::SubmitPassed() {
 
 void PasswordFormManager::SubmitFailed() {
   submit_result_ = kSubmitResultFailed;
-}
-
-void PasswordFormManager::SendNotBlacklistedToRenderer() {
-  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(),
-                                                 observed_form_));
 }

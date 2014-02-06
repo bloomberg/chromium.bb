@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/content_password_manager_driver.h"
 
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_context.h"
@@ -92,4 +93,16 @@ bool ContentPasswordManagerDriver::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+autofill::AutofillManager* ContentPasswordManagerDriver::GetAutofillManager() {
+  autofill::AutofillDriverImpl* driver =
+      autofill::AutofillDriverImpl::FromWebContents(web_contents());
+  return driver ? driver->autofill_manager() : NULL;
+}
+
+void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
+    autofill::PasswordForm* form) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), *form));
 }

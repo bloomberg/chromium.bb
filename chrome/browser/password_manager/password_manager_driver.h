@@ -9,6 +9,8 @@ class PasswordGenerationManager;
 class PasswordManager;
 
 namespace autofill {
+class AutofillManager;
+struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
 
@@ -35,6 +37,12 @@ class PasswordManagerDriver {
 
   // Returns the PasswordManager associated with this instance.
   virtual PasswordManager* GetPasswordManager() = 0;
+
+  // Returns the AutofillManager associated with this instance.
+  virtual autofill::AutofillManager* GetAutofillManager() = 0;
+
+  // Informs the driver that |form| can be used for password generation.
+  virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);

@@ -33,6 +33,10 @@ using testing::Exactly;
 using testing::Return;
 using testing::WithArg;
 
+namespace autofill {
+class AutofillManager;
+}
+
 namespace {
 
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
@@ -50,6 +54,9 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
+  MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
+  MOCK_METHOD1(AllowPasswordGenerationForForm,
+               void(autofill::PasswordForm* form));
 };
 
 ACTION_P(InvokeConsumer, forms) {
