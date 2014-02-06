@@ -174,6 +174,15 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       });
       buttons.push(rebootButton);
 
+      var diagnoseButton = this.ownerDocument.createElement('button');
+      diagnoseButton.textContent = loadTimeData.getString('diagnoseButton');
+      diagnoseButton.classList.add('show-with-ui-state-kiosk-mode');
+      diagnoseButton.addEventListener('click', function(e) {
+        chrome.send('diagnoseButtonClicked');
+        e.stopPropagation();
+      });
+      buttons.push(diagnoseButton);
+
       var spacer = this.ownerDocument.createElement('div');
       spacer.classList.add('button-spacer');
       spacer.classList.add('show-with-ui-state-kiosk-mode');

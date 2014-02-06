@@ -8,15 +8,21 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "extensions/browser/extension_system.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -145,6 +151,31 @@ void ErrorScreenHandler::HandleRebootButtonClicked() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
+void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
+  UserManager* user_manager = UserManager::Get();
+  User* user = user_manager->GetActiveUser();
+  Profile* profile = user_manager->GetProfileByUser(user);
+
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+
+  std::string extension_id =
+      extension_service->component_loader()->Add(
+          IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
+          base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
+
+  const extensions::Extension* extension = extension_service->
+      GetExtensionById(extension_id, true);
+  OpenApplication(AppLaunchParams(profile, extension,
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
+                                  NEW_WINDOW));
+  InitAppSession(profile, extension_id);
+
+  user_manager->SessionStarted();
+
+  LoginDisplayHostImpl::default_host()->Finalize();
+}
+
 void ErrorScreenHandler::RegisterMessages() {
   AddCallback("showCaptivePortal",
               &ErrorScreenHandler::HandleShowCaptivePortal);
@@ -154,6 +185,8 @@ void ErrorScreenHandler::RegisterMessages() {
               &ErrorScreenHandler::HandleLocalStateErrorPowerwashButtonClicked);
   AddCallback("rebootButtonClicked",
               &ErrorScreenHandler::HandleRebootButtonClicked);
+  AddCallback("diagnoseButtonClicked",
+              &ErrorScreenHandler::HandleDiagnoseButtonClicked);
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
@@ -176,6 +209,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("localStateErrorPowerwashButton",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
+  builder->Add("diagnoseButton", IDS_DIAGNOSE_BUTTON);
 }
 
 void ErrorScreenHandler::Initialize() {
