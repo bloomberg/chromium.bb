@@ -698,7 +698,8 @@ interface Functions {
   static void getProfiles(GetProfilesCallback callback);
 
   // Moves the window to other user's desktop.
-  static void visitDesktop(DOMString profileId);
+  static void visitDesktop(DOMString profileId,
+                           optional SimpleCallback callback);
 };
 
 interface Events {

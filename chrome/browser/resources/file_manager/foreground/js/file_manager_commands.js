@@ -425,9 +425,14 @@ CommandHandler.COMMANDS_['new-folder'] = {
  */
 CommandHandler.COMMANDS_['new-window'] = {
   execute: function(event, fileManager) {
-    fileManager.backgroundPage.launchFileManager({
-      currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
-          fileManager.getCurrentDirectoryEntry().toURL()
+    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                   currentId,
+                                                   displayedId) {
+      fileManager.backgroundPage.launchFileManager({
+        currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
+            fileManager.getCurrentDirectoryEntry().toURL(),
+        displayedId: currentId !== displayedId ? displayedId : undefined
+      });
     });
   },
   canExecute: function(event, fileManager) {

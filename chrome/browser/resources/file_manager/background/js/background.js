@@ -242,12 +242,36 @@ function AppWindowWrapper(url, id, options) {
 }
 
 /**
+ * Focuses the window on the specified desktop.
+ * @param {AppWindow} appWindow Application window.
+ * @param {string=} opt_profileId The profiled ID of the target window. If it is
+ *     dropped, the window is focused on the current window.
+ */
+AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
+  new Promise(function(onFullfilled, onRejected) {
+    if (opt_profileId) {
+      onFullfilled(opt_profileId);
+    } else {
+      chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                     currentId,
+                                                     displayedId) {
+        onFullfilled(currentId);
+      });
+    }
+  }).then(function(profileId) {
+    appWindow.contentWindow.chrome.fileBrowserPrivate.visitDesktop(
+        profileId, function() {
+      appWindow.focus();
+    });
+  });
+};
+
+/**
  * Shift distance to avoid overlapping windows.
  * @type {number}
  * @const
  */
 AppWindowWrapper.SHIFT_DISTANCE = 40;
-
 
 /**
  * Opens the window.
@@ -447,7 +471,7 @@ SingletonAppWindowWrapper.prototype.launch = function(appState, opt_callback) {
   this.queue.run(function(nextStep) {
     this.window_.contentWindow.appState = appState;
     this.window_.contentWindow.reload();
-    this.window_.focus();
+    AppWindowWrapper.focusOnDesktop(this.window_, appState.displayedId);
     if (opt_callback)
       opt_callback();
     nextStep();
@@ -544,7 +568,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
             continue;
           }
 
-          background.appWindows[key].focus();
+          AppWindowWrapper.focusOnDesktop(
+              background.appWindows[key], opt_appState.displayedId);
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -579,7 +604,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
           continue;
 
         if (!background.appWindows[key].isMinimized()) {
-          background.appWindows[key].focus();
+          AppWindowWrapper.focusOnDesktop(
+              background.appWindows[key], (opt_appState || {}).displayedId);
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -591,7 +617,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         if (!key.match(FILES_ID_PATTERN))
           continue;
 
-        background.appWindows[key].focus();
+        AppWindowWrapper.focusOnDesktop(
+            background.appWindows[key], (opt_appState || {}).displayedId);
         if (opt_callback)
           opt_callback(key);
         onTaskCompleted();
@@ -611,6 +638,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         appId,
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);
     appWindow.launch(opt_appState || {}, function() {
+      AppWindowWrapper.focusOnDesktop(
+          appWindow.window_, (opt_appState || {}).displayedId);
       if (opt_callback)
         opt_callback(appId);
       onTaskCompleted();
