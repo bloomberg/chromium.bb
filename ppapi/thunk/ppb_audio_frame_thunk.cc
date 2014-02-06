@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio_frame.idl modified Wed Jan 22 09:11:35 2014.
+// From ppb_audio_frame.idl modified Thu Jan 23 15:09:57 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_frame.h"
@@ -36,6 +36,14 @@ void SetTimestamp(PP_Resource frame, PP_TimeDelta timestamp) {
   if (enter.failed())
     return;
   enter.object()->SetTimestamp(timestamp);
+}
+
+PP_AudioFrame_SampleRate GetSampleRate(PP_Resource frame) {
+  VLOG(4) << "PPB_AudioFrame::GetSampleRate()";
+  EnterResource<PPB_AudioFrame_API> enter(frame, true);
+  if (enter.failed())
+    return PP_AUDIOFRAME_SAMPLERATE_UNKNOWN;
+  return enter.object()->GetSampleRate();
 }
 
 PP_AudioFrame_SampleSize GetSampleSize(PP_Resource frame) {
@@ -82,6 +90,7 @@ const PPB_AudioFrame_0_1 g_ppb_audioframe_thunk_0_1 = {
   &IsAudioFrame,
   &GetTimestamp,
   &SetTimestamp,
+  &GetSampleRate,
   &GetSampleSize,
   &GetNumberOfChannels,
   &GetNumberOfSamples,

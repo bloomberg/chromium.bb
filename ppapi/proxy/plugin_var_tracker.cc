@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/file_system_resource.h"
+#include "ppapi/proxy/media_stream_audio_track_resource.h"
 #include "ppapi/proxy/media_stream_video_track_resource.h"
 #include "ppapi/proxy/plugin_array_buffer_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -193,6 +194,24 @@ PP_Var PluginVarTracker::MakeResourcePPVarFromMessage(
                                   pending_renderer_id,
                                   pending_browser_id,
                                   file_system_type))->GetReference();
+      return MakeResourcePPVar(pp_resource);
+    }
+    case PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost::ID: {
+      DCHECK(pending_renderer_id);
+      std::string track_id;
+      if (!UnpackMessage<
+              PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost>(
+          creation_message, &track_id)) {
+        NOTREACHED() <<
+            "Invalid message of type "
+            "PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost";
+        return PP_MakeNull();
+      }
+      PP_Resource pp_resource =
+          (new MediaStreamAudioTrackResource(GetConnectionForInstance(instance),
+                                             instance,
+                                             pending_renderer_id,
+                                             track_id))->GetReference();
       return MakeResourcePPVar(pp_resource);
     }
     case PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost::ID: {

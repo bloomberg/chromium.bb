@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_frame.idl modified Wed Jan 22 21:25:31 2014. */
+/* From ppb_audio_frame.idl modified Wed Jan 29 13:24:24 2014. */
 
 #ifndef PPAPI_C_PPB_AUDIO_FRAME_H_
 #define PPAPI_C_PPB_AUDIO_FRAME_H_
@@ -31,6 +31,7 @@
  */
 typedef enum {
   PP_AUDIOFRAME_SAMPLERATE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLERATE_8000 = 8000,
   PP_AUDIOFRAME_SAMPLERATE_44100 = 44100
 } PP_AudioFrame_SampleRate;
 
@@ -80,6 +81,15 @@ struct PPB_AudioFrame_0_1 { /* dev */
    * audio stream.
    */
   void (*SetTimestamp)(PP_Resource frame, PP_TimeDelta timestamp);
+  /**
+   * Gets the sample rate of the audio frame.
+   *
+   * @param[in] frame A <code>PP_Resource</code> corresponding to an audio frame
+   * resource.
+   *
+   * @return The sample rate of the audio frame.
+   */
+  PP_AudioFrame_SampleRate (*GetSampleRate)(PP_Resource frame);
   /**
    * Gets the sample size of the audio frame.
    *

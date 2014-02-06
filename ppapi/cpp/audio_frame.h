@@ -47,10 +47,15 @@ class AudioFrame : public Resource {
   /// audio stream.
   void SetTimestamp(PP_TimeDelta timestamp);
 
+  /// Gets the sample rate of the audio frame.
+  ///
+  /// @return The sample rate of the audio frame.
+  PP_AudioFrame_SampleRate GetSampleRate() const;
+
   /// Gets the sample size of the audio frame in bytes.
   ///
   /// @return The sample size of the audio frame in bytes.
-  uint32_t GetSampleSize() const;
+  PP_AudioFrame_SampleSize GetSampleSize() const;
 
   /// Gets the number of channels in the audio frame.
   ///

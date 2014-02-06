@@ -78,7 +78,9 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     DCHECK(!frame_data_size_);
     frame_data_size_ = VideoFrame::AllocationSize(frame_format_, frame_size_);
     int32_t size = sizeof(ppapi::MediaStreamFrame::Video) + frame_data_size_;
-    InitFrames(kNumberOfFrames, size);
+    bool result = InitFrames(kNumberOfFrames, size);
+    // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
+    CHECK(result);
   }
 
   int32_t index = frame_buffer()->DequeueFrame();

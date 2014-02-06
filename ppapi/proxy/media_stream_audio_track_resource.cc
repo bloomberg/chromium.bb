@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/media_stream_video_track_resource.h"
+#include "ppapi/proxy/media_stream_audio_track_resource.h"
 
-#include "base/logging.h"
-#include "ppapi/proxy/video_frame_resource.h"
+#include "ppapi/proxy/audio_frame_resource.h"
 #include "ppapi/shared_impl/media_stream_frame.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 namespace proxy {
 
-MediaStreamVideoTrackResource::MediaStreamVideoTrackResource(
+MediaStreamAudioTrackResource::MediaStreamAudioTrackResource(
     Connection connection,
     PP_Instance instance,
     int pending_renderer_id,
@@ -22,40 +21,38 @@ MediaStreamVideoTrackResource::MediaStreamVideoTrackResource(
       get_frame_output_(NULL) {
 }
 
-MediaStreamVideoTrackResource::~MediaStreamVideoTrackResource() {
+MediaStreamAudioTrackResource::~MediaStreamAudioTrackResource() {
   Close();
 }
 
-thunk::PPB_MediaStreamVideoTrack_API*
-MediaStreamVideoTrackResource::AsPPB_MediaStreamVideoTrack_API() {
+thunk::PPB_MediaStreamAudioTrack_API*
+MediaStreamAudioTrackResource::AsPPB_MediaStreamAudioTrack_API() {
   return this;
 }
 
-PP_Var MediaStreamVideoTrackResource::GetId() {
+PP_Var MediaStreamAudioTrackResource::GetId() {
   return StringVar::StringToPPVar(id());
 }
 
-PP_Bool MediaStreamVideoTrackResource::HasEnded() {
+PP_Bool MediaStreamAudioTrackResource::HasEnded() {
   return PP_FromBool(has_ended());
 }
 
-
-int32_t MediaStreamVideoTrackResource::Configure(
+int32_t MediaStreamAudioTrackResource::Configure(
     const int32_t attrib_list[],
     scoped_refptr<TrackedCallback> callback) {
-  // TODO(penghuang): redesign and implement Configure() to support format,
-  // size, etc.
+  // TODO(penghuang): Implement this function.
   return PP_ERROR_NOTSUPPORTED;
 }
 
-int32_t MediaStreamVideoTrackResource::GetAttrib(
-    PP_MediaStreamVideoTrack_Attrib attrib,
+int32_t MediaStreamAudioTrackResource::GetAttrib(
+    PP_MediaStreamAudioTrack_Attrib attrib,
     int32_t* value) {
-  // TODO(penghuang): implement this function.
+  // TODO(penghuang): Implement this function.
   return PP_ERROR_NOTSUPPORTED;
 }
 
-int32_t MediaStreamVideoTrackResource::GetFrame(
+int32_t MediaStreamAudioTrackResource::GetFrame(
     PP_Resource* frame,
     scoped_refptr<TrackedCallback> callback) {
   if (has_ended())
@@ -64,21 +61,24 @@ int32_t MediaStreamVideoTrackResource::GetFrame(
   if (TrackedCallback::IsPending(get_frame_callback_))
     return PP_ERROR_INPROGRESS;
 
-  *frame = GetVideoFrame();
+  *frame = GetAudioFrame();
   if (*frame)
     return PP_OK;
 
+  // TODO(penghuang): Use the callback as hints to determine which thread will
+  // use the resource, so we could deliver frames to the target thread directly
+  // for better performance.
   get_frame_output_ = frame;
   get_frame_callback_ = callback;
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t MediaStreamVideoTrackResource::RecycleFrame(PP_Resource frame) {
+int32_t MediaStreamAudioTrackResource::RecycleFrame(PP_Resource frame) {
   FrameMap::iterator it = frames_.find(frame);
   if (it == frames_.end())
     return PP_ERROR_BADRESOURCE;
 
-  scoped_refptr<VideoFrameResource> frame_resource = it->second;
+  scoped_refptr<AudioFrameResource> frame_resource = it->second;
   frames_.erase(it);
 
   if (has_ended())
@@ -91,7 +91,7 @@ int32_t MediaStreamVideoTrackResource::RecycleFrame(PP_Resource frame) {
   return PP_OK;
 }
 
-void MediaStreamVideoTrackResource::Close() {
+void MediaStreamAudioTrackResource::Close() {
   if (has_ended())
     return;
 
@@ -106,11 +106,11 @@ void MediaStreamVideoTrackResource::Close() {
   MediaStreamTrackResourceBase::CloseInternal();
 }
 
-void MediaStreamVideoTrackResource::OnNewFrameEnqueued() {
+void MediaStreamAudioTrackResource::OnNewFrameEnqueued() {
   if (!TrackedCallback::IsPending(get_frame_callback_))
     return;
 
-  *get_frame_output_ = GetVideoFrame();
+  *get_frame_output_ = GetAudioFrame();
   int32_t result = *get_frame_output_ ? PP_OK : PP_ERROR_FAILED;
   get_frame_output_ = NULL;
   scoped_refptr<TrackedCallback> callback;
@@ -118,15 +118,15 @@ void MediaStreamVideoTrackResource::OnNewFrameEnqueued() {
   callback->Run(result);
 }
 
-PP_Resource MediaStreamVideoTrackResource::GetVideoFrame() {
+PP_Resource MediaStreamAudioTrackResource::GetAudioFrame() {
   int32_t index = frame_buffer()->DequeueFrame();
   if (index < 0)
-    return 0;
+      return 0;
 
   MediaStreamFrame* frame = frame_buffer()->GetFramePointer(index);
   DCHECK(frame);
-  scoped_refptr<VideoFrameResource> resource =
-      new VideoFrameResource(pp_instance(), index, frame);
+  scoped_refptr<AudioFrameResource> resource =
+      new AudioFrameResource(pp_instance(), index, frame);
   // Add |pp_resource()| and |resource| into |frames_|.
   // |frames_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
   // resource alive.
@@ -134,7 +134,7 @@ PP_Resource MediaStreamVideoTrackResource::GetVideoFrame() {
   return resource->GetReference();
 }
 
-void MediaStreamVideoTrackResource::ReleaseFrames() {
+void MediaStreamAudioTrackResource::ReleaseFrames() {
   FrameMap::iterator it = frames_.begin();
   while (it != frames_.end()) {
     // Just invalidate and release VideoFrameResorce, but keep PP_Resource.

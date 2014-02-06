@@ -19,6 +19,8 @@
           'cpp/completion_callback.h',
           'utility/completion_callback_factory.h',
 
+          'proxy/audio_frame_resource.cc',
+          'proxy/audio_frame_resource.h',
           'proxy/audio_input_resource.cc',
           'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',
@@ -84,6 +86,8 @@
           'proxy/isolated_file_system_private_resource.cc',
           'proxy/isolated_file_system_private_resource.h',
           'proxy/locking_resource_releaser.h',
+          'proxy/media_stream_audio_track_resource.cc',
+          'proxy/media_stream_audio_track_resource.h',
           'proxy/media_stream_track_resource_base.cc',
           'proxy/media_stream_track_resource_base.h',
           'proxy/media_stream_video_track_resource.cc',

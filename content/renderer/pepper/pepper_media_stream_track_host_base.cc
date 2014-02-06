@@ -39,6 +39,8 @@ bool PepperMediaStreamTrackHostBase::InitFrames(int32_t number_of_frames,
   // Make each frame 4 byte aligned.
   frame_size = (frame_size + 3) & ~0x3;
 
+  // TODO(penghuang): |HostAllocateSharedMemoryBuffer| uses sync IPC. We should
+  // avoid it.
   int32_t size = number_of_frames * frame_size;
   content::RenderThread* render_thread = content::RenderThread::Get();
   scoped_ptr<base::SharedMemory> shm(

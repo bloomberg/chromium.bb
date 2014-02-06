@@ -693,6 +693,8 @@
         'renderer/p2p/socket_client_impl.h',
         'renderer/p2p/socket_dispatcher.cc',
         'renderer/p2p/socket_dispatcher.h',
+        'renderer/pepper/pepper_media_stream_audio_track_host.cc',
+        'renderer/pepper/pepper_media_stream_audio_track_host.h',
         'renderer/pepper/pepper_media_stream_track_host_base.cc',
         'renderer/pepper/pepper_media_stream_track_host_base.h',
         'renderer/pepper/pepper_media_stream_video_track_host.cc',

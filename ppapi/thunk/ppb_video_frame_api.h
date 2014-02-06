@@ -24,7 +24,7 @@ class PPAPI_THUNK_EXPORT PPB_VideoFrame_API {
   virtual void* GetDataBuffer() = 0;
   virtual uint32_t GetDataBufferSize() = 0;
 
-  // Private APIs:
+  // Methods used by Pepper internal implementation only.
   virtual MediaStreamFrame* GetFrameBuffer() = 0;
   virtual int32_t GetFrameBufferIndex() = 0;
   virtual void Invalidate() = 0;

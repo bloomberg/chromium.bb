@@ -524,6 +524,16 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'ppapi_example_media_stream_audio',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/media_stream_audio/media_stream_audio.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_media_stream_video',
       'dependencies': [
         'ppapi_example_skeleton',

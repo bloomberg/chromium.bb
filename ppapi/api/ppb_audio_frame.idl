@@ -19,6 +19,7 @@ label Chrome {
  */
 enum PP_AudioFrame_SampleRate {
   PP_AUDIOFRAME_SAMPLERATE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLERATE_8000 = 8000,
   PP_AUDIOFRAME_SAMPLERATE_44100 = 44100
 };
 
@@ -64,6 +65,17 @@ interface PPB_AudioFrame {
    * audio stream.
    */
   void SetTimestamp([in] PP_Resource frame, [in] PP_TimeDelta timestamp);
+
+  /**
+   * Gets the sample rate of the audio frame.
+   *
+   * @param[in] frame A <code>PP_Resource</code> corresponding to an audio frame
+   * resource.
+   *
+   * @return The sample rate of the audio frame.
+   */
+  [on_failure=PP_AUDIOFRAME_SAMPLERATE_UNKNOWN]
+  PP_AudioFrame_SampleRate GetSampleRate([in] PP_Resource frame);
 
   /**
    * Gets the sample size of the audio frame.

@@ -9,6 +9,9 @@
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+union MediaStreamFrame;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_AudioFrame_API {
@@ -16,11 +19,17 @@ class PPAPI_THUNK_EXPORT PPB_AudioFrame_API {
   virtual ~PPB_AudioFrame_API() {}
   virtual PP_TimeDelta GetTimestamp() = 0;
   virtual void SetTimestamp(PP_TimeDelta timestamp) = 0;
+  virtual PP_AudioFrame_SampleRate GetSampleRate() = 0;
   virtual PP_AudioFrame_SampleSize GetSampleSize() = 0;
   virtual uint32_t GetNumberOfChannels() = 0;
   virtual uint32_t GetNumberOfSamples() = 0;
   virtual void* GetDataBuffer() = 0;
   virtual uint32_t GetDataBufferSize() = 0;
+
+  // Methods used by Pepper internal implementation only.
+  virtual MediaStreamFrame* GetFrameBuffer() = 0;
+  virtual int32_t GetFrameBufferIndex() = 0;
+  virtual void Invalidate() = 0;
 };
 
 }  // namespace thunk

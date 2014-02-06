@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
+#include "content/renderer/pepper/pepper_media_stream_audio_track_host.h"
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -112,8 +113,15 @@ bool DOMMediaStreamTrackToResource(
         new PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost(id));
     return true;
   } else if (track.source().type() == blink::WebMediaStreamSource::TypeAudio) {
-    // TODO(penghuang): support audio track.
-    return false;
+    *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
+        scoped_ptr<ppapi::host::ResourceHost>(
+            new PepperMediaStreamAudioTrackHost(host, instance, 0, track)));
+    if (*pending_renderer_id == 0)
+      return false;
+
+    create_message->reset(
+        new PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost(id));
+    return true;
   }
 
   return false;

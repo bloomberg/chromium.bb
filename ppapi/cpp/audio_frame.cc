@@ -44,10 +44,16 @@ void AudioFrame::SetTimestamp(PP_TimeDelta timestamp) {
     get_interface<PPB_AudioFrame_0_1>()->SetTimestamp(pp_resource(), timestamp);
 }
 
-uint32_t AudioFrame::GetSampleSize() const {
+PP_AudioFrame_SampleRate AudioFrame::GetSampleRate() const {
+  if (has_interface<PPB_AudioFrame_0_1>())
+    return get_interface<PPB_AudioFrame_0_1>()->GetSampleRate(pp_resource());
+  return PP_AUDIOFRAME_SAMPLERATE_UNKNOWN;
+}
+
+PP_AudioFrame_SampleSize AudioFrame::GetSampleSize() const {
   if (has_interface<PPB_AudioFrame_0_1>())
     return get_interface<PPB_AudioFrame_0_1>()->GetSampleSize(pp_resource());
-  return 0;
+  return PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN;
 }
 
 uint32_t AudioFrame::GetNumberOfChannels() const {

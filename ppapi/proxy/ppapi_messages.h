@@ -1437,9 +1437,13 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply,
                      std::string /* fsid */)
 
 // MediaStream -----------------------------------------------------------------
-// Message for init frames. It also takes a shared memory handle.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost,
+                     std::string /* track_id */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost,
                      std::string /* track_id */)
+
+// Message for init frames. It also takes a shared memory handle which is put in
+// the outer ResourceReplyMessage.
 IPC_MESSAGE_CONTROL2(PpapiPluginMsg_MediaStreamTrack_InitFrames,
                      int32_t /* number_of_frames */,
                      int32_t /* frame_size */)
