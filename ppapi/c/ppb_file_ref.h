@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_ref.idl modified Wed Jan  8 12:40:12 2014. */
+/* From ppb_file_ref.idl modified Wed Jan 29 20:50:29 2014. */
 
 #ifndef PPAPI_C_PPB_FILE_REF_H_
 #define PPAPI_C_PPB_FILE_REF_H_
@@ -20,8 +20,8 @@
 
 #define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
 #define PPB_FILEREF_INTERFACE_1_1 "PPB_FileRef;1.1"
-#define PPB_FILEREF_INTERFACE_1_2 "PPB_FileRef;1.2" /* dev */
-#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_1
+#define PPB_FILEREF_INTERFACE_1_2 "PPB_FileRef;1.2"
+#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_2
 
 /**
  * @file
@@ -61,7 +61,7 @@ typedef enum {
  * a file system.  This struct contains a <code>PP_FileSystemType</code>
  * identifier and a file path string.
  */
-struct PPB_FileRef_1_2 { /* dev */
+struct PPB_FileRef_1_2 {
   /**
    * Create() creates a weak pointer to a file in the given file system. File
    * paths are POSIX style.
@@ -233,6 +233,8 @@ struct PPB_FileRef_1_2 { /* dev */
                                   struct PP_CompletionCallback callback);
 };
 
+typedef struct PPB_FileRef_1_2 PPB_FileRef;
+
 struct PPB_FileRef_1_0 {
   PP_Resource (*Create)(PP_Resource file_system, const char* path);
   PP_Bool (*IsFileRef)(PP_Resource resource);
@@ -280,8 +282,6 @@ struct PPB_FileRef_1_1 {
                                   struct PP_ArrayOutput output,
                                   struct PP_CompletionCallback callback);
 };
-
-typedef struct PPB_FileRef_1_1 PPB_FileRef;
 /**
  * @}
  */
