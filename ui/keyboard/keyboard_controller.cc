@@ -36,13 +36,24 @@ const int kAnimationDurationMs = 200;
 // hide animation finishes.
 const float kAnimationStartOrAfterHideOpacity = 0.2f;
 
+// The ratio between the height of the keyboard and the screen when using the
+// usability keyboard.
+const float kUsabilityKeyboardHeightRatio = 1.0f;
+
+// The default ratio between the height of the keyboard and the screen.
+const float kDefaultKeyboardHeightRatio = 0.3f;
+
+// The ratio between the height of the keyboard and the screen when using the
+// accessibility keyboard.
+const float kAccessibilityKeyboardHeightRatio = 0.3f;
+
 float GetKeyboardHeightRatio(){
   if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    return 1.0f;
+    return kUsabilityKeyboardHeightRatio;
   } else if (keyboard::GetAccessibilityKeyboardEnabled()) {
-    return 0.4f;
+    return kAccessibilityKeyboardHeightRatio;
   }
-  return 0.3f;
+  return kDefaultKeyboardHeightRatio;
 }
 gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
   const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
