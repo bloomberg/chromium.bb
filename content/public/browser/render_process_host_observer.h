@@ -28,7 +28,7 @@ class CONTENT_EXPORT RenderProcessHostObserver {
                                    int exit_code) {}
 
   // This method is invoked when the observed RenderProcessHost itself is
-  // destroyed.
+  // destroyed. This is guaranteed to be the last call made to the observer.
   virtual void RenderProcessHostDestroyed(RenderProcessHost* host) {}
 
  protected:

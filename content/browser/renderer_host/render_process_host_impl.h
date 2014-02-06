@@ -384,6 +384,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // than once.
   bool gpu_observer_registered_;
 
+  // Set if a call to Cleanup is required once the RenderProcessHostImpl is no
+  // longer within the RenderProcessHostObserver::RenderProcessExited callbacks.
+  bool delayed_cleanup_needed_;
+
+  // Indicates whether RenderProcessHostImpl is currently iterating and calling
+  // through RenderProcessHostObserver::RenderProcessExited.
+  bool within_process_died_observer_;
+
   // Forwards power state messages to the renderer process.
   PowerMonitorMessageBroadcaster power_monitor_broadcaster_;
 

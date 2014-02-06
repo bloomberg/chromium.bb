@@ -8,6 +8,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
@@ -104,6 +105,90 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
   // Expect that we got another process (the guest renderer was not reused).
   EXPECT_EQ(2, RenderProcessHostCount());
+}
+
+class ShellCloser : public RenderProcessHostObserver {
+ public:
+  ShellCloser(Shell* shell, std::string* logging_string)
+      : shell_(shell), logging_string_(logging_string) {}
+
+ protected:
+  // RenderProcessHostObserver:
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) OVERRIDE {
+    logging_string_->append("ShellCloser::RenderProcessExited ");
+    shell_->Close();
+  }
+
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+    logging_string_->append("ShellCloser::RenderProcessHostDestroyed ");
+  }
+
+  Shell* shell_;
+  std::string* logging_string_;
+};
+
+class ObserverLogger : public RenderProcessHostObserver {
+ public:
+  explicit ObserverLogger(std::string* logging_string)
+      : logging_string_(logging_string), host_destroyed_(false) {}
+
+  bool host_destroyed() { return host_destroyed_; }
+
+ protected:
+  // RenderProcessHostObserver:
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) OVERRIDE {
+    logging_string_->append("ObserverLogger::RenderProcessExited ");
+  }
+
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+    logging_string_->append("ObserverLogger::RenderProcessHostDestroyed ");
+    host_destroyed_ = true;
+  }
+
+  std::string* logging_string_;
+  bool host_destroyed_;
+};
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  NavigateToURL(shell(), test_url);
+
+  std::string logging_string;
+  ShellCloser shell_closer(shell(), &logging_string);
+  ObserverLogger observer_logger(&logging_string);
+  RenderProcessHost* rph =
+      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+
+  // Ensure that the ShellCloser observer is first, so that it will have first
+  // dibs on the ProcessExited callback.
+  rph->AddObserver(&shell_closer);
+  rph->AddObserver(&observer_logger);
+
+  // This will crash the render process, and start all the callbacks.
+  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+
+  // The key here is that all the RenderProcessExited callbacks precede all the
+  // RenderProcessHostDestroyed callbacks.
+  EXPECT_EQ("ShellCloser::RenderProcessExited "
+            "ObserverLogger::RenderProcessExited "
+            "ShellCloser::RenderProcessHostDestroyed "
+            "ObserverLogger::RenderProcessHostDestroyed ", logging_string);
+
+  // If the test fails, and somehow the RPH is still alive somehow, at least
+  // deregister the observers so that the test fails and doesn't also crash.
+  if (!observer_logger.host_destroyed()) {
+    rph->RemoveObserver(&shell_closer);
+    rph->RemoveObserver(&observer_logger);
+  }
 }
 
 }  // namespace

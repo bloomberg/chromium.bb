@@ -393,6 +393,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           supports_browser_plugin_(supports_browser_plugin),
           is_guest_(is_guest),
           gpu_observer_registered_(false),
+          delayed_cleanup_needed_(false),
+          within_process_died_observer_(false),
           power_monitor_broadcaster_(this),
           geolocation_dispatcher_host_(NULL),
           weak_factory_(this) {
@@ -1442,8 +1444,23 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
 }
 
 void RenderProcessHostImpl::Cleanup() {
+  // If within_process_died_observer_ is true, one of our observers performed an
+  // action that caused us to die (e.g. http://crbug.com/339504). Therefore,
+  // delay the destruction until all of the observer callbacks have been made,
+  // and guarantee that the RenderProcessHostDestroyed observer callback is
+  // always the last callback fired.
+  if (within_process_died_observer_) {
+    delayed_cleanup_needed_ = true;
+    return;
+  }
+  delayed_cleanup_needed_ = false;
+
   // When there are no other owners of this object, we can delete ourselves.
   if (listeners_.IsEmpty()) {
+    // We cannot clean up twice; if this fails, there is an issue with our
+    // control flow.
+    DCHECK(!deleting_soon_);
+
     DCHECK_EQ(0, pending_views_);
     FOR_EACH_OBSERVER(RenderProcessHostObserver,
                       observers_,
@@ -1820,6 +1837,13 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   // calls to a renderer. If we don't have a valid channel here it means we
   // already handled the error.
 
+  // It should not be possible for us to be called re-entrantly.
+  DCHECK(!within_process_died_observer_);
+
+  // It should not be possible for a process death notification to come in while
+  // we are dying.
+  DCHECK(!deleting_soon_);
+
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
   int exit_code = 0;
@@ -1830,6 +1854,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   RendererClosedDetails details(GetHandle(), status, exit_code);
+  within_process_died_observer_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
@@ -1837,6 +1862,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   FOR_EACH_OBSERVER(RenderProcessHostObserver,
                     observers_,
                     RenderProcessExited(this, GetHandle(), status, exit_code));
+  within_process_died_observer_ = false;
 
   child_process_launcher_.reset();
   channel_.reset();
@@ -1855,7 +1881,12 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   ClearTransportDIBCache();
 
-  // this object is not deleted at this point and may be reused later.
+  // It's possible that one of the calls out to the observers might have caused
+  // this object to be no longer needed.
+  if (delayed_cleanup_needed_)
+    Cleanup();
+
+  // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up
 }
 
