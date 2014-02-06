@@ -4253,10 +4253,51 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionInstallSigner.RequestCount">
+  <summary>
+    A count of the number of server requests since Chrome started running,
+    recorded each time we do a request. NOTE: when interpreting these values,
+    keep in mind that a user who did 5 server requests during one run of Chrome
+    will log this histogram 5 times with values 1, 2, 3, 4, and 5.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionInstallSigner.ResultWasValid">
   <summary>
     Whether the server result received by the extensions install signer was
     valid or invalid.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallSigner.SecondsSinceLastRequest"
+    units="seconds">
+  <summary>
+    This records the number of seconds since the last time we've done a request
+    to the server (only during this run of the browser).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallSigner.UptimeAtTimeOfRequest" units="seconds">
+  <summary>
+    Records how many seconds the browser has been running at the time a request
+    to the server is made to get a new install signature.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallVerifier.ActualStatus"
+    enum="ExtensionInstallVerifierStatus">
+  <summary>
+    Logged during InstallVerifier::Init, to indicate the actual enforcement
+    status used (usually determined by the ExtensionInstallVerifier field trial
+    experiment, but possibly modified by command line flags).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallVerifier.ExperimentStatus"
+    enum="ExtensionInstallVerifierStatus">
+  <summary>
+    Logged during InstallVerifier::Init to indicate the enforcement status as
+    determined by the ExtensionInstallVerifier field trial experiment.
   </summary>
 </histogram>
 
@@ -5136,6 +5177,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionService.AddVerified" enum="BooleanSuccess">
+  <summary>
+    Records whether adding a new/updated extension to the install verifier
+    succeeded.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionService.VerifyAllSuccess"
+    enum="ExtensionServiceVerifyAllSuccess">
+  <summary>
+    The outcome of a call to ExtensionService::VerifyAllExtensions, whether it
+    was called for bootstrapping or another reason (extension
+    installed/uninstalled, etc.).
+  </summary>
+</histogram>
+
 <histogram name="ExtensionToolbarModel.BrowserActionsCount">
   <summary>
     The number of icons the Browser Actions Container knows about (visible or
@@ -5943,6 +6000,13 @@ other types of suffix sets.
 <histogram name="Installer.UpdateURLSwitches" units="count">
   <summary>
     Number of times the download URLs were switched due to failures.
+  </summary>
+</histogram>
+
+<histogram name="InstallSigner.InvalidCount">
+  <summary>
+    This is a count of the number of ids that we asked to be signed which the
+    server response indicated were not in the webstore.
   </summary>
 </histogram>
 
@@ -25229,6 +25293,12 @@ other types of suffix sets.
   <int value="8" label="NOT_VERIFIED"/>
 </enum>
 
+<enum name="ExtensionInstallVerifierStatus" type="int">
+  <int value="0" label="NONE"/>
+  <int value="1" label="BOOTSTRAP"/>
+  <int value="2" label="ENFORCE"/>
+</enum>
+
 <enum name="ExtensionLaunchType" type="int">
   <int value="0" label="PINNED"/>
   <int value="1" label="REGULAR"/>
@@ -25279,6 +25349,13 @@ other types of suffix sets.
   <int value="26" label="SOCKET_ANY_HOST"/>
   <int value="27" label="SOCKET_DOMAIN_HOSTS"/>
   <int value="28" label="SOCKET_SPECIFIC_HOSTS"/>
+</enum>
+
+<enum name="ExtensionServiceVerifyAllSuccess" type="int">
+  <int value="0" label="VERIFY_ALL_BOOTSTRAP_SUCCESS"/>
+  <int value="1" label="VERIFY_ALL_BOOTSTRAP_FAILURE"/>
+  <int value="2" label="VERIFY_ALL_NON_BOOTSTRAP_SUCCESS"/>
+  <int value="3" label="VERIFY_ALL_NON_BOOTSTRAP_FAILURE"/>
 </enum>
 
 <enum name="ExtensionType" type="int">
