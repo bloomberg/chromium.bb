@@ -127,14 +127,16 @@ void MidiHost::OnSendData(uint32 port,
   if (!IsValidWebMIDIData(data))
     return;
 
-  base::AutoLock auto_lock(in_flight_lock_);
-  // Sanity check that we won't send too much data.
-  // TODO(yukawa): Consider to send an error event back to the renderer
-  // after some future discussion in W3C.
-  if (data.size() + sent_bytes_in_flight_ > kMaxInFlightBytes)
-    return;
+  {
+    base::AutoLock auto_lock(in_flight_lock_);
+    // Sanity check that we won't send too much data.
+    // TODO(yukawa): Consider to send an error event back to the renderer
+    // after some future discussion in W3C.
+    if (data.size() + sent_bytes_in_flight_ > kMaxInFlightBytes)
+      return;
+    sent_bytes_in_flight_ += data.size();
+  }
   midi_manager_->DispatchSendMidiData(this, port, data, timestamp);
-  sent_bytes_in_flight_ += data.size();
 }
 
 void MidiHost::ReceiveMidiData(
