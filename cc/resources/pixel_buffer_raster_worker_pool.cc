@@ -181,7 +181,8 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   check_for_completed_raster_tasks_pending_ = false;
   ScheduleCheckForCompletedRasterTasks();
 
-  RunGpuRasterTasks(gpu_raster_tasks);
+  if (!gpu_raster_tasks.empty())
+    RunGpuRasterTasks(gpu_raster_tasks);
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc",

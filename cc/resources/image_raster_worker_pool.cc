@@ -81,7 +81,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   set_raster_required_for_activation_finished_task(
       new_raster_required_for_activation_finished_task);
 
-  RunGpuRasterTasks(gpu_raster_tasks);
+  if (!gpu_raster_tasks.empty())
+    RunGpuRasterTasks(gpu_raster_tasks);
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc",

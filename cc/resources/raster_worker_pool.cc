@@ -8,12 +8,14 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -199,10 +201,14 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::RasterWorkerPoolTask:
   virtual void RunOnOriginThread(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider) OVERRIDE {
-    TRACE_EVENT1("cc",
-                 "RasterWorkerPoolTaskImpl::RunOnOriginThread",
-                 "data",
-                 TracedValue::FromValue(DataAsValue().release()));
+    // TODO(alokp): Use a trace macro to push/pop markers.
+    // Using push/pop functions directly incurs cost to evaluate function
+    // arguments even when tracing is disabled.
+    context_provider->ContextGL()->PushGroupMarkerEXT(
+        0,
+        base::StringPrintf(
+            "Raster-%d-%d-%p", source_frame_number_, layer_id_, tile_id_)
+            .c_str());
     // TODO(alokp): For now run-on-origin-thread implies gpu rasterization.
     DCHECK(use_gpu_rasterization());
     ResourceProvider::ScopedWriteLockGL lock(resource_provider,
@@ -225,6 +231,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(device.get()));
 
     Raster(picture_pile_, canvas.get());
+    context_provider->ContextGL()->PopGroupMarkerEXT();
   }
 
  protected:
@@ -656,8 +663,9 @@ void RasterWorkerPool::CollectCompletedWorkerPoolTasks(
 }
 
 void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
-  if (tasks.empty())
-    return;
+  DCHECK(!tasks.empty());
+  TRACE_EVENT1(
+      "cc", "RasterWorkerPool::RunGpuRasterTasks", "num_tasks", tasks.size());
 
   GrContext* gr_context = context_provider_->GrContext();
   // TODO(alokp): Implement TestContextProvider::GrContext().
