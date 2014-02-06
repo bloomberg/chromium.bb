@@ -11,8 +11,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_dispatcher.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
@@ -31,19 +29,15 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
                     public ATL::CDialogImpl<SetupDialog> {
  public:
   // Enables accelerators.
-  class Dispatcher : public base::MessagePumpDispatcher {
+  class MessageFilter : public base::MessageLoopForUI::MessageFilter {
    public:
-    explicit Dispatcher(SetupDialog* dialog) : dialog_(dialog) {}
-    virtual ~Dispatcher() {};
+    explicit MessageFilter(SetupDialog* dialog) : dialog_(dialog){}
+    virtual ~MessageFilter() {};
 
-    // MessagePumpDispatcher:
-    virtual bool Dispatch(const MSG& msg) OVERRIDE {
+    // MessageLoopForUI::MessageFilter
+    virtual bool ProcessMessage(const MSG& msg) OVERRIDE {
       MSG msg2 = msg;
-      if (!dialog_->IsDialogMessage(&msg2)) {
-        ::TranslateMessage(&msg);
-        ::DispatchMessage(&msg);
-      }
-      return true;
+      return dialog_->IsDialogMessage(&msg2) != FALSE;
     }
 
    private:
@@ -450,9 +444,10 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   scoped_refptr<SetupDialog> dialog(new SetupDialog());
   dialog->Create(NULL);
   dialog->ShowWindow(SW_SHOW);
-  SetupDialog::Dispatcher dispatcher(dialog);
-  base::RunLoop run_loop;
-  run_loop.set_dispatcher(&dispatcher);
-  run_loop.Run();
+  scoped_ptr<SetupDialog::MessageFilter> filter(
+      new SetupDialog::MessageFilter(dialog));
+  loop.SetMessageFilter(filter.Pass());
+
+  loop.Run();
   return 0;
 }
