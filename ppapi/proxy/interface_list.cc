@@ -128,6 +128,7 @@
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/ppp_messaging_proxy.h"
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
+#include "ppapi/proxy/ppp_pdf_proxy.h"
 #include "ppapi/proxy/ppp_printing_proxy.h"
 #include "ppapi/proxy/ppp_text_input_proxy.h"
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
@@ -289,6 +290,8 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_PRINTING_DEV_INTERFACE, PPP_Printing_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_TEXT_INPUT, &ProxyFactory<PPP_TextInput_Proxy>);
   AddPPP(PPP_TEXTINPUT_DEV_INTERFACE, PPP_TextInput_Proxy::GetProxyInterface());
+  AddProxy(API_ID_PPP_PDF, &ProxyFactory<PPP_Pdf_Proxy>);
+  AddPPP(PPP_PDF_INTERFACE, PPP_Pdf_Proxy::GetProxyInterface());
 #if !defined(OS_NACL)
   AddProxy(API_ID_PPP_VIDEO_DECODER_DEV, &ProxyFactory<PPP_VideoDecoder_Proxy>);
   AddPPP(PPP_VIDEODECODER_DEV_INTERFACE,

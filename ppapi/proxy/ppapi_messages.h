@@ -621,6 +621,11 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
                     PP_Instance /* instance */)
 
+// PPP_Pdf
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPPdf_Rotate,
+                    PP_Instance /* instance */,
+                    bool /* clockwise */)
+
 // PPP_Printing
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_QuerySupportedFormats,
                            PP_Instance /* instance */,
