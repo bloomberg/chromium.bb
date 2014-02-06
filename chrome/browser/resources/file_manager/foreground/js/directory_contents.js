@@ -664,7 +664,7 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
  * @param {function(Object)} callback Callback on done.
  */
 DirectoryContents.prototype.prefetchMetadata = function(entries, callback) {
-  this.context_.metadataCache.get(entries, 'filesystem', callback);
+  this.context_.metadataCache.get(entries, 'filesystem|drive', callback);
 };
 
 /**
