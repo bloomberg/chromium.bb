@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 
+#include <algorithm>
+
 DevToolsContentsResizingStrategy::DevToolsContentsResizingStrategy() {
 }
 
