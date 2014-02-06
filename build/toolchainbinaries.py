@@ -29,6 +29,7 @@ PLATFORM_MAPPING = {
     'linux': {
         'x86': ['linux_x86',
                 'linux_x86_newlib',
+                'linux_arm_bionic',
                 'pnacl_linux_x86',
                 'linux_arm-trusted',
                 'pnacl_translator',
@@ -56,6 +57,9 @@ def EncodeToolchainUrl(base_url, version, flavor):
   if 'pnacl' in flavor:
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
         base_url, version, flavor)
+  elif 'bionic' in flavor:
+    return '%s/toolchain/%s/naclsdk_%s.tgz' % (
+        base_url, version, flavor)
   elif flavor.endswith('_newlib'):
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
       base_url, version, flavor[:-len('_newlib')])
@@ -78,6 +82,9 @@ def IsArmUntrustedFlavor(flavor):
 
 def IsArmTrustedFlavor(flavor):
   return 'arm-trusted' in flavor
+
+def IsBionicFlavor(flavor):
+  return 'bionic' in flavor
 
 def IsPnaclFlavor(flavor):
   return 'pnacl' in flavor

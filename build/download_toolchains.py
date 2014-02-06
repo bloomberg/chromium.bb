@@ -64,6 +64,8 @@ def VersionSelect(versions, flavor):
   if isinstance(flavor, tuple):
     ids = [versions[i] for i in flavor[1:]]
     return ','.join(ids)
+  if toolchainbinaries.IsBionicFlavor(flavor):
+    return versions['BIONIC_VERSION']
   if toolchainbinaries.IsPnaclFlavor(flavor):
     return versions['PNACL_VERSION']
   if toolchainbinaries.IsX86Flavor(flavor):
@@ -319,6 +321,10 @@ def ParseArgs(args):
       action='append_const', const=toolchainbinaries.IsNotNaClNewlibFlavor,
       help='download only the non-pnacl newlib toolchain')
   parser.add_option(
+      '--allow-bionic', dest='allow_bionic', action='store_true',
+      default=False,
+      help='Allow download of bionic toolchain.')
+  parser.add_option(
       '--no-pnacl', dest='filter_out_predicates', action='append_const',
       const=toolchainbinaries.IsPnaclFlavor,
       help='Filter out PNaCl toolchains.')
@@ -344,6 +350,11 @@ def ParseArgs(args):
     if options.filter_out_predicates is None:
       options.filter_out_predicates = []
     options.filter_out_predicates.append(toolchainbinaries.IsArmUntrustedFlavor)
+
+  if not options.allow_bionic:
+    if options.filter_out_predicates is None:
+      options.filter_out_predicates = []
+    options.filter_out_predicates.append(toolchainbinaries.IsBionicFlavor)
 
   if len(args) > 1:
     parser.error('Expecting only one version file.')

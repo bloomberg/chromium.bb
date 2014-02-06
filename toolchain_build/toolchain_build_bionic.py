@@ -12,6 +12,7 @@ The real entry plumbing is in toolchain_main.py.
 import toolchain_env
 
 import fnmatch
+import hashing_tools
 import os
 import optparse
 import process
@@ -26,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '2124cf8f8d052809a546e80d1795ba119e591765'
+BIONIC_VERSION = 'b9af6dada55253abef4c2f1473dd25d9e624a66a'
 
 ARCHES = ['arm']
 
@@ -122,7 +123,7 @@ def CreateBasicToolchain():
 
   UpdateFromTo(X86_NEWLIB, X86_BIONIC,
                filters=['*x86_64-nacl/include*', '*x86_64-nacl/lib*','*.o'])
-  UpdateFromTo(ARM_NEWLIB, ARM_BIONIC, paterns=['*.s'])
+  UpdateFromTo(X86_NEWLIB, X86_BIONIC, paterns=['*.s'])
 
   #  Static build uses:
   #     crt1.o crti.o 4.8.2/crtbeginT.o ... 4.8.2/crtend.o crtn.o
@@ -191,6 +192,18 @@ def CreateBasicToolchain():
     text = open(specs, 'r').read()
     text = ReplaceText(text, [{'-lgcc': '-lgcc %{!shared: -lgcc_eh}'}])
     open(specs, 'w').write(text)
+
+
+def ConfigureAndBuildBionic():
+  for arch in ARCHES:
+    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
+    inspath = ReplaceArch(inspath, arch)
+
+    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
+    workpath = ReplaceArch(workpath, arch)
+    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath)
+    ConfigureAndBuild(arch, 'bionic/libm', workpath, inspath)
+    ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
 
 
 def ConfigureAndInstallForGCC(arch, project, cfg, workpath, inspath):
@@ -395,54 +408,6 @@ def ConfigureAndBuild(arch, project, workpath, inspath, tcpath=None):
   print 'Done with %s for %s.\n' % (project, arch)
 
 
-def ConfigureAndBuildLibC(clobber=False):
-  GCC_PAIRS = [
-    ('gcc_$GCC_i686_linux_install/arm-nacl/lib', '$NACL-nacl/lib'),
-    ('gcc_libs_$GCC_install/lib', 'lib'),
-    ('gcc_libs_$GCC_install/$GCC-nacl/include/c++',
-        '$NACL-nacl/include/c++'),
-  ]
-  GCC_
-
-  for arch in ARCHES:
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT,
-                              ReplaceArch('bionic_$GCC_work', arch))
-    inspath = os.path.join(TOOLCHAIN_BUILD_OUT,
-                             ReplaceArch('bionic_$GCC_install', arch))
-
-    tcpath = ReplaceArch(os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic'), arch)
-    if clobber:
-      print 'Clobbering'
-      Rmdir(workpath)
-      Rmdir(inspath)
-
-    Mkdir(workpath)
-    Mkdir(inspath)
-
-    # Copy BIONIC files
-    for src, dst in BIONIC_PAIRS:
-      srcpath = ReplaceArch(os.path.join(TOOLCHAIN_BUILD_SRC, src), arch)
-      dstpath = ReplaceArch(os.path.join(inspath, dst), arch)
-      UpdateFromTo(srcpath, dstpath)
-
-    # Copy GCC files
-    for src, dst in GCC_PAIRS:
-      srcpath = ReplaceArch(os.path.join(TOOLCHAIN_BUILD_OUT, src), arch)
-      dstpath = ReplaceArch(os.path.join(inspath, dst), arch)
-      UpdateFromTo(srcpath, dstpath, filters=['*.o'])
-
-    # Create empty objects and libraries
-    libpath = ReplaceArch(os.path.join(inspath, '$NACL-nacl', 'lib'), arch)
-    for name in EMPTY_FILES:
-      UpdateText(os.path.join(libpath, name), EMPTY)
-
-    # Install headers to toolchain
-    UpdateFromTo(inspath, tcpath)
-
-    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath, tcpath)
-    ConfigureAndBuild(arch, 'bionic/libm', workpath, inspath, tcpath)
-
-
 def ConfigureAndBuildGCC(clobber=False):
   ConfigureAndBuildArmGCC(clobber)
 
@@ -464,6 +429,51 @@ def ConfigureAndBuildTests(clobber=False):
     Mkdir(workpath)
     Mkdir(inspath)
     ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath)
+
+
+def ArchiveAndUpload(version, zipname, zippath):
+  if 'BUILDBOT_BUILDERNAME' in os.environ:
+    GSUTIL = '../buildbot/gsutil.sh'
+  else:
+    GSUTIL = 'gsutil'
+  GSUTIL_ARGS = [GSUTIL, 'cp', '-a', 'public-read']
+  GSUTIL_PATH = 'gs://nativeclient-archive2/toolchain'
+
+  urldir = os.path.join(GSUTIL_PATH, version)
+  zipurl = os.path.join(urldir, zipname)
+  zipname = os.path.join(TOOLCHAIN_BUILD_OUT, zipname)
+
+  try:
+    os.remove(zipname)
+  except:
+    pass
+
+  sys.stdout.flush()
+  print >>sys.stderr, '@@@STEP_LINK@download@%s@@@' % urldir
+
+  if process.Run(['tar', '-czf', zipname, zippath],
+                 cwd=TOOLCHAIN,
+                 outfile=sys.stdout):
+      raise RuntimeError('Failed to zip %s from %s.\n' % (zipname, zippath))
+
+  hashzipname = zipname + '.sha1hash'
+  hashzipurl = zipurl + '.sha1hash'
+  hashval = hashing_tools.HashFileContents(zipname)
+
+  with open(hashzipname, 'w') as f:
+    f.write(hashval)
+
+  if process.Run(GSUTIL_ARGS + [zipname, zipurl],
+                 cwd=TOOLCHAIN_BUILD,
+                 outfile=sys.stdout):
+    err = 'Failed to upload zip %s to %s.\n' % (zipname, zipurl)
+    raise RuntimeError(err)
+
+  if process.Run(GSUTIL_ARGS + [hashzipname, hashzipurl],
+                 cwd=TOOLCHAIN_BUILD,
+                 outfile=sys.stdout):
+    err = 'Failed to upload hash %s to %s.\n' % (hashzipname, hashzipurl)
+    raise RuntimeError(err)
 
 
 def main(argv):
@@ -491,7 +501,20 @@ def main(argv):
       default=False, action='store_true',
       help='Only create empty toolchain')
 
+  parser.add_option(
+      '-u', '--upload', dest='upload',
+      default=False, action='store_true',
+      help='Upload build artifacts.')
+
+  parser.add_option(
+      '--skip-gcc', dest='skip_gcc',
+      default=False, action='store_true',
+      help='Skip building GCC components.')
+
   options, args = parser.parse_args(argv)
+  if options.buildbot or options.upload:
+    version = os.environ['BUILDBOT_REVISION']
+
   if options.clobber or options.empty:
     Clobber()
 
@@ -499,16 +522,20 @@ def main(argv):
     FetchBionicSources()
 
   CreateBasicToolchain()
-  if not options.empty:
+  if not options.empty and not options.skip_gcc:
     FetchAndBuildGCC()
     ConfigureAndBuildGCC(options.clobber)
     ConfigureAndBuildCXX(options.clobber)
+
+  ConfigureAndBuildBionic()
 
   # Can not test on buildot until sel_ldr, irt, etc.. are built
   if not options.buildbot:
     ConfigureAndBuildTests(clobber=False)
 
-
+  if options.buildbot or options.upload:
+    zipname = 'naclsdk_linux_arm_bionic.tgz'
+    ArchiveAndUpload(version, zipname, 'linux_x86_bionic')
 
 
 if __name__ == '__main__':
