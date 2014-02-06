@@ -1524,7 +1524,9 @@ void ImmediateInterpreter::SortFingersByProximity(
   }
   // To do the sort, we sort all inter-point distances^2, then scan through
   // that until we have enough points
-  DistSqElt dist_sq[(finger_ids.size() * (finger_ids.size() - 1)) / 2];
+  size_t dist_sq_capacity =
+      (finger_ids.size() * (finger_ids.size() - 1)) / 2;
+  DistSqElt dist_sq[dist_sq_capacity];
   size_t dist_sq_len = 0;
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs1 = hwstate.fingers[i];
@@ -1538,6 +1540,10 @@ void ImmediateInterpreter::SortFingersByProximity(
         DistSq(fs1, fs2),
         { fs1.tracking_id, fs2.tracking_id }
       };
+      if (dist_sq_len >= dist_sq_capacity) {
+        Err("%s: Array overrun", __func__);
+        break;
+      }
       dist_sq[dist_sq_len++] = elt;
     }
   }
@@ -1545,6 +1551,10 @@ void ImmediateInterpreter::SortFingersByProximity(
   DistSqCompare distSqCompare;
   std::sort(dist_sq, dist_sq + dist_sq_len, distSqCompare);
 
+  if (out_sorted_ids == NULL) {
+    Err("out_sorted_ids became NULL");
+    return;
+  }
   for (size_t i = 0; i < dist_sq_len; i++) {
     short id1 = dist_sq[i].tracking_id[0];
     short id2 = dist_sq[i].tracking_id[1];
