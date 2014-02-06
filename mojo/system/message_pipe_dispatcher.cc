@@ -37,7 +37,7 @@ unsigned MessagePipeDispatcher::GetPortNoLock() const {
   return port_;
 }
 
-Dispatcher::Type MessagePipeDispatcher::GetType() {
+Dispatcher::Type MessagePipeDispatcher::GetType() const {
   return kTypeMessagePipe;
 }
 

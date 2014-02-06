@@ -30,7 +30,7 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementCtorCallCount();
   }
 
-  virtual Type GetType() OVERRIDE {
+  virtual Type GetType() const OVERRIDE {
     return kTypeUnknown;
   }
 

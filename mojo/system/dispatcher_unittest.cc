@@ -21,7 +21,7 @@ class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
-  virtual Type GetType() OVERRIDE {
+  virtual Type GetType() const OVERRIDE {
     return kTypeUnknown;
   }
 

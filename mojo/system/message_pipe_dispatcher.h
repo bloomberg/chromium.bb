@@ -33,7 +33,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Similarly for the port.
   unsigned GetPortNoLock() const;
 
-  virtual Type GetType() OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<MessagePipeDispatcher>;

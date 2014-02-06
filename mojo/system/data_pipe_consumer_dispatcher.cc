@@ -19,7 +19,7 @@ void DataPipeConsumerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
   data_pipe_ = data_pipe;
 }
 
-Dispatcher::Type DataPipeConsumerDispatcher::GetType() {
+Dispatcher::Type DataPipeConsumerDispatcher::GetType() const {
   return kTypeDataPipeConsumer;
 }
 

@@ -41,7 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     kTypeDataPipeProducer,
     kTypeDataPipeConsumer
   };
-  virtual Type GetType() = 0;
+  virtual Type GetType() const = 0;
 
   // These methods implement the various primitives named |Mojo...()|. These
   // take |lock_| and handle races with |Close()|. Then they call out to

@@ -57,7 +57,7 @@ class MockSimpleDispatcher : public SimpleDispatcher {
     StateChangedNoLock();
   }
 
-  virtual Type GetType() OVERRIDE {
+  virtual Type GetType() const OVERRIDE {
     return kTypeUnknown;
   }
 
