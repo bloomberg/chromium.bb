@@ -24,12 +24,16 @@ import android.widget.TextView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.base.ViewAndroid;
+import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This class implements accelerated fullscreen video playback using surface view.
  */
 @JNINamespace("content")
-public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callback {
+public class ContentVideoView extends FrameLayout
+        implements SurfaceHolder.Callback, ViewAndroidDelegate {
 
     private static final String TAG = "ContentVideoView";
 
@@ -82,6 +86,9 @@ public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callb
 
     // Progress view when the video is loading.
     private View mProgressView;
+
+    // The ViewAndroid is used to keep screen on during video playback.
+    private ViewAndroid mViewAndroid;
 
     private final ContentVideoViewClient mClient;
 
@@ -136,6 +143,7 @@ public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callb
             ContentVideoViewClient client) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
+        mViewAndroid = new ViewAndroid(new WindowAndroid(context.getApplicationContext()), this);
         mClient = client;
         initResources(context);
         mVideoSurfaceView = new VideoSurfaceView(context);
@@ -422,6 +430,28 @@ public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callb
             return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public View acquireAnchorView() {
+        View anchorView = new View(getContext());
+        addView(anchorView);
+        return anchorView;
+    }
+
+    @Override
+    public void setAnchorViewPosition(View view, float x, float y, float width, float height) {
+        Log.e(TAG, "setAnchorViewPosition isn't implemented");
+    }
+
+    @Override
+    public void releaseAnchorView(View anchorView) {
+        removeView(anchorView);
+    }
+
+    @CalledByNative
+    private long getNativeViewAndroid() {
+        return mViewAndroid.getNativePointer();
     }
 
     private static native ContentVideoView nativeGetSingletonJavaContentVideoView();
