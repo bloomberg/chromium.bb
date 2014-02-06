@@ -127,6 +127,33 @@ static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void hrefCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->hrefCallWith(), info.GetIsolate());
+}
+
+static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestNodeV8Internal::hrefCallWithAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void hrefCallWithAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setHrefCallWith(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
+}
+
+static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestNodeV8Internal::hrefCallWithAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtr<TestNode> impl = TestNode::create();
@@ -141,6 +168,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 static const V8DOMConfiguration::AttributeConfiguration V8TestNodeAttributes[] = {
     {"href", TestNodeV8Internal::hrefAttributeGetterCallback, TestNodeV8Internal::hrefAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"hrefThrows", TestNodeV8Internal::hrefThrowsAttributeGetterCallback, TestNodeV8Internal::hrefThrowsAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"hrefCallWith", TestNodeV8Internal::hrefCallWithAttributeGetterCallback, TestNodeV8Internal::hrefCallWithAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

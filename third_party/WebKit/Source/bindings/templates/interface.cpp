@@ -16,7 +16,8 @@
 {% set setter_callback_for_main_world =
        '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
            (cpp_class, attribute.name)
-       if attribute.is_per_world_bindings and not attribute.is_read_only else '0' %}
+       if attribute.is_per_world_bindings and
+          (not attribute.is_read_only or attribute.put_forwards) else '0' %}
 {% set wrapper_type_info =
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
             attribute.constructor_type

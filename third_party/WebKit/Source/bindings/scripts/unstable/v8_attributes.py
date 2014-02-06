@@ -260,24 +260,24 @@ def is_keep_alive_for_gc(interface, attribute):
 ################################################################################
 
 def generate_setter(interface, attribute, contents):
-    extended_attributes = attribute.extended_attributes
-
-    if 'PutForwards' in extended_attributes:
+    def target_attribute():
         target_interface_name = attribute.idl_type
         target_attribute_name = extended_attributes['PutForwards']
         target_interface = interfaces[target_interface_name]
         try:
-            target_attribute = next(attribute
-                                    for attribute in target_interface.attributes
-                                    if attribute.name == target_attribute_name)
+            return next(attribute
+                        for attribute in target_interface.attributes
+                        if attribute.name == target_attribute_name)
         except StopIteration:
             raise Exception('[PutForward] target not found:\n'
                             'Attribute "%s" is not present in interface "%s"' %
                             (target_attribute_name, target_interface_name))
-        # For setter expression, overwrite attribute name and IDL type with
-        # values of target attribute
-        attribute.name = target_attribute_name
-        attribute.idl_type = target_attribute.idl_type
+
+    extended_attributes = attribute.extended_attributes
+
+    if 'PutForwards' in extended_attributes:
+        # Use target attribute in place of original attribute
+        attribute = target_attribute()
 
     contents.update({
         'cpp_setter': setter_expression(interface, attribute, contents),

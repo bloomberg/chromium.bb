@@ -168,6 +168,8 @@ interface TestObjectPython {
     [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
     [PutForwards=href] readonly attribute TestNode location;
     [PutForwards=hrefThrows] readonly attribute TestNode locationWithException;
+    [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
+    [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;

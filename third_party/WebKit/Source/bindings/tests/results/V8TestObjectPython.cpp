@@ -2553,6 +2553,96 @@ static void locationWithExceptionAttributeSetterCallback(v8::Local<v8::String>, 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void locationWithCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->locationWithCallWith(), imp);
+}
+
+static void locationWithCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::locationWithCallWithAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
+    TestNode* imp = proxyImp->locationWithCallWith();
+    if (!imp)
+        return;
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setHrefCallWith(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
+}
+
+static void locationWithCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::locationWithCallWithAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void locationWithPerWorldBindingsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->locationWithPerWorldBindings(), imp);
+}
+
+static void locationWithPerWorldBindingsAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
+    TestNode* imp = proxyImp->locationWithPerWorldBindings();
+    if (!imp)
+        return;
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setHref(cppValue);
+}
+
+static void locationWithPerWorldBindingsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void locationWithPerWorldBindingsAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueForMainWorld(info, imp->locationWithPerWorldBindings());
+}
+
+static void locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeGetterForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
+    TestNode* imp = proxyImp->locationWithPerWorldBindings();
+    if (!imp)
+        return;
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setHref(cppValue);
+}
+
+static void locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeSetterForMainWorld(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void raisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -7087,6 +7177,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", TestObjectPythonV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectPythonV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectPythonV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"location", TestObjectPythonV8Internal::locationAttributeGetterCallback, TestObjectPythonV8Internal::locationAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWithException", TestObjectPythonV8Internal::locationWithExceptionAttributeGetterCallback, TestObjectPythonV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"locationWithCallWith", TestObjectPythonV8Internal::locationWithCallWithAttributeGetterCallback, TestObjectPythonV8Internal::locationWithCallWithAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"locationWithPerWorldBindings", TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectPythonV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"raisesExceptionLongAttribute", TestObjectPythonV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"raisesExceptionGetterLongAttribute", TestObjectPythonV8Internal::raisesExceptionGetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::raisesExceptionGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterRaisesExceptionLongAttribute", TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
