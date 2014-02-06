@@ -116,7 +116,7 @@ bool UsingDelegatedRenderer() {
   return using_delegated_renderer;
 }
 
-ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent event) {
+ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
   if (event.timeStampSeconds) {
