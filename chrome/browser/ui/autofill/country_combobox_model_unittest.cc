@@ -24,7 +24,14 @@ TEST(CountryComboboxModel, RespectsManagerDefaultCountry) {
   EXPECT_EQ(kTestCountry, model.GetDefaultCountryCode());
 }
 
-TEST(CountryComboboxModel, AllCountriesHaveComponents) {
+// http://crbug.com/341329
+#if defined(TOOLKIT_GTK)
+#define MAYBE_AllCountriesHaveComponents DISABLED_AllCountriesHaveComponents
+#else
+#define MAYBE_AllCountriesHaveComponents AllCountriesHaveComponents
+#endif
+
+TEST(CountryComboboxModel, MAYBE_AllCountriesHaveComponents) {
   TestPersonalDataManager manager;
   CountryComboboxModel model(manager);
 
