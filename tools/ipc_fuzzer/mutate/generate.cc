@@ -66,7 +66,23 @@ class Generator {
 
 template <typename T>
 void GenerateIntegralType(T* value) {
-  *value = static_cast<T>(RandU64());
+  switch (RandInRange(16)) {
+    case 0:
+      *value = 0;
+      break;
+    case 1:
+      *value = 1;
+      break;
+    case 2:
+      *value = -1;
+      break;
+    case 3:
+      *value = 2;
+      break;
+    default:
+      *value = static_cast<T>(RandU64());
+      break;
+  }
 }
 
 template <typename T>
@@ -156,8 +172,8 @@ template <class P>
 struct GenerateTraits {
   static bool Generate(P* p, Generator *generator) {
     // This is the catch-all for types we don't have enough information
-    // to generate. Sadly, we must reject this message.
-    std::cerr << "Cant handle " << __PRETTY_FUNCTION__ << "\n";
+    // to generate.
+    std::cerr << "Can't handle " << __PRETTY_FUNCTION__ << "\n";
     return false;
   }
 };
@@ -441,6 +457,40 @@ struct GenerateTraits<base::FilePath> {
 };
 
 template <>
+struct GenerateTraits<base::File::Error> {
+  static bool Generate(base::File::Error* p, Generator* generator) {
+    int temporary;
+    if (!GenerateParam(&temporary, generator))
+      return false;
+    *p = static_cast<base::File::Error>(temporary);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<base::File::Info> {
+  static bool Generate(base::File::Info* p, Generator* generator) {
+    double last_modified;
+    double last_accessed;
+    double creation_time;
+    if (!GenerateParam(&p->size, generator))
+      return false;
+    if (!GenerateParam(&p->is_directory, generator))
+      return false;
+    if (!GenerateParam(&last_modified, generator))
+      return false;
+    if (GenerateParam(&last_accessed, generator))
+      return false;
+    if (GenerateParam(&creation_time, generator))
+      return false;
+    p->last_modified = base::Time::FromDoubleT(last_modified);
+    p->last_accessed = base::Time::FromDoubleT(last_accessed);
+    p->creation_time = base::Time::FromDoubleT(creation_time);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<base::Time> {
   static bool Generate(base::Time* p, Generator* generator) {
     *p = base::Time::FromInternalValue(RandU64());
@@ -626,6 +676,161 @@ struct GenerateTraits<GURL> {
   }
 };
 
+// FIXME: Actually generate something.
+template <>
+struct GenerateTraits<SkBitmap> {
+  static bool Generate(SkBitmap* p, Generator* generator) {
+    *p = SkBitmap();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<IPC::ChannelHandle> {
+  static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
+    return
+        GenerateParam(&p->name, generator) &&
+        GenerateParam(&p->socket, generator);
+  }
+};
+
+template <>
+struct GenerateTraits<cc::CompositorFrame> {
+  // FIXME: this should actually generate something
+  static bool Generate(cc::CompositorFrame* p, Generator* generator) {
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::CompositorFrameAck> {
+  // FIXME: this should actually generate something
+  static bool Generate(cc::CompositorFrameAck* p, Generator* generator) {
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::IndexedDBKey> {
+  static bool Generate(content::IndexedDBKey* p, Generator* generator) {
+    ++g_depth;
+    blink::WebIDBKeyType web_type =
+        static_cast<blink::WebIDBKeyType>(RandInRange(7));
+    switch (web_type)
+    {
+      case blink::WebIDBKeyTypeArray: {
+        size_t length = g_depth > 3 ? 0 : RandInRange(4);
+        std::vector<content::IndexedDBKey> array;
+        array.resize(length);
+        for (size_t i = 0; i < length; ++i) {
+          if (!GenerateParam(&array[i], generator))
+            return false;
+        }
+        *p = content::IndexedDBKey(array);
+        return true;
+      }
+      case blink::WebIDBKeyTypeBinary: {
+        std::string binary;
+        if (!GenerateParam(&binary, generator))
+          return false;
+        *p = content::IndexedDBKey(binary);
+        return true;
+      }
+      case blink::WebIDBKeyTypeString: {
+        base::string16 string;
+        if (!GenerateParam(&string, generator))
+          return false;
+        *p = content::IndexedDBKey(string);
+        return true;
+      }
+      case blink::WebIDBKeyTypeDate:
+      case blink::WebIDBKeyTypeNumber: {
+        double number;
+        if (!GenerateParam(&number, generator))
+          return false;
+        *p = content::IndexedDBKey(number, web_type);
+        return true;
+      }
+      case blink::WebIDBKeyTypeInvalid:
+      case blink::WebIDBKeyTypeNull: {
+        *p = content::IndexedDBKey(web_type);
+        return true;
+      }
+      default:
+        NOTREACHED();
+        return false;
+    }
+    --g_depth;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::IndexedDBKeyRange> {
+  static bool Generate(content::IndexedDBKeyRange *p, Generator* generator) {
+    content::IndexedDBKey lower;
+    content::IndexedDBKey upper;
+    bool lower_open;
+    bool upper_open;
+    if (!GenerateParam(&lower, generator))
+      return false;
+    if (!GenerateParam(&upper, generator))
+      return false;
+    if (!GenerateParam(&lower_open, generator))
+      return false;
+    if (!GenerateParam(&upper_open, generator))
+      return false;
+    *p = content::IndexedDBKeyRange(lower, upper, lower_open, upper_open);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::IndexedDBKeyPath> {
+  static bool Generate(content::IndexedDBKeyPath *p, Generator* generator) {
+    switch (RandInRange(3)) {
+      case 0: {
+        std::vector<base::string16> array;
+        if (!GenerateParam(&array, generator))
+          return false;
+        *p = content::IndexedDBKeyPath(array);
+        break;
+      }
+      case 1: {
+        base::string16 string;
+        if (!GenerateParam(&string, generator))
+          return false;
+        *p = content::IndexedDBKeyPath(string);
+        break;
+      }
+      case 2: {
+        *p = content::IndexedDBKeyPath();
+        break;
+      }
+    }
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::PageState> {
+  static bool Generate(content::PageState *p, Generator* generator) {
+    std::string junk;
+    if (!GenerateParam(&junk, generator))
+      return false;
+    *p = content::PageState::CreateFromEncodedData(junk);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gpu::Mailbox> {
+  static bool Generate(gpu::Mailbox *p, Generator* generator) {
+    generator->GenerateBytes(p->name, sizeof(p->name));
+    return true;
+  }
+};
+
 template <>
 struct GenerateTraits<media::AudioParameters> {
   static bool Generate(media::AudioParameters *p, Generator* generator) {
@@ -680,6 +885,29 @@ struct GenerateTraits<media::VideoCaptureFormat> {
     p->frame_size.SetSize(frame_size_width, frame_size_height);
     p->pixel_format = static_cast<media::VideoPixelFormat>(pixel_format);
     return true;
+  }
+};
+
+
+template <>
+struct GenerateTraits<net::LoadTimingInfo> {
+  static bool Generate(net::LoadTimingInfo *p, Generator* generator) {
+    return
+        GenerateParam(&p->socket_log_id, generator) &&
+        GenerateParam(&p->socket_reused, generator) &&
+        GenerateParam(&p->request_start_time, generator) &&
+        GenerateParam(&p->request_start, generator) &&
+        GenerateParam(&p->proxy_resolve_start, generator) &&
+        GenerateParam(&p->proxy_resolve_end, generator) &&
+        GenerateParam(&p->connect_timing.dns_start, generator) &&
+        GenerateParam(&p->connect_timing.dns_end, generator) &&
+        GenerateParam(&p->connect_timing.connect_start, generator) &&
+        GenerateParam(&p->connect_timing.connect_end, generator) &&
+        GenerateParam(&p->connect_timing.ssl_start, generator) &&
+        GenerateParam(&p->connect_timing.ssl_end, generator) &&
+        GenerateParam(&p->send_start, generator) &&
+        GenerateParam(&p->send_end, generator) &&
+        GenerateParam(&p->receive_headers_end, generator);
   }
 };
 
@@ -837,6 +1065,77 @@ struct GenerateTraits<gfx::Vector2dF> {
     if (!GenerateParam(&y, generator))
       return false;
     *p = gfx::Vector2dF(x, y);
+    return true;
+  }
+};
+
+// PP_ traits.
+template <>
+struct GenerateTraits<PP_Bool> {
+  static bool Generate(PP_Bool *p, Generator* generator) {
+    bool tmp;
+    if (!GenerateParam(&tmp, generator))
+      return false;
+    *p = PP_FromBool(tmp);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<PP_NetAddress_Private> {
+  static bool Generate(PP_NetAddress_Private *p, Generator* generator) {
+    p->size = RandInRange(sizeof(p->data) + 1);
+    generator->GenerateBytes(&p->data, p->size);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::HostResource> {
+  static bool Generate(ppapi::HostResource *p, Generator* generator) {
+    PP_Instance instance;
+    PP_Resource resource;
+    if (!GenerateParam(&instance, generator))
+      return false;
+    if (!GenerateParam(&resource, generator))
+      return false;
+    p->SetHostResource(instance, resource);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::PepperFilePath> {
+  static bool Generate(ppapi::PepperFilePath *p, Generator* generator) {
+    unsigned domain = RandInRange(ppapi::PepperFilePath::DOMAIN_MAX_VALID+1);
+    base::FilePath path;
+    if (!GenerateParam(&path, generator))
+      return false;
+    *p = ppapi::PepperFilePath(
+        static_cast<ppapi::PepperFilePath::Domain>(domain), path);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::PpapiPermissions> {
+  static bool Generate(ppapi::PpapiPermissions *p, Generator* generator) {
+    uint32_t bits;
+    if (!GenerateParam(&bits, generator))
+      return false;
+    *p = ppapi::PpapiPermissions(bits);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::SocketOptionData> {
+  static bool Generate(ppapi::SocketOptionData *p, Generator* generator) {
+    // FIXME: we can do better here.
+    int32 temp;
+    if (!GenerateParam(&temp, generator))
+      return false;
+    p->SetInt32(temp);
     return true;
   }
 };
