@@ -72,6 +72,40 @@ TEST_F(TimeFormatTest, FormatTime) {
   TestTimeFormats(1 * one_day + 12 * one_hour, "2 days");
 }
 
+void TestRemainingLong(const TimeDelta& delta, const std::string& expected) {
+  EXPECT_EQ(TimeFormat::TimeRemainingLong(delta), ASCIIToUTF16(expected));
+}
+
+TEST_F(TimeFormatTest, TimeRemainingLong) {
+  const TimeDelta one_day(TimeDelta::FromDays(1));
+  const TimeDelta one_hour(TimeDelta::FromHours(1));
+  const TimeDelta one_min(TimeDelta::FromMinutes(1));
+  const TimeDelta one_second(TimeDelta::FromSeconds(1));
+  const TimeDelta one_millisecond(TimeDelta::FromMilliseconds(1));
+  const TimeDelta zero(TimeDelta::FromMilliseconds(0));
+
+  TestRemainingLong(zero, "0 seconds left");
+  TestRemainingLong(499 * one_millisecond, "0 seconds left");
+  TestRemainingLong(500 * one_millisecond, "1 second left");
+  TestRemainingLong(one_second + 499 * one_millisecond, "1 second left");
+  TestRemainingLong(one_second + 500 * one_millisecond, "2 seconds left");
+  TestRemainingLong(59 * one_second + 499 * one_millisecond, "59 seconds left");
+  TestRemainingLong(59 * one_second + 500 * one_millisecond, "1 minute left");
+  TestRemainingLong(one_min + 30 * one_second - one_millisecond,
+                    "1 minute left");
+  TestRemainingLong(one_min + 30 * one_second, "2 minutes left");
+  TestRemainingLong(59 * one_min + 30 * one_second - one_millisecond,
+                    "59 minutes left");
+  TestRemainingLong(59 * one_min + 30 * one_second, "1 hour left");
+  TestRemainingLong(one_hour + 30 * one_min - one_millisecond, "1 hour left");
+  TestRemainingLong(one_hour + 30 * one_min, "2 hours left");
+  TestRemainingLong(23 * one_hour + 30 * one_min - one_millisecond,
+                    "23 hours left");
+  TestRemainingLong(23 * one_hour + 30 * one_min, "1 day left");
+  TestRemainingLong(one_day + 12 * one_hour - one_millisecond, "1 day left");
+  TestRemainingLong(one_day + 12 * one_hour, "2 days left");
+}
+
 // crbug.com/159388: This test fails when daylight savings time ends.
 TEST_F(TimeFormatTest, RelativeDate) {
   base::Time now = base::Time::Now();

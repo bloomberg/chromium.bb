@@ -29,8 +29,6 @@ class UI_BASE_EXPORT TimeFormat {
   static base::string16 TimeRemaining(const base::TimeDelta& delta);
 
   // Returns times in remaining-long-format: "3 minutes left", "2 days left".
-  // Currently, this only affects the minutes in long format, the rest
-  // of the time units are formatted the same as TimeRemaining does.
   static base::string16 TimeRemainingLong(const base::TimeDelta& delta);
 
   // Returns times in short-format: "3 mins", "2 days".
