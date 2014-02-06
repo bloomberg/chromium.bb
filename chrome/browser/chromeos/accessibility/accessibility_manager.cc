@@ -393,6 +393,12 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   ash::Shell::GetInstance()->cursor_manager()->SetCursorSet(
       enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
 #endif
+
+#if defined(OS_CHROMEOS)
+  // Enable cursor compositing mode when using high contrast or large cursor.
+  ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+      large_cursor_enabled_ || high_contrast_enabled_);
+#endif
 }
 
 bool AccessibilityManager::IsIncognitoAllowed() {
@@ -592,6 +598,12 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 
 #if defined(USE_ASH)
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Enable cursor compositing mode when using high contrast or large cursor.
+  ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+      large_cursor_enabled_ || high_contrast_enabled_);
 #endif
 }
 

@@ -9,6 +9,7 @@
 #include <map>
 
 #include "ash/ash_switches.h"
+#include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
@@ -216,7 +217,8 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 DisplayController::DisplayController()
     : primary_root_window_for_replace_(NULL),
       focus_activation_store_(new internal::FocusActivationStore()),
-      mirror_window_controller_(new internal::MirrorWindowController),
+      cursor_window_controller_(new internal::CursorWindowController()),
+      mirror_window_controller_(new internal::MirrorWindowController()),
       virtual_keyboard_window_controller_(
           new internal::VirtualKeyboardWindowController) {
 #if defined(OS_CHROMEOS)
@@ -249,6 +251,7 @@ void DisplayController::Shutdown() {
   // DisplayManager outlives DisplayController.
   Shell::GetInstance()->display_manager()->set_delegate(NULL);
 
+  cursor_window_controller_.reset();
   mirror_window_controller_.reset();
   virtual_keyboard_window_controller_.reset();
 
@@ -613,6 +616,7 @@ void DisplayController::OnWindowTreeHostResized(const aura::RootWindow* root) {
           display.id(),
           root->host()->GetBounds())) {
     mirror_window_controller_->UpdateWindow();
+    cursor_window_controller_->UpdateContainer();
   }
 }
 
@@ -621,10 +625,12 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
   switch (GetDisplayManager()->second_display_mode()) {
     case internal::DisplayManager::MIRRORING:
       mirror_window_controller_->UpdateWindow(info);
+      cursor_window_controller_->UpdateContainer();
       virtual_keyboard_window_controller_->Close();
       break;
     case internal::DisplayManager::VIRTUAL_KEYBOARD:
       mirror_window_controller_->Close();
+      cursor_window_controller_->UpdateContainer();
       virtual_keyboard_window_controller_->UpdateWindow(info);
       break;
     case internal::DisplayManager::EXTENDED:
@@ -634,6 +640,7 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
 
 void DisplayController::CloseNonDesktopDisplay() {
   mirror_window_controller_->Close();
+  cursor_window_controller_->UpdateContainer();
   virtual_keyboard_window_controller_->Close();
 }
 

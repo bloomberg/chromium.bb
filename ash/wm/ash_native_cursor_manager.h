@@ -33,6 +33,12 @@ class ASH_EXPORT AshNativeCursorManager
   AshNativeCursorManager();
   virtual ~AshNativeCursorManager();
 
+  // Toggle native cursor enabled/disabled.
+  // The native cursor is enabled by default. When disabled, we hide the native
+  // cursor regardless of visibility state, and let CursorWindowManager draw
+  // the cursor.
+  void SetNativeCursorEnabled(bool enabled);
+
  private:
   friend class test::CursorManagerTestApi;
 
@@ -58,6 +64,8 @@ class ASH_EXPORT AshNativeCursorManager
 
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;
+
+  bool native_cursor_enabled_;
 
   scoped_ptr<ImageCursors> image_cursors_;
 

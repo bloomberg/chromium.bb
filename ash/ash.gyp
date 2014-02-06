@@ -99,6 +99,8 @@
         'desktop_background/wallpaper_resizer.cc',
         'desktop_background/wallpaper_resizer.h',
         'desktop_background/wallpaper_resizer_observer.h',
+        'display/cursor_window_controller.cc',
+        'display/cursor_window_controller.h',
         'display/display_change_observer_chromeos.cc',
         'display/display_change_observer_chromeos.h',
         'display/display_controller.cc',

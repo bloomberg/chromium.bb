@@ -38,6 +38,7 @@ class Insets;
 
 namespace ash {
 namespace internal {
+class CursorWindowController;
 class DisplayInfo;
 class DisplayManager;
 class FocusActivationStore;
@@ -75,6 +76,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // Returns primary display's ID.
   // TODO(oshima): Move this out from DisplayController;
   static int64 GetPrimaryDisplayId();
+
+  internal::CursorWindowController* cursor_window_controller() {
+    return cursor_window_controller_.get();
+  }
 
   internal::MirrorWindowController* mirror_window_controller() {
     return mirror_window_controller_.get();
@@ -199,6 +204,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   scoped_ptr<internal::FocusActivationStore> focus_activation_store_;
 
+  scoped_ptr<internal::CursorWindowController> cursor_window_controller_;
   scoped_ptr<internal::MirrorWindowController> mirror_window_controller_;
   scoped_ptr<internal::VirtualKeyboardWindowController>
       virtual_keyboard_window_controller_;

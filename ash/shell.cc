@@ -17,6 +17,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
@@ -551,6 +552,12 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
 #if defined(OS_CHROMEOS)
 ash::FirstRunHelper* Shell::CreateFirstRunHelper() {
   return new ash::FirstRunHelperImpl;
+}
+
+void Shell::SetCursorCompositingEnabled(bool enabled) {
+  display_controller_->cursor_window_controller()->SetCursorCompositingEnabled(
+      enabled);
+  native_cursor_manager_->SetNativeCursorEnabled(!enabled);
 }
 #endif  // defined(OS_CHROMEOS)
 

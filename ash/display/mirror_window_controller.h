@@ -32,7 +32,6 @@ class MirrorWindowTestApi;
 
 namespace internal {
 class DisplayInfo;
-class CursorWindowDelegate;
 
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
@@ -53,14 +52,11 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   // Close the mirror window.
   void Close();
 
-  // Updates the mirrored cursor location,shape and
-  // visibility.
-  void UpdateCursorLocation();
-  void SetMirroredCursor(gfx::NativeCursor cursor);
-  void SetMirroredCursorVisibility(bool visible);
-
   // aura::RootWindowObserver overrides:
   virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
+
+  // Returns the mirror root window.
+  aura::RootWindow* root_window() const { return root_window_.get(); }
 
  private:
   friend class test::MirrorWindowTestApi;
@@ -69,12 +65,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   // configuration.
   scoped_ptr<aura::RootWindowTransformer> CreateRootWindowTransformer() const;
 
-  int current_cursor_type_;
-  gfx::Display::Rotation current_cursor_rotation_;
-  aura::Window* cursor_window_;  // owned by root window.
   scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<CursorWindowDelegate> cursor_window_delegate_;
-  gfx::Point hot_point_;
   gfx::Size mirror_window_host_size_;
   scoped_refptr<ui::Reflector> reflector_;
 

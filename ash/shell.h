@@ -537,6 +537,10 @@ class ASH_EXPORT Shell
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
 
+  // Toggles cursor compositing on/off. Native cursor is disabled when cursor
+  // compositing is enabled, and vice versa.
+  void SetCursorCompositingEnabled(bool enabled);
+
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
   }
