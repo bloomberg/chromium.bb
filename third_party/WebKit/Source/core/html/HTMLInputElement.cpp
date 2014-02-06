@@ -395,14 +395,7 @@ void HTMLInputElement::handleBlurEvent()
 
 void HTMLInputElement::setType(const AtomicString& type)
 {
-    // FIXME: This should just call setAttribute. No reason to handle the empty string specially.
-    // We should write a test case to show that setting to the empty string does not remove the
-    // attribute in other browsers and then fix this. Note that setting to null *does* remove
-    // the attribute and setAttribute implements that.
-    if (type.isEmpty())
-        removeAttribute(typeAttr);
-    else
-        setAttribute(typeAttr, type);
+    setAttribute(typeAttr, type);
 }
 
 void HTMLInputElement::updateType()

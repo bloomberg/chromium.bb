@@ -1,59 +1,63 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
+<!DOCTYPE HTML>
 <script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
 <script>
 description('Tests for writing and reading .type property of HTMLInputElement.');
 
 var input = document.createElement('input');
-document.body.appendChild(input);
 
 // The default type is "text".
 shouldBe('input.type', '"text"');
+shouldBeNull("input.getAttribute('type')");
 
-function check(value, expected)
+function check(value, expected, expectedAttributeValue)
 {
     input.type = value;
-    if (input.type == expected)
+    if (input.type === expected)
         testPassed('input.type for "' + value + '" is correctly "' + input.type + '".');
     else
         testFailed('input.type for "' + value + '" is incorrectly "' + input.type + '", should be "' + expected + '".');
+
+    if (typeof expectedAttributeValue === "undefined")
+        expectedAttributeValue = expected;
+
+    if (input.getAttribute('type') === expectedAttributeValue)
+        testPassed('input.getAttribute("type") for "' + value + '" is correctly "' + expectedAttributeValue + '".');
+    else
+        testFailed('input.getAttribute("type") for "' + value + '" is incorrectly "' + input.getAttribute('type') + '", should be "' + expectedAttributeValue + '".');
 }
 
 // The type is not specified explicitly.  We can change it to "file".
 check("file", "file");
 // http://webkit.org/b/57343
 check("file", "file");
-check("FILE", "file");
+check("FILE", "file", "FILE");
 
 check("text", "text");
-check("TEXT", "text");  // input.type must return a lower case value according to DOM Level 2.
-check(" text ", "text");
+check("TEXT", "text", "TEXT");  // input.type must return a lower case value according to DOM Level 2.
+check(" text ", "text", " text ");
 check("button", "button");
-check(" button ", "text");
+check(" button ", "text", " button ");
 check("checkbox", "checkbox");
 check("email", "email");
 check("file", "email"); // We can't change a concrete type to file for a security reason.
 check("hidden", "hidden");
 check("image", "image");
-check("isindex", "text");
+check("isindex", "text", "isindex");
 check("number", "number");
 check("password", "password");
-check("passwd", "text");
+check("passwd", "text", "passwd");
 check("radio", "radio");
 check("range", "range");
 check("reset", "reset");
 check("search", "search");
 check("submit", "submit");
 check("tel", "tel");
-check("telephone", "text");
+check("telephone", "text", "telephone");
 check("url", "url");
-check("uri", "text");
+check("uri", "text", "uri");
 
+// Empty and unknown value handling.
+check("", "text", "");
+check("x-unknown", "text", "x-unknown");
+shouldBeNull("input.removeAttribute('type'); input.getAttribute('type')");
 </script>
-</body>
-</html>
