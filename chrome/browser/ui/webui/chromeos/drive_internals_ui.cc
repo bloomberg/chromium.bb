@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -217,8 +216,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Returns a DriveService instance.
   drive::DriveServiceInterface* GetDriveService();
 
-  // Returns a FileSystem instance.
-  drive::FileSystemInterface* GetFileSystem();
+  // Returns a DebugInfoCollector instance.
+  drive::DebugInfoCollector* GetDebugInfoCollector();
 
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
@@ -402,11 +401,12 @@ drive::DriveServiceInterface* DriveInternalsWebUIHandler::GetDriveService() {
   return drive::util::GetDriveServiceByProfile(profile);
 }
 
-drive::FileSystemInterface* DriveInternalsWebUIHandler::GetFileSystem() {
+drive::DebugInfoCollector* DriveInternalsWebUIHandler::GetDebugInfoCollector() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  return drive::util::GetFileSystemByProfile(profile);
+  drive::DriveIntegrationService* integration_service = GetIntegrationService();
+  return integration_service ?
+      integration_service->debug_info_collector() : NULL;
 }
 
 void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
@@ -697,25 +697,20 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
 void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive::DriveServiceInterface* drive_service = GetDriveService();
-  drive::FileSystemInterface* file_system = GetFileSystem();
-  if (!drive_service || !file_system)
-    return;
-
-  // Start updating the file system tree section, if we have access token.
-  if (!drive_service->HasAccessToken())
+  drive::DebugInfoCollector* debug_info_collector = GetDebugInfoCollector();
+  if (!debug_info_collector)
     return;
 
   // Start rendering the file system tree as text.
   const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
 
-  file_system->GetResourceEntry(
+  debug_info_collector->GetResourceEntry(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  root_path));
 
-  file_system->ReadDirectory(
+  debug_info_collector->ReadDirectory(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -816,7 +811,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entries.get());
 
-    drive::FileSystemInterface* file_system = GetFileSystem();
+    drive::DebugInfoCollector* debug_info_collector = GetDebugInfoCollector();
     std::string file_system_as_text;
     for (size_t i = 0; i < entries->size(); ++i) {
       const drive::ResourceEntry& entry = (*entries)[i];
@@ -826,7 +821,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
       file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 
       if (entry.file_info().is_directory()) {
-        file_system->ReadDirectory(
+        debug_info_collector->ReadDirectory(
             current_path,
             base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                        weak_ptr_factory_.GetWeakPtr(),

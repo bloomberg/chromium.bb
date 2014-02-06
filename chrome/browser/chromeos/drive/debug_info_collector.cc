@@ -24,20 +24,79 @@ void IterateFileCacheInternal(
   DCHECK(!it->HasError());
 }
 
+// Runs the callback with arguments.
+void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
+                                 scoped_ptr<ResourceEntry> entry,
+                                 FileError error) {
+  DCHECK(!callback.is_null());
+  if (error != FILE_ERROR_OK)
+    entry.reset();
+  callback.Run(error, entry.Pass());
+}
+
+// Runs the callback with arguments.
+void RunReadDirectoryCallback(const ReadDirectoryCallback& callback,
+                              scoped_ptr<ResourceEntryVector> entries,
+                              FileError error) {
+  DCHECK(!callback.is_null());
+  if (error != FILE_ERROR_OK)
+    entries.reset();
+  callback.Run(error, entries.Pass());
+}
+
 }  // namespace
 
 DebugInfoCollector::DebugInfoCollector(
-    FileSystemInterface* file_system,
     internal::FileCache* file_cache,
+    internal::ResourceMetadata* metadata,
+    FileSystemInterface* file_system,
     base::SequencedTaskRunner* blocking_task_runner)
-    : file_system_(file_system),
-      file_cache_(file_cache),
+    : file_cache_(file_cache),
+      metadata_(metadata),
+      file_system_(file_system),
       blocking_task_runner_(blocking_task_runner) {
-  DCHECK(file_system_);
   DCHECK(file_cache_);
+  DCHECK(metadata_);
+  DCHECK(file_system_);
 }
 
 DebugInfoCollector::~DebugInfoCollector() {
+}
+
+void DebugInfoCollector::GetResourceEntry(
+    const base::FilePath& file_path,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  ResourceEntry* entry_ptr = entry.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(metadata_),
+                 file_path,
+                 entry_ptr),
+      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
+}
+
+void DebugInfoCollector::ReadDirectory(
+    const base::FilePath& file_path,
+    const ReadDirectoryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
+  ResourceEntryVector* entries_ptr = entries.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::ReadDirectoryByPath,
+                 base::Unretained(metadata_),
+                 file_path,
+                 entries_ptr),
+      base::Bind(&RunReadDirectoryCallback, callback, base::Passed(&entries)));
 }
 
 void DebugInfoCollector::IterateFileCache(
