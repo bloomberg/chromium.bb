@@ -88,6 +88,9 @@ class VMInstance(object):
   STARTUP_TIMEOUT = 60 * 5
   STARTUP_CHECK_INTERNAL = 30
 
+  # VM needs a longer timeout.
+  SSH_CONNECT_TIMEOUT = 120
+
   def __init__(self, image_path, port=None, tempdir=None,
                debug_level=logging.DEBUG):
     """Initializes VMWrapper with a VM image path.
@@ -108,6 +111,8 @@ class VMInstance(object):
     self.port = (remote_access.GetUnusedPort() if port is None
                  else remote_access.NormalizePort(port))
     self.debug_level = debug_level
+    self.ssh_settings = remote_access.CompileSSHConnectSettings(
+        ConnectTimeout=self.SSH_CONNECT_TIMEOUT)
     self.agent = remote_access.RemoteAccess(
         remote_access.LOCALHOST, self.tempdir, self.port,
         debug_level=self.debug_level, interactive=False)
@@ -127,7 +132,7 @@ class VMInstance(object):
   def Connect(self):
     """Returns True if we can connect to VM via SSH."""
     try:
-      self.agent.RemoteSh(['true'])
+      self.agent.RemoteSh(['true'], connect_settings=self.ssh_settings)
     except Exception:
       return False
 
