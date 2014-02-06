@@ -863,6 +863,7 @@ sonic = _config(
   build_tests=False,
   vm_tests=None,
   signer_tests=False,
+  sync_chrome=False,
   hw_tests=[],
 )
 
