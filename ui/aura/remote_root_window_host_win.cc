@@ -176,6 +176,11 @@ RemoteWindowTreeHostWin::~RemoteWindowTreeHostWin() {
   g_instance = NULL;
 }
 
+// static
+bool RemoteWindowTreeHostWin::IsValid() {
+  return Instance()->remote_window_ != NULL;
+}
+
 void RemoteWindowTreeHostWin::SetRemoteWindowHandle(HWND remote_window) {
   remote_window_ = remote_window;
   // Do not create compositor here, but in Connected() below.

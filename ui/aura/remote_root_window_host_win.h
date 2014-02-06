@@ -111,6 +111,10 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   static RemoteWindowTreeHostWin* Instance();
   static RemoteWindowTreeHostWin* Create(const gfx::Rect& bounds);
 
+  // Returns true if there is a RemoteWindowTreeHostWin and it has a valid
+  // HWND. A return value of false typically indicates we're not in metro mode.
+  static bool IsValid();
+
   // Sets the handle to the remote window. The |remote_window| is the actual
   // window owned by the viewer process. Call this before Connected() for some
   // customers like input method initialization which needs the handle.

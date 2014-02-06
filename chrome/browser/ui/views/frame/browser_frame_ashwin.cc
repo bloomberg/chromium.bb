@@ -30,7 +30,8 @@ void BrowserFrameAshWin::OnWindowFocused(aura::Window* gained_focus,
 
   // If the activated window is in Metro mode, and the viewer process window is
   // not in the foreground, activate Metro Chrome.
-  if (!aura::RemoteWindowTreeHostWin::Instance()->IsForegroundWindow() &&
+  if (aura::RemoteWindowTreeHostWin::IsValid() &&
+      !aura::RemoteWindowTreeHostWin::Instance()->IsForegroundWindow() &&
       !browser_shutdown::IsTryingToQuit()) {
     // PostTask because ActivateMetroChrome can not be called nested in another
     // ::SendMessage().
