@@ -287,7 +287,7 @@ VolumeManagerWrapper.prototype.mountArchive = function(
 };
 
 /**
- * Requests unmount the volume at mountPath.
+ * Requests unmount the specified volume.
  * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
  * @param {function()} successCallback Called on success.
  * @param {function(util.VolumeError)} errorCallback Called when an error

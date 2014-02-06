@@ -9,7 +9,6 @@
  * flush storage", or "mounted zip archive" etc.
  *
  * @param {util.VolumeType} volumeType The type of the volume.
- * @param {string} mountPath Where the volume is mounted.
  * @param {string} volumeId ID of the volume.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
@@ -23,7 +22,6 @@
  */
 function VolumeInfo(
     volumeType,
-    mountPath,
     volumeId,
     root,
     error,
@@ -32,7 +30,6 @@ function VolumeInfo(
     profile) {
   this.volumeType_ = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
-  this.mountPath_ = mountPath;
   this.volumeId_ = volumeId;
   this.root_ = root;
   this.displayRoot_ = null;
@@ -76,12 +73,6 @@ VolumeInfo.prototype = {
    */
   get volumeType() {
     return this.volumeType_;
-  },
-  /**
-   * @return {string} Mount path.
-   */
-  get mountPath() {
-    return this.mountPath_;
   },
   /**
    * @return {string} Volume id.
@@ -177,6 +168,7 @@ volumeManagerUtil.validateError = function(error) {
 
 /**
  * Returns the root entry of a volume mounted at mountPath.
+ * TODO(mtomasz): Migrate to volumeId, once requestFileSystem can handle it.
  *
  * @param {string} mountPath The mounted path of the volume.
  * @param {function(DirectoryEntry)} successCallback Called when the root entry
@@ -230,7 +222,6 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
         }
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
-            volumeMetadata.mountPath,
             volumeMetadata.volumeId,
             entry,
             volumeMetadata.mountCondition,
@@ -243,7 +234,6 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.mountPath + ', ' + fileError.name);
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
-            volumeMetadata.mountPath,
             volumeMetadata.volumeId,
             null,  // Root entry is not found.
             volumeMetadata.mountCondition,
@@ -268,7 +258,7 @@ volumeManagerUtil.volumeListOrder_ = [
 ];
 
 /**
- * Orders two volumes by volumeType and mountPath.
+ * Orders two volumes by volumeType and volumeId.
  *
  * The volumes at first are compared by volume type in the order of
  * volumeListOrder_.  Then they are compared by volume ID.
@@ -541,6 +531,7 @@ VolumeManager.prototype.initialize_ = function(callback) {
  */
 VolumeManager.prototype.onMountCompleted_ = function(event) {
   if (event.eventType === 'mount') {
+    // TODO(mtomasz): Migrate to volumeId once possible.
     if (event.volumeMetadata.mountPath) {
       var requestKey = this.makeRequestKey_(
           'mount',
@@ -683,8 +674,7 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
   var isReadOnly;
   var isRootEntry;
   if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
-    // If the volume is drive, root path can be either mountPath + '/root' or
-    // mountPath + '/other'.
+    // For Drive, the roots are /root and /other, instead of /.
     // TODO(mtomasz): Simplify once switching to filesystem per volume.
     if (entry.toURL() === volumeInfo.root.toURL() + '/root' ||
         entry.toURL().indexOf(volumeInfo.root.toURL() + '/root/') === 0) {
