@@ -53,10 +53,10 @@ VersionLoader::VersionLoader() : backend_(new Backend()) {}
 
 VersionLoader::~VersionLoader() {}
 
-CancelableTaskTracker::TaskId VersionLoader::GetVersion(
+base::CancelableTaskTracker::TaskId VersionLoader::GetVersion(
     VersionFormat format,
     const GetVersionCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   std::string* version = new std::string();
   return tracker->PostTaskAndReply(
       BrowserThread::GetBlockingPool(),
@@ -65,9 +65,9 @@ CancelableTaskTracker::TaskId VersionLoader::GetVersion(
       base::Bind(&VersionLoaderCallbackHelper, callback, base::Owned(version)));
 }
 
-CancelableTaskTracker::TaskId VersionLoader::GetFirmware(
+base::CancelableTaskTracker::TaskId VersionLoader::GetFirmware(
     const GetFirmwareCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   std::string* firmware = new std::string();
   return tracker->PostTaskAndReply(
       BrowserThread::GetBlockingPool(),

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/typed_url_syncable_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
@@ -382,7 +382,7 @@ class HistoryService : public CancelableRequestProvider,
                             base::Time begin_time,
                             base::Time end_time,
                             const base::Closure& callback,
-                            CancelableTaskTracker* tracker);
+                            base::CancelableTaskTracker* tracker);
 
   // Removes all visits to specified URLs in specific time ranges.
   // This is the equivalent ExpireHistoryBetween() once for each element in the
@@ -390,17 +390,16 @@ class HistoryService : public CancelableRequestProvider,
   // of ExpireHistoryBetween().
   void ExpireHistory(const std::vector<history::ExpireHistoryArgs>& expire_list,
                      const base::Closure& callback,
-                     CancelableTaskTracker* tracker);
+                     base::CancelableTaskTracker* tracker);
 
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
   // synced visits if appropriate.
-  void ExpireLocalAndRemoteHistoryBetween(
-      const std::set<GURL>& restrict_urls,
-      base::Time begin_time,
-      base::Time end_time,
-      const base::Closure& callback,
-      CancelableTaskTracker* tracker);
+  void ExpireLocalAndRemoteHistoryBetween(const std::set<GURL>& restrict_urls,
+                                          base::Time begin_time,
+                                          base::Time end_time,
+                                          const base::Closure& callback,
+                                          base::CancelableTaskTracker* tracker);
 
   // Processes the given |delete_directive| and sends it to the
   // SyncChangeProcessor (if it exists).  Returns any error resulting
@@ -666,13 +665,13 @@ class HistoryService : public CancelableRequestProvider,
   // If |icon_types| has several types, results for only a single type will be
   // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
   // FAVICON.
-  CancelableTaskTracker::TaskId GetFavicons(
+  base::CancelableTaskTracker::TaskId GetFavicons(
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get favicons mapped to |page_url| for
   // |icon_types| which most closely match |desired_size_in_dip| and
@@ -683,13 +682,13 @@ class HistoryService : public CancelableRequestProvider,
   // there will be less results. If |icon_types| has several types, results for
   // only a single type will be returned in the priority of
   // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON.
-  CancelableTaskTracker::TaskId GetFaviconsForURL(
+  base::CancelableTaskTracker::TaskId GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used by FaviconService to find the first favicon bitmap whose width and
   // height are greater than that of |minimum_size_in_pixels|. This searches
@@ -702,23 +701,23 @@ class HistoryService : public CancelableRequestProvider,
   // icon types in |icon_types| is returned.
   // This feature is especially useful when some types of icon is perfered as
   // long as its size is larger than a specific value.
-  CancelableTaskTracker::TaskId GetLargestFaviconForURL(
+  base::CancelableTaskTracker::TaskId GetLargestFaviconForURL(
       const GURL& page_url,
       const std::vector<int>& icon_types,
       int minimum_size_in_pixels,
       const FaviconService::FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
   // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon
   // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
   // the largest favicon bitmap for |favicon_id| is returned.
-  CancelableTaskTracker::TaskId GetFaviconForID(
+  base::CancelableTaskTracker::TaskId GetFaviconForID(
       chrome::FaviconID favicon_id,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to replace the favicon mappings to |page_url|
   // for |icon_types| on the history backend.
@@ -739,14 +738,14 @@ class HistoryService : public CancelableRequestProvider,
   // and |desired_scale_factors| from the favicons which were just mapped
   // to |page_url| are returned. If |desired_size_in_dip| is 0, the
   // largest favicon bitmap is returned.
-  CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
+  base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used by FaviconService to set a favicon for |page_url| and |icon_url| with
   // |pixel_size|.

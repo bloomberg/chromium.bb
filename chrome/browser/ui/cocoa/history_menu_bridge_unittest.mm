@@ -338,7 +338,7 @@ TEST_F(HistoryMenuBridgeTest, GetFaviconForHistoryItem) {
 
   // Make sure the item was modified properly.
   EXPECT_TRUE(item.icon_requested);
-  EXPECT_NE(CancelableTaskTracker::kBadTaskId, item.icon_task_id);
+  EXPECT_NE(base::CancelableTaskTracker::kBadTaskId, item.icon_task_id);
 }
 
 TEST_F(HistoryMenuBridgeTest, GotFaviconData) {

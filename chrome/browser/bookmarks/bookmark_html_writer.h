@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -79,7 +79,7 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   std::list<std::string> bookmark_urls_;
 
   // Tracks favicon tasks.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Map that stores favicon per URL.
   scoped_ptr<URLFaviconMap> favicons_map_;

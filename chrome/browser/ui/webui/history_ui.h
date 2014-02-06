@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/web_history_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -186,7 +186,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   scoped_ptr<history::WebHistoryService::Request> web_history_delete_request_;
 
   // Tracker for delete requests to the history service.
-  CancelableTaskTracker delete_task_tracker_;
+  base::CancelableTaskTracker delete_task_tracker_;
 
   // The list of URLs that are in the process of being deleted.
   std::set<GURL> urls_to_be_deleted_;

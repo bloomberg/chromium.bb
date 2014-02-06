@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/common/favicon_url.h"
 #include "ui/gfx/favicon_size.h"
@@ -133,19 +133,19 @@ class FaviconHandler {
       const GURL& icon_url,
       chrome::IconType icon_type,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   virtual void GetFavicon(
       const GURL& icon_url,
       chrome::IconType icon_type,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   virtual void SetHistoryFavicons(const GURL& page_url,
                                   const GURL& icon_url,
@@ -253,7 +253,7 @@ class FaviconHandler {
   }
 
   // Used for FaviconService requests.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // URL of the page we're requesting the favicon for.
   GURL url_;

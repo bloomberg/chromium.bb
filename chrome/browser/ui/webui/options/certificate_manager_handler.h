@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "net/cert/nss_cert_database.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -175,7 +175,7 @@ class CertificateManagerHandler
   scoped_refptr<net::CryptoModule> module_;
 
   // Used in reading and writing certificate files.
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
   scoped_ptr<CertIdMap> cert_id_map_;

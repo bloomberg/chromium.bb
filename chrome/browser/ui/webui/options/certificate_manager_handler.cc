@@ -205,13 +205,15 @@ class FileAccessProvider
   // parameter is the number of bytes written on success.
   typedef base::Callback<void(const int*, const int*)> WriteCallback;
 
-  CancelableTaskTracker::TaskId StartRead(const base::FilePath& path,
-                                          const ReadCallback& callback,
-                                          CancelableTaskTracker* tracker);
-  CancelableTaskTracker::TaskId StartWrite(const base::FilePath& path,
-                                           const std::string& data,
-                                           const WriteCallback& callback,
-                                           CancelableTaskTracker* tracker);
+  base::CancelableTaskTracker::TaskId StartRead(
+      const base::FilePath& path,
+      const ReadCallback& callback,
+      base::CancelableTaskTracker* tracker);
+  base::CancelableTaskTracker::TaskId StartWrite(
+      const base::FilePath& path,
+      const std::string& data,
+      const WriteCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
  private:
   friend class base::RefCountedThreadSafe<FileAccessProvider>;
@@ -230,10 +232,10 @@ class FileAccessProvider
                int* bytes_written);
 };
 
-CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
+base::CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
     const base::FilePath& path,
     const ReadCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   // Owned by reply callback posted below.
   int* saved_errno = new int(0);
   std::string* data = new std::string();
@@ -246,11 +248,11 @@ CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
       base::Bind(callback, base::Owned(saved_errno), base::Owned(data)));
 }
 
-CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
+base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
     const base::FilePath& path,
     const std::string& data,
     const WriteCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   // Owned by reply callback posted below.
   int* saved_errno = new int(0);
   int* bytes_written = new int(0);

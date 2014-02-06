@@ -28,7 +28,7 @@ class VersionHandlerChromeOS : public VersionHandler {
   chromeos::VersionLoader loader_;
 
   // Used to request the version.
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionHandlerChromeOS);
 };

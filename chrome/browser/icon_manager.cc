@@ -14,7 +14,7 @@
 namespace {
 
 void RunCallbackIfNotCanceled(
-    const CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
     const IconManager::IconRequestCallback& callback,
     gfx::Image* image) {
   if (is_canceled.Run())
@@ -55,17 +55,18 @@ gfx::Image* IconManager::LookupIconFromGroup(const IconGroupID& group,
   return NULL;
 }
 
-CancelableTaskTracker::TaskId IconManager::LoadIcon(
+base::CancelableTaskTracker::TaskId IconManager::LoadIcon(
     const base::FilePath& file_name,
     IconLoader::IconSize size,
     const IconRequestCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   IconLoader* loader = new IconLoader(file_name, size, this);
   loader->AddRef();
   loader->Start();
 
-  CancelableTaskTracker::IsCanceledCallback is_canceled;
-  CancelableTaskTracker::TaskId id = tracker->NewTrackedTaskId(&is_canceled);
+  base::CancelableTaskTracker::IsCanceledCallback is_canceled;
+  base::CancelableTaskTracker::TaskId id =
+      tracker->NewTrackedTaskId(&is_canceled);
   IconRequestCallback callback_runner = base::Bind(
       &RunCallbackIfNotCanceled, is_canceled, callback);
 

@@ -8,11 +8,11 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/glue/synced_session.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -159,8 +159,8 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   gfx::Image default_favicon_;
 
-  CancelableTaskTracker local_tab_cancelable_task_tracker_;
-  CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;
+  base::CancelableTaskTracker local_tab_cancelable_task_tracker_;
+  base::CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
 

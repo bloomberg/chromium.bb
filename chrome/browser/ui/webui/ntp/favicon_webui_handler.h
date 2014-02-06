@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class ExtensionIconColorManager;
@@ -45,7 +45,7 @@ class FaviconWebUIHandler : public content::WebUIMessageHandler {
       FaviconService::Handle request_handle,
       const chrome::FaviconBitmapResult& bitmap_result);
 
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Map from request ID to DOM ID so we can make the appropriate callback when
   // the favicon request comes back. This map exists because

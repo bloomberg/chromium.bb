@@ -258,7 +258,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& icon_url,
       chrome::IconType icon_type,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker) OVERRIDE {
+      base::CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, icon_url,
                                                      icon_type, callback));
   }
@@ -267,7 +267,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& icon_url,
       chrome::IconType icon_type,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker) OVERRIDE {
+      base::CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(GURL(), icon_url,
                                                      icon_type, callback));
   }
@@ -276,7 +276,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& page_url,
       int icon_types,
       const FaviconService::FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker) OVERRIDE {
+      base::CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, GURL(),
                                                      icon_types, callback));
   }

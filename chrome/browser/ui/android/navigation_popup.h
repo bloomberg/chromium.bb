@@ -9,7 +9,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 
 class GURL;
 
@@ -37,7 +37,7 @@ class NavigationPopup {
  private:
   JavaObjectWeakGlobalRef weak_jobject_;
 
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPopup);
 };

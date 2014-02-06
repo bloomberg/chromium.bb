@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/provider/blocking_ui_thread_async_request.h"
 #include "chrome/browser/android/provider/bookmark_model_observer_task.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -641,19 +641,19 @@ class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
   FaviconServiceTask(FaviconService* service,
                      Profile* profile,
                      CancelableRequestConsumer* cancelable_consumer,
-                     CancelableTaskTracker* cancelable_tracker)
+                     base::CancelableTaskTracker* cancelable_tracker)
       : AsyncServiceRequest<FaviconService>(service, cancelable_consumer),
         profile_(profile),
         cancelable_tracker_(cancelable_tracker) {}
 
   Profile* profile() const { return profile_; }
-  CancelableTaskTracker* cancelable_tracker() const {
+  base::CancelableTaskTracker* cancelable_tracker() const {
     return cancelable_tracker_;
   }
 
  private:
   Profile* profile_;
-  CancelableTaskTracker* cancelable_tracker_;
+  base::CancelableTaskTracker* cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconServiceTask);
 };
@@ -661,13 +661,14 @@ class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
 // Retrieves the favicon or touch icon for a URL from the FaviconService.
 class BookmarkIconFetchTask : public FaviconServiceTask {
  public:
-  BookmarkIconFetchTask(
-      FaviconService* favicon_service,
-      Profile* profile,
-      CancelableRequestConsumer* cancelable_consumer,
-      CancelableTaskTracker* cancelable_tracker)
-      : FaviconServiceTask(favicon_service, profile,
-                           cancelable_consumer, cancelable_tracker) {}
+  BookmarkIconFetchTask(FaviconService* favicon_service,
+                        Profile* profile,
+                        CancelableRequestConsumer* cancelable_consumer,
+                        base::CancelableTaskTracker* cancelable_tracker)
+      : FaviconServiceTask(favicon_service,
+                           profile,
+                           cancelable_consumer,
+                           cancelable_tracker) {}
 
   chrome::FaviconBitmapResult Run(const GURL& url) {
     RunAsyncRequestOnUIThreadBlocking(

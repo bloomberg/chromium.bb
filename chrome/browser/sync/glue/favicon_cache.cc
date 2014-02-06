@@ -467,11 +467,12 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
   // TODO(zea): This appears to only fetch one favicon (best match based on
   // desired_size_in_dip). Figure out a way to fetch all favicons we support.
   // See crbug.com/181068.
-  CancelableTaskTracker::TaskId id = favicon_service->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(page_url, SupportedFaviconTypes(),
-                                          kMaxFaviconResolution),
+  base::CancelableTaskTracker::TaskId id = favicon_service->GetFaviconForURL(
+      FaviconService::FaviconForURLParams(
+          page_url, SupportedFaviconTypes(), kMaxFaviconResolution),
       base::Bind(&FaviconCache::OnFaviconDataAvailable,
-                 weak_ptr_factory_.GetWeakPtr(), page_url),
+                 weak_ptr_factory_.GetWeakPtr(),
+                 page_url),
       &cancelable_task_tracker_);
   page_task_map_[page_url] = id;
 }

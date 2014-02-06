@@ -8,8 +8,8 @@
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace chrome {
@@ -66,7 +66,7 @@ class ShortcutBuilder : public content::WebContentsObserver {
   base::string16 title_;
   int launcher_large_icon_size_;
   ShortcutType shortcut_type_;
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutBuilder);
 };

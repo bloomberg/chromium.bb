@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 
 namespace chromeos {
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // To use ChromeOSVersionLoader do the following:
 //
 // . In your class define a member field of type chromeos::VersionLoader and
-//   CancelableTaskTracker.
+//   base::CancelableTaskTracker.
 // . Define the callback method, something like:
 //   void OnGetChromeOSVersion(const std::string& version);
 // . When you want the version invoke:
@@ -46,12 +46,14 @@ class VersionLoader {
   // Asynchronously requests the version.
   // If |full_version| is true version string with extra info is extracted,
   // otherwise it's in short format x.x.xx.x.
-  CancelableTaskTracker::TaskId GetVersion(VersionFormat format,
-                                           const GetVersionCallback& callback,
-                                           CancelableTaskTracker* tracker);
+  base::CancelableTaskTracker::TaskId GetVersion(
+      VersionFormat format,
+      const GetVersionCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
-  CancelableTaskTracker::TaskId GetFirmware(const GetFirmwareCallback& callback,
-                                            CancelableTaskTracker* tracker);
+  base::CancelableTaskTracker::TaskId GetFirmware(
+      const GetFirmwareCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFirmware);

@@ -13,9 +13,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 /**
  * This is a helper class to use favicon_service.cc's functionality.
  *
- * You can request a favicon image by web page URL. Note that an instance of this class should be
- * created & used & destroyed (by destroy()) in the same thread due to the C++ CancelableTaskTracker
- * class requirement.
+ * You can request a favicon image by web page URL. Note that an instance of
+ * this class should be created & used & destroyed (by destroy()) in the same
+ * thread due to the C++ base::CancelableTaskTracker class
+ * requirement.
  */
 public class FaviconHelper {
 

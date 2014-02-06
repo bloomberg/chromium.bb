@@ -14,11 +14,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/common/cancelable_task_tracker.h"
 
 // This class is JNI implementation of
 // org.chromium.chrome.database.SqliteCursor, it uses the AndroidStatement to
@@ -181,7 +181,7 @@ class SQLiteCursor {
 
   // Live on UI thread.
   scoped_ptr<CancelableRequestConsumer> consumer_;
-  scoped_ptr<CancelableTaskTracker> tracker_;
+  scoped_ptr<base::CancelableTaskTracker> tracker_;
 
   // The count of result rows.
   int count_;

@@ -17,8 +17,8 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -162,10 +162,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   FaviconState favicon_state() const { return favicon_state_; }
   void set_favicon_state(FaviconState state) { favicon_state_ = state; }
 
-  CancelableTaskTracker::TaskId favicon_load_task_id() const {
+  base::CancelableTaskTracker::TaskId favicon_load_task_id() const {
     return favicon_load_task_id_;
   }
-  void set_favicon_load_task_id(CancelableTaskTracker::TaskId id) {
+  void set_favicon_load_task_id(base::CancelableTaskTracker::TaskId id) {
     favicon_load_task_id_ = id;
   }
 
@@ -194,9 +194,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // The loading state of the favicon.
   FaviconState favicon_state_;
 
-  // If not CancelableTaskTracker::kBadTaskId, it indicates we're loading the
+  // If not base::CancelableTaskTracker::kBadTaskId, it indicates
+  // we're loading the
   // favicon and the task is tracked by CancelabelTaskTracker.
-  CancelableTaskTracker::TaskId favicon_load_task_id_;
+  base::CancelableTaskTracker::TaskId favicon_load_task_id_;
 
   // A map that stores arbitrary meta information about the node.
   scoped_ptr<MetaInfoMap> meta_info_map_;
@@ -560,7 +561,7 @@ class BookmarkModel : public content::NotificationObserver,
   base::Lock url_lock_;
 
   // Used for loading favicons.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Reads/writes bookmarks to disk.
   scoped_refptr<BookmarkStorage> store_;

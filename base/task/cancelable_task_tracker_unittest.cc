@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 
 #include <cstddef>
 #include <deque>
@@ -19,16 +19,16 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+
 namespace {
 
 class CancelableTaskTrackerTest : public testing::Test {
  protected:
-  virtual ~CancelableTaskTrackerTest() {
-    RunCurrentLoopUntilIdle();
-  }
+  virtual ~CancelableTaskTrackerTest() { RunCurrentLoopUntilIdle(); }
 
   void RunCurrentLoopUntilIdle() {
-    base::RunLoop run_loop;
+    RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
 
@@ -36,7 +36,7 @@ class CancelableTaskTrackerTest : public testing::Test {
 
  private:
   // Needed by CancelableTaskTracker methods.
-  base::MessageLoop message_loop_;
+  MessageLoop message_loop_;
 };
 
 void AddFailureAt(const tracked_objects::Location& location) {
@@ -44,9 +44,8 @@ void AddFailureAt(const tracked_objects::Location& location) {
 }
 
 // Returns a closure that fails if run.
-base::Closure MakeExpectedNotRunClosure(
-    const tracked_objects::Location& location) {
-  return base::Bind(&AddFailureAt, location);
+Closure MakeExpectedNotRunClosure(const tracked_objects::Location& location) {
+  return Bind(&AddFailureAt, location);
 }
 
 // A helper class for MakeExpectedRunClosure() that fails if it is
@@ -56,8 +55,7 @@ base::Closure MakeExpectedNotRunClosure(
 class RunChecker {
  public:
   explicit RunChecker(const tracked_objects::Location& location)
-      : location_(location),
-        called_(false) {}
+      : location_(location), called_(false) {}
 
   ~RunChecker() {
     if (!called_) {
@@ -65,9 +63,7 @@ class RunChecker {
     }
   }
 
-  void Run() {
-    called_ = true;
-  }
+  void Run() { called_ = true; }
 
  private:
   tracked_objects::Location location_;
@@ -75,16 +71,17 @@ class RunChecker {
 };
 
 // Returns a closure that fails on destruction if it hasn't been run.
-base::Closure MakeExpectedRunClosure(
-    const tracked_objects::Location& location) {
-  return base::Bind(&RunChecker::Run, base::Owned(new RunChecker(location)));
+Closure MakeExpectedRunClosure(const tracked_objects::Location& location) {
+  return Bind(&RunChecker::Run, Owned(new RunChecker(location)));
 }
+
+}  // namespace
 
 // With the task tracker, post a task, a task with a reply, and get a
 // new task id without canceling any of them.  The tasks and the reply
 // should run and the "is canceled" callback should return false.
 TEST_F(CancelableTaskTrackerTest, NoCancel) {
-  base::Thread worker_thread("worker thread");
+  Thread worker_thread("worker thread");
   ASSERT_TRUE(worker_thread.Start());
 
   ignore_result(task_tracker_.PostTask(worker_thread.message_loop_proxy().get(),
@@ -110,14 +107,11 @@ TEST_F(CancelableTaskTrackerTest, NoCancel) {
 // Post a task with the task tracker but cancel it before running the
 // task runner.  The task should not run.
 TEST_F(CancelableTaskTrackerTest, CancelPostedTask) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
-  CancelableTaskTracker::TaskId task_id =
-      task_tracker_.PostTask(
-          test_task_runner.get(),
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE));
+  CancelableTaskTracker::TaskId task_id = task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
   EXPECT_EQ(1U, test_task_runner->GetPendingTasks().size());
@@ -131,15 +125,14 @@ TEST_F(CancelableTaskTrackerTest, CancelPostedTask) {
 // running the task runner.  Neither the task nor the reply should
 // run.
 TEST_F(CancelableTaskTrackerTest, CancelPostedTaskAndReply) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   CancelableTaskTracker::TaskId task_id =
-      task_tracker_.PostTaskAndReply(
-          test_task_runner.get(),
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE),
-          MakeExpectedNotRunClosure(FROM_HERE));
+      task_tracker_.PostTaskAndReply(test_task_runner.get(),
+                                     FROM_HERE,
+                                     MakeExpectedNotRunClosure(FROM_HERE),
+                                     MakeExpectedNotRunClosure(FROM_HERE));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
   task_tracker_.TryCancel(task_id);
@@ -151,15 +144,14 @@ TEST_F(CancelableTaskTrackerTest, CancelPostedTaskAndReply) {
 // running the task runner but before running the current message
 // loop.  The task should run but the reply should not.
 TEST_F(CancelableTaskTrackerTest, CancelReply) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   CancelableTaskTracker::TaskId task_id =
-      task_tracker_.PostTaskAndReply(
-          test_task_runner.get(),
-          FROM_HERE,
-          MakeExpectedRunClosure(FROM_HERE),
-          MakeExpectedNotRunClosure(FROM_HERE));
+      task_tracker_.PostTaskAndReply(test_task_runner.get(),
+                                     FROM_HERE,
+                                     MakeExpectedRunClosure(FROM_HERE),
+                                     MakeExpectedNotRunClosure(FROM_HERE));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
   test_task_runner->RunUntilIdle();
@@ -171,13 +163,13 @@ TEST_F(CancelableTaskTrackerTest, CancelReply) {
 // cancel it before running the current message loop.  The task should
 // run but the reply should not.
 TEST_F(CancelableTaskTrackerTest, CancelReplyDifferentThread) {
-  base::Thread worker_thread("worker thread");
+  Thread worker_thread("worker thread");
   ASSERT_TRUE(worker_thread.Start());
 
   CancelableTaskTracker::TaskId task_id =
       task_tracker_.PostTaskAndReply(worker_thread.message_loop_proxy().get(),
                                      FROM_HERE,
-                                     base::Bind(&base::DoNothing),
+                                     Bind(&DoNothing),
                                      MakeExpectedNotRunClosure(FROM_HERE));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
@@ -202,19 +194,17 @@ TEST_F(CancelableTaskTrackerTest, NewTrackedTaskIdDifferentThread) {
 
   EXPECT_FALSE(is_canceled.Run());
 
-  base::Thread other_thread("other thread");
+  Thread other_thread("other thread");
   ASSERT_TRUE(other_thread.Start());
   other_thread.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExpectIsCanceled, is_canceled, false));
+      FROM_HERE, Bind(&ExpectIsCanceled, is_canceled, false));
   other_thread.Stop();
 
   task_tracker_.TryCancel(task_id);
 
   ASSERT_TRUE(other_thread.Start());
   other_thread.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExpectIsCanceled, is_canceled, true));
+      FROM_HERE, Bind(&ExpectIsCanceled, is_canceled, true));
   other_thread.Stop();
 }
 
@@ -223,8 +213,8 @@ TEST_F(CancelableTaskTrackerTest, NewTrackedTaskIdDifferentThread) {
 // reply should run and the "is canceled" callback should return
 // true.
 TEST_F(CancelableTaskTrackerTest, CancelAll) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   ignore_result(task_tracker_.PostTask(
       test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE)));
@@ -252,8 +242,8 @@ TEST_F(CancelableTaskTrackerTest, CancelAll) {
 // reply should run and the "is canceled" callback should return
 // true.
 TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   CancelableTaskTracker::IsCanceledCallback is_canceled;
 
@@ -285,8 +275,8 @@ TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
 // from when the task is posted until the (do-nothing) reply task is
 // flushed.
 TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
@@ -307,8 +297,8 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
 // Post a task with a reply and cancel it.  HasTrackedTasks() should
 // return true from when the task is posted until it is canceled.
 TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
@@ -371,32 +361,30 @@ class CancelableTaskTrackerDeathTest : public CancelableTaskTrackerTest {
 // Runs |fn| with |task_tracker|, expecting it to crash in debug mode.
 void MaybeRunDeadlyTaskTrackerMemberFunction(
     CancelableTaskTracker* task_tracker,
-    const base::Callback<void(CancelableTaskTracker*)>& fn) {
-  // CancelableTask uses DCHECKs with its ThreadChecker (itself only
-  // enabled in debug mode).
+    const Callback<void(CancelableTaskTracker*)>& fn) {
+// CancelableTask uses DCHECKs with its ThreadChecker (itself only
+// enabled in debug mode).
 #if ENABLE_THREAD_CHECKER
   EXPECT_DEATH_IF_SUPPORTED(fn.Run(task_tracker), "");
 #endif
 }
 
 void PostDoNothingTask(CancelableTaskTracker* task_tracker) {
-  ignore_result(
-      task_tracker->PostTask(scoped_refptr<base::TestSimpleTaskRunner>(
-                                 new base::TestSimpleTaskRunner())
-                                 .get(),
-                             FROM_HERE,
-                             base::Bind(&base::DoNothing)));
+  ignore_result(task_tracker->PostTask(
+      scoped_refptr<TestSimpleTaskRunner>(new TestSimpleTaskRunner()).get(),
+      FROM_HERE,
+      Bind(&DoNothing)));
 }
 
 TEST_F(CancelableTaskTrackerDeathTest, PostFromDifferentThread) {
-  base::Thread bad_thread("bad thread");
+  Thread bad_thread("bad thread");
   ASSERT_TRUE(bad_thread.Start());
 
   bad_thread.message_loop_proxy()->PostTask(
       FROM_HERE,
-      base::Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
-                 base::Unretained(&task_tracker_),
-                 base::Bind(&PostDoNothingTask)));
+      Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
+           Unretained(&task_tracker_),
+           Bind(&PostDoNothingTask)));
 }
 
 void TryCancel(CancelableTaskTracker::TaskId task_id,
@@ -405,49 +393,43 @@ void TryCancel(CancelableTaskTracker::TaskId task_id,
 }
 
 TEST_F(CancelableTaskTrackerDeathTest, CancelOnDifferentThread) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
-  base::Thread bad_thread("bad thread");
+  Thread bad_thread("bad thread");
   ASSERT_TRUE(bad_thread.Start());
 
-  CancelableTaskTracker::TaskId task_id =
-      task_tracker_.PostTask(
-          test_task_runner.get(),
-          FROM_HERE,
-          base::Bind(&base::DoNothing));
+  CancelableTaskTracker::TaskId task_id = task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, Bind(&DoNothing));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
   bad_thread.message_loop_proxy()->PostTask(
       FROM_HERE,
-      base::Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
-                 base::Unretained(&task_tracker_),
-                 base::Bind(&TryCancel, task_id)));
+      Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
+           Unretained(&task_tracker_),
+           Bind(&TryCancel, task_id)));
 
   test_task_runner->RunUntilIdle();
 }
 
 TEST_F(CancelableTaskTrackerDeathTest, CancelAllOnDifferentThread) {
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
-      new base::TestSimpleTaskRunner());
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
 
-  base::Thread bad_thread("bad thread");
+  Thread bad_thread("bad thread");
   ASSERT_TRUE(bad_thread.Start());
 
-  CancelableTaskTracker::TaskId task_id =
-      task_tracker_.PostTask(
-          test_task_runner.get(),
-          FROM_HERE,
-          base::Bind(&base::DoNothing));
+  CancelableTaskTracker::TaskId task_id = task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, Bind(&DoNothing));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
   bad_thread.message_loop_proxy()->PostTask(
       FROM_HERE,
-      base::Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
-                 base::Unretained(&task_tracker_),
-                 base::Bind(&CancelableTaskTracker::TryCancelAll)));
+      Bind(&MaybeRunDeadlyTaskTrackerMemberFunction,
+           Unretained(&task_tracker_),
+           Bind(&CancelableTaskTracker::TryCancelAll)));
 
   test_task_runner->RunUntilIdle();
 }
 
-}  // namespace
+}  // namespace base

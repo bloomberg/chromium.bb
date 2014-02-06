@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -204,7 +204,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   std::set<int> requested_favicons_;
 
   // Used for loading favicons.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Used for receiving notifications when an icon is changed.
   ui::MenuModelDelegate* menu_model_delegate_;

@@ -10,6 +10,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/notifications.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/favicon/favicon_types.h"
@@ -258,7 +258,7 @@ void MessageCenterSettingsController::GetNotifierList(
   notification_service->GetNotificationsSettings(&settings);
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
-  favicon_tracker_.reset(new CancelableTaskTracker());
+  favicon_tracker_.reset(new base::CancelableTaskTracker());
   patterns_.clear();
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();
        iter != settings.end(); ++iter) {

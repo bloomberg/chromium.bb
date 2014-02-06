@@ -26,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -50,7 +51,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -311,7 +311,7 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
   void OnIconLoadComplete(
       float scale, const IconURLCallback& callback, gfx::Image* icon);
 
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 };
 
 bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(

@@ -205,7 +205,7 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
     const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
-    tracker_.reset(new CancelableTaskTracker());
+    tracker_.reset(new base::CancelableTaskTracker());
   favicon_service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
 }
 

@@ -48,8 +48,8 @@
 #include <map>
 
 #include "base/files/file_path.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/icon_loader.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/image/image.h"
 
 class IconManager : public IconLoader::Delegate {
@@ -77,10 +77,11 @@ class IconManager : public IconLoader::Delegate {
   //    should never keep it or delete it.
   // 3. The gfx::Image pointer passed to the callback may be NULL if decoding
   //    failed.
-  CancelableTaskTracker::TaskId LoadIcon(const base::FilePath& file_name,
-                                         IconLoader::IconSize size,
-                                         const IconRequestCallback& callback,
-                                         CancelableTaskTracker* tracker);
+  base::CancelableTaskTracker::TaskId LoadIcon(
+      const base::FilePath& file_name,
+      IconLoader::IconSize size,
+      const IconRequestCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // IconLoader::Delegate interface.
   virtual bool OnGroupLoaded(IconLoader* loader,

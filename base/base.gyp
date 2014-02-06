@@ -615,6 +615,7 @@
         'synchronization/waitable_event_watcher_unittest.cc',
         'sys_info_unittest.cc',
         'system_monitor/system_monitor_unittest.cc',
+        'task/cancelable_task_tracker_unittest.cc',
         'task_runner_util_unittest.cc',
         'template_util_unittest.cc',
         'test/expectations/expectation_unittest.cc',

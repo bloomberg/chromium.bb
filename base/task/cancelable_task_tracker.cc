@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 
 #include <utility>
 
@@ -54,12 +54,13 @@ void RunOrPostToTaskRunner(TaskRunner* task_runner, const Closure& closure) {
 
 }  // namespace
 
+namespace base {
+
 // static
 const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 
 CancelableTaskTracker::CancelableTaskTracker()
-    : weak_factory_(this),
-      next_id_(1) {}
+    : weak_factory_(this), next_id_(1) {}
 
 CancelableTaskTracker::~CancelableTaskTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -92,13 +93,15 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   TaskId id = next_id_;
   next_id_++;  // int64 is big enough that we ignore the potential overflow.
 
-  const Closure& untrack_closure = Bind(
-      &CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id);
-  bool success = task_runner->PostTaskAndReply(
-      from_here,
-      Bind(&RunIfNotCanceled, flag, task),
-      Bind(&RunIfNotCanceledThenUntrack,
-           base::Owned(flag), reply, untrack_closure));
+  const Closure& untrack_closure =
+      Bind(&CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id);
+  bool success =
+      task_runner->PostTaskAndReply(from_here,
+                                    Bind(&RunIfNotCanceled, flag, task),
+                                    Bind(&RunIfNotCanceledThenUntrack,
+                                         base::Owned(flag),
+                                         reply,
+                                         untrack_closure));
 
   if (!success)
     return kBadTaskId;
@@ -125,13 +128,12 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
 
   // Will always run |untrack_and_delete_flag| on current MessageLoop.
   base::ScopedClosureRunner* untrack_and_delete_flag_runner =
-      new base::ScopedClosureRunner(
-          Bind(&RunOrPostToTaskRunner,
-               base::MessageLoopProxy::current(),
-               untrack_and_delete_flag));
+      new base::ScopedClosureRunner(Bind(&RunOrPostToTaskRunner,
+                                         base::MessageLoopProxy::current(),
+                                         untrack_and_delete_flag));
 
-  *is_canceled_cb = Bind(
-      &IsCanceled, flag, base::Owned(untrack_and_delete_flag_runner));
+  *is_canceled_cb =
+      Bind(&IsCanceled, flag, base::Owned(untrack_and_delete_flag_runner));
 
   Track(id, flag);
   return id;
@@ -181,3 +183,5 @@ void CancelableTaskTracker::Untrack(TaskId id) {
   size_t num = task_flags_.erase(id);
   DCHECK_EQ(1u, num);
 }
+
+}  // namespace base

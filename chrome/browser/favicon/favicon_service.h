@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -95,27 +95,27 @@ class FaviconService : public CancelableRequestProvider,
   // Each of the three methods below differs in the format of the callback and
   // the requested scale factors. All of the scale factors supported by the
   // current platform (eg MacOS) are requested for GetFaviconImage().
-  CancelableTaskTracker::TaskId GetFaviconImage(
+  base::CancelableTaskTracker::TaskId GetFaviconImage(
       const GURL& icon_url,
       chrome::IconType icon_type,
       int desired_size_in_dip,
       const FaviconImageCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
-  CancelableTaskTracker::TaskId GetRawFavicon(
+  base::CancelableTaskTracker::TaskId GetRawFavicon(
       const GURL& icon_url,
       chrome::IconType icon_type,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
       const FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
-  CancelableTaskTracker::TaskId GetFavicon(
+  base::CancelableTaskTracker::TaskId GetFavicon(
       const GURL& icon_url,
       chrome::IconType icon_type,
       int desired_size_in_dip,
       const FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Set the favicon mappings to |page_url| for |icon_types| in the history
   // database.
@@ -137,13 +137,13 @@ class FaviconService : public CancelableRequestProvider,
   // addition to 1x from the favicons which were just mapped to |page_url| are
   // returned. If |desired_size_in_dip| is 0, the largest favicon bitmap is
   // returned.
-  CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
+  base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
       const FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Requests the favicons of any of |icon_types| whose pixel sizes most
   // closely match |desired_size_in_dip| and desired scale factors for a web
@@ -156,39 +156,39 @@ class FaviconService : public CancelableRequestProvider,
   // supported by the current platform (eg MacOS) are requested for
   // GetFaviconImageForURL().
   // Note. |callback| is always run asynchronously.
-  CancelableTaskTracker::TaskId GetFaviconImageForURL(
+  base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const FaviconForURLParams& params,
       const FaviconImageCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
-  CancelableTaskTracker::TaskId GetRawFaviconForURL(
+  base::CancelableTaskTracker::TaskId GetRawFaviconForURL(
       const FaviconForURLParams& params,
       ui::ScaleFactor desired_scale_factor,
       const FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // See HistoryService::GetLargestFaviconForURL().
-  CancelableTaskTracker::TaskId GetLargestRawFaviconForURL(
+  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForURL(
       Profile* profile,
       const GURL& page_url,
       const std::vector<int>& icon_types,
       int minimum_size_in_pixels,
       const FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
-  CancelableTaskTracker::TaskId GetFaviconForURL(
+  base::CancelableTaskTracker::TaskId GetFaviconForURL(
       const FaviconForURLParams& params,
       const FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Used to request a bitmap for the favicon with |favicon_id| which is not
   // resized from the size it is stored at in the database. If there are
   // multiple favicon bitmaps for |favicon_id|, the largest favicon bitmap is
   // returned.
-  CancelableTaskTracker::TaskId GetLargestRawFaviconForID(
+  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForID(
       chrome::FaviconID favicon_id,
       const FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Marks all types of favicon for the page as being out of date.
   void SetFaviconOutOfDateForPage(const GURL& page_url);
@@ -245,11 +245,11 @@ class FaviconService : public CancelableRequestProvider,
 
   // Helper function for GetFaviconImageForURL(), GetRawFaviconForURL() and
   // GetFaviconForURL().
-  CancelableTaskTracker::TaskId GetFaviconForURLImpl(
+  base::CancelableTaskTracker::TaskId GetFaviconForURLImpl(
       const FaviconForURLParams& params,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
       const FaviconResultsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Intermediate callback for GetFaviconImage() and GetFaviconImageForURL()
   // so that history service can deal solely with FaviconResultsCallback.

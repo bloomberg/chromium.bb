@@ -67,8 +67,6 @@
         'common/automation_messages_internal.h',
         'common/badge_util.cc',
         'common/badge_util.h',
-        'common/cancelable_task_tracker.cc',
-        'common/cancelable_task_tracker.h',
         'common/child_process_logging.h',
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',

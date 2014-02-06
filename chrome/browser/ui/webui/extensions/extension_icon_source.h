@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/common/extension_resource.h"
@@ -156,7 +156,7 @@ class ExtensionIconSource : public content::URLDataSource,
 
   scoped_ptr<SkBitmap> default_extension_data_;
 
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconSource);
 };

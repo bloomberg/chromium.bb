@@ -62,7 +62,7 @@ static jlong Init(JNIEnv* env, jclass clazz) {
 }
 
 FaviconHelper::FaviconHelper() {
-  cancelable_task_tracker_.reset(new CancelableTaskTracker());
+  cancelable_task_tracker_.reset(new base::CancelableTaskTracker());
 }
 
 void FaviconHelper::Destroy(JNIEnv* env, jobject obj) {

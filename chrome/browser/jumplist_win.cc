@@ -466,8 +466,7 @@ bool UpdateJumpList(const wchar_t* app_id,
 JumpList::JumpList()
     : weak_ptr_factory_(this),
       profile_(NULL),
-      task_id_(CancelableTaskTracker::kBadTaskId) {
-}
+      task_id_(base::CancelableTaskTracker::kBadTaskId) {}
 
 JumpList::~JumpList() {
   Terminate();
@@ -553,9 +552,9 @@ void JumpList::RemoveObserver() {
 }
 
 void JumpList::CancelPendingUpdate() {
-  if (task_id_ != CancelableTaskTracker::kBadTaskId) {
+  if (task_id_ != base::CancelableTaskTracker::kBadTaskId) {
     cancelable_task_tracker_.TryCancel(task_id_);
-    task_id_ = CancelableTaskTracker::kBadTaskId;
+    task_id_ = base::CancelableTaskTracker::kBadTaskId;
   }
 }
 
@@ -697,7 +696,7 @@ void JumpList::OnFaviconDataAvailable(
     const chrome::FaviconImageResult& image_result) {
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
-  task_id_ = CancelableTaskTracker::kBadTaskId;
+  task_id_ = base::CancelableTaskTracker::kBadTaskId;
   // lock the list to set icon data and pop the url
   {
     base::AutoLock auto_lock(list_lock_);

@@ -13,12 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/geoposition.h"
@@ -180,7 +180,7 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   base::OneShotTimer<DeviceStatusCollector> geolocation_update_timer_;
 
   chromeos::VersionLoader version_loader_;
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
 
   std::string os_version_;
   std::string firmware_version_;

@@ -9,12 +9,12 @@
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -114,7 +114,7 @@ class ModelEntry {
   gfx::ImageSkia favicon_;
   LoadState load_state_;
   TemplateURLTableModel* model_;
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelEntry);
 };

@@ -13,10 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -151,9 +151,9 @@ class BaseSessionService : public CancelableRequestProvider {
   // Invokes SessionBackend::ReadLastSessionCommands with callback on the
   // backend thread.
   // If testing, SessionBackend::ReadLastSessionCommands is invoked directly.
-  CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
+  base::CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
       const InternalGetCommandsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.

@@ -11,8 +11,8 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host.h"
@@ -25,7 +25,7 @@ namespace chromeos {
 // To use BootTimesLoader, do the following:
 //
 // . In your class define a member field of type chromeos::BootTimesLoader and
-//   CancelableTaskTracker.
+//   base::CancelableTaskTracker.
 // . Define the callback method, something like:
 //   void OnBootTimesLoaded(const BootTimesLoader::BootTimes& boot_times);
 // . When you want the version invoke: loader.GetBootTimes(callback, &tracker_);

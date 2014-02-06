@@ -138,7 +138,7 @@ void BookmarkNode::Initialize(int64 id) {
   type_ = url_.is_empty() ? FOLDER : URL;
   date_added_ = Time::Now();
   favicon_state_ = INVALID_FAVICON;
-  favicon_load_task_id_ = CancelableTaskTracker::kBadTaskId;
+  favicon_load_task_id_ = base::CancelableTaskTracker::kBadTaskId;
   meta_info_map_.reset();
   sync_transaction_version_ = kInvalidSyncTransactionVersion;
 }
@@ -987,7 +987,7 @@ void BookmarkModel::OnFaviconDataAvailable(
     BookmarkNode* node,
     const chrome::FaviconImageResult& image_result) {
   DCHECK(node);
-  node->set_favicon_load_task_id(CancelableTaskTracker::kBadTaskId);
+  node->set_favicon_load_task_id(base::CancelableTaskTracker::kBadTaskId);
   node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
   if (!image_result.image.IsEmpty()) {
     node->set_favicon(image_result.image);
@@ -1021,9 +1021,9 @@ void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
 }
 
 void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
-  if (node->favicon_load_task_id() != CancelableTaskTracker::kBadTaskId) {
+  if (node->favicon_load_task_id() != base::CancelableTaskTracker::kBadTaskId) {
     cancelable_task_tracker_.TryCancel(node->favicon_load_task_id());
-    node->set_favicon_load_task_id(CancelableTaskTracker::kBadTaskId);
+    node->set_favicon_load_task_id(base::CancelableTaskTracker::kBadTaskId);
   }
 }
 

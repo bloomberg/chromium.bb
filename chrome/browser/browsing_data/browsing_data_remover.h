@@ -13,10 +13,10 @@
 #include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_method_call_status.h"
 #endif
@@ -401,7 +401,7 @@ class BrowsingDataRemover
   ObserverList<Observer> observer_list_;
 
   // Used if we need to clear history.
-  CancelableTaskTracker history_task_tracker_;
+  base::CancelableTaskTracker history_task_tracker_;
 
   scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
 

@@ -11,9 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
 
-class CancelableTaskTracker;
-
 namespace base {
+class CancelableTaskTracker;
 class FilePath;
 }
 
@@ -41,7 +40,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   // Fetches MostVisitedThumbnails.
   void GetMostVisitedThumbnails(
       const GetMostVisitedThumbnailsCallback& callback,
-      CancelableTaskTracker* tracker);
+      base::CancelableTaskTracker* tracker);
 
   // Updates top sites database from the specified delta.
   void UpdateTopSites(const TopSitesDelta& delta);
@@ -58,7 +57,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   // the the calling thread with a reply. This is used to make sure the db has
   // finished processing a request.
   void DoEmptyRequest(const base::Closure& reply,
-                      CancelableTaskTracker* tracker);
+                      base::CancelableTaskTracker* tracker);
 
  private:
   friend class base::RefCountedThreadSafe<TopSitesBackend>;

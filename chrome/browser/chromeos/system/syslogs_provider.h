@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "base/task/cancelable_task_tracker.h"
 
 namespace chromeos {
 namespace system {
@@ -44,13 +44,14 @@ class SyslogsProvider {
   // Request system logs. Read happens on the FILE thread and callback is
   // called on the thread this is called from. Logs are owned by callback
   // function (use delete when done with them).
-  // Call CancelableTaskTracker::TryCancel() with the returned task ID to cancel
+  // Call base::CancelableTaskTracker::TryCancel() with the returned
+  // task ID to cancel
   // task and callback.
-  virtual CancelableTaskTracker::TaskId RequestSyslogs(
+  virtual base::CancelableTaskTracker::TaskId RequestSyslogs(
       bool compress_logs,
       SyslogsContext context,
       const ReadCompleteCallback& callback,
-      CancelableTaskTracker* tracker) = 0;
+      base::CancelableTaskTracker* tracker) = 0;
 
  protected:
   virtual ~SyslogsProvider() {}

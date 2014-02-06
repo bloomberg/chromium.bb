@@ -25,9 +25,12 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-class CancelableTaskTracker;
 class Profile;
 class ProfileInfoCache;
+
+namespace base {
+class CancelableTaskTracker;
+}
 
 namespace chrome {
 struct FaviconImageResult;
@@ -106,7 +109,7 @@ class MessageCenterSettingsController
   ObserverList<message_center::NotifierSettingsObserver> observers_;
 
   // The task tracker for loading favicons.
-  scoped_ptr<CancelableTaskTracker> favicon_tracker_;
+  scoped_ptr<base::CancelableTaskTracker> favicon_tracker_;
 
   scoped_ptr<extensions::AppIconLoader> app_icon_loader_;
 

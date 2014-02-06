@@ -11,6 +11,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/common/cancelable_request.h"
 #import "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 
 class NotificationRegistrar;
@@ -79,10 +79,11 @@ class HistoryMenuBridge : public content::NotificationObserver,
 
     // If the icon is being requested from the FaviconService, |icon_requested|
     // will be true and |icon_task_id| will be valid. If this is false, then
-    // |icon_task_id| will be CancelableTaskTracker::kBadTaskId.
+    // |icon_task_id| will be
+    // base::CancelableTaskTracker::kBadTaskId.
     bool icon_requested;
     // The Handle given to us by the FaviconService for the icon fetch request.
-    CancelableTaskTracker::TaskId icon_task_id;
+    base::CancelableTaskTracker::TaskId icon_task_id;
 
     // The pointer to the item after it has been created. Strong; NSMenu also
     // retains this. During a rebuild flood (if the user closes a lot of tabs
@@ -212,7 +213,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
   CancelableRequestConsumer cancelable_request_consumer_;
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until
   // they are removed and deleted via ClearMenuSection().

@@ -67,7 +67,7 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // Handles asynchronously loading the boot times.
   BootTimesLoader boot_times_loader_;
   // Used to request version and boot times.
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
 
   // Information pieces for version label.
   std::string version_text_;

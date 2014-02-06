@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// CancelableTaskTracker posts tasks (in the form of a Closure) to a TaskRunner,
-// and is able to cancel the task later if it's not needed anymore. On
-// destruction, CancelableTaskTracker will cancel all tracked tasks.
+// CancelableTaskTracker posts tasks (in the form of a Closure) to a
+// TaskRunner, and is able to cancel the task later if it's not needed
+// anymore.  On destruction, CancelableTaskTracker will cancel all
+// tracked tasks.
 //
 // Each cancelable task can be associated with a reply (also a Closure). After
-// the task is run on the TaskRunner, |reply| will be posted back to originating
-// TaskRunner.
+// the task is run on the TaskRunner, |reply| will be posted back to
+// originating TaskRunner.
 //
 // NOTE:
 //
@@ -17,39 +18,41 @@
 // cancelation from another thread. This is sometimes a performance critical
 // requirement. E.g. We need to cancel database lookup task on DB thread when
 // user changes inputed text. If it is performance critical to do a best effort
-// cancelation of a task, then CancelableTaskTracker is appropriate, otherwise
-// use one of the other mechanisms.
+// cancelation of a task, then CancelableTaskTracker is appropriate,
+// otherwise use one of the other mechanisms.
 //
 // THREAD-SAFETY:
 //
-// 1. CancelableTaskTracker objects are not thread safe. They must be created,
-// used, and destroyed on the originating thread that posts the task. It's safe
-// to destroy a CancelableTaskTracker while there are outstanding tasks. This is
-// commonly used to cancel all outstanding tasks.
+// 1. CancelableTaskTracker objects are not thread safe. They must
+// be created, used, and destroyed on the originating thread that posts the
+// task. It's safe to destroy a CancelableTaskTracker while there
+// are outstanding tasks. This is commonly used to cancel all outstanding
+// tasks.
 //
 // 2. Both task and reply are deleted on the originating thread.
 //
-// 3. IsCanceledCallback is thread safe and can be run or deleted on any thread.
+// 3. IsCanceledCallback is thread safe and can be run or deleted on any
+// thread.
+#ifndef BASE_TASK_CANCELABLE_TASK_TRACKER_H_
+#define BASE_TASK_CANCELABLE_TASK_TRACKER_H_
 
-#ifndef CHROME_COMMON_CANCELABLE_TASK_TRACKER_H_
-#define CHROME_COMMON_CANCELABLE_TASK_TRACKER_H_
-
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 
-namespace base {
-class CancellationFlag;
-class TaskRunner;
-}  // namespace base
-
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-class CancelableTaskTracker {
+namespace base {
+
+class CancellationFlag;
+class TaskRunner;
+
+class BASE_EXPORT CancelableTaskTracker {
  public:
   // All values except kBadTaskId are valid.
   typedef int64 TaskId;
@@ -112,4 +115,6 @@ class CancelableTaskTracker {
   DISALLOW_COPY_AND_ASSIGN(CancelableTaskTracker);
 };
 
-#endif  // CHROME_COMMON_CANCELABLE_TASK_TRACKER_H_
+}  // namespace base
+
+#endif  // BASE_TASK_CANCELABLE_TASK_TRACKER_H_

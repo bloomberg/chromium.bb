@@ -572,6 +572,8 @@
           'sys_info_openbsd.cc',
           'sys_info_posix.cc',
           'sys_info_win.cc',
+          'task/cancelable_task_tracker.cc',
+          'task/cancelable_task_tracker.h',
           'task_runner.cc',
           'task_runner.h',
           'task_runner_util.h',

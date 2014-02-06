@@ -9,9 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_command.h"
-#include "chrome/common/cancelable_task_tracker.h"
 
 namespace net {
 class FileStream;
@@ -67,7 +67,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // Invoked from the service to read the commands that make up the last
   // session, invokes ReadLastSessionCommandsImpl to do the work.
   void ReadLastSessionCommands(
-      const CancelableTaskTracker::IsCanceledCallback& is_canceled,
+      const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
       const BaseSessionService::InternalGetCommandsCallback& callback);
 
   // Reads the commands from the last file.

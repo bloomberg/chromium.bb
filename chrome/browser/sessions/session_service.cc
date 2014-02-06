@@ -497,9 +497,9 @@ void SessionService::SetTabUserAgentOverride(
       kCommandSetTabUserAgentOverride, tab_id.id(), user_agent_override));
 }
 
-CancelableTaskTracker::TaskId SessionService::GetLastSession(
+base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
     const SessionCallback& callback,
-    CancelableTaskTracker* tracker) {
+    base::CancelableTaskTracker* tracker) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
   return ScheduleGetLastSessionCommands(

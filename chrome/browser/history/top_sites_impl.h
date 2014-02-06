@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_backend.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/thumbnail_score.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
@@ -237,7 +237,7 @@ class TopSitesImpl : public TopSites {
   // Need a separate consumer for each CancelableRequestProvider we interact
   // with (HistoryService and TopSitesBackend).
   CancelableRequestConsumer history_consumer_;
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Timer that asks history for the top sites. This is used to make sure our
   // data stays in sync with history.

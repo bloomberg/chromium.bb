@@ -13,11 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -115,8 +115,8 @@ typedef std::vector<scoped_refptr<ShellLinkItem> > ShellLinkItemList;
 // update it in a UI thread. To solve this problem, this class posts to a
 // runnable method when it actually updates a JumpList.
 //
-// Note. CancelableTaskTracker is not thread safe, so we always delete JumpList
-// on UI thread (the same thread it got constructed on).
+// Note. base::CancelableTaskTracker is not thread safe, so we
+// always delete JumpList on UI thread (the same thread it got constructed on).
 class JumpList : public TabRestoreServiceObserver,
                  public content::NotificationObserver,
                  public base::RefCountedThreadSafe<
@@ -218,7 +218,7 @@ class JumpList : public TabRestoreServiceObserver,
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;
 
   // Tracks FaviconService tasks.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // The Profile object is used to listen for events
   Profile* profile_;
@@ -247,7 +247,7 @@ class JumpList : public TabRestoreServiceObserver,
 
   // Id of last favicon task. It's used to cancel current task if a new one
   // comes in before it finishes.
-  CancelableTaskTracker::TaskId task_id_;
+  base::CancelableTaskTracker::TaskId task_id_;
 
   // Lock for most_visited_pages_, recently_closed_pages_, icon_urls_
   // as they may be used by up to 3 threads.

@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/top_sites_database.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -34,8 +34,8 @@ void TopSitesBackend::Shutdown() {
 }
 
 void TopSitesBackend::GetMostVisitedThumbnails(
-      const GetMostVisitedThumbnailsCallback& callback,
-      CancelableTaskTracker* tracker) {
+    const GetMostVisitedThumbnailsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   scoped_refptr<MostVisitedThumbnails> thumbnails = new MostVisitedThumbnails();
 
   tracker->PostTaskAndReply(
@@ -69,7 +69,7 @@ void TopSitesBackend::ResetDatabase() {
 }
 
 void TopSitesBackend::DoEmptyRequest(const base::Closure& reply,
-                                     CancelableTaskTracker* tracker) {
+                                     base::CancelableTaskTracker* tracker) {
   tracker->PostTaskAndReply(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       FROM_HERE,

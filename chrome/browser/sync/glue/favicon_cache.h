@@ -15,9 +15,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/api/sync_change.h"
@@ -117,7 +117,7 @@ class FaviconCache : public syncer::SyncableService,
   typedef std::set<linked_ptr<SyncedFaviconInfo>,
                    FaviconRecencyFunctor> RecencySet;
   // Map of page url to task id (for favicon loading).
-  typedef std::map<GURL, CancelableTaskTracker::TaskId> PageTaskMap;
+  typedef std::map<GURL, base::CancelableTaskTracker::TaskId> PageTaskMap;
   // Map of page url to favicon url.
   typedef std::map<GURL, GURL> PageFaviconMap;
 
@@ -194,7 +194,7 @@ class FaviconCache : public syncer::SyncableService,
   size_t NumTasksForTest() const;
 
   // Trask tracker for loading favicons.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Our actual cached favicon data.
   FaviconMap synced_favicons_;

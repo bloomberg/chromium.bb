@@ -244,7 +244,7 @@ void SessionBackend::AppendCommands(
 }
 
 void SessionBackend::ReadLastSessionCommands(
-    const CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
     const BaseSessionService::InternalGetCommandsCallback& callback) {
   if (is_canceled.Run())
     return;

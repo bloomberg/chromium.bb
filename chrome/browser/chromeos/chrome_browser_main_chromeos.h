@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "chrome/common/cancelable_task_tracker.h"
 
 namespace contacts {
 class ContactManager;
@@ -73,7 +73,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<internal::DBusServices> dbus_services_;
 
   VersionLoader cros_version_loader_;
-  CancelableTaskTracker tracker_;
+  base::CancelableTaskTracker tracker_;
   bool use_new_network_change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);

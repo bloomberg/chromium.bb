@@ -7,9 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -52,7 +52,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
   DownloadItemController* item_controller_;  // weak, owns us.
 
   // For canceling an in progress icon request.
-  CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Stores the last known path where the file will be saved.
   base::FilePath lastFilePath_;
