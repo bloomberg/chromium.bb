@@ -33,58 +33,46 @@ void PasswordStoreDefault::ReportMetricsImpl() {
   login_db_->ReportMetrics();
 }
 
-void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
-  if (login_db_->AddLogin(form)) {
-    PasswordStoreChangeList changes;
+PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
+  if (login_db_->AddLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
-  }
+  return changes;
 }
 
-void PasswordStoreDefault::UpdateLoginImpl(const PasswordForm& form) {
-  if (login_db_->UpdateLogin(form, NULL)) {
-    PasswordStoreChangeList changes;
+PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
+  if (login_db_->UpdateLogin(form, NULL))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
-  }
+  return changes;
 }
 
-void PasswordStoreDefault::RemoveLoginImpl(const PasswordForm& form) {
-  if (login_db_->RemoveLogin(form)) {
-    PasswordStoreChangeList changes;
+PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
+  if (login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
-  }
+  return changes;
 }
 
-void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
+PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     const base::Time& delete_begin, const base::Time& delete_end) {
   std::vector<PasswordForm*> forms;
+  PasswordStoreChangeList changes;
   if (login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
-      PasswordStoreChangeList changes;
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
         changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                               **it));
       }
       LogStatsForBulkDeletion(changes.size());
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_LOGINS_CHANGED,
-          content::Source<PasswordStore>(this),
-          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
   STLDeleteElements(&forms);
+  return changes;
 }
 
 void PasswordStoreDefault::GetLoginsImpl(

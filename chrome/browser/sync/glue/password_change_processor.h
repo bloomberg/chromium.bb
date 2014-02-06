@@ -9,12 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 
 class PasswordStore;
 
@@ -31,18 +29,16 @@ class DataTypeErrorHandler;
 // operations and use of this class are from the DB thread on Windows and Linux,
 // or the password thread on Mac.
 class PasswordChangeProcessor : public ChangeProcessor,
-                                public content::NotificationObserver {
+                                public PasswordStore::Observer {
  public:
   PasswordChangeProcessor(PasswordModelAssociator* model_associator,
                           PasswordStore* password_store,
                           DataTypeErrorHandler* error_handler);
   virtual ~PasswordChangeProcessor();
 
-  // content::NotificationObserver implementation.
+  // PasswordStore::Observer implementation:
   // Passwords -> sync API model change application.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) OVERRIDE;
 
   // sync API model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -60,10 +56,12 @@ class PasswordChangeProcessor : public ChangeProcessor,
   void Disconnect();
 
  protected:
+
   virtual void StartImpl(Profile* profile) OVERRIDE;
 
  private:
   friend class ScopedStopObserving<PasswordChangeProcessor>;
+
   void StartObserving();
   void StopObserving();
 
@@ -83,8 +81,6 @@ class PasswordChangeProcessor : public ChangeProcessor,
   PasswordModelAssociator::PasswordVector new_passwords_;
   PasswordModelAssociator::PasswordVector updated_passwords_;
   PasswordModelAssociator::PasswordVector deleted_passwords_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   base::MessageLoop* expected_loop_;
 

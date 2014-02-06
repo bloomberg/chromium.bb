@@ -26,11 +26,14 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD0(ReportMetrics, void());
   MOCK_METHOD0(ReportMetricsImpl, void());
-  MOCK_METHOD1(AddLoginImpl, void(const autofill::PasswordForm&));
-  MOCK_METHOD1(UpdateLoginImpl, void(const autofill::PasswordForm&));
-  MOCK_METHOD1(RemoveLoginImpl, void(const autofill::PasswordForm&));
+  MOCK_METHOD1(AddLoginImpl,
+               PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD1(UpdateLoginImpl,
+               PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD1(RemoveLoginImpl,
+               PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl,
-               void(const base::Time&, const base::Time&));
+               PasswordStoreChangeList(const base::Time&, const base::Time&));
   MOCK_METHOD3(GetLoginsImpl,
                void(const autofill::PasswordForm& form,
                     PasswordStore::AuthorizationPromptPolicy prompt_policy,

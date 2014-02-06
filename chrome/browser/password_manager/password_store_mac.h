@@ -13,10 +13,6 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 
-namespace content {
-class NotificationService;
-}
-
 namespace crypto {
 class AppleKeychain;
 }
@@ -36,7 +32,7 @@ class PasswordStoreMac : public PasswordStore {
       crypto::AppleKeychain* keychain,
       LoginDatabase* login_db);
 
-  // Initializes |thread_| and |notification_service_|.
+  // Initializes |thread_|.
   virtual bool Init() OVERRIDE;
 
  protected:
@@ -47,12 +43,13 @@ class PasswordStoreMac : public PasswordStore {
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;
-  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
-  virtual void UpdateLoginImpl(
+  virtual PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginImpl(
+  virtual PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginsCreatedBetweenImpl(
+  virtual PasswordStoreChangeList RemoveLoginImpl(
+      const autofill::PasswordForm& form) OVERRIDE;
+  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
@@ -88,19 +85,11 @@ class PasswordStoreMac : public PasswordStore {
   void RemoveKeychainForms(
       const std::vector<autofill::PasswordForm*>& forms);
 
-  // Allows the creation of |notification_service_| to be scheduled on the right
-  // thread.
-  void CreateNotificationService();
-
   scoped_ptr<crypto::AppleKeychain> keychain_;
   scoped_ptr<LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.
   scoped_ptr<base::Thread> thread_;
-
-  // Since we aren't running on a well-known thread but still want to send out
-  // notifications, we need to run our own service.
-  scoped_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };

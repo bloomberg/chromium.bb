@@ -77,12 +77,13 @@ class PasswordStoreX : public PasswordStoreDefault {
   virtual ~PasswordStoreX();
 
   // Implements PasswordStore interface.
-  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
-  virtual void UpdateLoginImpl(
+  virtual PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginImpl(
+  virtual PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginsCreatedBetweenImpl(
+  virtual PasswordStoreChangeList RemoveLoginImpl(
+      const autofill::PasswordForm& form) OVERRIDE;
+  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,

@@ -31,7 +31,7 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
   virtual ~PasswordManagerPresenter();
 
   // PasswordStore::Observer implementation.
-  virtual void OnLoginsChanged() OVERRIDE;
+  virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) OVERRIDE;
 
   // Repopulates the password and exception entries.
   void UpdatePasswordLists();

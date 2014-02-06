@@ -30,35 +30,50 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
       lhs.signon_realm == rhs.signon_realm;
 }
 
-void TestPasswordStore::WrapModificationTask(base::Closure task) {
+void TestPasswordStore::WrapModificationTask(ModificationTask task) {
   task.Run();
 }
 
-void TestPasswordStore::AddLoginImpl(const autofill::PasswordForm& form) {
+PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
+    const autofill::PasswordForm& form) {
+  PasswordStoreChangeList changes;
   stored_passwords_[form.signon_realm].push_back(form);
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  return changes;
 }
 
-void TestPasswordStore::UpdateLoginImpl(const autofill::PasswordForm& form) {
+PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
+    const autofill::PasswordForm& form) {
+  PasswordStoreChangeList changes;
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
   for (std::vector<autofill::PasswordForm>::iterator it = forms.begin();
          it != forms.end(); ++it) {
     if (FormsAreEquivalent(form, *it)) {
       *it = form;
+      changes.push_back(
+          PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
   }
+  return changes;
 }
 
-void TestPasswordStore::RemoveLoginImpl(const autofill::PasswordForm& form) {
+PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
+    const autofill::PasswordForm& form) {
+  PasswordStoreChangeList changes;
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
-  for (std::vector<autofill::PasswordForm>::iterator it = forms.begin();
-       it != forms.end(); ++it) {
+  std::vector<autofill::PasswordForm>::iterator it = forms.begin();
+  while (it != forms.end()) {
     if (FormsAreEquivalent(form, *it)) {
-      forms.erase(it);
-      return;
+      it = forms.erase(it);
+      changes.push_back(
+          PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+    } else {
+      ++it;
     }
   }
+  return changes;
 }
 
 void TestPasswordStore::GetLoginsImpl(
@@ -73,6 +88,12 @@ void TestPasswordStore::GetLoginsImpl(
     matched_forms.push_back(new autofill::PasswordForm(*it));
   }
   runner.Run(matched_forms);
+}
+
+PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
+    const base::Time& begin, const base::Time& end) {
+  PasswordStoreChangeList changes;
+  return changes;
 }
 
 bool TestPasswordStore::FillAutofillableLogins(

@@ -55,7 +55,9 @@ void PasswordManagerPresenter::Initialize() {
     store->AddObserver(this);
 }
 
-void PasswordManagerPresenter::OnLoginsChanged() {
+void PasswordManagerPresenter::OnLoginsChanged(
+    const PasswordStoreChangeList& changes) {
+  // Entire list is updated for convenience.
   UpdatePasswordLists();
 }
 

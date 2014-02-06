@@ -69,6 +69,7 @@ PasswordStore::PasswordStore(
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
     : main_thread_runner_(main_thread_runner),
       db_thread_runner_(db_thread_runner),
+      observers_(new ObserverListThreadSafe<Observer>()),
       shutdown_called_(false) {}
 
 bool PasswordStore::Init() {
@@ -77,26 +78,29 @@ bool PasswordStore::Init() {
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
-      base::Closure(base::Bind(&PasswordStore::AddLoginImpl, this, form))));
+  ScheduleTask(
+      base::Bind(&PasswordStore::WrapModificationTask, this,
+                 base::Bind(&PasswordStore::AddLoginImpl, this, form)));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
-      base::Closure(base::Bind(&PasswordStore::UpdateLoginImpl, this, form))));
+  ScheduleTask(
+      base::Bind(&PasswordStore::WrapModificationTask, this,
+                 base::Bind(&PasswordStore::UpdateLoginImpl, this, form)));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
-      base::Closure(base::Bind(&PasswordStore::RemoveLoginImpl, this, form))));
+  ScheduleTask(
+      base::Bind(&PasswordStore::WrapModificationTask, this,
+                 base::Bind(&PasswordStore::RemoveLoginImpl, this, form)));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                                const base::Time& delete_end) {
-  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
-      base::Closure(
-          base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenImpl, this,
-                     delete_begin, delete_end))));
+  ScheduleTask(
+      base::Bind(&PasswordStore::WrapModificationTask, this,
+                 base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenImpl,
+                            this, delete_begin, delete_end)));
 }
 
 void PasswordStore::GetLogins(
@@ -143,11 +147,11 @@ void PasswordStore::ReportMetrics() {
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
+  observers_->AddObserver(observer);
 }
 
 void PasswordStore::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+  observers_->RemoveObserver(observer);
 }
 
 void PasswordStore::Shutdown() { shutdown_called_ = true; }
@@ -197,18 +201,13 @@ void PasswordStore::Schedule(
       base::Bind(func, this, base::Owned(request)));
 }
 
-void PasswordStore::WrapModificationTask(base::Closure task) {
-  task.Run();
-  PostNotifyLoginsChanged();
+void PasswordStore::WrapModificationTask(ModificationTask task) {
+  PasswordStoreChangeList changes = task.Run();
+  NotifyLoginsChanged(changes);
 }
 
-void PasswordStore::PostNotifyLoginsChanged() {
-  main_thread_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PasswordStore::NotifyLoginsChanged, this));
-}
-
-void PasswordStore::NotifyLoginsChanged() {
-  DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(Observer, observers_, OnLoginsChanged());
+void PasswordStore::NotifyLoginsChanged(
+    const PasswordStoreChangeList& changes) {
+  if (!changes.empty())
+    observers_->Notify(&Observer::OnLoginsChanged, changes);
 }

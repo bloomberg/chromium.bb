@@ -27,6 +27,13 @@ syncer::SyncChange::SyncChangeType GetSyncChangeType(
   return syncer::SyncChange::ACTION_INVALID;
 }
 
+void AppendChanges(const PasswordStoreChangeList& new_changes,
+                   PasswordStoreChangeList* all_changes) {
+  all_changes->insert(all_changes->end(),
+                     new_changes.begin(),
+                     new_changes.end());
+}
+
 }  // namespace
 
 PasswordSyncableService::PasswordSyncableService(
@@ -125,25 +132,24 @@ std::string PasswordSyncableService::MakeTag(
 void PasswordSyncableService::WriteToPasswordStore(
     PasswordForms* new_entries,
     PasswordForms* updated_entries) {
+  PasswordStoreChangeList changes;
   for (std::vector<autofill::PasswordForm*>::const_iterator it =
            new_entries->begin();
        it != new_entries->end();
        ++it) {
-    password_store_->AddLoginImpl(**it);
+    AppendChanges(password_store_->AddLoginImpl(**it), &changes);
   }
 
   for (std::vector<autofill::PasswordForm*>::const_iterator it =
            updated_entries->begin();
        it != updated_entries->end();
        ++it) {
-    password_store_->UpdateLoginImpl(**it);
+    AppendChanges(password_store_->UpdateLoginImpl(**it), &changes);
   }
 
-  if (!new_entries->empty() || !updated_entries->empty()) {
-    // We have to notify password store observers of the change by hand since
-    // we use internal password store interfaces to make changes synchronously.
-    password_store_->PostNotifyLoginsChanged();
-  }
+  // We have to notify password store observers of the change by hand since
+  // we use internal password store interfaces to make changes synchronously.
+  password_store_->NotifyLoginsChanged(changes);
 }
 
 syncer::SyncData PasswordSyncableService::CreateSyncData(

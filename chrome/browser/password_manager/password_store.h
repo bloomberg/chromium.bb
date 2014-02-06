@@ -11,11 +11,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -93,11 +94,12 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
   // An interface used to notify clients (observers) of this object that data in
   // the password store has changed. Register the observer via
-  // PasswordStore::SetObserver.
+  // PasswordStore::AddObserver.
   class Observer {
    public:
-    // Notifies the observer that password data changed in some way.
-    virtual void OnLoginsChanged() = 0;
+    // Notifies the observer that password data changed. Will be called from
+    // the UI thread.
+    virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -177,6 +179,8 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
                                             const autofill::PasswordForm&);
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, IgnoreOldWwwGoogleLogins);
 
+  typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
+
   virtual ~PasswordStore();
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
@@ -191,14 +195,17 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Synchronous implementation that reports usage metrics.
   virtual void ReportMetricsImpl() = 0;
   // Synchronous implementation to add the given login.
-  virtual void AddLoginImpl(const autofill::PasswordForm& form) = 0;
+  virtual PasswordStoreChangeList AddLoginImpl(
+      const autofill::PasswordForm& form) = 0;
   // Synchronous implementation to update the given login.
-  virtual void UpdateLoginImpl(const autofill::PasswordForm& form) = 0;
+  virtual PasswordStoreChangeList UpdateLoginImpl(
+      const autofill::PasswordForm& form) = 0;
   // Synchronous implementation to remove the given login.
-  virtual void RemoveLoginImpl(const autofill::PasswordForm& form) = 0;
+  virtual PasswordStoreChangeList RemoveLoginImpl(
+      const autofill::PasswordForm& form) = 0;
   // Synchronous implementation to remove the given logins.
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end) = 0;
+  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end) = 0;
 
   typedef base::Callback<void(const std::vector<autofill::PasswordForm*>&)>
       ConsumerCallbackRunner;  // Owns all PasswordForms in the vector.
@@ -250,18 +257,12 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // observers that the password store may have been modified via
   // NotifyLoginsChanged(). Note that there is no guarantee that the called
   // method will actually modify the password store data.
-  virtual void WrapModificationTask(base::Closure task);
-
-  // Post a message to the UI thread to run NotifyLoginsChanged(). Called by
-  // WrapModificationTask() above, and split out as a separate method so that
-  // password sync can call it as well after synchronously updating the password
-  // store.
-  void PostNotifyLoginsChanged();
+  virtual void WrapModificationTask(ModificationTask task);
 
   // Called by WrapModificationTask() once the underlying data-modifying
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
-  void NotifyLoginsChanged();
+  void NotifyLoginsChanged(const PasswordStoreChangeList& changes);
 
   // Copies |matched_forms| into the request's result vector, then calls
   // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
@@ -272,7 +273,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
       const std::vector<autofill::PasswordForm*>& matched_forms);
 
   // The observers.
-  ObserverList<Observer> observers_;
+  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
 
   bool shutdown_called_;
 

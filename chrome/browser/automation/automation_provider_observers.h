@@ -34,7 +34,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -947,57 +947,6 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
  private:
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
-};
-
-// Observes when login entries stored in the password store are changed.  The
-// notifications are sent on the DB thread, the thread that interacts with the
-// web database.
-class PasswordStoreLoginsChangedObserver
-    : public base::RefCountedThreadSafe<
-          PasswordStoreLoginsChangedObserver,
-          content::BrowserThread::DeleteOnUIThread>,
-      public content::NotificationObserver {
- public:
-  PasswordStoreLoginsChangedObserver(AutomationProvider* automation,
-                                     IPC::Message* reply_message,
-                                     PasswordStoreChange::Type expected_type,
-                                     const std::string& result_key);
-
-  // Schedules a task on the DB thread to register the appropriate observers.
-  virtual void Init();
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  ~PasswordStoreLoginsChangedObserver();
-  friend class base::DeleteHelper<PasswordStoreLoginsChangedObserver>;
-
-  // Registers the appropriate observers.  Called on the DB thread.
-  void RegisterObserversTask();
-
-  // Sends the |reply_message_| to |automation_| indicating we're done.  Called
-  // on the UI thread.
-  void IndicateDone();
-
-  // Sends an error reply to |automation_|.  Called on the UI thread.
-  void IndicateError(const std::string& error);
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  PasswordStoreChange::Type expected_type_;
-  std::string result_key_;
-
-  // Used to ensure that the UI thread waits for the DB thread to finish
-  // registering observers before proceeding.
-  base::WaitableEvent done_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreLoginsChangedObserver);
 };
 
 // Allows automation provider to wait until page load after selecting an item

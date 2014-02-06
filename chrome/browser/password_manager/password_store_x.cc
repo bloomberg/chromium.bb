@@ -35,76 +35,66 @@ PasswordStoreX::PasswordStoreX(
 
 PasswordStoreX::~PasswordStoreX() {}
 
-void PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
   CheckMigration();
+  PasswordStoreChangeList changes;
   if (use_native_backend() && backend_->AddLogin(form)) {
-    PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    PasswordStoreDefault::AddLoginImpl(form);
+    changes = PasswordStoreDefault::AddLoginImpl(form);
   }
+  return changes;
 }
 
-void PasswordStoreX::UpdateLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreX::UpdateLoginImpl(
+    const PasswordForm& form) {
   CheckMigration();
+  PasswordStoreChangeList changes;
   if (use_native_backend() && backend_->UpdateLogin(form)) {
-    PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    PasswordStoreDefault::UpdateLoginImpl(form);
+    changes = PasswordStoreDefault::UpdateLoginImpl(form);
   }
+  return changes;
 }
 
-void PasswordStoreX::RemoveLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreX::RemoveLoginImpl(
+    const PasswordForm& form) {
   CheckMigration();
+  PasswordStoreChangeList changes;
   if (use_native_backend() && backend_->RemoveLogin(form)) {
-    PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    PasswordStoreDefault::RemoveLoginImpl(form);
+    changes = PasswordStoreDefault::RemoveLoginImpl(form);
   }
+  return changes;
 }
 
-void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
+PasswordStoreChangeList PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
   CheckMigration();
   vector<PasswordForm*> forms;
+  PasswordStoreChangeList changes;
   if (use_native_backend() &&
       backend_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms) &&
       backend_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
-    PasswordStoreChangeList changes;
     for (vector<PasswordForm*>::const_iterator it = forms.begin();
          it != forms.end(); ++it) {
       changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                             **it));
     }
     LogStatsForBulkDeletion(changes.size());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(delete_begin,
-                                                         delete_end);
+    changes = PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(delete_begin,
+                                                                   delete_end);
   }
   STLDeleteElements(&forms);
+  return changes;
 }
 
 namespace {

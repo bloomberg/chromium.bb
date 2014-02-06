@@ -26,6 +26,17 @@ using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
 
+namespace {
+
+void AppendChanges(const PasswordStoreChangeList& new_changes,
+                   PasswordStoreChangeList* all_changes) {
+  all_changes->insert(all_changes->end(),
+                      new_changes.begin(),
+                      new_changes.end());
+}
+
+}  // namespace
+
 namespace browser_sync {
 
 const char kPasswordTag[] = "google_chrome_passwords";
@@ -304,32 +315,35 @@ syncer::SyncError PasswordModelAssociator::WriteToPasswordStore(
 
   CHECK(password_store_.get());
 
+  PasswordStoreChangeList changes;
   if (new_passwords) {
     for (PasswordVector::const_iterator password = new_passwords->begin();
          password != new_passwords->end(); ++password) {
-      password_store_->AddLoginImpl(*password);
+      AppendChanges(password_store_->AddLoginImpl(*password),
+                    &changes);
     }
   }
 
   if (updated_passwords) {
     for (PasswordVector::const_iterator password = updated_passwords->begin();
          password != updated_passwords->end(); ++password) {
-      password_store_->UpdateLoginImpl(*password);
+      AppendChanges(password_store_->UpdateLoginImpl(*password),
+                    &changes);
     }
   }
 
   if (deleted_passwords) {
     for (PasswordVector::const_iterator password = deleted_passwords->begin();
          password != deleted_passwords->end(); ++password) {
-      password_store_->RemoveLoginImpl(*password);
+      AppendChanges(password_store_->RemoveLoginImpl(*password),
+                    &changes);
     }
   }
 
-  if (new_passwords || updated_passwords || deleted_passwords) {
-    // We have to notify password store observers of the change by hand since
-    // we use internal password store interfaces to make changes synchronously.
-    password_store_->PostNotifyLoginsChanged();
-  }
+  // We have to notify password store observers of the change by hand since
+  // we use internal password store interfaces to make changes synchronously.
+  password_store_->NotifyLoginsChanged(changes);
+
   return syncer::SyncError();
 }
 

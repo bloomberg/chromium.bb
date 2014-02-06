@@ -447,21 +447,6 @@ class TestingAutomationProvider : public AutomationProvider,
                        base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
-  // Add a new entry to the password store based on the password information
-  // provided. This method can also be used to add a blacklisted site (which
-  // will never fill in the password).
-  // Uses the JSON interface for input/output.
-  void AddSavedPassword(Browser* browser,
-                        base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-
-  // Removes the password matching the information provided. This method can
-  // also be used to remove a blacklisted site.
-  // Uses the JSON interface for input/output.
-  void RemoveSavedPassword(Browser* browser,
-                           base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
   // Return the saved username/password combinations.
   // Uses the JSON interface for input/output.
   void GetSavedPasswords(Browser* browser,

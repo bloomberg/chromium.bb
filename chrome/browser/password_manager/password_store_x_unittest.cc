@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_x.h"
@@ -23,10 +22,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,29 +45,10 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
                void(const std::vector<PasswordForm*>&));
 };
 
-// This class will add and remove a mock notification observer from
-// the DB thread.
-class DBThreadObserverHelper {
+class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:
-  DBThreadObserverHelper() {}
-
-  ~DBThreadObserverHelper() {
-    registrar_.RemoveAll();
-  }
-
-  void Init(PasswordStore* password_store) {
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_LOGINS_CHANGED,
-                   content::Source<PasswordStore>(password_store));
-  }
-
-  content::MockNotificationObserver& observer() {
-    return observer_;
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  content::MockNotificationObserver observer_;
+  MOCK_METHOD1(OnLoginsChanged,
+               void(const PasswordStoreChangeList& changes));
 };
 
 class FailingBackend : public PasswordStoreX::NativeBackend {
@@ -299,19 +275,16 @@ TEST_P(PasswordStoreXTest, Notifications) {
     true, false, 1 };
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
-  DBThreadObserverHelper helper;
-  helper.Init(store.get());
+  MockPasswordStoreObserver observer;
+  store->AddObserver(&observer);
 
   const PasswordStoreChange expected_add_changes[] = {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
   EXPECT_CALL(
-      helper.observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_add_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_add_changes)));
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
@@ -328,11 +301,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(
-      helper.observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_update_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_update_changes)));
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
@@ -345,17 +315,16 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(
-      helper.observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_delete_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
 
   // Wait for PasswordStore to execute.
   base::RunLoop().RunUntilIdle();
+
+  store->RemoveObserver(&observer);
 
   store->Shutdown();
 }

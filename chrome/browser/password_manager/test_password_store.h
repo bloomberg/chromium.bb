@@ -38,19 +38,22 @@ class TestPasswordStore : public PasswordStore {
                           const autofill::PasswordForm& rhs);
 
   // PasswordStore interface
-  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
-  virtual void UpdateLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
+  virtual PasswordStoreChangeList AddLoginImpl(
+      const autofill::PasswordForm& form) OVERRIDE;
+  virtual PasswordStoreChangeList UpdateLoginImpl(
+      const autofill::PasswordForm& form) OVERRIDE;
+  virtual PasswordStoreChangeList RemoveLoginImpl(
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       PasswordStore::AuthorizationPromptPolicy prompt_policy,
       const ConsumerCallbackRunner& runner) OVERRIDE;
-  virtual void WrapModificationTask(base::Closure task) OVERRIDE;
+  virtual void WrapModificationTask(ModificationTask task) OVERRIDE;
 
   // Unused portions of PasswordStore interface
   virtual void ReportMetricsImpl() OVERRIDE {}
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& begin,
-                                              const base::Time& end) OVERRIDE {}
+  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
+      const base::Time& begin, const base::Time& end) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(
       PasswordStore::GetLoginsRequest* request) OVERRIDE {}
   virtual void GetBlacklistLoginsImpl(

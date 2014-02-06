@@ -19,11 +19,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/mac/security_wrappers.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "content/public/browser/notification_service.h"
 #include "crypto/apple_keychain.h"
 
 using autofill::PasswordForm;
@@ -838,12 +836,7 @@ PasswordStoreMac::PasswordStoreMac(
   DCHECK(login_metadata_db_.get());
 }
 
-PasswordStoreMac::~PasswordStoreMac() {
-  if (thread_.get()) {
-    thread_->message_loop()->DeleteSoon(FROM_HERE,
-                                        notification_service_.release());
-  }
-}
+PasswordStoreMac::~PasswordStoreMac() {}
 
 bool PasswordStoreMac::Init() {
   thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
@@ -852,7 +845,6 @@ bool PasswordStoreMac::Init() {
     thread_.reset(NULL);
     return false;
   }
-  ScheduleTask(base::Bind(&PasswordStoreMac::CreateNotificationService, this));
   return PasswordStore::Init();
 }
 
@@ -869,36 +861,35 @@ void PasswordStoreMac::ReportMetricsImpl() {
   login_metadata_db_->ReportMetrics();
 }
 
-void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
   if (AddToKeychainIfNecessary(form)) {
     if (login_metadata_db_->AddLogin(form)) {
-      PasswordStoreChangeList changes;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_LOGINS_CHANGED,
-          content::Source<PasswordStore>(this),
-          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
+  return changes;
 }
 
-void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
   int update_count = 0;
   if (!login_metadata_db_->UpdateLogin(form, &update_count))
-    return;
+    return changes;
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
   if (update_count == 0 &&
       !keychain_adapter.HasPasswordsMergeableWithForm(form)) {
     // If the password isn't in either the DB or the keychain, then it must have
     // been deleted after autofill happened, and should not be re-added.
-    return;
+    return changes;
   }
 
   // The keychain add will update if there is a collision and add if there
   // isn't, which is the behavior we want, so there's no separate update call.
   if (AddToKeychainIfNecessary(form)) {
-    PasswordStoreChangeList changes;
     if (update_count == 0) {
       if (login_metadata_db_->AddLogin(form)) {
         changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
@@ -908,16 +899,13 @@ void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
                                             form));
     }
-    if (!changes.empty()) {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_LOGINS_CHANGED,
-          content::Source<PasswordStore>(this),
-          content::Details<PasswordStoreChangeList>(&changes));
-    }
   }
+  return changes;
 }
 
-void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
+    const PasswordForm& form) {
+  PasswordStoreChangeList changes;
   if (login_metadata_db_->RemoveLogin(form)) {
     // See if we own a Keychain item associated with this item. We can do an
     // exact search rather than messing around with trying to do fuzzy matching
@@ -938,17 +926,14 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
       }
     }
 
-    PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGINS_CHANGED,
-        content::Source<PasswordStore>(this),
-        content::Details<PasswordStoreChangeList>(&changes));
   }
+  return changes;
 }
 
-void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
+PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
     const base::Time& delete_begin, const base::Time& delete_end) {
+  PasswordStoreChangeList changes;
   std::vector<PasswordForm*> forms;
   if (login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
                                                   &forms)) {
@@ -968,19 +953,15 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
       RemoveKeychainForms(orphan_keychain_forms);
       STLDeleteElements(&orphan_keychain_forms);
 
-      PasswordStoreChangeList changes;
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
         changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                               **it));
       }
       LogStatsForBulkDeletion(changes.size());
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_LOGINS_CHANGED,
-          content::Source<PasswordStore>(this),
-          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
+  return changes;
 }
 
 void PasswordStoreMac::GetLoginsImpl(
@@ -1143,8 +1124,4 @@ void PasswordStoreMac::RemoveKeychainForms(
        i != forms.end(); ++i) {
     owned_keychain_adapter.RemovePassword(**i);
   }
-}
-
-void PasswordStoreMac::CreateNotificationService() {
-  notification_service_.reset(content::NotificationService::Create());
 }

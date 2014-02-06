@@ -44,49 +44,10 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
                void(const std::vector<PasswordForm*>&));
 };
 
-// This class will add and remove a mock notification observer from
-// the DB thread.
-class DBThreadObserverHelper
-    : public base::RefCountedThreadSafe<DBThreadObserverHelper,
-                                        BrowserThread::DeleteOnDBThread> {
+class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:
-  DBThreadObserverHelper() : done_event_(true, false) {}
-
-  void Init(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&DBThreadObserverHelper::AddObserverTask,
-                   this,
-                   make_scoped_refptr(password_store)));
-    done_event_.Wait();
-  }
-
-  content::MockNotificationObserver& observer() {
-    return observer_;
-  }
-
- protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::DB>;
-  friend class base::DeleteHelper<DBThreadObserverHelper>;
-
-  virtual ~DBThreadObserverHelper() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.RemoveAll();
-  }
-
-  void AddObserverTask(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_LOGINS_CHANGED,
-                   content::Source<PasswordStore>(password_store));
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
-  content::NotificationRegistrar registrar_;
-  content::MockNotificationObserver observer_;
+  MOCK_METHOD1(OnLoginsChanged,
+               void(const PasswordStoreChangeList& changes));
 };
 
 }  // anonymous namespace
@@ -210,19 +171,16 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
     true, false, 1 };
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
-  scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
-  helper->Init(store.get());
+  MockPasswordStoreObserver observer;
+  store->AddObserver(&observer);
 
   const PasswordStoreChange expected_add_changes[] = {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
   EXPECT_CALL(
-      helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_add_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_add_changes)));
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
@@ -234,6 +192,12 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
+  // Notification happens on the same thread that we added the observer on,
+  // so run message loop to get the notification
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
+
   // Change the password.
   form->password_value = base::ASCIIToUTF16("a different password");
 
@@ -242,11 +206,8 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   };
 
   EXPECT_CALL(
-      helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_update_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_update_changes)));
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
@@ -256,16 +217,17 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
+
   const PasswordStoreChange expected_delete_changes[] = {
     PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
   };
 
   EXPECT_CALL(
-      helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store.get()),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_delete_changes)))));
+      observer,
+      OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
@@ -275,5 +237,10 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
+
+  store->RemoveObserver(&observer);
   store->Shutdown();
 }

@@ -506,11 +506,15 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_HasNativeHasSyncNoMerge) {
     expected_forms.push_back(new_form);
   }
 
+  PasswordStoreChangeList changes;
+  changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::ADD, expected_forms[1]));
   EXPECT_CALL(*password_store_.get(), FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms), Return(true)));
   EXPECT_CALL(*password_store_.get(), FillBlacklistLogins(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*password_store_.get(), AddLoginImpl(_)).Times(1);
+  EXPECT_CALL(*password_store_.get(), AddLoginImpl(_)).
+      WillOnce(Return(changes));
 
   CreateRootHelper create_root(this, syncer::PASSWORDS);
   StartSyncService(create_root.callback(),
@@ -567,6 +571,7 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_EnsureNoTransactions) {
     expected_forms.push_back(new_form);
   }
 
+  PasswordStoreChangeList changes;
   EXPECT_CALL(*password_store_.get(), FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms),
                       AcquireSyncTransaction(this),
@@ -574,7 +579,7 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_EnsureNoTransactions) {
   EXPECT_CALL(*password_store_.get(), FillBlacklistLogins(_))
       .WillOnce(DoAll(AcquireSyncTransaction(this), Return(true)));
   EXPECT_CALL(*password_store_.get(), AddLoginImpl(_))
-      .WillOnce(AcquireSyncTransaction(this));
+      .WillOnce(DoAll(AcquireSyncTransaction(this), Return(changes)));
 
   CreateRootHelper create_root(this, syncer::PASSWORDS);
   StartSyncService(create_root.callback(),
@@ -644,11 +649,15 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_HasNativeHasSyncMergeEntry) {
     expected_forms.push_back(new_form);
   }
 
+  PasswordStoreChangeList changes;
+  changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::UPDATE, expected_forms[0]));
   EXPECT_CALL(*password_store_.get(), FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms), Return(true)));
   EXPECT_CALL(*password_store_.get(), FillBlacklistLogins(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*password_store_.get(), UpdateLoginImpl(_)).Times(1);
+  EXPECT_CALL(*password_store_.get(), UpdateLoginImpl(_))
+      .WillOnce(Return(changes));
 
   CreateRootHelper create_root(this, syncer::PASSWORDS);
   StartSyncService(create_root.callback(),

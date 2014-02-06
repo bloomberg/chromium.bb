@@ -898,14 +898,6 @@ enum NotificationType {
   // Details are a Details<CaptivePortalService::CheckResults>.
   NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
 
-  // Password Store ----------------------------------------------------------
-  // This notification is sent whenenever login entries stored in the password
-  // store are changed. The detail of this notification is a list of changes
-  // represented by a vector of PasswordStoreChange. Each change includes a
-  // change type (ADD, UPDATE, or REMOVE) as well as the
-  // |autofill::PasswordForm|s that were affected.
-  NOTIFICATION_LOGINS_CHANGED,
-
   // Sent when the applications in the NTP app launcher have been reordered.
   // The details, if not NoDetails, is the std::string ID of the extension that
   // was moved.
