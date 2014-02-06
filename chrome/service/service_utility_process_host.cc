@@ -287,7 +287,7 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterCapsAndDefaultsSucceeded, client_.get(),
+      base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), true,
                  printer_name, caps_and_defaults));
 }
 
@@ -302,8 +302,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterCapsAndDefaultsFailed, client_.get(),
-                 printer_name));
+      base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
+                 printer_name, printing::PrinterCapsAndDefaults()));
 }
 
 void ServiceUtilityProcessHost::Client::MetafileAvailable(

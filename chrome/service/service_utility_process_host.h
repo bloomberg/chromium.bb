@@ -62,14 +62,10 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
     // Called when the printer capabilities and defaults have been
     // retrieved successfully.
-    virtual void OnGetPrinterCapsAndDefaultsSucceeded(
+    virtual void OnGetPrinterCapsAndDefaults(
+        bool succedded,
         const std::string& printer_name,
         const printing::PrinterCapsAndDefaults& caps_and_defaults) {}
-
-    // Called when the printer capabilities and defaults could not be
-    // retrieved successfully.
-    virtual void OnGetPrinterCapsAndDefaultsFailed(
-        const std::string& printer_name) {}
 
    protected:
     virtual ~Client() {}

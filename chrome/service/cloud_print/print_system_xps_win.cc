@@ -428,21 +428,15 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
 
   // ServiceUtilityProcessHost::Client implementation.
   virtual void OnChildDied() OVERRIDE {
-    OnGetPrinterCapsAndDefaultsFailed(printer_name_);
+    OnGetPrinterCapsAndDefaults(false, printer_name_,
+                                printing::PrinterCapsAndDefaults());
   }
 
-  virtual void OnGetPrinterCapsAndDefaultsSucceeded(
+  virtual void OnGetPrinterCapsAndDefaults(
+      bool succeeded,
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults) OVERRIDE {
-    callback_.Run(true, printer_name, caps_and_defaults);
-    callback_.Reset();
-    Release();
-  }
-
-  virtual void OnGetPrinterCapsAndDefaultsFailed(
-      const std::string& printer_name) OVERRIDE {
-    printing::PrinterCapsAndDefaults caps_and_defaults;
-    callback_.Run(false, printer_name, caps_and_defaults);
+    callback_.Run(succeeded, printer_name, caps_and_defaults);
     callback_.Reset();
     Release();
   }
@@ -469,8 +463,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     } else {
       client_message_loop_proxy->PostTask(
           FROM_HERE,
-          base::Bind(&PrinterCapsHandler::OnGetPrinterCapsAndDefaultsFailed,
-                      this, printer_name_));
+          base::Bind(&PrinterCapsHandler::OnChildDied, this));
     }
   }
 
@@ -485,14 +478,17 @@ class PrintSystemWinXPS : public PrintSystemWin {
 
   // PrintSystem implementation.
   virtual PrintSystemResult Init() OVERRIDE;
+
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       const PrinterCapsAndDefaultsCallback& callback) OVERRIDE;
+
   virtual bool PrintSystemWinXPS::ValidatePrintTicket(
       const std::string& printer_name,
       const std::string& print_ticket_data) OVERRIDE;
 
   virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
+
   virtual std::string GetSupportedMimeTypes() OVERRIDE;
 
  private:
