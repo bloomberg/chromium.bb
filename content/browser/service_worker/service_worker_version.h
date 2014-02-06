@@ -113,6 +113,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SendMessageAndRegisterCallback(const IPC::Message& message,
                                       const MessageCallback& callback);
 
+  // Sends install event to the associated embedded worker and asynchronously
+  // calls |callback| when it errors out or it gets response from the worker
+  // to notify install completion.
+  // |active_version_embedded_worker_id| must be a valid positive ID
+  // if there's an active (previous) version running.
+  void DispatchInstallEvent(int active_version_embedded_worker_id,
+                            const StatusCallback& callback);
+
   // Sends fetch event to the associated embedded worker.
   // This immediately returns false if the worker is not running
   // or sending a message to the child process fails.

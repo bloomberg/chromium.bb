@@ -33,10 +33,13 @@ class ServiceWorkerScriptContext {
 
   void OnMessageReceived(int request_id, const IPC::Message& message);
 
+  void DidHandleInstallEvent(int request_id);
+
  private:
   // Send message back to the browser.
   void Send(int request_id, const IPC::Message& message);
 
+  void OnInstallEvent(int active_version_embedded_worker_id);
   void OnFetchEvent(const ServiceWorkerFetchRequest& request);
 
   // Not owned; embedded_context_ owns this.

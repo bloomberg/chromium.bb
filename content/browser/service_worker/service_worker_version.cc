@@ -57,6 +57,23 @@ void RunEmptyMessageCallback(const MessageCallback& callback,
   callback.Run(status, IPC::Message());
 }
 
+void HandleInstallFinished(const StatusCallback& callback,
+                           ServiceWorkerStatusCode status,
+                           const IPC::Message& message) {
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (message.type() != ServiceWorkerHostMsg_InstallEventFinished::ID) {
+    NOTREACHED() << "Got unexpected response for InstallEvent: "
+                 << message.type();
+    callback.Run(SERVICE_WORKER_ERROR_FAILED);
+    return;
+  }
+  callback.Run(SERVICE_WORKER_OK);
+}
+
 }  // namespace
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -166,6 +183,14 @@ void ServiceWorkerVersion::SendMessageAndRegisterCallback(
     RunSoon(base::Bind(callback, status, IPC::Message()));
     return;
   }
+}
+
+void ServiceWorkerVersion::DispatchInstallEvent(
+    int active_version_embedded_worker_id,
+    const StatusCallback& callback) {
+  SendMessageAndRegisterCallback(
+      ServiceWorkerMsg_InstallEvent(active_version_embedded_worker_id),
+      base::Bind(&HandleInstallFinished, callback));
 }
 
 bool ServiceWorkerVersion::DispatchFetchEvent(

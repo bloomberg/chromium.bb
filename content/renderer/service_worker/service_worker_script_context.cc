@@ -29,6 +29,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
   current_request_id_ = request_id;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerScriptContext, message)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -36,9 +37,23 @@ void ServiceWorkerScriptContext::OnMessageReceived(
   current_request_id_ = -1;
 }
 
+void ServiceWorkerScriptContext::DidHandleInstallEvent(int request_id) {
+  Send(request_id, ServiceWorkerHostMsg_InstallEventFinished());
+}
+
 void ServiceWorkerScriptContext::Send(int request_id,
                                       const IPC::Message& message) {
   embedded_context_->SendMessageToBrowser(request_id, message);
+}
+
+void ServiceWorkerScriptContext::OnInstallEvent(
+    int active_version_embedded_worker_id) {
+  // TODO(kinuko): Uncomment this when blink side becomes ready.
+  // proxy_->dispatchInstallEvent(current_request_id_);
+
+  // TODO(kinuko): this should be called asynchronously from blink side
+  // when blink-side plumbing is done.
+  DidHandleInstallEvent(current_request_id_);
 }
 
 void ServiceWorkerScriptContext::OnFetchEvent(

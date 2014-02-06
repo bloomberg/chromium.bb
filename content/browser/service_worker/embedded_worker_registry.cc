@@ -8,6 +8,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 
@@ -74,10 +75,14 @@ void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
     return;
   }
-  // TODO(kinuko): Filter out unexpected messages here and uncomment below
-  // when we actually define messages that are to be sent from child process
-  // to the browser via this channel. (We don't have any yet)
-  found->second->OnMessageReceived(request_id, message);
+  // Perform security check to filter out any unexpected (and non-test)
+  // messages. This must list up all message types that can go through here.
+  if (message.type() == ServiceWorkerHostMsg_InstallEventFinished::ID ||
+      IPC_MESSAGE_CLASS(message) == TestMsgStart) {
+    found->second->OnMessageReceived(request_id, message);
+    return;
+  }
+  NOTREACHED() << "Got unexpected message: " << message.type();
 }
 
 void EmbeddedWorkerRegistry::AddChildProcessSender(

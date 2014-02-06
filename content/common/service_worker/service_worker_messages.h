@@ -5,6 +5,7 @@
 // Message definition file, included multiple times, hence no include guard.
 
 #include "base/strings/string16.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -58,6 +59,10 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      blink::WebServiceWorkerError::ErrorType /* code */,
                      base::string16 /* message */)
 
+// Sent via EmbeddedWorker to dispatch install event.
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
+                     int /* active_version_embedded_worker_id */)
+
 // Sent via EmbeddedWorker to dispatch fetch event.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_FetchEvent,
                      content::ServiceWorkerFetchRequest)
@@ -70,3 +75,9 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
 // Informs the browser of a ServiceWorkerProvider being destroyed.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
                      int /* provider_id */)
+
+// Informs the browser that install event handling has finished.
+// Sent via EmbeddedWorker. If there was an exception during the
+// event handling it'll be reported back separately (to be propagated
+// to the documents).
+IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_InstallEventFinished)
