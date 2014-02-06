@@ -121,7 +121,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void BufferSendComplete(int result);
   void BufferRecvComplete(int result);
   void TransportWriteComplete(int result);
-  void TransportReadComplete(int result);
+  int TransportReadComplete(int result);
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.
@@ -163,6 +163,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // indicates there is no pending result, otherwise 0 indicates EOF and < 0
   // indicates an error.
   int pending_read_error_;
+
+  // Used by TransportWriteComplete() and TransportReadComplete() to signify an
+  // error writing to the transport socket. A value of OK indicates no error.
+  int transport_write_error_;
 
   // Set when handshake finishes.
   scoped_refptr<X509Certificate> server_cert_;

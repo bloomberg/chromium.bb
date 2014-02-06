@@ -1170,6 +1170,112 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   EXPECT_FALSE(callback.have_result());
 }
 
+// Tests that the SSLClientSocket does not crash if data is received on the
+// transport socket after a failing write. This can occur if we have a Write
+// error in a SPDY socket.
+// Regression test for http://crbug.com/335557
+TEST_F(SSLClientSocketTest, Read_WithWriteError) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  // Note: |error_socket|'s ownership is handed to |transport|, but a pointer
+  // is retained in order to configure additional errors.
+  scoped_ptr<SynchronousErrorStreamSocket> error_socket(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  SynchronousErrorStreamSocket* raw_error_socket = error_socket.get();
+  scoped_ptr<FakeBlockingStreamSocket> transport(
+      new FakeBlockingStreamSocket(error_socket.PassAs<StreamSocket>()));
+  FakeBlockingStreamSocket* raw_transport = transport.get();
+
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+
+  // Disable TLS False Start to avoid handshake non-determinism.
+  SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+                            test_server.host_port_pair(),
+                            ssl_config));
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+
+  // Send a request so there is something to read from the socket.
+  const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
+  static const int kRequestTextSize =
+      static_cast<int>(arraysize(request_text) - 1);
+  scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestTextSize));
+  memcpy(request_buffer->data(), request_text, kRequestTextSize);
+
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  EXPECT_EQ(kRequestTextSize, rv);
+
+  // Start a hanging read.
+  TestCompletionCallback read_callback;
+  raw_transport->SetNextReadShouldBlock();
+  scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  rv = sock->Read(buf.get(), 4096, read_callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Perform another write, but have it fail. Write a request larger than the
+  // internal socket buffers so that the request hits the underlying transport
+  // socket and detects the error.
+  std::string long_request_text =
+      "GET / HTTP/1.1\r\nUser-Agent: long browser name ";
+  long_request_text.append(20 * 1024, '*');
+  long_request_text.append("\r\n\r\n");
+  scoped_refptr<DrainableIOBuffer> long_request_buffer(new DrainableIOBuffer(
+      new StringIOBuffer(long_request_text), long_request_text.size()));
+
+  raw_error_socket->SetNextWriteError(ERR_CONNECTION_RESET);
+
+  // Write as much data as possible until hitting an error. This is necessary
+  // for NSS. PR_Write will only consume as much data as it can encode into
+  // application data records before the internal memio buffer is full, which
+  // should only fill if writing a large amount of data and the underlying
+  // transport is blocked. Once this happens, NSS will return (total size of all
+  // application data records it wrote) - 1, with the caller expected to resume
+  // with the remaining unsent data.
+  do {
+    rv = callback.GetResult(sock->Write(long_request_buffer.get(),
+                                        long_request_buffer->BytesRemaining(),
+                                        callback.callback()));
+    if (rv > 0) {
+      long_request_buffer->DidConsume(rv);
+      // Abort if the entire buffer is ever consumed.
+      ASSERT_LT(0, long_request_buffer->BytesRemaining());
+    }
+  } while (rv > 0);
+
+#if !defined(USE_OPENSSL)
+  // NSS records the error exactly.
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+#else
+  // OpenSSL treats the reset as a generic protocol error.
+  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
+#endif
+
+  // Release the read. Some bytes should go through.
+  raw_transport->UnblockRead();
+  rv = read_callback.WaitForResult();
+
+  // Per the fix for http://crbug.com/249848, write failures currently break
+  // reads. Change this assertion if they're changed to not collide.
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+}
+
 TEST_F(SSLClientSocketTest, Read_SmallChunks) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::kLocalhost,
