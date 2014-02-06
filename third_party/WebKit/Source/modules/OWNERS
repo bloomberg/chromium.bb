@@ -2,13 +2,9 @@ abarth@chromium.org
 darin@chromium.org
 dglazkov@chromium.org
 eseidel@chromium.org
+haraken@chromium.org
 jochen@chromium.org
 ojan@chromium.org
 tkent@chromium.org
-
-# FIXME: Remove this when issue 235756 is fixed.
-# Currently a top-level OWNERS file for *.idl doesn't cover IDL files
-# in subdirectories like modules/.
-haraken@chromium.org
 
 per-file modules.gypi=*
