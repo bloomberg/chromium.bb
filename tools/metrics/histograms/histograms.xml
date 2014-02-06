@@ -17186,6 +17186,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.ExtractSignatureFeaturesTime"
+    units="milliseconds">
+  <summary>
+    Records the time it takes for the SafeBrowsing download service to extract
+    signature info from a downloaded binary. This includes both unsigned and
+    signed binaries.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.ExtractZipFeaturesTime" units="milliseconds">
+  <summary>
+    Records the time it takes for the SafeBrowsing download service to extract
+    info from a downloaded zip file.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.SignedBinaryDownload"
     enum="SBClientDownloadIsSignedBinary">
   <summary>
@@ -17197,6 +17213,22 @@ other types of suffix sets.
   <summary>
     Counter which is incremented whenever an executable is downloaded which is
     either signed or whose URL matches the download whitelist.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.ZipFileHasArchiveButNoExecutable"
+    enum="Boolean">
+  <summary>
+    For each zip file analyzed by the SafeBrowsing download service, records
+    true if the zip did not contain any executables but did contain another zip
+    file, false otherwise.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.ZipFileHasExecutable" enum="Boolean">
+  <summary>
+    For each zip file analyzed by the SafeBrowsing download service, records if
+    the zip contained an executable file.
   </summary>
 </histogram>
 
