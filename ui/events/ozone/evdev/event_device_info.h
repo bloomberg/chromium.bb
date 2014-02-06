@@ -9,6 +9,7 @@
 #include <linux/input.h>
 
 #include "base/basictypes.h"
+#include "ui/events/events_export.h"
 
 #define EVDEV_LONG_BITS (CHAR_BIT * sizeof(long))
 #define EVDEV_BITS_TO_LONGS(x) (((x) + EVDEV_LONG_BITS - 1) / EVDEV_LONG_BITS)
@@ -19,7 +20,7 @@ namespace ui {
 //
 // This stores and queries information about input devices; in
 // particular it knows which events the device can generate.
-class EventDeviceInfo {
+class EVENTS_EXPORT EventDeviceInfo {
  public:
   EventDeviceInfo();
   ~EventDeviceInfo();
