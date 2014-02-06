@@ -24,7 +24,8 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/public/nacl_app.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 
 #if defined(OS_POSIX)
@@ -233,9 +234,24 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStart(const nacl::NaClStartParams& params) {
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  int urandom_fd = dup(base::GetUrandomFD());
+  if (urandom_fd < 0) {
+    LOG(ERROR) << "Failed to dup() the urandom FD";
+    return;
+  }
+  NaClChromeMainSetUrandomFd(urandom_fd);
+#endif
+
+  NaClChromeMainInit();
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
+    return;
+  }
+  struct NaClApp *nap = NaClAppCreate();
+  if (nap == NULL) {
+    LOG(ERROR) << "NaClAppCreate() failed";
     return;
   }
 
@@ -251,7 +267,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
     // Pass a NaClDesc to the untrusted side. This will hold a ref to the
     // NaClIPCAdapter.
-    args->initial_ipc_desc = ipc_adapter->MakeNaClDesc();
+    NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, ipc_adapter->MakeNaClDesc());
 #if defined(OS_POSIX)
     handle.socket = base::FileDescriptor(
         ipc_adapter->TakeClientFileDescriptor(), true);
@@ -263,11 +279,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   std::vector<nacl::FileDescriptor> handles = params.handles;
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  args->urandom_fd = dup(base::GetUrandomFD());
-  if (args->urandom_fd < 0) {
-    LOG(ERROR) << "Failed to dup() the urandom FD";
-    return;
-  }
   args->number_of_cores = number_of_cores_;
   args->create_memory_object_func = CreateMemoryObject;
 # if defined(OS_MACOSX)
@@ -340,6 +351,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     return;
   }
 #endif
-  NaClChromeMainStart(args);
+  NaClChromeMainStartApp(nap, args);
   NOTREACHED();
 }
