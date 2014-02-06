@@ -31,14 +31,6 @@ class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
-
-// TODO(nhiroki): Remove this after a Blink-side patch is landed.
-// (http://crbug.com/338995)
-#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
-typedef WebStorageQuotaCallbacks WebStorageQuotaCallbacksType;
-#else
-typedef WebStorageQuotaCallbacks* WebStorageQuotaCallbacksType;
-#endif
 }
 
 namespace gfx {
@@ -306,7 +298,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       blink::WebStorageQuotaType type,
       unsigned long long requested_size,
-      blink::WebStorageQuotaCallbacksType callbacks);
+      blink::WebStorageQuotaCallbacks callbacks);
   virtual void willOpenSocketStream(
       blink::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(

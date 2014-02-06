@@ -1069,7 +1069,7 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
     const blink::WebURL& storage_partition,
     blink::WebStorageQuotaType type,
-    blink::WebStorageQuotaCallbacksType callbacks) {
+    blink::WebStorageQuotaCallbacks callbacks) {
   if (!thread_safe_sender_.get() || !quota_message_filter_.get())
     return;
   QuotaDispatcher::ThreadSpecificInstance(

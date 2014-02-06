@@ -31,14 +31,6 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
-
-// TODO(nhiroki): Remove this after a Blink-side patch is landed.
-// (http://crbug.com/338995)
-#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
-typedef WebStorageQuotaCallbacks WebStorageQuotaCallbacksType;
-#else
-typedef WebStorageQuotaCallbacks* WebStorageQuotaCallbacksType;
-#endif
 }
 
 namespace content {
@@ -155,7 +147,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void queryStorageUsageAndQuota(
       const blink::WebURL& storage_partition,
       blink::WebStorageQuotaType,
-      blink::WebStorageQuotaCallbacksType) OVERRIDE;
+      blink::WebStorageQuotaCallbacks) OVERRIDE;
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
 

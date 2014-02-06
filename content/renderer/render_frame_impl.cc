@@ -1467,16 +1467,12 @@ void RenderFrameImpl::requestStorageQuota(
     blink::WebFrame* frame,
     blink::WebStorageQuotaType type,
     unsigned long long requested_size,
-    blink::WebStorageQuotaCallbacksType callbacks) {
+    blink::WebStorageQuotaCallbacks callbacks) {
   DCHECK(frame);
   WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isUnique()) {
     // Unique origins cannot store persistent state.
-#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
     callbacks.didFail(blink::WebStorageQuotaErrorAbort);
-#else
-    callbacks->didFail(blink::WebStorageQuotaErrorAbort);
-#endif
     return;
   }
   ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
