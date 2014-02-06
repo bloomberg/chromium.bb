@@ -588,6 +588,7 @@
                   'EmbedManifest': 'true',
                   'AdditionalManifestFiles': [
                     'host/win/common-controls.manifest',
+                    'host/win/dpi_aware.manifest',
                   ],
                 },
                 'VCLinkerTool': {
