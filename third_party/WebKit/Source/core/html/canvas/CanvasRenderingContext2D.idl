@@ -58,10 +58,6 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     sequence<float> getLineDash();
     attribute float lineDashOffset;
 
-    // FIXME: These attributes should be implemented.
-    // [Custom] attribute float[] webkitLineDash;
-    // attribute float webkitLineDashOffset;
-
     void clearRect(float x, float y, float width, float height);
     void fillRect(float x, float y, float width, float height);
 
@@ -168,8 +164,8 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
 
     [DeprecateAs=PrefixedBackingStorePixelRatio] readonly attribute float webkitBackingStorePixelRatio;
 
-    [ImplementedAs=imageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
-    attribute boolean imageSmoothingEnabled;
+    [ImplementedAs=imageSmoothingEnabled, MeasureAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
+    [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled;
 
     Canvas2DContextAttributes getContextAttributes();
 };

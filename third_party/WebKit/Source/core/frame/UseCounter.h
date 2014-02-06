@@ -195,6 +195,8 @@ public:
         PrefixedAndUnprefixedAnimationStartEvent,
         PrefixedAnimationIterationEvent,
         UnprefixedAnimationIterationEvent,
+        PrefixedImageSmoothingEnabled,
+        UnprefixedImageSmoothingEnabled,
         PrefixedAndUnprefixedAnimationIterationEvent,
         EventReturnValue, // Legacy IE extension.
         SVGSVGElement,
