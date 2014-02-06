@@ -335,8 +335,16 @@ void ThreadState::visitRoots(Visitor* visitor)
 NO_SANITIZE_ADDRESS
 void ThreadState::visitStack(Visitor* visitor)
 {
-    Address* end = reinterpret_cast<Address*>(m_startOfStack);
-    for (Address* current = reinterpret_cast<Address*>(m_endOfStack); current < end; ++current) {
+    Address* start = reinterpret_cast<Address*>(m_startOfStack);
+    // If there is a safepoint scope marker we should stop the stack
+    // scanning there to not touch active parts of the stack. Anything
+    // interesting beyond that point is in the safepoint stack copy.
+    // If there is no scope marker the thread is blocked and we should
+    // scan all the way to the recorded end stack pointer.
+    Address* end = reinterpret_cast<Address*>(m_endOfStack);
+    Address* safePointScopeMarker = reinterpret_cast<Address*>(m_safePointScopeMarker);
+    Address* current = safePointScopeMarker ? safePointScopeMarker : end;
+    for (; current < start; ++current) {
         Heap::checkAndMarkPointer(visitor, *current);
     }
 
