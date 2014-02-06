@@ -31,6 +31,10 @@ const HpackPrefix kIndexedOpcode = { 0x1, 1 };
 // 4.3.1).
 const HpackPrefix kLiteralNoIndexOpcode = { 0x01, 2 };
 
+// The opcode for a literal header field with incremental indexing
+// (from 4.3.2).
+const HpackPrefix kLiteralIncrementalIndexOpcode = { 0x00, 2 };
+
 }  // namespace net
 
 #endif  // NET_SPDY_HPACK_CONSTANTS_H_

@@ -117,15 +117,53 @@ TEST(HpackDecoderTest, LiteralHeaderNoIndexing) {
   HpackHeaderPairVector header_list;
   // First header with indexed name, second header with string literal
   // name.
-  EXPECT_TRUE(decoder.DecodeHeaderSet(
-      "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2",
-      &header_list));
-  std::map<string, string> header_set(header_list.begin(), header_list.end());
+  std::map<string, string> header_set =
+      DecodeUniqueHeaderSet(
+          &decoder, "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2");
 
   std::map<string, string> expected_header_set;
   expected_header_set[":path"] = "/sample/path";
   expected_header_set[":path2"] = "/sample/path/2";
   EXPECT_EQ(expected_header_set, header_set);
+}
+
+// Decoding two valid encoded literal headers with incremental
+// indexing and string literal names should work and add the headers
+// to the reference set.
+TEST(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
+  HpackDecoder decoder(kuint32max);
+  std::map<string, string> header_set = DecodeUniqueHeaderSet(
+      &decoder,
+      StringPiece("\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2", 37));
+
+  std::map<string, string> expected_header_set;
+  expected_header_set[":path"] = "/sample/path";
+  expected_header_set[":path2"] = "/sample/path/2";
+  EXPECT_EQ(expected_header_set, header_set);
+
+  // Decoding an empty string should just return the reference set.
+  std::map<string, string> header_set2 = DecodeUniqueHeaderSet(&decoder, "");
+  EXPECT_EQ(expected_header_set, header_set2);
+}
+
+// Decoding literal headers with invalid indices should fail
+// gracefully.
+TEST(HpackDecoderTest, LiteralHeaderInvalidIndices) {
+  HpackDecoder decoder(kuint32max);
+
+  HpackHeaderPairVector header_list;
+
+  // No indexing.
+
+  // One more than the number of static table entries.
+  EXPECT_FALSE(decoder.DecodeHeaderSet(StringPiece("\x7d", 1), &header_list));
+  EXPECT_FALSE(decoder.DecodeHeaderSet(StringPiece("\x40", 1), &header_list));
+
+  // Incremental indexing.
+
+  // One more than the number of static table entries.
+  EXPECT_FALSE(decoder.DecodeHeaderSet(StringPiece("\x3d", 1), &header_list));
+  EXPECT_FALSE(decoder.DecodeHeaderSet(StringPiece("\x00", 1), &header_list));
 }
 
 // Round-tripping the header set from E.2.1 should work.
@@ -148,9 +186,6 @@ TEST(HpackDecoderTest, BasicE21) {
   std::map<string, string> header_set(header_list.begin(), header_list.end());
   EXPECT_EQ(expected_header_set, header_set);
 }
-
-// TODO(akalin): Add test to exercise emission of the reference set
-// once we can decode opcodes that add to the reference set.
 
 }  // namespace
 

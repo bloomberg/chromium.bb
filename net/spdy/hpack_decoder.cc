@@ -92,6 +92,30 @@ bool HpackDecoder::ProcessNextHeaderRepresentation(
     return true;
   }
 
+  // Implements 4.3.2. Literal Header Field with Incremental Indexing.
+  if (input_stream->MatchPrefixAndConsume(kLiteralIncrementalIndexOpcode)) {
+    StringPiece name;
+    if (!DecodeNextName(input_stream, &name))
+      return false;
+
+    StringPiece value;
+    if (!DecodeNextValue(input_stream, &value))
+      return false;
+
+    header_list->push_back(
+        HpackHeaderPair(name.as_string(), value.as_string()));
+
+    uint32 new_index = 0;
+    std::vector<uint32> removed_referenced_indices;
+    context_.ProcessLiteralHeaderWithIncrementalIndexing(
+        name, value, &new_index, &removed_referenced_indices);
+
+    if (new_index > 0)
+      context_.AddTouchesAt(new_index, 0);
+
+    return true;
+  }
+
   return false;
 }
 
