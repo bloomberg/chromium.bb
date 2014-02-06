@@ -170,11 +170,11 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, Resource
 
     for (HistoryFrameLoadSet::iterator it = sameDocumentLoads.begin(); it != sameDocumentLoads.end(); ++it) {
         if (it->key->host())
-            it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad, cachePolicy);
+            it->key->loader().loadHistoryItem(it->value.get(), HistorySameDocumentLoad, cachePolicy);
     }
     for (HistoryFrameLoadSet::iterator it = differentDocumentLoads.begin(); it != differentDocumentLoads.end(); ++it) {
         if (it->key->host())
-            it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad, cachePolicy);
+            it->key->loader().loadHistoryItem(it->value.get(), HistoryDifferentDocumentLoad, cachePolicy);
     }
 }
 

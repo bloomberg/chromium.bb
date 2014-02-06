@@ -1,0 +1,12 @@
+<body>
+<script>
+window.onpopstate = function() {
+    parent.addChild();
+};
+
+setTimeout(function() {
+    history.pushState("Test", "", "#test");
+    parent.setupDone();
+}, 0);
+</script>
+</body>

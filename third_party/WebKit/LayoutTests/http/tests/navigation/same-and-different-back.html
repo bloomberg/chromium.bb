@@ -1,0 +1,31 @@
+<body>
+We pass if we don't crash under ASAN.
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpBackForwardList();
+    testRunner.waitUntilDone();
+}
+
+var setupStepsDone = 0;
+function setupDone() {
+    setupStepsDone++;
+    if (setupStepsDone < 2)
+        return;
+
+    // Send a backspace to trigger a back navigation.
+    if (window.eventSender)
+        eventSender.keyDown('\u0008');
+}
+
+function addChild() {
+    var i = document.createElement("iframe");
+    i.src = "about:blank";
+    document.body.appendChild(i);
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+</script>
+<iframe src="resources/pushState-onload.html"></iframe>
+<iframe src="resources/location-replace.html"></iframe>
+</body>
