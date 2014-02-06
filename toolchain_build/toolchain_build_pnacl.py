@@ -107,6 +107,20 @@ def TripleIsWindows(t):
   return fnmatch.fnmatch(t, '*-mingw32*') or fnmatch.fnmatch(t, '*cygwin*')
 
 
+def CompilersForHost(host):
+  compiler = {
+      # For now we only do native builds for linux and mac
+      'i686-linux': ('gcc', 'g++'), # treat 32-bit linux like a native build
+      'x86_64-linux': ('gcc', 'g++'),
+      # TODO(dschuff): switch to clang on mac
+      'x86_64-apple-darwin': ('gcc', 'g++'),
+      # Windows build should work for native and cross
+      'i686-w64-mingw32': ('i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++'),
+      # TODO: add arm-hosted support
+  }
+  return compiler[host]
+
+
 def ConfigureHostArchFlags(host):
   configure_args = []
   extra_cc_args = []
@@ -126,22 +140,12 @@ def ConfigureHostArchFlags(host):
 
   extra_cxx_args = list(extra_cc_args)
 
-  compiler = {
-      # For now we only do native builds for linux and mac
-      'i686-linux': ('gcc', 'g++'), # treat 32-bit linux like a native build
-      'x86_64-linux': ('gcc', 'g++'),
-      # TODO(dschuff): switch to clang on mac
-      'x86_64-apple-darwin': ('gcc', 'g++'),
-      # Windows build should work for native and cross
-      'i686-w64-mingw32': ('i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++'),
-      # TODO: add arm-hosted support
-  }
-  cc = compiler[host][0]
-  cxx = compiler[host][1]
+  cc, cxx = CompilersForHost(host)
 
   if is_cross:
-    # LLVM's linux->mingw cross build isn't right without this?
+    # LLVM's linux->mingw cross build needs this
     configure_args.append('CC_FOR_BUILD=gcc')
+
   configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
   configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
 
@@ -155,6 +159,24 @@ def ConfigureHostArchFlags(host):
                              'CFLAGS=-isystem %(abs_libdl)s',
                              'CXXFLAGS=-isystem %(abs_libdl)s'])
   return configure_args
+
+
+def CmakeHostArchFlags(host, options):
+  cmake_flags = []
+  if options.clang:
+    cc ='%(abs_top_srcdir)s/../third_party/llvm-build/Release+Asserts/bin/clang'
+    cxx = cc + '++'
+  else:
+    cc, cxx = CompilersForHost(host)
+  cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
+
+  if options.sanitize:
+    cmake_flags.extend(['-DCMAKE_%s_FLAGS=-fsanitize=%s' % (c, options.sanitize)
+                        for c in ('C', 'CXX')])
+    cmake_flags.append('-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=%s' %
+                       options.sanitize)
+  return cmake_flags
+
 
 def MakeCommand(host):
   make_command = ['make']
@@ -270,7 +292,7 @@ def HostLibs(host):
   return libs
 
 
-def HostTools(host):
+def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return component_name + '_' + gsd_storage.LegalizeName(host)
@@ -308,7 +330,45 @@ def HostTools(host):
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('arm-pc-nacl', 'lib', 'lib32')]
-          },
+      },
+      H('driver'): {
+        'type': 'build',
+        'output_subdir': BinSubdir(host),
+        'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+        'commands': [
+            command.Runnable(pnacl_commands.InstallDriverScripts,
+                             '%(src)s', '%(output)s',
+                             host_windows=TripleIsWindows(host),
+                             host_64bit=IsHost64(host))
+        ],
+      },
+  }
+  llvm_cmake = {
+      H('llvm'): {
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
+          'type': 'build',
+          'output_subdir': HostSubdir(host),
+          'commands': [
+              command.SkipForIncrementalCommand([
+                  'cmake', '-G', 'Ninja'] +
+                  CmakeHostArchFlags(host, options) +
+                  ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                  '-DCMAKE_INSTALL_PREFIX=%(output)s',
+                  '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
+                  '-DBUILD_SHARED_LIBS=ON',
+                  '-DLLVM_ENABLE_ASSERTIONS=ON',
+                  '-ULLVM_ENABLE_ZLIB',
+                  '-DLLVM_BUILD_TESTS=ON',
+                  '-DLLVM_APPEND_VC_REV=ON',
+                  '-DLLVM_BINUTILS_INCDIR=%(abs_binutils_pnacl_src)s/include',
+                  '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
+                  '%(llvm_src)s']),
+              command.Command(['ninja']),
+              command.Command(['ninja', 'install']),
+        ],
+      },
+  }
+  llvm_autoconf = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
           'type': 'build',
@@ -335,18 +395,11 @@ def HostTools(host):
               command.Command(MAKE_DESTDIR_CMD + ['install'])] +
               CopyWindowsHostLibs(host),
       },
-      H('driver'): {
-        'type': 'build',
-        'output_subdir': BinSubdir(host),
-        'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-        'commands': [
-            command.Runnable(pnacl_commands.InstallDriverScripts,
-                             '%(src)s', '%(output)s',
-                             host_windows=TripleIsWindows(host),
-                             host_64bit=IsHost64(host))
-        ],
-      },
   }
+  if options.cmake:
+    tools.update(llvm_cmake)
+  else:
+    tools.update(llvm_autoconf)
   if TripleIsWindows(host) and not command.Runnable.use_cygwin:
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
@@ -471,11 +524,25 @@ if __name__ == '__main__':
   parser.add_argument('--build-64bit-host', action='store_true',
                       dest='build_64bit_host', default=False,
                       help='Build 64-bit Linux host binaries in addition to 32')
+  parser.add_argument('--cmake', action='store_true', default=False,
+                      help="Use LLVM's cmake ninja build instead of autoconf")
+  parser.add_argument('--clang', action='store_true', default=False,
+                      help="Use clang instead of gcc with LLVM's cmake build")
+  parser.add_argument('--sanitize', choices=['address', 'thread', 'undefined'],
+                      help="Use a sanitizer with LLVM's clang cmake build")
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
     parser.print_help()
     print 'The rest of the arguments are generic, in toolchain_main.py'
+
+  if args.sanitize and not args.cmake:
+    print 'Use of sanitizers requires a cmake build'
+    sys.exit(1)
+  if args.clang and not args.cmake:
+    print 'Use of clang is currently only supported with cmake/ninja'
+    sys.exit(1)
+
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
   if args.legacy_repo_sync:
     SyncPNaClRepos(revisions)
@@ -498,7 +565,7 @@ if __name__ == '__main__':
     hosts.append('i686-w64-mingw32')
   for host in hosts:
     packages.update(HostLibs(host))
-    packages.update(HostTools(host))
+    packages.update(HostTools(host, args))
   # Don't build the target libs on Windows because of pathname issues.
   # Don't build the target libs on Mac because the gold plugin's rpaths
   # aren't right.

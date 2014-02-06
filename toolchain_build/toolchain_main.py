@@ -220,6 +220,7 @@ class PackageBuilder(object):
         subdir=output_subdir)
 
     if not is_source_target and self._options.install:
+      logging.debug('Installing output to %s' % self._options.install)
       file_tools.CopyTree(output, self._options.install)
 
   def BuildOrder(self, targets):
