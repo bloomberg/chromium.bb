@@ -63,10 +63,10 @@ enum MarginsType {
 struct Margins {
   Margins();
   Margins(MarginsType type,
-          int32 top_microns,
-          int32 right_microns,
-          int32 bottom_microns,
-          int32 left_microns);
+          int32 top_um,
+          int32 right_um,
+          int32 bottom_um,
+          int32 left_um);
 
   bool operator==(const Margins& other) const;
   bool operator!=(const Margins& other) const {
@@ -74,10 +74,10 @@ struct Margins {
   }
 
   MarginsType type;
-  int32 top_microns;
-  int32 right_microns;
-  int32 bottom_microns;
-  int32 left_microns;
+  int32 top_um;
+  int32 right_um;
+  int32 bottom_um;
+  int32 left_um;
 };
 
 struct Dpi {
@@ -282,10 +282,12 @@ enum MediaType {
 struct Media {
   Media();
 
-  Media(MediaType type, int32 width_microns, int32 height_microns);
+  Media(MediaType type, int32 width_um, int32 height_um);
 
   Media(const std::string& custom_display_name,
-        int32 width_microns, int32 height_microns);
+        int32 width_um, int32 height_um);
+
+  bool MatchBySize();
 
   bool IsValid() const;
   bool operator==(const Media& other) const;
@@ -294,8 +296,8 @@ struct Media {
   }
 
   MediaType type;
-  int32 width_microns;
-  int32 height_microns;
+  int32 width_um;
+  int32 height_um;
   bool is_continuous_feed;
   std::string custom_display_name;
 };
