@@ -8,6 +8,9 @@ import android.content.Context;
 
 import org.chromium.android_webview.AwResource;
 
+/**
+ * Registers resources for the Android webview shell.
+ */
 public class AwShellResourceProvider {
     private static boolean sInitialized;
 
@@ -18,10 +21,9 @@ public class AwShellResourceProvider {
 
         AwResource.setResources(context.getResources());
 
-        AwResource.RAW_LOAD_ERROR = R.raw.blank_html;
-        AwResource.RAW_NO_DOMAIN = R.raw.blank_html;
+        AwResource.setErrorPageResources(R.raw.blank_html, R.raw.blank_html);
 
-        AwResource.STRING_DEFAULT_TEXT_ENCODING = R.string.test_string;
+        AwResource.setDefaultTextEncoding(R.string.test_string);
 
         sInitialized = true;
     }

@@ -17,6 +17,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+/**
+ * A class that defines a set of resource IDs and functionality to resolve
+ * those IDs to concrete resources.
+ */
 @JNINamespace("android_webview::AwResource")
 public class AwResource {
     // The following resource ID's must be initialized by the embedder.
@@ -45,6 +49,15 @@ public class AwResource {
     public static void setResources(Resources resources) {
         sResources = resources;
         sResourceCache = new HashMap<Integer, SoftReference<String> >();
+    }
+
+    public static void setErrorPageResources(int loaderror, int nodomain) {
+        RAW_LOAD_ERROR = loaderror;
+        RAW_NO_DOMAIN = nodomain;
+    }
+
+    public static void setDefaultTextEncoding(int encoding) {
+        STRING_DEFAULT_TEXT_ENCODING = encoding;
     }
 
     @CalledByNative
@@ -109,6 +122,7 @@ public class AwResource {
                     isr.close();
                 }
             } catch (IOException e) {
+                // Nothing to do if close() fails.
             }
         }
         return result;
