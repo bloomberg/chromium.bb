@@ -209,6 +209,8 @@ private:
 
     bool shouldRepaint(const LayoutRect&) const;
 
+    bool rootFillsViewportBackground(RenderBox* rootBox) const;
+
     // These functions may only be accessed by LayoutStateMaintainer.
     bool pushLayoutState(RenderBox* renderer, const LayoutSize& offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
     {

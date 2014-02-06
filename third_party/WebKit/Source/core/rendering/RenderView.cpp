@@ -408,25 +408,33 @@ void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     paintObject(paintInfo, paintOffset);
 }
 
-static inline bool rendererObscuresBackground(RenderObject* rootObject)
+static inline bool rendererObscuresBackground(RenderBox* rootBox)
 {
-    if (!rootObject)
-        return false;
-
-    RenderStyle* style = rootObject->style();
+    ASSERT(rootBox);
+    RenderStyle* style = rootBox->style();
     if (style->visibility() != VISIBLE
         || style->opacity() != 1
         || style->hasTransform())
         return false;
 
-    if (rootObject->compositingState() == PaintsIntoOwnBacking)
+    if (rootBox->compositingState() == PaintsIntoOwnBacking)
         return false;
 
-    const RenderObject* rootRenderer = rootObject->rendererForRootBackground();
+    const RenderObject* rootRenderer = rootBox->rendererForRootBackground();
     if (rootRenderer->style()->backgroundClip() == TextFillBox)
         return false;
 
     return true;
+}
+
+bool RenderView::rootFillsViewportBackground(RenderBox* rootBox) const
+{
+    ASSERT(rootBox);
+    // CSS Boxes always fill the viewport background (see paintRootBoxFillLayers)
+    if (!rootBox->isSVG())
+        return true;
+
+    return rootBox->frameRect().contains(frameRect());
 }
 
 void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
@@ -456,21 +464,13 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
     if (paintInfo.skipRootBackground())
         return;
 
-    bool rootFillsViewport = false;
-    bool rootObscuresBackground = false;
+    bool shouldPaintBackground = true;
     Node* documentElement = document().documentElement();
-    if (RenderObject* rootRenderer = documentElement ? documentElement->renderer() : 0) {
-        // The document element's renderer is currently forced to be a block, but may not always be.
-        RenderBox* rootBox = rootRenderer->isBox() ? toRenderBox(rootRenderer) : 0;
-        rootFillsViewport = rootBox && !rootBox->x() && !rootBox->y() && rootBox->width() >= width() && rootBox->height() >= height();
-        rootObscuresBackground = rendererObscuresBackground(rootRenderer);
-    }
-
-    Page* page = document().page();
-    float pageScaleFactor = page ? page->pageScaleFactor() : 1;
+    if (RenderBox* rootBox = documentElement ? toRenderBox(documentElement->renderer()) : 0)
+        shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
 
     // If painting will entirely fill the view, no need to fill the background.
-    if (rootFillsViewport && rootObscuresBackground && pageScaleFactor >= 1)
+    if (!shouldPaintBackground)
         return;
 
     // This code typically only executes if the root element's visibility has been set to hidden,
