@@ -393,7 +393,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
 
   legacy_software_mode_stats_ = cc::RenderingStatsInstrumentation::Create();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuBenchmarking))
+          cc::switches::kEnableGpuBenchmarking))
     legacy_software_mode_stats_->set_record_rendering_stats(true);
 }
 

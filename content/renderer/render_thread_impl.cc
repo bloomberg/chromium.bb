@@ -384,7 +384,7 @@ void RenderThreadImpl::Init() {
   InitSkiaEventTracer();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
+  if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
       RegisterExtension(GpuBenchmarkingExtension::Get());
 
   // Note that under Linux, the media library will normally already have

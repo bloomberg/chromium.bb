@@ -47,6 +47,7 @@ CC_EXPORT extern const char kDisableCompositorTouchHitTesting[];
 CC_EXPORT extern const char kUIDisablePartialSwap[];
 CC_EXPORT extern const char kEnablePerTilePainting[];
 CC_EXPORT extern const char kUIEnablePerTilePainting[];
+CC_EXPORT extern const char kEnableGpuBenchmarking[];
 
 // Debug visualizations.
 CC_EXPORT extern const char kShowCompositedLayerBorders[];

@@ -89,6 +89,9 @@ const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 const char kEnablePerTilePainting[] = "enable-per-tile-painting";
 const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";
 
+// Enables the GPU benchmarking extension
+const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
+
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";

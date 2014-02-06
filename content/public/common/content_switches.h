@@ -139,7 +139,6 @@ extern const char kEnableFastTextAutosizing[];
 CONTENT_EXPORT extern const char kEnableFileCookies[];
 CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kEnableGestureTapHighlight[];
-extern const char kEnableGpuBenchmarking[];
 extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
 #if defined(OS_WIN)

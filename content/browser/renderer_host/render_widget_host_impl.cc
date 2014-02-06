@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -2470,7 +2471,7 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   // This feature is behind the kEnableGpuBenchmarking command line switch
   // because it poses security concerns and should only be used for testing.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableGpuBenchmarking)) {
+  if (!command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     Send(new ViewMsg_WindowSnapshotCompleted(
         GetRoutingID(), snapshot_id, gfx::Size(), png));
     return;

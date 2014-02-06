@@ -205,7 +205,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
-      cmd->HasSwitch(switches::kEnableGpuBenchmarking));
+      cmd->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
   if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;
