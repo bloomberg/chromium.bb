@@ -20,6 +20,7 @@ if [ "$3" = "" ]; then
   echo "  $0 [TARGET_OS] [TARGET_ARCH] [path/to/ffmpeg] [config-only]"
   echo
   echo "Valid combinations are linux       [ia32|x64|mipsel|arm|arm-neon]"
+  echo "                       linux-noasm x64"
   echo "                       win         [ia32|x64]"
   echo "                       win-vs2013  [ia32|x64]"
   echo "                       mac         [ia32|x64]"
@@ -55,10 +56,11 @@ CONFIG_ONLY=$4
 
 # Check TARGET_OS (TARGET_ARCH is checked during configuration).
 if [[ "$TARGET_OS" != "linux" &&
+      "$TARGET_OS" != "linux-noasm" &&
       "$TARGET_OS" != "mac" &&
       "$TARGET_OS" != "win" &&
       "$TARGET_OS" != "win-vs2013" ]]; then
-  echo "Valid target OSes are: linux, mac, win, win-vs2013"
+  echo "Valid target OSes are: linux, linux-noasm, mac, win, win-vs2013"
   exit 1
 fi
 
@@ -279,7 +281,7 @@ add_flag_common --enable-demuxer=ogg,matroska,wav
 add_flag_common --enable-parser=vp3,vorbis,vp8
 
 # Linux only.
-if [ "$TARGET_OS" = "linux" ]; then
+if [[ "$TARGET_OS" = "linux" || "$TARGET_OS" = "linux-noasm" ]]; then
   if [ "$TARGET_ARCH" = "x64" ]; then
     # Nothing to add for now.
     add_flag_common ""
@@ -350,6 +352,16 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --disable-mipsfpu
     add_flag_common --disable-mipsdspr1
     add_flag_common --disable-mipsdspr2
+  else
+    echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
+    exit 1
+  fi
+fi
+
+if [ "$TARGET_OS" = "linux-noasm" ]; then
+  if [ "$TARGET_ARCH" = "x64" ]; then
+    add_flag_common --disable-asm
+    add_flag_common --disable-inline-asm
   else
     echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
     exit 1
