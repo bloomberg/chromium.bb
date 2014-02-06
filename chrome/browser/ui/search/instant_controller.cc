@@ -81,22 +81,10 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
 InstantController::InstantController(BrowserInstantController* browser)
     : browser_(browser),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
-      omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT),
-      omnibox_bounds_(-1, -1, 0, 0) {
+      omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT) {
 }
 
 InstantController::~InstantController() {
-}
-
-void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
-  if (omnibox_bounds_ == bounds)
-    return;
-
-  omnibox_bounds_ = bounds;
-  if (instant_tab_) {
-    SearchTabHelper::FromWebContents(instant_tab_->contents())->
-        SetOmniboxStartMargin(omnibox_bounds_.x());
-  }
 }
 
 void InstantController::SetSuggestionToPrefetch(
@@ -255,9 +243,6 @@ void InstantController::ResetInstantTab() {
 
 void InstantController::UpdateInfoForInstantTab() {
   if (instant_tab_) {
-    SearchTabHelper::FromWebContents(instant_tab_->contents())->
-        SetOmniboxStartMargin(omnibox_bounds_.x());
-
     // Update theme details.
     InstantService* instant_service = GetInstantService();
     if (instant_service) {

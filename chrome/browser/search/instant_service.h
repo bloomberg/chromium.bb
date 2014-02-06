@@ -89,9 +89,15 @@ class InstantService : public BrowserContextKeyedService,
   // Sends the current set of search URLs to a renderer process.
   void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
 
+  // Invoked to notify the Instant page that the omnibox start margin has
+  // changed.
+  void OnOmniboxStartMarginChanged(int start_margin);
+
   InstantSearchPrerenderer* instant_search_prerenderer() {
     return instant_prerenderer_.get();
   }
+
+  int omnibox_start_margin() const { return omnibox_start_margin_; }
 
  private:
   friend class InstantExtendedTest;
@@ -143,6 +149,10 @@ class InstantService : public BrowserContextKeyedService,
 
   // Theme-related data for NTP overlay to adopt themes.
   scoped_ptr<ThemeBackgroundInfo> theme_info_;
+
+  // The start-edge margin of the omnibox, used by the Instant page to align
+  // text or assets properly with the omnibox.
+  int omnibox_start_margin_;
 
   ObserverList<InstantServiceObserver> observers_;
 

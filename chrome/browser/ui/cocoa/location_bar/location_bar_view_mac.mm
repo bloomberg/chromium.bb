@@ -22,6 +22,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -545,9 +547,11 @@ void LocationBarViewMac::OnChanged() {
 
   Layout();
 
-  if (browser_->instant_controller()) {
-    browser_->instant_controller()->SetOmniboxBounds(
-        gfx::Rect(NSRectToCGRect([field_ frame])));
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  if (instant_service) {
+    gfx::Rect bounds(NSRectToCGRect([field_ frame]));
+    instant_service->OnOmniboxStartMarginChanged(bounds.x());
   }
 }
 

@@ -738,8 +738,7 @@ TEST_F(SearchIPCRouterTest, SendSetOmniboxStartMargin) {
       .WillOnce(testing::Return(true));
 
   process()->sink().ClearMessages();
-  content::WebContents* contents = web_contents();
-  GetSearchTabHelper(contents)->SetOmniboxStartMargin(92);
+  GetSearchIPCRouter().SetOmniboxStartMargin(92);
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
 }
 
@@ -751,8 +750,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetOmniboxStartMargin) {
       .WillOnce(testing::Return(false));
 
   process()->sink().ClearMessages();
-  content::WebContents* contents = web_contents();
-  GetSearchTabHelper(contents)->SetOmniboxStartMargin(92);
+  GetSearchIPCRouter().SetOmniboxStartMargin(92);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
 }
 

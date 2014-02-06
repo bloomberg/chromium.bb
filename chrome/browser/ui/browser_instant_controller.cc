@@ -117,10 +117,6 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
     prerenderer->Cancel();
 }
 
-void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
-  instant_.SetOmniboxBounds(bounds);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, SearchModelObserver implementation:
 

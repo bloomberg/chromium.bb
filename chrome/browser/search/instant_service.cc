@@ -67,6 +67,7 @@ RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
+      omnibox_start_margin_(chrome::kDisableStartMargin),
       weak_ptr_factory_(this) {
   // Stub for unit tests.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -242,6 +243,12 @@ void InstantService::Observe(int type,
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   rph->Send(new ChromeViewMsg_SetSearchURLs(
       chrome::GetSearchURLs(profile_), chrome::GetNewTabPageURL(profile_)));
+}
+
+void InstantService::OnOmniboxStartMarginChanged(int start_margin) {
+  omnibox_start_margin_ = start_margin;
+  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                    OmniboxStartMarginChanged(omnibox_start_margin_));
 }
 
 void InstantService::OnRendererProcessTerminated(int process_id) {

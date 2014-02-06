@@ -19,7 +19,6 @@
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 class BrowserInstantController;
 class GURL;
@@ -29,10 +28,6 @@ class Profile;
 
 namespace content {
 class WebContents;
-}
-
-namespace gfx {
-class Rect;
 }
 
 // Macro used for logging debug events. |message| should be a std::string.
@@ -52,9 +47,6 @@ class InstantController : public InstantPage::Delegate {
  public:
   explicit InstantController(BrowserInstantController* browser);
   virtual ~InstantController();
-
-  // Sets the stored start-edge margin and width of the omnibox.
-  void SetOmniboxBounds(const gfx::Rect& bounds);
 
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
@@ -93,11 +85,6 @@ class InstantController : public InstantPage::Delegate {
   // See comments for |debug_events_| below.
   const std::list<std::pair<int64, std::string> >& debug_events() {
     return debug_events_;
-  }
-
-  // Gets the stored start-edge margin and width of the omnibox.
-  const gfx::Rect omnibox_bounds() {
-    return omnibox_bounds_;
   }
 
   // Used by BrowserInstantController to notify InstantController about the
@@ -180,10 +167,6 @@ class InstantController : public InstantPage::Delegate {
 
   // The search model mode for the active tab.
   SearchMode search_mode_;
-
-  // The start-edge margin and width of the omnibox, used by the page to align
-  // its suggestions with the omnibox.
-  gfx::Rect omnibox_bounds_;
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
   mutable std::list<std::pair<int64, std::string> > debug_events_;

@@ -21,6 +21,8 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1110,8 +1112,9 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (browser_ && browser_->instant_controller() && parent())
-    browser_->instant_controller()->SetOmniboxBounds(bounds());
+  InstantServiceFactory::GetForProfile(profile())->OnOmniboxStartMarginChanged(
+      bounds().x());
+
   OmniboxPopupView* popup = omnibox_view_->model()->popup_model()->view();
   if (popup->IsOpen())
     popup->UpdatePopupAppearance();

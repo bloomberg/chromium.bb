@@ -28,6 +28,9 @@ class InstantServiceObserver {
   // the page, and the actual change is triggered after the user accepts.
   virtual void GoogleURLUpdated();
 
+  // Indicates that the omnibox start margin has changed.
+  virtual void OmniboxStartMarginChanged(int omnibox_start_margin);
+
  protected:
   virtual ~InstantServiceObserver() {}
 };

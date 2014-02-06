@@ -213,10 +213,6 @@ void SearchTabHelper::SetSuggestionToPrefetch(
   ipc_router_.SetSuggestionToPrefetch(suggestion);
 }
 
-void SearchTabHelper::SetOmniboxStartMargin(int start_margin) {
-  ipc_router_.SetOmniboxStartMargin(start_margin);
-}
-
 void SearchTabHelper::Submit(const base::string16& text) {
   ipc_router_.Submit(text);
 }
@@ -326,10 +322,11 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  // TODO(kmadhusu): Set the page initial states (such as omnibox margin, etc)
-  // from here. Please refer to crbug.com/247517 for more details.
   if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
                                                profile())) {
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile());
+    ipc_router_.SetOmniboxStartMargin(instant_service->omnibox_start_margin());
     ipc_router_.SetDisplayInstantResults();
   }
 
@@ -386,6 +383,10 @@ void SearchTabHelper::MostVisitedItemsChanged(
   std::vector<InstantMostVisitedItem> items_copy(items);
   MaybeRemoveMostVisitedItems(&items_copy);
   ipc_router_.SendMostVisitedItems(items_copy);
+}
+
+void SearchTabHelper::OmniboxStartMarginChanged(int omnibox_start_margin) {
+  ipc_router_.SetOmniboxStartMargin(omnibox_start_margin);
 }
 
 void SearchTabHelper::MaybeRemoveMostVisitedItems(

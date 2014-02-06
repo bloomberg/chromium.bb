@@ -31,6 +31,8 @@
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1629,20 +1631,11 @@ void SearchProvider::AddMatchToMap(const SuggestResult& result,
                                    const std::string& metadata,
                                    int accepted_suggestion,
                                    MatchMap* map) {
-  // On non-mobile, ask the instant controller for the appropriate start margin.
-  // On mobile the start margin is unused, so leave the value as default there.
-  int omnibox_start_margin = chrome::kDisableStartMargin;
-#if !defined(OS_ANDROID) && !defined(IOS)
-  if (chrome::IsInstantExtendedAPIEnabled()) {
-    Browser* browser =
-        chrome::FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
-    if (browser && browser->instant_controller() &&
-        browser->instant_controller()->instant()) {
-      omnibox_start_margin =
-          browser->instant_controller()->instant()->omnibox_bounds().x();
-    }
-  }
-#endif  // !defined(OS_ANDROID) && !defined(IOS)
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  // Android and iOS have no InstantService.
+  const int omnibox_start_margin = instant_service ?
+      instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
 
   const TemplateURL* template_url = result.from_keyword_provider() ?
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();

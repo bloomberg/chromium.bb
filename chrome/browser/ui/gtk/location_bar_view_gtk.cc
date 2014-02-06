@@ -34,6 +34,8 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -1120,9 +1122,11 @@ void LocationBarViewGtk::OnHboxSizeAllocate(GtkWidget* sender,
     hbox_width_ = allocation->width;
     UpdateEVCertificateLabelSize();
   }
-  if (browser_ && browser_->instant_controller()) {
-    browser_->instant_controller()->
-        SetOmniboxBounds(AllocationToRect(*allocation));
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  if (instant_service) {
+    instant_service->OnOmniboxStartMarginChanged(
+        AllocationToRect(*allocation).x());
   }
 }
 

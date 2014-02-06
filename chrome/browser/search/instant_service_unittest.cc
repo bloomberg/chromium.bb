@@ -30,6 +30,7 @@ class MockInstantServiceObserver : public InstantServiceObserver {
  public:
   MOCK_METHOD0(DefaultSearchProviderChanged, void());
   MOCK_METHOD0(GoogleURLUpdated, void());
+  MOCK_METHOD1(OmniboxStartMarginChanged, void(int));
 };
 
 class InstantServiceTest : public InstantUnitTestBase {
@@ -48,6 +49,10 @@ class InstantServiceTest : public InstantUnitTestBase {
 
   InstantSearchPrerenderer* GetInstantSearchPrerenderer() {
     return instant_service_->instant_search_prerenderer();
+  }
+
+  void UpdateOmniboxStartMargin(int start_margin) {
+    instant_service_->OnOmniboxStartMarginChanged(start_margin);
   }
 
   scoped_ptr<MockInstantServiceObserver> instant_service_observer_;
@@ -136,4 +141,11 @@ TEST_F(InstantServiceTest, ResetInstantSearchPrerenderer_GoogleBaseURLUpdated) {
   const std::string& new_base_url = "https://www.google.es/";
   NotifyGoogleBaseURLUpdate(new_base_url);
   EXPECT_NE(old_prerenderer, GetInstantSearchPrerenderer());
+}
+
+TEST_F(InstantServiceTest, OmniboxStartMarginChanged) {
+  int new_start_margin = 92;
+  EXPECT_CALL(*instant_service_observer_.get(),
+              OmniboxStartMarginChanged(new_start_margin)).Times(1);
+  UpdateOmniboxStartMargin(new_start_margin);
 }

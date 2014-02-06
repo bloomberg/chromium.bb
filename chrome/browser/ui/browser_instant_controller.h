@@ -21,10 +21,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Rect;
-}
-
 class BrowserInstantController : public SearchModelObserver,
                                  public InstantServiceObserver {
  public:
@@ -50,9 +46,6 @@ class BrowserInstantController : public SearchModelObserver,
 
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
-
-  // Sets the stored omnibox bounds.
-  void SetOmniboxBounds(const gfx::Rect& bounds);
 
  private:
   // Overridden from search::SearchModelObserver:
