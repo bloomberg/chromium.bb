@@ -671,7 +671,7 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_InstantExtendedAPIEnabled) {
 #endif
 }
 
-TEST_F(SearchTest, ShouldPrefetchSearchResults_DisabledViaFinch) {
+TEST_F(SearchTest, ShouldPrefetchSearchResults_DisabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
       "Group1 espv:89 prefetch_results:0"));
@@ -679,7 +679,7 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_DisabledViaFinch) {
   EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
 }
 
-TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaFinch) {
+TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
       "Group1 espv:80 prefetch_results:1"));
@@ -697,7 +697,7 @@ TEST_F(SearchTest,
   EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
 }
 
-TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_EnabledViaFinch) {
+TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_EnabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
       "Group1 espv:89 prefetch_results:1 reuse_instant_search_base_page:1"));
@@ -705,7 +705,7 @@ TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_EnabledViaFinch) {
   EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
 }
 
-TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_DisabledViaFinch) {
+TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_DisabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
       "Group1 espv:89 prefetch_results:1 reuse_instant_search_base_page:0"));
@@ -786,7 +786,7 @@ TEST_F(IsQueryExtractionEnabledTest, NotSet) {
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
-TEST_F(IsQueryExtractionEnabledTest, EnabledViaFinch) {
+TEST_F(IsQueryExtractionEnabledTest, EnabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 query_extraction:1"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
@@ -794,7 +794,7 @@ TEST_F(IsQueryExtractionEnabledTest, EnabledViaFinch) {
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
-TEST_F(IsQueryExtractionEnabledTest, DisabledViaFinch) {
+TEST_F(IsQueryExtractionEnabledTest, DisabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 query_extraction:0"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
@@ -862,7 +862,7 @@ TEST_F(DisplaySearchButtonTest, CommandLineNever) {
       switches::kDisableSearchButtonInOmnibox);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 
-  // Command-line disable should override Finch.
+  // Command-line disable should override the field trial.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
@@ -922,7 +922,7 @@ TEST_F(OriginChipTest, NotSet) {
   EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 }
 
-TEST_F(OriginChipTest, NoOriginChip) {
+TEST_F(OriginChipTest, Disabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
   EXPECT_FALSE(ShouldDisplayOriginChip());
@@ -957,12 +957,12 @@ TEST_F(OriginChipTest, OriginChipInvalidValue) {
   EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 }
 
-TEST_F(OriginChipTest, CommandLineNoOriginChip) {
+TEST_F(OriginChipTest, CommandLineDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableOriginChip);
   EXPECT_FALSE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 
-  // Command-line disable should override Finch.
+  // Command-line disable should override the field trial.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
   EXPECT_FALSE(ShouldDisplayOriginChip());
@@ -974,7 +974,7 @@ TEST_F(OriginChipTest, CommandLineOriginChip) {
   EXPECT_TRUE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_TRAILING_LOCATION_BAR, GetOriginChipPosition());
 
-  // Command-line enable should override Finch.
+  // Command-line enable should override the field trial.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
   EXPECT_TRUE(ShouldDisplayOriginChip());
@@ -1000,6 +1000,81 @@ TEST_F(OriginChipTest, CommandLineOriginChipLeadingMenuButton) {
       switches::kEnableOriginChipLeadingMenuButton);
   EXPECT_TRUE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_LEADING_MENU_BUTTON, GetOriginChipPosition());
+}
+
+typedef SearchTest OriginChipV2Test;
+
+TEST_F(OriginChipV2Test, NotSet) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2"));
+  EXPECT_FALSE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, Disabled) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:0"));
+  EXPECT_FALSE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, HideOnMouseRelease) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:1"));
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, HideOnUserInput) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:2"));
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, InvalidValue) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:3"));
+  EXPECT_FALSE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, BothVersions) {
+  // With both the original and v2 origin chip experiments enabled, v2 should
+  // disable the original.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:1 origin_chip_v2:1"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, CommandLineDisabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableOriginChipV2);
+  EXPECT_FALSE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+
+  // Command-line disable should override the field trial.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:1"));
+  EXPECT_FALSE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, CommandLineHideOnMouseRelease) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipV2HideOnMouseRelease);
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+}
+
+TEST_F(OriginChipV2Test, CommandLineHideOnUserInput) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipV2HideOnUserInput);
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2HideTrigger());
 }
 
 }  // namespace chrome

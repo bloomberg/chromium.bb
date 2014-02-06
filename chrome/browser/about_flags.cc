@@ -372,6 +372,14 @@ const Experiment::Choice kOriginChipChoices[] = {
   { IDS_FLAGS_ORIGIN_CHIP_LEADING_MENU_BUTTON,
     switches::kEnableOriginChipLeadingMenuButton, ""}
 };
+const Experiment::Choice kOriginChipV2Choices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOriginChipV2, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE,
+    switches::kEnableOriginChipV2HideOnMouseRelease, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
+    switches::kEnableOriginChipV2HideOnUserInput, ""}
+};
 
 const Experiment::Choice kNotificationCenterTrayBehaviorChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1917,6 +1925,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION,
     kOsCrOS | kOsWin,
     MULTI_VALUE_TYPE(kOriginChipChoices)
+  },
+  {
+    "origin-chip-in-omnibox",
+    IDS_FLAGS_ORIGIN_CHIP_V2_NAME,
+    IDS_FLAGS_ORIGIN_CHIP_V2_DESCRIPTION,
+    kOsCrOS | kOsMac | kOsWin,
+    MULTI_VALUE_TYPE(kOriginChipV2Choices)
   },
   {
     "search-button-in-omnibox",

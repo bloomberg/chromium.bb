@@ -69,6 +69,7 @@ const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
 const char kOriginChipFlagName[] = "origin_chip";
+const char kOriginChipV2FlagName[] = "origin_chip_v2";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
@@ -565,15 +566,14 @@ bool ShouldHideTopVerbatimMatch() {
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableSearchButtonInOmnibox)) {
+  if (cl->HasSwitch(switches::kDisableSearchButtonInOmnibox))
     return DISPLAY_SEARCH_BUTTON_NEVER;
-  } else if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStr)) {
+  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStr))
     return DISPLAY_SEARCH_BUTTON_FOR_STR;
-  } else if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStrOrIip)) {
+  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStrOrIip))
     return DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP;
-  } else if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxAlways)) {
+  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxAlways))
     return DISPLAY_SEARCH_BUTTON_ALWAYS;
-  }
 
   FieldTrialFlags flags;
   if (!GetFieldTrialInfo(&flags))
@@ -590,17 +590,19 @@ bool ShouldDisplayOriginChip() {
 }
 
 OriginChipPosition GetOriginChipPosition() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableOriginChip)) {
+  if (ShouldDisplayOriginChipV2())
     return ORIGIN_CHIP_DISABLED;
-  } else if (cl->HasSwitch(switches::kEnableOriginChipLeadingLocationBar)) {
+
+  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kDisableOriginChip))
+    return ORIGIN_CHIP_DISABLED;
+  if (cl->HasSwitch(switches::kEnableOriginChipLeadingLocationBar))
     return ORIGIN_CHIP_LEADING_LOCATION_BAR;
-  } else if (cl->HasSwitch(switches::kEnableOriginChip) ||
-             cl->HasSwitch(switches::kEnableOriginChipTrailingLocationBar)) {
+  if (cl->HasSwitch(switches::kEnableOriginChip) ||
+      cl->HasSwitch(switches::kEnableOriginChipTrailingLocationBar))
     return ORIGIN_CHIP_TRAILING_LOCATION_BAR;
-  } else if (cl->HasSwitch(switches::kEnableOriginChipLeadingMenuButton)) {
+  if (cl->HasSwitch(switches::kEnableOriginChipLeadingMenuButton))
     return ORIGIN_CHIP_LEADING_MENU_BUTTON;
-  }
 
   FieldTrialFlags flags;
   if (!GetFieldTrialInfo(&flags))
@@ -610,6 +612,29 @@ OriginChipPosition GetOriginChipPosition() {
   return (value < ORIGIN_CHIP_NUM_VALUES) ?
       static_cast<OriginChipPosition>(value) :
       ORIGIN_CHIP_DISABLED;
+}
+
+bool ShouldDisplayOriginChipV2() {
+  return GetOriginChipV2HideTrigger() != ORIGIN_CHIP_V2_DISABLED;
+}
+
+OriginChipV2HideTrigger GetOriginChipV2HideTrigger() {
+  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kDisableOriginChipV2))
+    return ORIGIN_CHIP_V2_DISABLED;
+  if (cl->HasSwitch(switches::kEnableOriginChipV2HideOnMouseRelease))
+    return ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE;
+  if (cl->HasSwitch(switches::kEnableOriginChipV2HideOnUserInput))
+    return ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT;
+
+  FieldTrialFlags flags;
+  if (!GetFieldTrialInfo(&flags))
+    return ORIGIN_CHIP_V2_DISABLED;
+  uint64 value =
+      GetUInt64ValueForFlagWithDefault(kOriginChipV2FlagName, 0, flags);
+  return (value < ORIGIN_CHIP_V2_NUM_VALUES) ?
+      static_cast<OriginChipV2HideTrigger>(value) :
+      ORIGIN_CHIP_V2_DISABLED;
 }
 
 bool ShouldShowGoogleLocalNTP() {
