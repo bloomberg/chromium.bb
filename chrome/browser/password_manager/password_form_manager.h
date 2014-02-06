@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "components/autofill/core/common/password_form.h"
@@ -34,7 +35,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   //           used to filter login results from database.
   PasswordFormManager(Profile* profile,
                       PasswordManager* password_manager,
-                      content::WebContents* web_contents,
+                      PasswordManagerDriver* driver,
                       const autofill::PasswordForm& observed_form,
                       bool ssl_valid);
   virtual ~PasswordFormManager();
@@ -236,11 +237,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // UMA.
   int GetActionsTaken();
 
-  // Informs the renderer that the user has not blacklisted observed_form_ by
-  // choosing "never save passwords for this site". This is used by the password
-  // generation manager to deside whether to show the password generation icon.
-  virtual void SendNotBlacklistedToRenderer();
-
   // Remove possible_usernames that may contains sensitive information and
   // duplicates.
   void SanitizePossibleUsernames(autofill::PasswordForm* form);
@@ -301,9 +297,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // The profile from which we get the PasswordStore.
   Profile* profile_;
 
-  // Web contents from which we get the RenderViewHost for sending messages to
-  // the corresponding renderer.
-  content::WebContents* web_contents_;
+  // The driver which implements platform-specific PasswordManager operations.
+  PasswordManagerDriver* driver_;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and

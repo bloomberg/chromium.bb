@@ -12,6 +12,11 @@
 #include "chrome/browser/password_manager/password_manager_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace autofill {
+class AutofillManager;
+struct PasswordForm;
+}
+
 namespace content {
 class WebContents;
 }
@@ -30,6 +35,9 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
   virtual PasswordManager* GetPasswordManager() OVERRIDE;
+  virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE;
+  virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
+      OVERRIDE;
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
