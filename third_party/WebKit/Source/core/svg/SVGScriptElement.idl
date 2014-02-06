@@ -24,7 +24,7 @@
  */
 
 interface SVGScriptElement : SVGElement {
-    attribute DOMString type;
+    [Reflect] attribute DOMString type;
 };
 
 SVGScriptElement implements SVGURIReference;

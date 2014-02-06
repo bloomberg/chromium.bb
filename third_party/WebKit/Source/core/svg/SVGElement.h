@@ -133,7 +133,7 @@ public:
     virtual void synchronizeSystemLanguage() { }
 
 #ifndef NDEBUG
-    bool isAnimatableAttribute(const QualifiedName&) const;
+    virtual bool isAnimatableAttribute(const QualifiedName&) const;
 #endif
 
     MutableStylePropertySet* animatedSMILStyleProperties() const;

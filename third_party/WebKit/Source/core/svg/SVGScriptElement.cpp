@@ -74,10 +74,10 @@ void SVGScriptElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 
     SVGParsingError parseError = NoError;
-
     if (name == SVGNames::typeAttr)
-        setType(value);
-    else if (name == HTMLNames::onerrorAttr)
+        return;
+
+    if (name == HTMLNames::onerrorAttr)
         setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value));
     else if (name.matches(XLinkNames::hrefAttr))
         m_href->setBaseValueAsString(value, parseError);
@@ -140,16 +140,6 @@ void SVGScriptElement::finishParsingChildren()
     m_loader->setHaveFiredLoadEvent(true);
 }
 
-String SVGScriptElement::type() const
-{
-    return m_type;
-}
-
-void SVGScriptElement::setType(const String& type)
-{
-    m_type = type;
-}
-
 bool SVGScriptElement::haveLoadedRequiredResources()
 {
     return m_loader->haveFiredLoadEvent();
@@ -167,7 +157,7 @@ String SVGScriptElement::charsetAttributeValue() const
 
 String SVGScriptElement::typeAttributeValue() const
 {
-    return type();
+    return getAttribute(SVGNames::typeAttr).string();
 }
 
 String SVGScriptElement::languageAttributeValue() const
@@ -209,5 +199,15 @@ void SVGScriptElement::dispatchLoadEvent()
 {
     dispatchEvent(Event::create(EventTypeNames::load));
 }
+
+#ifndef NDEBUG
+bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const
+{
+    if (name == SVGNames::typeAttr)
+        return false;
+
+    return SVGElement::isAnimatableAttribute(name);
+}
+#endif
 
 }

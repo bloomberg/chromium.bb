@@ -45,6 +45,10 @@ public:
     ScriptLoader* loader() const { return m_loader.get(); }
     SVGAnimatedString* href() { return m_href.get(); }
 
+#ifndef NDEBUG
+    virtual bool isAnimatableAttribute(const QualifiedName&) const OVERRIDE;
+#endif
+
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
@@ -82,7 +86,6 @@ private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    String m_type;
     Timer<SVGElement> m_svgLoadEventTimer;
     OwnPtr<ScriptLoader> m_loader;
 };
