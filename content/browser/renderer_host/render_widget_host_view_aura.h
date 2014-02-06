@@ -356,9 +356,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Exposed for tests.
   aura::Window* window() { return window_; }
-  gfx::Size current_frame_size_in_dip() const {
-    return current_frame_size_in_dip_;
-  }
+  gfx::Size current_frame_size() const { return current_frame_size_; }
   void LockResources();
   void UnlockResources();
 
@@ -425,6 +423,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Checks if the resize lock can be released because we received an new frame.
   void CheckResizeLock();
 
+  void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
 
   // Returns whether the widget needs an input grab to work properly.
@@ -513,6 +512,28 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Converts |rect| from screen coordinate to window coordinate.
   gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
+
+  typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)>
+      BufferPresentedCallback;
+
+  // The common entry point for buffer updates from renderer
+  // and GPU process.
+  void BuffersSwapped(const gfx::Size& surface_size,
+                      const gfx::Rect& damage_rect,
+                      float surface_scale_factor,
+                      const std::string& mailbox_name,
+                      const std::vector<ui::LatencyInfo>& latency_info,
+                      const BufferPresentedCallback& ack_callback);
+
+  bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
+                          float surface_scale_factor,
+                          const gfx::Rect& damage_rect,
+                          const std::string& mailbox_name,
+                          const BufferPresentedCallback& ack_callback);
+
+  void SwapBuffersCompleted(
+      const BufferPresentedCallback& ack_callback,
+      const scoped_refptr<ui::Texture>& texture_to_return);
 
   void SwapDelegatedFrame(
       uint32 output_surface_id,
@@ -605,6 +626,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
+  // The current frontbuffer texture.
+  scoped_refptr<ui::Texture> current_surface_;
+
   // This holds the current software framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
@@ -616,6 +640,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The number of delegated frame acks that are pending, to delay resource
   // returns until the acks are sent.
   int pending_delegated_ack_count_;
+
+  // The damage in the previously presented buffer.
+  SkRegion previous_damage_;
+
+  // Pending damage from previous frames that we skipped.
+  SkRegion skipped_damage_;
 
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.
@@ -629,9 +659,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Provides delegated frame updates to the cc::DelegatedRendererLayer.
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
-  // The size and scale of the last software compositing frame that was swapped.
-  gfx::Size last_swapped_software_frame_size_;
-  float last_swapped_software_frame_scale_factor_;
+  // The size of the last frame that was swapped (even if we skipped it).
+  // Used to determine when the skipped_damage_ needs to be reset due to
+  // size changes between front- and backbuffer.
+  gfx::Size last_swapped_surface_size_;
+  float last_swapped_surface_scale_factor_;
 
   // If non-NULL we're in OnPaint() and this is the supplied canvas.
   gfx::Canvas* paint_canvas_;
@@ -651,6 +683,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // events vs. normal mouse move events.
   bool synthetic_move_sent_;
 
+  // Signals that the accelerated compositing has been turned on or off.
+  // This is used to signal to turn off the external texture as soon as the
+  // software backing store is updated.
+  bool accelerated_compositing_state_changed_;
+
   // This lock is the one waiting for a frame of the right size to come back
   // from the renderer/GPU process. It is set from the moment the aura window
   // got resized, to the moment we committed the renderer frame of the same
@@ -660,7 +697,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   scoped_ptr<ResizeLock> resize_lock_;
 
   // Keeps track of the current frame size.
-  gfx::Size current_frame_size_in_dip_;
+  gfx::Size current_frame_size_;
 
   // This lock is for waiting for a front surface to become available to draw.
   scoped_refptr<ui::CompositorLock> released_front_lock_;
