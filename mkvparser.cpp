@@ -374,6 +374,8 @@ bool mkvparser::Match(
     const long status = pReader->Length(&total, &available);
     assert(status >= 0);
     assert((total < 0) || (available <= total));
+    if (status < 0)
+        return false;
 
     long len;
 
@@ -420,6 +422,8 @@ bool mkvparser::Match(
     long status = pReader->Length(&total, &available);
     assert(status >= 0);
     assert((total < 0) || (available <= total));
+    if (status < 0)
+        return false;
 
     long len;
     const long long id = ReadUInt(pReader, pos, len);
@@ -2527,6 +2531,8 @@ bool Cues::LoadCuePoint() const
         CuePoint* const pCP = m_cue_points[m_count];
         assert(pCP);
         assert((pCP->GetTimeCode() >= 0) || (-pCP->GetTimeCode() == idpos));
+        if (pCP->GetTimeCode() < 0 && (-pCP->GetTimeCode() != idpos))
+            return false;
 
         pCP->Load(pReader);
         ++m_count;
@@ -3025,17 +3031,15 @@ void CuePoint::Load(IMkvReader* pReader)
 
         const long long id = ReadUInt(pReader, pos_, len);
         assert(id == 0x3B);  //CuePoint ID
-        //assert((pos + len) <= stop);
+        if (id != 0x3B)
+            return;
 
         pos_ += len;  //consume ID
 
         const long long size = ReadUInt(pReader, pos_, len);
         assert(size >= 0);
-        //assert((pos + len) <= stop);
 
         pos_ += len;  //consume Size field
-        //assert((pos + size) <= stop);
-
         //pos_ now points to start of payload
 
         stop = pos_ + size;
@@ -3322,11 +3326,15 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
         long len;
 
         long long result = GetUIntLength(m_pReader, pos, len);
-        assert(result == 0);  //TODO
+        assert(result == 0);
         assert((pos + len) <= stop);  //TODO
+        if (result != 0)
+            return NULL;
 
         const long long id = ReadUInt(m_pReader, pos, len);
-        assert(id == 0x0F43B675);  //Cluster ID   //TODO
+        assert(id == 0x0F43B675);  //Cluster ID
+        if (id != 0x0F43B675)
+            return NULL;
 
         pos += len;  //consume ID
 
@@ -3354,8 +3362,10 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
         long len;
 
         long long result = GetUIntLength(m_pReader, pos, len);
-        assert(result == 0);  //TODO
+        assert(result == 0);
         assert((pos + len) <= stop);  //TODO
+        if (result != 0)
+            return NULL;
 
         const long long idpos = pos;  //pos of next (potential) cluster
 
@@ -5792,7 +5802,9 @@ long Track::GetNext(
     assert(!pCurrEntry->EOS());  //?
 
     const Block* const pCurrBlock = pCurrEntry->GetBlock();
-    assert(pCurrBlock->GetTrackNumber() == m_info.number);
+    assert(pCurrBlock && pCurrBlock->GetTrackNumber() == m_info.number);
+    if (!pCurrBlock || pCurrBlock->GetTrackNumber() != m_info.number)
+        return -1;
 
     const Cluster* pCluster = pCurrEntry->GetCluster();
     assert(pCluster);
@@ -5889,6 +5901,8 @@ bool Track::VetEntry(const BlockEntry* pBlockEntry) const
     const Block* const pBlock = pBlockEntry->GetBlock();
     assert(pBlock);
     assert(pBlock->GetTrackNumber() == m_info.number);
+    if (!pBlock || pBlock->GetTrackNumber() != m_info.number)
+        return false;
 
     // This function is used during a seek to determine whether the
     // frame is a valid seek target.  This default function simply
@@ -8425,7 +8439,9 @@ long Cluster::CreateBlockGroup(
             long long time;
 
             long status = UnserializeInt(pReader, pos, size_, time);
-            assert(status == 0);  //TODO
+            assert(status == 0);
+            if (status != 0)
+                return -1;
 
             if (time <= 0)  //see note above
                 prev = time;
@@ -9409,6 +9425,8 @@ long Block::Parse(const Cluster* pCluster)
 
             const Frame& prev = *pf++;
             assert(prev.len == frame_size);
+            if (prev.len != frame_size)
+                return E_FILE_FORMAT_INVALID;
 
             assert(pf < pf_end);
 
@@ -9451,6 +9469,8 @@ long Block::Parse(const Cluster* pCluster)
 
             const Frame& prev = *pf++;
             assert(prev.len == frame_size);
+            if (prev.len != frame_size)
+                return E_FILE_FORMAT_INVALID;
 
             assert(pf < pf_end);
 
