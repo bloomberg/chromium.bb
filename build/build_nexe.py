@@ -198,8 +198,8 @@ class Builder(object):
     #    pexe targets.
     # 2. by specifying --build=newlib_translate to generated
     #    nexe via translation
-    # 3. by specifying --build=newlib_nexe_pnacl use pnacl
-    #    toolchain in arm-native mode (e.g. the arm IRT)
+    # 3. by specifying --build=newlib_{nexe,nlib}_pnacl use pnacl
+    #    toolchain in native mode (e.g. the IRT shim)
     self.is_pnacl_toolchain = False
     if self.outtype == 'translate':
       self.is_pnacl_toolchain = True

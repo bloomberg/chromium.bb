@@ -141,7 +141,6 @@
           'nexe_target': '',
           'nlib_target': '',
           'nso_target': '',
-          'force_arm_pnacl': 0,
           'build_newlib': 0,
           'build_glibc': 0,
           'build_irt': 0,
@@ -587,7 +586,7 @@
       'target_defaults': {
         'target_conditions': [
           # arm newlib nexe action
-          ['force_arm_pnacl==0 and nexe_target!="" and build_newlib!=0', {
+          ['nexe_target!="" and build_newlib!=0', {
             'variables': {
                'tool_name': 'newlib',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
@@ -631,7 +630,7 @@
             ],
           }],
           # arm newlib library action
-          ['force_arm_pnacl==0 and nlib_target!="" and build_newlib!=0', {
+          ['nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
@@ -675,7 +674,7 @@
             ],
           }],
           # arm irt nexe action
-          ['force_arm_pnacl==0 and nexe_target!="" and build_irt!=0', {
+          ['nexe_target!="" and build_irt!=0', {
             'variables': {
                'tool_name': 'irt',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
@@ -719,7 +718,7 @@
             ],
           }],
           # arm IRT library action
-          ['force_arm_pnacl==0 and nlib_target!="" and build_irt!=0', {
+          ['nlib_target!="" and build_irt!=0', {
             'variables': {
               'tool_name': 'irt',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
@@ -762,53 +761,7 @@
               },
             ],
           }],
-          # pnacl ARM library build using biased bitcode. This is currently
-          # used to build the IRT shim. TODO(dschuff): see if this can be
-          # further simplified, perhaps using re-using the plib build below
-          ['force_arm_pnacl==1 and nlib_target!="" and build_newlib!=0', {
-            'variables': {
-              'tool_name': 'newlib',
-              'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
-              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-            },
-            'actions': [
-              {
-                'action_name': 'build newlib arm nlib (via pnacl)',
-                'variables': {
-                  'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                },
-                'msvs_cygwin_shell': 0,
-                'description': 'building >(out_newlib_arm)',
-                'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                  '>@(extra_deps)',
-                  '>@(extra_deps_newlib_arm)',
-                  '^(source_list_newlib_arm)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
-                ],
-                'outputs': ['>(out_newlib_arm)'],
-                'action': [
-                  'python',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '>@(extra_args)',
-                  '--arch', 'arm',
-                  '--build', 'newlib_nlib_pnacl',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_newlib_arm)',
-                  '--objdir', '>(objdir_newlib_arm)',
-                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                  '--gomadir', '<(gomadir)',
-                  '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
-                  '--source-list=^(source_list_newlib_arm)',
-                ],
-              },
-            ],
-          }],
-        ], # end target_conditions for arm newlib (nexe/nlib, force_arm_pnacl)
+        ], # end target_conditions for arm newlib (nexe/nlib)
       },
     }], # end target_arch = arm
     ['target_arch=="mipsel"', {
@@ -1271,6 +1224,8 @@
     'variables': {
       'disable_pnacl%': 0,
       'build_pnacl_newlib': 0,
+      'pnacl_native_biased': 0,
+      'nexe_target': '',
       'nlib_target': '',
       'extra_deps_pnacl_newlib': [],
       'tc_lib_dir_pnacl_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib',
@@ -1299,203 +1254,352 @@
     },
     'target_conditions': [
       # pnacl actions for building pexes and translating them
-      ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
-        'variables': {
-            'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
-            'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
-            'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
-            'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips.nexe',
-          'tool_name': 'pnacl_newlib',
-          'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
-          'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
-          'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-          'link_flags': [
-            '-O3',
-          ],
-          'translate_flags': [],
-        },
-        'actions': [
-          {
-            'action_name': 'build newlib pexe',
-            'variables': {
-              'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-            },
-            'msvs_cygwin_shell': 0,
-            'description': 'building >(out_pnacl_newlib)',
-            'inputs': [
-              '<(DEPTH)/native_client/build/build_nexe.py',
-              '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-              '>@(extra_deps)',
-              '>@(extra_deps_pnacl_newlib)',
-              '^(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
-            ],
-            'outputs': ['>(out_pnacl_newlib)'],
-            'action': [
-              'python',
-              '<(DEPTH)/native_client/build/build_nexe.py',
-              '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-              '>@(extra_args)',
-              '--arch', 'pnacl',
-              '--build', 'newlib_pexe',
-              '--root', '<(DEPTH)',
-              '--name', '>(out_pnacl_newlib)',
-              '--objdir', '>(objdir_pnacl_newlib)',
-              '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-              '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-              '--gomadir', '<(gomadir)',
-              '--defines=^(defines) >(_defines)',
-              '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
-              '--source-list=^(source_list_pnacl_newlib)',
-            ],
-          }],
-          'target_conditions': [
-            [ 'enable_x86_32!=0', {
-              'actions': [{
-                'action_name': 'translate newlib pexe to x86-32 nexe',
-                'msvs_cygwin_shell': 0,
-                'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
-                'inputs': [
-                  # Having this in the input somehow causes devenv warnings
-                  # when building pnacl browser tests.
-                  # '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>(out_pnacl_newlib)',
-                ],
-                'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
-                'action' : [
-                  'python',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '--arch', 'x86-32',
-                  '--build', 'newlib_translate',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_pnacl_newlib_x86_32_nexe)',
-                  '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32',
-                  '>(out_pnacl_newlib)',
-                ],
-              }],
-            }],
-            [ 'enable_x86_64!=0', {
-              'actions': [{
-                'action_name': 'translate newlib pexe to x86-64 nexe',
-                'msvs_cygwin_shell': 0,
-                'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
-                'inputs': [
-                  # Having this in the input somehow causes devenv warnings
-                  # when building pnacl browser tests.
-                  # '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>(out_pnacl_newlib)',
-                ],
-                'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
-                'action' : [
-                  'python',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '--arch', 'x86-64',
-                  '--build', 'newlib_translate',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_pnacl_newlib_x86_64_nexe)',
-                  '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-64',
-                  '>(out_pnacl_newlib)',
-                ],
-              }],
-            }],
-            [ 'enable_arm!=0', {
-              'actions': [{
-                'action_name': 'translate newlib pexe to ARM nexe',
-                'msvs_cygwin_shell': 0,
-                'description': 'translating >(out_pnacl_newlib_arm_nexe)',
-                'inputs': [
+      ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0 '
+       'and pnacl_native_biased==0', {
+         'variables': {
+           'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
+           'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
+           'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
+           'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips.nexe',
+           'tool_name': 'pnacl_newlib',
+           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
+           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
+           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+           'link_flags': [
+             '-O3',
+           ],
+           'translate_flags': [],
+         },
+         'actions': [
+           {
+             'action_name': 'build newlib pexe',
+             'variables': {
+               'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+             },
+             'msvs_cygwin_shell': 0,
+             'description': 'building >(out_pnacl_newlib)',
+             'inputs': [
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+               '>@(extra_deps)',
+               '>@(extra_deps_pnacl_newlib)',
+               '^(source_list_pnacl_newlib)',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+             ],
+             'outputs': ['>(out_pnacl_newlib)'],
+             'action': [
+               'python',
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+               '>@(extra_args)',
+               '--arch', 'pnacl',
+               '--build', 'newlib_pexe',
+               '--root', '<(DEPTH)',
+               '--name', '>(out_pnacl_newlib)',
+               '--objdir', '>(objdir_pnacl_newlib)',
+               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               '--gomadir', '<(gomadir)',
+               '--defines=^(defines) >(_defines)',
+               '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
+               '--source-list=^(source_list_pnacl_newlib)',
+             ],
+           }],
+         'target_conditions': [
+           [ 'enable_x86_32!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-32 nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
+               'inputs': [
                  # Having this in the input somehow causes devenv warnings
                  # when building pnacl browser tests.
                  # '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>(out_pnacl_newlib)',
-                ],
-                'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
-                'action' : [
-                  'python',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '--arch', 'arm',
-                  '--build', 'newlib_translate',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_pnacl_newlib_arm_nexe)',
-                  '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm',
-                  '>(out_pnacl_newlib)',
-                ],
-              }],
-            }],
-            [ 'enable_mips!=0', {
-              'actions': [{
-                'action_name': 'translate newlib pexe to MIPS nexe',
-                'msvs_cygwin_shell': 0,
-                'description': 'translating >(out_pnacl_newlib_mips_nexe)',
-                'inputs': [
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
+               'action' : [
+                 'python',
+                 '<(DEPTH)/native_client/build/build_nexe.py',
+                 '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                 '--arch', 'x86-32',
+                 '--build', 'newlib_translate',
+                 '--root', '<(DEPTH)',
+                 '--name', '>(out_pnacl_newlib_x86_32_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_x86_64!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-64 nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
+               'inputs': [
                  # Having this in the input somehow causes devenv warnings
                  # when building pnacl browser tests.
                  # '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>(out_pnacl_newlib)',
-                ],
-                'outputs': [ '>(out_pnacl_newlib_mips_nexe)' ],
-                'action' : [
-                  'python',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '--arch', 'mips',
-                  '--build', 'newlib_translate',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_pnacl_newlib_mips_nexe)',
-                  '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips',
-                  '>(out_pnacl_newlib)',
-                ],
-              }],
-            }],
-          ],
-      }],
-      # pnacl action for building libraries
-      ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
-        'variables': {
-          'tool_name': 'pnacl_newlib',
-          'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
-          'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
-        },
-        'actions': [
-          {
-            'action_name': 'build newlib plib',
-            'variables': {
-              'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-            },
-            'msvs_cygwin_shell': 0,
-            'description': 'building >(out_pnacl_newlib)',
-            'inputs': [
-              '<(DEPTH)/native_client/build/build_nexe.py',
-              '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-              '>@(extra_deps)',
-              '>@(extra_deps_pnacl_newlib)',
-              '^(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
-            ],
-            'outputs': ['>(out_pnacl_newlib)'],
-            'action': [
-              'python',
-              '<(DEPTH)/native_client/build/build_nexe.py',
-              '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-              '>@(extra_args)',
-              '--arch', 'pnacl',
-              '--build', 'newlib_plib',
-              '--root', '<(DEPTH)',
-              '--name', '>(out_pnacl_newlib)',
-              '--objdir', '>(objdir_pnacl_newlib)',
-              '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-              '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-              '--gomadir', '<(gomadir)',
-              '--defines=^(defines) >(_defines)',
-              '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-              '--source-list=^(source_list_pnacl_newlib)',
-            ],
-          },
-        ],
-      }],
-    ], # end target_conditions for pnacl pexe/plib
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
+               'action' : [
+                 'python',
+                 '<(DEPTH)/native_client/build/build_nexe.py',
+                 '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                 '--arch', 'x86-64',
+                 '--build', 'newlib_translate',
+                 '--root', '<(DEPTH)',
+                 '--name', '>(out_pnacl_newlib_x86_64_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-64',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_arm!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to ARM nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_arm_nexe)',
+               'inputs': [
+                 # Having this in the input somehow causes devenv warnings
+                 # when building pnacl browser tests.
+                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
+               'action' : [
+                 'python',
+                 '<(DEPTH)/native_client/build/build_nexe.py',
+                 '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                 '--arch', 'arm',
+                 '--build', 'newlib_translate',
+                 '--root', '<(DEPTH)',
+                 '--name', '>(out_pnacl_newlib_arm_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_mips!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to MIPS nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_mips_nexe)',
+               'inputs': [
+                 # Having this in the input somehow causes devenv warnings
+                 # when building pnacl browser tests.
+                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_mips_nexe)' ],
+               'action' : [
+                 'python',
+                 '<(DEPTH)/native_client/build/build_nexe.py',
+                 '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                 '--arch', 'mips',
+                 '--build', 'newlib_translate',
+                 '--root', '<(DEPTH)',
+                 '--name', '>(out_pnacl_newlib_mips_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+         ],
+       }],  # end pnacl actions for building pexes and translating to nexes
+      # pnacl action for building portable bitcode libraries
+      ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0'
+       'and pnacl_native_biased==0', {
+         'variables': {
+           'tool_name': 'pnacl_newlib',
+           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
+           'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
+         },
+         'actions': [
+           {
+             'action_name': 'build newlib plib',
+             'variables': {
+               'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+             },
+             'msvs_cygwin_shell': 0,
+             'description': 'building >(out_pnacl_newlib)',
+             'inputs': [
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+               '>@(extra_deps)',
+               '>@(extra_deps_pnacl_newlib)',
+               '^(source_list_pnacl_newlib)',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+             ],
+             'outputs': ['>(out_pnacl_newlib)'],
+             'action': [
+               'python',
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+               '>@(extra_args)',
+               '--arch', 'pnacl',
+               '--build', 'newlib_plib',
+               '--root', '<(DEPTH)',
+               '--name', '>(out_pnacl_newlib)',
+               '--objdir', '>(objdir_pnacl_newlib)',
+               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               '--gomadir', '<(gomadir)',
+               '--defines=^(defines) >(_defines)',
+               '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+               '--source-list=^(source_list_pnacl_newlib)',
+             ],
+           },
+         ],
+       }], # end pnacl actions for bitcode libraries
+    ], # end target conditions for pnacl pexe/plib
+    # pnacl actions for building ABI-biased native libraries
+    'conditions': [
+      # ARM
+      ['target_arch=="arm" and disable_pnacl==0 and pnacl_native_biased==1 and '
+       'nlib_target!="" and build_pnacl_newlib!=0', {
+         'variables': {
+           'tool_name': 'pnacl_newlib_arm',
+           'out_pnacl_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+           'objdir_pnacl_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+         },
+         'actions': [
+           {
+             'action_name': 'build newlib arm nlib (via pnacl)',
+             'variables': {
+               'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+             },
+             'msvs_cygwin_shell': 0,
+             'description': 'building >(out_pnacl_newlib_arm)',
+             'inputs': [
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+               '>@(extra_deps)',
+               '>@(extra_deps_pnacl_newlib)',
+               '^(source_list_pnacl_newlib_arm)',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+             ],
+             'outputs': ['>(out_pnacl_newlib_arm)'],
+             'action': [
+               'python',
+               '<(DEPTH)/native_client/build/build_nexe.py',
+               '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+               '>@(extra_args)',
+               '--arch', 'arm',
+               '--build', 'newlib_nlib_pnacl',
+               '--root', '<(DEPTH)',
+               '--name', '>(out_pnacl_newlib_arm)',
+               '--objdir', '>(objdir_pnacl_newlib_arm)',
+               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+               '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard --pnacl-allow-translate -arch arm ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               '--gomadir', '<(gomadir)',
+               '--defines=^(defines) >(_defines)',
+               '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+               '--source-list=^(source_list_pnacl_newlib_arm)',
+             ],
+           },
+         ],
+       }], # end ARM
+      # ia32 or x64 (want to build both for Windows)
+      ['target_arch=="ia32" or target_arch=="x64"', {
+        'target_conditions': [
+          # x64
+          ['enable_x86_64!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
+           'and nlib_target!="" and build_pnacl_newlib!=0', {
+             'variables': {
+               'tool_name': 'pnacl_newlib_x86_64',
+               'out_pnacl_newlib_x86_64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-64/>(nlib_target)',
+               'objdir_pnacl_newlib_x86_64%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build newlib x86-64 nlib (via pnacl)',
+                 'variables': {
+                   'source_list_pnacl_newlib_x86_64%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_pnacl_newlib_x86_64)',
+                 'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
+                   '>@(extra_deps_pnacl_newlib)',
+                   '^(source_list_pnacl_newlib_x86_64)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                 ],
+                 'outputs': ['>(out_pnacl_newlib_x86_64)'],
+                 'action': [
+                   'python',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-64',
+                   '--build', 'newlib_nlib_pnacl',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_pnacl_newlib_x86_64)',
+                   '--objdir', '>(objdir_pnacl_newlib_x86_64)',
+                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=--target=x86_64-unknown-nacl --pnacl-allow-translate -arch x86-64 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                   '--gomadir', '<(gomadir)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                   '--source-list=^(source_list_pnacl_newlib_x86_64)',
+                 ],
+               },
+             ],
+           }], # end x64
+          # ia32
+          ['enable_x86_32!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
+           'and nlib_target!="" and build_pnacl_newlib!=0', {
+             'variables': {
+               'tool_name': 'pnacl_newlib_x86_32',
+               'out_pnacl_newlib_x86_32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-32/>(nlib_target)',
+               'objdir_pnacl_newlib_x86_32%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build newlib x86-32 nlib (via pnacl)',
+                 'variables': {
+                   'source_list_pnacl_newlib_x86_32%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_pnacl_newlib_x86_32)',
+                 'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
+                   '>@(extra_deps_pnacl_newlib)',
+                   '^(source_list_pnacl_newlib_x86_32)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                 ],
+                 'outputs': ['>(out_pnacl_newlib_x86_32)'],
+                 'action': [
+                   'python',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-32',
+                   '--build', 'newlib_nlib_pnacl',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_pnacl_newlib_x86_32)',
+                   '--objdir', '>(objdir_pnacl_newlib_x86_32)',
+                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=--target=i686-unknown-nacl --pnacl-allow-translate -arch x86-32 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                   '--gomadir', '<(gomadir)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                   '--source-list=^(source_list_pnacl_newlib_x86_32)',
+                 ],
+               },
+             ],
+           }], # end ia32
+        ], # end ia32 or x64
+        # TODO(jvoung): implement MIPS clause.
+        # Do they want the IRT ABI to be biased toward --target=mipsel-...-nacl
+        # or do they want it to be le32 along with -expand-byval, etc.
+        # (then the shim isn't necessary)?
+      }], # end pnacl actions for building ABI-biased native libraries
+    ], # end conditions for pnacl biased nlib
   },
 }
