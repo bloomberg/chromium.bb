@@ -1954,7 +1954,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   OpenURLViaClick(destination_url);
 }
 
-// Checks that a prerender for an https will prevent a prerender from happening.
+// Checks that a page served over HTTPS is correctly prerendered.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
@@ -1964,20 +1964,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   PrerenderTestURL(https_url,
                    FINAL_STATUS_USED,
                    1);
-  NavigateToDestURL();
-}
-
-// Checks that client-issued redirects to an https page will cancel prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectToHttps) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  PrerenderTestURL(CreateClientRedirect(https_url.spec()),
-                   FINAL_STATUS_USED,
-                   2);
   NavigateToDestURL();
 }
 
@@ -1998,30 +1984,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 2);
   EXPECT_FALSE(UrlIsInPrerenderManager(
       "files/prerender/prerender_embedded_content.html"));
-  NavigateToDestURL();
-}
-
-// Checks that client-issued redirects within an iframe in a prerendered
-// page to an https page will not cancel the prerender, nor will it
-// count as an "alias" for the prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectToHttpsInIframe) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  std::string redirect_path = CreateClientRedirect(https_url.spec());
-  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
-  std::string replacement_path;
-  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
-      "files/prerender/prerender_with_iframe.html",
-      replacement_text,
-      &replacement_path));
-  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 2);
-  EXPECT_FALSE(UrlIsInPrerenderManager(https_url));
   NavigateToDestURL();
 }
 
@@ -2060,21 +2022,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   OpenURLViaClick(destination_url);
 }
 
-// Checks that server-issued redirects from an http to an https
-// location will cancel prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderServerRedirectToHttps) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  PrerenderTestURL(CreateServerRedirect(https_url.spec()),
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURL();
-}
-
 // Checks that server-issued redirects within an iframe in a prerendered
 // page will not count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
@@ -2091,30 +2038,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
   PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
   EXPECT_FALSE(UrlIsInPrerenderManager(
       "files/prerender/prerender_embedded_content.html"));
-  NavigateToDestURL();
-}
-
-// Checks that server-issued redirects within an iframe in a prerendered
-// page to an https page will not cancel the prerender, nor will it
-// count as an "alias" for the prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderServerRedirectToHttpsInIframe) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  std::string redirect_path = CreateServerRedirect(https_url.spec());
-  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
-  std::string replacement_path;
-  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
-      "files/prerender/prerender_with_iframe.html",
-      replacement_text,
-      &replacement_path));
-  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
-  EXPECT_FALSE(UrlIsInPrerenderManager(https_url));
   NavigateToDestURL();
 }
 
