@@ -50,7 +50,7 @@ $toc-margin-left: 195px;
         font-weight: bold;
         color: $black;
 
-        &::after {
+        &.hastoc::after {
           content: '+';
           @include flex(1);
           text-align: right;
@@ -64,7 +64,7 @@ $toc-margin-left: 195px;
         .toc {
           display: block;
         }
-        > a {
+        > a.hastoc {
           &::after {
             content: '-';
           }

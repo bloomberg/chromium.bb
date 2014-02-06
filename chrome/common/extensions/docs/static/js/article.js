@@ -45,14 +45,20 @@ if (isLargerThanMobile) {
                                   sidebar.classList.remove('sticky');
   });
 
+  // Add +/- expander to headings with subheading children.
+  [].forEach.call(toc.querySelectorAll('.toplevel'), function(heading) {
+    if (heading.querySelector('.toc')) {
+      heading.firstChild.classList.add('hastoc');
+    }
+  });
+
   toc.addEventListener('click', function(e) {
     var parent = e.target.parentElement;
-    if (e.target.localName == 'a' && parent.classList.contains('toplevel')) {
+    if (e.target.localName == 'a' && e.target.classList.contains('hastoc') &&
+        parent.classList.contains('toplevel')) {
       // Allow normal link click if  h2 toplevel heading doesn't have h3s.
-      if (parent.querySelector('.toc')) {
-        e.preventDefault();
-        parent.classList.toggle('active');
-      }
+      e.preventDefault();
+      parent.classList.toggle('active');
     }
   });
 
