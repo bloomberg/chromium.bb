@@ -411,10 +411,15 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             m_buffer = 0;
         }
 
+        NEVER_INLINE void reallyDeallocateBuffer(T* bufferToDeallocate)
+        {
+            Allocator::backingFree(bufferToDeallocate);
+        }
+
         void deallocateBuffer(T* bufferToDeallocate)
         {
             if (UNLIKELY(bufferToDeallocate != inlineBuffer()))
-                Allocator::backingFree(bufferToDeallocate);
+                reallyDeallocateBuffer(bufferToDeallocate);
         }
 
         void resetBufferPointer()
