@@ -31,6 +31,7 @@ var TimelineGraphView = (function() {
   var TEXT_COLOR = '#000';
   var BACKGROUND_COLOR = '#FFF';
 
+  var MAX_DECIMAL_PRECISION = 2;
   /**
    * @constructor
    */
@@ -349,7 +350,7 @@ var TimelineGraphView = (function() {
        */
       layoutLabels_: function(maxValue) {
         if (maxValue < 1024) {
-          this.layoutLabelsBasic_(maxValue, 0);
+          this.layoutLabelsBasic_(maxValue, MAX_DECIMAL_PRECISION);
           return;
         }
 
@@ -365,7 +366,7 @@ var TimelineGraphView = (function() {
         }
 
         // Calculate labels.
-        this.layoutLabelsBasic_(maxValue, 1);
+        this.layoutLabelsBasic_(maxValue, MAX_DECIMAL_PRECISION);
 
         // Append units to labels.
         for (var i = 0; i < this.labels_.length; ++i)
