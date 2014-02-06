@@ -59,16 +59,17 @@
       ['OS=="win"', {
         'host_plugin_extension': 'dll',
         'host_plugin_prefix': '',
-        # Use auto-generated CLSIDs to make sure that the newly installed COM
-        # classes will be used during/after upgrade even if there are old
-        # instances running already.
-        # The parameter at the end is ignored, but needed to make sure that the
-        # script will be invoked separately for each CLSID. Otherwise GYP will
-        # reuse the value returned by the first invocation of the script.
+
+        # Each CLSID is a hash of the current version string salted with an
+        # arbitrary GUID. This ensures that the newly installed COM classes will
+        # be used during/after upgrade even if there are old instances running
+        # already.
+        # The IDs are not random to avoid rebuilding host when it's not
+        # necessary.
         'daemon_controller_clsid':
-            '<!(python -c "import uuid; print uuid.uuid4()" 1)',
+            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'655bd819-c08c-4b04-80c2-f160739ff6ef\'), \'<(version_full)\')")',
         'rdp_desktop_session_clsid':
-            '<!(python -c "import uuid; print uuid.uuid4()" 2)',
+            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'6a7699f0-ee43-43e7-aa30-a6738f9bd470\'), \'<(version_full)\')")',
       }],
     ],
     'remoting_locales': [
