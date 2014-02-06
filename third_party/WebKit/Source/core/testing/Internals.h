@@ -100,7 +100,6 @@ public:
     ShadowRoot* youngestShadowRoot(Element* host, ExceptionState&);
     ShadowRoot* oldestShadowRoot(Element* host, ExceptionState&);
     ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionState&);
-    ShadowRoot* olderShadowRoot(Node* shadow, ExceptionState&);
     String shadowRootType(const Node*, ExceptionState&) const;
     bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
     bool hasContentElement(const Node*, ExceptionState&) const;

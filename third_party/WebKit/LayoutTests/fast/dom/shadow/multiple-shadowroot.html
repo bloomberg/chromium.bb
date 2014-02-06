@@ -11,15 +11,15 @@ var div = document.createElement('div');
 shouldBe("internals.shadowRoot(div)", "null");
 var shadowRoot1 = div.createShadowRoot();
 shouldBe("internals.shadowRoot(div)", "shadowRoot1");
-shouldBe("internals.olderShadowRoot(shadowRoot1)", "null");
+shouldBe("shadowRoot1.olderShadowRoot", "null");
 
 var shadowRoot2 = div.createShadowRoot()
 shouldBe("internals.shadowRoot(div)", "shadowRoot2");
-shouldBe("internals.olderShadowRoot(shadowRoot2)", "shadowRoot1");
+shouldBe("shadowRoot2.olderShadowRoot", "shadowRoot1");
 
 var shadowRoot3 = div.createShadowRoot();
 shouldBe("internals.shadowRoot(div)", "shadowRoot3");
-shouldBe("internals.olderShadowRoot(shadowRoot3)", "shadowRoot2");
+shouldBe("shadowRoot3.olderShadowRoot", "shadowRoot2");
 
 var successfullyParsed = true;
 </script>

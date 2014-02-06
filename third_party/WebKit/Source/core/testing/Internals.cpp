@@ -677,16 +677,6 @@ ShadowRoot* Internals::youngerShadowRoot(Node* shadow, ExceptionState& exception
     return toShadowRoot(shadow)->youngerShadowRoot();
 }
 
-ShadowRoot* Internals::olderShadowRoot(Node* shadow, ExceptionState& exceptionState)
-{
-    if (!shadow || !shadow->isShadowRoot()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is not a valid shadow root.");
-        return 0;
-    }
-
-    return toShadowRoot(shadow)->olderShadowRoot();
-}
-
 String Internals::shadowRootType(const Node* root, ExceptionState& exceptionState) const
 {
     if (!root || !root->isShadowRoot()) {

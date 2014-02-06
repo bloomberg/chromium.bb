@@ -20,7 +20,7 @@ function getElementByIdConsideringShadowDOM(root, id) {
         if (root.nodeType != 1)
             return null;
 
-        for (var shadowRoot = internals.youngestShadowRoot(root); shadowRoot; shadowRoot = internals.olderShadowRoot(shadowRoot)) {
+        for (var shadowRoot = internals.youngestShadowRoot(root); shadowRoot; shadowRoot = shadowRoot.olderShadowRoot) {
             var node = iter(shadowRoot, id);
             if (node != null)
                 return node;
