@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -98,6 +99,7 @@ public class X509Util {
     private static final class X509TrustManagerJellyBean implements X509TrustManagerImplementation {
         private final X509TrustManagerExtensions mTrustManagerExtensions;
 
+        @SuppressLint("NewApi")
         public X509TrustManagerJellyBean(X509TrustManager trustManager) {
             mTrustManagerExtensions = new X509TrustManagerExtensions(trustManager);
         }
