@@ -914,6 +914,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
   },
   {
+    "enable-gpu-rasterization",
+    IDS_FLAGS_ENABLE_GPU_RASTERIZATION_NAME,
+    IDS_FLAGS_ENABLE_GPU_RASTERIZATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(cc::switches::kEnableGPURasterization)
+  },
+  {
     "enable-experimental-web-platform-features",
     IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
     IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION,
