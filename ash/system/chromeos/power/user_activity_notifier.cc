@@ -20,6 +20,28 @@ namespace {
 // Minimum number of seconds between notifications.
 const int kNotifyIntervalSec = 5;
 
+// Returns a UserActivityType describing |event|.
+power_manager::UserActivityType GetUserActivityTypeForEvent(
+    const ui::Event* event) {
+  if (!event || event->type() != ui::ET_KEY_PRESSED)
+    return power_manager::USER_ACTIVITY_OTHER;
+
+  switch (static_cast<const ui::KeyEvent*>(event)->key_code()) {
+    case ui::VKEY_BRIGHTNESS_DOWN:
+      return power_manager::USER_ACTIVITY_BRIGHTNESS_DOWN_KEY_PRESS;
+    case ui::VKEY_BRIGHTNESS_UP:
+      return power_manager::USER_ACTIVITY_BRIGHTNESS_UP_KEY_PRESS;
+    case ui::VKEY_VOLUME_DOWN:
+      return power_manager::USER_ACTIVITY_VOLUME_DOWN_KEY_PRESS;
+    case ui::VKEY_VOLUME_MUTE:
+      return power_manager::USER_ACTIVITY_VOLUME_MUTE_KEY_PRESS;
+    case ui::VKEY_VOLUME_UP:
+      return power_manager::USER_ACTIVITY_VOLUME_UP_KEY_PRESS;
+    default:
+      return power_manager::USER_ACTIVITY_OTHER;
+  }
+}
+
 }  // namespace
 
 UserActivityNotifier::UserActivityNotifier(UserActivityDetector* detector)
@@ -37,22 +59,8 @@ void UserActivityNotifier::OnUserActivity(const ui::Event* event) {
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    power_manager::UserActivityType type = power_manager::USER_ACTIVITY_OTHER;
-    if (event && event->type() == ui::ET_KEY_PRESSED) {
-      switch (static_cast<const ui::KeyEvent*>(event)->key_code()) {
-        case ui::VKEY_BRIGHTNESS_UP:
-          type = power_manager::USER_ACTIVITY_BRIGHTNESS_UP_KEY_PRESS;
-          break;
-        case ui::VKEY_BRIGHTNESS_DOWN:
-          type = power_manager::USER_ACTIVITY_BRIGHTNESS_DOWN_KEY_PRESS;
-          break;
-        default:
-          break;
-      }
-    }
-
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyUserActivity(type);
+        NotifyUserActivity(GetUserActivityTypeForEvent(event));
     last_notify_time_ = now;
   }
 }
