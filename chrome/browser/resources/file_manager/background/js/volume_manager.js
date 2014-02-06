@@ -41,23 +41,21 @@ function VolumeInfo(
   this.displayRootPromise_ = null;
 
   if (volumeType === util.VolumeType.DRIVE) {
+    // TODO(mtomasz): Convert fake entries to DirectoryProvider.
     this.fakeEntries_[RootType.DRIVE_OFFLINE] = {
-      fullPath: '/drive_offline',
       isDirectory: true,
       rootType: RootType.DRIVE_OFFLINE,
-      toURL: function() { return 'fake-entry://' + this.fullPath; }
+      toURL: function() { return 'fake-entry://drive_offline' }
     };
     this.fakeEntries_[RootType.DRIVE_SHARED_WITH_ME] = {
-      fullPath: '/drive_shared_with_me',
       isDirectory: true,
       rootType: RootType.DRIVE_SHARED_WITH_ME,
-      toURL: function() { return 'fake-entry://' + this.fullPath; }
+      toURL: function() { return 'fake-entry://drive_shared_with_me'; }
     };
     this.fakeEntries_[RootType.DRIVE_RECENT] = {
-      fullPath: '/drive_recent',
       isDirectory: true,
       rootType: RootType.DRIVE_RECENT,
-      toURL: function() { return 'fake-entry://' + this.fullPath; }
+      toURL: function() { return 'fake-entry://drive_recent'; }
     };
   }
 
@@ -379,10 +377,12 @@ VolumeInfoList.prototype.findByEntry = function(entry) {
   // TODO(mtomasz): Switch to comparing file systems once possible.
   for (var i = 0; i < this.length; i++) {
     var volumeInfo = this.item(i);
-    var mountPath = volumeInfo.mountPath;
-    if (entry.fullPath === mountPath ||
-        entry.fullPath.indexOf(mountPath + '/') === 0)
+    if (!volumeInfo.root)
+      continue;
+    if (util.isSameEntry(entry, volumeInfo.root) ||
+        entry.toURL().indexOf(volumeInfo.root.toURL() + '/') === 0) {
       return volumeInfo;
+    }
     // Additionally, check fake entries.
     for (var key in volumeInfo.fakeEntries_) {
       var fakeEntry = volumeInfo.fakeEntries_[key];
@@ -679,21 +679,23 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
   if (!volumeInfo)
     return null;
 
-  var rootPath;
   var rootType;
   var isReadOnly;
+  var isRootEntry;
   if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
     // If the volume is drive, root path can be either mountPath + '/root' or
     // mountPath + '/other'.
-    if ((entry.fullPath + '/').indexOf(volumeInfo.mountPath + '/root/') === 0) {
-      rootPath = volumeInfo.mountPath + '/root';
+    // TODO(mtomasz): Simplify once switching to filesystem per volume.
+    if (entry.toURL() === volumeInfo.root.toURL() + '/root' ||
+        entry.toURL().indexOf(volumeInfo.root.toURL() + '/root/') === 0) {
       rootType = RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
-    } else if ((entry.fullPath + '/').indexOf(
-                   volumeInfo.mountPath + '/other/') === 0) {
-      rootPath = volumeInfo.mountPath + '/other';
+      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + '/root';
+    } else if (entry.toURL() === volumeInfo.root.toURL() + '/other' ||
+        entry.toURL().indexOf(volumeInfo.root.toURL() + '/other/') === 0) {
       rootType = RootType.DRIVE_OTHER;
       isReadOnly = true;
+      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + '/other';
     } else {
       // Accessing Drive files outside of /drive/root and /drive/other is not
       // allowed, but can happen. Therefore returning null.
@@ -701,7 +703,6 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
     }
   } else {
     // Otherwise, root path is same with a mount path of the volume.
-    rootPath = volumeInfo.mountPath;
     switch (volumeInfo.volumeType) {
       case util.VolumeType.DOWNLOADS:
         rootType = RootType.DOWNLOADS;
@@ -720,9 +721,8 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);
     }
     isReadOnly = volumeInfo.isReadOnly;
+    isRootEntry = util.isSameEntry(entry, volumeInfo.root);
   }
-  var isRootEntry = (entry.fullPath.substr(0, rootPath.length) || '/') ===
-      entry.fullPath;
 
   return new EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly);
 };
