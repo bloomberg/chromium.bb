@@ -38,6 +38,8 @@ class PrefRegistrySyncable;
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel {
  public:
+  static const char kOtherPossibleUsernamesExperiment[];
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);

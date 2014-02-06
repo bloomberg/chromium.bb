@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 
+#include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
 
 class PasswordFormManager;
@@ -38,6 +39,11 @@ class PasswordManagerDelegate {
 
   // Returns the PasswordManagerDriver instance associated with this instance.
   virtual PasswordManagerDriver* GetDriver() = 0;
+
+  // Returns the probability that the experiment identified by |experiment_name|
+  // should be enabled. The default implementation returns 0.
+  virtual base::FieldTrial::Probability GetProbabilityForExperiment(
+      const std::string& experiment_name);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegate);

@@ -1451,6 +1451,7 @@
         'browser/password_manager/password_generation_manager.h',
         'browser/password_manager/password_manager.cc',
         'browser/password_manager/password_manager.h',
+        'browser/password_manager/password_manager_delegate.cc',
         'browser/password_manager/password_manager_delegate.h',
         'browser/password_manager/password_manager_delegate_impl.cc',
         'browser/password_manager/password_manager_delegate_impl.h',

@@ -32,6 +32,8 @@ class PasswordManagerDelegateImpl
   virtual Profile* GetProfile() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
+  virtual base::FieldTrial::Probability GetProbabilityForExperiment(
+      const std::string& experiment_name) OVERRIDE;
 
   // Convenience method to allow //chrome code easy access to a PasswordManager
   // from a WebContents instance.

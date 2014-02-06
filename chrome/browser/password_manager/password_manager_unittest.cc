@@ -45,6 +45,8 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
   MOCK_METHOD0(GetProfile, Profile*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
+  MOCK_METHOD1(GetProbabilityForExperiment,
+               base::FieldTrial::Probability(const std::string&));
 };
 
 class MockPasswordManagerDriver : public PasswordManagerDriver {

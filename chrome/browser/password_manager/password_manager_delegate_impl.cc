@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -257,6 +258,23 @@ PrefService* PasswordManagerDelegateImpl::GetPrefs() {
 
 PasswordManagerDriver* PasswordManagerDelegateImpl::GetDriver() {
   return &driver_;
+}
+
+base::FieldTrial::Probability
+PasswordManagerDelegateImpl::GetProbabilityForExperiment(
+    const std::string& experiment_name) {
+  base::FieldTrial::Probability enabled_probability = 0;
+  if (experiment_name == PasswordManager::kOtherPossibleUsernamesExperiment) {
+    switch (chrome::VersionInfo::GetChannel()) {
+      case chrome::VersionInfo::CHANNEL_DEV:
+      case chrome::VersionInfo::CHANNEL_BETA:
+        enabled_probability = 50;
+        break;
+      default:
+        break;
+    }
+  }
+  return enabled_probability;
 }
 
 // static

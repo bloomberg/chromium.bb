@@ -17,7 +17,8 @@
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/password_autofill_util.h"
@@ -36,9 +37,6 @@ using content::WebContents;
 namespace {
 
 const char kSpdyProxyRealm[] = "/SpdyProxy";
-const char kOtherPossibleUsernamesExperiment[] =
-    "PasswordManagerOtherPossibleUsernames";
-
 void ReportOsPassword() {
   password_manager_util::OsPasswordStatus status =
       password_manager_util::GetOsPasswordStatus();
@@ -75,6 +73,9 @@ void ReportMetrics(bool password_manager_enabled) {
 }
 
 }  // namespace
+
+const char PasswordManager::kOtherPossibleUsernamesExperiment[] =
+    "PasswordManagerOtherPossibleUsernames";
 
 // static
 void PasswordManager::RegisterProfilePrefs(
@@ -360,19 +361,13 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kOtherPossibleUsernamesExperiment,
-          kDivisor, "Disabled", 2013, 12, 31,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
-  base::FieldTrial::Probability enabled_probability = 0;
-
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_DEV:
-    case chrome::VersionInfo::CHANNEL_BETA:
-      enabled_probability = 50;
-      break;
-    default:
-      break;
-  }
-
+          kDivisor,
+          "Disabled",
+          2013, 12, 31,
+          base::FieldTrial::ONE_TIME_RANDOMIZED,
+          NULL));
+  base::FieldTrial::Probability enabled_probability =
+      delegate_->GetProbabilityForExperiment(kOtherPossibleUsernamesExperiment);
   trial->AppendGroup("Enabled", enabled_probability);
 }
 
