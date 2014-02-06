@@ -336,6 +336,8 @@ native_compiler_configs = [
 ]
 if (is_win) {
   native_compiler_configs += [ "//build/config/win:sdk", ]
+} else if (is_linux) {
+  native_compiler_configs += [ "//build/config/linux:sdk", ]
 } else if (is_mac) {
   native_compiler_configs += [ "//build/config/mac:sdk", ]
 } else if (is_ios) {
