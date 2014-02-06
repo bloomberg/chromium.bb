@@ -16,6 +16,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/shadow_border.h"
@@ -29,6 +30,10 @@ const int kShadowBlur = 4;
 const int kSpeechViewMaxHeight = 300;
 const int kMicButtonMargin = 12;
 const int kTextMargin = 32;
+const int kLogoMarginLeft = 30;
+const int kLogoMarginTop = 28;
+const int kLogoWidth = 104;
+const int kLogoHeight = 36;
 const int kIndicatorRadiusMax = 100;
 const int kIndicatorAnimationDuration = 100;
 const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
@@ -92,7 +97,8 @@ bool MicButton::HitTestRect(const gfx::Rect& rect) const {
 // static
 
 SpeechView::SpeechView(AppListViewDelegate* delegate)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      logo_(NULL) {
   SetBorder(scoped_ptr<views::Border>(
       new views::ShadowBorder(kShadowBlur,
                               kShadowColor,
@@ -106,7 +112,13 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   container->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
 
-  // TODO(mukai): add Google logo.
+  const gfx::ImageSkia& logo_image = delegate_->GetSpeechUI()->logo();
+  if (!logo_image.isNull()) {
+    logo_ = new views::ImageView();
+    logo_->SetImage(&logo_image);
+    container->AddChildView(logo_);
+  }
+
   indicator_ = new SoundLevelIndicator();
   indicator_->SetVisible(false);
   container->AddChildView(indicator_);
@@ -157,8 +169,9 @@ void SpeechView::Layout() {
   container->SetBoundsRect(GetContentsBounds());
 
   // Because container is a pure View, this class should layout its children.
-  // TODO(mukai): arrange Google logo.
   const gfx::Rect contents_bounds = container->GetContentsBounds();
+  if (logo_)
+    logo_->SetBounds(kLogoMarginLeft, kLogoMarginTop, kLogoWidth, kLogoHeight);
   gfx::Size mic_size = mic_button_->GetPreferredSize();
   gfx::Point mic_origin(
       contents_bounds.right() - kMicButtonMargin - mic_size.width(),

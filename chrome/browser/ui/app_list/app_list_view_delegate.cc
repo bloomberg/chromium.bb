@@ -34,10 +34,12 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/theme_resources.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
@@ -108,6 +110,12 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
         app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING :
 #endif
         app_list::SPEECH_RECOGNITION_OFF));
+
+#if defined(GOOGLE_CHROME_BUILD)
+  speech_ui_->set_logo(
+      *ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
+#endif
 }
 
 AppListViewDelegate::~AppListViewDelegate() {

@@ -12,6 +12,7 @@
 namespace views {
 class BoundsAnimator;
 class ImageButton;
+class ImageView;
 class Label;
 }
 
@@ -51,6 +52,7 @@ class SpeechView : public views::View,
 
   AppListViewDelegate* delegate_;
 
+  views::ImageView* logo_;
   views::View* indicator_;
   views::ImageButton* mic_button_;
   views::Label* speech_result_;
