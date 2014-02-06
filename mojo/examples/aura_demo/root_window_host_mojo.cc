@@ -156,6 +156,8 @@ ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
 // WindowTreeHostMojo, NativeViewportClient implementation:
 
 void WindowTreeHostMojo::OnCreated() {
+  CreateCompositor(GetAcceleratedWidget());
+  compositor_created_callback_.Run();
 }
 
 void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
@@ -163,8 +165,6 @@ void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
                       bounds.size().width(), bounds.size().height());
   if (delegate_)
     window()->SetBounds(gfx::Rect(bounds_.size()));
-  CreateCompositor(GetAcceleratedWidget());
-  compositor_created_callback_.Run();
   NotifyHostResized(bounds_.size());
 }
 
