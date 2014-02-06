@@ -1,10 +1,10 @@
 <!doctype html>
 <style>
+  .foo {
+    background: red;
+  }
   div {
     border: 1px solid black;
-  }
-  div.foo {
-    background: red;
   }
 </style>
 <script src="../../resources/js-test.js"></script>
@@ -16,6 +16,13 @@
     var host = document.createElement('div');
     var root = host.createShadowRoot();
     root.innerHTML = '<style>' + (style ? style : 'span {color:blue;}') + '</style><span>item</span>';
+    return host;
+  }
+
+  function createElementWithShadowAndInsertionPoint(style) {
+    var host = document.createElement('ul');
+    var root = host.createShadowRoot();
+    root.innerHTML = '<style>' + (style ? style : 'div {border: 1px solid green;}') + '</style><div>shadow</div><content></content>';
     return host;
   }
 
@@ -47,6 +54,26 @@
     host2.classList.add('foo');
     document.body.offsetHeight;
     shouldBeFalse(String(internals.isSharingStyle(host1, host2)));
+
+    var host5 = createElementWithShadowAndInsertionPoint();
+    host5.innerHTML = '<div>item 1</div><div>item 2</div>';
+    container.appendChild(host5);
+    document.body.offsetHeight;
+    var light = host5.querySelectorAll('div');
+    var shadow = querySelectorInShadow(host5, 'div');
+    shouldBeTrue(String(internals.isSharingStyle(light[0], light[1])));
+    shouldBeFalse(String(internals.isSharingStyle(light[0], shadow)));
+
+    var host6 = document.createElement('div');
+    var root1 = host6.createShadowRoot();
+    root1.innerHTML = '<style>.foo::content > p { color: red; }</style><content class="foo" select=":first-child"></content><content></content>';
+    var root2 = host6.createShadowRoot();
+    root2.innerHTML = '<shadow></shadow>';
+    host6.innerHTML = '<p>A</p><p>B</p>';
+    container.appendChild(host6);
+    document.body.offsetHeight;
+    light = host6.querySelectorAll('p');
+    shouldBeFalse(String(internals.isSharingStyle(light[0], light[1])));
   }
 </script>
 <div id="container"></div>

@@ -644,7 +644,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), element, defaultParent, regionForStyling);
 
-    if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint() && state.parentStyle()) {
+    if (sharingBehavior == AllowStyleSharing && state.parentStyle()) {
         SharedStyleFinder styleFinder(state.elementContext(), m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), *this);
         if (RefPtr<RenderStyle> sharedStyle = styleFinder.findSharedStyle())
             return sharedStyle.release();

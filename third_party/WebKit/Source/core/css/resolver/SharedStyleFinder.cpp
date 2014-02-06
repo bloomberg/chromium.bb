@@ -42,6 +42,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
@@ -165,6 +166,20 @@ bool SharedStyleFinder::sharingCandidateShadowHasSharedStyleSheetContents(Elemen
     return element().shadow()->hasSameStyles(candidate.shadow());
 }
 
+bool SharedStyleFinder::sharingCandidateDistributedToSameInsertionPoint(Element& candidate) const
+{
+    Vector<InsertionPoint*, 8> insertionPoints, candidateInsertionPoints;
+    collectDestinationInsertionPoints(element(), insertionPoints);
+    collectDestinationInsertionPoints(candidate, candidateInsertionPoints);
+    if (insertionPoints.size() != candidateInsertionPoints.size())
+        return false;
+    for (size_t i = 0; i < insertionPoints.size(); ++i) {
+        if (insertionPoints[i] != candidateInsertionPoints[i])
+            return false;
+    }
+    return true;
+}
+
 bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 {
     if (element() == candidate)
@@ -208,6 +223,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (candidate.hasScopedHTMLStyleChild())
         return false;
     if (candidate.shadow() && candidate.shadow()->containsActiveStyles() && !sharingCandidateShadowHasSharedStyleSheetContents(candidate))
+        return false;
+    if (!sharingCandidateDistributedToSameInsertionPoint(candidate))
         return false;
     if (candidate.isInTopLayer() != element().isInTopLayer())
         return false;
