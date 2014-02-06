@@ -12,9 +12,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
@@ -26,7 +23,7 @@ const int kMinScreenshotIntervalMS = 1000;
 
 namespace content {
 
-// Converts SkBitmap to grayscale and encodes to PNG data in a worker thread.
+// Encodes an SkBitmap to PNG data in a worker thread.
 class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
  public:
   ScreenshotData() {
@@ -52,19 +49,7 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
 
   void EncodeOnWorker(const SkBitmap& bitmap) {
     std::vector<unsigned char> data;
-    // Paint |bitmap| to a kA8_Config SkBitmap
-    SkBitmap a8Bitmap;
-    a8Bitmap.setConfig(SkBitmap::kA8_Config,
-                       bitmap.width(),
-                       bitmap.height(),
-                       0);
-    a8Bitmap.allocPixels();
-    SkCanvas canvas(a8Bitmap);
-    SkPaint paint;
-    paint.setColorFilter(SkLumaColorFilter::Create());
-    canvas.drawBitmap(bitmap, SK_Scalar1, SK_Scalar1, &paint);
-    // Encode the a8Bitmap to grayscale PNG treating alpha as color intensity
-    if (gfx::PNGCodec::EncodeA8SkBitmap(a8Bitmap, &data))
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &data))
       data_ = new base::RefCountedBytes(data);
   }
 
