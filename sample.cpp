@@ -321,8 +321,8 @@ int main(int argc, char* argv[]) {
         if (track_pos != NULL) {
           const char track_type =
               (track->GetType() == mkvparser::Track::kVideo) ? 'V' : 'A';
-          printf("\t\t\tCue Point %4d Track %3u(%c) Time %14lld "
-                 "Block %4lld Pos %8x\n",
+          printf("\t\t\tCue Point %4d Track %3lu(%c) Time %14lld "
+                 "Block %4lld Pos %8llx\n",
                  cue_point_num,
                  track_num, track_type,
                  cue->GetTime(pSegment.get()),
