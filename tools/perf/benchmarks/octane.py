@@ -19,6 +19,7 @@ from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+_GB = 1024 * 1024 * 1024
 
 class _OctaneMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
@@ -28,7 +29,12 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
 
+
   def WillNavigateToPage(self, page, tab):
+    if tab.browser.memory_stats['SystemTotalPhysicalMemory'] < 1 * _GB:
+      skipBenchmarks = '"zlib"'
+    else:
+      skipBenchmarks = ''
     page.script_to_evaluate_on_commit = """
         var __results = [];
         var __real_log = window.console.log;
@@ -36,7 +42,8 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
           __results.push(msg);
           __real_log.apply(this, [msg]);
         }
-        """
+        skipBenchmarks = [%s]
+        """ % (skipBenchmarks)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)
@@ -56,11 +63,12 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
       score_and_name = output.split(': ', 2)
       assert len(score_and_name) == 2, \
         'Unexpected result format "%s"' % score_and_name
-      name = score_and_name[0]
-      score = int(score_and_name[1])
-      results.Add(name, 'score', score, data_type='unimportant')
-      # Collect all test scores to compute geometric mean.
-      all_scores.append(score)
+      if 'Skipped' not in score_and_name[1]:
+        name = score_and_name[0]
+        score = int(score_and_name[1])
+        results.Add(name, 'score', score, data_type='unimportant')
+        # Collect all test scores to compute geometric mean.
+        all_scores.append(score)
     total = statistics.GeometricMean(all_scores)
     results.AddSummary('Score', 'score', total, chart_name='Total')
 
