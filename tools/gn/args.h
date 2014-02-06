@@ -66,12 +66,13 @@ class Args {
 
  private:
   // Sets the default config based on the current system.
-  void SetSystemVars(Scope* scope) const;
+  void SetSystemVarsLocked(Scope* scope) const;
 
   // Sets the given vars on the given scope.
-  void ApplyOverrides(const Scope::KeyValueMap& values, Scope* scope) const;
+  void ApplyOverridesLocked(const Scope::KeyValueMap& values,
+                            Scope* scope) const;
 
-  void SaveOverrideRecord(const Scope::KeyValueMap& values) const;
+  void SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const;
 
   // Since this is called during setup which we assume is single-threaded,
   // this is not protected by the lock. It should be set only during init.
