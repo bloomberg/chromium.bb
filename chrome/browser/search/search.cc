@@ -72,6 +72,7 @@ const char kOriginChipFlagName[] = "origin_chip";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
+const char kShouldShowGoogleLocalNTPFlagName[] = "google_local_ntp";
 
 // Constants for the field trial name and group prefix.
 // Note in M30 and below this field trial was named "InstantExtended" and in
@@ -609,6 +610,12 @@ OriginChipPosition GetOriginChipPosition() {
   return (value < ORIGIN_CHIP_NUM_VALUES) ?
       static_cast<OriginChipPosition>(value) :
       ORIGIN_CHIP_DISABLED;
+}
+
+bool ShouldShowGoogleLocalNTP() {
+  FieldTrialFlags flags;
+  return !GetFieldTrialInfo(&flags) || GetBoolValueForFlagWithDefault(
+      kShouldShowGoogleLocalNTPFlagName, true, flags);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {

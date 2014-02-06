@@ -105,7 +105,8 @@ std::string GetConfigData(Profile* profile) {
   base::DictionaryValue config_data;
   config_data.Set("translatedStrings", GetTranslatedStrings().release());
   config_data.SetBoolean("isGooglePage",
-                         DefaultSearchProviderIsGoogle(profile));
+                         DefaultSearchProviderIsGoogle(profile) &&
+                         chrome::ShouldShowGoogleLocalNTP());
 
   // Serialize the dictionary.
   std::string js_text;
