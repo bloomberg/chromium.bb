@@ -249,14 +249,29 @@ bool NonAlphaColorsClose(uint32_t a, uint32_t b) {
          abs(static_cast<int>(SkColorGetR(a) - SkColorGetR(b))) < 2;
 }
 
-void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
+// Returns true if the BGRA 32-bit SkColor specified by |a| is equivalent to the
+// 8-bit Gray color specified by |b|.
+bool BGRAGrayEqualsA8Gray(uint32_t a, uint8_t b) {
+  return SkColorGetB(a) == b && SkColorGetG(a) ==  b &&
+         SkColorGetR(a) == b && SkColorGetA(a) == 255;
+}
+
+void MakeTestBGRASkBitmap(int w, int h, SkBitmap* bmp) {
   bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
   bmp->allocPixels();
 
   uint32_t* src_data = bmp->getAddr32(0, 0);
-  for (int i = 0; i < w * h; i++) {
+  for (int i = 0; i < w * h; i++)
     src_data[i] = SkPreMultiplyARGB(i % 255, i % 250, i % 245, i % 240);
-  }
+}
+
+void MakeTestA8SkBitmap(int w, int h, SkBitmap* bmp) {
+  bmp->setConfig(SkBitmap::kA8_Config, w, h);
+  bmp->allocPixels();
+
+  uint8_t* src_data = bmp->getAddr8(0, 0);
+  for (int i = 0; i < w * h; i++)
+    src_data[i] = i % 255;
 }
 
 TEST(PNGCodec, EncodeDecodeRGB) {
@@ -1017,7 +1032,7 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
   const int w = 20, h = 20;
 
   SkBitmap original_bitmap;
-  MakeTestSkBitmap(w, h, &original_bitmap);
+  MakeTestBGRASkBitmap(w, h, &original_bitmap);
 
   // Encode the bitmap.
   std::vector<unsigned char> encoded;
@@ -1040,11 +1055,35 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
   }
 }
 
+TEST(PNGCodec, EncodeA8SkBitmap) {
+  const int w = 20, h = 20;
+
+  SkBitmap original_bitmap;
+  MakeTestA8SkBitmap(w, h, &original_bitmap);
+
+  // Encode the bitmap.
+  std::vector<unsigned char> encoded;
+  EXPECT_TRUE(PNGCodec::EncodeA8SkBitmap(original_bitmap, &encoded));
+
+  // Decode the encoded string.
+  SkBitmap decoded_bitmap;
+  EXPECT_TRUE(PNGCodec::Decode(&encoded.front(), encoded.size(),
+                               &decoded_bitmap));
+
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      uint8_t original_pixel = *original_bitmap.getAddr8(x, y);
+      uint32_t decoded_pixel = *decoded_bitmap.getAddr32(x, y);
+      EXPECT_TRUE(BGRAGrayEqualsA8Gray(decoded_pixel, original_pixel));
+    }
+  }
+}
+
 TEST(PNGCodec, EncodeBGRASkBitmapDiscardTransparency) {
   const int w = 20, h = 20;
 
   SkBitmap original_bitmap;
-  MakeTestSkBitmap(w, h, &original_bitmap);
+  MakeTestBGRASkBitmap(w, h, &original_bitmap);
 
   // Encode the bitmap.
   std::vector<unsigned char> encoded;
@@ -1121,7 +1160,7 @@ TEST(PNGCodec, EncodeDecodeWithVaryingCompressionLevels) {
   // create an image with known values, a must be opaque because it will be
   // lost during encoding
   SkBitmap original_bitmap;
-  MakeTestSkBitmap(w, h, &original_bitmap);
+  MakeTestBGRASkBitmap(w, h, &original_bitmap);
 
   // encode
   std::vector<unsigned char> encoded_normal;
