@@ -264,6 +264,11 @@ message PolicyData {
   // service object source. This value is combined with invalidation_source to
   // form the object id used to register for invalidations to this policy.
   optional bytes invalidation_name = 14;
+
+  // Server-provided identifier of the fetched policy. This is to be used
+  // by the client when requesting Policy Posture assertion through an API
+  // call or SAML flow.
+  optional string policy_token = 15;
 }
 
 message PolicyFetchResponse {
@@ -306,11 +311,6 @@ message PolicyFetchResponse {
   // new_public_key with the embedded public key and 
   // new_public_key_verification_signature.
   optional bytes new_public_key_verification_signature = 7;
-
-  // Server-provided identifier of the fetched policy. This is to be used
-  // by the client when requesting Policy Posture assertion through an API
-  // call or SAML flow.
-  optional bytes policy_token = 8;
 }
 
 // Request from device to server for reading policies.

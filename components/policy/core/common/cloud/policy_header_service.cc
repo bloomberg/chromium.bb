@@ -64,12 +64,10 @@ std::string PolicyHeaderService::CreateHeaderValue() {
   std::string user_dm_token = user_policy_store_->policy()->request_token();
   base::DictionaryValue value;
   value.SetString(kUserDMTokenKey, user_dm_token);
-  // TODO(atwilson): Enable this once policy token is available.
-  //if (user_policy_store_->policy()->has_policy_token()) {
-  //    value.SetString(kUserPolicyTokenKey,
-  //                    user_policy_store_->policy()->policy_token());
-  //}
-  value.SetString(kUserPolicyTokenKey, "");
+  if (user_policy_store_->policy()->has_policy_token()) {
+    value.SetString(kUserPolicyTokenKey,
+                    user_policy_store_->policy()->policy_token());
+  }
   if (!verification_key_hash_.empty())
     value.SetString(kVerificationKeyHashKey, verification_key_hash_);
 
