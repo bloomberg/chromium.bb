@@ -51,8 +51,8 @@ struct CONTENT_EXPORT LoadCommittedDetails {
 
   // When the committed load is a web page from the renderer, this string
   // specifies the security state if the page is secure.
-  // See ViewHostMsg_FrameNavigate_Params.security_info, where it comes from.
-  // Use SSLManager::DeserializeSecurityInfo to decode it.
+  // See FrameHostMsg_DidCommitProvisionalLoad_Params.security_info, where it
+  // comes from. Use SSLManager::DeserializeSecurityInfo to decode it.
   std::string serialized_security_info;
 
   // Returns whether the main frame navigated to a different page (e.g., not

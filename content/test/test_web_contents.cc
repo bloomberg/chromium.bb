@@ -9,8 +9,10 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -68,7 +70,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
     const GURL& url,
     const Referrer& referrer,
     PageTransition transition) {
-  ViewHostMsg_FrameNavigate_Params params;
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.page_id = page_id;
   params.url = url;
@@ -84,7 +86,10 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url);
 
-  DidNavigate(render_view_host, params);
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(render_view_host);
+  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
+      rvh->GetProcess()->GetID(), rvh->main_frame_routing_id());
+  frame_tree_.root()->navigator()->DidNavigate(rfh, params);
 }
 
 WebPreferences TestWebContents::TestGetWebkitPrefs() {

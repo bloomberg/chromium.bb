@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_controller.h"
 
 class GURL;
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace base {
@@ -54,6 +55,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) {}
+
+  // The RenderFrameHostImpl has committed a navigation.
+  virtual void DidNavigate(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {}
 
   // Causes the Navigator to navigate in the right render frame to |entry|,
   // which must be already part of the entries in the navigation controller.

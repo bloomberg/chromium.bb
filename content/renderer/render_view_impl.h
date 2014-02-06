@@ -807,9 +807,6 @@ class CONTENT_EXPORT RenderViewImpl
     CONNECTION_ERROR,
   };
 
-  static void GetRedirectChain(blink::WebDataSource* ds,
-                               std::vector<GURL>* result);
-
   static blink::WebReferrerPolicy GetReferrerPolicyFromRequest(
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
@@ -818,10 +815,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
 
-  static webkit_glue::WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
-      const blink::WebURLResponse& response);
-
-  void UpdateURL(blink::WebFrame* frame);
   void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
                    blink::WebTextDirection title_direction);
   void UpdateSessionHistory(blink::WebFrame* frame);

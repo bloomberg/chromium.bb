@@ -671,8 +671,9 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddDOMActionToActivityLog,
 // certain conditions.  This message is sent in response to several events:
 //
 // * ExtensionMsg_WatchPages was received, updating the set of conditions.
-// * A new page is loaded.  This will be sent after ViewHostMsg_FrameNavigate.
-//   Currently this only fires for the main frame.
+// * A new page is loaded.  This will be sent after
+//   FrameHostMsg_DidCommitProvisionalLoad. Currently this only fires for the
+//   main frame.
 // * Something changed on an existing frame causing the set of matching searches
 //   to change.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_OnWatchedPageChange,

@@ -97,6 +97,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                       bool is_swapped_out);
 
  private:
+  friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
   // IPC Message handlers.
@@ -110,8 +111,14 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void OnDidRedirectProvisionalLoad(int32 page_id,
                                     const GURL& source_url,
                                     const GURL& target_url);
+  void OnNavigate(const IPC::Message& msg);
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
+
+  // Returns whether the given URL is allowed to commit in the current process.
+  // This is a more conservative check than RenderProcessHost::FilterURL, since
+  // it will be used to kill processes that commit unauthorized URLs.
+  bool CanCommitURL(const GURL& url);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

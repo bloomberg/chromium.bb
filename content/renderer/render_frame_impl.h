@@ -329,9 +329,13 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
                            ShouldUpdateSelectionTextFromContextMenuParams);
 
+  typedef std::map<GURL, double> HostZoomLevels;
+
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
   void RemoveObserver(RenderFrameObserver* observer);
+
+  void UpdateURL(blink::WebFrame* frame);
 
   // IPC message handlers ------------------------------------------------------
   //

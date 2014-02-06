@@ -23,7 +23,6 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
@@ -184,20 +183,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
 #endif
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
-  IPC_STRUCT_TRAITS_MEMBER(page_id)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(base_url)
-  IPC_STRUCT_TRAITS_MEMBER(referrer)
-  IPC_STRUCT_TRAITS_MEMBER(transition)
-  IPC_STRUCT_TRAITS_MEMBER(redirects)
-  IPC_STRUCT_TRAITS_MEMBER(should_update_history)
-  IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
-  IPC_STRUCT_TRAITS_MEMBER(searchable_form_encoding)
-  IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
-  IPC_STRUCT_TRAITS_MEMBER(socket_address)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_process_id)
   IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
@@ -353,57 +338,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
   IPC_STRUCT_MEMBER(std::vector<content::DateTimeSuggestion>, suggestions)
 IPC_STRUCT_END()
 
-// Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
-// parameters to be reasonably put in a predefined IPC message.
-IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
-                             content::FrameNavigateParams)
-  IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
-  // The frame ID for this navigation. The frame ID uniquely identifies the
-  // frame the navigation happened in for a given renderer.
-  IPC_STRUCT_MEMBER(int64, frame_id)
-
-  // The WebFrame's uniqueName().
-  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
-
-  // Information regarding the security of the connection (empty if the
-  // connection was not secure).
-  IPC_STRUCT_MEMBER(std::string, security_info)
-
-  // The gesture that initiated this navigation.
-  IPC_STRUCT_MEMBER(content::NavigationGesture, gesture)
-
-  // True if this was a post request.
-  IPC_STRUCT_MEMBER(bool, is_post)
-
-  // The POST body identifier. -1 if it doesn't exist.
-  IPC_STRUCT_MEMBER(int64, post_id)
-
-  // Whether the frame navigation resulted in no change to the documents within
-  // the page. For example, the navigation may have just resulted in scrolling
-  // to a named anchor.
-  IPC_STRUCT_MEMBER(bool, was_within_same_page)
-
-  // The status code of the HTTP request.
-  IPC_STRUCT_MEMBER(int, http_status_code)
-
-  // True if the connection was proxied.  In this case, socket_address
-  // will represent the address of the proxy, rather than the remote host.
-  IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)
-
-  // Serialized history item state to store in the navigation entry.
-  IPC_STRUCT_MEMBER(content::PageState, page_state)
-
-  // Original request's URL.
-  IPC_STRUCT_MEMBER(GURL, original_request_url)
-
-  // User agent override used to navigate.
-  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
-
-  // Notifies the browser that for this navigation, the session history was
-  // successfully cleared.
-  IPC_STRUCT_MEMBER(bool, history_list_was_cleared)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ViewHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
@@ -548,7 +482,7 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // The page_id for this navigation, or -1 if it is a new navigation.  Back,
   // Forward, and Reload navigations should have a valid page_id.  If the load
   // succeeds, then this page_id will be reflected in the resultant
-  // ViewHostMsg_FrameNavigate message.
+  // FrameHostMsg_DidCommitProvisionalLoad message.
   IPC_STRUCT_MEMBER(int32, page_id)
 
   // If page_id is -1, then pending_history_list_offset will also be -1.
@@ -1413,12 +1347,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 // the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
                     gfx::Rect /* position */)
-
-// Notifies the browser that a frame in the view has changed. This message
-// has a lot of parameters and is packed/unpacked by functions defined in
-// render_messages.h.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameNavigate,
-                    ViewHostMsg_FrameNavigate_Params)
 
 // Message to show a popup menu using native cocoa controls (Mac only).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,

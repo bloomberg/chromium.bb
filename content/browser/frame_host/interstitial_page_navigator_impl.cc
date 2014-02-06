@@ -6,12 +6,22 @@
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 namespace content {
 
 InterstitialPageNavigatorImpl::InterstitialPageNavigatorImpl(
     InterstitialPageImpl* interstitial,
-    NavigationControllerImpl* navigation_controller) {
+    NavigationControllerImpl* navigation_controller)
+    : interstitial_(interstitial) {}
+
+void InterstitialPageNavigatorImpl::DidNavigate(
+    RenderFrameHostImpl* render_frame_host,
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
+  // TODO(nasko): Move implementation here, but for the time being call out
+  // to the interstitial page code.
+  interstitial_->DidNavigate(
+      render_frame_host->render_view_host(), input_params);
 }
 
 }  // namespace content

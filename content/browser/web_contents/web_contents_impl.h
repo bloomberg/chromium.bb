@@ -328,9 +328,6 @@ class CONTENT_EXPORT WebContentsImpl
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidNavigate(
-      RenderViewHost* render_view_host,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateState(RenderViewHost* render_view_host,
                            int32 page_id,
                            const PageState& page_state) OVERRIDE;
@@ -464,6 +461,22 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidRedirectProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& validated_target_url) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(
+      int64 frame_id,
+      const base::string16& frame_unique_name,
+      bool is_main_frame,
+      const GURL& url,
+      PageTransition transition_type,
+      RenderFrameHostImpl* render_frame_host) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      const LoadCommittedDetails& details,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
+  virtual void DidNavigateAnyFramePostCommit(
+      RenderFrameHostImpl* render_frame_host,
+      const LoadCommittedDetails& details,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
+  virtual void SetMainFrameMimeType(const std::string& mime_type) OVERRIDE;
+  virtual bool CanOverscrollContent() OVERRIDE;
   virtual void NotifyChangedNavigationState(
       InvalidateTypes changed_flags) OVERRIDE;
   virtual void AboutToNavigateRenderFrame(
@@ -746,17 +759,6 @@ class CONTENT_EXPORT WebContentsImpl
   // committed to the navigation controller. Note that the navigation entry is
   // not provided since it may be invalid/changed after being committed. The
   // current navigation entry is in the NavigationController at this point.
-  void DidNavigateMainFramePostCommit(
-      const LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
-  void DidNavigateAnyFramePostCommit(
-      RenderViewHost* render_view_host,
-      const LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
-
-  // Specifies whether the passed in URL should be assigned as the site of the
-  // current SiteInstance, if it does not yet have a site.
-  bool ShouldAssignSiteForURL(const GURL& url);
 
   // If our controller was restored, update the max page ID associated with the
   // given RenderViewHost to be larger than the number of restored entries.
