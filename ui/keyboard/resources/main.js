@@ -101,7 +101,7 @@
 
       // Sum of all keys in the current row.
       var keyWeightSumX = 0;
-      for (var i=0; i< allKeys.length; i++) {
+      for (var i = 0; i < allKeys.length; i++) {
         keyWeightSumX += allKeys[i].weight;
       }
 
@@ -110,11 +110,12 @@
       var totalWeightX = keyWeightSumX + interspaceWeightSumX +
           keyset.weightLeft + keyset.weightRight;
 
-      var totalWeightY = (DEFAULT_KEY_WEIGHT_Y * rows.length) +
-                        (pitchWeightY * (rows.length - 1)) +
-                        keyset.weightTop +
-                        keyset.weightBottom;
-
+      var totalWeightY = (pitchWeightY * (rows.length - 1)) +
+                         keyset.weightTop +
+                         keyset.weightBottom;
+      for (var i = 0; i < rows.length; i++) {
+        totalWeightY += rows[i].weight;
+      }
       // Calculate width and height of the window.
       var bounds = exports.getKeyboardBounds();
 
@@ -326,9 +327,10 @@
    * @param {!kb-row} row The current row to be aligned.
    * @param {!kb-row} prevRow The row above the current row.
    * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   * @param {number} keyHeight The height of the keys in this row.
    * @param {number} heightOffset The height offset caused by the rows above.
    */
-  function realignSpacebarRow(row, prevRow, params, heightOffset) {
+  function realignSpacebarRow(row, prevRow, params, keyHeight, heightOffset) {
     var allKeys = row.children;
     var stretchWeightBeforeSpace = 0;
     var stretchBefore = 0;
@@ -385,7 +387,7 @@
                  params.pitchX,
                  params.offsetLeft,
                  leftWidth,
-                 params.keyHeight,
+                 keyHeight,
                  yOffset);
     // Fix right side.
     var rightEdge = parseFloat(rightKey.style.left) +
@@ -393,7 +395,7 @@
     var spacebarWidth = rightEdge - leftEdge;
     updateKey(allKeys[spaceIndex],
               spacebarWidth,
-              params.keyHeight,
+              keyHeight,
               leftEdge,
               yOffset);
     var rightWidth =
@@ -403,7 +405,7 @@
                  params.pitchX,
                  rightEdge + params.pitchX,//xOffset.
                  rightWidth,
-                 params.keyHeight,
+                 keyHeight,
                  yOffset);
   }
 
@@ -411,9 +413,10 @@
    * Realigns a given row based on the parameters provided.
    * @param {!kb-row} row The row to realign.
    * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   * @param {number} The height of the keys.
    * @param {number} heightOffset The offset caused by rows above it.
    */
-  function realignRow(row, params, heightOffset) {
+  function realignRow(row, params, keyHeight, heightOffset) {
     var all = row.children;
     var nStretch = 0;
     var stretchWeightSum = 0;
@@ -476,7 +479,7 @@
       if (key.weight != DEFAULT_KEY_WEIGHT_X)
         width = Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight)
       width += deltaWidth[i];
-      updateKey(key, width, params.keyHeight, left, yOffset)
+      updateKey(key, width, keyHeight, left, yOffset)
       left += (width + params.pitchX);
     }
   }
@@ -536,12 +539,14 @@
     var heightOffset  = 0;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
+      var rowHeight =
+          Math.floor(params.keyHeight * (row.weight/DEFAULT_KEY_WEIGHT_Y))
       if (row.querySelector('.space') && (i > 1)) {
-        realignSpacebarRow(row, rows[i-1], params, heightOffset)
+        realignSpacebarRow(row, rows[i-1], params, rowHeight, heightOffset)
       } else {
-        realignRow(row, params, heightOffset);
+        realignRow(row, params, rowHeight, heightOffset);
       }
-      heightOffset += (params.keyHeight + params.pitchY);
+      heightOffset += (rowHeight + params.pitchY);
     }
   }
   window.addEventListener('realign', requestRealign);
