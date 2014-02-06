@@ -34,6 +34,8 @@
 
 namespace WebCore {
 
+class Settings;
+
 class WebGLContextAttributes FINAL : public CanvasContextAttributes, public ScriptWrappable {
 public:
     virtual ~WebGLContextAttributes();
@@ -41,30 +43,30 @@ public:
     // Create a new attributes object
     static PassRefPtr<WebGLContextAttributes> create();
 
-    // Create a new attributes object initialized with preexisting attributes
-    static PassRefPtr<WebGLContextAttributes> create(blink::WebGraphicsContext3D::Attributes);
+    // Create a copy of this object.
+    PassRefPtr<WebGLContextAttributes> clone() const;
 
     // Whether or not the drawing buffer has an alpha channel; default=true
     bool alpha() const;
-    void setAlpha(bool alpha);
+    void setAlpha(bool);
 
     // Whether or not the drawing buffer has a depth buffer; default=true
     bool depth() const;
-    void setDepth(bool depth);
+    void setDepth(bool);
 
-    // Whether or not the drawing buffer has a stencil buffer; default=true
+    // Whether or not the drawing buffer has a stencil buffer; default=false
     bool stencil() const;
-    void setStencil(bool stencil);
+    void setStencil(bool);
 
     // Whether or not the drawing buffer is antialiased; default=true
     bool antialias() const;
-    void setAntialias(bool antialias);
+    void setAntialias(bool);
 
     // Whether or not to treat the values in the drawing buffer as
     // though their alpha channel has already been multiplied into the
     // color channels; default=true
     bool premultipliedAlpha() const;
-    void setPremultipliedAlpha(bool premultipliedAlpha);
+    void setPremultipliedAlpha(bool);
 
     // Whether or not to preserve the drawing buffer after presentation to the
     // screen; default=false
@@ -76,17 +78,23 @@ public:
     bool failIfMajorPerformanceCaveat() const;
     void setFailIfMajorPerformanceCaveat(bool);
 
-    // Fetches a copy of the attributes stored in this object in a
-    // form that can be used to initialize a GraphicsContext3D.
-    blink::WebGraphicsContext3D::Attributes attributes() const;
+    // Set up the attributes that can be used to initialize a WebGraphicsContext3D.
+    // It's mostly based on WebGLContextAttributes, but would be adjusted based
+    // on settings.
+    blink::WebGraphicsContext3D::Attributes attributes(const blink::WebString&, Settings*) const;
 
 protected:
     WebGLContextAttributes();
-    WebGLContextAttributes(blink::WebGraphicsContext3D::Attributes);
+    WebGLContextAttributes(const WebGLContextAttributes&);
 
 private:
-    blink::WebGraphicsContext3D::Attributes m_attrs;
+    bool m_alpha;
+    bool m_depth;
+    bool m_stencil;
+    bool m_antialias;
+    bool m_premultipliedAlpha;
     bool m_preserveDrawingBuffer;
+    bool m_failIfMajorPerformanceCaveat;
 };
 
 } // namespace WebCore

@@ -350,7 +350,7 @@ public:
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
 
-    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, PassRefPtr<GraphicsContext3D>, blink::WebGraphicsContext3D::Attributes, blink::WebGraphicsContext3D::Attributes requestedAttributes, bool preserveDrawingBuffer);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, PassRefPtr<GraphicsContext3D>, WebGLContextAttributes*);
     void initializeNewContext();
     void setupFlags();
 
@@ -496,8 +496,7 @@ public:
     GLenum m_unpackColorspaceConversion;
     bool m_contextLost;
     LostContextMode m_contextLostMode;
-    blink::WebGraphicsContext3D::Attributes m_attributes;
-    blink::WebGraphicsContext3D::Attributes m_requestedAttributes;
+    RefPtr<WebGLContextAttributes> m_requestedAttributes;
 
     bool m_layerCleared;
     GLfloat m_clearColor[4];

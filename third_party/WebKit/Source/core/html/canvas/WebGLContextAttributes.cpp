@@ -28,6 +28,8 @@
 
 #include "core/html/canvas/WebGLContextAttributes.h"
 
+#include "core/frame/Settings.h"
+
 namespace WebCore {
 
 PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::create()
@@ -35,28 +37,28 @@ PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::create()
     return adoptRef(new WebGLContextAttributes());
 }
 
-PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::create(blink::WebGraphicsContext3D::Attributes attributes)
-{
-    return adoptRef(new WebGLContextAttributes(attributes));
-}
-
 WebGLContextAttributes::WebGLContextAttributes()
     : CanvasContextAttributes()
+    , m_alpha(true)
+    , m_depth(true)
+    , m_stencil(false)
+    , m_antialias(true)
+    , m_premultipliedAlpha(true)
     , m_preserveDrawingBuffer(false)
+    , m_failIfMajorPerformanceCaveat(false)
 {
-    ASSERT(m_attrs.alpha);
-    ASSERT(m_attrs.depth);
-    ASSERT(m_attrs.antialias);
-    ASSERT(m_attrs.premultipliedAlpha);
-    ASSERT(!m_attrs.failIfMajorPerformanceCaveat);
-    m_attrs.stencil = false;
     ScriptWrappable::init(this);
 }
 
-WebGLContextAttributes::WebGLContextAttributes(blink::WebGraphicsContext3D::Attributes attributes)
+WebGLContextAttributes::WebGLContextAttributes(const WebGLContextAttributes& attrs)
     : CanvasContextAttributes()
-    , m_attrs(attributes)
-    , m_preserveDrawingBuffer(false)
+    , m_alpha(attrs.m_alpha)
+    , m_depth(attrs.m_depth)
+    , m_stencil(attrs.m_stencil)
+    , m_antialias(attrs.m_antialias)
+    , m_premultipliedAlpha(attrs.m_premultipliedAlpha)
+    , m_preserveDrawingBuffer(attrs.m_preserveDrawingBuffer)
+    , m_failIfMajorPerformanceCaveat(attrs.m_failIfMajorPerformanceCaveat)
 {
     ScriptWrappable::init(this);
 }
@@ -65,54 +67,59 @@ WebGLContextAttributes::~WebGLContextAttributes()
 {
 }
 
+PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::clone() const
+{
+    return adoptRef(new WebGLContextAttributes(*this));
+}
+
 bool WebGLContextAttributes::alpha() const
 {
-    return m_attrs.alpha;
+    return m_alpha;
 }
 
 void WebGLContextAttributes::setAlpha(bool alpha)
 {
-    m_attrs.alpha = alpha;
+    m_alpha = alpha;
 }
 
 bool WebGLContextAttributes::depth() const
 {
-    return m_attrs.depth;
+    return m_depth;
 }
 
 void WebGLContextAttributes::setDepth(bool depth)
 {
-    m_attrs.depth = depth;
+    m_depth = depth;
 }
 
 bool WebGLContextAttributes::stencil() const
 {
-    return m_attrs.stencil;
+    return m_stencil;
 }
 
 void WebGLContextAttributes::setStencil(bool stencil)
 {
-    m_attrs.stencil = stencil;
+    m_stencil = stencil;
 }
 
 bool WebGLContextAttributes::antialias() const
 {
-    return m_attrs.antialias;
+    return m_antialias;
 }
 
 void WebGLContextAttributes::setAntialias(bool antialias)
 {
-    m_attrs.antialias = antialias;
+    m_antialias = antialias;
 }
 
 bool WebGLContextAttributes::premultipliedAlpha() const
 {
-    return m_attrs.premultipliedAlpha;
+    return m_premultipliedAlpha;
 }
 
 void WebGLContextAttributes::setPremultipliedAlpha(bool premultipliedAlpha)
 {
-    m_attrs.premultipliedAlpha = premultipliedAlpha;
+    m_premultipliedAlpha = premultipliedAlpha;
 }
 
 bool WebGLContextAttributes::preserveDrawingBuffer() const
@@ -127,17 +134,37 @@ void WebGLContextAttributes::setPreserveDrawingBuffer(bool preserveDrawingBuffer
 
 bool WebGLContextAttributes::failIfMajorPerformanceCaveat() const
 {
-    return m_attrs.failIfMajorPerformanceCaveat;
+    return m_failIfMajorPerformanceCaveat;
 }
 
 void WebGLContextAttributes::setFailIfMajorPerformanceCaveat(bool failIfMajorPerformanceCaveat)
 {
-    m_attrs.failIfMajorPerformanceCaveat = failIfMajorPerformanceCaveat;
+    m_failIfMajorPerformanceCaveat = failIfMajorPerformanceCaveat;
 }
 
-blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes() const
+blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes(
+    const blink::WebString& topDocumentURL, Settings* settings) const
 {
-    return m_attrs;
+    blink::WebGraphicsContext3D::Attributes attrs;
+
+    attrs.alpha = m_alpha;
+    attrs.depth = m_depth;
+    attrs.stencil = m_stencil;
+    attrs.antialias = m_antialias;
+    if (m_antialias) {
+        if (settings && !settings->openGLMultisamplingEnabled())
+            attrs.antialias = false;
+    }
+    attrs.premultipliedAlpha = m_premultipliedAlpha;
+    attrs.failIfMajorPerformanceCaveat = m_failIfMajorPerformanceCaveat;
+
+    attrs.noExtensions = true;
+    attrs.shareResources = true;
+    attrs.preferDiscreteGPU = true;
+
+    attrs.topDocumentURL = topDocumentURL;
+
+    return attrs;
 }
 
 } // namespace WebCore

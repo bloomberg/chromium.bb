@@ -453,17 +453,6 @@ namespace {
             break;
         }
     }
-
-    blink::WebGraphicsContext3D::Attributes adjustAttributes(const blink::WebGraphicsContext3D::Attributes& attributes, Settings* settings)
-    {
-        blink::WebGraphicsContext3D::Attributes adjustedAttributes = attributes;
-        if (adjustedAttributes.antialias) {
-            if (settings && !settings->openGLMultisamplingEnabled())
-                adjustedAttributes.antialias = false;
-        }
-
-        return adjustedAttributes;
-    }
 } // namespace anonymous
 
 class WebGLRenderingContextLostCallback : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
@@ -506,24 +495,13 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    bool preserveDrawingBuffer = attrs ? attrs->preserveDrawingBuffer() : false;
-    blink::WebGraphicsContext3D::Attributes requestedAttributes = attrs ? attrs->attributes() : blink::WebGraphicsContext3D::Attributes();
+    // The only situation that attrs is null is through Document::getCSSCanvasContext().
+    RefPtr<WebGLContextAttributes> defaultAttrs;
     if (!attrs) {
-        // Default attributes.
-        ASSERT(requestedAttributes.alpha);
-        ASSERT(requestedAttributes.depth);
-        ASSERT(requestedAttributes.antialias);
-        ASSERT(requestedAttributes.premultipliedAlpha);
-        ASSERT(!requestedAttributes.failIfMajorPerformanceCaveat);
-        requestedAttributes.stencil = false;
+        defaultAttrs = WebGLContextAttributes::create();
+        attrs = defaultAttrs.get();
     }
-    requestedAttributes.noExtensions = true;
-    requestedAttributes.shareResources = true;
-    requestedAttributes.preferDiscreteGPU = true;
-    requestedAttributes.topDocumentURL = document.topDocument()->url().string();
-
-    blink::WebGraphicsContext3D::Attributes attributes = adjustAttributes(requestedAttributes, settings);
-
+    blink::WebGraphicsContext3D::Attributes attributes = attrs->attributes(document.topDocument()->url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
     if (!context || !context->makeContextCurrent()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
@@ -540,7 +518,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     if (contextSupport->supportsExtension("GL_EXT_debug_marker"))
         context->pushGroupMarkerEXT("WebGLRenderingContext");
 
-    OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context.release(), contextSupport, attributes, requestedAttributes, preserveDrawingBuffer));
+    OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context.release(), contextSupport, attrs));
     renderingContext->suspendIfNeeded();
 
     if (renderingContext->m_drawingBuffer->isZeroSized()) {
@@ -551,7 +529,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     return renderingContext.release();
 }
 
-WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, PassRefPtr<GraphicsContext3D> contextSupport, blink::WebGraphicsContext3D::Attributes attributes, blink::WebGraphicsContext3D::Attributes requestedAttributes, bool preserveDrawingBuffer)
+WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, PassRefPtr<GraphicsContext3D> contextSupport, WebGLContextAttributes* requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , ActiveDOMObject(&passedCanvas->document())
     , m_context(context)
@@ -563,15 +541,13 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     , m_generatedImageCache(4)
     , m_contextLost(false)
     , m_contextLostMode(SyntheticLostContext)
-    , m_attributes(attributes)
-    , m_requestedAttributes(requestedAttributes)
+    , m_requestedAttributes(requestedAttributes->clone())
     , m_synthesizedErrorsToConsole(true)
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
     , m_multisamplingAllowed(false)
     , m_multisamplingObserverRegistered(false)
     , m_onePlusMaxEnabledAttribIndex(0)
     , m_onePlusMaxNonDefaultTextureUnit(0)
-    , m_preserveDrawingBuffer(preserveDrawingBuffer)
 {
     ASSERT(m_contextSupport);
     ScriptWrappable::init(this);
@@ -585,7 +561,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
 
     // Create the DrawingBuffer and initialize the platform layer.
-    DrawingBuffer::PreserveDrawingBuffer preserve = preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+    DrawingBuffer::PreserveDrawingBuffer preserve = requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
     m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (!m_drawingBuffer->isZeroSized()) {
@@ -710,7 +686,7 @@ void WebGLRenderingContext::setupFlags()
     if (Page* p = canvas()->document().page()) {
         m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
 
-        if (!m_multisamplingObserverRegistered && m_requestedAttributes.antialias) {
+        if (!m_multisamplingObserverRegistered && m_requestedAttributes->antialias()) {
             m_multisamplingAllowed = m_drawingBuffer->multisample();
             p->addMultisamplingChangedObserver(this);
             m_multisamplingObserverRegistered = true;
@@ -831,7 +807,7 @@ bool WebGLRenderingContext::clearIfComposited(GLbitfield mask)
         return false;
 
     if (!m_drawingBuffer->layerComposited() || m_layerCleared
-        || m_preserveDrawingBuffer || (mask && m_framebufferBinding))
+        || m_requestedAttributes->preserveDrawingBuffer() || (mask && m_framebufferBinding))
         return false;
 
     RefPtr<WebGLContextAttributes> contextAttributes = getContextAttributes();
@@ -910,7 +886,7 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
 
     // Until the canvas is written to by the application, the clear that
     // happened after it was composited should be ignored by the compositor.
-    if (m_drawingBuffer->layerComposited() && !m_preserveDrawingBuffer) {
+    if (m_drawingBuffer->layerComposited() && !m_requestedAttributes->preserveDrawingBuffer()) {
         m_drawingBuffer->paintCompositedResultsToCanvas(canvas()->buffer());
 
         canvas()->makePresentationCopy();
@@ -2148,18 +2124,14 @@ PassRefPtr<WebGLContextAttributes> WebGLRenderingContext::getContextAttributes()
         return 0;
     // We always need to return a new WebGLContextAttributes object to
     // prevent the user from mutating any cached version.
-
-    // Also, we need to enforce requested values of "false" for depth
-    // and stencil, regardless of the properties of the underlying
-    // GraphicsContext3D or DrawingBuffer.
-    RefPtr<WebGLContextAttributes> attributes = WebGLContextAttributes::create(m_context->getContextAttributes());
-    attributes->setPreserveDrawingBuffer(m_preserveDrawingBuffer);
-    if (!m_attributes.depth)
+    blink::WebGraphicsContext3D::Attributes attrs = m_context->getContextAttributes();
+    RefPtr<WebGLContextAttributes> attributes = m_requestedAttributes->clone();
+    // Some requested attributes may not be honored, so we need to query the underlying
+    // context/drawing buffer and adjust accordingly.
+    if (m_requestedAttributes->depth() && !attrs.depth)
         attributes->setDepth(false);
-    if (!m_attributes.stencil)
+    if (m_requestedAttributes->stencil() && !attrs.stencil)
         attributes->setStencil(false);
-    // The DrawingBuffer obtains its parameters from GraphicsContext3D::getContextAttributes(),
-    // but it makes its own determination of whether multisampling is supported.
     attributes->setAntialias(m_drawingBuffer->multisample());
     return attributes.release();
 }
@@ -2313,7 +2285,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
     case GL_CURRENT_PROGRAM:
         return WebGLGetInfo(PassRefPtr<WebGLProgram>(m_currentProgram));
     case GL_DEPTH_BITS:
-        if (!m_framebufferBinding && !m_attributes.depth)
+        if (!m_framebufferBinding && !m_requestedAttributes->depth())
             return WebGLGetInfo(intZero);
         return getIntParameter(pname);
     case GL_DEPTH_CLEAR_VALUE:
@@ -2408,7 +2380,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
     case GL_STENCIL_BACK_WRITEMASK:
         return getUnsignedIntParameter(pname);
     case GL_STENCIL_BITS:
-        if (!m_framebufferBinding && !m_attributes.stencil)
+        if (!m_framebufferBinding && !m_requestedAttributes->stencil())
             return WebGLGetInfo(intZero);
         return getIntParameter(pname);
     case GL_STENCIL_CLEAR_VALUE:
@@ -4460,7 +4432,7 @@ GLenum WebGLRenderingContext::boundFramebufferColorFormat()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
         return m_framebufferBinding->colorBufferFormat();
-    if (m_attributes.alpha)
+    if (m_requestedAttributes->alpha())
         return GL_RGBA;
     return GL_RGB;
 }
@@ -5424,10 +5396,8 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     if (!frame->loader().client()->allowWebGL(settings && settings->webGLEnabled()))
         return;
 
-    // Reset the context attributes back to the requested attributes and re-apply restrictions
-    m_attributes = adjustAttributes(m_requestedAttributes, settings);
-
-    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(m_attributes));
+    blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument()->url().string(), settings);
+    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
     RefPtr<GraphicsContext3D> contextSupport(GraphicsContext3D::createContextSupport(context.get()));
 
     if (!context || !contextSupport) {
@@ -5444,7 +5414,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
 
     // Construct a new drawing buffer with the new GraphicsContext3D.
     m_drawingBuffer->releaseResources();
-    DrawingBuffer::PreserveDrawingBuffer preserve = m_preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+    DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
     m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (m_drawingBuffer->isZeroSized())
