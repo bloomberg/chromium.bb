@@ -229,6 +229,15 @@
                   '|LayoutTests/platform/.*/fast/css-grid-layout/' \
                   '|LayoutTests/platform/.*/ietestcenter/css3/grid/'
     },
+    'fragment_layout': {
+      'filepath': 'Source/core/rendering/.*(FlowThread|MultiCol|Region)' \
+                  '|Source/core/rendering/ColumnInfo' \
+                  '|LayoutTests/.*/multicol/' \
+                  '|LayoutTests/.*/regions/'
+    },
+    'table_layout': {
+      'filepath': 'Source/core/rendering/.*Table'
+    },
   },
 
   'WATCHLISTS': {
@@ -328,5 +337,7 @@
               'skal@google.com',
               'vikasa@google.com' ],
     'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
+    'fragment_layout': [ 'mstensho+blink@opera.com' ],
+    'table_layout': [ 'mstensho+blink@opera.com' ],
   },
 }
