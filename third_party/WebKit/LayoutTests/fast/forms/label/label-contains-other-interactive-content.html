@@ -3,8 +3,9 @@
 <script src="../../../resources/js-test.js"></script>
 <script src="../resources/common.js"></script>
 <script>
-var interactiveElements1 = ['a', 'button', 'details', 'embed', 'iframe', 'keygen', 'label', 'select', 'textarea'];
+var interactiveElements1 = ['button', 'details', 'embed', 'iframe', 'keygen', 'label', 'select', 'textarea'];
 var interactiveElements2 = [
+    ['a', 'href'],
     ['audio', 'controls'],
     ['video', 'controls'],
     ['img', 'usemap'],
@@ -48,6 +49,9 @@ interactiveElements2.forEach(function(entry) {
     document.activeElement.blur();
 
     element.setAttribute(entry[1], entry[1]);
+    // Prevents page transition.
+    if (entry[0] == 'a')
+        element.addEventListener('click', function(e) { e.preventDefault(); }, false);
     clickElement(element);
     debug(entry[0] + '[' + entry[1] + ']');
     shouldNotBe('document.activeElement.id', '"control"');

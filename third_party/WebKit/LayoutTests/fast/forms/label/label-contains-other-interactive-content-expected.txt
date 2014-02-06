@@ -1,5 +1,3 @@
-a
-PASS document.activeElement.id is not "control"
 button
 PASS document.activeElement.id is not "control"
 details
@@ -17,6 +15,10 @@ PASS document.activeElement.id is not "control"
 textarea
 PASS document.activeElement.id is not "control"
 
+a
+PASS document.activeElement.id is "control"
+a[href]
+PASS document.activeElement.id is not "control"
 audio[controls]
 PASS document.activeElement.id is not "control"
 video

@@ -692,7 +692,7 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(blink::WebPreconnectMotiv
 
 bool HTMLAnchorElement::isInteractiveContent() const
 {
-    return true;
+    return isLink();
 }
 
 }
