@@ -62,7 +62,7 @@ using namespace HTMLNames;
 // Upper limit agreed upon with representatives of Opera and Mozilla.
 static const unsigned maxSelectItems = 10000;
 
-HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form, bool createdByParser)
+HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(selectTag, document, form)
     , m_typeAhead(this)
     , m_size(0)
@@ -73,19 +73,18 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form, 
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
-    , m_isParsingInProgress(createdByParser)
 {
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    return adoptRef(new HTMLSelectElement(document, 0, false));
+    return adoptRef(new HTMLSelectElement(document, 0));
 }
 
-PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLSelectElement(document, form, createdByParser));
+    return adoptRef(new HTMLSelectElement(document, form));
 }
 
 const AtomicString& HTMLSelectElement::formControlType() const
@@ -1544,7 +1543,6 @@ unsigned HTMLSelectElement::length() const
 void HTMLSelectElement::finishParsingChildren()
 {
     HTMLFormControlElementWithState::finishParsingChildren();
-    m_isParsingInProgress = false;
     updateListItemSelectedStates();
 }
 

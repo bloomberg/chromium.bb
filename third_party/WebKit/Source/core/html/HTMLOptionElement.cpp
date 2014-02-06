@@ -207,11 +207,11 @@ bool HTMLOptionElement::selected() const
         // If a stylesheet contains option:checked selectors, this function is
         // called during parsing. updateListItemSelectedStates() is O(N) where N
         // is the number of option elements, so the <select> parsing would be
-        // O(N^2) without isParsingInProgress check. Also,
+        // O(N^2) without the isFinishedParsingChildren check. Also,
         // updateListItemSelectedStates() determines default selection, and we'd
         // like to avoid to determine default selection with incomplete option
         // list.
-        if (select->isParsingInProgress())
+        if (!select->isFinishedParsingChildren())
             return m_isSelected;
         select->updateListItemSelectedStates();
     }

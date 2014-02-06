@@ -40,7 +40,7 @@ class HTMLOptionElement;
 class HTMLSelectElement FINAL : public HTMLFormControlElementWithState, public TypeAheadDataSource {
 public:
     static PassRefPtr<HTMLSelectElement> create(Document&);
-    static PassRefPtr<HTMLSelectElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
 
     int selectedIndex() const;
     void setSelectedIndex(int);
@@ -110,11 +110,10 @@ public:
 
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
-    bool isParsingInProgress() const { return m_isParsingInProgress; }
     bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
 
 protected:
-    HTMLSelectElement(Document&, HTMLFormElement*, bool createdByParser);
+    HTMLSelectElement(Document&, HTMLFormElement*);
 
 private:
     virtual const AtomicString& formControlType() const OVERRIDE;
@@ -206,7 +205,6 @@ private:
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
-    bool m_isParsingInProgress;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLSelectElement, hasTagName(HTMLNames::selectTag));
