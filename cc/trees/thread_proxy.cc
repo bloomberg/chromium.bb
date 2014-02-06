@@ -4,6 +4,7 @@
 
 #include "cc/trees/thread_proxy.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/auto_reset.h"
@@ -129,6 +130,7 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy)
       next_frame_is_newly_committed_frame(false),
       inside_draw(false),
       input_throttled_until_commit(false),
+      animations_frozen_until_next_draw(false),
       renew_tree_priority_pending(false),
       draw_duration_history(kDurationHistorySize),
       begin_main_frame_to_commit_duration_history(kDurationHistorySize),
@@ -274,9 +276,13 @@ void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
 }
 
 void ThreadProxy::UpdateBackgroundAnimateTicking() {
-  impl().layer_tree_host_impl->UpdateBackgroundAnimateTicking(
+  bool should_background_tick =
       !impl().scheduler->WillDrawIfNeeded() &&
-      impl().layer_tree_host_impl->active_tree()->root_layer());
+      impl().layer_tree_host_impl->active_tree()->root_layer();
+  impl().layer_tree_host_impl->UpdateBackgroundAnimateTicking(
+      should_background_tick);
+  if (should_background_tick)
+    impl().animations_frozen_until_next_draw = false;
 }
 
 void ThreadProxy::DoCreateAndInitializeOutputSurface() {
@@ -842,6 +848,8 @@ void ThreadProxy::BeginMainFrame(
         begin_main_frame_state->monotonic_frame_begin_time);
     layer_tree_host()->AnimateLayers(
         begin_main_frame_state->monotonic_frame_begin_time);
+    blocked_main().last_monotonic_frame_begin_time =
+        begin_main_frame_state->monotonic_frame_begin_time;
   }
 
   // Unlink any backings that the impl thread has evicted, so that we know to
@@ -1041,6 +1049,12 @@ void ThreadProxy::ScheduledActionCommit() {
   impl().current_resource_update_controller->Finalize();
   impl().current_resource_update_controller.reset();
 
+  if (impl().animations_frozen_until_next_draw) {
+    impl().animation_freeze_time =
+        std::max(impl().animation_freeze_time,
+                 blocked_main().last_monotonic_frame_begin_time);
+  }
+
   blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
   layer_tree_host()->BeginCommitOnImplThread(impl().layer_tree_host_impl.get());
@@ -1119,8 +1133,14 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
 
   // Advance our animations.
-  base::TimeTicks monotonic_time =
-      impl().layer_tree_host_impl->CurrentFrameTimeTicks();
+  base::TimeTicks monotonic_time;
+  if (impl().animations_frozen_until_next_draw)
+    monotonic_time = impl().animation_freeze_time;
+  else
+    monotonic_time = impl().layer_tree_host_impl->CurrentFrameTimeTicks();
+
+  // TODO(ajuma): Remove wall_clock_time once the legacy implementation of
+  // animations in Blink is removed.
   base::Time wall_clock_time = impl().layer_tree_host_impl->CurrentFrameTime();
 
   // TODO(enne): This should probably happen post-animate.
@@ -1163,6 +1183,19 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     impl().layer_tree_host_impl->DrawLayers(
         &frame, impl().scheduler->LastBeginImplFrameTime());
     result.draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
+    impl().animations_frozen_until_next_draw = false;
+  } else if (result.draw_result ==
+                 DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS &&
+             !impl().layer_tree_host_impl->settings().impl_side_painting) {
+    // Without impl-side painting, the animated layer that is checkerboarding
+    // will continue to checkerboard until the next commit. If this layer
+    // continues to move during the commit, it may continue to checkerboard
+    // after the commit since the region rasterized during the commit will not
+    // match the region that is currently visible; eventually this
+    // checkerboarding will be displayed when we force a draw. To avoid this,
+    // we freeze animations until we successfully draw.
+    impl().animations_frozen_until_next_draw = true;
+    impl().animation_freeze_time = monotonic_time;
   } else {
     DCHECK_NE(DrawSwapReadbackResult::DRAW_SUCCESS, result.draw_result);
   }

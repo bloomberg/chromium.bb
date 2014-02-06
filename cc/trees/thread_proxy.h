@@ -246,6 +246,8 @@ class ThreadProxy : public Proxy,
     LayerTreeHost* layer_tree_host;
     bool commit_waits_for_activation;
     bool main_thread_inside_commit;
+
+    base::TimeTicks last_monotonic_frame_begin_time;
   };
   // Use accessors instead of this variable directly.
   MainThreadOrBlockedMainThread main_thread_or_blocked_vars_unsafe_;
@@ -287,6 +289,10 @@ class ThreadProxy : public Proxy,
     bool inside_draw;
 
     bool input_throttled_until_commit;
+
+    // Set when we freeze animations to avoid checkerboarding.
+    bool animations_frozen_until_next_draw;
+    base::TimeTicks animation_freeze_time;
 
     base::TimeTicks smoothness_takes_priority_expiration_time;
     bool renew_tree_priority_pending;
