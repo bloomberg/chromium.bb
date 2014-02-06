@@ -23,6 +23,8 @@ namespace i18ninput {
 
 namespace {
 
+static bool g_enabled_for_testing_ = false;
+
 using base::UTF16ToUTF8;
 using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
@@ -38,8 +40,15 @@ DetailInput::Length LengthFromHint(AddressUiComponent::LengthHint hint) {
 }  // namespace
 
 bool Enabled() {
+  if (g_enabled_for_testing_)
+    return true;
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(::switches::kEnableAutofillAddressI18n);
+  return !command_line->HasSwitch(::switches::kDisableAutofillAddressI18n);
+}
+
+void EnableForTesting() {
+  g_enabled_for_testing_ = true;
 }
 
 void BuildAddressInputs(common::AddressType address_type,

@@ -573,6 +573,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
                         const std::string& cc_number,
                         bool should_pass) {
     FieldValueMap outputs;
+    outputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("United States");
     outputs[CREDIT_CARD_NUMBER] = UTF8ToUTF16(cc_number);
     ValidityMessages messages =
         controller()->InputsAreValid(section, outputs);
@@ -787,6 +788,7 @@ TEST_F(AutofillDialogControllerTest, ExpirationDateValidity) {
       exp_month_model->GetItemAt(exp_month_model->GetItemCount() - 1);
 
   FieldValueMap outputs;
+  outputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("United States");
   outputs[CREDIT_CARD_EXP_MONTH] = default_month_value;
   outputs[CREDIT_CARD_EXP_4_DIGIT_YEAR] = default_year_value;
 
@@ -814,8 +816,10 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   // Construct FieldValueMap from AutofillProfile data.
   SwitchToAutofill();
 
-  // Input an empty billing name.
   FieldValueMap outputs;
+  outputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("United States");
+
+  // Input an empty billing name.
   outputs[NAME_BILLING_FULL] = base::string16();
   ValidityMessages messages = controller()->InputsAreValid(SECTION_BILLING,
                                                            outputs);
@@ -836,31 +840,29 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   // Input an empty billing name. Data source should not change this behavior.
-  FieldValueMap wallet_outputs;
-  wallet_outputs[NAME_BILLING_FULL] = base::string16();
-  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  outputs[NAME_BILLING_FULL] = base::string16();
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
   EXPECT_TRUE(HasUnsureError(messages, NAME_BILLING_FULL));
 
   // Input a one name billing name. Wallet does not currently support this.
-  wallet_outputs[NAME_BILLING_FULL] = ASCIIToUTF16("Bob");
-  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  outputs[NAME_BILLING_FULL] = ASCIIToUTF16("Bob");
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
   EXPECT_TRUE(messages.HasSureError(NAME_BILLING_FULL));
 
   // Input a two name billing name.
-  wallet_outputs[NAME_BILLING_FULL] = ASCIIToUTF16("Bob Barker");
-  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  outputs[NAME_BILLING_FULL] = ASCIIToUTF16("Bob Barker");
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
   EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 
   // Input a more than two name billing name.
-  wallet_outputs[NAME_BILLING_FULL] =
-      ASCIIToUTF16("John Jacob Jingleheimer Schmidt"),
-  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  outputs[NAME_BILLING_FULL] = ASCIIToUTF16("John Jacob Jingleheimer Schmidt"),
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
   EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 
   // Input a billing name with lots of crazy whitespace.
-  wallet_outputs[NAME_BILLING_FULL] =
+  outputs[NAME_BILLING_FULL] =
       ASCIIToUTF16("     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  "),
-  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
   EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 }
 
@@ -2978,10 +2980,8 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
 
 class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
  public:
-  // AutofillDialogControllerTest implementation.
   virtual void SetUp() OVERRIDE {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+    i18ninput::EnableForTesting();
     AutofillDialogControllerTest::SetUp();
   }
 };

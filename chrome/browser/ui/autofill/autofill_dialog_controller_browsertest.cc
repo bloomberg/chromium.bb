@@ -619,76 +619,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   }
 }
 
-// For now, no matter what, the country must always be US. See
-// http://crbug.com/247518
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       FillInputFromForeignProfile) {
-  AutofillProfile full_profile(test::GetFullProfile());
-  full_profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                       ASCIIToUTF16("France"), "en-US");
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-
-  // Select "Add new shipping address...".
-  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_SHIPPING);
-  model->ActivatedAt(model->GetItemCount() - 2);
-  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
-
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-  const ServerFieldType triggering_type = inputs[0].type;
-  base::string16 value = full_profile.GetRawInfo(triggering_type);
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
-  view->SetTextContentsOfInput(triggering_type,
-                               value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_type);
-
-  ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
-
-  // All inputs should be filled.
-  AutofillProfileWrapper wrapper(&full_profile);
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    const ServerFieldType type = inputs[i].type;
-    base::string16 expectation =
-        AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY ?
-        ASCIIToUTF16("United States") : wrapper.GetInfo(AutofillType(type));
-    EXPECT_EQ(expectation, view->GetTextContentsOfInput(type));
-  }
-
-  // Now simulate some user edits and try again.
-  std::vector<base::string16> expectations;
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    if (controller()->ComboboxModelForAutofillType(inputs[i].type)) {
-      expectations.push_back(base::string16());
-      continue;
-    }
-    base::string16 users_input = i % 2 == 0 ? base::string16()
-                                            : ASCIIToUTF16("dummy");
-    view->SetTextContentsOfInput(inputs[i].type, users_input);
-    // Empty inputs should be filled, others should be left alone.
-    base::string16 expectation =
-        inputs[i].type == triggering_type || users_input.empty() ?
-        wrapper.GetInfo(AutofillType(inputs[i].type)) :
-        users_input;
-    if (AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY)
-      expectation = ASCIIToUTF16("United States");
-
-    expectations.push_back(expectation);
-  }
-
-  view->SetTextContentsOfInput(triggering_type,
-                               value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_type);
-  ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
-
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    if (controller()->ComboboxModelForAutofillType(inputs[i].type))
-      continue;
-    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
-  }
-}
-
 // This test makes sure that picking a profile variant in the Autofill
 // popup works as expected.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
@@ -1448,9 +1378,9 @@ class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
   AutofillDialogControllerI18nTest() {}
   virtual ~AutofillDialogControllerI18nTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
-    CHECK(i18ninput::Enabled());
+  virtual void SetUp() OVERRIDE {
+    i18ninput::EnableForTesting();
+    AutofillDialogControllerTest::SetUp();
   }
 
  protected:

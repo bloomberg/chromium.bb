@@ -270,6 +270,9 @@ const char kDisableAsyncDns[]               = "disable-async-dns";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
+// Disables the i18n address input widget for the requestAutocomplete() dialog.
+const char kDisableAutofillAddressI18n[]    = "disable-autofill-address-i18n";
+
 // Disables background mode (background apps will not keep chrome running in
 // the background).
 const char kDisableBackgroundMode[]         = "disable-background-mode";
@@ -558,9 +561,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // in response to a Negotiate challenge. See
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
-
-// Enables the i18n address input widget for the requestAutocomplete() dialog.
-const char kEnableAutofillAddressI18n[]     = "enable-autofill-address-i18n";
 
 // Enable using a public suffix based domain matching for autofill of passwords.
 const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =

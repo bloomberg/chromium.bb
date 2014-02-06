@@ -30,6 +30,9 @@ namespace i18ninput {
 // Returns true if the internationalized address input is enabled.
 bool Enabled();
 
+// Call this to force Enabled() to always return true while testing.
+void EnableForTesting();
+
 // Builds internationalized address input fields for |country_code| and adds
 // them (at most 13) to |inputs|. |address_type| is which kind of address to
 // build (e.g. billing or shipping).

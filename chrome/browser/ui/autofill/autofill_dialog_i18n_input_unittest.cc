@@ -18,13 +18,11 @@ const size_t kNumberOfAddressLinesUS = 7;
 
 }  // namespace
 
-TEST(AutofillDialogI18nInput, DisabledByDefaultEnabledByFlag) {
-  EXPECT_FALSE(Enabled());
-
+TEST(AutofillDialogI18nInput, FlagFlipsEnabled) {
+  bool enabled = Enabled();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
-
-  EXPECT_TRUE(Enabled());
+  command_line->AppendSwitch(::switches::kDisableAutofillAddressI18n);
+  EXPECT_NE(enabled, Enabled());
 }
 
 TEST(AutofillDialogI18nInput, USShippingAddress) {
