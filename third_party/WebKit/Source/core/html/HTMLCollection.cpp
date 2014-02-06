@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,6 +33,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 
@@ -485,6 +487,46 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
         return nameResults->first();
 
     return 0;
+}
+
+bool HTMLCollection::namedPropertyQuery(const AtomicString& name, ExceptionState&)
+{
+    return namedItem(name);
+}
+
+void HTMLCollection::supportedPropertyNames(Vector<String>& names)
+{
+    // As per the specification (http://dom.spec.whatwg.org/#htmlcollection):
+    // The supported property names are the values from the list returned by these steps:
+    // 1. Let result be an empty list.
+    // 2. For each element represented by the collection, in tree order, run these substeps:
+    //   1. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
+    //      nor is in result, append element's name attribute value to result.
+    //   2. If element has an ID which is neither the empty string nor is in result, append element's ID to result.
+    // 3. Return result.
+    HashSet<AtomicString> existingNames;
+    ContainerNode& root = rootNode();
+    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
+        if (element->isHTMLElement()) {
+            const AtomicString& nameAttribute = element->getNameAttribute();
+            if (!nameAttribute.isEmpty()) {
+                HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
+                if (addResult.isNewEntry)
+                    names.append(nameAttribute);
+            }
+        }
+        const AtomicString& idAttribute = element->getIdAttribute();
+        if (!idAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
+            if (addResult.isNewEntry)
+                names.append(idAttribute);
+        }
+    }
+}
+
+void HTMLCollection::namedPropertyEnumerator(Vector<String>& names, ExceptionState&)
+{
+    return supportedPropertyNames(names);
 }
 
 void HTMLCollection::updateNameCache() const
