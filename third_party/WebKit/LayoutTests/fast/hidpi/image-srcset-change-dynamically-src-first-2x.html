@@ -1,13 +1,16 @@
 <html>
 <head>
+<script>
+</script>
 <script src="resources/srcset-helper.js"></script>
 <script src="../../resources/js-test.js"></script>
 <script>
     function updateSrc() {
         var img = document.getElementById("foo");
-        // srcset must be set first, otherwise 'src' is loaded as well
-        img.srcset = "resources/blue-100-px-square.png 1x, resources/green-400-px-square.png 2x";
+        // The below should not trigger the load of the blue image according to the spec, but currently it does
+        // See http://crbug.com/341172
         img.src = "resources/blue-100-px-square.png"
+        img.srcset = "resources/blue-100-px-square.png 1x, resources/green-400-px-square.png 2x";
     }
 
     addEventListener("DOMContentLoaded", function() {
