@@ -60,7 +60,7 @@ class SandboxIPCProcess  {
   // browser_socket: the browser's end of the sandbox IPC socketpair. From the
   //   point of view of the renderer, it's talking to the browser but this
   //   object actually services the requests.
-  // sandbox_cmd: the path of the sandbox executable
+  // sandbox_cmd: the path of the sandbox executable.
   SandboxIPCProcess(int lifeline_fd, int browser_socket,
                     std::string sandbox_cmd)
       : lifeline_fd_(lifeline_fd),
@@ -96,11 +96,13 @@ class SandboxIPCProcess  {
 
     int failed_polls = 0;
     for (;;) {
-      const int r = HANDLE_EINTR(poll(pfds, 2, -1));
-      if (r < 1) {
-        LOG(WARNING) << "poll errno:" << errno;
+      const int r = HANDLE_EINTR(poll(pfds, 2, -1 /* no timeout */));
+      // '0' is not a possible return value with no timeout.
+      DCHECK_NE(0, r);
+      if (r < 0) {
+        PLOG(WARNING) << "poll";
         if (failed_polls++ == 3) {
-          LOG(FATAL) << "poll failing. Sandbox host aborting.";
+          LOG(FATAL) << "poll(2) failing. RenderSandboxHostLinux aborting.";
           return;
         }
         continue;
