@@ -133,9 +133,7 @@ static void paintRoundedSliderBackground(const IntRect& rect, const RenderStyle*
     int borderRadius = rect.height() / 2;
     IntSize radii(borderRadius, borderRadius);
     Color sliderBackgroundColor = Color(11, 11, 11);
-    context->save();
     context->fillRoundedRect(rect, radii, radii, radii, radii, sliderBackgroundColor);
-    context->restore();
 }
 
 static void paintSliderRangeHighlight(const IntRect& rect, const RenderStyle* style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)

@@ -2142,8 +2142,11 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
     // Apply the transform.
-    GraphicsContextStateSaver stateSaver(*context);
-    context->concatCTM(transform.toAffineTransform());
+    GraphicsContextStateSaver stateSaver(*context, false);
+    if (!transform.isIdentity()) {
+        stateSaver.save();
+        context->concatCTM(transform.toAffineTransform());
+    }
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(this, enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect)), paintingInfo.paintBehavior,
