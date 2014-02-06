@@ -326,7 +326,7 @@ int NaClSimpleRevConnectionCtor(
     return 0;
   }
 
-  NaClRefCountRef((struct NaClRefCount *) self->service);
+  NaClRefCountRef((struct NaClRefCount *) service);
   self->service = service;
   self->connected_socket = conn;
   self->exit_cb = exit_cb;
