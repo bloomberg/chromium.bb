@@ -16,6 +16,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -60,10 +61,11 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
         shell()->web_contents()->GetBrowserContext());
     wrapper_ = partition->GetServiceWorkerContext();
 
-    // Navigate to the page to set up a provider.
+    // Navigate to the page to set up a renderer page (where we can embed
+    // a worker).
     NavigateToURLBlockUntilNavigationsComplete(
         shell(),
-        embedded_test_server()->GetURL("/service_worker/index.html"), 1);
+        embedded_test_server()->GetURL("/service_worker/empty.html"), 1);
 
     RunOnIOThread(base::Bind(&self::SetUpOnIOThread, this));
   }
@@ -78,22 +80,12 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
 
-  void AssociateProcessToWorker(EmbeddedWorkerInstance* worker) {
-    // TODO(kinuko): this manual wiring should go away when this gets wired
-    // in the actual code path.
-    ServiceWorkerProviderHost* provider_host = GetRegisteredProviderHost();
-    worker->AddProcessReference(provider_host->process_id());
+  void AssociateRendererProcessToWorker(EmbeddedWorkerInstance* worker) {
+    worker->AddProcessReference(
+        shell()->web_contents()->GetRenderProcessHost()->GetID());
   }
 
  private:
-  ServiceWorkerProviderHost* GetRegisteredProviderHost() {
-    // Assumes only one provider host is registered at this point.
-    std::vector<ServiceWorkerProviderHost*> providers;
-    wrapper_->context()->GetAllProviderHosts(&providers);
-    DCHECK_EQ(1U, providers.size());
-    return providers[0];
-  }
-
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 };
 
@@ -119,7 +111,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker_->status());
     worker_->AddObserver(this);
 
-    AssociateProcessToWorker(worker_.get());
+    AssociateRendererProcessToWorker(worker_.get());
 
     const int64 service_worker_version_id = 33L;
     const GURL script_url = embedded_test_server()->GetURL(
@@ -204,7 +196,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         registration_,
         wrapper()->context()->embedded_worker_registry(),
         version_id);
-    AssociateProcessToWorker(version_->embedded_worker());
+    AssociateRendererProcessToWorker(version_->embedded_worker());
   }
 
   void StartOnIOThread(const base::Closure& done,

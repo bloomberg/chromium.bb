@@ -81,8 +81,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
-  friend class ServiceWorkerBrowserTest;
-
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
 
@@ -94,9 +92,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const RegistrationCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-
-  // Used only for testing.
-  void GetAllProviderHosts(std::vector<ServiceWorkerProviderHost*>* providers);
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
