@@ -51,25 +51,25 @@ class DirectoryNotFoundException(Exception):
     return self.msg
 
 
-def changeWorkingDirectory(target_directory):
-  """Changes the working directory to the given |target_directory|, which
-  defaults to the root of the Chromium checkout.
+def findDefaultRoot():
+  """Find the root of the chromium repo, in case the script is run from the
+  histograms dir.
 
   Returns:
-    None
+    string: path to the src dir of the repo.
 
   Raises:
     DirectoryNotFoundException if the target directory cannot be found.
   """
-  working_directory = os.getcwd()
-  pos = working_directory.find(target_directory)
-  if pos < 0:
-    raise DirectoryNotFoundException('Could not find root directory "' +
-                                     target_directory + '".  ' +
-                                     'Please run this script within your ' +
-                                     'Chromium checkout.')
-
-  os.chdir(working_directory[:pos + len(target_directory)])
+  path = os.getcwd()
+  while path:
+    head, tail = os.path.split(path)
+    if tail == 'src':
+      return path
+    if path == head:
+      break
+    path = head
+  raise DirectoryNotFoundException('Could not find src/ dir')
 
 
 def collapseAdjacentCStrings(string):
@@ -182,17 +182,23 @@ def readXmlHistograms(histograms_file_location):
 
 
 def main():
+  # Find default paths.
+  default_root = findDefaultRoot()
+  default_histograms_path = os.path.join(
+      default_root, 'tools/metrics/histograms/histograms.xml')
+
   # Parse command line options
   parser = optparse.OptionParser()
   parser.add_option(
-    '--root-directory', dest='root_directory', default='src',
-    help='scan within DIRECTORY for histograms [optional, defaults to "src/"]',
+    '--root-directory', dest='root_directory', default=default_root,
+    help='scan within DIRECTORY for histograms [optional, defaults to "%s"]' %
+        default_root,
     metavar='DIRECTORY')
   parser.add_option(
     '--histograms-file', dest='histograms_file_location',
-    default='tools/metrics/histograms/histograms.xml',
+    default=default_histograms_path,
     help='read histogram definitions from FILE (relative to --root-directory) '
-         '[optional, defaults to "tools/histograms/histograms.xml"]',
+         '[optional, defaults to "%s"]' % default_histograms_path,
     metavar='FILE')
 
   (options, args) = parser.parse_args()
@@ -203,9 +209,9 @@ def main():
   logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
   try:
-    changeWorkingDirectory(options.root_directory)
-  except DirectoryNotFoundException as e:
-    logging.error(e)
+    os.chdir(options.root_directory)
+  except EnvironmentError as e:
+    logging.error("Could not change to root directory: %s", e)
     sys.exit(1)
   chromium_histograms = readChromiumHistograms()
   xml_histograms = readXmlHistograms(options.histograms_file_location)
