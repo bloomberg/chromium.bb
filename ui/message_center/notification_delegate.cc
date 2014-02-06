@@ -32,7 +32,8 @@ bool HandleNotificationClickedDelegate::HasClickedListener() {
 }
 
 void HandleNotificationClickedDelegate::Click() {
-  closure_.Run();
+  if (!closure_.is_null())
+    closure_.Run();
 }
 
 void HandleNotificationClickedDelegate::ButtonClick(int button_index) {
