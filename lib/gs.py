@@ -476,7 +476,7 @@ class GSContext(object):
           # required for GSContext.Copy().
           tracker_filenames = self._GetTrackerFilenames(e.result.cmd[-1])
           logging.info('Potential list of tracker files: %s',
-                          tracker_filenames)
+                       tracker_filenames)
           for tracker_filename in tracker_filenames:
             tracker_file_path = os.path.join(self.DEFAULT_GSUTIL_TRACKER_DIR,
                                              tracker_filename)
@@ -495,8 +495,22 @@ class GSContext(object):
     return False
 
   # TODO(mtennant): Make a private method.
-  def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
+  def DoCommand(self, gsutil_cmd, headers=(), retries=None, version=None,
+                **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
+
+    Args:
+      gsutil_cmd: The (mostly) constructed gsutil subcommand to run.
+      headers: A list of raw headers to pass down.
+      retries: How many times to retry this command (defaults to setting given
+        at object creation).
+      version: If given, the generation; essentially the timestamp of the last
+        update.  Note this is not the same as sequence-number; it's
+        monotonically increasing bucket wide rather than reset per file.
+        The usage of this is if we intend to replace/update only if the version
+        is what we expect.  This is useful for distributed reasons- for example,
+        to ensure you don't overwrite someone else's creation, a version of
+        0 states "only update if no version exists".
 
     Returns:
       A RunCommandResult object.
@@ -508,6 +522,8 @@ class GSContext(object):
     cmd += self.gsutil_flags
     for header in headers:
       cmd += ['-h', header]
+    if version is not None:
+      cmd += ['-h', 'x-goog-if-generation-match:%d' % int(version)]
     cmd.extend(gsutil_cmd)
 
     if retries is None:
@@ -525,7 +541,7 @@ class GSContext(object):
                                      cmd, sleep=self._sleep_time,
                                      extra_env=extra_env, **kwargs)
 
-  def Copy(self, src_path, dest_path, acl=None, version=None, **kwargs):
+  def Copy(self, src_path, dest_path, acl=None, **kwargs):
     """Copy to/from GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
@@ -538,13 +554,6 @@ class GSContext(object):
       dest_path: Fully qualified local path or full gs:// path of the dest
                  file.
       acl: One of the google storage canned_acls to apply.
-      version: If given, the generation; essentially the timestamp of the last
-        update.  Note this is not the same as sequence-number; it's
-        monotonically increasing bucket wide rather than reset per file.
-        The usage of this is if we intend to replace/update only if the version
-        is what we expect.  This is useful for distributed reasons- for example,
-        to ensure you don't overwrite someone else's creation, a version of
-        0 states "only update if no version exists".
 
     Returns:
       Return the CommandResult from the run.
@@ -552,12 +561,7 @@ class GSContext(object):
     Raises:
       RunCommandError if the command failed despite retries.
     """
-    cmd, headers = [], []
-
-    if version is not None:
-      headers = ['x-goog-if-generation-match:%d' % int(version)]
-
-    cmd.append('cp')
+    cmd = ['cp']
 
     acl = self.acl if acl is None else acl
     if acl is not None:
@@ -565,9 +569,6 @@ class GSContext(object):
 
     cmd += ['--', src_path, dest_path]
 
-    # For ease of testing, only pass headers if we got some.
-    if headers:
-      kwargs['headers'] = headers
     if not (src_path.startswith(BASE_GS_URL) or
             dest_path.startswith(BASE_GS_URL)):
       # Don't retry on local copies.

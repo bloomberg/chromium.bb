@@ -163,13 +163,6 @@ class CopyTest(AbstractGSContextTest):
     self.Copy(ctx=ctx, acl=self.ACL)
     self.gs_mock.assertCommandContains(['cp', '-a', self.ACL])
 
-  def testVersion(self):
-    """Test version field."""
-    for version in xrange(7):
-      self.Copy(version=version)
-      self.gs_mock.assertCommandContains(
-          [], headers=['x-goog-if-generation-match:%s' % version])
-
   def testRunCommandError(self):
     """Test RunCommandError is propagated."""
     self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=1)
@@ -299,10 +292,16 @@ class GSDoCommandTest(cros_test_lib.TestCase):
   def setUp(self):
     self.ctx = gs.GSContext()
 
-  def _testDoCommand(self, ctx, retries, sleep):
+  def _testDoCommand(self, ctx, headers=(), retries=None, sleep=None,
+                     version=None):
+    if retries is None:
+      retries = ctx.DEFAULT_RETRIES
+    if sleep is None:
+      sleep = ctx.DEFAULT_SLEEP_TIME
+
     with mock.patch.object(retry_util, 'GenericRetry', autospec=True):
-      ctx.Copy('/blah', 'gs://foon')
-      cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags
+      ctx.Copy('/blah', 'gs://foon', version=version)
+      cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
       cmd += ['cp', '--', '/blah', 'gs://foon']
 
       retry_util.GenericRetry.assert_called_once_with(
@@ -314,13 +313,17 @@ class GSDoCommandTest(cros_test_lib.TestCase):
 
   def testDoCommandDefault(self):
     """Verify the internal DoCommand function works correctly."""
-    self._testDoCommand(self.ctx, retries=self.ctx.DEFAULT_RETRIES,
-                        sleep=self.ctx.DEFAULT_SLEEP_TIME)
+    self._testDoCommand(self.ctx)
 
   def testDoCommandCustom(self):
     """Test that retries and sleep parameters are honored."""
     ctx = gs.GSContext(retries=4, sleep=1)
     self._testDoCommand(ctx, retries=4, sleep=1)
+
+  def testVersion(self):
+    """Test that the version field expands into the header."""
+    self._testDoCommand(self.ctx, version=3,
+                        headers=['-h', 'x-goog-if-generation-match:3'])
 
 
 class GSRetryFilterTest(cros_test_lib.TestCase):
