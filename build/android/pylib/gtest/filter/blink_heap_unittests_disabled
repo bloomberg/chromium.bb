@@ -1,5 +1,2 @@
 # List of suppressions
 
-# crbug.com/340591
-HeapTest.DeepTest
-HeapTest.MarkTest
