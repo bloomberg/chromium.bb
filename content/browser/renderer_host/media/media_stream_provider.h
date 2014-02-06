@@ -20,7 +20,7 @@
 #include "content/common/media/media_stream_options.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -60,7 +60,8 @@ class CONTENT_EXPORT MediaStreamProvider
  public:
   // Registers a listener and a device message loop.
   virtual void Register(MediaStreamProviderListener* listener,
-                        base::MessageLoopProxy* device_thread_loop) = 0;
+                        const scoped_refptr<base::SingleThreadTaskRunner>&
+                            device_task_runner) = 0;
 
   // Unregisters the previously registered listener.
   virtual void Unregister() = 0;

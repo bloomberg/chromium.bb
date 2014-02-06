@@ -37,10 +37,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/media_request_state.h"
 
-namespace base {
-class Thread;
-}
-
 namespace media {
 class AudioManager;
 }
@@ -336,8 +332,10 @@ class CONTENT_EXPORT MediaStreamManager
       const std::string& source_id,
       std::string* device_id) const;
 
-  // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
-  scoped_ptr<base::Thread> device_thread_;
+  // Task runner shared by VideoCaptureManager and AudioInputDeviceManager.
+  // Note: Enumeration tasks may take seconds to complete so must never be run
+  // on any of the BrowserThreads (UI, IO, etc).  See http://crbug.com/256945.
+  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
 
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;

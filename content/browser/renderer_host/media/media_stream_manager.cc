@@ -346,7 +346,7 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 MediaStreamManager::~MediaStreamManager() {
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
-  DCHECK(!device_thread_.get());
+  DCHECK(!device_task_runner_);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
@@ -1353,22 +1353,16 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (device_thread_)
+  if (device_task_runner_)
     return;
 
-  device_thread_.reset(new base::Thread("MediaStreamDeviceThread"));
-#if defined(OS_WIN)
-  device_thread_->init_com_with_mta(true);
-#endif
-  CHECK(device_thread_->Start());
+  device_task_runner_ = audio_manager_->GetWorkerTaskRunner();
 
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
-  audio_input_device_manager_->Register(
-      this, device_thread_->message_loop_proxy().get());
+  audio_input_device_manager_->Register(this, device_task_runner_);
 
   video_capture_manager_ = new VideoCaptureManager();
-  video_capture_manager_->Register(this,
-                                   device_thread_->message_loop_proxy().get());
+  video_capture_manager_->Register(this, device_task_runner_);
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
@@ -1735,12 +1729,12 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DVLOG(3) << "MediaStreamManager::WillDestroyCurrentMessageLoop()";
   DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
-  if (device_thread_) {
+  if (device_task_runner_) {
     StopMonitoring();
 
     video_capture_manager_->Unregister();
     audio_input_device_manager_->Unregister();
-    device_thread_.reset();
+    device_task_runner_ = NULL;
   }
 
   audio_input_device_manager_ = NULL;

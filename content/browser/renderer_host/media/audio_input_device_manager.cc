@@ -55,12 +55,12 @@ const StreamDeviceInfo* AudioInputDeviceManager::GetOpenedDeviceInfoById(
 
 void AudioInputDeviceManager::Register(
     MediaStreamProviderListener* listener,
-    base::MessageLoopProxy* device_thread_loop) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!listener_);
-  DCHECK(!device_loop_.get());
+  DCHECK(!device_task_runner_);
   listener_ = listener;
-  device_loop_ = device_thread_loop;
+  device_task_runner_ = device_task_runner;
 }
 
 void AudioInputDeviceManager::Unregister() {
@@ -72,7 +72,7 @@ void AudioInputDeviceManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
 
-  device_loop_->PostTask(
+  device_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::EnumerateOnDeviceThread,
                  this, stream_type));
@@ -82,7 +82,7 @@ int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Generate a new id for this device.
   int session_id = next_capture_session_id_++;
-  device_loop_->PostTask(
+  device_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::OpenOnDeviceThread,
                  this, session_id, device));
@@ -241,7 +241,7 @@ void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
 }
 
 bool AudioInputDeviceManager::IsOnDeviceThread() const {
-  return device_loop_->BelongsToCurrentThread();
+  return device_task_runner_->BelongsToCurrentThread();
 }
 
 AudioInputDeviceManager::StreamDeviceList::iterator

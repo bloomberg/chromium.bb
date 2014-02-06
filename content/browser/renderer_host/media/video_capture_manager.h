@@ -41,7 +41,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Implements MediaStreamProvider.
   virtual void Register(MediaStreamProviderListener* listener,
-                        base::MessageLoopProxy* device_thread_loop) OVERRIDE;
+                        const scoped_refptr<base::SingleThreadTaskRunner>&
+                            device_task_runner) OVERRIDE;
 
   virtual void Unregister() OVERRIDE;
 
@@ -167,7 +168,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                                  DeviceInfos& device_vector);
 
   // The message loop of media stream device thread, where VCD's live.
-  scoped_refptr<base::MessageLoopProxy> device_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
 
   // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;

@@ -65,13 +65,14 @@ VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(devices_.empty());
 }
 
-void VideoCaptureManager::Register(MediaStreamProviderListener* listener,
-                                   base::MessageLoopProxy* device_thread_loop) {
+void VideoCaptureManager::Register(
+    MediaStreamProviderListener* listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!listener_);
-  DCHECK(!device_loop_.get());
+  DCHECK(!device_task_runner_.get());
   listener_ = listener;
-  device_loop_ = device_thread_loop;
+  device_task_runner_ = device_task_runner;
 }
 
 void VideoCaptureManager::Unregister() {
@@ -84,7 +85,7 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   DVLOG(1) << "VideoCaptureManager::EnumerateDevices, type " << stream_type;
   DCHECK(listener_);
   base::PostTaskAndReplyWithResult(
-      device_loop_, FROM_HERE,
+      device_task_runner_, FROM_HERE,
       base::Bind(&VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread,
                  this, stream_type, devices_info_cache_),
       base::Bind(&VideoCaptureManager::OnDevicesInfoEnumerated, this,
@@ -246,7 +247,7 @@ void VideoCaptureManager::StartCaptureForClient(
     DVLOG(1) << "VideoCaptureManager starting device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
 
-    device_loop_->PostTask(
+    device_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             &VideoCaptureManager::DoStartDeviceOnDeviceThread,
@@ -382,7 +383,7 @@ void VideoCaptureManager::OnDevicesInfoEnumerated(
 }
 
 bool VideoCaptureManager::IsOnDeviceThread() const {
-  return device_loop_->BelongsToCurrentThread();
+  return device_task_runner_->BelongsToCurrentThread();
 }
 
 VideoCaptureManager::DeviceInfos
@@ -505,7 +506,7 @@ void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
     // DeviceEntry, VideoCaptureController, and VideoCaptureDevice.
     devices_.erase(entry);
     entry->video_capture_controller.reset();
-    device_loop_->PostTask(
+    device_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
                    base::Owned(entry)));

@@ -45,7 +45,8 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
 
   // MediaStreamProvider implementation, called on IO thread.
   virtual void Register(MediaStreamProviderListener* listener,
-                        base::MessageLoopProxy* device_thread_loop) OVERRIDE;
+                        const scoped_refptr<base::SingleThreadTaskRunner>&
+                            device_task_runner) OVERRIDE;
   virtual void Unregister() OVERRIDE;
   virtual void EnumerateDevices(MediaStreamType stream_type) OVERRIDE;
   virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
@@ -90,7 +91,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   media::AudioManager* const audio_manager_;  // Weak.
 
   // The message loop of media stream device thread that this object runs on.
-  scoped_refptr<base::MessageLoopProxy> device_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };
