@@ -58,6 +58,8 @@ class ServiceFactoryBase : public ShellClient {
  protected:
   ServiceFactoryBase(ScopedMessagePipeHandle shell_handle);
   Shell* shell() { return shell_.get(); }
+  // Destroys connection to Shell.
+  void DisconnectFromShell();
 
  private:
   RemotePtr<Shell> shell_;
@@ -88,6 +90,8 @@ class ServiceFactory : public ServiceFactoryBase {
          it != services_.end(); ++it) {
       if (*it == service) {
         services_.erase(it);
+        if (services_.empty())
+          DisconnectFromShell();
         return;
       }
     }
@@ -116,12 +120,12 @@ class Service : public ServiceInterface {
 
  protected:
   friend class ServiceFactory<ServiceImpl, Context>;
-  Service() {}
+  Service() : reaper_(this) {}
 
   void Initialize(ServiceFactory<ServiceImpl, Context>* service_factory,
                   ScopedMessagePipeHandle client_handle) {
     service_factory_ = service_factory;
-    client_.reset(client_handle.Pass(), this);
+    client_.reset(client_handle.Pass(), this, &reaper_);
   }
 
   Context* context() const {
@@ -131,6 +135,19 @@ class Service : public ServiceInterface {
   typename ServiceInterface::_Peer* client() { return client_.get(); }
 
  private:
+  // The Reaper class allows us to handle errors on the client proxy without
+  // polluting the name space of the Service<> class.
+  class Reaper : public ErrorHandler {
+   public:
+    Reaper(Service<ServiceInterface, ServiceImpl, Context>* service)
+        : service_(service) {}
+    virtual void OnError() {
+      delete service_;
+    }
+   private:
+    Service<ServiceInterface, ServiceImpl, Context>* service_;
+  };
+  Reaper reaper_;
   ServiceFactory<ServiceImpl, Context>* service_factory_;
   RemotePtr<typename ServiceInterface::_Peer> client_;
 };

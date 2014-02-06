@@ -12,4 +12,8 @@ ServiceFactoryBase::ServiceFactoryBase(ScopedMessagePipeHandle shell_handle)
 
 ServiceFactoryBase::~ServiceFactoryBase() {}
 
+void ServiceFactoryBase::DisconnectFromShell() {
+  shell_.reset();
+}
+
 }  // namespace mojo

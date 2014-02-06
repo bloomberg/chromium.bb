@@ -5,19 +5,20 @@
 #include "mojo/shell/service_connector.h"
 
 #include "base/logging.h"
+#include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojom/shell.h"
 
 namespace mojo {
 namespace shell {
 
-class ServiceConnector::ServiceFactory : public Shell {
+class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
  public:
   ServiceFactory(ServiceConnector* connector, const GURL& url)
       : connector_(connector),
         url_(url) {
     MessagePipe pipe;
-    shell_client_.reset(pipe.handle0.Pass(), this);
+    shell_client_.reset(pipe.handle0.Pass(), this, this);
     connector_->GetLoaderForURL(url)->Load(url, pipe.handle1.Pass());
   }
   virtual ~ServiceFactory() {}
@@ -32,6 +33,12 @@ class ServiceConnector::ServiceFactory : public Shell {
     connector_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
   }
 
+  virtual void OnError() MOJO_OVERRIDE {
+    connector_->RemoveServiceFactory(this);
+  }
+
+  GURL url() const { return url_; }
+
  private:
   ServiceConnector* connector_;
   GURL url_;
@@ -41,6 +48,11 @@ class ServiceConnector::ServiceFactory : public Shell {
 
 ServiceConnector::Loader::Loader() {}
 ServiceConnector::Loader::~Loader() {}
+
+bool ServiceConnector::TestAPI::HasFactoryForURL(const GURL& url) const {
+  return connector_->url_to_service_factory_.find(url) !=
+      connector_->url_to_service_factory_.end();
+}
 
 ServiceConnector::ServiceConnector() : default_loader_(NULL) {
 }
@@ -78,6 +90,14 @@ void ServiceConnector::Connect(const GURL& url,
     url_to_service_factory_[url] = service_factory;
   }
   service_factory->ConnectToClient(client_handle.Pass());
+}
+
+void ServiceConnector::RemoveServiceFactory(ServiceFactory* service_factory) {
+  ServiceFactoryMap::iterator it =
+      url_to_service_factory_.find(service_factory->url());
+  DCHECK(it != url_to_service_factory_.end());
+  delete it->second;
+  url_to_service_factory_.erase(it);
 }
 
 }  // namespace shell

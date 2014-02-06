@@ -28,6 +28,17 @@ class ServiceConnector {
     Loader();
   };
 
+  // API for testing.
+  class TestAPI {
+   private:
+    friend class ServiceConnectorTest;
+    explicit TestAPI(ServiceConnector* connector) : connector_(connector) {}
+    // Returns true if there is a ServiceFactory for this URL.
+    bool HasFactoryForURL(const GURL& url) const;
+
+    ServiceConnector* connector_;
+  };
+
   ServiceConnector();
   ~ServiceConnector();
 
@@ -41,9 +52,11 @@ class ServiceConnector {
   Loader* GetLoaderForURL(const GURL& gurl);
   // Loads a service if necessary and establishes a new client connection.
   void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
-
  private:
   class ServiceFactory;
+
+  // Removes a ServiceFactory when it no longer has any connections.
+  void RemoveServiceFactory(ServiceFactory* service_factory);
 
   Loader* default_loader_;
   typedef std::map<GURL, ServiceFactory*> ServiceFactoryMap;

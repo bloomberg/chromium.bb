@@ -365,9 +365,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        'mojo_common_lib',
-        'mojo_environment_chromium',
+        'mojo_environment_standalone',
         'mojo_run_all_unittests',
+        'mojo_utility',
         'mojo_shell_lib',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
