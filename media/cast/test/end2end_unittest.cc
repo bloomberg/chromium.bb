@@ -810,6 +810,8 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
   SendVideoFrame(video_start, send_time);
   RunTasks(kFrameTimerMs);
 
+  // Frames 1-3 are old frames by now, and therefore should be decoded, but
+  // not rendered. The next frame we expect to render is frame #4.
   test_receiver_video_callback_->AddExpectedResult(video_start,
                                                    video_sender_config_.width,
                                                    video_sender_config_.height,

@@ -14,12 +14,20 @@ namespace media {
 namespace cast {
 namespace transport {
 
-RtpSender::RtpSender(base::TickClock* clock,
-                     const CastTransportConfig& config,
-                     bool is_audio,
-                     PacedSender* const transport)
-    : config_(),
-      transport_(transport) {
+// Schedule the RTP statistics callback every 100mS.
+static const int kStatsCallbackIntervalMs = 100;
+
+RtpSender::RtpSender(
+    base::TickClock* clock,
+    const CastTransportConfig& config,
+    bool is_audio,
+    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    PacedSender* const transport)
+    : clock_(clock),
+      config_(),
+      transport_(transport),
+      stats_callback_(),
+      transport_task_runner_(transport_task_runner) {
   // Store generic cast config and create packetizer config.
   if (is_audio) {
     storage_.reset(
@@ -48,11 +56,12 @@ RtpSender::RtpSender(base::TickClock* clock,
 RtpSender::~RtpSender() {}
 
 void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
-    const base::TimeTicks& capture_time) {
+                                          const base::TimeTicks& capture_time) {
   packetizer_->IncomingEncodedVideoFrame(video_frame, capture_time);
 }
 
-void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
+void RtpSender::IncomingEncodedAudioFrame(
+    const EncodedAudioFrame* audio_frame,
     const base::TimeTicks& recorded_time) {
   packetizer_->IncomingEncodedAudioFrame(audio_frame, recorded_time);
 }
@@ -61,8 +70,9 @@ void RtpSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
-       missing_frames_and_packets.begin();
-       it != missing_frames_and_packets.end(); ++it) {
+           missing_frames_and_packets.begin();
+       it != missing_frames_and_packets.end();
+       ++it) {
     PacketList packets_to_resend;
     uint8 frame_id = it->first;
     const PacketIdSet& packets_set = it->second;
@@ -78,8 +88,8 @@ void RtpSender::ResendPackets(
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
+          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
+                  << packet_id;
           // Set a unique incremental sequence number for every packet.
           Packet& packet = packets_to_resend.back();
           UpdateSequenceNumber(&packet);
@@ -90,14 +100,15 @@ void RtpSender::ResendPackets(
     } else {
       // Iterate over all of the packets in the frame.
       for (PacketIdSet::const_iterator set_it = packets_set.begin();
-          set_it != packets_set.end(); ++set_it) {
+           set_it != packets_set.end();
+           ++set_it) {
         uint16 packet_id = *set_it;
         success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
+          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
+                  << packet_id;
           Packet& packet = packets_to_resend.back();
           UpdateSequenceNumber(&packet);
         }
@@ -111,32 +122,37 @@ void RtpSender::UpdateSequenceNumber(Packet* packet) {
   uint16 new_sequence_number = packetizer_->NextSequenceNumber();
   int index = 2;
   (*packet)[index] = (static_cast<uint8>(new_sequence_number));
-  (*packet)[index + 1] =(static_cast<uint8>(new_sequence_number >> 8));
+  (*packet)[index + 1] = (static_cast<uint8>(new_sequence_number >> 8));
 }
 
-void RtpSender::RtpStatistics(const base::TimeTicks& now,
-                              RtcpSenderInfo* sender_info) {
-  // The timestamp of this Rtcp packet should be estimated as the timestamp of
-  // the frame being captured at this moment. We are calculating that
-  // timestamp as the last frame's timestamp + the time since the last frame
-  // was captured.
+void RtpSender::SubscribeRtpStatsCallback(
+    const CastTransportRtpStatistics& callback) {
+  stats_callback_ = callback;
+  ScheduleNextStatsReport();
+}
+
+void RtpSender::ScheduleNextStatsReport() {
+  transport_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RtpSender::RtpStatistics, base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(kStatsCallbackIntervalMs));
+}
+
+void RtpSender::RtpStatistics() {
+  RtcpSenderInfo sender_info;
   uint32 ntp_seconds = 0;
   uint32 ntp_fraction = 0;
-  ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
-  sender_info->ntp_seconds = ntp_seconds;
-  sender_info->ntp_fraction = ntp_fraction;
+  ConvertTimeTicksToNtp(clock_->NowTicks(), &ntp_seconds, &ntp_fraction);
+  sender_info.ntp_seconds = ntp_seconds;
+  sender_info.ntp_fraction = ntp_fraction;
 
   base::TimeTicks time_sent;
-  uint32 rtp_timestamp;
-  if (packetizer_->LastSentTimestamp(&time_sent, &rtp_timestamp)) {
-    base::TimeDelta time_since_last_send = now - time_sent;
-    sender_info->rtp_timestamp = rtp_timestamp +
-        time_since_last_send.InMilliseconds() * (config_.frequency / 1000);
-  } else {
-    sender_info->rtp_timestamp = 0;
-  }
-  sender_info->send_packet_count = packetizer_->send_packets_count();
-  sender_info->send_octet_count = packetizer_->send_octet_count();
+  uint32 rtp_timestamp = 0;
+  packetizer_->LastSentTimestamp(&time_sent, &rtp_timestamp);
+  sender_info.send_packet_count = packetizer_->send_packets_count();
+  sender_info.send_octet_count = packetizer_->send_octet_count();
+  stats_callback_.Run(sender_info, time_sent, rtp_timestamp);
+  ScheduleNextStatsReport();
 }
 
 }  // namespace transport

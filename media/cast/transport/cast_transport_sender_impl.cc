@@ -30,17 +30,17 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacketSender* external_transport)
-    : transport_(external_transport ? NULL :
-                 new UdpTransport(transport_task_runner,
-                                  config.local_endpoint,
-                                  config.receiver_endpoint,
-                                  status_callback)),
+    : transport_(external_transport ? NULL
+                                    : new UdpTransport(transport_task_runner,
+                                                       config.local_endpoint,
+                                                       config.receiver_endpoint,
+                                                       status_callback)),
       pacer_(clock,
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),
       rtcp_builder_(&pacer_),
-      audio_sender_(config, clock, &pacer_),
-      video_sender_(config, clock, &pacer_) {
+      audio_sender_(config, clock, transport_task_runner, &pacer_),
+      video_sender_(config, clock, transport_task_runner, &pacer_) {
   if (audio_sender_.initialized() && video_sender_.initialized()) {
     status_callback.Run(TRANSPORT_INITIALIZED);
   } else {
@@ -48,8 +48,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
   }
 }
 
-CastTransportSenderImpl::~CastTransportSenderImpl() {
-}
+CastTransportSenderImpl::~CastTransportSenderImpl() {}
 
 void CastTransportSenderImpl::SetPacketReceiver(
     const PacketReceiverCallback& packet_receiver) {
@@ -75,16 +74,13 @@ void CastTransportSenderImpl::SendRtcpFromRtpSender(
     const RtcpSenderLogMessage& sender_log,
     uint32 sending_ssrc,
     const std::string& c_name) {
-  rtcp_builder_.SendRtcpFromRtpSender(packet_type_flags,
-                                      sender_info,
-                                      dlrr,
-                                      sender_log,
-                                      sending_ssrc,
-                                      c_name);
+  rtcp_builder_.SendRtcpFromRtpSender(
+      packet_type_flags, sender_info, dlrr, sender_log, sending_ssrc, c_name);
 }
 
 void CastTransportSenderImpl::ResendPackets(
-    bool is_audio, const MissingFramesAndPacketsMap& missing_packets) {
+    bool is_audio,
+    const MissingFramesAndPacketsMap& missing_packets) {
   if (is_audio) {
     audio_sender_.ResendPackets(missing_packets);
   } else {
@@ -92,16 +88,14 @@ void CastTransportSenderImpl::ResendPackets(
   }
 }
 
-void CastTransportSenderImpl::RtpAudioStatistics(
-    const base::TimeTicks& now,
-    RtcpSenderInfo* sender_info) {
-  audio_sender_.GetStatistics(now, sender_info);
+void CastTransportSenderImpl::SubscribeAudioRtpStatsCallback(
+    const CastTransportRtpStatistics& callback) {
+  audio_sender_.SubscribeAudioRtpStatsCallback(callback);
 }
 
-void CastTransportSenderImpl::RtpVideoStatistics(
-    const base::TimeTicks& now,
-    RtcpSenderInfo* sender_info) {
-  video_sender_.GetStatistics(now, sender_info);
+void CastTransportSenderImpl::SubscribeVideoRtpStatsCallback(
+    const CastTransportRtpStatistics& callback) {
+  video_sender_.SubscribeVideoRtpStatsCallback(callback);
 }
 
 }  // namespace transport

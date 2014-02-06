@@ -16,8 +16,13 @@ namespace transport {
 TransportAudioSender::TransportAudioSender(
     const CastTransportConfig& config,
     base::TickClock* clock,
+    const scoped_refptr<base::TaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
-    : rtp_sender_(clock, config, true, paced_packet_sender),
+    : rtp_sender_(clock,
+                  config,
+                  true,
+                  transport_task_runner,
+                  paced_packet_sender),
       encryptor_() {
   initialized_ = encryptor_.Initialize(config.aes_key, config.aes_iv_mask);
 }
@@ -56,9 +61,9 @@ void TransportAudioSender::ResendPackets(
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 
-void TransportAudioSender::GetStatistics(const base::TimeTicks& now,
-                                         RtcpSenderInfo* sender_info) {
-  rtp_sender_.RtpStatistics(now, sender_info);
+void TransportAudioSender::SubscribeAudioRtpStatsCallback(
+    const CastTransportRtpStatistics& callback) {
+  rtp_sender_.SubscribeRtpStatsCallback(callback);
 }
 
 }  // namespace transport

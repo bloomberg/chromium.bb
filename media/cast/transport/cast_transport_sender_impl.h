@@ -59,11 +59,11 @@ class CastTransportSenderImpl : public CastTransportSender {
       bool is_audio,
       const MissingFramesAndPacketsMap& missing_packets) OVERRIDE;
 
-  virtual void RtpAudioStatistics(const base::TimeTicks& now,
-                                  RtcpSenderInfo* sender_info) OVERRIDE;
+  virtual void SubscribeAudioRtpStatsCallback(
+      const CastTransportRtpStatistics& callback) OVERRIDE;
 
-  virtual void RtpVideoStatistics(const base::TimeTicks& now,
-                                  RtcpSenderInfo* sender_info) OVERRIDE;
+  virtual void SubscribeVideoRtpStatsCallback(
+      const CastTransportRtpStatistics& callback) OVERRIDE;
 
  private:
   scoped_ptr<UdpTransport> transport_;

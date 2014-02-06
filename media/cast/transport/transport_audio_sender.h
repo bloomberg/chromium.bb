@@ -21,9 +21,11 @@ class PacedSender;
 // It's only called from the main cast transport thread.
 class TransportAudioSender : public base::NonThreadSafe {
  public:
-  TransportAudioSender(const CastTransportConfig& config,
-                       base::TickClock* clock,
-                       PacedSender* const paced_packet_sender);
+  TransportAudioSender(
+      const CastTransportConfig& config,
+      base::TickClock* clock,
+      const scoped_refptr<base::TaskRunner>& transport_task_runner,
+      PacedSender* const paced_packet_sender);
 
   virtual ~TransportAudioSender();
 
@@ -32,14 +34,15 @@ class TransportAudioSender : public base::NonThreadSafe {
   void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
                              const base::TimeTicks& recorded_time);
 
-  // Retrieves audio RTP statistics.
-  void GetStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
-
   // Retransmision request.
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
   bool initialized() const { return initialized_; }
+
+  // Subscribe callback to get RTP Audio stats.
+  void SubscribeAudioRtpStatsCallback(
+      const CastTransportRtpStatistics& callback);
 
  private:
   friend class LocalRtcpAudioSenderFeedback;

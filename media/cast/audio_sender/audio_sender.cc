@@ -37,17 +37,45 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
 
 class LocalRtpSenderStatistics : public RtpSenderStatistics {
  public:
-  explicit LocalRtpSenderStatistics(
-      transport::CastTransportSender* const transport_sender)
-      : transport_sender_(transport_sender) {}
+  LocalRtpSenderStatistics(
+      transport::CastTransportSender* const transport_sender,
+      int frequency)
+      : transport_sender_(transport_sender),
+        frequency_(0),
+        sender_info_(),
+        rtp_timestamp_(0) {
+    transport_sender_->SubscribeAudioRtpStatsCallback(base::Bind(
+        &LocalRtpSenderStatistics::StoreStatistics, base::Unretained(this)));
+  }
 
   virtual void GetStatistics(const base::TimeTicks& now,
                              transport::RtcpSenderInfo* sender_info) OVERRIDE {
-    transport_sender_->RtpAudioStatistics(now, sender_info);
+    // Update RTP timestamp and return last stored statistics.
+    if (rtp_timestamp_) {
+      base::TimeDelta time_since_last_send = now - time_sent_;
+      sender_info_.rtp_timestamp =
+          rtp_timestamp_ +
+          time_since_last_send.InMilliseconds() * (frequency_ / 1000);
+    } else {
+      sender_info_.rtp_timestamp = 0;
+    }
+    memcpy(sender_info, &sender_info_, sizeof(transport::RtcpSenderInfo));
+  }
+
+  void StoreStatistics(transport::RtcpSenderInfo& sender_info,
+                       base::TimeTicks time_sent,
+                       uint32 rtp_timestamp) {
+    sender_info_ = sender_info;
+    time_sent_ = time_sent;
+    rtp_timestamp_ = rtp_timestamp;
   }
 
  private:
   transport::CastTransportSender* const transport_sender_;
+  int frequency_;
+  transport::RtcpSenderInfo sender_info_;
+  base::TimeTicks time_sent_;
+  uint32 rtp_timestamp_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpSenderStatistics);
 };
@@ -60,7 +88,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       transport_sender_(transport_sender),
       rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
       rtp_audio_sender_statistics_(
-          new LocalRtpSenderStatistics(transport_sender_)),
+          new LocalRtpSenderStatistics(transport_sender_,
+                                       audio_config.frequency)),
       rtcp_(cast_environment,
             rtcp_feedback_.get(),
             transport_sender_,

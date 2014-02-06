@@ -38,6 +38,10 @@ namespace transport {
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
+typedef base::Callback<
+    void(RtcpSenderInfo& sender_info, base::TimeTicks time_sent,
+         uint32 rtp_timestamp)> CastTransportRtpStatistics;
+
 // The application should only trigger this class from the transport thread.
 class CastTransportSender : public base::NonThreadSafe {
  public:
@@ -64,25 +68,26 @@ class CastTransportSender : public base::NonThreadSafe {
                                      const base::TimeTicks& capture_time) = 0;
 
   // Builds an RTCP packet and sends it to the network.
-  virtual void SendRtcpFromRtpSender(
-      uint32 packet_type_flags,
-      const RtcpSenderInfo& sender_info,
-      const RtcpDlrrReportBlock& dlrr,
-      const RtcpSenderLogMessage& sender_log,
-      uint32 sending_ssrc,
-      const std::string& c_name) = 0;
+  virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
+                                     const RtcpSenderInfo& sender_info,
+                                     const RtcpDlrrReportBlock& dlrr,
+                                     const RtcpSenderLogMessage& sender_log,
+                                     uint32 sending_ssrc,
+                                     const std::string& c_name) = 0;
 
   // Retransmission request.
   virtual void ResendPackets(
-      bool is_audio, const MissingFramesAndPacketsMap& missing_packets) = 0;
+      bool is_audio,
+      const MissingFramesAndPacketsMap& missing_packets) = 0;
 
-  // Retrieves audio RTP statistics.
-  virtual void RtpAudioStatistics(const base::TimeTicks& now,
-                                  RtcpSenderInfo* sender_info) = 0;
+  // Audio/Video RTP statistics.
+  // RTP statistics will be returned on a regular interval on the designated
+  // callback.
+  virtual void SubscribeAudioRtpStatsCallback(
+      const CastTransportRtpStatistics& callback) = 0;
 
-  // Retrieves video RTP statistics.
-  virtual void RtpVideoStatistics(const base::TimeTicks& now,
-                                  RtcpSenderInfo* sender_info) = 0;
+  virtual void SubscribeVideoRtpStatsCallback(
+      const CastTransportRtpStatistics& callback) = 0;
 };
 
 }  // namespace transport

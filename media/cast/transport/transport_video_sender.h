@@ -27,9 +27,11 @@ class PacedSender;
 // encrypt, create RTP packets and send to network.
 class TransportVideoSender : public base::NonThreadSafe {
  public:
-  TransportVideoSender(const CastTransportConfig& config,
-                       base::TickClock* clock,
-                       PacedSender* const paced_packet_sender);
+  TransportVideoSender(
+      const CastTransportConfig& config,
+      base::TickClock* clock,
+      const scoped_refptr<base::TaskRunner>& transport_task_runner,
+      PacedSender* const paced_packet_sender);
 
   virtual ~TransportVideoSender();
 
@@ -38,14 +40,15 @@ class TransportVideoSender : public base::NonThreadSafe {
   void InsertCodedVideoFrame(const EncodedVideoFrame* coded_frame,
                              const base::TimeTicks& capture_time);
 
-  // Retrieves video RTP statistics.
-  void GetStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
-
   // Retransmision request.
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
   bool initialized() const { return initialized_; }
+
+  // Subscribe callback to get RTP Audio stats.
+  void SubscribeVideoRtpStatsCallback(
+      const CastTransportRtpStatistics& callback);
 
  private:
   // Caller must allocate the destination |encrypted_video_frame| the data

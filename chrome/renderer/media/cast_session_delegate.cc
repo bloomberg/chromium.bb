@@ -53,12 +53,12 @@ class DummyTransport : public media::cast::transport::CastTransportSender {
       bool is_audio,
       const media::cast::transport::MissingFramesAndPacketsMap& missing_packets)
       OVERRIDE {}
-  virtual void RtpAudioStatistics(
-      const base::TimeTicks& now,
-      media::cast::transport::RtcpSenderInfo* sender_info) OVERRIDE {}
-  virtual void RtpVideoStatistics(
-      const base::TimeTicks& now,
-      media::cast::transport::RtcpSenderInfo* sender_info) OVERRIDE {}
+  virtual void SubscribeAudioRtpStatsCallback(
+      const media::cast::transport::CastTransportRtpStatistics& callback)
+      OVERRIDE {}
+  virtual void SubscribeVideoRtpStatsCallback(
+      const media::cast::transport::CastTransportRtpStatistics& callback)
+      OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyTransport);

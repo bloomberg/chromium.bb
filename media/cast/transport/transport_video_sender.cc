@@ -19,11 +19,16 @@ namespace transport {
 TransportVideoSender::TransportVideoSender(
     const CastTransportConfig& config,
     base::TickClock* clock,
+    const scoped_refptr<base::TaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
           config.video_rtp_config.max_delay_ms)),
       encryptor_(),
-      rtp_sender_(clock, config, false, paced_packet_sender) {
+      rtp_sender_(clock,
+                  config,
+                  false,
+                  transport_task_runner,
+                  paced_packet_sender) {
   initialized_ = encryptor_.Initialize(config.aes_key, config.aes_iv_mask);
 }
 
@@ -63,14 +68,14 @@ bool TransportVideoSender::EncryptVideoFrame(
   return true;
 }
 
-void TransportVideoSender::GetStatistics(const base::TimeTicks& now,
-                                         RtcpSenderInfo* sender_info) {
-  rtp_sender_.RtpStatistics(now, sender_info);
-}
-
 void TransportVideoSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   rtp_sender_.ResendPackets(missing_frames_and_packets);
+}
+
+void TransportVideoSender::SubscribeVideoRtpStatsCallback(
+    const CastTransportRtpStatistics& callback) {
+  rtp_sender_.SubscribeRtpStatsCallback(callback);
 }
 
 }  // namespace transport

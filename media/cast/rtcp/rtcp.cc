@@ -404,8 +404,9 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency,
                                     uint32 rtp_timestamp,
                                     base::TimeTicks* rtp_timestamp_in_ticks)
     const {
-  if (last_received_ntp_seconds_ == 0)
+  if (last_received_ntp_seconds_ == 0) {
     return false;
+  }
 
   int wrap = CheckForWrapAround(rtp_timestamp, last_received_rtp_timestamp_);
   int64 rtp_timestamp_int64 = rtp_timestamp;
@@ -426,8 +427,9 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency,
   int64 rtp_time_diff_ms = rtp_timestamp_diff / frequency_khz;
 
   // Sanity check.
-  if (abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs)
+  if (abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs) {
     return false;
+  }
 
   *rtp_timestamp_in_ticks = ConvertNtpToTimeTicks(last_received_ntp_seconds_,
                                                   last_received_ntp_fraction_) +

@@ -16,6 +16,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/transport/rtp_sender/rtp_packetizer/rtp_packetizer.h"
@@ -23,6 +24,7 @@
 namespace media {
 namespace cast {
 namespace transport {
+
 
 // This object is only called from the main cast thread.
 // This class handles splitting encoded audio and video frames into packets and
@@ -33,6 +35,7 @@ class RtpSender {
   RtpSender(base::TickClock* clock,
             const CastTransportConfig& config,
             bool is_audio,
+            const scoped_refptr<base::TaskRunner>& transport_task_runner,
             PacedSender* const transport);
 
   ~RtpSender();
@@ -47,15 +50,23 @@ class RtpSender {
 
   void ResendPackets(const MissingFramesAndPacketsMap& missing_packets);
 
-  void RtpStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
+  // Set the callback on which RTP statistics data will be returned. Calling
+  // this function would start a timer that would schedule the callback in
+  // a constant interval.
+  void SubscribeRtpStatsCallback(const CastTransportRtpStatistics& callback);
 
  private:
+  void ScheduleNextStatsReport();
+  void RtpStatistics();
   void UpdateSequenceNumber(Packet* packet);
 
+  base::TickClock* clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;
   PacedSender* const transport_;
+  CastTransportRtpStatistics stats_callback_;
+  scoped_refptr<base::TaskRunner> transport_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpSender);
 };
