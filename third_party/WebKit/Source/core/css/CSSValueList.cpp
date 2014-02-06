@@ -129,7 +129,9 @@ bool CSSValueList::equals(const CSSValueList& other) const
 {
     // FIXME: the explicit Vector conversion copies into a temporary and is
     // wasteful.
-    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(Vector<RefPtr<CSSValue> >(m_values), Vector<RefPtr<CSSValue> >(other.m_values));
+    Vector<RefPtr<CSSValue> > tmpValues(m_values);
+    Vector<RefPtr<CSSValue> > tmpOtherValues(other.m_values);
+    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(tmpValues, tmpOtherValues);
 }
 
 bool CSSValueList::equals(const CSSValue& other) const
@@ -190,6 +192,11 @@ CSSValueList::CSSValueList(const CSSValueList& cloneFrom)
 PassRefPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
 {
     return adoptRef(new CSSValueList(*this));
+}
+
+void CSSValueList::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore

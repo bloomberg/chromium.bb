@@ -62,4 +62,9 @@ bool CSSFunctionValue::equals(const CSSFunctionValue& other) const
     return m_name == other.m_name && compareCSSValuePtr(m_args, other.m_args);
 }
 
+void CSSFunctionValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 }

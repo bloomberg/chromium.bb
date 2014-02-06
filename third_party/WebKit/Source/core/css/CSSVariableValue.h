@@ -47,6 +47,8 @@ public:
 
     bool equals(const CSSVariableValue& other) const { return m_name == other.m_name && m_value == other.m_value; }
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSVariableValue(const AtomicString& name, const String& value)
         : CSSValue(VariableClass)

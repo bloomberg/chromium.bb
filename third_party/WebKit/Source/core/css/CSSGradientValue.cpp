@@ -459,6 +459,11 @@ bool CSSGradientValue::knownToBeOpaque(const RenderObject*) const
     return true;
 }
 
+void CSSGradientValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSImageGeneratorValue::traceAfterDispatch(visitor);
+}
+
 String CSSLinearGradientValue::customCSSText() const
 {
     StringBuilder result;
@@ -730,6 +735,11 @@ bool CSSLinearGradientValue::equals(const CSSLinearGradientValue& other) const
         equalXandY = !other.m_firstX && !other.m_firstY;
 
     return equalXandY && m_stops == other.m_stops;
+}
+
+void CSSLinearGradientValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSGradientValue::traceAfterDispatch(visitor);
 }
 
 String CSSRadialGradientValue::customCSSText() const
@@ -1158,6 +1168,11 @@ bool CSSRadialGradientValue::equals(const CSSRadialGradientValue& other) const
         equalHorizontalAndVerticalSize = !other.m_endHorizontalSize && !other.m_endVerticalSize;
     }
     return equalShape && equalSizingBehavior && equalHorizontalAndVerticalSize && m_stops == other.m_stops;
+}
+
+void CSSRadialGradientValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSGradientValue::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore

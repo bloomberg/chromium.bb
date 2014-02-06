@@ -71,6 +71,8 @@ public:
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSFontFaceSrcValue(const String& resource, bool local)
         : CSSValue(FontFaceSrcClass)

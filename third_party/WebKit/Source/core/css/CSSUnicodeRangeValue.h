@@ -45,6 +45,8 @@ public:
 
     bool equals(const CSSUnicodeRangeValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSUnicodeRangeValue(UChar32 from, UChar32 to)
         : CSSValue(UnicodeRangeClass)

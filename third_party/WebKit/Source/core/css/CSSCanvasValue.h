@@ -49,6 +49,8 @@ public:
 
     bool equals(const CSSCanvasValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSImageGeneratorValue::traceAfterDispatch(visitor); }
+
 private:
     explicit CSSCanvasValue(const String& name)
         : CSSImageGeneratorValue(CanvasClass)

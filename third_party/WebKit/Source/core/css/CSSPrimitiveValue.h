@@ -320,6 +320,8 @@ public:
 
     bool equals(const CSSPrimitiveValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
     static UnitTypes canonicalUnitTypeForCategory(UnitCategory);
     static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType);
 

@@ -74,4 +74,9 @@ bool CSSFontValue::equals(const CSSFontValue& other) const
         && compareCSSValuePtr(family, other.family);
 }
 
+void CSSFontValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 }

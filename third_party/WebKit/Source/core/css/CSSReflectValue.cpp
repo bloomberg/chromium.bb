@@ -53,4 +53,9 @@ bool CSSReflectValue::equals(const CSSReflectValue& other) const
         && compareCSSValuePtr(m_mask, other.m_mask);
 }
 
+void CSSReflectValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 } // namespace WebCore

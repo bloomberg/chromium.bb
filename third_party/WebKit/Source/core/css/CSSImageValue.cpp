@@ -111,4 +111,9 @@ bool CSSImageValue::knownToBeOpaque(const RenderObject* renderer) const
     return m_image ? m_image->knownToBeOpaque(renderer) : false;
 }
 
+void CSSImageValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 } // namespace WebCore

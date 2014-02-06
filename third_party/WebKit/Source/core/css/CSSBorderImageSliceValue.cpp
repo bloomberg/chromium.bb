@@ -53,4 +53,9 @@ bool CSSBorderImageSliceValue::equals(const CSSBorderImageSliceValue& other) con
     return m_fill == other.m_fill && compareCSSValuePtr(m_slices, other.m_slices);
 }
 
+void CSSBorderImageSliceValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 } // namespace WebCore

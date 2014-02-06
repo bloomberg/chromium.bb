@@ -48,6 +48,8 @@ public:
 
     bool equals(const CSSArrayFunctionValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
+
 private:
     CSSArrayFunctionValue();
     explicit CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);

@@ -46,6 +46,8 @@ public:
     bool loadRequested() const { return m_loadRequested; }
     bool equals(const CSSSVGDocumentValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSSVGDocumentValue(const String& url);
 

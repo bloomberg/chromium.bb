@@ -118,6 +118,8 @@ public:
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     bool hasVariableReference() const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSCalcValue(PassRefPtr<CSSCalcExpressionNode> expression, ValueRange range)
         : CSSValue(CalculationClass)

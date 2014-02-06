@@ -51,6 +51,8 @@ public:
 
     CSSValueList* arguments() const { return m_args.get(); }
 
+    void traceAfterDispatch(Visitor*);
+
 private:
     explicit CSSFunctionValue(CSSParserFunction*);
     CSSFunctionValue(String, PassRefPtr<CSSValueList>);

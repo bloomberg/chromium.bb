@@ -218,4 +218,9 @@ bool CSSCrossfadeValue::equals(const CSSCrossfadeValue& other) const
         && compareCSSValuePtr(m_percentageValue, other.m_percentageValue);
 }
 
+void CSSCrossfadeValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSImageGeneratorValue::traceAfterDispatch(visitor);
+}
+
 } // namespace WebCore

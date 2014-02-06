@@ -104,6 +104,8 @@ public:
 
     bool equals(const SVGPaint&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { SVGColor::traceAfterDispatch(visitor); }
+
 private:
     friend class CSSComputedStyleDeclaration;
 

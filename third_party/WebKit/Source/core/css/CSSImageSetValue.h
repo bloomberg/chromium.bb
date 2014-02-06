@@ -63,6 +63,8 @@ public:
 
     PassRefPtr<CSSImageSetValue> cloneForCSSOM() const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
+
 protected:
     ImageWithScale bestImageForScaleFactor();
 

@@ -47,6 +47,8 @@ public:
 
     PassRefPtr<CSSGridLineNamesValue> cloneForCSSOM() const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
+
 private:
     CSSGridLineNamesValue();
 };

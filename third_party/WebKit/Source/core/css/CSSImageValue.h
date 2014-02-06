@@ -58,6 +58,8 @@ public:
 
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
+    void traceAfterDispatch(Visitor*);
+
 private:
     explicit CSSImageValue(const KURL&);
     CSSImageValue(const KURL&, StyleImage*);

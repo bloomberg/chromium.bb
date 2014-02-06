@@ -53,6 +53,8 @@ public:
     RefPtr<CSSPrimitiveValue> style;
     RefPtr<CSSPrimitiveValue> color;
 
+    void traceAfterDispatch(Visitor*);
+
 private:
     CSSShadowValue(PassRefPtr<CSSPrimitiveValue> x,
         PassRefPtr<CSSPrimitiveValue> y,

@@ -196,4 +196,9 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
         && compareCSSValuePtr(m_imageValue, other.m_imageValue);
 }
 
+void CSSCursorImageValue::traceAfterDispatch(Visitor* visitor)
+{
+    CSSValue::traceAfterDispatch(visitor);
+}
+
 } // namespace WebCore

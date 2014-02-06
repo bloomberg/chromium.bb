@@ -80,6 +80,8 @@ public:
 
     bool equals(const SVGColor&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 protected:
     friend class CSSComputedStyleDeclaration;
 

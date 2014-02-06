@@ -41,6 +41,8 @@ public:
 
     bool equals(const CSSFontValue&) const;
 
+    void traceAfterDispatch(Visitor*);
+
     RefPtr<CSSPrimitiveValue> style;
     RefPtr<CSSPrimitiveValue> variant;
     RefPtr<CSSPrimitiveValue> weight;

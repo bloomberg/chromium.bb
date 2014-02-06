@@ -88,6 +88,8 @@ public:
     void loadSubimages(ResourceFetcher*) { }
     PassRefPtr<CSSGradientValue> gradientWithStylesResolved(const TextLinkColors&, Color currentColor);
 
+    void traceAfterDispatch(Visitor*);
+
 protected:
     CSSGradientValue(ClassType classType, CSSGradientRepeat repeat, CSSGradientType gradientType)
         : CSSImageGeneratorValue(classType)
@@ -155,6 +157,8 @@ public:
 
     bool equals(const CSSLinearGradientValue&) const;
 
+    void traceAfterDispatch(Visitor*);
+
 private:
     CSSLinearGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
         : CSSGradientValue(LinearGradientClass, repeat, gradientType)
@@ -199,6 +203,8 @@ public:
     PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
 
     bool equals(const CSSRadialGradientValue&) const;
+
+    void traceAfterDispatch(Visitor*);
 
 private:
     CSSRadialGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)

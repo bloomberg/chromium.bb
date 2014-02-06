@@ -47,6 +47,8 @@ public:
 
     bool equals(const CSSCubicBezierTimingFunctionValue&) const;
 
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
 private:
     CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
         : CSSValue(CubicBezierTimingFunctionClass)
@@ -78,6 +80,8 @@ public:
     String customCSSText() const;
 
     bool equals(const CSSStepsTimingFunctionValue&) const;
+
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSStepsTimingFunctionValue(int steps, bool stepAtStart)

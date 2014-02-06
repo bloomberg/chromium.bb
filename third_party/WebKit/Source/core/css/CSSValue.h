@@ -22,6 +22,7 @@
 #define CSSValue_h
 
 #include "core/dom/ExceptionCode.h"
+#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -40,7 +41,8 @@ enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 // They should be handled by separate wrapper classes.
 
 // Please don't expose more CSSValue types to the web.
-class CSSValue : public RefCounted<CSSValue> {
+class CSSValue : public RefCountedWillBeRefCountedGarbageCollected<CSSValue> {
+    DECLARE_GC_INFO;
 public:
     enum Type {
         CSS_INHERIT = 0,
@@ -53,11 +55,15 @@ public:
 
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
+    // When oilpan is enabled the finalize method is called by the garbage
+    // collector and not immediately when deref reached zero.
+#if !ENABLE(OILPAN)
     void deref()
     {
         if (derefBase())
             destroy();
     }
+#endif // !ENABLE(OILPAN)
 
     Type cssValueType() const;
 
@@ -117,6 +123,10 @@ public:
     bool hasFailedOrCanceledSubresources() const;
 
     bool equals(const CSSValue&) const;
+
+    void finalize();
+    void traceAfterDispatch(Visitor*) { }
+    void trace(Visitor*);
 
 protected:
 
