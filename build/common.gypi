@@ -2642,6 +2642,7 @@
         'abstract': 1,
         'msvs_settings': {
           'VCLinkerTool': {
+            'MinimumRequiredVersion': '5.01',  # XP.
             'TargetMachine': '1',
           },
           'VCLibrarianTool': {
