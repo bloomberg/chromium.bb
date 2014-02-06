@@ -1619,7 +1619,9 @@ void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 void RenderViewHostImpl::OnOpenURL(
     const ViewHostMsg_OpenURL_Params& params) {
   GURL validated_url(params.url);
-  GetProcess()->FilterURL(false, &validated_url);
+  // BrowserPluginGuest does filtering after firing a loadabort event.
+  if (!GetProcess()->IsGuest())
+    GetProcess()->FilterURL(false, &validated_url);
 
   delegate_->RequestOpenURL(
       this, validated_url, params.referrer, params.disposition, params.frame_id,

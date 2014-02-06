@@ -1144,7 +1144,8 @@ function testNavigationToExternalProtocol() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadstop', function(e) {
     webview.addEventListener('loadabort', function(e) {
-      embedder.test.assertEq('ERR_UNKNOWN_URL_SCHEME', e.reason);
+      // TODO(fsamuel): Change to ERR_UNKNOWN_URL_SCHEME.
+      embedder.test.assertEq('ERR_ABORTED', e.reason);
       embedder.test.succeed();
     });
     webview.executeScript({
@@ -1262,6 +1263,78 @@ function testScreenshotCapture() {
   document.body.appendChild(webview);
 }
 
+function testNavigateToWebStore() {
+  var CHROME_WEB_STORE = 'https://chrome.google.com/webstore';
+  var webview = new WebView();
+  webview.src = 'about:blank';
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'inject_comm_channel.js'},
+      function(results) {
+        window.console.log('The guest script for a two-way comm channel has ' +
+            'been injected into webview.');
+        webview.executeScript(
+          {file: 'inject_webstore_nav_test.js'},
+          function(results) {
+            window.console.log(
+                'The WebStore navigation test has been injected into webview.');
+            // Establish a communication channel with the guest.
+            var msg = ['connect'];
+            webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+          }
+        );
+      }
+    );
+  });
+
+  webview.addEventListener('loadabort', function(e) {
+    e.preventDefault();
+    window.console.log('Navigation to \'' + e.url + '\' has been aborted.');
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq(CHROME_WEB_STORE, e.url);
+    // Ask the guest process if it's still alive. If the guest process has
+    // crashed then this message will never be received.
+    window.console.log('Checking if the guest process is still alive.');
+    var msg = ['isalive'];
+    webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+  });
+
+  webview.addEventListener('exit', function(e) {
+    window.console.log('The guest process has crashed.');
+    embedder.test.fail();
+  });
+
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    switch (data[0]) {
+      case 'connected': {
+        window.console.log(
+            'A communication channel has been established with webview.');
+        window.console.log('Requesting a guest-initiated navigation to \'' +
+            CHROME_WEB_STORE + '\'');
+        var msg = ['navigate', CHROME_WEB_STORE];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+        return;
+      }
+      case 'alive': {
+        window.console.log('The guest process is alive!');
+        embedder.test.succeed();
+        return;
+      }
+      case 'error': {
+        window.console.log('The guest received an unexpected message: \'' +
+            data[1]  + '\'');
+        embedder.test.fail();
+        return;
+      }
+    }
+    window.console.log('Unexpected message: \'' + data[0]  + '\'');
+    embedder.test.fail();
+  });
+
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
@@ -1313,7 +1386,8 @@ embedder.test.testList = {
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
   'testPostMessageCommChannel': testPostMessageCommChannel,
-  'testScreenshotCapture' : testScreenshotCapture
+  'testScreenshotCapture' : testScreenshotCapture,
+  'testNavigateToWebStore' : testNavigateToWebStore
 };
 
 onload = function() {
