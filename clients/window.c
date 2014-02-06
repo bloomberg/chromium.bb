@@ -4120,6 +4120,39 @@ window_schedule_redraw(struct window *window)
 	window_schedule_redraw_task(window);
 }
 
+static void
+configure_sync_callback(void *data,
+			struct wl_callback *callback, uint32_t time)
+{
+	struct window *window = data;
+
+	DBG("scheduling redraw from maximize sync callback\n");
+
+	wl_callback_destroy(callback);
+
+	window->redraw_task_scheduled = 0;
+	window_schedule_redraw_task(window);
+}
+
+static struct wl_callback_listener configure_sync_callback_listener = {
+	configure_sync_callback,
+};
+
+static void
+window_delay_redraw(struct window *window)
+{
+	struct wl_callback *callback;
+
+	DBG("delay scheduled redraw for maximize configure\n");
+	if (window->redraw_task_scheduled)
+		wl_list_remove(&window->redraw_task.link);
+
+	window->redraw_task_scheduled = 1;
+	callback = wl_display_sync(window->display->display);
+	wl_callback_add_listener(callback,
+				 &configure_sync_callback_listener, window);
+}
+
 int
 window_is_fullscreen(struct window *window)
 {
@@ -4140,6 +4173,8 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		xdg_surface_set_fullscreen(window->xdg_surface);
 	else
 		xdg_surface_unset_fullscreen(window->xdg_surface);
+
+	window_delay_redraw(window);
 }
 
 int
@@ -4162,6 +4197,8 @@ window_set_maximized(struct window *window, int maximized)
 		xdg_surface_set_maximized(window->xdg_surface);
 	else
 		xdg_surface_unset_maximized(window->xdg_surface);
+
+	window_delay_redraw(window);
 }
 
 void
