@@ -36,7 +36,7 @@ ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
   factory.set_extension_prefs(new TestingPrefStore);
   // app_shell should not require syncable preferences, but for now we need to
   // recycle some of the RegisterProfilePrefs() code in Chrome.
-  // TODO(jamescook): Convert this to user_prefs::PrefRegistrySimple.
+  // TODO(jamescook): Convert this to PrefRegistrySimple.
   user_prefs::PrefRegistrySyncable* pref_registry =
       new user_prefs::PrefRegistrySyncable;
   // Prefs should be registered before the PrefService is created.
