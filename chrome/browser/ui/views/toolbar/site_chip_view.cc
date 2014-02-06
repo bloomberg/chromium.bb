@@ -21,6 +21,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/elide_url.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -366,6 +367,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   host_label_->SetText(host);
   host_label_->SetTooltipText(host);
   host_label_->SetBackgroundColor(label_background);
+  host_label_->SetElideBehavior(views::Label::NO_ELIDE);
 
   int icon = toolbar_view_->GetToolbarModel()->GetIconForSecurityLevel(
       security_level_);
@@ -447,6 +449,22 @@ void SiteChipView::OnPaint(gfx::Canvas* canvas) {
     views::Painter::PaintPainterAt(canvas, painter_, rect);
 
   ToolbarButton::OnPaint(canvas);
+}
+
+int SiteChipView::ElideDomainTarget(int target_max_width) {
+  base::string16 host = SiteLabelFromURL(url_displayed_);
+  host_label_->SetText(host);
+  int width = GetPreferredSize().width();
+  if (width <= target_max_width)
+    return width;
+
+  gfx::Size label_size = host_label_->GetPreferredSize();
+  int padding_width = width - label_size.width();
+
+  host_label_->SetText(ElideHost(
+      toolbar_view_->GetToolbarModel()->GetURL(),
+      host_label_->font_list(), target_max_width - padding_width));
+  return GetPreferredSize().width();
 }
 
 // TODO(gbillock): Make the LocationBarView or OmniboxView the listener for

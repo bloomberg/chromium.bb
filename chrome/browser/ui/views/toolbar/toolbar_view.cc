@@ -587,11 +587,8 @@ void ToolbarView::Layout() {
   int available_width = std::max(0, width() - kRightEdgeSpacing -
       app_menu_width - browser_actions_width - next_element_x);
 
-  // Cap site chip width at 1/2 the size available to the location bar.
   site_chip_view_->SetVisible(site_chip_view_->ShouldShow());
-  int site_chip_width = site_chip_view_->GetPreferredSize().width();
-  site_chip_width = std::max(0, std::min(site_chip_width,
-      (available_width - kStandardSpacing) / 2));
+  int site_chip_width = site_chip_view_->ElideDomainTarget(available_width/2);
   if (site_chip_view_->visible())
     available_width -= site_chip_width + kStandardSpacing;
 

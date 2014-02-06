@@ -56,6 +56,11 @@ class SiteChipView : public ToolbarButton,
     return location_icon_view_;
   }
 
+  // Elides the hostname shown to the indicated width, if needed. Returns the
+  // final width of the site chip. Note: this may be more than the target width,
+  // since the hostname will not be elided past the TLD+1.
+  int ElideDomainTarget(int target_max_width);
+
   // ToolbarButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
