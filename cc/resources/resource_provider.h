@@ -334,8 +334,6 @@ class CC_EXPORT ResourceProvider {
   // Returns the stride for the image.
   int GetImageStride(ResourceId id);
 
-  base::SharedMemory* GetSharedMemory(ResourceId id);
-
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);

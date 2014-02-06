@@ -1853,16 +1853,6 @@ int ResourceProvider::GetImageStride(ResourceId id) {
   return stride;
 }
 
-base::SharedMemory* ResourceProvider::GetSharedMemory(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-
-  if (!resource->shared_bitmap)
-    return NULL;
-  return resource->shared_bitmap->memory();
-}
-
 GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
   GLint active_unit = 0;
   gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
