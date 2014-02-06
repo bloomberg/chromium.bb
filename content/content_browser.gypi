@@ -1215,6 +1215,8 @@
     'browser/vibration/vibration_provider_android.h',
     'browser/web_contents/aura/image_window_delegate.cc',
     'browser/web_contents/aura/image_window_delegate.h',
+    'browser/web_contents/aura/overscroll_navigation_overlay.cc',
+    'browser/web_contents/aura/overscroll_navigation_overlay.h',
     'browser/web_contents/aura/shadow_layer_delegate.cc',
     'browser/web_contents/aura/shadow_layer_delegate.h',
     'browser/web_contents/aura/window_slider.cc',
