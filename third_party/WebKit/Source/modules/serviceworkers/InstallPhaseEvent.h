@@ -36,17 +36,21 @@
 
 namespace WebCore {
 
+class WaitUntilObserver;
+
 class InstallPhaseEvent : public Event {
 public:
     static PassRefPtr<InstallPhaseEvent> create();
 
-    virtual ~InstallPhaseEvent() { }
+    virtual ~InstallPhaseEvent();
 
     void waitUntil(const ScriptValue&);
 
 protected:
-    InstallPhaseEvent() { }
-    InstallPhaseEvent(const AtomicString& type, const EventInit&);
+    InstallPhaseEvent();
+    InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+
+    RefPtr<WaitUntilObserver> m_observer;
 };
 
 } // namespace WebCore

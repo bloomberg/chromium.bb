@@ -488,6 +488,7 @@
       'serviceworkers/ServiceWorkerGlobalScopeClient.h',
       'serviceworkers/ServiceWorkerThread.cpp',
       'serviceworkers/ServiceWorkerThread.h',
+      'serviceworkers/WaitUntilObserver.cpp',
       'navigatorcontentutils/NavigatorContentUtils.cpp',
       'navigatorcontentutils/NavigatorContentUtils.h',
       'navigatorcontentutils/NavigatorContentUtilsClient.h',

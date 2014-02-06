@@ -38,6 +38,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/serviceworkers/InstallEvent.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -55,12 +56,13 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int)
+void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    // FIXME: We need to asynchronously call back to the client when all
-    // waitUntil is resolved in the event handler.
-    m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit()));
+    RefPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, eventID);
+    observer->willDispatchEvent();
+    m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
+    observer->didDispatchEvent();
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)

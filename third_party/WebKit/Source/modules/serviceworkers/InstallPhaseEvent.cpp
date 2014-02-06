@@ -31,6 +31,7 @@
 #include "config.h"
 #include "InstallPhaseEvent.h"
 
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 
 namespace WebCore {
@@ -40,14 +41,22 @@ PassRefPtr<InstallPhaseEvent> InstallPhaseEvent::create()
     return adoptRef(new InstallPhaseEvent());
 }
 
-void InstallPhaseEvent::waitUntil(const ScriptValue&)
+InstallPhaseEvent::~InstallPhaseEvent()
 {
-    // FIXME: implement.
-    notImplemented();
 }
 
-InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer)
+void InstallPhaseEvent::waitUntil(const ScriptValue& value)
+{
+    m_observer->waitUntil(value);
+}
+
+InstallPhaseEvent::InstallPhaseEvent()
+{
+}
+
+InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
     : Event(type, initializer)
+    , m_observer(observer)
 {
 }
 

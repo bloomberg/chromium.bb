@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 #include "wtf/RefPtr.h"
 
@@ -43,9 +44,9 @@ PassRefPtr<InstallEvent> InstallEvent::create()
     return adoptRef(new InstallEvent());
 }
 
-PassRefPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer)
+PassRefPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
 {
-    return adoptRef(new InstallEvent(type, initializer));
+    return adoptRef(new InstallEvent(type, initializer, observer));
 }
 
 void InstallEvent::replace()
@@ -76,8 +77,8 @@ InstallEvent::InstallEvent()
     ScriptWrappable::init(this);
 }
 
-InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer)
-    : InstallPhaseEvent(type, initializer)
+InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
+    : InstallPhaseEvent(type, initializer, observer)
 {
     ScriptWrappable::init(this);
 }
