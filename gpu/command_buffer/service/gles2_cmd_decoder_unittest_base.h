@@ -193,12 +193,6 @@ class GLES2DecoderTestBase : public testing::Test {
       GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
       GLuint fragment_shader_client_id, GLuint fragment_shader_service_id);
 
-  void SetupExpectationsForClearingUniforms(
-      UniformInfo* uniforms, size_t num_uniforms) {
-    TestHelper::SetupExpectationsForClearingUniforms(
-        gl_.get(), uniforms, num_uniforms);
-  }
-
   void SetupInitCapabilitiesExpectations();
   void SetupInitStateExpectations();
   void ExpectEnableDisable(GLenum cap, bool enable);

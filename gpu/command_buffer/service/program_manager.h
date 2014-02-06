@@ -20,7 +20,6 @@
 namespace gpu {
 namespace gles2 {
 
-class FeatureInfo;
 class ProgramCache;
 class ProgramManager;
 class Shader;
@@ -157,7 +156,6 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   bool Link(ShaderManager* manager,
             ShaderTranslator* vertex_translator,
             ShaderTranslator* fragment_shader,
-            FeatureInfo* feature_info,
             const ShaderCacheCallback& shader_callback);
 
   // Performs glValidateProgram and related activities.
@@ -337,6 +335,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 // need to be shared by multiple GLES2Decoders.
 class GPU_EXPORT ProgramManager {
  public:
+  enum TranslatedShaderSourceType {
+    kANGLE,
+    kGL,  // GL or GLES
+  };
+
   explicit ProgramManager(ProgramCache* program_cache,
                           uint32 max_varying_vectors);
   ~ProgramManager();
@@ -376,9 +379,10 @@ class GPU_EXPORT ProgramManager {
 
   static int32 MakeFakeLocation(int32 index, int32 element);
 
-  void DoCompileShader(Shader* shader,
-                       ShaderTranslator* translator,
-                       FeatureInfo* feature_info);
+  void DoCompileShader(
+      Shader* shader,
+      ShaderTranslator* translator,
+      TranslatedShaderSourceType translated_shader_source_type);
 
   uint32 max_varying_vectors() const {
     return max_varying_vectors_;
@@ -403,8 +407,6 @@ class GPU_EXPORT ProgramManager {
   unsigned int program_count_;
 
   bool have_context_;
-
-  bool disable_workarounds_;
 
   // Used to clear uniforms.
   std::vector<uint8> zero_;

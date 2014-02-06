@@ -5417,13 +5417,12 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   if (program->Link(shader_manager(),
                     vertex_translator,
                     fragment_translator,
-                    feature_info_.get(),
                     shader_cache_callback_)) {
     if (program == state_.current_program.get()) {
-      if (workarounds().use_current_program_after_successful_link) {
+      if (workarounds().use_current_program_after_successful_link)
         glUseProgram(program->service_id());
-      }
-      program_manager()->ClearUniforms(program);
+      if (workarounds().clear_uniforms_before_first_program_use)
+        program_manager()->ClearUniforms(program);
     }
   }
 };
@@ -5889,6 +5888,8 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program_id) {
   glUseProgram(service_id);
   if (state_.current_program.get()) {
     program_manager()->UseProgram(state_.current_program.get());
+    if (workarounds().clear_uniforms_before_first_program_use)
+      program_manager()->ClearUniforms(program);
   }
 }
 
@@ -6616,7 +6617,11 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
         vertex_translator_.get() : fragment_translator_.get();
   }
 
-  program_manager()->DoCompileShader(shader, translator, feature_info_.get());
+  program_manager()->DoCompileShader(
+     shader,
+     translator,
+     feature_info_->feature_flags().angle_translated_shader_source ?
+         ProgramManager::kANGLE : ProgramManager::kGL);
 };
 
 void GLES2DecoderImpl::DoGetShaderiv(

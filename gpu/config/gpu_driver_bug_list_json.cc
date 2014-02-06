@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.8",
+  "version": "3.9",
   "entries": [
     {
       "id": 1,
@@ -706,6 +706,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_framebuffer_multisample"
+      ]
+    },
+    {
+      "id": 54,
+      "cr_bugs": [124764],
+      "description": "Clear uniforms before first program use on all platforms",
+      "features": [
+        "clear_uniforms_before_first_program_use"
       ]
     }
   ]

@@ -250,7 +250,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
     program_->AttachShader(&shader_manager_, vertex_shader);
     program_->AttachShader(&shader_manager_, fragment_shader);
-    program_->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+    program_->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
   }
 
   void SetupShader(AttribInfo* attribs, size_t num_attribs,
@@ -283,7 +283,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
       SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
                   service_id);
     }
-    program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+    program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
     GLint link_status;
     program->GetProgramiv(GL_LINK_STATUS, &link_status);
     return (static_cast<bool>(link_status) == expected_link_status);
@@ -720,7 +720,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   ASSERT_TRUE(program != NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+  program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
   GLint value = 0;
   program->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &value);
   EXPECT_EQ(3, value);
@@ -788,7 +788,7 @@ TEST_F(ProgramManagerWithShaderTest, SimilarArrayNames) {
   ASSERT_TRUE(program != NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+  program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
 
   // Check that we get the correct locations.
   EXPECT_EQ(kUniform2FakeLocation,
@@ -889,7 +889,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ASSERT_TRUE(program!= NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+  program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
   // Check that we got the good type, not the bad.
   // Check Attribs
   for (unsigned index = 0; index < kNumAttribs; ++index) {
@@ -1461,7 +1461,7 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
     const size_t kNumUniforms = arraysize(kUniforms);
     SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
                 kServiceProgramId);
-    program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+    program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
     SetupExpectationsForClearingUniforms(kUniforms, kNumUniforms);
     manager_.ClearUniforms(program);
   }
@@ -1533,7 +1533,7 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   const size_t kNumUniforms = arraysize(kUniforms);
   SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
               kServiceProgramId);
-  program->Link(NULL, NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
+  program->Link(NULL, NULL, NULL, base::Bind(&ShaderCacheCb));
 
   EXPECT_EQ(kUniform1DesiredLocation,
             program->GetUniformFakeLocation(kUniform1Name));
@@ -1756,7 +1756,7 @@ TEST_F(ProgramManagerWithCacheTest, CacheProgramOnSuccessfulLink) {
   SetShadersCompiled();
   SetExpectationsForProgramLink();
   SetExpectationsForProgramCached();
-  EXPECT_TRUE(program_->Link(NULL, NULL, NULL, NULL,
+  EXPECT_TRUE(program_->Link(NULL, NULL, NULL,
                              base::Bind(&ShaderCacheCb)));
 }
 
@@ -1770,7 +1770,7 @@ TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
   SetExpectationsForNotCachingProgram();
   SetExpectationsForProgramLoadSuccess();
 
-  EXPECT_TRUE(program_->Link(NULL, NULL, NULL, NULL,
+  EXPECT_TRUE(program_->Link(NULL, NULL, NULL,
                              base::Bind(&ShaderCacheCb)));
 }
 
