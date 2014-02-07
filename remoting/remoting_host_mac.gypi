@@ -78,6 +78,7 @@
             'remoting_host_uninstaller',
             'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
+            'remoting_it2me_native_messaging_host',
             'remoting_native_messaging_manifests',
           ],
           'variables': {
@@ -99,16 +100,23 @@
               'generated_files': [
                 '<(PRODUCT_DIR)/remoting_host_prefpane.prefPane',
                 '<(PRODUCT_DIR)/remoting_me2me_host.app',
-                '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
                 '<(PRODUCT_DIR)/remoting_native_messaging_host',
+                '<(PRODUCT_DIR)/remoting_it2me_native_messaging_host',
+                '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
                 '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
+                '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_assistance.json',
               ],
               'generated_files_dst': [
                 'PreferencePanes/org.chromium.chromoting.prefPane',
+
+                # TODO(sergeyu): Rename org.chromium.chromoting.me2me_host. e.g.
+                # to com.google.chrome.remote-desktop .
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app',
-                'Applications/<(host_uninstaller_name).app',
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
+                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/remote_assistance_host',
+                'Applications/<(host_uninstaller_name).app',
                 'Config/com.google.chrome.remote_desktop.json',
+                'Config/com.google.chrome.remote_assistance.json',
               ],
               'source_files': [
                 '<@(remoting_host_installer_mac_files)',
