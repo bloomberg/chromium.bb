@@ -1012,6 +1012,28 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 }
 
+TEST_F(QuicSentPacketManagerTest,
+       CryptoHandshakeRetransmissionThenRetransmitAll) {
+  // Send 1 crypto packet.
+  SendCryptoPacket(1);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+
+  // Retransmit the crypto packet as 2.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(2);
+
+  // Now retransmit all the unacked packets, which occurs when there is a
+  // version negotiation.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
+  manager_.RetransmitUnackedPackets(ALL_PACKETS);
+  QuicPacketSequenceNumber unacked[] = { 1, 2 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+}
+
 TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeoutUnsentDataPacket) {
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 2);
   // Serialize two data packets and send the latter.

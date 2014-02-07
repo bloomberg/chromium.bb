@@ -290,23 +290,29 @@ bool QuicSentPacketManager::HasRetransmittableFrames(
 
 void QuicSentPacketManager::RetransmitUnackedPackets(
     RetransmissionType retransmission_type) {
-  if (unacked_packets_.empty()) {
-    return;
-  }
-
-  for (UnackedPacketMap::iterator unacked_it = unacked_packets_.begin();
-       unacked_it != unacked_packets_.end(); ++unacked_it) {
+  UnackedPacketMap::iterator unacked_it = unacked_packets_.begin();
+  while (unacked_it != unacked_packets_.end()) {
     const RetransmittableFrames* frames =
         unacked_it->second.retransmittable_frames;
-    if (retransmission_type == ALL_PACKETS ||
-        (frames != NULL && frames->encryption_level() == ENCRYPTION_INITIAL)) {
-      if (frames) {
-        OnPacketAbandoned(unacked_it);
-        MarkForRetransmission(unacked_it->first, NACK_RETRANSMISSION);
-      } else {
-        DiscardUnackedPacket(unacked_it->first);
-      }
+    // Only mark it as handled if it can't be retransmitted and there are no
+    // pending retransmissions which would be cleared.
+    if (frames == NULL && unacked_it->second.previous_transmissions == NULL &&
+        retransmission_type == ALL_PACKETS) {
+      unacked_it = MarkPacketHandled(unacked_it->first, NOT_RECEIVED_BY_PEER);
+      continue;
     }
+    // If it had no other transmissions, we handle it above.  If it has
+    // other transmissions, one of them must have retransmittable frames,
+    // so that gets resolved the same way as other retransmissions.
+    // TODO(ianswett): Consider adding a new retransmission type which removes
+    // all these old packets from unacked and retransmits them as new sequence
+    // numbers with no connection to the previous ones.
+    if (frames != NULL && (retransmission_type == ALL_PACKETS ||
+                           frames->encryption_level() == ENCRYPTION_INITIAL)) {
+      OnPacketAbandoned(unacked_it);
+      MarkForRetransmission(unacked_it->first, NACK_RETRANSMISSION);
+    }
+    ++unacked_it;
   }
 }
 
@@ -319,7 +325,7 @@ void QuicSentPacketManager::MarkForRetransmission(
     LOG_IF(DFATAL, transmission_info->retransmittable_frames == NULL);
     LOG_IF(DFATAL, transmission_info->sent_time == QuicTime::Zero());
   } else {
-    LOG(DFATAL) << "Unable to retansmit packet: " << sequence_number;
+    LOG(DFATAL) << "Unable to retransmit packet: " << sequence_number;
   }
   // TODO(ianswett): Currently the RTO can fire while there are pending NACK
   // retransmissions for the same data, which is not ideal.
@@ -405,8 +411,6 @@ QuicSentPacketManager::MarkPacketHandled(
     }
     DiscardPacket(newest_transmission);
   } else {
-    TransmissionInfo* transmission_info =
-        FindOrNull(unacked_packets_, newest_transmission);
     // If we have received an ack for a previous transmission of a packet,
     // we want to keep the "new" transmission of the packet unacked,
     // but prevent the data from being retransmitted.
