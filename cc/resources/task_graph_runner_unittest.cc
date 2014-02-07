@@ -74,29 +74,27 @@ class TaskGraphRunnerTestBase {
   void ScheduleTasks(int namespace_index, const std::vector<Task>& tasks) {
     internal::Task::Vector new_tasks;
     internal::Task::Vector new_dependents;
-    internal::GraphNode::Map new_graph;
+    internal::TaskGraph new_graph;
 
     for (std::vector<Task>::const_iterator it = tasks.begin();
          it != tasks.end();
          ++it) {
       scoped_refptr<FakeTaskImpl> new_task(
           new FakeTaskImpl(this, it->namespace_index, it->id));
-      scoped_ptr<internal::GraphNode> node(
-          new internal::GraphNode(new_task.get(), it->priority));
-
+      new_graph.nodes.push_back(
+          internal::TaskGraph::Node(new_task.get(), it->priority, 0u));
       for (unsigned i = 0; i < it->dependent_count; ++i) {
         scoped_refptr<FakeDependentTaskImpl> new_dependent_task(
             new FakeDependentTaskImpl(
                 this, it->namespace_index, it->dependent_id));
-        scoped_ptr<internal::GraphNode> dependent_node(
-            new internal::GraphNode(new_dependent_task.get(), it->priority));
-        node->add_dependent(dependent_node.get());
-        dependent_node->add_dependency();
-        new_graph.set(new_dependent_task.get(), dependent_node.Pass());
+        new_graph.nodes.push_back(internal::TaskGraph::Node(
+            new_dependent_task.get(), it->priority, 1u));
+        new_graph.edges.push_back(internal::TaskGraph::Edge(
+            new_task.get(), new_dependent_task.get()));
+
         new_dependents.push_back(new_dependent_task.get());
       }
 
-      new_graph.set(new_task.get(), node.Pass());
       new_tasks.push_back(new_task.get());
     }
 
@@ -288,44 +286,6 @@ TEST_F(TaskGraphRunnerSingleThreadTest, Priority) {
     ASSERT_EQ(2u, on_task_completed_ids(i).size());
     EXPECT_EQ(1u, on_task_completed_ids(i)[0]);
     EXPECT_EQ(0u, on_task_completed_ids(i)[1]);
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i)
-    ResetIds(i);
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    std::vector<Task> tasks;
-    tasks.push_back(Task(i,
-                         0u,
-                         3u,
-                         1u,    // 1 dependent
-                         1u));  // Priority 1
-    tasks.push_back(Task(i,
-                         1u,
-                         4u,
-                         2u,    // 2 dependents
-                         1u));  // Priority 1
-    tasks.push_back(Task(i,
-                         2u,
-                         5u,
-                         1u,    // 1 dependent
-                         0u));  // Priority 0
-    ScheduleTasks(i, tasks);
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    RunAllTasks(i);
-
-    // Check if tasks ran in order of priority and that task with more
-    // dependents ran first when priority is the same.
-    ASSERT_LE(3u, run_task_ids(i).size());
-    EXPECT_EQ(2u, run_task_ids(i)[0]);
-    EXPECT_EQ(5u, run_task_ids(i)[1]);
-    EXPECT_EQ(1u, run_task_ids(i)[2]);
-    ASSERT_EQ(3u, on_task_completed_ids(i).size());
-    EXPECT_EQ(2u, on_task_completed_ids(i)[0]);
-    EXPECT_EQ(1u, on_task_completed_ids(i)[1]);
-    EXPECT_EQ(0u, on_task_completed_ids(i)[2]);
   }
 }
 

@@ -79,40 +79,43 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
   }
 
   void BuildTaskGraph() {
-    unsigned priority = 0;
-    TaskGraph graph;
+    unsigned priority = 2u;
+    internal::TaskGraph graph;
 
     scoped_refptr<internal::WorkerPoolTask>
         raster_required_for_activation_finished_task(
             CreateRasterRequiredForActivationFinishedTask(
                 raster_tasks_required_for_activation().size()));
-    internal::GraphNode* raster_required_for_activation_finished_node =
-        CreateGraphNodeForTask(
-            raster_required_for_activation_finished_task.get(),
-            priority++,
-            &graph);
-
     scoped_refptr<internal::WorkerPoolTask> raster_finished_task(
         CreateRasterFinishedTask());
-    internal::GraphNode* raster_finished_node =
-        CreateGraphNodeForTask(raster_finished_task.get(), priority++, &graph);
+
+    size_t raster_required_for_activation_finished_dependencies = 0u;
+    size_t raster_finished_dependencies = 0u;
 
     for (RasterTaskVector::const_iterator it = raster_tasks().begin();
          it != raster_tasks().end();
          ++it) {
       internal::RasterWorkerPoolTask* task = it->get();
 
-      internal::GraphNode* node = CreateGraphNodeForRasterTask(
-          task, task->dependencies(), priority++, &graph);
-
       if (IsRasterTaskRequiredForActivation(task)) {
-        raster_required_for_activation_finished_node->add_dependency();
-        node->add_dependent(raster_required_for_activation_finished_node);
+        raster_required_for_activation_finished_dependencies++;
+        graph.edges.push_back(internal::TaskGraph::Edge(
+            task, raster_required_for_activation_finished_task.get()));
       }
 
-      raster_finished_node->add_dependency();
-      node->add_dependent(raster_finished_node);
+      InsertNodeForRasterTask(&graph, task, task->dependencies(), priority++);
+
+      raster_finished_dependencies++;
+      graph.edges.push_back(
+          internal::TaskGraph::Edge(task, raster_finished_task.get()));
     }
+
+    InsertNodeForTask(&graph,
+                      raster_required_for_activation_finished_task.get(),
+                      0u,
+                      raster_required_for_activation_finished_dependencies);
+    InsertNodeForTask(
+        &graph, raster_finished_task.get(), 1u, raster_finished_dependencies);
   }
 
  private:

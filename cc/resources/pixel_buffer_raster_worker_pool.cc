@@ -9,11 +9,6 @@
 #include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/sys_utils.h"
-#endif
 
 namespace cc {
 namespace {
@@ -22,20 +17,8 @@ const int kCheckForCompletedRasterTasksDelayMs = 6;
 
 const size_t kMaxScheduledRasterTasks = 48;
 
-typedef base::StackVector<internal::GraphNode*, kMaxScheduledRasterTasks>
-    NodeVector;
-
-void AddDependenciesToGraphNode(internal::GraphNode* node,
-                                const NodeVector::ContainerType& dependencies) {
-  for (NodeVector::ContainerType::const_iterator it = dependencies.begin();
-       it != dependencies.end();
-       ++it) {
-    internal::GraphNode* dependency = *it;
-
-    node->add_dependency();
-    dependency->add_dependent(node);
-  }
-}
+typedef base::StackVector<internal::WorkerPoolTask*, kMaxScheduledRasterTasks>
+    WorkerPoolTaskVector;
 
 // Only used as std::find_if predicate for DCHECKs.
 bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
@@ -487,14 +470,11 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
 void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::ScheduleMoreTasks");
 
-  enum RasterTaskType {
-    PREPAINT_TYPE = 0,
-    REQUIRED_FOR_ACTIVATION_TYPE = 1,
-    NUM_TYPES = 2
-  };
-  NodeVector tasks[NUM_TYPES];
-  unsigned priority = 2u;  // 0-1 reserved for RasterFinished tasks.
-  TaskGraph graph;
+  WorkerPoolTaskVector tasks;
+  WorkerPoolTaskVector tasks_required_for_activation;
+
+  unsigned priority = kRasterTaskPriorityBase;
+  internal::TaskGraph graph;
 
   size_t bytes_pending_upload = bytes_pending_upload_;
   bool did_throttle_raster_tasks = false;
@@ -534,10 +514,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     }
 
     // Throttle raster tasks based on kMaxScheduledRasterTasks.
-    size_t scheduled_raster_task_count =
-        tasks[PREPAINT_TYPE].container().size() +
-        tasks[REQUIRED_FOR_ACTIVATION_TYPE].container().size();
-    if (scheduled_raster_task_count >= kMaxScheduledRasterTasks) {
+    if (tasks.container().size() >= kMaxScheduledRasterTasks) {
       did_throttle_raster_tasks = true;
       break;
     }
@@ -546,22 +523,21 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     // throttling limits.
     bytes_pending_upload = new_bytes_pending_upload;
 
-    RasterTaskType type = IsRasterTaskRequiredForActivation(task)
-                              ? REQUIRED_FOR_ACTIVATION_TYPE
-                              : PREPAINT_TYPE;
-
     DCHECK(state_it->second == UNSCHEDULED || state_it->second == SCHEDULED);
     state_it->second = SCHEDULED;
 
-    tasks[type].container().push_back(CreateGraphNodeForRasterTask(
-        task, task->dependencies(), priority++, &graph));
+    InsertNodeForRasterTask(&graph, task, task->dependencies(), priority++);
+
+    tasks.container().push_back(task);
+    if (IsRasterTaskRequiredForActivation(task))
+      tasks_required_for_activation.container().push_back(task);
   }
 
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task;
 
   size_t scheduled_raster_task_required_for_activation_count =
-      tasks[REQUIRED_FOR_ACTIVATION_TYPE].container().size();
+      tasks_required_for_activation.container().size();
   DCHECK_LE(scheduled_raster_task_required_for_activation_count,
             raster_tasks_required_for_activation_.size());
   // Schedule OnRasterTasksRequiredForActivationFinished call only when
@@ -574,20 +550,22 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
         CreateRasterRequiredForActivationFinishedTask(
             raster_tasks_required_for_activation_.size());
     raster_required_for_activation_finished_task_pending_ = true;
-    internal::GraphNode* raster_required_for_activation_finished_node =
-        CreateGraphNodeForTask(
-            new_raster_required_for_activation_finished_task.get(),
-            0u,  // Priority 0
-            &graph);
-    AddDependenciesToGraphNode(raster_required_for_activation_finished_node,
-                               tasks[REQUIRED_FOR_ACTIVATION_TYPE].container());
+    InsertNodeForTask(&graph,
+                      new_raster_required_for_activation_finished_task.get(),
+                      kRasterRequiredForActivationFinishedTaskPriority,
+                      scheduled_raster_task_required_for_activation_count);
+    for (WorkerPoolTaskVector::ContainerType::const_iterator it =
+             tasks_required_for_activation.container().begin();
+         it != tasks_required_for_activation.container().end();
+         ++it) {
+      graph.edges.push_back(internal::TaskGraph::Edge(
+          *it, new_raster_required_for_activation_finished_task.get()));
+    }
   }
 
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task;
 
-  size_t scheduled_raster_task_count =
-      tasks[PREPAINT_TYPE].container().size() +
-      tasks[REQUIRED_FOR_ACTIVATION_TYPE].container().size();
+  size_t scheduled_raster_task_count = tasks.container().size();
   DCHECK_LE(scheduled_raster_task_count, PendingRasterTaskCount());
   // Schedule OnRasterTasksFinished call only when notification is pending
   // and throttling is not preventing all pending tasks from being scheduled.
@@ -595,12 +573,16 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       should_notify_client_if_no_tasks_are_pending_) {
     new_raster_finished_task = CreateRasterFinishedTask();
     raster_finished_task_pending_ = true;
-    internal::GraphNode* raster_finished_node =
-        CreateGraphNodeForTask(new_raster_finished_task.get(),
-                               1u,  // Priority 1
-                               &graph);
-    for (unsigned type = 0; type < NUM_TYPES; ++type) {
-      AddDependenciesToGraphNode(raster_finished_node, tasks[type].container());
+    InsertNodeForTask(&graph,
+                      new_raster_finished_task.get(),
+                      kRasterFinishedTaskPriority,
+                      scheduled_raster_task_count);
+    for (WorkerPoolTaskVector::ContainerType::const_iterator it =
+             tasks.container().begin();
+         it != tasks.container().end();
+         ++it) {
+      graph.edges.push_back(
+          internal::TaskGraph::Edge(*it, new_raster_finished_task.get()));
     }
   }
 

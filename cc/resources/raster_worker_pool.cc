@@ -23,7 +23,6 @@
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 
 namespace cc {
-
 namespace {
 
 // Subclass of Allocator that takes a suitably allocated pointer and uses
@@ -235,7 +234,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
  protected:
-  virtual ~RasterWorkerPoolTaskImpl() {}
+  virtual ~RasterWorkerPoolTaskImpl() { DCHECK(!buffer_); }
 
  private:
   scoped_ptr<base::Value> DataAsValue() const {
@@ -544,6 +543,13 @@ void RasterWorkerPool::RasterTask::Reset() { internal_ = NULL; }
 
 RasterWorkerPool::RasterTask::~RasterTask() {}
 
+// Task priorities that make sure raster finished tasks run before any
+// remaining raster tasks.
+unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 1u;
+unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
+    0u;
+unsigned RasterWorkerPool::kRasterTaskPriorityBase = 2u;
+
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
                                    ContextProvider* context_provider)
     : namespace_token_(g_task_graph_runner.Pointer()->GetNamespaceToken()),
@@ -618,7 +624,7 @@ void RasterWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "RasterWorkerPool::Shutdown");
 
   raster_tasks_.clear();
-  TaskGraph empty;
+  internal::TaskGraph empty;
   SetTaskGraph(&empty);
   g_task_graph_runner.Pointer()->WaitForTasksToFinishRunning(namespace_token_);
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -636,15 +642,15 @@ bool RasterWorkerPool::IsRasterTaskRequiredForActivation(
          raster_tasks_required_for_activation_.end();
 }
 
-void RasterWorkerPool::SetTaskGraph(TaskGraph* graph) {
-  TRACE_EVENT1(
-      "cc", "RasterWorkerPool::SetTaskGraph", "num_tasks", graph->size());
+void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
+  TRACE_EVENT0("cc", "RasterWorkerPool::SetTaskGraph");
 
-  for (internal::GraphNode::Map::iterator it = graph->begin();
-       it != graph->end();
+  for (internal::TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
+       it != graph->nodes.end();
        ++it) {
+    internal::TaskGraph::Node& node = *it;
     internal::WorkerPoolTask* task =
-        static_cast<internal::WorkerPoolTask*>(it->first);
+        static_cast<internal::WorkerPoolTask*>(node.task);
 
     if (!task->HasBeenScheduled()) {
       task->WillSchedule();
@@ -756,24 +762,25 @@ scoped_ptr<base::Value> RasterWorkerPool::ScheduledStateAsValue() const {
 }
 
 // static
-internal::GraphNode* RasterWorkerPool::CreateGraphNodeForTask(
-    internal::WorkerPoolTask* task,
-    unsigned priority,
-    TaskGraph* graph) {
-  internal::GraphNode* node = new internal::GraphNode(task, priority);
-  DCHECK(graph->find(task) == graph->end());
-  graph->set(task, make_scoped_ptr(node));
-  return node;
+void RasterWorkerPool::InsertNodeForTask(internal::TaskGraph* graph,
+                                         internal::WorkerPoolTask* task,
+                                         unsigned priority,
+                                         size_t dependencies) {
+  DCHECK(std::find_if(graph->nodes.begin(),
+                      graph->nodes.end(),
+                      internal::TaskGraph::Node::TaskComparator(task)) ==
+         graph->nodes.end());
+  graph->nodes.push_back(
+      internal::TaskGraph::Node(task, priority, dependencies));
 }
 
 // static
-internal::GraphNode* RasterWorkerPool::CreateGraphNodeForRasterTask(
+void RasterWorkerPool::InsertNodeForRasterTask(
+    internal::TaskGraph* graph,
     internal::WorkerPoolTask* raster_task,
     const internal::Task::Vector& decode_tasks,
-    unsigned priority,
-    TaskGraph* graph) {
-  internal::GraphNode* raster_node =
-      CreateGraphNodeForTask(raster_task, priority, graph);
+    unsigned priority) {
+  size_t dependencies = 0u;
 
   // Insert image decode tasks.
   for (internal::Task::Vector::const_iterator it = decode_tasks.begin();
@@ -786,22 +793,20 @@ internal::GraphNode* RasterWorkerPool::CreateGraphNodeForRasterTask(
     if (decode_task->HasCompleted())
       continue;
 
-    raster_node->add_dependency();
+    dependencies++;
 
-    // Check if decode task already exists in graph.
-    internal::GraphNode::Map::iterator decode_it = graph->find(decode_task);
-    if (decode_it != graph->end()) {
-      internal::GraphNode* decode_node = decode_it->second;
-      decode_node->add_dependent(raster_node);
-      continue;
-    }
+    // Add decode task if it doesn't already exists in graph.
+    internal::TaskGraph::Node::Vector::iterator decode_it =
+        std::find_if(graph->nodes.begin(),
+                     graph->nodes.end(),
+                     internal::TaskGraph::Node::TaskComparator(decode_task));
+    if (decode_it == graph->nodes.end())
+      InsertNodeForTask(graph, decode_task, priority, 0u);
 
-    internal::GraphNode* decode_node =
-        CreateGraphNodeForTask(decode_task, priority, graph);
-    decode_node->add_dependent(raster_node);
+    graph->edges.push_back(internal::TaskGraph::Edge(decode_task, raster_task));
   }
 
-  return raster_node;
+  InsertNodeForTask(graph, raster_task, priority, dependencies);
 }
 
 }  // namespace cc

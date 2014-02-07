@@ -46,15 +46,6 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   scoped_ptr<base::Value> StateAsValue() const;
 
-  static void CreateGraphNodeForImageRasterTask(
-      internal::WorkerPoolTask* image_task,
-      const internal::Task::Vector& decode_tasks,
-      unsigned priority,
-      bool is_required_for_activation,
-      internal::GraphNode* raster_required_for_activation_finished_node,
-      internal::GraphNode* raster_finished_node,
-      TaskGraph* graph);
-
   const unsigned texture_target_;
 
   bool raster_tasks_pending_;

@@ -5,13 +5,11 @@
 #ifndef CC_RESOURCES_TASK_GRAPH_RUNNER_H_
 #define CC_RESOURCES_TASK_GRAPH_RUNNER_H_
 
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
 #include "cc/base/cc_export.h"
@@ -39,58 +37,49 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   bool did_run_;
 };
 
-}  // namespace internal
-}  // namespace cc
+// Dependencies are represented as edges in a task graph. Each graph node
+// is assigned a priority and a run count that matches the number of
+// dependencies.
+struct CC_EXPORT TaskGraph {
+  struct Node {
+    class TaskComparator {
+     public:
+      explicit TaskComparator(const Task* task) : task_(task) {}
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::internal::Task*> {
-  size_t operator()(cc::internal::Task* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
+      bool operator()(const Node& node) const { return node.task == task_; }
 
-namespace cc {
-namespace internal {
+     private:
+      const Task* task_;
+    };
 
-// Dependencies are represented by edges in a task graph. A graph node
-// store edges as a vector of dependents. Each graph node is assigned
-// a priority and a run count that matches the number of dependencies.
-class CC_EXPORT GraphNode {
- public:
-  typedef std::vector<GraphNode*> Vector;
-  typedef base::ScopedPtrHashMap<Task*, GraphNode> Map;
+    typedef std::vector<Node> Vector;
 
-  GraphNode(Task* task, unsigned priority);
-  ~GraphNode();
+    Node(Task* task, unsigned priority, size_t dependencies)
+        : task(task), priority(priority), dependencies(dependencies) {}
 
-  Task* task() { return task_; }
+    Task* task;
+    unsigned priority;
+    size_t dependencies;
+  };
 
-  void add_dependent(GraphNode* dependent) {
-    DCHECK(dependent);
-    dependents_.push_back(dependent);
-  }
-  const Vector& dependents() const { return dependents_; }
+  struct Edge {
+    typedef std::vector<Edge> Vector;
 
-  unsigned priority() const { return priority_; }
+    Edge(const Task* task, Task* dependent)
+        : task(task), dependent(dependent) {}
 
-  unsigned num_dependencies() const { return num_dependencies_; }
-  void add_dependency() { ++num_dependencies_; }
-  void remove_dependency() {
-    DCHECK(num_dependencies_);
-    --num_dependencies_;
-  }
+    const Task* task;
+    Task* dependent;
+  };
 
- private:
-  Task* task_;
-  Vector dependents_;
-  unsigned priority_;
-  unsigned num_dependencies_;
+  TaskGraph();
+  ~TaskGraph();
 
-  DISALLOW_COPY_AND_ASSIGN(GraphNode);
+  void Swap(TaskGraph* other);
+  void Reset();
+
+  Node::Vector nodes;
+  Edge::Vector edges;
 };
 
 class TaskGraphRunner;
@@ -115,8 +104,6 @@ class CC_EXPORT NamespaceToken {
 // might block and should not be used on a thread that needs to be responsive.
 class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
  public:
-  typedef GraphNode::Map TaskGraph;
-
   TaskGraphRunner(size_t num_threads, const std::string& thread_name_prefix);
   virtual ~TaskGraphRunner();
 
@@ -128,7 +115,7 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   // no longer needed will be canceled unless already running. Canceled
   // tasks are moved to |completed_tasks| without being run. The result
   // is that once scheduled, a task is guaranteed to end up in the
-  // |completed_tasks| queue even if it later get canceled by another
+  // |completed_tasks| queue even if it later gets canceled by another
   // call to SetTaskGraph().
   void SetTaskGraph(NamespaceToken token, TaskGraph* graph);
 
@@ -144,32 +131,41 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   bool RunTaskForTesting();
 
  private:
+  struct PrioritizedTask {
+    typedef std::vector<PrioritizedTask> Vector;
+
+    PrioritizedTask(Task* task, unsigned priority)
+        : task(task), priority(priority) {}
+
+    Task* task;
+    unsigned priority;
+  };
+
   struct TaskNamespace {
     typedef std::vector<TaskNamespace*> Vector;
 
     TaskNamespace();
     ~TaskNamespace();
 
-    // This set contains all pending tasks.
-    TaskGraph pending_tasks;
-    // This set contains all currently running tasks.
-    TaskGraph running_tasks;
+    // Current task graph.
+    TaskGraph graph;
+
+    // Ordered set of tasks that are ready to run.
+    PrioritizedTask::Vector ready_to_run_tasks;
+
     // Completed tasks not yet collected by origin thread.
     Task::Vector completed_tasks;
-    // Ordered set of tasks that are ready to run.
-    internal::GraphNode::Vector ready_to_run_tasks;
+
+    // Number of currently running tasks.
+    size_t num_running_tasks;
   };
 
   typedef base::ScopedPtrHashMap<int, TaskNamespace> TaskNamespaceMap;
 
-  static bool CompareTaskPriority(const internal::GraphNode* a,
-                                  const internal::GraphNode* b) {
+  static bool CompareTaskPriority(const PrioritizedTask& a,
+                                  const PrioritizedTask& b) {
     // In this system, numerically lower priority is run first.
-    if (a->priority() != b->priority())
-      return a->priority() > b->priority();
-
-    // Run task with most dependents first when priority is the same.
-    return a->dependents().size() < b->dependents().size();
+    return a.priority > b.priority;
   }
 
   static bool CompareTaskNamespacePriority(const TaskNamespace* a,
@@ -185,9 +181,9 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   }
 
   static bool HasFinishedRunningTasksInNamespace(
-      TaskNamespace* task_namespace) {
-    return task_namespace->pending_tasks.empty() &&
-           task_namespace->running_tasks.empty();
+      const TaskNamespace* task_namespace) {
+    return !task_namespace->num_running_tasks &&
+           task_namespace->ready_to_run_tasks.empty();
   }
 
   // Overridden from base::DelegateSimpleThread:
@@ -223,6 +219,10 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   // Provides each running thread loop with a unique index. First thread
   // loop index is 0.
   unsigned next_thread_index_;
+
+  // This set contains all currently running tasks.
+  typedef std::vector<const Task*> TaskVector;
+  TaskVector running_tasks_;
 
   // Set during shutdown. Tells workers to exit when no more tasks
   // are pending.

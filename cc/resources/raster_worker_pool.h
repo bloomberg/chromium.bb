@@ -241,7 +241,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   virtual ResourceFormat GetResourceFormat() const = 0;
 
  protected:
-  typedef internal::TaskGraphRunner::TaskGraph TaskGraph;
   typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
   typedef std::deque<scoped_refptr<internal::WorkerPoolTask> > TaskDeque;
   typedef std::vector<scoped_refptr<internal::RasterWorkerPoolTask> >
@@ -257,7 +256,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   void SetRasterTasks(RasterTask::Queue* queue);
   bool IsRasterTaskRequiredForActivation(internal::RasterWorkerPoolTask* task)
       const;
-  void SetTaskGraph(TaskGraph* graph);
+  void SetTaskGraph(internal::TaskGraph* graph);
   void CollectCompletedWorkerPoolTasks(internal::Task::Vector* completed_tasks);
 
   // Run raster tasks that use GPU on current thread.
@@ -288,16 +287,20 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
   scoped_ptr<base::Value> ScheduledStateAsValue() const;
 
-  static internal::GraphNode* CreateGraphNodeForTask(
-      internal::WorkerPoolTask* task,
-      unsigned priority,
-      TaskGraph* graph);
+  static void InsertNodeForTask(internal::TaskGraph* graph,
+                                internal::WorkerPoolTask* task,
+                                unsigned priority,
+                                size_t dependencies);
 
-  static internal::GraphNode* CreateGraphNodeForRasterTask(
-      internal::WorkerPoolTask* raster_task,
+  static void InsertNodeForRasterTask(
+      internal::TaskGraph* graph,
+      internal::WorkerPoolTask* task,
       const internal::Task::Vector& decode_tasks,
-      unsigned priority,
-      TaskGraph* graph);
+      unsigned priority);
+
+  static unsigned kRasterFinishedTaskPriority;
+  static unsigned kRasterRequiredForActivationFinishedTaskPriority;
+  static unsigned kRasterTaskPriorityBase;
 
  private:
   void OnRasterFinished(const internal::WorkerPoolTask* source);
