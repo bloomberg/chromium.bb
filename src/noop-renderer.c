@@ -50,6 +50,9 @@ static void
 noop_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 	struct wl_shm_buffer *shm_buffer;
+	uint8_t *data;
+	uint32_t size, i, width, height, stride;
+	volatile unsigned char unused = 0; /* volatile so it's not optimized out */
 
 	if (!buffer)
 		return;
@@ -61,9 +64,24 @@ noop_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		return;
 	}
 
+	data = wl_shm_buffer_get_data(shm_buffer);
+	stride = wl_shm_buffer_get_stride(shm_buffer);
+	width = wl_shm_buffer_get_width(shm_buffer);
+	height = wl_shm_buffer_get_height(shm_buffer);
+	size = stride * height;
+
+	/* Access the buffer data to make sure the buffer's client gets killed
+	 * if the buffer size is invalid. This makes the bad_buffer test pass.
+	 * This can be removed if we start reading the buffer contents
+	 * somewhere else, e.g. in repaint_output(). */
+	wl_shm_buffer_begin_access(shm_buffer);
+	for (i = 0; i < size; i++)
+		unused ^= data[i];
+	wl_shm_buffer_end_access(shm_buffer);
+
 	buffer->shm_buffer = shm_buffer;
-	buffer->width = wl_shm_buffer_get_width(shm_buffer);
-	buffer->height = wl_shm_buffer_get_height(shm_buffer);
+	buffer->width = width;
+	buffer->height = height;
 }
 
 static void
