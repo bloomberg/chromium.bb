@@ -48,6 +48,7 @@ enum MenuSourceType {
   MENU_SOURCE_KEYBOARD        = 2,
   MENU_SOURCE_TOUCH           = 3,
   MENU_SOURCE_TOUCH_EDIT_MENU = 4,
+  MENU_SOURCE_TYPE_LAST = MENU_SOURCE_TOUCH_EDIT_MENU
 };
 
 UI_BASE_EXPORT MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);

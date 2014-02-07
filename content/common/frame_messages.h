@@ -18,8 +18,10 @@
 
 #define IPC_MESSAGE_START FrameMsgStart
 
-IPC_ENUM_TRAITS(blink::WebContextMenuData::MediaType)
-IPC_ENUM_TRAITS(ui::MenuSourceType)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
+                          blink::WebContextMenuData::MediaTypeLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
