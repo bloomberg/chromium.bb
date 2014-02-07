@@ -57,7 +57,7 @@ Fullscreen status=stable
 FastTextAutosizing
 Gamepad status=stable
 Geolocation status=stable
-HTMLImports status=test
+HTMLImports status=experimental
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
