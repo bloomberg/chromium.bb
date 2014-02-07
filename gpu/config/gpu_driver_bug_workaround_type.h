@@ -14,6 +14,8 @@
          clear_alpha_in_readpixels)                          \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE,            \
          clear_uniforms_before_first_program_use)            \
+  GPU_OP(COUNT_ALL_IN_VARYINGS_PACKING,                      \
+         count_all_in_varyings_packing)                      \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \

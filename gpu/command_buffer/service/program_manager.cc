@@ -522,6 +522,7 @@ void ProgramManager::DoCompileShader(
 bool Program::Link(ShaderManager* manager,
                    ShaderTranslator* vertex_translator,
                    ShaderTranslator* fragment_translator,
+                   Program::VaryingsPackingOption varyings_packing_option,
                    const ShaderCacheCallback& shader_callback) {
   ClearLinkStatus();
   if (!CanLink()) {
@@ -552,7 +553,7 @@ bool Program::Link(ShaderManager* manager,
     set_log_info(ProcessLogInfo(info_log).c_str());
     return false;
   }
-  if (!CheckVaryingsPacking()) {
+  if (!CheckVaryingsPacking(varyings_packing_option)) {
     set_log_info("Varyings over maximum register limit");
     return false;
   }
@@ -1097,7 +1098,8 @@ bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
   return false;
 }
 
-bool Program::CheckVaryingsPacking() const {
+bool Program::CheckVaryingsPacking(
+    Program::VaryingsPackingOption option) const {
   DCHECK(attached_shaders_[0] &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1] &&
@@ -1112,13 +1114,14 @@ bool Program::CheckVaryingsPacking() const {
   for (ShaderTranslator::VariableMap::const_iterator iter =
            fragment_varyings->begin();
        iter != fragment_varyings->end(); ++iter) {
-    if (!iter->second.static_use)
+    if (!iter->second.static_use && option == kCountOnlyStaticallyUsed)
       continue;
     if (!IsBuiltInVarying(iter->first)) {
       ShaderTranslator::VariableMap::const_iterator vertex_iter =
           vertex_varyings->find(iter->first);
       if (vertex_iter == vertex_varyings->end() ||
-          !vertex_iter->second.static_use)
+          (!vertex_iter->second.static_use &&
+           option == kCountOnlyStaticallyUsed))
         continue;
     }
 

@@ -5417,6 +5417,8 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   if (program->Link(shader_manager(),
                     vertex_translator,
                     fragment_translator,
+                    workarounds().count_all_in_varyings_packing ?
+                        Program::kCountAll : Program::kCountOnlyStaticallyUsed,
                     shader_cache_callback_)) {
     if (program == state_.current_program.get()) {
       if (workarounds().use_current_program_after_successful_link)
