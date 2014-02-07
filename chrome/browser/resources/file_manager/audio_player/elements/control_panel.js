@@ -40,9 +40,21 @@
      * element is ready.
      */
     ready: function() {
-      this.$.volumeSlider.value = this.volume || 50;
-      this.$.playlistButton.querySelector('input').checked =
-          this.playlistExpanded;
+    },
+
+    /**
+     * Model object of the Audio Player.
+     * @type {AudioPlayerModel}
+     */
+    model: null,
+
+    /**
+     * Invoked when the model changed.
+     * @param {AudioPlayerModel} oldValue Old Value.
+     * @param {AudioPlayerModel} newValue Nld Value.
+     */
+    modelChanged: function(oldValue, newValue) {
+      this.$.volumeSlider.model = newValue;
     },
 
     /**
@@ -76,34 +88,10 @@
     },
 
     /**
-     * Current volume. Must be between 0 to 100.
-     * @type {number}
-     */
-    volume: 50,
-
-    /**
-     * Flag whether the playlist is expanded or not.
-     * @type {boolean}
-     */
-    playlistExpanded: false,
-
-    /**
      * Flag whether the volume slider is expanded or not.
      * @type {boolean}
      */
     volumeSliderShown: false,
-
-    /**
-     * Flag whether the shuffle mode is enabled.
-     * @type {boolean}
-     */
-    shuffle: false,
-
-    /**
-     * Flag whether the repeat mode is enabled.
-     * @type {boolean}
-     */
-    repeat: false,
 
     /**
      * Flag whether the audio is playing or paused. True if playing, or false
@@ -111,15 +99,6 @@
      * @type {boolean}
      */
     playing: false,
-
-    /**
-     * Invoked when the 'playlistExpanded' property is changed.
-     * @param {boolean} oldValue old value.
-     * @param {boolean} newValue new value.
-     */
-    playlistExpandedChanged: function(oldValue, newValue) {
-      this.$.playlistButton.querySelector('input').checked = !!newValue;
-    },
 
     /**
      * Invoked when the 'duration' property is changed.
@@ -164,15 +143,6 @@
         this.$.volumeContainer.style.visibility = 'hidden';
       }
       event.stopPropagation();
-    },
-
-    /**
-     * Invoked the value of the volume slider is changed.
-     * @type {number}
-     */
-    volumeSliderChanged: function() {
-      this.volume = this.$.volumeSlider.value;
-      this.fire('volume-changed');
     },
   });
 })();  // Anonymous closure

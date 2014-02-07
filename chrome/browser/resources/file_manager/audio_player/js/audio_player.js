@@ -15,6 +15,14 @@ function AudioPlayer(container) {
   this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
   this.selectedEntry_ = null;
 
+  this.model_ = new AudioPlayerModel();
+  var observer = new PathObserver(this.model_, 'expanded');
+  observer.open(function(newValue, oldValue) {
+    // Inverse arguments intentionally to match the Polymer way.
+    this.onModelExpandedChanged(oldValue, newValue);
+  }.bind(this));
+  this.trackListItems_ = [];
+
   this.currentTrackIndex_ = -1;
   this.playlistGeneration_ = 0;
 
@@ -29,8 +37,8 @@ function AudioPlayer(container) {
   this.isExpanded_ = null;  // Initial value is null. It'll be set in load().
 
   this.player_ = document.querySelector('audio-player');
-  this.trackListItems_ = [];
   this.player_.tracks = this.trackListItems_;
+  this.player_.model = this.model_;
   Platform.performMicrotaskCheckpoint();
 
   this.errorString_ = '';
@@ -97,8 +105,6 @@ AudioPlayer.prototype.load = function(playlist) {
   // playlist member is not changed after entries are resolved.
   window.appState = JSON.parse(JSON.stringify(playlist));  // cloning
   util.saveAppState();
-
-  this.syncExpanded();
 
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
@@ -237,21 +243,6 @@ AudioPlayer.prototype.onError_ = function() {
 };
 
 /**
- * Expands/collapses button click handler. Toggles the mode and updates the
- * height of the window.
- *
- * @private
- */
-AudioPlayer.prototype.onExpandCollapse_ = function() {
-  if (this.isExpanded_) {
-    this.player_.expand(false);
-  } else {
-    this.player_.expand(true);
-  }
-  this.syncHeight_();
-};
-
-/**
  * Toggles the expanded mode when resizing.
  *
  * @param {Event} event Resize event.
@@ -261,11 +252,11 @@ AudioPlayer.prototype.onResize_ = function(event) {
   if (!this.isExpanded_ &&
       window.innerHeight >= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
     this.isExpanded_ = true;
-    this.player_.expand(true);
+    this.model_.expanded = true;
   } else if (this.isExpanded_ &&
              window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
     this.isExpanded_ = false;
-    this.player_.expand(false);
+    this.model_.expanded = false;
   }
 };
 
@@ -308,18 +299,22 @@ AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.CONTROLS_HEIGHT +
                                        AudioPlayer.TRACK_HEIGHT * 2;
 
 /**
- * Sets the correct player window height.
+ * Invoked when the 'expanded' property in the model is changed.
+ * @param {boolean} oldValue Old value.
+ * @param {boolean} newValue New value.
  */
-AudioPlayer.prototype.syncExpanded = function() {
+AudioPlayer.prototype.onModelExpandedChanged = function(oldValue, newValue) {
   if (this.isExpanded_ !== null &&
-      this.isExpanded_ == this.player_.isExpanded())
+      this.isExpanded_ === newValue)
     return;
 
-  if (this.isExpanded_ && !this.player_.isExpanded())
+  if (this.isExpanded_ && !newValue)
     this.lastExpandedHeight_ = window.innerHeight;
 
-  this.isExpanded_ = this.player_.isExpanded();
-  this.syncHeight_();
+  if (this.isExpanded_ !== newValue) {
+    this.isExpanded_ = newValue;
+    this.syncHeight_();
+  }
 };
 
 /**
@@ -328,7 +323,7 @@ AudioPlayer.prototype.syncExpanded = function() {
 AudioPlayer.prototype.syncHeight_ = function() {
   var targetHeight;
 
-  if (this.isExpanded_) {
+  if (this.model_.expanded) {
     // Expanded.
     if (!this.lastExpandedHeight_ ||
         this.lastExpandedHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {

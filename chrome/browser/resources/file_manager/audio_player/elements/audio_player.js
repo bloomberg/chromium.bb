@@ -17,6 +17,12 @@ Polymer('audio-player', {
   currenttrackurl: '',
 
   /**
+   * Model object of the Audio Player.
+   * @type {AudioPlayerModel}
+   */
+  model: null,
+
+  /**
    * Initializes an element. This method is called automatically when the
    * element is ready.
    */
@@ -25,7 +31,7 @@ Polymer('audio-player', {
     this.audioElement = this.$.audio;
     this.trackList = this.$.trackList;
 
-    this.audioElement.volume = this.audioController.volume / 100;
+    this.audioElement.volume = 0;  // Temporaly initial volume.
     this.audioElement.addEventListener('ended', this.onAudioEnded.bind(this));
     this.audioElement.addEventListener('error', this.onAudioError.bind(this));
 
@@ -46,12 +52,9 @@ Polymer('audio-player', {
    */
   observe: {
     'trackList.currentTrackIndex': 'onCurrentTrackIndexChanged',
-    'audioController.playlistExpanded': 'onPlayerExpandedChanged',
     'audioController.playing': 'onControllerPlayingChanged',
-    'audioController.volume': 'onControllerVolumeChanged',
     'audioController.time': 'onControllerTimeChanged',
-    'audioController.shuffle': 'onControllerShuffleChanged',
-    'audioController.repeat': 'onControllerRepeatChanged',
+    'model.volume': 'onVolumeChanged',
   },
 
   /**
@@ -73,19 +76,6 @@ Polymer('audio-player', {
 
     // The attributes may be being watched, so we change it at the last.
     this.currenttrackurl = currentTrackUrl;
-  },
-
-  /**
-   * Invoked when audioController.playlistExpanded is changed.
-   * @param {boolean} oldValue old value.
-   * @param {boolean} newValue new value.
-   */
-  onPlayerExpandedChanged: function(oldValue, newValue) {
-    if (oldValue != newValue) {
-      this.trackList.expanded = newValue;
-      if (AudioPlayer.instance)
-        AudioPlayer.instance.syncExpanded();
-    }
   },
 
   /**
@@ -121,8 +111,21 @@ Polymer('audio-player', {
    * @param {number} oldValue old value.
    * @param {number} newValue new value.
    */
-  onControllerVolumeChanged: function(oldValue, newValue) {
+  onVolumeChanged: function(oldValue, newValue) {
     this.audioElement.volume = newValue / 100;
+  },
+
+  /**
+   * Invoked when the model changed.
+   * @param {AudioPlayerModel} oldValue Old Value.
+   * @param {AudioPlayerModel} newValue Nld Value.
+   */
+  modelChanged: function(oldValue, newValue) {
+    this.trackList.model = newValue;
+    this.audioController.model = newValue;
+
+    // Invoke the handler manually.
+    this.onVolumeChanged(0, newValue.volume);
   },
 
   /**
@@ -137,24 +140,6 @@ Polymer('audio-player', {
 
     if (this.audioElement.readyState !== 0)
       this.audioElement.currentTime = this.audioController.time / 1000;
-  },
-
-  /**
-   * Invoked when audioController.shuffle is changed.
-   * @param {boolean} oldValue old value.
-   * @param {boolean} newValue new value.
-   */
-  onControllerShuffleChanged: function(oldValue, newValue) {
-    this.trackList.shuffle = newValue;
-  },
-
-  /**
-   * Invoked when audioController.repeat is changed.
-   * @param {boolean} oldValue old value.
-   * @param {boolean} newValue new value.
-   */
-  onControllerRepeatChanged: function(oldValue, newValue) {
-    this.trackList.repeat = newValue;
   },
 
   /**
@@ -178,7 +163,7 @@ Polymer('audio-player', {
    * This handler is registered in this.ready().
    */
   onAudioEnded: function() {
-    this.advance_(true /* forward */, this.audioController.repeat);
+    this.advance_(true /* forward */, this.model.repeat);
   },
 
   /**
@@ -186,7 +171,7 @@ Polymer('audio-player', {
    * This handler is registered in this.ready().
    */
   onAudioError: function() {
-    this.scheduleAutoAdvance_(true /* forward */, this.audioController.repeat);
+    this.scheduleAutoAdvance_(true /* forward */, this.model.repeat);
   },
 
   /**
@@ -298,22 +283,6 @@ Polymer('audio-player', {
       this.audioElement.src = currentTrack.url;
       this.audioElement.play();
     }
-  },
-
-  /**
-   * Returns whether the track list is expanded or not.
-   * @return {boolean} True if the list is expanded. False, otherwise.
-   */
-  isExpanded: function() {
-    return this.audioController.playlistExpanded;
-  },
-
-  /**
-   * Expands or collapse the track list.
-   * @param {boolean} True to expand the list, false to collapse.
-   */
-  expand: function(expand) {
-    this.audioController.playlistExpanded = !!expand;
   },
 
   /**

@@ -47,7 +47,7 @@
  </head>
 <body>
   <!-- Definition of <track-list> tag. -->
-  <polymer-element name="track-list" attributes="tracks expanded">
+  <polymer-element name="track-list" attributes="tracks">
     <template>
       <link rel="stylesheet" href="audio_player/elements/track_list.css"></link>
       <template id="tracks" repeat="{{tracks}}">
@@ -62,7 +62,7 @@
   </polymer-element>
 
   <!-- Definition of <control-panel> tag. -->
-  <polymer-element name="control-panel" attributes="expanded">
+  <polymer-element name="control-panel">
     <template>
       <link rel="stylesheet"
             href="audio_player/elements/control_panel.css"></link>
@@ -92,7 +92,7 @@
             <label>
               <input id="shuffleCheckbox"
                      type="checkbox"
-                     checked="{{shuffle}}"></input>
+                     checked="{{model.shuffle}}"></input>
               <span class="icon"></span>
             </label>
           </button>
@@ -102,7 +102,7 @@
             <label>
               <input id="repeatCheckbox"
                      type="checkbox"
-                     checked="{{repeat}}"></input>
+                     checked="{{model.repeat}}"></input>
               <span class="icon"></span>
             </label>
           </button>
@@ -136,8 +136,7 @@
                class="default-hidden"
                anchor-point="bottom center">
             <volume-controller id="volumeSlider"
-                               width="32" height="85" value="50"
-                               on-changed="{{volumeSliderChanged}}">
+                               width="32" height="85" value="50">
             </volume-controller>
 
             <polymer-anchor-point id="anchorHelper"></polymer-anchor-point>
@@ -160,7 +159,7 @@
                   class="playlist media-button toggle"
                   state="default">
             <label>
-              <input type="checkbox" checked="{{playlistExpanded}}"></input>
+              <input type="checkbox" checked="{{model.expanded}}"></input>
               <span class="icon"></span>
             </label>
           </button>
@@ -190,7 +189,7 @@
   <polymer-element name="audio-player"
                    attributes="tracks playing currenttrackurl">
     <template>
-      <track-list id="trackList" expanded="true"></track-list>
+      <track-list id="trackList" expanded?="{{model.expanded}}"></track-list>
       <control-panel id="audioController"
                      on-next-clicked="{{onControllerNextClicked}}"
                      on-previous-clicked="{{onControllerPreviousClicked}}">

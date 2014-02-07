@@ -17,6 +17,19 @@
     },
 
     /**
+     * Registers handlers for changing of external variables
+     */
+    observe: {
+      'model.shuffle': 'onShuffleChanged',
+    },
+
+    /**
+     * Model object of the Audio Player.
+     * @type {AudioPlayerModel}
+     */
+    model: null,
+
+    /**
      * List of tracks.
      * @type {Array.<AudioPlayer.TrackInfo>}
      */
@@ -38,17 +51,11 @@
     currentTrackIndex: -1,
 
     /**
-     * Flag whether the shuffle mode is enabled.
-     * @type {boolean}
-     */
-    shuffle: false,
-
-    /**
      * Invoked when 'shuffle' property is changed.
      * @param {boolean} oldValue Old value.
      * @param {boolean} newValue New value.
      */
-    shuffleChanged: function(oldValue, newValue) {
+    onShuffleChanged: function(oldValue, newValue) {
       this.generatePlayOrder(true /* keep the current track */);
     },
 
@@ -141,7 +148,7 @@
           this.tracks.
           map(function(unused, index) { return index; });
 
-      if (this.shuffle) {
+      if (this.model && this.model.shuffle) {
         // Randomizes the play order array (Schwarzian-transform algorithm).
         this.playOrder =
             this.playOrder.

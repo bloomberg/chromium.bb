@@ -26,6 +26,28 @@
     },
 
     /**
+     * Registers handlers for changing of external variables
+     */
+    observe: {
+      'model.volume': 'onVolumeChanged',
+    },
+
+    /**
+     * Model object of the Audio Player.
+     * @type {AudioPlayerModel}
+     */
+    model: null,
+
+    /**
+     * Invoked when the model changed.
+     * @param {AudioPlayerModel} oldValue Old Value.
+     * @param {AudioPlayerModel} newValue Nld Value.
+     */
+    modelChanged: function(oldValue, newValue) {
+      this.onVolumeChanged((oldValue || {}).volume, (newValue || {}).volume);
+    },
+
+    /**
      * Volume. 0 is silent, and 100 is maximum.
      * @type {number}
      */
@@ -52,14 +74,13 @@
     width: 32,
 
     /**
-     * Invoked the 'value' property is changed.
+     * Invoked the 'volume' value in the model is changed.
      * @param {number} oldValue Old value.
      * @param {number} newValue New value.
      */
-    valueChanged: function(oldValue, newValue) {
+    onVolumeChanged: function(oldValue, newValue) {
       if (oldValue != newValue)
         this.rawValue = 100 - newValue;
-      this.fire('changed');
     },
 
     /**
@@ -69,7 +90,7 @@
      */
     rawValueChanged: function(oldValue, newValue) {
       if (oldValue != newValue)
-        this.value = 100 - newValue;
+        this.model.volume = 100 - newValue;
     },
   });
 })();  // Anonymous closure

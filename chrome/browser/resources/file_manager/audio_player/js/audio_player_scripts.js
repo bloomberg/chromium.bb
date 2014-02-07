@@ -35,6 +35,7 @@ if (!('allowsEval' in document.securityPolicy))
 //<include src="../../foreground/js/metadata/metadata_cache.js"/>
 
 //<include src="audio_player.js"/>
+//<include src="audio_player_model.js"/>
 //<include src="../../foreground/js/media/player_testapi.js"/>
 
 //<include src="../elements/track_list.js"/>
