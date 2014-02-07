@@ -103,7 +103,10 @@ class PageCyclerToughLayoutCases(test.Test):
 
 class PageCyclerTypical25(test.Test):
   # crbug.com/273986: This test is really flakey on xp.
-  enabled = not sys.platform.startswith('win')
+  # cabug.com/341843: This test is always timing out on Android. At present the
+  # only way to disable on Android is to disable on any run hosted on linux.
+  enabled = (not sys.platform.startswith('win') and not
+             sys.platform.startswith('linux'))
   test = page_cycler.PageCycler
   page_set = 'page_sets/typical_25.json'
   options = {'pageset_repeat_iters': 10}
