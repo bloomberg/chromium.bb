@@ -41,7 +41,7 @@ template <class T> class Handle;
 
 namespace WTF { class ArrayBuffer; }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -59,22 +59,19 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
+    BLINK_PLATFORM_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebArrayBuffer&);
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebArrayBuffer&);
 
     bool isNull() const { return m_private.isNull(); }
-    BLINK_EXPORT void* data() const;
-    BLINK_EXPORT unsigned byteLength() const;
+    BLINK_PLATFORM_EXPORT void* data() const;
+    BLINK_PLATFORM_EXPORT unsigned byteLength() const;
 
-    BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
-    BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
-
-#if BLINK_IMPLEMENTATION
-    WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    WebArrayBuffer& operator=(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
+    BLINK_PLATFORM_EXPORT WebArrayBuffer& operator=(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
 #endif
 
 protected:

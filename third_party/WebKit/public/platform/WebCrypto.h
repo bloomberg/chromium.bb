@@ -37,7 +37,7 @@
 
 namespace WebCore { class CryptoResult; }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -64,7 +64,7 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void completeWithError();
+    BLINK_PLATFORM_EXPORT void completeWithError();
 
     // Note that WebString is NOT safe to pass across threads.
     //
@@ -72,23 +72,23 @@ public:
     // They MUST NEVER reveal any secret information such as bytes of the key
     // or plain text. An appropriate error would be something like:
     //   "iv must be 16 bytes long".
-    BLINK_EXPORT void completeWithError(const WebString&);
+    BLINK_PLATFORM_EXPORT void completeWithError(const WebString&);
 
     // Note that WebArrayBuffer is NOT safe to create from another thread.
-    BLINK_EXPORT void completeWithBuffer(const WebArrayBuffer&);
+    BLINK_PLATFORM_EXPORT void completeWithBuffer(const WebArrayBuffer&);
     // Makes a copy of the input data given as a pointer and byte length.
-    BLINK_EXPORT void completeWithBuffer(const void*, unsigned);
-    BLINK_EXPORT void completeWithBoolean(bool);
-    BLINK_EXPORT void completeWithKey(const WebCryptoKey&);
-    BLINK_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
+    BLINK_PLATFORM_EXPORT void completeWithBuffer(const void*, unsigned);
+    BLINK_PLATFORM_EXPORT void completeWithBoolean(bool);
+    BLINK_PLATFORM_EXPORT void completeWithKey(const WebCryptoKey&);
+    BLINK_PLATFORM_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
 
-#if BLINK_IMPLEMENTATION
-    explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
 #endif
 
 private:
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebCryptoResult&);
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebCryptoResult&);
 
     WebPrivatePtr<WebCore::CryptoResult> m_impl;
 };

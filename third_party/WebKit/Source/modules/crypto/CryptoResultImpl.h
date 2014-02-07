@@ -34,7 +34,7 @@
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/platform/CryptoResult.h"
+#include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"

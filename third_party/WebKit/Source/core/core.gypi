@@ -3229,10 +3229,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.h',
         ],
-        'webcore_platform_support_files': [
-            'platform/chromium/support/WebArrayBuffer.cpp',
-            'platform/chromium/support/WebCrypto.cpp',
-        ],
         'core_unittest_files': [
             'animation/AnimatableColorTest.cpp',
             'animation/AnimatableDoubleTest.cpp',

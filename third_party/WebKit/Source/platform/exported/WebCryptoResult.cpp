@@ -31,8 +31,9 @@
 #include "config.h"
 #include "public/platform/WebCrypto.h"
 
-#include "core/platform/CryptoResult.h"
+#include "platform/CryptoResult.h"
 #include "public/platform/WebArrayBuffer.h"
+#include "wtf/PassRefPtr.h"
 #include <string.h>
 
 namespace blink {
@@ -85,7 +86,7 @@ void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey, const W
     reset();
 }
 
-WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
+WebCryptoResult::WebCryptoResult(const PassRefPtr<WebCore::CryptoResult>& impl)
     : m_impl(impl)
 {
     ASSERT(m_impl.get());

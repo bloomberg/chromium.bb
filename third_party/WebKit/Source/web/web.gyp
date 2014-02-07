@@ -73,7 +73,6 @@
                 'INSIDE_BLINK',
             ],
             'sources': [
-                '<@(webcore_platform_support_files)',
                 '<@(web_files)',
             ],
             'conditions': [
