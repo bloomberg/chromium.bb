@@ -276,6 +276,7 @@
                 'policy/core/common/policy_loader_mac_unittest.cc',
                 'policy/core/common/policy_loader_win_unittest.cc',
                 'policy/core/common/policy_map_unittest.cc',
+                'policy/core/common/policy_provider_android_unittest.cc',
                 'policy/core/common/policy_service_impl_unittest.cc',
                 'policy/core/common/policy_statistics_collector_unittest.cc',
                 'policy/core/common/preg_parser_win_unittest.cc',
