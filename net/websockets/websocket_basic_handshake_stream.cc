@@ -567,6 +567,11 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
         return ERR_INVALID_RESPONSE;
     }
   } else {
+    if (rv == ERR_EMPTY_RESPONSE) {
+      failure_message_ =
+          "Connection closed before receiving a handshake response";
+      return rv;
+    }
     failure_message_ =
         std::string("Error during WebSocket handshake: ") + ErrorToString(rv);
     OnFinishOpeningHandshake();

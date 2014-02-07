@@ -983,5 +983,27 @@ TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
   EXPECT_FALSE(response_info_);
 }
 
+// If the remote host closes the connection without sending headers, we should
+// log the console message "Connection closed before receiving a handshake
+// response".
+TEST_F(WebSocketStreamCreateTest, NoResponse) {
+  std::string request = WebSocketStandardRequest("/", "http://localhost/", "");
+  MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
+  MockRead reads[] = {MockRead(ASYNC, 0, 1)};
+  DeterministicSocketData* socket_data(new DeterministicSocketData(
+      reads, arraysize(reads), writes, arraysize(writes)));
+  socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  CreateAndConnectRawExpectations("ws://localhost/",
+                                  NoSubProtocols(),
+                                  "http://localhost/",
+                                  make_scoped_ptr(socket_data));
+  socket_data->RunFor(2);
+  EXPECT_TRUE(has_failed());
+  EXPECT_FALSE(stream_);
+  EXPECT_FALSE(response_info_);
+  EXPECT_EQ("Connection closed before receiving a handshake response",
+            failure_message());
+}
+
 }  // namespace
 }  // namespace net
