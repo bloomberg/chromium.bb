@@ -4,13 +4,25 @@
 
 #include "chrome/browser/autocomplete/base_search_provider.h"
 
+#include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 // BaseSearchProvider ---------------------------------------------------------
 
@@ -238,5 +250,156 @@ bool BaseSearchProvider::Results::HasServerProvidedScores() const {
   }
 
   return false;
+}
+
+// BaseSearchProvider ---------------------------------------------------------
+
+// static
+AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
+    AutocompleteProvider* autocomplete_provider,
+    const AutocompleteInput& input,
+    const base::string16& input_text,
+    const SuggestResult& suggestion,
+    const TemplateURL* template_url,
+    int accepted_suggestion,
+    int omnibox_start_margin,
+    bool append_extra_query_params) {
+  AutocompleteMatch match(autocomplete_provider, suggestion.relevance(), false,
+                          suggestion.type());
+
+  if (!template_url)
+    return match;
+  match.keyword = template_url->keyword();
+  match.contents = suggestion.match_contents();
+  match.contents_class = suggestion.match_contents_class();
+
+  if (!suggestion.annotation().empty())
+    match.description = suggestion.annotation();
+
+  match.allowed_to_be_default_match =
+      (input_text == suggestion.match_contents());
+
+  // When the user forced a query, we need to make sure all the fill_into_edit
+  // values preserve that property.  Otherwise, if the user starts editing a
+  // suggestion, non-Search results will suddenly appear.
+  if (input.type() == AutocompleteInput::FORCED_QUERY)
+    match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
+  if (suggestion.from_keyword_provider())
+    match.fill_into_edit.append(match.keyword + base::char16(' '));
+  if (!input.prevent_inline_autocomplete() &&
+      StartsWith(suggestion.suggestion(), input_text, false)) {
+    match.inline_autocompletion =
+        suggestion.suggestion().substr(input_text.length());
+    match.allowed_to_be_default_match = true;
+  }
+  match.fill_into_edit.append(suggestion.suggestion());
+
+  const TemplateURLRef& search_url = template_url->url_ref();
+  DCHECK(search_url.SupportsReplacement());
+  match.search_terms_args.reset(
+      new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
+  match.search_terms_args->original_query = input_text;
+  match.search_terms_args->accepted_suggestion = accepted_suggestion;
+  match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
+  match.search_terms_args->suggest_query_params =
+      suggestion.suggest_query_params();
+  match.search_terms_args->append_extra_query_params =
+      append_extra_query_params;
+  // This is the destination URL sans assisted query stats.  This must be set
+  // so the AutocompleteController can properly de-dupe; the controller will
+  // eventually overwrite it before it reaches the user.
+  match.destination_url =
+      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
+
+  // Search results don't look like URLs.
+  match.transition = suggestion.from_keyword_provider() ?
+      content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
+
+  return match;
+}
+
+// static
+scoped_ptr<base::Value> BaseSearchProvider::DeserializeJsonData(
+    std::string json_data) {
+  // The JSON response should be an array.
+  for (size_t response_start_index = json_data.find("["), i = 0;
+       response_start_index != std::string::npos && i < 5;
+       response_start_index = json_data.find("[", 1), i++) {
+    // Remove any XSSI guards to allow for JSON parsing.
+    if (response_start_index > 0)
+      json_data.erase(0, response_start_index);
+
+    JSONStringValueSerializer deserializer(json_data);
+    deserializer.set_allow_trailing_comma(true);
+    int error_code = 0;
+    scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));
+    if (error_code == 0)
+      return data.Pass();
+  }
+  return scoped_ptr<base::Value>();
+}
+
+// static
+bool BaseSearchProvider::CanSendURL(
+    const GURL& current_page_url,
+    const GURL& suggest_url,
+    const TemplateURL* template_url,
+    AutocompleteInput::PageClassification page_classification,
+    Profile* profile) {
+  if (!current_page_url.is_valid())
+    return false;
+
+  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
+  // description when the user actively focuses on the omnibox as discussed in
+  // crbug/305366 if Most Visited (or something similar) will launch.
+  if ((page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+      (page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
+    return false;
+
+  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
+  // provider.
+  if ((current_page_url.scheme() != content::kHttpScheme) &&
+      ((current_page_url.scheme() != content::kHttpsScheme) ||
+       !net::registry_controlled_domains::SameDomainOrHost(
+           current_page_url, suggest_url,
+           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
+    return false;
+
+  // Make sure we are sending the suggest request through HTTPS to prevent
+  // exposing the current page URL to networks before the search provider.
+  if (!suggest_url.SchemeIs(content::kHttpsScheme))
+    return false;
+
+  // Don't run if there's no profile or in incognito mode.
+  if (profile == NULL || profile->IsOffTheRecord())
+    return false;
+
+  // Don't run if we can't get preferences or search suggest is not enabled.
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled))
+    return false;
+
+  // Only make the request if we know that the provider supports zero suggest
+  // (currently only the prepopulated Google provider).
+  if (template_url == NULL || !template_url->SupportsReplacement() ||
+      TemplateURLPrepopulateData::GetEngineType(*template_url) !=
+      SEARCH_ENGINE_GOOGLE)
+    return false;
+
+  // Check field trials and settings allow sending the URL on suggest requests.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  browser_sync::SyncPrefs sync_prefs(prefs);
+  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
+      service == NULL ||
+      !service->IsSyncEnabledAndLoggedIn() ||
+      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
+          syncer::PROXY_TABS) ||
+      service->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+    return false;
+
+  return true;
 }
 

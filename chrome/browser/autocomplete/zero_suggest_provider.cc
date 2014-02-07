@@ -116,8 +116,7 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetStatus().is_success() && source->GetResponseCode() == 200;
 
   if (request_succeeded) {
-    scoped_ptr<base::Value> data(
-        SearchProvider::DeserializeJsonData(json_data));
+    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
     if (data.get())
       ParseSuggestResults(*data.get());
   }
@@ -149,8 +148,7 @@ void ZeroSuggestProvider::StartZeroSuggest(
   search_term_args.current_page_url = current_query_;
   GURL suggest_url(default_provider->suggestions_url_ref().
                    ReplaceSearchTerms(search_term_args));
-  if (!SearchProvider::CanSendURL(
-          current_page_url, suggest_url,
+  if (!CanSendURL(current_page_url, suggest_url,
           template_url_service_->GetDefaultSearchProvider(),
           page_classification, profile_) ||
       !OmniboxFieldTrial::InZeroSuggestFieldTrial())
@@ -282,9 +280,8 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
       std::string(), false, relevance, true, false, query_string);
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
   // of passing in -1.
-  AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
-      this, AutocompleteInput(), query_string, suggestion, template_url,
-      accepted_suggestion, -1, true);
+  AutocompleteMatch match = CreateSearchSuggestion(this, AutocompleteInput(),
+      query_string, suggestion, template_url, accepted_suggestion, -1, true);
   if (!match.destination_url.is_valid())
     return;
 

@@ -23,6 +23,11 @@
 class AutocompleteProviderListener;
 class GURL;
 class Profile;
+class TemplateURL;
+
+namespace base {
+class Value;
+}
 
 // Base functionality for receiving suggestions from a search engine.
 // This class is abstract and should only be used as a base for other
@@ -248,6 +253,65 @@ class BaseSearchProvider : public AutocompleteProvider,
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
+
+  // Returns an AutocompleteMatch with the given |autocomplete_provider|
+  // for the search |suggestion|, which represents a search via |template_url|.
+  // If |template_url| is NULL, returns a match with an invalid destination URL.
+  //
+  // |input_text| is the original user input.  This is used to highlight
+  // portions of the match contents to distinguish locally-typed text from
+  // suggested text.
+  //
+  // |input| is necessary for various other details, like whether we should
+  // allow inline autocompletion and what the transition type should be.
+  // |accepted_suggestion| and |omnibox_start_margin| are used along with
+  // |input_text| to generate Assisted Query Stats.
+  // |append_extra_query_params| should be set if |template_url| is the default
+  // search engine, so the destination URL will contain any
+  // command-line-specified query params.
+  static AutocompleteMatch CreateSearchSuggestion(
+      AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const base::string16& input_text,
+      const SuggestResult& suggestion,
+      const TemplateURL* template_url,
+      int accepted_suggestion,
+      int omnibox_start_margin,
+      bool append_extra_query_params);
+
+  // Parses JSON response received from the provider, stripping XSSI
+  // protection if needed. Returns the parsed data if successful, NULL
+  // otherwise.
+  static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
+
+  // Returns whether we can send the URL of the current page in any suggest
+  // requests.  Doing this requires that all the following hold:
+  // * The user has suggest enabled in their settings and is not in incognito
+  //   mode.  (Incognito disables suggest entirely.)
+  // * The current URL is HTTP, or HTTPS with the same domain as the suggest
+  //   server.  Non-HTTP[S] URLs (e.g. FTP/file URLs) may contain sensitive
+  //   information.  HTTPS URLs may also contain sensitive information, but if
+  //   they're on the same domain as the suggest server, then the relevant
+  //   entity could have already seen/logged this data.
+  // * The suggest request is sent over HTTPS.  This avoids leaking the current
+  //   page URL in world-readable network traffic.
+  // * The user's suggest provider is Google.  We might want to allow other
+  //   providers to see this data someday, but for now this has only been
+  //   implemented for Google.  Also see next bullet.
+  // * The user is OK in principle with sending URLs of current pages to their
+  //   provider.  Today, there is no explicit setting that controls this, but if
+  //   the user has tab sync enabled and tab sync is unencrypted, then they're
+  //   already sending this data to Google for sync purposes.  Thus we use this
+  //   setting as a proxy for "it's OK to send such data".  In the future,
+  //   especially if we want to support suggest providers other than Google, we
+  //   may change this to be a standalone setting or part of some explicit
+  //   general opt-in.
+  static bool CanSendURL(
+      const GURL& current_page_url,
+      const GURL& suggest_url,
+      const TemplateURL* template_url,
+      AutocompleteInput::PageClassification page_classification,
+      Profile* profile);
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion
