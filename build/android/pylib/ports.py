@@ -13,8 +13,8 @@ import re
 import socket
 import traceback
 
-import cmd_helper
-import constants
+from pylib import cmd_helper
+from pylib import constants
 
 
 # The following two methods are used to allocate the port source for various

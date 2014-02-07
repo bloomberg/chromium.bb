@@ -8,8 +8,10 @@ import optparse
 import os
 import sys
 
+# pylint: disable=F0401
 from util import build_utils
 from util import md5_check
+# pylint: enable=F0401
 
 
 def DoDex(options, paths):
@@ -30,7 +32,7 @@ def DoDex(options, paths):
   build_utils.Touch(options.dex_path)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--android-sdk-tools',
                     help='Android sdk build tools directory.')
@@ -62,4 +64,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

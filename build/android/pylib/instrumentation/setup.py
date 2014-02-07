@@ -7,8 +7,8 @@
 import logging
 import os
 
-import test_package
-import test_runner
+from pylib.instrumentation import test_package
+from pylib.instrumentation import test_runner
 
 
 def Setup(test_options):
@@ -26,7 +26,7 @@ def Setup(test_options):
 
   test_pkg = test_package.TestPackage(test_options.test_apk_path,
                                       test_options.test_apk_jar_path)
-  tests = test_pkg._GetAllMatchingTests(
+  tests = test_pkg.GetAllMatchingTests(
       test_options.annotations,
       test_options.exclude_annotations,
       test_options.test_filter)

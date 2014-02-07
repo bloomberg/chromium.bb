@@ -11,12 +11,13 @@
 import optparse
 import os
 import re
-import subprocess
 import sys
 
+# pylint: disable=F0401
 from util import build_device
 from util import build_utils
 from util import md5_check
+# pylint: enable=F0401
 
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
@@ -27,9 +28,11 @@ from pylib.utils import apk_helper
 def GetNewMetadata(device, apk_package):
   """Gets the metadata on the device for the apk_package apk."""
   output = device.RunShellCommand('ls -l /data/app/')
+  # pylint: disable=C0301
   # Matches lines like:
   # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell.apk
   # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell-1.apk
+  # pylint: enable=C0301
   apk_matcher = lambda s: re.match('.*%s(-[0-9]*)?.apk$' % apk_package, s)
   matches = filter(apk_matcher, output)
   return matches[0] if matches else None
@@ -53,7 +56,7 @@ def RecordInstallMetadata(device, apk_package, metadata_path):
     outfile.write(metadata)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--apk-path',
       help='Path to .apk to install.')
@@ -101,4 +104,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

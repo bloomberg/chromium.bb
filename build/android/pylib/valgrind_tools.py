@@ -20,13 +20,13 @@ Call tool.SetupEnvironment().
 Run the test as usual.
 Call tool.CleanUpEnvironment().
 """
+# pylint: disable=R0201
 
 import os.path
 import subprocess
 import sys
-from glob import glob
 
-from constants import DIR_SOURCE_ROOT
+from pylib.constants import DIR_SOURCE_ROOT
 
 
 def SetChromeTimeoutScale(adb, scale):
@@ -41,6 +41,10 @@ def SetChromeTimeoutScale(adb, scale):
 
 class BaseTool(object):
   """A tool that does nothing."""
+
+  def __init__(self):
+    """Does nothing."""
+    pass
 
   def GetTestWrapper(self):
     """Returns a string that is to be prepended to the test command line."""
@@ -93,6 +97,7 @@ class AddressSanitizerTool(BaseTool):
   EXTRA_OPTIONS = 'strict_memcmp=0'
 
   def __init__(self, adb):
+    super(AddressSanitizerTool, self).__init__()
     self._adb = adb
     # Configure AndroidCommands to run utils (such as md5sum_bin) under ASan.
     # This is required because ASan is a compiler-based tool, and md5sum
@@ -137,6 +142,7 @@ class ValgrindTool(BaseTool):
   VGLOGS_DIR = '/data/local/tmp/vglogs'
 
   def __init__(self, adb):
+    super(ValgrindTool, self).__init__()
     self._adb = adb
     # exactly 31 chars, SystemProperties::PROP_NAME_MAX
     self._wrap_properties = ['wrap.com.google.android.apps.ch',
@@ -227,11 +233,11 @@ class TSanTool(ValgrindTool):
 
 
 TOOL_REGISTRY = {
-    'memcheck': lambda x: MemcheckTool(x),
-    'memcheck-renderer': lambda x: MemcheckTool(x),
-    'tsan': lambda x: TSanTool(x),
-    'tsan-renderer': lambda x: TSanTool(x),
-    'asan': lambda x: AddressSanitizerTool(x),
+    'memcheck': MemcheckTool,
+    'memcheck-renderer': MemcheckTool,
+    'tsan': TSanTool,
+    'tsan-renderer': TSanTool,
+    'asan': AddressSanitizerTool,
 }
 
 

@@ -65,7 +65,7 @@ _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
 
 def _GetTraceTimestamp():
- return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
 
 
 def _PackageTraceAsHtml(trace_file_name, html_file_name):
@@ -78,7 +78,6 @@ def _PackageTraceAsHtml(trace_file_name, html_file_name):
   generate = __import__('generate', {}, {})
   parse_deps = __import__('parse_deps', {}, {})
 
-  basename = os.path.splitext(trace_file_name)[0]
   load_sequence = parse_deps.calc_load_sequence(
       ['tracing/standalone_timeline_view.js'], [src_dir])
 
@@ -175,7 +174,7 @@ class SystraceController(object):
   def GetCategories(adb):
     return adb.RunShellCommand('atrace --list_categories')
 
-  def StartTracing(self, interval):
+  def StartTracing(self, _):
     self._thread = threading.Thread(target=self._CollectData)
     self._thread.start()
 
@@ -400,7 +399,7 @@ def main():
                     action='store_true')
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
 
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)

@@ -6,18 +6,13 @@
 
 import json
 import fnmatch
-import logging
 import os
-import psutil
-import signal
 import shutil
-import time
 
 from pylib import constants
 from pylib import forwarder
+from pylib.perf import test_runner
 from pylib.utils import test_environment
-
-import test_runner
 
 
 def Setup(test_options):
@@ -64,7 +59,7 @@ def Setup(test_options):
     with file(test_options.flaky_steps, 'r') as f:
       flaky_steps = json.load(f)
 
-  def TestRunnerFactory(device, shard_index):
+  def TestRunnerFactory(device, _shard_index):
     return test_runner.TestRunner(
         test_options, device, tests_dict, flaky_steps)
 

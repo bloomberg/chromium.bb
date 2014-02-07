@@ -101,7 +101,7 @@ def _Suppress(config_path, result_path):
   _WriteConfigFile(config_path, issues_dict)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser(usage='%prog RESULT-FILE')
   _, args = parser.parse_args()
 
@@ -112,4 +112,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  main(sys.argv)
+  main()

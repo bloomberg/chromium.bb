@@ -6,6 +6,7 @@
 
 Assumes adb binary is currently on system path.
 """
+# pylint: disable-all
 
 import collections
 import datetime
@@ -27,7 +28,7 @@ import system_properties
 
 try:
   from pylib import pexpect
-except:
+except ImportError:
   pexpect = None
 
 sys.path.append(os.path.join(
@@ -350,7 +351,7 @@ class AndroidCommands(object):
         logging.warning('Restarting and retrying after timeout: %s', e)
         retries -= 1
         self.RestartShell()
-    raise last_err  # Only reached after max retries, re-raise the last error.
+    raise last_err # Only reached after max retries, re-raise the last error.
 
   def RestartShell(self):
     """Restarts the shell on the device. Does not block for it to return."""
@@ -489,7 +490,7 @@ class AndroidCommands(object):
     if not adb_pids:
       raise errors.MsgException('Unable to obtain adbd pid')
     try:
-      self.KillAll('adbd', signal=signal.SIGTERM, with_su=True)
+      self.KillAll('adbd', signum=signal.SIGTERM, with_su=True)
       logging.info('Waiting for device to settle...')
       self._adb.SendCommand('wait-for-device')
       new_adb_pids = self.ExtractPid('adbd')
@@ -508,7 +509,8 @@ class AndroidCommands(object):
     if ret != 0:
       raise errors.MsgException('StartAdbServer: %d' % ret)
 
-  def KillAdbServer(self):
+  @staticmethod
+  def KillAdbServer():
     """Kill adb server."""
     adb_cmd = [constants.GetAdbPath(), 'kill-server']
     ret = cmd_helper.RunCmd(adb_cmd)
@@ -638,7 +640,8 @@ class AndroidCommands(object):
     """
     self._CheckCommandIsValid(command)
     self._LogShell(command)
-    if "'" in command: logging.warning(command + " contains ' quotes")
+    if "'" in command:
+      logging.warning(command + " contains ' quotes")
     result = self._adb.SendShellCommand(
         "'%s'" % command, timeout_time).splitlines()
     # TODO(b.kelemen): we should really be able to drop the stderr of the
@@ -669,12 +672,12 @@ class AndroidCommands(object):
       lines = lines[:-1] + [last_line[:status_pos]]
     return (status, lines)
 
-  def KillAll(self, process, signal=9, with_su=False):
+  def KillAll(self, process, signum=9, with_su=False):
     """Android version of killall, connected via adb.
 
     Args:
       process: name of the process to kill off.
-      signal: signal to use, 9 (SIGKILL) by default.
+      signum: signal to use, 9 (SIGKILL) by default.
       with_su: wether or not to use su to kill the processes.
 
     Returns:
@@ -682,7 +685,7 @@ class AndroidCommands(object):
     """
     pids = self.ExtractPid(process)
     if pids:
-      cmd = 'kill -%d %s' % (signal, ' '.join(pids))
+      cmd = 'kill -%d %s' % (signum, ' '.join(pids))
       if with_su:
         self.RunShellCommandWithSU(cmd)
       else:
@@ -714,7 +717,8 @@ class AndroidCommands(object):
         return 0
     return processes_killed
 
-  def _GetActivityCommand(self, package, activity, wait_for_completion, action,
+  @staticmethod
+  def _GetActivityCommand(package, activity, wait_for_completion, action,
                           category, data, extras, trace_file_name, force_stop,
                           flags):
     """Creates command to start |package|'s activity on the device.
@@ -1073,7 +1077,7 @@ class AndroidCommands(object):
     r = self.RunShellCommandWithSU('cat /dev/null')
     return r == [] or r[0].strip() == ''
 
-  def GetProtectedFileContents(self, filename, log_result=False):
+  def GetProtectedFileContents(self, filename):
     """Gets contents from the protected file specified by |filename|.
 
     This is less efficient than GetFileContents, but will work for protected
@@ -1321,7 +1325,8 @@ class AndroidCommands(object):
           # Note this will block for upto the timeout _per log line_, so we need
           # to calculate the overall timeout remaining since t0.
           time_remaining = t0 + timeout - time.time()
-          if time_remaining < 0: raise pexpect.TIMEOUT(self._logcat)
+          if time_remaining < 0:
+            raise pexpect.TIMEOUT(self._logcat)
           self._logcat.expect(PEXPECT_LINE_RE, timeout=time_remaining)
           line = self._logcat.match.group(1)
           if error_re:
@@ -1350,7 +1355,7 @@ class AndroidCommands(object):
                                      timeout=self._logcat.timeout,
                                      logfile=self._logcat.logfile)
 
-  def StartRecordingLogcat(self, clear=True, filters=['*:v']):
+  def StartRecordingLogcat(self, clear=True, filters=None):
     """Starts recording logcat output to eventually be saved as a string.
 
     This call should come before some series of tests are run, with either
@@ -1360,6 +1365,8 @@ class AndroidCommands(object):
       clear: True if existing log output should be cleared.
       filters: A list of logcat filters to be used.
     """
+    if not filters:
+      filters = ['*:v']
     if clear:
       self._adb.SendCommand('logcat -c')
     logcat_command = 'adb %s logcat -v threadtime %s' % (self._adb._target_arg,
@@ -1404,7 +1411,8 @@ class AndroidCommands(object):
     self._logcat_tmpoutfile = None
     return output
 
-  def SearchLogcatRecord(self, record, message, thread_id=None, proc_id=None,
+  @staticmethod
+  def SearchLogcatRecord(record, message, thread_id=None, proc_id=None,
                          log_level=None, component=None):
     """Searches the specified logcat output and returns results.
 
@@ -1520,8 +1528,7 @@ class AndroidCommands(object):
     usage_dict = collections.defaultdict(int)
     smaps = collections.defaultdict(dict)
     current_smap = ''
-    for line in self.GetProtectedFileContents('/proc/%s/smaps' % pid,
-                                              log_result=False):
+    for line in self.GetProtectedFileContents('/proc/%s/smaps' % pid):
       items = line.split()
       # See man 5 proc for more details. The format is:
       # address perms offset dev inode pathname
@@ -1541,8 +1548,7 @@ class AndroidCommands(object):
       # Presumably the process died between ps and calling this method.
       logging.warning('Could not find memory usage for pid ' + str(pid))
 
-    for line in self.GetProtectedFileContents('/d/nvmap/generic-0/clients',
-                                              log_result=False):
+    for line in self.GetProtectedFileContents('/d/nvmap/generic-0/clients'):
       match = re.match(NVIDIA_MEMORY_INFO_RE, line)
       if match and match.group('pid') == pid:
         usage_bytes = int(match.group('usage_bytes'))
@@ -1550,8 +1556,7 @@ class AndroidCommands(object):
         break
 
     peak_value_kb = 0
-    for line in self.GetProtectedFileContents('/proc/%s/status' % pid,
-                                              log_result=False):
+    for line in self.GetProtectedFileContents('/proc/%s/status' % pid):
       if not line.startswith('VmHWM:'):  # Format: 'VmHWM: +[0-9]+ kB'
         continue
       peak_value_kb = int(line.split(':')[1].strip().split(' ')[0])

@@ -15,7 +15,7 @@ output up until the BUILD SUCCESSFUL line.
 import sys
 import traceback
 
-from util import build_utils
+from util import build_utils # pylint: disable=F0401
 
 
 def main(argv):

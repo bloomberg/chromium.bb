@@ -9,9 +9,9 @@ import os
 import sys
 import types
 
-import test_case
-import test_info_collection
-import test_runner
+from pylib.host_driven import test_case
+from pylib.host_driven import test_info_collection
+from pylib.host_driven import test_runner
 
 
 def _GetPythonFiles(root, files):

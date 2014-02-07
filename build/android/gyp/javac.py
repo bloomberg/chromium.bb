@@ -9,8 +9,10 @@ import optparse
 import os
 import sys
 
+# pylint: disable=F0401
 from util import build_utils
 from util import md5_check
+# pylint: enable=F0401
 
 
 def DoJavac(options):
@@ -69,7 +71,7 @@ def DoJavac(options):
       input_strings=javac_cmd)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--src-dirs', help='Directories containing java files.')
   parser.add_option('--javac-includes',
@@ -94,6 +96,6 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 
 

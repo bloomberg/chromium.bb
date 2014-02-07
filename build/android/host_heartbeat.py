@@ -7,8 +7,8 @@
 """Sends a heart beat pulse to the currently online Android devices.
 This heart beat lets the devices know that they are connected to a host.
 """
+# pylint: disable=W0702
 
-import os
 import sys
 import time
 

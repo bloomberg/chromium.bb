@@ -26,7 +26,7 @@ import shutil
 import sys
 import xml.dom.minidom as minidom
 
-from util import build_utils
+from util import build_utils # pylint: disable=F0401
 
 # Note that we are assuming 'android:' is an alias of
 # the namespace 'http://schemas.android.com/apk/res/android'.
@@ -51,7 +51,7 @@ ATTRIBUTES_TO_MAP = {'paddingStart' : 'paddingLeft',
 ATTRIBUTES_TO_MAP = dict(['android:' + k, 'android:' + v] for k, v
                          in ATTRIBUTES_TO_MAP.iteritems())
 
-ATTRIBUTES_TO_MAP_REVERSED = dict([v,k] for k, v
+ATTRIBUTES_TO_MAP_REVERSED = dict([v, k] for k, v
                                   in ATTRIBUTES_TO_MAP.iteritems())
 
 
@@ -281,7 +281,7 @@ def ParseArgs():
   return options
 
 
-def main(argv):
+def main():
   options = ParseArgs()
 
   build_utils.DeleteDirectory(options.res_v14_compatibility_dir)
@@ -342,5 +342,5 @@ def main(argv):
     build_utils.Touch(options.stamp)
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 

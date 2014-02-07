@@ -108,12 +108,12 @@ def main(base_dir, adb_cmd='adb'):
 
   # Set up the alarm for calling 'adb devices'. This is to ensure
   # our script doesn't get stuck waiting for a process response
-  def TimeoutHandler(_, unused_frame):
+  def TimeoutHandler(_, _):
     raise TimeoutException()
   signal.signal(signal.SIGALRM, TimeoutHandler)
 
   # Handle SIGTERMs to ensure clean shutdown
-  def SigtermHandler(_, unused_frame):
+  def SigtermHandler(_, _):
     raise SigtermError()
   signal.signal(signal.SIGTERM, SigtermHandler)
 

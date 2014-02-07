@@ -9,6 +9,10 @@ import md5_check
 
 
 class TestMd5Check(unittest.TestCase):
+  def __init__(self):
+    super(TestMd5Check, self).__init__()
+    self.called = False
+
   def testCallAndRecordIfStale(self):
     input_strings = ['string1', 'string2']
     input_file1 = tempfile.NamedTemporaryFile()

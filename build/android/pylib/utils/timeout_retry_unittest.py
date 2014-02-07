@@ -6,15 +6,15 @@
 
 import unittest
 
-import reraiser_thread
-import timeout_retry
+from pylib.utils import reraiser_thread
+from pylib.utils import timeout_retry
 
 
 class TestException(Exception):
   pass
 
 
-def _NeverEnding(tries=[0]):
+def _NeverEnding(tries):
   tries[0] += 1
   while True:
     pass

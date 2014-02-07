@@ -11,14 +11,12 @@ import os
 import re
 import sys
 
-import build_utils
+import build_utils # pylint: disable=F0401
 
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
 from pylib import android_commands
-
-from pylib.android_commands import GetAttachedDevices
 
 
 class BuildDevice(object):
@@ -52,8 +50,8 @@ class BuildDevice(object):
     return matches[0] if matches else None
 
 
-def GetConfigurationForDevice(id):
-  adb = android_commands.AndroidCommands(id)
+def GetConfigurationForDevice(device_id):
+  adb = android_commands.AndroidCommands(device_id)
   configuration = None
   has_root = False
   is_online = adb.IsOnline()
@@ -69,7 +67,7 @@ def GetConfigurationForDevice(id):
       cmd_output = adb.RunShellCommand(cmd)
 
     configuration = {
-        'id': id,
+        'id': device_id,
         'description': cmd_output[-1],
         'install_metadata': cmd_output[:-1],
       }

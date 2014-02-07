@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 """Uploads the results to the flakiness dashboard server."""
+# pylint: disable=E1002,R0201
 
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import xml
@@ -26,8 +26,10 @@ sys.path.append(
                                  os.pardir, os.pardir, os.pardir,
                                  'Tools', 'Scripts')))
 
+# pylint: disable=F0401
 from webkitpy.common.system import executive, filesystem
 from webkitpy.layout_tests.layout_package import json_results_generator
+# pylint: enable=F0401
 
 #TODO(craigdh): pylib/utils/ should not depend on pylib/.
 from pylib import cmd_helper
@@ -125,7 +127,7 @@ class ResultsUploader(object):
       # TODO(frankf): Use factory properties (see buildbot/bb_device_steps.py)
       # This requires passing the actual master name (e.g. 'ChromiumFYI' not
       # 'chromium.fyi').
-      from slave import slave_utils
+      from slave import slave_utils # pylint: disable=F0401
       self._build_name = slave_utils.SlaveBuildName(constants.DIR_SOURCE_ROOT)
       self._master_name = slave_utils.GetActiveMaster()
     else:
@@ -188,7 +190,7 @@ class ResultsUploader(object):
       results_generator.generate_times_ms_file()
       results_generator.upload_json_files(json_files)
     except Exception as e:
-      logging.error("Uploading results to test server failed: %s." % e);
+      logging.error("Uploading results to test server failed: %s." % e)
     finally:
       shutil.rmtree(tmp_folder)
 

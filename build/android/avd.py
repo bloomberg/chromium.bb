@@ -13,7 +13,6 @@ import install_emulator_deps
 import logging
 import optparse
 import os
-import subprocess
 import sys
 
 from pylib import constants
@@ -45,7 +44,7 @@ def main(argv):
   # Check if KVM is enabled for x86 AVD's and check for x86 system images.
   # TODO(andrewhayden) Since we can fix all of these with install_emulator_deps
   # why don't we just run it?
-  if options.abi =='x86':
+  if options.abi == 'x86':
     if not install_emulator_deps.CheckKVM():
       logging.critical('ERROR: KVM must be enabled in BIOS, and installed. '
                        'Enable KVM in BIOS and run install_emulator_deps.py')

@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 """Base class representing GTest test packages."""
-
-import logging
+# pylint: disable=R0201
 
 
 class TestPackage(object):
@@ -43,7 +42,7 @@ class TestPackage(object):
     """
     raise NotImplementedError('Method must be overriden.')
 
-  def GetGTestReturnCode(self, adb):
+  def GetGTestReturnCode(self, _adb):
     return None
 
   def SpawnTestProcess(self, adb):
@@ -65,7 +64,8 @@ class TestPackage(object):
     """
     raise NotImplementedError('Method must be overriden.')
 
-  def _ParseGTestListTests(self, raw_list):
+  @staticmethod
+  def _ParseGTestListTests(raw_list):
     """Parses a raw test list as provided by --gtest_list_tests.
 
     Args:

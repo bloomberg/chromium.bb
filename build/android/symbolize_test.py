@@ -15,7 +15,6 @@ addresses and demangled names by running the following:
   nm -gC *.so
 """
 
-import sys
 import StringIO
 import unittest
 

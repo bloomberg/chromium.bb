@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """Annotations for host-driven tests."""
+# pylint: disable=W0212
 
 import os
 

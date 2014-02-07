@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """Helper class for instrumenation test jar."""
+# pylint: disable=W0702
 
 import collections
 import logging
@@ -127,7 +128,8 @@ class TestJar(object):
   def _GetAnnotationMap(self):
     return self._annotation_map
 
-  def _IsTestMethod(self, test):
+  @staticmethod
+  def _IsTestMethod(test):
     class_name, method = test.split('#')
     return class_name.endswith('Test') and method.startswith('test')
 
@@ -137,7 +139,8 @@ class TestJar(object):
       return []
     return self._GetAnnotationMap()[test]
 
-  def _AnnotationsMatchFilters(self, annotation_filter_list, annotations):
+  @staticmethod
+  def _AnnotationsMatchFilters(annotation_filter_list, annotations):
     """Checks if annotations match any of the filters."""
     if not annotation_filter_list:
       return True
@@ -173,7 +176,7 @@ class TestJar(object):
         tests_missing_annotations.append(test_method)
     return sorted(tests_missing_annotations)
 
-  def _GetAllMatchingTests(self, annotation_filter_list,
+  def GetAllMatchingTests(self, annotation_filter_list,
                            exclude_annotation_list, test_filter):
     """Get a list of tests matching any of the annotations and the filter.
 

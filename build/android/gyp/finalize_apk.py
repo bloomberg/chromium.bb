@@ -13,7 +13,7 @@ import shutil
 import sys
 import tempfile
 
-from util import build_utils
+from util import build_utils # pylint: disable=F0401
 
 def SignApk(keystore_path, unsigned_path, signed_path):
   shutil.copy(unsigned_path, signed_path)
@@ -39,7 +39,7 @@ def AlignApk(android_sdk_root, unaligned_path, final_path):
   build_utils.CheckOutput(align_cmd)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
 
   parser.add_option('--android-sdk-root', help='Android sdk root directory.')
@@ -64,6 +64,6 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 
 

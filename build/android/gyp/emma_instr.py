@@ -29,7 +29,7 @@ import tempfile
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from pylib.utils import command_option_parser
 
-from util import build_utils
+from util import build_utils # pylint: disable=F0401
 
 
 def _AddCommonOptions(option_parser):
@@ -63,7 +63,7 @@ def _AddInstrumentOptions(option_parser):
             'patterns separated with whitespace and/or comma.'))
 
 
-def _RunCopyCommand(command, options, args, option_parser):
+def _RunCopyCommand(_command, options, _, option_parser):
   """Copies the jar from input to output locations.
 
   Also removes any old coverage/sources file.
@@ -129,7 +129,7 @@ def _CreateSourcesFile(sources_string, sources_file, src_root):
     json.dump(relative_sources, f)
 
 
-def _RunInstrumentCommand(command, options, args, option_parser):
+def _RunInstrumentCommand(command, options, _, option_parser):
   """Instruments the classes/jar files using EMMA.
 
   Args:
@@ -197,11 +197,11 @@ VALID_COMMANDS = {
 }
 
 
-def main(argv):
+def main():
   option_parser = command_option_parser.CommandOptionParser(
       commands_dict=VALID_COMMANDS)
   command_option_parser.ParseAndExecute(option_parser)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

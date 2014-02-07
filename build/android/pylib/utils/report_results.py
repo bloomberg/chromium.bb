@@ -9,8 +9,7 @@ import os
 import re
 
 from pylib import constants
-
-import flakiness_dashboard_results_uploader
+from pylib.utils import flakiness_dashboard_results_uploader
 
 
 def _LogToFile(results, test_type, suite_name):
@@ -47,11 +46,11 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
 
   try:
     if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
-        assert test_package in ['ContentShellTest',
-                                'ChromiumTestShellTest',
-                                'AndroidWebViewTest']
-        dashboard_test_type = ('%s_instrumentation_tests' %
-                               test_package.lower().rstrip('test'))
+      assert test_package in ['ContentShellTest',
+                              'ChromiumTestShellTest',
+                              'AndroidWebViewTest']
+      dashboard_test_type = ('%s_instrumentation_tests' %
+                             test_package.lower().rstrip('test'))
     # Downstream server.
     else:
       dashboard_test_type = 'Chromium_Android_Instrumentation'
