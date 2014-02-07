@@ -40,7 +40,6 @@ function test()
             threads[event.tid] = (threads[event.tid] || 0) + 1;
         }
         InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
-        InspectorTest.assertGreaterOrEqual(knownEvents["MessageLoop::PostTask"], 20, "Too few MessageLoop::PostTask");
         InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 10, "Too few v8.callFunction");
         InspectorTest.assertGreaterOrEqual(knownEvents["Document::recalcStyle"], 1, "Too few Document::recalcStyle");
         InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
