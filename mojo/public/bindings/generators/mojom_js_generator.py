@@ -40,6 +40,8 @@ def JavaScriptDefaultValue(field):
     return "null";
   if isinstance(field.kind, mojom.Array):
     return "[]";
+  if isinstance(field.kind, mojom.Interface):
+    return _kind_to_javascript_default_value[mojom.MSGPIPE]
 
 
 def JavaScriptPayloadSize(packed):
@@ -79,6 +81,8 @@ def GetJavaScriptType(kind):
     return "new codec.PointerTo(%s)" % GetJavaScriptType(kind.name)
   if isinstance(kind, mojom.Array):
     return "new codec.ArrayOf(%s)" % GetJavaScriptType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetJavaScriptType(mojom.MSGPIPE)
   return kind
 
 
@@ -109,6 +113,8 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeStructPointer(%s)" % GetJavaScriptType(kind.name);
   if isinstance(kind, mojom.Array):
     return "decodeArrayPointer(%s)" % GetJavaScriptType(kind.kind);
+  if isinstance(kind, mojom.Interface):
+    return JavaScriptDecodeSnippet(mojom.MSGPIPE)
 
 
 _kind_to_javascript_encode_snippet = {
@@ -138,6 +144,8 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStructPointer(%s, " % GetJavaScriptType(kind.name);
   if isinstance(kind, mojom.Array):
     return "encodeArrayPointer(%s, " % GetJavaScriptType(kind.kind);
+  if isinstance(kind, mojom.Interface):
+    return JavaScriptEncodeSnippet(mojom.MSGPIPE)
 
 
 class Generator(mojom_generator.Generator):

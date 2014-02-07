@@ -33,6 +33,8 @@ class PackedField(object):
   def GetSizeForKind(cls, kind):
     if isinstance(kind, mojom.Array) or isinstance(kind, mojom.Struct):
       return 8
+    if isinstance(kind, mojom.Interface):
+      kind = mojom.MSGPIPE
     return cls.kind_to_size[kind]
 
   def __init__(self, field, ordinal):

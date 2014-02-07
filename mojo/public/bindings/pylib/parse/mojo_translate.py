@@ -72,11 +72,12 @@ def MapParameters(parameters):
 
 def MapMethods(methods):
   out = []
-  for method in methods:
-    if method[0] == 'METHOD':
-      out.append({'name': method[1],
-                  'parameters': MapParameters(method[2]),
-                  'ordinal': MapOrdinal(method[3])})
+  if methods:
+    for method in methods:
+      if method[0] == 'METHOD':
+        out.append({'name': method[1],
+                    'parameters': MapParameters(method[2]),
+                    'ordinal': MapOrdinal(method[3])})
   return out
 
 
@@ -91,10 +92,11 @@ def MapEnumFields(fields):
 
 def MapEnums(enums):
   out = []
-  for enum in enums:
-    if enum[0] == 'ENUM':
-      out.append({'name': enum[1],
-                  'fields': MapEnumFields(enum[2])})
+  if enums:
+    for enum in enums:
+      if enum[0] == 'ENUM':
+        out.append({'name': enum[1],
+                    'fields': MapEnumFields(enum[2])})
   return out
 
 

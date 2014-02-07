@@ -35,6 +35,8 @@ def GetCppType(kind):
     return "%s_Data*" % kind.name
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetCppType(mojom.MSGPIPE)
   if kind.spec == 's':
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
@@ -44,6 +46,8 @@ def GetCppArrayArgWrapperType(kind):
     return kind.name
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetCppArrayArgWrapperType(mojom.MSGPIPE)
   if kind.spec == 's':
     return "mojo::String"
   return _kind_to_cpp_type[kind]
@@ -53,6 +57,8 @@ def GetCppWrapperType(kind):
     return kind.name
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetCppWrapperType(mojom.MSGPIPE)
   if kind.spec == 's':
     return "mojo::String"
   if mojom_generator.IsHandleKind(kind):
@@ -64,6 +70,8 @@ def GetCppConstWrapperType(kind):
     return "const %s&" % kind.name
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetCppConstWrapperType(mojom.MSGPIPE)
   if kind.spec == 's':
     return "const mojo::String&"
   if kind.spec == 'h':
@@ -77,14 +85,16 @@ def GetCppConstWrapperType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppFieldType(kind):
-  if mojom_generator.IsHandleKind(kind):
-    return _kind_to_cpp_type[kind]
   if isinstance(kind, mojom.Struct):
     return "mojo::internal::StructPointer<%s_Data>" % kind.name
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return GetCppFieldType(mojom.MSGPIPE)
   if kind.spec == 's':
     return "mojo::internal::StringPointer"
+  if mojom_generator.IsHandleKind(kind):
+    return _kind_to_cpp_type[kind]
   return _kind_to_cpp_type[kind]
 
 def IsStructWithHandles(struct):

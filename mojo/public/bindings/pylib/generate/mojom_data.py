@@ -136,7 +136,9 @@ def InterfaceToData(interface):
 def InterfaceFromData(kinds, data):
   interface = mojom.Interface()
   interface.name = data['name']
+  interface.spec = 'x:' + interface.name
   interface.peer = data['peer'] if data.has_key('peer') else None
+  kinds[interface.spec] = interface
   interface.methods = map(
       lambda method: MethodFromData(kinds, method), data['methods'])
   if data.has_key('enums'):

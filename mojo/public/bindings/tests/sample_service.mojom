@@ -45,22 +45,22 @@ struct DefaultsTest {
   uint8[] data = [1, 2, 3] @2;
 };
 
+interface Port {
+  void PostMessage(string message_text @0) @0;
+};
+
 [Peer=ServiceClient]
 interface Service {
   enum BazOptions {
     BAZ_REGULAR = 0,
     BAZ_EXTRA
   };
-  void Frobinate(Foo foo @0, int32 baz @1, handle<message_pipe> port @2) @0;
+  void Frobinate(Foo foo @0, int32 baz @1, Port port @2) @0;
 };
 
 [Peer=Service]
 interface ServiceClient {
   void DidFrobinate(int32 result @0) @0;
-};
-
-interface Port {
-  void PostMessage(string message_text @0) @0;
 };
 
 }

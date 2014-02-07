@@ -38,7 +38,7 @@ def IsObjectKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or IsStringKind(kind)
 
 def IsHandleKind(kind):
-  return kind.spec.startswith('h')
+  return kind.spec.startswith('h') or isinstance(kind, mojom.Interface)
 
 def CamelToUnderscores(camel):
   s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)

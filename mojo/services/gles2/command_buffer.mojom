@@ -20,9 +20,14 @@ struct ShmHandle {
   uint64 handle_hack;
 };
 
+interface CommandBufferSyncClient {
+  void DidInitialize(bool success);
+  void DidMakeProgress(CommandBufferState state);
+};
+
 [Peer=CommandBufferClient]
 interface CommandBuffer {
-  void Initialize(handle<message_pipe> sync_client,
+  void Initialize(CommandBufferSyncClient sync_client,
                   ShmHandle shared_state);
   void SetGetBuffer(int32 buffer);
   void Flush(int32 put_offset);
@@ -46,11 +51,6 @@ interface CommandBufferClient {
 
   // TODO(piman): move to somewhere else (native_viewport?).
   void DrawAnimationFrame();
-};
-
-interface CommandBufferSyncClient {
-  void DidInitialize(bool success);
-  void DidMakeProgress(CommandBufferState state);
 };
 
 }

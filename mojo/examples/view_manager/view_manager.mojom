@@ -22,7 +22,7 @@ interface ViewManager {
 
 [Peer=ViewManager]
 interface ViewManagerClient {
-  void OnViewCreated(handle<message_pipe> view);
+  void OnViewCreated(View view);
 };
 
 }

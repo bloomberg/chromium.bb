@@ -109,9 +109,14 @@ class Method(object):
     return parameter
 
 
-class Interface(object):
+class Interface(Kind):
   def __init__(self, name = None, peer = None):
     self.name = name
+    if name != None:
+      spec = 'x:' + name
+    else:
+      spec = None
+    Kind.__init__(self, spec)
     self.peer = peer
     self.methods = []
 
