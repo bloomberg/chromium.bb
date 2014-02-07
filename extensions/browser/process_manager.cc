@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -869,7 +868,8 @@ IncognitoProcessManager::IncognitoProcessManager(
 ExtensionHost* IncognitoProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
   if (IncognitoInfo::IsSplitMode(extension)) {
-    if (util::IsIncognitoEnabled(extension->id(), GetBrowserContext()))
+    if (ExtensionsBrowserClient::Get()->IsExtensionIncognitoEnabled(
+            extension->id(), GetBrowserContext()))
       return ProcessManager::CreateBackgroundHost(extension, url);
   } else {
     // Do nothing. If an extension is spanning, then its original-profile

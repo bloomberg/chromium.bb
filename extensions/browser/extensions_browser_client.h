@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +24,7 @@ namespace extensions {
 
 class ApiActivityMonitor;
 class AppSorting;
+class Extension;
 class ExtensionSystem;
 
 // Interface to allow the extensions module to make browser-process-specific
@@ -65,6 +67,17 @@ class ExtensionsBrowserClient {
   // |context| is not incognito.
   virtual content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) = 0;
+
+  // Returns true if |extension_id| can run in an incognito window.
+  virtual bool IsExtensionIncognitoEnabled(
+      const std::string& extension_id,
+      content::BrowserContext* context) const = 0;
+
+  // Returns true if |extension| can see events and data from another
+  // sub-profile (incognito to original profile, or vice versa).
+  virtual bool CanExtensionCrossIncognito(
+      const extensions::Extension* extension,
+      content::BrowserContext* context) const = 0;
 
   // Returns the PrefService associated with |context|.
   virtual PrefService* GetPrefServiceForContext(

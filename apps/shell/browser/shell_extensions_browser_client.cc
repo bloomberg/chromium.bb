@@ -82,6 +82,20 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
   return context;
 }
 
+bool ShellExtensionsBrowserClient::IsExtensionIncognitoEnabled(
+    const std::string& extension_id,
+    content::BrowserContext* context) const {
+  NOTREACHED();
+  return false;
+}
+
+bool ShellExtensionsBrowserClient::CanExtensionCrossIncognito(
+    const extensions::Extension* extension,
+    content::BrowserContext* context) const {
+  NOTREACHED();
+  return false;
+}
+
 PrefService* ShellExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
   return prefs_.get();

@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -558,7 +557,8 @@ bool EventRouter::CanDispatchEventToBrowserContext(
                          context != event->restrict_to_browser_context;
   if (!cross_incognito)
     return true;
-  return util::CanCrossIncognito(extension, context);
+  return ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
+      extension, context);
 }
 
 bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(

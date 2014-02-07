@@ -383,7 +383,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
   //
-  // IMPORTANT: you probably want to use extension_utils::IsIncognitoEnabled
+  // IMPORTANT: you probably want to use extensions::util::IsIncognitoEnabled
   // instead of this method.
   bool IsIncognitoEnabled(const std::string& extension_id) const;
   void SetIsIncognitoEnabled(const std::string& extension_id, bool enabled);
@@ -391,7 +391,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Returns true if the user has chosen to allow this extension to inject
   // scripts into pages with file URLs.
   //
-  // IMPORTANT: you probably want to use extension_utils::AllowFileAccess
+  // IMPORTANT: you probably want to use extensions::util::AllowFileAccess
   // instead of this method.
   bool AllowFileAccess(const std::string& extension_id) const;
   void SetAllowFileAccess(const std::string& extension_id, bool allow);

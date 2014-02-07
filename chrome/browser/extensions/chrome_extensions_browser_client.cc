@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
@@ -76,6 +77,18 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
     content::BrowserContext* context) {
   return static_cast<Profile*>(context)->GetOriginalProfile();
+}
+
+bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
+    const std::string& extension_id,
+    content::BrowserContext* context) const {
+  return util::IsIncognitoEnabled(extension_id, context);
+}
+
+bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
+    const extensions::Extension* extension,
+    content::BrowserContext* context) const {
+  return util::CanCrossIncognito(extension, context);
 }
 
 PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(
