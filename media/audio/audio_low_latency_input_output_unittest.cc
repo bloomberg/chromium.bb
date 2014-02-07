@@ -312,8 +312,7 @@ class AudioOutputStreamTraits {
 
   static StreamType* CreateStream(AudioManager* audio_manager,
       const AudioParameters& params) {
-    return audio_manager->MakeAudioOutputStream(params, std::string(),
-        std::string());
+    return audio_manager->MakeAudioOutputStream(params, std::string());
   }
 };
 

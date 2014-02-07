@@ -16,8 +16,7 @@
 
 namespace {
 const int kTestComponentID = 0;
-const char kTestInputDeviceID[] = "test-input-id";
-const char kTestOutputDeviceID[] = "test-output-id";
+const char kTestDeviceID[] = "test-device-id";
 }  // namespace
 
 namespace content {
@@ -87,7 +86,7 @@ class MediaInternalsTest
 
 TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
   audio_log_->OnCreated(
-      kTestComponentID, test_params_, kTestInputDeviceID, kTestOutputDeviceID);
+      kTestComponentID, test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
 
   ExpectString("channel_layout",
@@ -96,8 +95,7 @@ TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
   ExpectInt("frames_per_buffer", test_params_.frames_per_buffer());
   ExpectInt("channels", test_params_.channels());
   ExpectInt("input_channels", test_params_.input_channels());
-  ExpectString("output_device_id", kTestOutputDeviceID);
-  ExpectString("input_device_id", kTestInputDeviceID);
+  ExpectString("device_id", kTestDeviceID);
   ExpectInt("component_id", kTestComponentID);
   ExpectInt("component_type", test_component_);
   ExpectStatus("created");
@@ -128,7 +126,7 @@ TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
 
 TEST_P(MediaInternalsTest, AudioLogCreateClose) {
   audio_log_->OnCreated(
-      kTestComponentID, test_params_, kTestInputDeviceID, kTestOutputDeviceID);
+      kTestComponentID, test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
   ExpectStatus("created");
 

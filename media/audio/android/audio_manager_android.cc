@@ -122,12 +122,10 @@ AudioParameters AudioManagerAndroid::GetInputStreamParameters(
 
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const std::string& input_device_id) {
+    const std::string& device_id) {
   bool had_no_streams = HadNoAudioStreams();
   AudioOutputStream* stream =
-      AudioManagerBase::MakeAudioOutputStream(params, std::string(),
-          std::string());
+      AudioManagerBase::MakeAudioOutputStream(params, std::string());
 
   // The audio manager for Android creates streams intended for real-time
   // VoIP sessions and therefore sets the audio mode to MODE_IN_COMMUNICATION.
@@ -187,8 +185,7 @@ AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(
 
 AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const std::string& input_device_id) {
+    const std::string& device_id) {
   DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return new OpenSLESOutputStream(this, params);

@@ -20,8 +20,6 @@
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 #include "media/audio/mac/audio_low_latency_output_mac.h"
-#include "media/audio/mac/audio_synchronized_mac.h"
-#include "media/audio/mac/audio_unified_mac.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
@@ -54,16 +52,6 @@ static bool HasAudioHardware(AudioObjectPropertySelector selector) {
                                             &output_device_id);
   return err == kAudioHardwareNoError &&
       output_device_id != kAudioObjectUnknown;
-}
-
-// Returns true if the default input device is the same as
-// the default output device.
-bool AudioManagerMac::HasUnifiedDefaultIO() {
-  AudioDeviceID input_id, output_id;
-  if (!GetDefaultInputDevice(&input_id) || !GetDefaultOutputDevice(&output_id))
-    return false;
-
-  return input_id == output_id;
 }
 
 // Retrieves information on audio devices, and prepends the default
@@ -566,72 +554,18 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
-  return MakeLowLatencyOutputStream(params, std::string(), std::string());
+  return MakeLowLatencyOutputStream(params, std::string());
 }
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const std::string& input_device_id) {
-  // Handle basic output with no input channels.
-  if (params.input_channels() == 0) {
-    AudioDeviceID device = GetAudioDeviceIdByUId(false, device_id);
-    if (device == kAudioObjectUnknown) {
-      DLOG(ERROR) << "Failed to open output device: " << device_id;
-      return NULL;
-    }
-    return new AUHALStream(this, params, device);
-  }
-
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
-
-  // TODO(xians): support more than stereo input.
-  if (params.input_channels() != 2) {
-    // WebAudio is currently hard-coded to 2 channels so we should not
-    // see this case.
-    NOTREACHED() << "Only stereo input is currently supported!";
+    const std::string& device_id) {
+  AudioDeviceID device = GetAudioDeviceIdByUId(false, device_id);
+  if (device == kAudioObjectUnknown) {
+    DLOG(ERROR) << "Failed to open output device: " << device_id;
     return NULL;
   }
-
-  AudioDeviceID device = kAudioObjectUnknown;
-  if (HasUnifiedDefaultIO()) {
-    // For I/O, the simplest case is when the default input and output
-    // devices are the same.
-    GetDefaultOutputDevice(&device);
-    VLOG(0) << "UNIFIED: default input and output devices are identical";
-  } else {
-    // Some audio hardware is presented as separate input and output devices
-    // even though they are really the same physical hardware and
-    // share the same "clock domain" at the lowest levels of the driver.
-    // A common of example of this is the "built-in" audio hardware:
-    //     "Built-in Line Input"
-    //     "Built-in Output"
-    // We would like to use an "aggregate" device for these situations, since
-    // CoreAudio will make the most efficient use of the shared "clock domain"
-    // so we get the lowest latency and use fewer threads.
-    device = aggregate_device_manager_.GetDefaultAggregateDevice();
-    if (device != kAudioObjectUnknown)
-      VLOG(0) << "Using AGGREGATE audio device";
-  }
-
-  if (device != kAudioObjectUnknown &&
-      input_device_id == AudioManagerBase::kDefaultDeviceId)
-    return new AUHALStream(this, params, device);
-
-  // Fallback to AudioSynchronizedStream which will handle completely
-  // different and arbitrary combinations of input and output devices
-  // even running at different sample-rates.
-  // kAudioDeviceUnknown translates to "use default" here.
-  // TODO(xians): consider tracking UMA stats on AUHALStream
-  // versus AudioSynchronizedStream.
-  AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, input_device_id);
-  if (audio_device_id == kAudioObjectUnknown)
-    return NULL;
-
-  return new AudioSynchronizedStream(this,
-                                     params,
-                                     audio_device_id,
-                                     kAudioDeviceUnknown);
+  return new AUHALStream(this, params, device);
 }
 
 std::string AudioManagerMac::GetDefaultOutputDeviceID() {

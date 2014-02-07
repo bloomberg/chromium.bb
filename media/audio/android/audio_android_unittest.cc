@@ -438,7 +438,7 @@ class AudioAndroidOutputTest : public testing::Test {
     const int num_callbacks =
         (kCallbackTestTimeMs / expected_time_between_callbacks_ms);
     AudioOutputStream* stream = audio_manager()->MakeAudioOutputStream(
-        params, std::string(), std::string());
+        params, std::string());
     EXPECT_TRUE(stream);
 
     int count = 0;
@@ -621,7 +621,7 @@ TEST_P(AudioAndroidInputTest, CreateAndCloseInputStream) {
 TEST_F(AudioAndroidOutputTest, CreateAndCloseOutputStream) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
-      params, std::string(), std::string());
+      params, std::string());
   EXPECT_TRUE(aos);
   aos->Close();
 }
@@ -640,7 +640,7 @@ TEST_P(AudioAndroidInputTest, OpenAndCloseInputStream) {
 TEST_F(AudioAndroidOutputTest, OpenAndCloseOutputStream) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
-      params, std::string(), std::string());
+      params, std::string());
   EXPECT_TRUE(aos);
   EXPECT_TRUE(aos->Open());
   aos->Close();
@@ -701,7 +701,7 @@ TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   VLOG(1) << params;
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
-      params, std::string(), std::string());
+      params, std::string());
   EXPECT_TRUE(aos);
 
   std::string file_name;
@@ -770,7 +770,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   AudioParameters out_params =
       audio_manager()->GetDefaultOutputStreamParameters();
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
-      out_params, std::string(), std::string());
+      out_params, std::string());
   EXPECT_TRUE(aos);
 
   std::string file_name = base::StringPrintf("out_duplex_%d_%d_%d.pcm",
@@ -829,7 +829,7 @@ TEST_P(AudioAndroidInputTest,
       io_params, AudioManagerBase::kDefaultDeviceId);
   EXPECT_TRUE(ais);
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
-      io_params, std::string(), std::string());
+      io_params, std::string());
   EXPECT_TRUE(aos);
 
   FullDuplexAudioSinkSource full_duplex(io_params);

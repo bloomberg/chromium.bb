@@ -93,14 +93,12 @@ class MockAudioManager : public AudioManagerBase {
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
   MOCK_METHOD0(GetAudioInputDeviceModel, base::string16());
-  MOCK_METHOD3(MakeAudioOutputStream, AudioOutputStream*(
+  MOCK_METHOD2(MakeAudioOutputStream, AudioOutputStream*(
       const AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id));
-  MOCK_METHOD3(MakeAudioOutputStreamProxy, AudioOutputStream*(
+      const std::string& device_id));
+  MOCK_METHOD2(MakeAudioOutputStreamProxy, AudioOutputStream*(
       const AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id));
+      const std::string& device_id));
   MOCK_METHOD2(MakeAudioInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD0(ShowAudioInputSettings, void());
@@ -112,9 +110,8 @@ class MockAudioManager : public AudioManagerBase {
 
   MOCK_METHOD1(MakeLinearOutputStream, AudioOutputStream*(
       const AudioParameters& params));
-  MOCK_METHOD3(MakeLowLatencyOutputStream, AudioOutputStream*(
-      const AudioParameters& params, const std::string& device_id,
-      const std::string& input_device_id));
+  MOCK_METHOD2(MakeLowLatencyOutputStream, AudioOutputStream*(
+      const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD2(MakeLinearInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD2(MakeLowLatencyInputStream, AudioInputStream*(
@@ -168,7 +165,6 @@ class AudioOutputProxyTest : public testing::Test {
     dispatcher_impl_ = new AudioOutputDispatcherImpl(&manager(),
                                                      params_,
                                                      std::string(),
-                                                     std::string(),
                                                      close_delay);
   }
 
@@ -199,7 +195,7 @@ class AudioOutputProxyTest : public testing::Test {
   void OpenAndClose(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -213,7 +209,7 @@ class AudioOutputProxyTest : public testing::Test {
   void StartAndStop(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -236,7 +232,7 @@ class AudioOutputProxyTest : public testing::Test {
   void CloseAfterStop(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -261,7 +257,7 @@ class AudioOutputProxyTest : public testing::Test {
   void TwoStreams(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -280,7 +276,7 @@ class AudioOutputProxyTest : public testing::Test {
   void OpenFailed(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(false));
@@ -297,7 +293,7 @@ class AudioOutputProxyTest : public testing::Test {
   void CreateAndWait(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -314,7 +310,7 @@ class AudioOutputProxyTest : public testing::Test {
   void OneStream_TwoPlays(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
 
     EXPECT_CALL(stream, Open())
@@ -346,7 +342,7 @@ class AudioOutputProxyTest : public testing::Test {
     MockAudioOutputStream stream1(&manager_, params_);
     MockAudioOutputStream stream2(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream1))
         .WillOnce(Return(&stream2));
 
@@ -383,7 +379,7 @@ class AudioOutputProxyTest : public testing::Test {
   void StartFailed(AudioOutputDispatcher* dispatcher) {
     MockAudioOutputStream stream(&manager_, params_);
 
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .WillOnce(Return(&stream));
     EXPECT_CALL(stream, Open())
         .WillOnce(Return(true));
@@ -394,7 +390,7 @@ class AudioOutputProxyTest : public testing::Test {
     WaitForCloseTimer(&stream);
 
     // |stream| is closed at this point. Start() should reopen it again.
-    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
         .Times(2)
         .WillRepeatedly(Return(reinterpret_cast<AudioOutputStream*>(NULL)));
 
@@ -434,8 +430,7 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
         16000, 16, 1024);
     resampler_ = new AudioOutputResampler(
-        &manager(), params_, resampler_params_, std::string(), std::string(),
-        close_delay);
+        &manager(), params_, resampler_params_, std::string(), close_delay);
   }
 
   virtual void OnStart() OVERRIDE {
@@ -535,7 +530,7 @@ TEST_F(AudioOutputResamplerTest, StartFailed) { StartFailed(resampler_); }
 // ensure AudioOutputResampler falls back to the high latency path.
 TEST_F(AudioOutputResamplerTest, LowLatencyCreateFailedFallback) {
   MockAudioOutputStream stream(&manager_, params_);
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .Times(2)
       .WillOnce(Return(static_cast<AudioOutputStream*>(NULL)))
       .WillRepeatedly(Return(&stream));
@@ -552,7 +547,7 @@ TEST_F(AudioOutputResamplerTest, LowLatencyCreateFailedFallback) {
 TEST_F(AudioOutputResamplerTest, LowLatencyOpenFailedFallback) {
   MockAudioOutputStream failed_stream(&manager_, params_);
   MockAudioOutputStream okay_stream(&manager_, params_);
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .Times(2)
       .WillOnce(Return(&failed_stream))
       .WillRepeatedly(Return(&okay_stream));
@@ -580,7 +575,7 @@ TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
 #else
   static const int kFallbackCount = 1;
 #endif
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .Times(kFallbackCount)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
@@ -591,7 +586,7 @@ TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
       testing::Property(&AudioParameters::sample_rate, params_.sample_rate()),
       testing::Property(
           &AudioParameters::frames_per_buffer, params_.frames_per_buffer())),
-                         _, _))
+                         _))
       .Times(1)
       .WillOnce(Return(&okay_stream));
   EXPECT_CALL(okay_stream, Open())
@@ -613,7 +608,7 @@ TEST_F(AudioOutputResamplerTest, AllFallbackFailed) {
 #else
   static const int kFallbackCount = 2;
 #endif
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .Times(kFallbackCount)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
@@ -629,7 +624,7 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenEventuallyFails) {
   MockAudioOutputStream stream2(&manager_, params_);
 
   // Setup the mock such that all three streams are successfully created.
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .WillOnce(Return(&stream1))
       .WillOnce(Return(&stream2))
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
@@ -685,7 +680,7 @@ TEST_F(AudioOutputResamplerTest, WedgeFix) {
   MockAudioOutputStream stream3(&manager_, params_);
 
   // Setup the mock such that all three streams are successfully created.
-  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
       .WillOnce(Return(&stream1))
       .WillOnce(Return(&stream2))
       .WillOnce(Return(&stream3));

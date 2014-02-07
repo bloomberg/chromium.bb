@@ -12,8 +12,7 @@ class FakeAudioLogImpl : public AudioLog {
   virtual ~FakeAudioLogImpl() {}
   virtual void OnCreated(int component_id,
                          const media::AudioParameters& params,
-                         const std::string& input_device_id,
-                         const std::string& output_device_id) OVERRIDE {}
+                         const std::string& device_id) OVERRIDE {}
   virtual void OnStarted(int component_id) OVERRIDE {}
   virtual void OnStopped(int component_id) OVERRIDE {}
   virtual void OnClosed(int component_id) OVERRIDE {}

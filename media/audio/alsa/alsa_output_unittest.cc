@@ -75,10 +75,9 @@ class MockAudioManagerAlsa : public AudioManagerAlsa {
   MOCK_METHOD0(HasAudioInputDevices, bool());
   MOCK_METHOD1(MakeLinearOutputStream, AudioOutputStream*(
       const AudioParameters& params));
-  MOCK_METHOD3(MakeLowLatencyOutputStream, AudioOutputStream*(
+  MOCK_METHOD2(MakeLowLatencyOutputStream, AudioOutputStream*(
       const AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id));
+      const std::string& device_id));
   MOCK_METHOD2(MakeLowLatencyInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
 
