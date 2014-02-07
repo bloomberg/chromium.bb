@@ -77,6 +77,13 @@ typedef base::Callback<void(FileError error,
                             const base::Closure& cancel_download_closure)>
     GetFileContentInitializedCallback;
 
+// Used to get list of entries under a directory.
+// If |error| is not FILE_ERROR_OK, |entries| is null.
+typedef base::Callback<void(FileError error,
+                            scoped_ptr<ResourceEntryVector> entries,
+                            bool has_more)>
+    ReadDirectoryCallback;
+
 // Used to get drive content search results.
 // If |error| is not FILE_ERROR_OK, |result_paths| is empty.
 typedef base::Callback<void(

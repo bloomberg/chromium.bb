@@ -70,10 +70,12 @@ void RunGetFileInfoCallback(const GetFileInfoCallback& callback,
 void RunReadDirectoryCallback(
     const ReadDirectoryCallback& callback,
     FileError error,
-    scoped_ptr<ResourceEntryVector> resource_entries) {
+    scoped_ptr<ResourceEntryVector> resource_entries,
+    bool has_more) {
   if (error != FILE_ERROR_OK) {
+    DCHECK(!has_more);
     callback.Run(FileErrorToBaseFileError(error),
-                 std::vector<fileapi::DirectoryEntry>(), false);
+                 std::vector<fileapi::DirectoryEntry>(), has_more);
     return;
   }
 
@@ -95,7 +97,7 @@ void RunReadDirectoryCallback(
     entries.push_back(entry);
   }
 
-  callback.Run(base::File::FILE_OK, entries, false);
+  callback.Run(base::File::FILE_OK, entries, has_more);
 }
 
 // Runs |callback| with arguments based on |error|, |local_path| and |entry|.

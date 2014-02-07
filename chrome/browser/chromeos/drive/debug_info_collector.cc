@@ -35,9 +35,10 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
 }
 
 // Runs the callback with arguments.
-void RunReadDirectoryCallback(const ReadDirectoryCallback& callback,
-                              scoped_ptr<ResourceEntryVector> entries,
-                              FileError error) {
+void RunReadDirectoryCallback(
+    const DebugInfoCollector::ReadDirectoryCallback& callback,
+    scoped_ptr<ResourceEntryVector> entries,
+    FileError error) {
   DCHECK(!callback.is_null());
   if (error != FILE_ERROR_OK)
     entries.reset();

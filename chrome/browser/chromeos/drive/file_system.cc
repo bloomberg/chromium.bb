@@ -613,27 +613,32 @@ void FileSystem::ReadDirectoryAfterLoad(
   DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
                                       << FileErrorToString(error);
 
-  resource_metadata_->ReadDirectoryByPathOnUIThread(
-      directory_path,
+  ResourceEntryVector* entries = new ResourceEntryVector;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::ReadDirectoryByPath,
+                 base::Unretained(resource_metadata_),
+                 directory_path,
+                 entries),
       base::Bind(&FileSystem::ReadDirectoryAfterRead,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
-                 callback));
+                 callback,
+                 base::Owned(entries)));
 }
 
-void FileSystem::ReadDirectoryAfterRead(
-    const base::FilePath& directory_path,
-    const ReadDirectoryCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntryVector> entries) {
+void FileSystem::ReadDirectoryAfterRead(const base::FilePath& directory_path,
+                                        const ReadDirectoryCallback& callback,
+                                        const ResourceEntryVector* entries,
+                                        FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntryVector>());
+    callback.Run(error, scoped_ptr<ResourceEntryVector>(), false);
     return;
   }
-  DCHECK(entries.get());  // This is valid for empty directories too.
 
   // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
   const bool hide_hosted_docs =
@@ -647,7 +652,7 @@ void FileSystem::ReadDirectoryAfterRead(
     filtered->push_back(entries->at(i));
   }
 
-  callback.Run(FILE_ERROR_OK, filtered.Pass());
+  callback.Run(FILE_ERROR_OK, filtered.Pass(), false);
 }
 
 void FileSystem::GetAvailableSpace(

@@ -164,13 +164,35 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<ResourceEntryVector> ReadDirectorySync(
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_FAILED;
-    scoped_ptr<ResourceEntryVector> entries;
+    scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
+    bool last_has_more = true;
     file_system_->ReadDirectory(
         file_path,
-        google_apis::test_util::CreateCopyResultCallback(&error, &entries));
+        base::Bind(&AccumulateReadDirectoryResult,
+                   &error, entries.get(), &last_has_more));
     test_util::RunBlockingPoolTask();
-
+    if (error != FILE_ERROR_OK)
+      entries.reset();
     return entries.Pass();
+  }
+
+  // Used to implement ReadDirectorySync().
+  static void AccumulateReadDirectoryResult(
+      FileError* out_error,
+      ResourceEntryVector* out_entries,
+      bool* last_has_more,
+      FileError error,
+      scoped_ptr<ResourceEntryVector> entries,
+      bool has_more) {
+    EXPECT_TRUE(*last_has_more);
+    *out_error = error;
+    *last_has_more = has_more;
+    if (error == FILE_ERROR_OK) {
+      ASSERT_TRUE(entries);
+      out_entries->insert(out_entries->end(), entries->begin(), entries->end());
+    } else {
+      EXPECT_FALSE(has_more);
+    }
   }
 
   // Returns true if an entry exists at |file_path|.

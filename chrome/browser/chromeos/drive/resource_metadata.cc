@@ -47,17 +47,6 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
-// Runs |callback| with arguments.
-void RunReadDirectoryCallback(const ReadDirectoryCallback& callback,
-                              scoped_ptr<ResourceEntryVector> entries,
-                              FileError error) {
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK)
-    entries.reset();
-  callback.Run(error, entries.Pass());
-}
-
 }  // namespace
 
 namespace internal {
@@ -282,24 +271,6 @@ FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
     return error;
 
   return GetResourceEntryById(id, out_entry);
-}
-
-void ResourceMetadata::ReadDirectoryByPathOnUIThread(
-    const base::FilePath& file_path,
-    const ReadDirectoryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
-  ResourceEntryVector* entries_ptr = entries.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::ReadDirectoryByPath,
-                 base::Unretained(this),
-                 file_path,
-                 entries_ptr),
-      base::Bind(&RunReadDirectoryCallback, callback, base::Passed(&entries)));
 }
 
 FileError ResourceMetadata::ReadDirectoryByPath(

@@ -17,6 +17,11 @@ namespace drive {
 // All the method should be called on UI thread.
 class DebugInfoCollector {
  public:
+  // Callback for ReadDirectory().
+  typedef base::Callback<void(FileError error,
+                              scoped_ptr<ResourceEntryVector> entries)>
+      ReadDirectoryCallback;
+
   // Callback for IterateFileCache().
   typedef base::Callback<void(const std::string& id,
                               const FileCacheEntry& cache_entry)>

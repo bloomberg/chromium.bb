@@ -222,8 +222,8 @@ class FileSystem : public FileSystemInterface,
                               FileError error);
   void ReadDirectoryAfterRead(const base::FilePath& directory_path,
                               const ReadDirectoryCallback& callback,
-                              FileError error,
-                              scoped_ptr<ResourceEntryVector> entries);
+                              const ResourceEntryVector* entries,
+                              FileError error);
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.

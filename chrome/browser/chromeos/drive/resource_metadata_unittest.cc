@@ -245,44 +245,6 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   EXPECT_FALSE(entry.get());
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
-  // Confirm that an existing directory is found.
-  FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntryVector> entries;
-  resource_metadata_->ReadDirectoryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entries.get());
-  ASSERT_EQ(3U, entries->size());
-  // The order is not guaranteed so we should sort the base names.
-  std::vector<std::string> base_names = GetSortedBaseNames(*entries);
-  EXPECT_EQ("dir3", base_names[0]);
-  EXPECT_EQ("file4", base_names[1]);
-  EXPECT_EQ("file5", base_names[2]);
-
-  // Confirm that a non existing directory is not found.
-  error = FILE_ERROR_FAILED;
-  entries.reset();
-  resource_metadata_->ReadDirectoryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/non_existing"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entries.get());
-
-  // Confirm that reading a file results in FILE_ERROR_NOT_A_DIRECTORY.
-  error = FILE_ERROR_FAILED;
-  entries.reset();
-  resource_metadata_->ReadDirectoryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
-  EXPECT_FALSE(entries.get());
-}
-
 // Tests for methods running on the blocking task runner.
 class ResourceMetadataTest : public testing::Test {
  protected:
@@ -314,6 +276,27 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->SetLargestChangestamp(kChangestamp));
   EXPECT_EQ(kChangestamp, resource_metadata_->GetLargestChangestamp());
+}
+
+TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
+  // Confirm that an existing directory is found.
+  ResourceEntryVector entries;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->ReadDirectoryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1"), &entries));
+  ASSERT_EQ(3U, entries.size());
+  // The order is not guaranteed so we should sort the base names.
+  std::vector<std::string> base_names = GetSortedBaseNames(entries);
+  EXPECT_EQ("dir3", base_names[0]);
+  EXPECT_EQ("file4", base_names[1]);
+  EXPECT_EQ("file5", base_names[2]);
+
+  // Confirm that a non existing directory is not found.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->ReadDirectoryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/non_existing"), &entries));
+
+  // Confirm that reading a file results in FILE_ERROR_NOT_A_DIRECTORY.
+  EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, resource_metadata_->ReadDirectoryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entries));
 }
 
 TEST_F(ResourceMetadataTest, RefreshEntry) {

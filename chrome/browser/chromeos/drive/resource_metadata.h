@@ -30,10 +30,6 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<ResourceEntry> entry)>
     GetResourceEntryCallback;
 
-typedef base::Callback<void(FileError error,
-                            scoped_ptr<ResourceEntryVector> entries)>
-    ReadDirectoryCallback;
-
 typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
 namespace internal {
@@ -88,12 +84,6 @@ class ResourceMetadata {
                                    ResourceEntry* out_entry);
 
   // Finds and reads a directory by |file_path|.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void ReadDirectoryByPathOnUIThread(const base::FilePath& file_path,
-                                     const ReadDirectoryCallback& callback);
-
-  // Synchronous version of ReadDirectoryByPathOnUIThread().
   FileError ReadDirectoryByPath(const base::FilePath& file_path,
                                 ResourceEntryVector* out_entries);
 
