@@ -68,6 +68,14 @@ void TabStripModelObserverBridge::ActiveTabChanged(WebContents* old_contents,
   }
 }
 
+void TabStripModelObserverBridge::TabSelectionChanged(
+    TabStripModel* tab_strip_model,
+    const ui::ListSelectionModel& old_model) {
+  if ([controller_ respondsToSelector:@selector(tabSelectionChanged)]) {
+    [controller_ tabSelectionChanged];
+  }
+}
+
 void TabStripModelObserverBridge::TabMoved(WebContents* contents,
                                            int from_index,
                                            int to_index) {

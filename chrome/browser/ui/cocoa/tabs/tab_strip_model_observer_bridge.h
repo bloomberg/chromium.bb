@@ -40,6 +40,9 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                                 content::WebContents* new_contents,
                                 int index,
                                 int reason) OVERRIDE;
+  virtual void TabSelectionChanged(
+      TabStripModel* tab_strip_model,
+      const ui::ListSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;
@@ -89,6 +92,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                                 atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 - (void)tabStripModelDeleted;
+- (void)tabSelectionChanged;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_MODEL_OBSERVER_BRIDGE_H_

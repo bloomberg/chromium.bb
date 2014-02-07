@@ -172,6 +172,31 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_EQ(model_->count(), 1);
 }
 
+// Clicking a selected (but inactive) tab should activate it.
+TEST_F(TabStripControllerTest, ActivateSelectedButInactiveTab) {
+  TabView* tab0 = CreateTab();
+  TabView* tab1 = CreateTab();
+  model_->ToggleSelectionAt(0);
+  EXPECT_TRUE([[tab0 controller] selected]);
+  EXPECT_TRUE([[tab1 controller] selected]);
+
+  [controller_ selectTab:tab1];
+  EXPECT_EQ(1, model_->active_index());
+}
+
+// Toggling (cmd-click) a selected (but inactive) tab should deselect it.
+TEST_F(TabStripControllerTest, DeselectInactiveTab) {
+  TabView* tab0 = CreateTab();
+  TabView* tab1 = CreateTab();
+  model_->ToggleSelectionAt(0);
+  EXPECT_TRUE([[tab0 controller] selected]);
+  EXPECT_TRUE([[tab1 controller] selected]);
+
+  model_->ToggleSelectionAt(1);
+  EXPECT_TRUE([[tab0 controller] selected]);
+  EXPECT_FALSE([[tab1 controller] selected]);
+}
+
 TEST_F(TabStripControllerTest, SelectTab) {
   // TODO(pinkerton): Implement http://crbug.com/10899
 }
