@@ -15,6 +15,11 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/content_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
+#endif
+
 using base::debug::TraceLog;
 
 namespace content {
@@ -43,16 +48,28 @@ class TracingControllerImpl::ResultFile {
         base::Bind(&TracingControllerImpl::ResultFile::CloseTask,
                    base::Unretained(this), callback));
   }
+  void WriteSystemTrace(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&TracingControllerImpl::ResultFile::WriteSystemTraceTask,
+                   base::Unretained(this), events_str_ptr));
+  }
+
   const base::FilePath& path() const { return path_; }
 
  private:
   void OpenTask();
   void WriteTask(const scoped_refptr<base::RefCountedString>& events_str_ptr);
+  void WriteSystemTraceTask(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
   void CloseTask(const base::Closure& callback);
 
   FILE* file_;
   base::FilePath path_;
   bool has_at_least_one_result_;
+  scoped_refptr<base::RefCountedString> system_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(ResultFile);
 };
@@ -97,13 +114,35 @@ void TracingControllerImpl::ResultFile::WriteTask(
   DCHECK(written == 1);
 }
 
+void TracingControllerImpl::ResultFile::WriteSystemTraceTask(
+    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+  system_trace_ = events_str_ptr;
+}
+
 void TracingControllerImpl::ResultFile::CloseTask(
     const base::Closure& callback) {
   if (!file_)
     return;
 
-  const char* trailout = "]}";
-  size_t written = fwrite(trailout, strlen(trailout), 1, file_);
+  const char* trailevents = "]";
+  size_t written = fwrite(trailevents, strlen(trailevents), 1, file_);
+  DCHECK(written == 1);
+
+  if (system_trace_) {
+    std::string json_string = base::GetQuotedJSONString(system_trace_->data());
+
+    const char* systemTraceHead = ", \"systemTraceEvents\": ";
+    written = fwrite(systemTraceHead, strlen(systemTraceHead), 1, file_);
+    DCHECK(written == 1);
+
+    written = fwrite(json_string.data(), json_string.size(), 1, file_);
+    DCHECK(written == 1);
+
+    system_trace_ = NULL;
+  }
+
+  const char* trailout = "}";
+  written = fwrite(trailout, strlen(trailout), 1, file_);
   DCHECK(written == 1);
   base::CloseFile(file_);
   file_ = NULL;
@@ -119,6 +158,9 @@ TracingControllerImpl::TracingControllerImpl() :
     maximum_trace_buffer_percent_full_(0),
     // Tracing may have been enabled by ContentMainRunner if kTraceStartup
     // is specified in command line.
+#if defined(OS_CHROMEOS)
+    is_system_tracing_(false),
+#endif
     is_recording_(TraceLog::GetInstance()->IsEnabled()),
     is_monitoring_(false) {
 }
@@ -194,7 +236,14 @@ bool TracingControllerImpl::EnableRecording(
   if (options & ENABLE_SAMPLING) {
     trace_options |=  TraceLog::ENABLE_SAMPLING;
   }
-  // TODO(haraken): How to handle ENABLE_SYSTRACE?
+#if defined(OS_CHROMEOS)
+  if (options & ENABLE_SYSTRACE) {
+    DCHECK(!is_system_tracing_);
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+      StartSystemTracing();
+    is_system_tracing_ = true;
+  }
+#endif
 
   base::Closure on_enable_recording_done_callback =
       base::Bind(&TracingControllerImpl::OnEnableRecordingDone,
@@ -609,9 +658,30 @@ void TracingControllerImpl::OnDisableRecordingAcked(
   if (pending_disable_recording_ack_count_ != 0)
     return;
 
+  OnDisableRecordingComplete();
+}
+
+void TracingControllerImpl::OnDisableRecordingComplete() {
   // All acks (including from the subprocesses and the local trace) have been
   // received.
   is_recording_ = false;
+
+#if defined(OS_CHROMEOS)
+  if (is_system_tracing_) {
+    // Disable system tracing now that the local trace has shutdown.
+    // This must be done last because we potentially need to push event
+    // records into the system event log for synchronizing system event
+    // timestamps with chrome event timestamps--and since the system event
+    // log is a ring-buffer (on linux) adding them at the end is the only
+    // way we're confident we'll have them in the final result.
+    is_system_tracing_ = false;
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+      RequestStopSystemTracing(
+          base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
+                     base::Unretained(this)));
+    return;
+  }
+#endif
 
   // Trigger callback if one is set.
   if (!pending_get_categories_done_callback_.is_null()) {
@@ -636,6 +706,19 @@ void TracingControllerImpl::OnResultFileClosed() {
   }
   result_file_.reset();
 }
+
+#if defined(OS_CHROMEOS)
+void TracingControllerImpl::OnEndSystemTracingAcked(
+    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (result_file_)
+    result_file_->WriteSystemTrace(events_str_ptr);
+
+  DCHECK(!is_system_tracing_);
+  OnDisableRecordingComplete();
+}
+#endif
 
 void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked(
     TraceMessageFilter* trace_message_filter) {

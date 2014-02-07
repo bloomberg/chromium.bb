@@ -113,7 +113,13 @@ class TracingControllerImpl : public TracingController {
   void OnDisableRecordingAcked(
       TraceMessageFilter* trace_message_filter,
       const std::vector<std::string>& known_category_groups);
+  void OnDisableRecordingComplete();
   void OnResultFileClosed();
+
+#if defined(OS_CHROMEOS)
+  void OnEndSystemTracingAcked(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
+#endif
 
   void OnCaptureMonitoringSnapshotAcked(
       TraceMessageFilter* trace_message_filter);
@@ -155,6 +161,9 @@ class TracingControllerImpl : public TracingController {
   TraceMessageFilterSet pending_trace_buffer_percent_full_filters_;
   float maximum_trace_buffer_percent_full_;
 
+#if defined(OS_CHROMEOS)
+  bool is_system_tracing_;
+#endif
   bool is_recording_;
   bool is_monitoring_;
   TracingController::Options options_;
