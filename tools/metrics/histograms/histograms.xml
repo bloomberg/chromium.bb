@@ -14007,6 +14007,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.Tps65090Retries">
+  <summary>
+    Retries needed to enable a FET on tps65090 (AKA tpschrome).  Tps65090 is a
+    power management unit (PMU) used on many ARM Chromebooks.  Until version ES7
+    was rolled into production we would sometimes run into a problem where FET1
+    (the FET used to switch on and off the backlight) wouldn't turn on properly.
+    This problem was especially prevalent when the voltage was high (like when
+    the device was plugged into the wall).  Retrying by turning the FET off and
+    on again is nearly always effective, so the kernel will retry up to 5 times
+    (currently) and will also log the fact that it needed to retry.  On newest
+    kernels (kernel 3.8 and up) a kernel warning will be logged with WARN_ON if
+    the FET still failed to turn on after 5 tries. Refer to the kernel warning
+    reports to find that information.  For more details about this bug refer to
+    http://crbug.com/338657 and http://crosbug.com/p/16009.  Note that we log
+    retries on all 7 FETs even though we've only ever seen failures of FET1.
+  </summary>
+</histogram>
+
 <histogram name="Platform.WriteSectorsLong">
   <summary>
     Number of disk sectors per second written by Chrome OS in a long interval
@@ -35209,6 +35227,17 @@ other types of suffix sets.
   <group name="XP_PreRead_100"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
+</fieldtrial>
+
+<fieldtrial name="Tps65090Fets" separator=".">
+  <group name="Fet1" label="FET1 on tps65090 (register 0xf)"/>
+  <group name="Fet2" label="FET2 on tps65090 (register 0x10)"/>
+  <group name="Fet3" label="FET3 on tps65090 (register 0x11)"/>
+  <group name="Fet4" label="FET4 on tps65090 (register 0x12)"/>
+  <group name="Fet5" label="FET5 on tps65090 (register 0x13)"/>
+  <group name="Fet6" label="FET6 on tps65090 (register 0x14)"/>
+  <group name="Fet7" label="FET7 on tps65090 (register 0x15)"/>
+  <affected-histogram name="Platform.Tps65090Retries"/>
 </fieldtrial>
 
 <fieldtrial name="TrackedSplitPreferences" separator=".">
