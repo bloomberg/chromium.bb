@@ -37,8 +37,10 @@ class GFX_EXPORT PNGCodec {
     // This is the default Windows DIB order.
     FORMAT_BGRA,
 
-    // 4 bytes per pixel, in pre-multiplied kARGB_8888_Config format. For use
-    // with directly writing to a skia bitmap.
+    // SkBitmap format. For Encode() kARGB_8888_Config (4 bytes per pixel) and
+    // kA8_Config (1 byte per pixel) formats are supported. kA8_Config gets
+    // encoded into a grayscale PNG treating alpha as the color intensity.
+    // For Decode() kARGB_8888_Config is always used.
     FORMAT_SkBitmap
   };
 
@@ -77,9 +79,10 @@ class GFX_EXPORT PNGCodec {
                      std::vector<unsigned char>* output);
 
   // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
-  // to be BGRA, 32 bits per pixel. The params |discard_transparency| and
-  // |output| are passed directly to Encode; refer to Encode for more
-  // information. During the call, an SkAutoLockPixels lock is held on |input|.
+  // to be kARGB_8888_Config, 32 bits per pixel. The params
+  // |discard_transparency| and |output| are passed directly to Encode; refer to
+  // Encode for more information. During the call, an SkAutoLockPixels lock
+  // is held on |input|.
   static bool EncodeBGRASkBitmap(const SkBitmap& input,
                                  bool discard_transparency,
                                  std::vector<unsigned char>* output);
@@ -90,6 +93,14 @@ class GFX_EXPORT PNGCodec {
   static bool FastEncodeBGRASkBitmap(const SkBitmap& input,
                                      bool discard_transparency,
                                      std::vector<unsigned char>* output);
+
+  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
+  // to be kA8_Config, 8 bits per pixel. The bitmap is encoded as a grayscale
+  // PNG with alpha used for color intensity. The |output| param is passed
+  // directly to Encode; refer to Encode for more information. During the call,
+  // an SkAutoLockPixels lock is held on |input|.
+  static bool EncodeA8SkBitmap(const SkBitmap& input,
+                               std::vector<unsigned char>* output);
 
   // Decodes the PNG data contained in input of length input_size. The
   // decoded data will be placed in *output with the dimensions in *w and *h

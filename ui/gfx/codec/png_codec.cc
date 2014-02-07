@@ -678,15 +678,29 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
       break;
 
     case PNGCodec::FORMAT_SkBitmap:
-      input_color_components = 4;
-      if (discard_transparency) {
-        output_color_components = 3;
-        png_output_color_type = PNG_COLOR_TYPE_RGB;
-        converter = ConvertSkiatoRGB;
+      // Compare row_byte_width and size.width() to detect the format of
+      // SkBitmap. kA8_Config (1bpp) and kARGB_8888_Config (4bpp) are the two
+      // supported formats.
+      if (row_byte_width < 4 * size.width()) {
+        // Not 4bpp, so must be 1bpp.
+        // Ignore discard_transparency - it doesn't make sense in this context,
+        // since alpha is the only thing we have and it needs to be used for
+        // color intensity.
+        input_color_components = 1;
+        output_color_components = 1;
+        png_output_color_type = PNG_COLOR_TYPE_GRAY;
+        // |converter| is left as null
       } else {
-        output_color_components = 4;
-        png_output_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-        converter = ConvertSkiatoRGBA;
+        input_color_components = 4;
+        if (discard_transparency) {
+          output_color_components = 3;
+          png_output_color_type = PNG_COLOR_TYPE_RGB;
+          converter = ConvertSkiatoRGB;
+        } else {
+          output_color_components = 4;
+          png_output_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+          converter = ConvertSkiatoRGBA;
+        }
       }
       break;
 
@@ -719,12 +733,38 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
   return success;
 }
 
+bool InternalEncodeSkBitmap(const SkBitmap& input,
+                            bool discard_transparency,
+                            int compression_level,
+                            std::vector<unsigned char>* output) {
+  if (input.empty() || input.isNull())
+    return false;
+  int bpp = input.bytesPerPixel();
+  DCHECK(bpp == 1 || bpp == 4);  // We support kA8_Config and kARGB_8888_Config.
+
+  SkAutoLockPixels lock_input(input);
+  unsigned char* inputAddr = bpp == 1 ?
+      reinterpret_cast<unsigned char*>(input.getAddr8(0, 0)) :
+      reinterpret_cast<unsigned char*>(input.getAddr32(0, 0));    // bpp = 4
+  return EncodeWithCompressionLevel(
+      inputAddr,
+      PNGCodec::FORMAT_SkBitmap,
+      Size(input.width(), input.height()),
+      static_cast<int>(input.rowBytes()),
+      discard_transparency,
+      std::vector<PNGCodec::Comment>(),
+      compression_level,
+      output);
+}
+
 
 }  // namespace
 
 // static
-bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
-                      const Size& size, int row_byte_width,
+bool PNGCodec::Encode(const unsigned char* input,
+                      ColorFormat format,
+                      const Size& size,
+                      int row_byte_width,
                       bool discard_transparency,
                       const std::vector<Comment>& comments,
                       std::vector<unsigned char>* output) {
@@ -742,37 +782,29 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
 bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
                                   bool discard_transparency,
                                   std::vector<unsigned char>* output) {
-  static const int bbp = 4;
+  return InternalEncodeSkBitmap(input,
+                                discard_transparency,
+                                Z_DEFAULT_COMPRESSION,
+                                output);
+}
 
-  if (input.empty())
-    return false;
-  DCHECK_EQ(input.bytesPerPixel(), bbp);
-  DCHECK_GE(static_cast<int>(input.rowBytes()), input.width() * bbp);
-
-  SkAutoLockPixels lock_input(input);
-  return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
-                FORMAT_SkBitmap, Size(input.width(), input.height()),
-                static_cast<int>(input.rowBytes()), discard_transparency,
-                std::vector<Comment>(), output);
+// static
+bool PNGCodec::EncodeA8SkBitmap(const SkBitmap& input,
+                                std::vector<unsigned char>* output) {
+  return InternalEncodeSkBitmap(input,
+                                false,
+                                Z_DEFAULT_COMPRESSION,
+                                output);
 }
 
 // static
 bool PNGCodec::FastEncodeBGRASkBitmap(const SkBitmap& input,
                                       bool discard_transparency,
                                       std::vector<unsigned char>* output) {
-  static const int bbp = 4;
-
-  if (input.empty())
-    return false;
-  DCHECK_EQ(input.bytesPerPixel(), bbp);
-  DCHECK_GE(static_cast<int>(input.rowBytes()), input.width() * bbp);
-
-  SkAutoLockPixels lock_input(input);
-  return EncodeWithCompressionLevel(
-      reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
-      FORMAT_SkBitmap, Size(input.width(), input.height()),
-      static_cast<int>(input.rowBytes()), discard_transparency,
-      std::vector<Comment>(), Z_BEST_SPEED, output);
+  return InternalEncodeSkBitmap(input,
+                                discard_transparency,
+                                Z_BEST_SPEED,
+                                output);
 }
 
 PNGCodec::Comment::Comment(const std::string& k, const std::string& t)
