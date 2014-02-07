@@ -130,8 +130,19 @@ For more information of cros build usage:
 
     logging.info('Installing %s...', latest_pkg)
     pkg_path = os.path.join(pkg_dir, pkg_name)
-
-    extra_env = {'FEATURES': '-sandbox', 'PKGDIR': pkgroot}
+    # We set PORTAGE_CONFIGROOT to '/usr/local' because by default all
+    # chromeos-base packages will be skipped due to the configuration
+    # in /etc/protage/make.profile/package.provided. However, there is
+    # a known bug that /usr/local/etc/portage is not setup properly
+    # (crbug.com/312041). This does not affect `cros deploy` because
+    # we do not use the preset PKGDIR.
+    extra_env = {
+        'FEATURES': '-sandbox',
+        'PKGDIR': pkgroot,
+        'PORTAGE_CONFIGROOT': '/usr/local',
+        'PORTAGE_TMPDIR': '/tmp',
+        'PORTDIR': device.work_dir,
+    }
     cmd = ['emerge', '--usepkg', pkg_path]
     if extra_args:
       cmd.append(extra_args)
