@@ -100,21 +100,29 @@ class TouchDispositionGestureFilterTest
   void SendTouchGestures() {
     GestureEventPacket gesture_packet;
     std::swap(gesture_packet, pending_gesture_packet_);
-    SendTouchGestures(touch_event_, gesture_packet);
+    EXPECT_EQ(TouchDispositionGestureFilter::SUCCESS,
+              SendTouchGestures(touch_event_, gesture_packet));
     touch_event_.ResetPoints();
   }
 
-  void SendTouchGestures(const WebTouchEvent& touch,
-                         const GestureEventPacket& packet) {
+  TouchDispositionGestureFilter::PacketResult
+  SendTouchGestures(const WebTouchEvent& touch,
+                    const GestureEventPacket& packet) {
     GestureEventPacket touch_packet = GestureEventPacket::FromTouch(touch);
     for (size_t i = 0; i < packet.gesture_count(); ++i)
       touch_packet.Push(packet.gesture(i));
-    queue_->OnGestureEventPacket(touch_packet);
+    return queue_->OnGestureEventPacket(touch_packet);
   }
 
-  void SendTimeoutGesture(WebInputEvent::Type type) {
-    queue_->OnGestureEventPacket(
+  TouchDispositionGestureFilter::PacketResult
+  SendTimeoutGesture(WebInputEvent::Type type) {
+    return queue_->OnGestureEventPacket(
         GestureEventPacket::FromTouchTimeout(CreateGesture(type)));
+  }
+
+  TouchDispositionGestureFilter::PacketResult
+  SendGesturePacket(const GestureEventPacket& packet) {
+    return queue_->OnGestureEventPacket(packet);
   }
 
   void SendTouchEventACK(InputEventAckState ack_result) {
@@ -147,6 +155,10 @@ class TouchDispositionGestureFilterTest
 
   bool GesturesSent() const {
     return !sent_gestures_.empty();
+  }
+
+  bool IsEmpty() const {
+    return queue_->IsEmpty();
   }
 
   GestureList GetAndResetSentGestures() {
@@ -446,6 +458,50 @@ TEST_F(TouchDispositionGestureFilterTest, TimeoutGestures) {
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureLongPress),
                             GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, SpuriousAcksIgnored) {
+  // Acks received when the queue is empty will be safely ignored.
+  ASSERT_TRUE(IsEmpty());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin,
+                                     WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+
+  // Even if all packets have been dispatched, the filter may not be empty as
+  // there could be follow-up timeout events.  Spurious acks in such cases
+  // should also be safely ignored.
+  ASSERT_FALSE(IsEmpty());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, PacketWithInvalidTypeIgnored) {
+  GestureEventPacket packet;
+  EXPECT_EQ(TouchDispositionGestureFilter::INVALID_PACKET_TYPE,
+            SendGesturePacket(packet));
+  EXPECT_TRUE(IsEmpty());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, PacketsWithInvalidOrderIgnored) {
+  EXPECT_EQ(TouchDispositionGestureFilter::INVALID_PACKET_ORDER,
+            SendTimeoutGesture(WebInputEvent::GestureShowPress));
+  EXPECT_TRUE(IsEmpty());
+
+  WebTouchEvent touch;
+  touch.type = WebInputEvent::TouchCancel;
+  EXPECT_EQ(TouchDispositionGestureFilter::INVALID_PACKET_ORDER,
+            SendTouchGestures(WebInputEvent::GestureShowPress,
+                              GestureEventPacket()));
+  EXPECT_TRUE(IsEmpty());
 }
 
 }  // namespace content

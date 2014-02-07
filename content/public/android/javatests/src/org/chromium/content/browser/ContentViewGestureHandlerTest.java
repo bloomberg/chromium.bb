@@ -73,6 +73,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
         GestureEvent mMostRecentGestureEvent;
         GestureEvent mActiveScrollStartEvent;
+        int mMostRecentMotionEventAction = -1;
         final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
         final ArrayList<Long> mGestureTimeList = new ArrayList<Long>();
 
@@ -81,6 +82,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         @Override
         public void onTouchEventHandlingBegin(MotionEvent event) {
+            mMostRecentMotionEventAction = event.getActionMasked();
         }
 
         @Override
@@ -317,17 +319,19 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
 
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
         mGestureHandler.fling(eventTime, 5, 5, 0, 0);
         assertEquals("A zero-velocity fling should not be forwarded",
-                null, mMockMotionEventDelegate.mMostRecentGestureEvent);
+                ContentViewGestureHandler.GESTURE_TAP_DOWN,
+                mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
 
         mGestureHandler.fling(eventTime, 5, 5, 5, 0);
         assertEquals("Subsequent flings should work properly",
                 ContentViewGestureHandler.GESTURE_FLING_START,
                         mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
 
-        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
-        assertTrue(mGestureHandler.onTouchEvent(event));
         event = MotionEvent.obtain(
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
@@ -1634,5 +1638,94 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
         assertEquals("Only GESTURE_SCROLL_END should have been sent",
                 8, mMockMotionEventDelegate.mGestureTypeList.size());
+    }
+
+    /**
+     * Verify that the timer of LONG_PRESS will be cancelled when scrolling begins so
+     * LONG_PRESS and LONG_TAP won't be triggered.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testGesturesCancelledAfterLongPressCausesLostFocus() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                setUp();
+                mGestureHandler = new ContentViewGestureHandler(
+                        getInstrumentation().getTargetContext(), mMockMotionEventDelegate);
+                MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+                assertTrue(mGestureHandler.onTouchEvent(event));
+            }
+        });
+
+        final long longPressTimeoutMs = ViewConfiguration.getLongPressTimeout()
+                + ViewConfiguration.getTapTimeout() + 10;
+        assertTrue(mMockMotionEventDelegate.mLongPressCalled.await(
+                ScalableTimeout.scaleTimeout(longPressTimeoutMs), TimeUnit.MILLISECONDS));
+
+        assertEquals("A LONG_PRESS gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_LONG_PRESS,
+                        mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
+
+        mGestureHandler.onWindowFocusLost();
+
+        assertEquals("The LONG_PRESS should have been cancelled by loss of focus",
+                ContentViewGestureHandler.GESTURE_TAP_CANCEL,
+                        mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
+
+        MotionEvent event = motionEvent(
+                MotionEvent.ACTION_UP, downTime, eventTime + longPressTimeoutMs);
+        mGestureHandler.onTouchEvent(event);
+        assertFalse("Tap cancellation should have prevented the LONG_TAP",
+                mMockMotionEventDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_LONG_TAP));
+    }
+
+    /**
+     * Verify that ignoring the remaining touch sequence triggers proper touch and gesture
+     * cancellation.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testSetIgnoreRemainingTouchEvents() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.setIgnoreRemainingTouchEvents();
+        assertTrue("If there was no active touch sequence, ignoring it should be a no-op",
+                mMockMotionEventDelegate.mGestureTypeList.isEmpty());
+        assertEquals("No MotionEvents should have been generated",
+                -1, mMockMotionEventDelegate.mMostRecentMotionEventAction);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(ContentViewGestureHandler.GESTURE_TAP_DOWN,
+                mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
+
+        mGestureHandler.setIgnoreRemainingTouchEvents();
+        assertEquals("The TAP_DOWN should have been cancelled",
+                ContentViewGestureHandler.GESTURE_TAP_CANCEL,
+                mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("An ACTION_CANCEL MotionEvent should have been inserted",
+                MotionEvent.ACTION_CANCEL, mMockMotionEventDelegate.mMostRecentMotionEventAction);
+
+        // Subsequent MotionEvent's are dropped until ACTION_DOWN.
+        event = motionEvent(MotionEvent.ACTION_MOVE, downTime, eventTime + 5);
+        assertFalse(mGestureHandler.onTouchEvent(event));
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 10);
+        assertFalse(mGestureHandler.onTouchEvent(event));
+
+        event = motionEvent(MotionEvent.ACTION_DOWN, downTime + 15, downTime + 15);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(ContentViewGestureHandler.GESTURE_TAP_DOWN,
+                mMockMotionEventDelegate.mMostRecentGestureEvent.mType);
     }
 }

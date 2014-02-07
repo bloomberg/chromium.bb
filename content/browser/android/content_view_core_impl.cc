@@ -1054,8 +1054,13 @@ void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {
     return;
 
   // Note: Order is important here, as the touch may be ack'ed synchronously
-  touch_disposition_gesture_filter_.OnGestureEventPacket(
-      pending_gesture_packet_);
+  TouchDispositionGestureFilter::PacketResult result =
+      touch_disposition_gesture_filter_.OnGestureEventPacket(
+          pending_gesture_packet_);
+  if (result != TouchDispositionGestureFilter::SUCCESS) {
+    NOTREACHED() << "Invalid touch gesture sequence detected.";
+    return;
+  }
   rwhv->SendTouchEvent(pending_touch_event_);
 }
 
@@ -1138,8 +1143,10 @@ void ContentViewCoreImpl::SendGestureEvent(
   // timestamp as the initial TouchStart of the current sequence. We should
   // verify that this is true, and use that as another timeout check.
   if (PossiblyTriggeredByTouchTimeout(event)) {
-    touch_disposition_gesture_filter_.OnGestureEventPacket(
-        GestureEventPacket::FromTouchTimeout(event));
+    TouchDispositionGestureFilter::PacketResult result =
+        touch_disposition_gesture_filter_.OnGestureEventPacket(
+            GestureEventPacket::FromTouchTimeout(event));
+    DCHECK_EQ(TouchDispositionGestureFilter::SUCCESS, result);
     return;
   }
 

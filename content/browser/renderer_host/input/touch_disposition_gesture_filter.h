@@ -35,10 +35,19 @@ class CONTENT_EXPORT TouchDispositionGestureFilter {
   // particular, |packet| contains [0, n] gestures that correspond to a given
   // touch event. It is imperative that a single packet is received for
   // *each* touch event, even those that did not produce a gesture.
-  void OnGestureEventPacket(const GestureEventPacket& packet);
+  enum PacketResult {
+    SUCCESS,              // Packet successfully queued.
+    INVALID_PACKET_ORDER, // Packets were received in the wrong order, i.e.,
+                          // TOUCH_BEGIN should always precede other packets.
+    INVALID_PACKET_TYPE,  // Packet had an invalid type.
+  };
+  PacketResult OnGestureEventPacket(const GestureEventPacket& packet);
 
   // To be called upon receipt of *all* touch event acks.
   void OnTouchEventAck(InputEventAckState ack_state);
+
+  // Whether there are any active gesture sequences still queued in the filter.
+  bool IsEmpty() const;
 
  private:
   // Utility class for tracking gesture events and dispositions for a single

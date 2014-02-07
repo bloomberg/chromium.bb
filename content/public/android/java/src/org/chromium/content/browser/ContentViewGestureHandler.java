@@ -712,7 +712,21 @@ class ContentViewGestureHandler {
      * One example usecase is stop processing the touch events when showing context popup menu.
      */
     public void setIgnoreRemainingTouchEvents() {
-        onTouchEvent(obtainActionCancelMotionEvent());
+        if (mIgnoreRemainingTouchEvents) return;
+
+        MotionEvent me = obtainActionCancelMotionEvent();
+        if (mCurrentDownEvent != null) {
+            // Only insert a synthetic event if there's an active touch sequence.
+            onTouchEvent(me);
+        } else {
+            // Otherwise, we still want to reset the gesture detector pipeline
+            // (e.g., reset double-tap detection state).
+            mGestureDetector.onTouchEvent(me);
+            processTouchEventForMultiTouch(me);
+        }
+        me.recycle();
+
+        assert mCurrentDownEvent == null;
         mIgnoreRemainingTouchEvents = true;
     }
 
@@ -755,6 +769,7 @@ class ContentViewGestureHandler {
      * Handle content view losing focus -- ensure that any remaining active state is removed.
      */
     void onWindowFocusLost() {
+        // TODO(jdduke): Determine if this should behave more like setIgnoreRemainingTouchEvents().
         if (mLastLongPressEvent != null) {
             sendTapCancelIfNecessary(mLastLongPressEvent);
         }
@@ -762,7 +777,8 @@ class ContentViewGestureHandler {
 
     private MotionEvent obtainActionCancelMotionEvent() {
         MotionEvent me = MotionEvent.obtain(
-                SystemClock.uptimeMillis(),
+                mCurrentDownEvent != null ?
+                    mCurrentDownEvent.getDownTime() : SystemClock.uptimeMillis(),
                 SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_CANCEL, 0.0f,  0.0f,  0);
         me.setSource(mCurrentDownEvent != null ?
@@ -784,6 +800,8 @@ class ContentViewGestureHandler {
     }
 
     private boolean processTouchEvent(MotionEvent event) {
+        if (!canHandle(event)) return false;
+
         mMotionEventDelegate.onTouchEventHandlingBegin(event);
 
         final boolean wasTouchScrolling = mTouchScrolling;
@@ -794,30 +812,26 @@ class ContentViewGestureHandler {
             endDoubleTapDragIfNecessary(event);
         } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             mGestureDetector.setIsLongpressEnabled(true);
+            mCurrentDownEvent = MotionEvent.obtain(event);
         }
 
-        // Use the framework's GestureDetector to detect pans and zooms not already
-        // handled by the WebKit touch events gesture manager.
-        boolean handled = false;
-        if (canHandle(event)) {
-            handled |= mGestureDetector.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                mCurrentDownEvent = MotionEvent.obtain(event);
-            }
-        }
-
+        boolean handled = mGestureDetector.onTouchEvent(event);
         handled |= processTouchEventForMultiTouch(event);
 
         if (event.getAction() == MotionEvent.ACTION_UP
                 || event.getAction() == MotionEvent.ACTION_CANCEL) {
-            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
-            mCurrentDownEvent = null;
+            if (event.getAction() == MotionEvent.ACTION_CANCEL) {
+                sendTapCancelIfNecessary(event);
+            }
 
             // "Last finger raised" could be an end to movement, but it should
             // only terminate scrolling if the event did not cause a fling.
             if (wasTouchScrolling && !handled) {
                 endTouchScrollIfNecessary(event.getEventTime(), true);
             }
+
+            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+            mCurrentDownEvent = null;
         }
 
         mMotionEventDelegate.onTouchEventHandlingEnd();
@@ -861,6 +875,14 @@ class ContentViewGestureHandler {
     private boolean sendGesture(
             int type, long timeMs, int x, int y, Bundle extraParams) {
         assert timeMs != 0;
+        // The only valid gestures that can occur after the touch sequence has
+        // ended are SHOW_PRESS and SINGLE_TAP_CONFIRMED, potentially triggered
+        // after the double-tap delay window times out.
+        if (mCurrentDownEvent == null
+                && type != GESTURE_SINGLE_TAP_CONFIRMED
+                && type != GESTURE_SHOW_PRESS) {
+            return false;
+        }
         return mMotionEventDelegate.onGestureEventCreated(type, timeMs, x, y, extraParams);
     }
 

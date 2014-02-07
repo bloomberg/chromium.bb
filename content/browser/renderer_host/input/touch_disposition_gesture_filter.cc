@@ -38,36 +38,38 @@ TouchDispositionGestureFilter::TouchDispositionGestureFilter(
 
 TouchDispositionGestureFilter::~TouchDispositionGestureFilter() {}
 
-void TouchDispositionGestureFilter::OnGestureEventPacket(
+TouchDispositionGestureFilter::PacketResult
+TouchDispositionGestureFilter::OnGestureEventPacket(
     const GestureEventPacket& packet) {
-  switch (packet.gesture_source()) {
-    case GestureEventPacket::TOUCH_BEGIN:
-      sequences_.push(GestureSequence());
-      break;
+ if (packet.gesture_source() == GestureEventPacket::INVALID)
+    return INVALID_PACKET_TYPE;
 
-    case GestureEventPacket::TOUCH:
-      break;
+  if (packet.gesture_source() == GestureEventPacket::TOUCH_BEGIN)
+    sequences_.push(GestureSequence());
 
-    case GestureEventPacket::TOUCH_TIMEOUT:
-      // Handle the timeout packet immediately if the packet preceding the
-      // timeout has already been dispatched.
-      if (Tail().IsEmpty()) {
-        if (!Tail().IsGesturePrevented())
-          SendPacket(packet);
-        return;
-      }
-      break;
+  if (IsEmpty())
+    return INVALID_PACKET_ORDER;
 
-    case GestureEventPacket::INVALID:
-      NOTREACHED() << "Invalid gesture packet detected.";
-      break;
+  if (packet.gesture_source() == GestureEventPacket::TOUCH_TIMEOUT) {
+    // Handle the timeout packet immediately if the packet preceding the
+    // timeout has already been dispatched.
+    if (Tail().IsEmpty()) {
+      if (!Tail().IsGesturePrevented())
+        SendPacket(packet);
+      return SUCCESS;
+    }
   }
 
   Tail().Push(packet);
+  return SUCCESS;
 }
 
 void TouchDispositionGestureFilter::OnTouchEventAck(
     InputEventAckState ack_state) {
+  // Spurious touch acks from the renderer should not trigger a crash.
+  if (IsEmpty() || (Head().IsEmpty() && sequences_.size() == 1))
+    return;
+
   if (Head().IsEmpty()) {
     CancelTapIfNecessary();
     CancelFlingIfNecessary();
@@ -103,6 +105,10 @@ void TouchDispositionGestureFilter::OnTouchEventAck(
   // subsequent TouchMove is consumed.
   if (sequence.IsGesturePrevented())
     CancelTapIfNecessary();
+}
+
+bool TouchDispositionGestureFilter::IsEmpty() const {
+  return sequences_.empty();
 }
 
 void TouchDispositionGestureFilter::SendPacket(
