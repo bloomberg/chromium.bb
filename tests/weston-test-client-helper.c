@@ -505,9 +505,11 @@ skip(const char *fmt, ...)
 	vfprintf(stderr, fmt, argp);
 	va_end(argp);
 
-	/* automake tests uses exit code 77, but we don't have a good
-	 * way to make weston exit with that from here. */
-	exit(0);
+	/* automake tests uses exit code 77. weston-test-runner will see
+	 * this and use it, and then weston-test's sigchld handler (in the
+	 * weston process) will use that as an exit status, which is what
+	 * automake will see in the end. */
+	exit(77);
 }
 
 static void

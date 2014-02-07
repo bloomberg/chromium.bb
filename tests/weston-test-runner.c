@@ -32,6 +32,8 @@
 #include <signal.h>
 #include "weston-test-runner.h"
 
+#define SKIP 77
+
 extern const struct weston_test __start_test_section, __stop_test_section;
 
 static const struct weston_test *
@@ -67,6 +69,7 @@ static int
 exec_and_report_test(const struct weston_test *t, void *test_data, int iteration)
 {
 	int success = 0;
+	int skip = 0;
 	int hardfail = 0;
 	siginfo_t info;
 
@@ -91,6 +94,8 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 		fprintf(stderr, "exit status %d", info.si_status);
 		if (info.si_status == EXIT_SUCCESS)
 			success = 1;
+		else if (info.si_status == SKIP)
+			skip = 1;
 		break;
 	case CLD_KILLED:
 	case CLD_DUMPED:
@@ -106,7 +111,10 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 	if (success && !hardfail) {
 		fprintf(stderr, ", pass.\n");
 		return 1;
-	} else { 
+	} else if (skip) {
+		fprintf(stderr, ", skip.\n");
+		return SKIP;
+	} else {
 		fprintf(stderr, ", fail.\n");
 		return 0;
 	}
@@ -114,13 +122,16 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 
 /* Returns number of tests and number of pass / fail in param args */
 static int
-iterate_test(const struct weston_test *t, int *passed)
+iterate_test(const struct weston_test *t, int *passed, int *skipped)
 {
-	int i;
+	int ret, i;
 	void *current_test_data = (void *) t->table_data;
 	for (i = 0; i < t->n_elements; ++i, current_test_data += t->element_size)
 	{
-		if (exec_and_report_test(t, current_test_data, i))
+		ret = exec_and_report_test(t, current_test_data, i);
+		if (ret == SKIP)
+			++(*skipped);
+		else if (ret)
 			++(*passed);
 	}
 
@@ -132,6 +143,7 @@ int main(int argc, char *argv[])
 	const struct weston_test *t;
 	int total = 0;
 	int pass = 0;
+	int skip = 0;
 
 	if (argc == 2) {
 		const char *testname = argv[1];
@@ -149,19 +161,26 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		int number_passed_in_test = 0;
-		total += iterate_test(t, &number_passed_in_test);
+		int number_passed_in_test = 0, number_skipped_in_test = 0;
+		total += iterate_test(t, &number_passed_in_test, &number_skipped_in_test);
 		pass += number_passed_in_test;
+		skip += number_skipped_in_test;
 	} else {
 		for (t = &__start_test_section; t < &__stop_test_section; t++) {
-			int number_passed_in_test = 0;
-			total += iterate_test(t, &number_passed_in_test);
+			int number_passed_in_test = 0, number_skipped_in_test = 0;
+			total += iterate_test(t, &number_passed_in_test, &number_skipped_in_test);
 			pass += number_passed_in_test;
+			skip += number_skipped_in_test;
 		}
 	}
 
-	fprintf(stderr, "%d tests, %d pass, %d fail\n",
-		total, pass, total - pass);
+	fprintf(stderr, "%d tests, %d pass, %d skip, %d fail\n",
+		total, pass, skip, total - pass - skip);
 
-	return pass == total ? EXIT_SUCCESS : EXIT_FAILURE;
+	if (skip == total)
+		return SKIP;
+	else if (pass + skip == total)
+		return EXIT_SUCCESS;
+
+	return EXIT_FAILURE;
 }

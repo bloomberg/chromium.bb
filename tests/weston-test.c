@@ -54,6 +54,12 @@ test_client_sigchld(struct weston_process *process, int status)
 	struct weston_test *test =
 		container_of(process, struct weston_test, process);
 
+	/* Chain up from weston-test-runner's exit code so that automake
+	 * knows the exit status and can report e.g. skipped tests. */
+	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+		exit(WEXITSTATUS(status));
+
+	/* In case the child aborted or segfaulted... */
 	assert(status == 0);
 
 	wl_display_terminate(test->compositor->wl_display);
