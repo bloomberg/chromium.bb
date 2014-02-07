@@ -294,7 +294,7 @@ void HeapProfileTable::MarkCurrentAllocations(AllocationMark mark) {
 }
 
 void HeapProfileTable::MarkUnmarkedAllocations(AllocationMark mark) {
-  const MarkArgs args(mark, true);
+  const MarkArgs args(mark, false);
   address_map_->Iterate<const MarkArgs&>(MarkIterator, args);
 }
 
