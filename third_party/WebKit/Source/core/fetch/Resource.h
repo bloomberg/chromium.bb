@@ -220,8 +220,6 @@ public:
     DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
     void setDataBufferingPolicy(DataBufferingPolicy);
 
-    virtual void destroyDecodedData() { }
-
     bool isPreloaded() const { return m_preloadCount; }
     void increasePreloadCount() { ++m_preloadCount; }
     void decreasePreloadCount() { ASSERT(m_preloadCount); --m_preloadCount; }
@@ -238,11 +236,7 @@ public:
 
     bool isPurgeable() const;
     bool wasPurged() const;
-
-    // This is used by the archive machinery to get at a purged resource without
-    // triggering a load. We should make it protected again if we can find a
-    // better way to handle the archive case.
-    bool makePurgeable(bool purgeable);
+    bool lock();
 
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }
@@ -287,8 +281,6 @@ protected:
     void setDecodedSize(size_t);
     void didAccessDecodedData(double timeStamp);
 
-    bool isSafeToMakePurgeable() const;
-
     virtual void switchClientsToRevalidatedResource();
     void clearResourceToRevalidate();
     void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
@@ -325,6 +317,11 @@ protected:
     };
     const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
 
+    virtual bool isSafeToUnlock() const { return false; }
+    virtual void destroyDecodedData() { }
+
+    void prune();
+
     ResourceRequest m_resourceRequest;
     AtomicString m_accept;
     RefPtr<ResourceLoader> m_loader;
@@ -343,6 +340,8 @@ private:
 
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();
+
+    bool unlock();
 
     void failBeforeStarting();
 

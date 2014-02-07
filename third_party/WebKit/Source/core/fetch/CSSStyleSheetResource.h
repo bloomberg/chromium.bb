@@ -46,10 +46,13 @@ public:
     virtual void didAddClient(ResourceClient*) OVERRIDE;
     virtual void setEncoding(const String&) OVERRIDE;
     virtual String encoding() const OVERRIDE;
-    virtual void destroyDecodedData() OVERRIDE;
 
     PassRefPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
     void saveParsedStyleSheet(PassRefPtr<StyleSheetContents>);
+
+protected:
+    virtual bool isSafeToUnlock() const OVERRIDE;
+    virtual void destroyDecodedData() OVERRIDE;
 
 private:
     bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
