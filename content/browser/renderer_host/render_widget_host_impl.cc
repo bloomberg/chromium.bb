@@ -2327,24 +2327,6 @@ void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
     Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
 }
 
-#if defined(USE_AURA)
-
-void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
-#if defined(OS_WIN)
-  HWND hwnd = reinterpret_cast<HWND>(new_parent);
-  if (!hwnd)
-    hwnd = GetDesktopWindow();
-  // On Windows GetParentForWindowlessPlugin returns the dummy window used as
-  // the parent for windowless NPAPI plugins. Reparenting this window to the
-  // new parent should be good enough.
-  if (view_ && view_->GetParentForWindowlessPlugin())
-    SetParent(reinterpret_cast<HWND>(view_->GetParentForWindowlessPlugin()),
-              reinterpret_cast<HWND>(new_parent));
-#endif
-}
-
-#endif
-
 void RenderWidgetHostImpl::DelayedAutoResized() {
   gfx::Size new_size = new_auto_size_;
   // Clear the new_auto_size_ since the empty value is used as a flag to

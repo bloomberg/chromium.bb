@@ -488,12 +488,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return is_threaded_compositing_enabled_;
   }
 
-#if defined(USE_AURA)
-  // Called by the view when the parent changes. If a parent isn't available,
-  // NULL is used.
-  void ParentChanged(gfx::NativeViewId new_parent);
-#endif
-
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
   }

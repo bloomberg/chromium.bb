@@ -11,6 +11,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/atl_module.h"
@@ -605,9 +606,11 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   const int32 busy_state = 1 << ui::AX_STATE_BUSY;
   const int32 readonly_state = 1 << ui::AX_STATE_READONLY;
   const int32 enabled_state = 1 << blink::WebAXStateEnabled;
+  scoped_ptr<content::LegacyRenderWidgetHostHWND> accessible_hwnd(
+      content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()));
   scoped_ptr<BrowserAccessibilityManager> manager(
       new BrowserAccessibilityManagerWin(
-          GetDesktopWindow(),
+          accessible_hwnd.get(),
           NULL,
           BrowserAccessibilityManagerWin::GetEmptyDocument(),
           NULL,
@@ -689,9 +692,12 @@ TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
       IID_IAccessible,
       reinterpret_cast<void**>(desktop_hwnd_iaccessible.Receive())));
 
+  scoped_ptr<content::LegacyRenderWidgetHostHWND> accessible_hwnd(
+      content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()));
+
   scoped_ptr<BrowserAccessibilityManagerWin> manager(
       new BrowserAccessibilityManagerWin(
-          desktop_hwnd,
+          accessible_hwnd.get(),
           desktop_hwnd_iaccessible,
           BrowserAccessibilityManagerWin::GetEmptyDocument(),
           NULL));
@@ -714,9 +720,11 @@ TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
   ASSERT_EQ(NULL, manager->parent_hwnd());
 
   // Now create it again.
+  accessible_hwnd = content::LegacyRenderWidgetHostHWND::Create(
+      GetDesktopWindow());
   manager.reset(
       new BrowserAccessibilityManagerWin(
-          desktop_hwnd,
+          accessible_hwnd.get(),
           desktop_hwnd_iaccessible,
           BrowserAccessibilityManagerWin::GetEmptyDocument(),
           NULL));

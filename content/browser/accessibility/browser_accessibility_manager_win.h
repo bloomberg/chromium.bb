@@ -14,14 +14,14 @@
 namespace content {
 class BrowserAccessibilityWin;
 
-class AccessibleHWND;
+class LegacyRenderWidgetHostHWND;
 
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManagerWin(
-      HWND parent_hwnd,
+      content::LegacyRenderWidgetHostHWND* accessible_hwnd,
       IAccessible* parent_iaccessible,
       const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
@@ -81,7 +81,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   base::hash_map<long, int32> unique_id_to_renderer_id_map_;
 
   // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
-  AccessibleHWND* accessible_hwnd_;
+  LegacyRenderWidgetHostHWND* accessible_hwnd_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

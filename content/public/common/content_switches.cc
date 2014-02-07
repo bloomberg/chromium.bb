@@ -473,6 +473,9 @@ const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
 
 #if defined(OS_WIN)
+// Disable the Legacy Window which corresponds to the size of the WebContents.
+const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
+
 // Enables the DirectWrite font rendering system on windows.
 const char kEnableDirectWrite[]             = "enable-direct-write";
 

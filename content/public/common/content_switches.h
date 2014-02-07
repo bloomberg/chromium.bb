@@ -142,6 +142,7 @@ CONTENT_EXPORT extern const char kEnableGestureTapHighlight[];
 extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
 #if defined(OS_WIN)
+CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 CONTENT_EXPORT extern const char kEnableDirectWrite[];
 CONTENT_EXPORT extern const char kEnableHighResolutionTime[];
 #endif
