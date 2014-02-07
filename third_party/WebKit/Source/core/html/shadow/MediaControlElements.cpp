@@ -722,7 +722,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
         hide();
 }
 
-void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
+void MediaControlTextTrackContainerElement::updateSizes()
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(this);
     if (!mediaElement)
@@ -737,7 +737,7 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
         return;
     videoBox = toRenderVideo(mediaElement->renderer())->videoBox();
 
-    if (!forceUpdate && m_videoDisplaySize == videoBox)
+    if (m_videoDisplaySize == videoBox)
         return;
     m_videoDisplaySize = videoBox;
 

@@ -240,7 +240,7 @@ public:
     static PassRefPtr<MediaControlTextTrackContainerElement> create(Document&);
 
     void updateDisplay();
-    void updateSizes(bool forceUpdate = false);
+    void updateSizes();
     static const AtomicString& textTrackContainerElementShadowPseudoId();
 
 private:
