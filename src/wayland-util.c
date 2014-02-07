@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -361,11 +362,12 @@ wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
 }
 
 static void
-wl_log_noop_handler(const char *fmt, va_list arg)
+wl_log_stderr_handler(const char *fmt, va_list arg)
 {
+	vfprintf(stderr, fmt, arg);
 }
 
-wl_log_func_t wl_log_handler = wl_log_noop_handler;
+wl_log_func_t wl_log_handler = wl_log_stderr_handler;
 
 void
 wl_log(const char *fmt, ...)
