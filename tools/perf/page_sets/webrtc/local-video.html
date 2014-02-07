@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript">
+  var errors = []
+  function requestVideo() {
+    navigator.webkitGetUserMedia({video: true, audio: false},
+                                 getUserMediaOkCallback,
+                                 getUserMediaFailedCallback);
+  }
+
+  function getUserMediaFailedCallback(error) {
+    errors.push('User media request denied with error code ' + error.code);
+  }
+
+  function getUserMediaOkCallback(stream) {
+    document.getElementById("view1").src = webkitURL.createObjectURL(stream);
+  }
+
+  function checkForErrors() {
+    if (errors.length > 0) {
+      throw errors.join("\n");
+    }
+  }
+  </script>
+</head>
+<body onload="requestVideo();">
+  <video width="640" height="480" id="view1" autoplay="autoplay"></video>
+</body>
+</html>

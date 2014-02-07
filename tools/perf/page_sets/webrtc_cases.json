@@ -1,0 +1,7 @@
+{
+  "description": "A simple test page showing a local video stream",
+  "pages": [
+    { "url": "file://webrtc/local-video.html" }
+  ],
+  "webrtc": { "action": "wait", "seconds": 10 }
+}
