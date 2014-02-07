@@ -1321,14 +1321,14 @@ PASS "use strict";var implements; true threw exception SyntaxError: Unexpected s
 PASS (function(){"use strict";var implements; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var implements = 42; implements === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var implements = 42; implements === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(implements){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(implements){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/implements/.test(function g(implements){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/implements/.test(function g(implements){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(implements){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(implements){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/implements/.test(function g(implements){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/implements/.test(function g(implements){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(implements){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(implements){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function implements(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function implements(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function implements(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function implements(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "implements": 42 }.implements === 42) is true
 PASS (function(){"use strict";({ "implements": 42 }.implements === 42)}); true is true
 PASS "use strict";({ implements: 42 }.implements === 42) is true
@@ -1357,14 +1357,14 @@ PASS "use strict";var let; true threw exception SyntaxError: Unexpected strict m
 PASS (function(){"use strict";var let; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var let = 42; let === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var let = 42; let === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(let){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(let){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/let/.test(function g(let){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/let/.test(function g(let){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(let){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(let){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/let/.test(function g(let){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/let/.test(function g(let){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(let){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(let){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function let(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function let(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function let(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function let(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "let": 42 }.let === 42) is true
 PASS (function(){"use strict";({ "let": 42 }.let === 42)}); true is true
 PASS "use strict";({ let: 42 }.let === 42) is true
@@ -1393,14 +1393,14 @@ PASS "use strict";var private; true threw exception SyntaxError: Unexpected stri
 PASS (function(){"use strict";var private; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var private = 42; private === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var private = 42; private === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(private){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(private){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/private/.test(function g(private){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/private/.test(function g(private){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(private){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(private){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/private/.test(function g(private){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/private/.test(function g(private){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(private){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(private){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function private(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function private(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function private(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function private(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "private": 42 }.private === 42) is true
 PASS (function(){"use strict";({ "private": 42 }.private === 42)}); true is true
 PASS "use strict";({ private: 42 }.private === 42) is true
@@ -1429,14 +1429,14 @@ PASS "use strict";var public; true threw exception SyntaxError: Unexpected stric
 PASS (function(){"use strict";var public; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var public = 42; public === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var public = 42; public === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(public){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(public){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/public/.test(function g(public){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/public/.test(function g(public){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(public){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(public){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/public/.test(function g(public){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/public/.test(function g(public){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(public){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(public){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function public(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function public(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function public(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function public(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "public": 42 }.public === 42) is true
 PASS (function(){"use strict";({ "public": 42 }.public === 42)}); true is true
 PASS "use strict";({ public: 42 }.public === 42) is true
@@ -1465,14 +1465,14 @@ PASS "use strict";var yield; true threw exception SyntaxError: Unexpected strict
 PASS (function(){"use strict";var yield; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var yield = 42; yield === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var yield = 42; yield === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(yield){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(yield){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/yield/.test(function g(yield){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/yield/.test(function g(yield){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(yield){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(yield){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/yield/.test(function g(yield){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/yield/.test(function g(yield){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(yield){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(yield){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function yield(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function yield(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function yield(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function yield(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "yield": 42 }.yield === 42) is true
 PASS (function(){"use strict";({ "yield": 42 }.yield === 42)}); true is true
 PASS "use strict";({ yield: 42 }.yield === 42) is true
@@ -1501,14 +1501,14 @@ PASS "use strict";var interface; true threw exception SyntaxError: Unexpected st
 PASS (function(){"use strict";var interface; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var interface = 42; interface === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var interface = 42; interface === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(interface){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(interface){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/interface/.test(function g(interface){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/interface/.test(function g(interface){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(interface){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(interface){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/interface/.test(function g(interface){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/interface/.test(function g(interface){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(interface){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(interface){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function interface(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function interface(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function interface(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function interface(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "interface": 42 }.interface === 42) is true
 PASS (function(){"use strict";({ "interface": 42 }.interface === 42)}); true is true
 PASS "use strict";({ interface: 42 }.interface === 42) is true
@@ -1537,14 +1537,14 @@ PASS "use strict";var package; true threw exception SyntaxError: Unexpected stri
 PASS (function(){"use strict";var package; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var package = 42; package === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var package = 42; package === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(package){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(package){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/package/.test(function g(package){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/package/.test(function g(package){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(package){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(package){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/package/.test(function g(package){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/package/.test(function g(package){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(package){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(package){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function package(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function package(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function package(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function package(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "package": 42 }.package === 42) is true
 PASS (function(){"use strict";({ "package": 42 }.package === 42)}); true is true
 PASS "use strict";({ package: 42 }.package === 42) is true
@@ -1573,14 +1573,14 @@ PASS "use strict";var protected; true threw exception SyntaxError: Unexpected st
 PASS (function(){"use strict";var protected; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var protected = 42; protected === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var protected = 42; protected === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(protected){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(protected){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/protected/.test(function g(protected){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/protected/.test(function g(protected){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(protected){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(protected){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/protected/.test(function g(protected){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/protected/.test(function g(protected){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(protected){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(protected){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function protected(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function protected(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function protected(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function protected(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "protected": 42 }.protected === 42) is true
 PASS (function(){"use strict";({ "protected": 42 }.protected === 42)}); true is true
 PASS "use strict";({ protected: 42 }.protected === 42) is true
@@ -1609,14 +1609,14 @@ PASS "use strict";var static; true threw exception SyntaxError: Unexpected stric
 PASS (function(){"use strict";var static; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS "use strict";var static = 42; static === 42 threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";var static = 42; static === 42}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function g(static){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function g(static){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";/static/.test(function g(static){ "use strict"; }) threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";/static/.test(function g(static){ "use strict"; })}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function g(static){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function g(static){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS "use strict";/static/.test(function g(static){ "use strict"; }) threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";/static/.test(function g(static){ "use strict"; })}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";try{}catch(static){}; true threw exception SyntaxError: Unexpected strict mode reserved word.
 PASS (function(){"use strict";try{}catch(static){}; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS "use strict";function static(){ "use strict"; }; true threw exception SyntaxError: Unexpected strict mode reserved word.
-PASS (function(){"use strict";function static(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected strict mode reserved word.
+PASS "use strict";function static(){ "use strict"; }; true threw exception SyntaxError: Use of future reserved word in strict mode.
+PASS (function(){"use strict";function static(){ "use strict"; }; true}); true threw exception SyntaxError: Use of future reserved word in strict mode.
 PASS "use strict";({ "static": 42 }.static === 42) is true
 PASS (function(){"use strict";({ "static": 42 }.static === 42)}); true is true
 PASS "use strict";({ static: 42 }.static === 42) is true

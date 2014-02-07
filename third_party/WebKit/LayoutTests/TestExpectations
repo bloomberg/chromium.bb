@@ -988,5 +988,3 @@ crbug.com/340105 svg/dom/svgpath-out-of-bounds-getPathSeg.html [ NeedsManualReba
 crbug.com/340105 virtual/deferred/fast/images/support-broken-image-delegate.html [ NeedsManualRebaseline ]
 
 crbug.com/329786 http/tests/inspector/network/network-shared-worker.html [ Pass Failure ]
-
-crbug.com/340639 fast/js/reserved-words-as-property.html [ NeedsRebaseline ]
