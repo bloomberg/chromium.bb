@@ -61,7 +61,7 @@
           '-Wno-unused-parameter', # be a bit stricter to match NaCl flags.
         ],
         'conditions': [
-          ['asan!=1', {
+          ['asan!=1 and msan!=1', {
             'ldflags': [
               # Catch unresolved symbols.
               '-Wl,-z,defs',
