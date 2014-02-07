@@ -11,7 +11,8 @@
 
 #define IPC_MESSAGE_START GeolocationMsgStart
 
-IPC_ENUM_TRAITS(content::Geoposition::ErrorCode)
+IPC_ENUM_TRAITS_MAX_VALUE(content::Geoposition::ErrorCode,
+                          content::Geoposition::ERROR_CODE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::Geoposition)
   IPC_STRUCT_TRAITS_MEMBER(latitude)
