@@ -51,6 +51,7 @@ enum WorldIdConstants {
     // Embedder isolated worlds can use IDs in [1, 1<<29).
     EmbedderWorldIdLimit = (1 << 29),
     ScriptPreprocessorIsolatedWorldId,
+    WorkerWorldId,
 };
 
 // This class represent a collection of DOM wrappers for a specific world.
@@ -63,7 +64,7 @@ public:
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static bool isIsolatedWorldId(int worldId) { return worldId != MainWorldId; }
+    static bool isIsolatedWorldId(int worldId) { return worldId != MainWorldId && worldId != WorkerWorldId; }
     static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     void setIsolatedWorldField(v8::Handle<v8::Context>);
@@ -103,7 +104,8 @@ public:
     static V8DOMActivityLogger* activityLogger(int worldId);
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
-    bool isIsolatedWorld() const { return !isMainWorld(); }
+    bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }
+    bool isIsolatedWorld() const { return !isMainWorld() && !isWorkerWorld(); }
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
@@ -113,6 +115,8 @@ public:
         return *m_domDataStore;
     }
     v8::Handle<v8::Context> context(ScriptController&);
+
+    DOMDataStore* domDataStore() { return m_domDataStore.get(); }
 
 private:
     static unsigned isolatedWorldCount;

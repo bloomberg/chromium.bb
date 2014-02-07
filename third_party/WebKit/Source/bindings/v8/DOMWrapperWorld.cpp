@@ -57,8 +57,10 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
 {
-    if (!isMainWorld())
+    if (isIsolatedWorld())
         m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
+    else if (isWorkerWorld())
+        m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
 }
 
 DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
