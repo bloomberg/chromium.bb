@@ -39,6 +39,24 @@ const int kScrollbarArrowButtonImages[NativeTheme::kMaxState][9] = {
 
 const int kScrollbarTrackImages[9] = IMAGE_GRID(IDR_SCROLLBAR_BASE);
 
+bool IsScrollbarPart(NativeTheme::Part part) {
+  switch (part) {
+    case NativeTheme::kScrollbarDownArrow:
+    case NativeTheme::kScrollbarLeftArrow:
+    case NativeTheme::kScrollbarRightArrow:
+    case NativeTheme::kScrollbarUpArrow:
+    case NativeTheme::kScrollbarHorizontalThumb:
+    case NativeTheme::kScrollbarVerticalThumb:
+    case NativeTheme::kScrollbarHorizontalTrack:
+    case NativeTheme::kScrollbarVerticalTrack:
+    case NativeTheme::kScrollbarHorizontalGripper:
+    case NativeTheme::kScrollbarVerticalGripper:
+    case NativeTheme::kScrollbarCorner:
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -69,6 +87,20 @@ NativeThemeAuraWin::NativeThemeAuraWin() {
 NativeThemeAuraWin::~NativeThemeAuraWin() {
 }
 
+void NativeThemeAuraWin::Paint(SkCanvas* canvas,
+                               Part part,
+                               State state,
+                               const gfx::Rect& rect,
+                               const ExtraParams& extra) const {
+  if (IsScrollbarPart(part) &&
+      NativeThemeWin::instance()->IsUsingHighContrastTheme()) {
+    NativeThemeWin::instance()->Paint(canvas, part, state, rect, extra);
+    return;
+  }
+
+  NativeThemeAura::Paint(canvas, part, state, rect, extra);
+}
+
 gfx::Size NativeThemeAuraWin::GetPartSize(Part part,
                                           State state,
                                           const ExtraParams& extra) const {
@@ -78,19 +110,8 @@ gfx::Size NativeThemeAuraWin::GetPartSize(Part part,
 
   // We want aura on windows to use the same size for scrollbars as we would in
   // the native theme.
-  switch (part) {
-    case kScrollbarDownArrow:
-    case kScrollbarLeftArrow:
-    case kScrollbarRightArrow:
-    case kScrollbarUpArrow:
-    case kScrollbarHorizontalThumb:
-    case kScrollbarVerticalThumb:
-    case kScrollbarHorizontalTrack:
-    case kScrollbarVerticalTrack:
-      return NativeThemeWin::instance()->GetPartSize(part, state, extra);
-    default:
-      break;
-  }
+  if (IsScrollbarPart(part))
+    return NativeThemeWin::instance()->GetPartSize(part, state, extra);
 
   return NativeThemeAura::GetPartSize(part, state, extra);
 }

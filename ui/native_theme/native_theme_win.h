@@ -54,6 +54,9 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   bool IsThemingActive() const;
 
+  // Returns true if a high contrast theme is being used.
+  bool IsUsingHighContrastTheme() const;
+
   HRESULT GetThemeColor(ThemeName theme,
                         int part_id,
                         int state_id,
@@ -355,6 +358,12 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // The system color change listener and the updated cache of system colors.
   gfx::ScopedSysColorChangeListener color_change_listener_;
   mutable std::map<int, SkColor> system_colors_;
+
+  // Is a high contrast theme active?
+  mutable bool is_using_high_contrast_;
+
+  // Is |is_using_high_contrast_| valid?
+  mutable bool is_using_high_contrast_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };

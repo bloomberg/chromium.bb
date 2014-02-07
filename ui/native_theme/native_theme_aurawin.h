@@ -28,6 +28,11 @@ class NATIVE_THEME_EXPORT NativeThemeAuraWin : public NativeThemeAura {
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
                                 const ExtraParams& extra) const OVERRIDE;
+  virtual void Paint(SkCanvas* canvas,
+                     Part part,
+                     State state,
+                     const gfx::Rect& rect,
+                     const ExtraParams& extra) const OVERRIDE;
   virtual void PaintArrowButton(SkCanvas* gc,
                                 const gfx::Rect& rect,
                                 Part direction,

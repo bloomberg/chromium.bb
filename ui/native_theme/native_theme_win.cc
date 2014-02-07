@@ -127,14 +127,6 @@ RECT InsetRect(const RECT* rect, int size) {
   return result.ToRECT();
 }
 
-// Returns true if using a high contrast theme.
-bool UsingHighContrastTheme() {
-  HIGHCONTRAST result;
-  result.cbSize = sizeof(HIGHCONTRAST);
-  return SystemParametersInfo(SPI_GETHIGHCONTRAST, result.cbSize, &result, 0) &&
-      (result.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON;
-}
-
 }  // namespace
 
 namespace ui {
@@ -143,6 +135,18 @@ bool NativeThemeWin::IsThemingActive() const {
   if (is_theme_active_)
     return !!is_theme_active_();
   return false;
+}
+
+bool NativeThemeWin::IsUsingHighContrastTheme() const {
+  if (is_using_high_contrast_valid_)
+    return is_using_high_contrast_;
+  HIGHCONTRAST result;
+  result.cbSize = sizeof(HIGHCONTRAST);
+  is_using_high_contrast_ =
+      SystemParametersInfo(SPI_GETHIGHCONTRAST, result.cbSize, &result, 0) &&
+      (result.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON;
+  is_using_high_contrast_valid_ = true;
+  return is_using_high_contrast_;
 }
 
 HRESULT NativeThemeWin::GetThemeColor(ThemeName theme,
@@ -352,7 +356,9 @@ NativeThemeWin::NativeThemeWin()
       set_theme_properties_(NULL),
       is_theme_active_(NULL),
       get_theme_int_(NULL),
-      color_change_listener_(this) {
+      color_change_listener_(this),
+      is_using_high_contrast_(false),
+      is_using_high_contrast_valid_(false) {
   if (theme_dll_) {
     draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
         GetProcAddress(theme_dll_, "DrawThemeBackground"));
@@ -392,6 +398,7 @@ NativeThemeWin::~NativeThemeWin() {
 
 void NativeThemeWin::OnSysColorChange() {
   UpdateSystemColors();
+  is_using_high_contrast_valid_ = false;
 }
 
 void NativeThemeWin::UpdateSystemColors() {
@@ -571,7 +578,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectionBackgroundFocused:
       return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return system_colors_[UsingHighContrastTheme() ?
+      return system_colors_[IsUsingHighContrastTheme() ?
                               COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
     case kColorId_TreeArrow:
       return system_colors_[COLOR_WINDOWTEXT];
@@ -588,7 +595,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TableSelectionBackgroundFocused:
       return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_TableSelectionBackgroundUnfocused:
-      return system_colors_[UsingHighContrastTheme() ?
+      return system_colors_[IsUsingHighContrastTheme() ?
                               COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
     case kColorId_TableGroupingIndicatorColor:
       return system_colors_[COLOR_GRAYTEXT];
