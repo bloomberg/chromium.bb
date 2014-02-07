@@ -43,7 +43,6 @@ include_rules = [
   "+installer_util_strings",  # For generated headers
   "+jni",
   "+media/base",  # For media switches
-  "+native_client/src/shared/imc",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",
