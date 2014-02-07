@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
+#include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -19,7 +20,6 @@ namespace mojo {
 namespace system {
 
 class Channel;
-class Dispatcher;
 class MessagePipeEndpoint;
 class Waiter;
 
@@ -47,13 +47,15 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   // Unlike |MessagePipeDispatcher::WriteMessage()|, this does not validate its
   // arguments.
   MojoResult WriteMessage(unsigned port,
-                          const void* bytes, uint32_t num_bytes,
-                          const std::vector<Dispatcher*>* dispatchers,
+                          const void* bytes,
+                          uint32_t num_bytes,
+                          std::vector<DispatcherTransport>* transports,
                           MojoWriteMessageFlags flags);
   // Unlike |MessagePipeDispatcher::ReadMessage()|, this does not validate its
   // arguments.
   MojoResult ReadMessage(unsigned port,
-                         void* bytes, uint32_t* num_bytes,
+                         void* bytes,
+                         uint32_t* num_bytes,
                          std::vector<scoped_refptr<Dispatcher> >* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);
@@ -69,7 +71,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   // |message|. |dispatchers| should be non-null only if it's nonempty.
   MojoResult EnqueueMessage(unsigned port,
                             MessageInTransit* message,
-                            const std::vector<Dispatcher*>* dispatchers);
+                            std::vector<DispatcherTransport>* transports);
 
   // These are used by |Channel|.
   void Attach(unsigned port,

@@ -15,6 +15,7 @@ namespace mojo {
 namespace system {
 
 class MessagePipe;
+class MessagePipeDispatcherTransport;
 
 // This is the |Dispatcher| implementation for message pipes (created by the
 // Mojo primitive |MojoCreateMessagePipe()|). This class is thread-safe.
@@ -25,6 +26,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  friend class MessagePipeDispatcherTransport;
+
+  friend class base::RefCountedThreadSafe<MessagePipeDispatcher>;
+  virtual ~MessagePipeDispatcher();
+
   // Gets a dumb pointer to |message_pipe_|. This must be called under the
   // |Dispatcher| lock (that it's a dumb pointer is okay since it's under lock).
   // This is needed when sending handles across processes, where nontrivial,
@@ -33,21 +42,19 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Similarly for the port.
   unsigned GetPortNoLock() const;
 
-  virtual Type GetType() const OVERRIDE;
-
- private:
-  friend class base::RefCountedThreadSafe<MessagePipeDispatcher>;
-  virtual ~MessagePipeDispatcher();
-
   // |Dispatcher| implementation/overrides:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual void CloseImplNoLock() OVERRIDE;
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes, uint32_t num_bytes,
-      const std::vector<Dispatcher*>* dispatchers,
+      const void* bytes,
+      uint32_t num_bytes,
+      std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags) OVERRIDE;
   virtual MojoResult ReadMessageImplNoLock(
-      void* bytes, uint32_t* num_bytes,
+      void* bytes,
+      uint32_t* num_bytes,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
       uint32_t* num_dispatchers,
       MojoReadMessageFlags flags) OVERRIDE;
@@ -55,14 +62,29 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                          MojoWaitFlags flags,
                                          MojoResult wake_result) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
-  virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
 
   // Protected by |lock()|:
   scoped_refptr<MessagePipe> message_pipe_;  // This will be null if closed.
   unsigned port_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
+};
+
+class MessagePipeDispatcherTransport : public DispatcherTransport {
+ public:
+  explicit MessagePipeDispatcherTransport(DispatcherTransport transport);
+
+  MessagePipe* GetMessagePipe() {
+    return message_pipe_dispatcher()->GetMessagePipeNoLock();
+  }
+  unsigned GetPort() { return message_pipe_dispatcher()->GetPortNoLock(); }
+
+ private:
+  MessagePipeDispatcher* message_pipe_dispatcher() {
+    return static_cast<MessagePipeDispatcher*>(dispatcher());
+  }
+
+  // Copy and assign allowed.
 };
 
 }  // namespace system

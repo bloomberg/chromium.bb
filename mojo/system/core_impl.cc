@@ -214,7 +214,7 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
   // without accessing the handle table. These can be dumb pointers, since their
   // entries in the handle table won't get removed (since they'll be marked as
   // busy).
-  std::vector<Dispatcher*> dispatchers(num_handles);
+  std::vector<DispatcherTransport> transports(num_handles);
 
   // When we pass handles, we have to try to take all their dispatchers' locks
   // and mark the handles as busy. If the call succeeds, we then remove the
@@ -250,34 +250,30 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       // same handle from being sent multiple times in the same message.
       entries[i]->busy = true;
 
-      // Try to take the lock.
-      if (!Dispatcher::CoreImplAccess::TryLock(entries[i]->dispatcher.get())) {
+      // Try to start the transport.
+      DispatcherTransport transport =
+          Dispatcher::CoreImplAccess::TryStartTransport(
+              entries[i]->dispatcher.get());
+      if (!transport.is_valid()) {
         // Unset the busy flag (since it won't be unset below).
         entries[i]->busy = false;
         error_result = MOJO_RESULT_BUSY;
         break;
       }
 
-      // We shouldn't race with things that close dispatchers, since closing can
-      // only take place either under |handle_table_lock_| or when the handle is
-      // marked as busy.
-      DCHECK(!Dispatcher::CoreImplAccess::IsClosedNoLock(
-          entries[i]->dispatcher.get()));
-
       // Check if the dispatcher is busy (e.g., in a two-phase read/write).
       // (Note that this must be done after the dispatcher's lock is acquired.)
-      if (Dispatcher::CoreImplAccess::IsBusyNoLock(entries[i]->dispatcher)) {
-        // Unset the busy flag and release the lock (since it won't be done
+      if (transport.IsBusy()) {
+        // Unset the busy flag and end the transport (since it won't be done
         // below).
         entries[i]->busy = false;
-        Dispatcher::CoreImplAccess::ReleaseLock(entries[i]->dispatcher.get());
+        transport.End();
         error_result = MOJO_RESULT_BUSY;
         break;
       }
 
-      // Hang on to the pointer to the dispatcher (which we'll need to release
-      // the lock without going through the handle table).
-      dispatchers[i] = entries[i]->dispatcher;
+      // Hang on to the transport (which we'll need to end the transport).
+      transports[i] = transport;
     }
     if (i < num_handles) {
       DCHECK_NE(error_result, MOJO_RESULT_INTERNAL);
@@ -286,20 +282,19 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       for (uint32_t j = 0; j < i; j++) {
         DCHECK(entries[j]->busy);
         entries[j]->busy = false;
-        Dispatcher::CoreImplAccess::ReleaseLock(entries[j]->dispatcher.get());
+        transports[j].End();
       }
       return error_result;
     }
   }
 
-  MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes,
-                                           &dispatchers,
+  MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes, &transports,
                                            flags);
 
   // We need to release the dispatcher locks before we take the handle table
   // lock.
   for (uint32_t i = 0; i < num_handles; i++)
-    Dispatcher::CoreImplAccess::ReleaseLock(dispatchers[i]);
+    transports[i].End();
 
   if (rv == MOJO_RESULT_OK) {
     base::AutoLock locker(handle_table_lock_);

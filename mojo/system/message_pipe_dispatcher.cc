@@ -14,6 +14,8 @@ namespace system {
 
 const unsigned kInvalidPort = static_cast<unsigned>(-1);
 
+// MessagePipeDispatcher -------------------------------------------------------
+
 MessagePipeDispatcher::MessagePipeDispatcher()
     : port_(kInvalidPort) {
 }
@@ -27,6 +29,15 @@ void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
   port_ = port;
 }
 
+Dispatcher::Type MessagePipeDispatcher::GetType() const {
+  return kTypeMessagePipe;
+}
+
+MessagePipeDispatcher::~MessagePipeDispatcher() {
+  // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
+  DCHECK(!message_pipe_.get());
+}
+
 MessagePipe* MessagePipeDispatcher::GetMessagePipeNoLock() const {
   lock().AssertAcquired();
   return message_pipe_.get();
@@ -35,15 +46,6 @@ MessagePipe* MessagePipeDispatcher::GetMessagePipeNoLock() const {
 unsigned MessagePipeDispatcher::GetPortNoLock() const {
   lock().AssertAcquired();
   return port_;
-}
-
-Dispatcher::Type MessagePipeDispatcher::GetType() const {
-  return kTypeMessagePipe;
-}
-
-MessagePipeDispatcher::~MessagePipeDispatcher() {
-  // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
-  DCHECK(!message_pipe_.get());
 }
 
 void MessagePipeDispatcher::CancelAllWaitersNoLock() {
@@ -58,12 +60,24 @@ void MessagePipeDispatcher::CloseImplNoLock() {
   port_ = kInvalidPort;
 }
 
+scoped_refptr<Dispatcher>
+MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
+  lock().AssertAcquired();
+
+  scoped_refptr<MessagePipeDispatcher> rv = new MessagePipeDispatcher();
+  rv->Init(message_pipe_, port_);
+  message_pipe_ = NULL;
+  port_ = kInvalidPort;
+  return scoped_refptr<Dispatcher>(rv.get());
+}
+
 MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
-    const void* bytes, uint32_t num_bytes,
-    const std::vector<Dispatcher*>* dispatchers,
+    const void* bytes,
+    uint32_t num_bytes,
+    std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
-  DCHECK(!dispatchers || (dispatchers->size() > 0 &&
-                          dispatchers->size() <= kMaxMessageNumHandles));
+  DCHECK(!transports || (transports->size() > 0 &&
+                         transports->size() <= kMaxMessageNumHandles));
 
   lock().AssertAcquired();
 
@@ -72,14 +86,13 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  return message_pipe_->WriteMessage(port_,
-                                     bytes, num_bytes,
-                                     dispatchers,
+  return message_pipe_->WriteMessage(port_, bytes, num_bytes, transports,
                                      flags);
 }
 
 MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
-    void* bytes, uint32_t* num_bytes,
+    void* bytes,
+    uint32_t* num_bytes,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
@@ -92,10 +105,8 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  return message_pipe_->ReadMessage(port_,
-                                    bytes, num_bytes,
-                                    dispatchers, num_dispatchers,
-                                    flags);
+  return message_pipe_->ReadMessage(port_, bytes, num_bytes, dispatchers,
+                                    num_dispatchers, flags);
 }
 
 MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
@@ -110,15 +121,11 @@ void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
   message_pipe_->RemoveWaiter(port_, waiter);
 }
 
-scoped_refptr<Dispatcher>
-MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  lock().AssertAcquired();
+// MessagePipeDispatcherTransport ----------------------------------------------
 
-  scoped_refptr<MessagePipeDispatcher> rv = new MessagePipeDispatcher();
-  rv->Init(message_pipe_, port_);
-  message_pipe_ = NULL;
-  port_ = kInvalidPort;
-  return scoped_refptr<Dispatcher>(rv.get());
+MessagePipeDispatcherTransport::MessagePipeDispatcherTransport(
+    DispatcherTransport transport) : DispatcherTransport(transport) {
+  DCHECK_EQ(message_pipe_dispatcher()->GetType(), Dispatcher::kTypeMessagePipe);
 }
 
 }  // namespace system

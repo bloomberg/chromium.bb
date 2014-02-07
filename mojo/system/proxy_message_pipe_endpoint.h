@@ -49,7 +49,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual void OnPeerClose() OVERRIDE;
   virtual MojoResult EnqueueMessage(
       MessageInTransit* message,
-      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
+      std::vector<DispatcherTransport>* transports) OVERRIDE;
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
   virtual void Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
@@ -63,14 +63,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
 
-  // Checks that |dispatchers| will be able to be enqueued by
-  // |EnqueueMessageInternal()| (which then MUST be called if this succeeds).
-  // |dispatchers| must be non-null and nonempty; |preflight_dispatcher_infos|
-  // must be non-null and empty.
-  // "Attaches" |dispatchers| to asdf
-  // TODO(vtl):
-  void SerializeDispatchers(MessageInTransit* message,
-                            const std::vector<Dispatcher*>* dispatchers);
+  // "Attaches" |transports| (which must be non-null and nonempty) to |message|
+  // by "serializing" them in an appropriate way, and closes each dispatcher.
+  void AttachAndCloseDispatchers(MessageInTransit* message,
+                                 std::vector<DispatcherTransport>* transports);
   void EnqueueMessageInternal(MessageInTransit* message);
 
 #ifdef NDEBUG

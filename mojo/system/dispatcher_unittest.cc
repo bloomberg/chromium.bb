@@ -31,6 +31,7 @@ class TrivialDispatcher : public Dispatcher {
 
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+    lock().AssertAcquired();
     return scoped_refptr<Dispatcher>(new TrivialDispatcher());
   }
 

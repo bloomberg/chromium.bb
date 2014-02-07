@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "mojo/system/channel.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
@@ -453,16 +452,23 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
   // Write to MP 0, port 0.
   {
-    base::AutoLock locker(test::GetDispatcherLock(dispatcher.get()));
+    DispatcherTransport
+        transport(test::DispatcherTryStartTransport(dispatcher.get()));
+    EXPECT_TRUE(transport.is_valid());
 
-    std::vector<Dispatcher*> dispatchers;
-    dispatchers.push_back(dispatcher.get());
+    std::vector<DispatcherTransport> transports;
+    transports.push_back(transport);
     EXPECT_EQ(MOJO_RESULT_OK,
               mp0->WriteMessage(0,
                                 hello, sizeof(hello),
-                                &dispatchers,
+                                &transports,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-    EXPECT_TRUE(test::IsDispatcherClosedNoLock(dispatcher.get()));
+    transport.End();
+
+    // |dispatcher| should have been closed. This is |DCHECK()|ed when the
+    // |dispatcher| is destroyed.
+    EXPECT_TRUE(dispatcher->HasOneRef());
+    dispatcher = NULL;
   }
 
   // Wait.

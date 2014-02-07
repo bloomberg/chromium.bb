@@ -42,19 +42,19 @@ LocalMessagePipeEndpoint::MessageQueueEntry::~MessageQueueEntry() {
 
 void LocalMessagePipeEndpoint::MessageQueueEntry::Init(
     MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
+    std::vector<DispatcherTransport>* transports) {
   DCHECK(message);
-  DCHECK(!dispatchers || !dispatchers->empty());
+  DCHECK(!transports || !transports->empty());
   DCHECK(!message_);
   DCHECK(dispatchers_.empty());
 
   message_ = message;
-  if (dispatchers) {
-    dispatchers_.reserve(dispatchers->size());
-    for (size_t i = 0; i < dispatchers->size(); i++) {
-      if ((*dispatchers)[i]) {
+  if (transports) {
+    dispatchers_.reserve(transports->size());
+    for (size_t i = 0; i < transports->size(); i++) {
+      if ((*transports)[i].is_valid()) {
         dispatchers_.push_back(
-            (*dispatchers)[i]->CreateEquivalentDispatcherAndCloseNoLock());
+            (*transports)[i].CreateEquivalentDispatcherAndClose());
 
 #ifndef NDEBUG
         // It's important that we have "ownership" of these dispatchers. In
@@ -64,7 +64,7 @@ void LocalMessagePipeEndpoint::MessageQueueEntry::Init(
         DCHECK(dispatchers_[i]->HasOneRef());
 #endif
       } else {
-        LOG(ERROR) << "Enqueueing null dispatcher";
+        LOG(WARNING) << "Enqueueing null dispatcher";
         dispatchers_.push_back(scoped_refptr<Dispatcher>());
       }
     }
@@ -105,16 +105,16 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
 
 MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
     MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
+    std::vector<DispatcherTransport>* transports) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
-  DCHECK(!dispatchers || !dispatchers->empty());
+  DCHECK(!transports || !transports->empty());
 
   bool was_empty = message_queue_.empty();
   // TODO(vtl): Use |emplace_back()| (and a suitable constructor, instead of
   // |Init()|) when that becomes available.
   message_queue_.push_back(MessageQueueEntry());
-  message_queue_.back().Init(message, dispatchers);
+  message_queue_.back().Init(message, transports);
   if (was_empty) {
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());

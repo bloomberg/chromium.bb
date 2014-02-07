@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "mojo/system/channel.h"
-#include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_dispatcher.h"
@@ -59,23 +58,26 @@ void MessagePipe::Close(unsigned port) {
 // TODO(vtl): Handle flags.
 MojoResult MessagePipe::WriteMessage(
     unsigned port,
-    const void* bytes, uint32_t num_bytes,
-    const std::vector<Dispatcher*>* dispatchers,
+    const void* bytes,
+    uint32_t num_bytes,
+    std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
+  uint32_t num_handles =
+      transports ? static_cast<uint32_t>(transports->size()) : 0;
   return EnqueueMessage(
       GetPeerPort(port),
       MessageInTransit::Create(
           MessageInTransit::kTypeMessagePipeEndpoint,
           MessageInTransit::kSubtypeMessagePipeEndpointData,
-          bytes, num_bytes,
-          dispatchers ? static_cast<uint32_t>(dispatchers->size()) : 0),
-      dispatchers);
+          bytes, num_bytes, num_handles),
+      transports);
 }
 
 MojoResult MessagePipe::ReadMessage(
     unsigned port,
-    void* bytes, uint32_t* num_bytes,
+    void* bytes,
+    uint32_t* num_bytes,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
@@ -84,9 +86,8 @@ MojoResult MessagePipe::ReadMessage(
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port].get());
 
-  return endpoints_[port]->ReadMessage(bytes, num_bytes,
-                                       dispatchers, num_dispatchers,
-                                       flags);
+  return endpoints_[port]->ReadMessage(bytes, num_bytes, dispatchers,
+                                       num_dispatchers, flags);
 }
 
 MojoResult MessagePipe::AddWaiter(unsigned port,
@@ -113,15 +114,15 @@ void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
 MojoResult MessagePipe::EnqueueMessage(
     unsigned port,
     MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
+    std::vector<DispatcherTransport>* transports) {
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
-  DCHECK((!dispatchers && message->num_handles() == 0) ||
-         (dispatchers && dispatchers->size() > 0 &&
-              message->num_handles() == dispatchers->size()));
+  DCHECK((!transports && message->num_handles() == 0) ||
+         (transports && transports->size() > 0 &&
+              message->num_handles() == transports->size()));
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
-    DCHECK(!dispatchers);
+    DCHECK(!transports);
     return HandleControlMessage(port, message);
   }
 
@@ -136,7 +137,7 @@ MojoResult MessagePipe::EnqueueMessage(
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  if (dispatchers) {
+  if (transports) {
     // You're not allowed to send either handle to a message pipe over the
     // message pipe, so check for this. (The case of trying to write a handle to
     // itself is taken care of by |CoreImpl|. That case kind of makes sense, but
@@ -144,23 +145,22 @@ MojoResult MessagePipe::EnqueueMessage(
     // their respective handles simultaneously. The other case, of trying to
     // write the peer handle to a handle, doesn't make sense -- since no handle
     // will be available to read the message from.)
-    for (size_t i = 0; i < dispatchers->size(); i++) {
-      if (!(*dispatchers)[i])
+    for (size_t i = 0; i < transports->size(); i++) {
+      if (!(*transports)[i].is_valid())
         continue;
-      if ((*dispatchers)[i]->GetType() == Dispatcher::kTypeMessagePipe) {
-        MessagePipeDispatcher* mp_dispatcher =
-            static_cast<MessagePipeDispatcher*>((*dispatchers)[i]);
-        if (mp_dispatcher->GetMessagePipeNoLock() == this) {
+      if ((*transports)[i].GetType() == Dispatcher::kTypeMessagePipe) {
+        MessagePipeDispatcherTransport mp_transport((*transports)[i]);
+        if (mp_transport.GetMessagePipe() == this) {
           // The other case should have been disallowed by |CoreImpl|. (Note:
           // |port| is the peer port of the handle given to |WriteMessage()|.)
-          DCHECK_EQ(mp_dispatcher->GetPortNoLock(), port);
+          DCHECK_EQ(mp_transport.GetPort(), port);
           return MOJO_RESULT_INVALID_ARGUMENT;
         }
       }
     }
   }
 
-  return endpoints_[port]->EnqueueMessage(message, dispatchers);
+  return endpoints_[port]->EnqueueMessage(message, transports);
 }
 
 void MessagePipe::Attach(unsigned port,

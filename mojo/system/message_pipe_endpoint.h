@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/system/core.h"
+#include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -19,7 +20,6 @@ namespace mojo {
 namespace system {
 
 class Channel;
-class Dispatcher;
 class Waiter;
 
 // This is an interface to one of the ends of a message pipe, and is used by
@@ -41,7 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // details).
   virtual MojoResult EnqueueMessage(
       MessageInTransit* message,
-      const std::vector<Dispatcher*>* dispatchers) = 0;
+      std::vector<DispatcherTransport>* transports) = 0;
 
   // Implementations must override these if they represent a local endpoint,
   // i.e., one for which there's a |MessagePipeDispatcher| (and thus a handle).

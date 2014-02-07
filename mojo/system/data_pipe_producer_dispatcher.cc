@@ -39,6 +39,17 @@ void DataPipeProducerDispatcher::CloseImplNoLock() {
   data_pipe_ = NULL;
 }
 
+scoped_refptr<Dispatcher>
+DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
+  lock().AssertAcquired();
+
+  scoped_refptr<DataPipeProducerDispatcher> rv =
+      new DataPipeProducerDispatcher();
+  rv->Init(data_pipe_);
+  data_pipe_ = NULL;
+  return scoped_refptr<Dispatcher>(rv.get());
+}
+
 MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
     const void* elements,
     uint32_t* num_bytes,
@@ -92,17 +103,6 @@ void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
 bool DataPipeProducerDispatcher::IsBusyNoLock() const {
   lock().AssertAcquired();
   return data_pipe_->ProducerIsBusy();
-}
-
-scoped_refptr<Dispatcher>
-DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  lock().AssertAcquired();
-
-  scoped_refptr<DataPipeProducerDispatcher> rv =
-      new DataPipeProducerDispatcher();
-  rv->Init(data_pipe_);
-  data_pipe_ = NULL;
-  return scoped_refptr<Dispatcher>(rv.get());
 }
 
 }  // namespace system

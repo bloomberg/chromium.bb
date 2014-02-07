@@ -10,6 +10,24 @@
 namespace mojo {
 namespace system {
 
+// Dispatcher ------------------------------------------------------------------
+
+// static
+DispatcherTransport Dispatcher::CoreImplAccess::TryStartTransport(
+    Dispatcher* dispatcher) {
+  DCHECK(dispatcher);
+
+  if (!dispatcher->lock_.Try())
+    return DispatcherTransport();
+
+  // We shouldn't race with things that close dispatchers, since closing can
+  // only take place either under |handle_table_lock_| or when the handle is
+  // marked as busy.
+  DCHECK(!dispatcher->is_closed_);
+
+  return DispatcherTransport(dispatcher);
+}
+
 MojoResult Dispatcher::Close() {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -19,18 +37,19 @@ MojoResult Dispatcher::Close() {
   return MOJO_RESULT_OK;
 }
 
-MojoResult Dispatcher::WriteMessage(const void* bytes,
-                                    uint32_t num_bytes,
-                                    const std::vector<Dispatcher*>* dispatchers,
-                                    MojoWriteMessageFlags flags) {
-  DCHECK(!dispatchers || (dispatchers->size() > 0 &&
-                          dispatchers->size() < kMaxMessageNumHandles));
+MojoResult Dispatcher::WriteMessage(
+    const void* bytes,
+    uint32_t num_bytes,
+    std::vector<DispatcherTransport>* transports,
+    MojoWriteMessageFlags flags) {
+  DCHECK(!transports || (transports->size() > 0 &&
+                         transports->size() < kMaxMessageNumHandles));
 
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return WriteMessageImplNoLock(bytes, num_bytes, dispatchers, flags);
+  return WriteMessageImplNoLock(bytes, num_bytes, transports, flags);
 }
 
 MojoResult Dispatcher::ReadMessage(
@@ -125,25 +144,6 @@ void Dispatcher::RemoveWaiter(Waiter* waiter) {
   RemoveWaiterImplNoLock(waiter);
 }
 
-void Dispatcher::CloseNoLock() {
-  lock_.AssertAcquired();
-  DCHECK(!is_closed_);
-
-  is_closed_ = true;
-  CancelAllWaitersNoLock();
-  CloseImplNoLock();
-}
-
-scoped_refptr<Dispatcher>
-Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
-  lock_.AssertAcquired();
-  DCHECK(!is_closed_);
-
-  is_closed_ = true;
-  CancelAllWaitersNoLock();
-  return CreateEquivalentDispatcherAndCloseImplNoLock();
-}
-
 Dispatcher::Dispatcher()
     : is_closed_(false) {
 }
@@ -168,10 +168,10 @@ void Dispatcher::CloseImplNoLock() {
 }
 
 MojoResult Dispatcher::WriteMessageImplNoLock(
-    const void* bytes,
-    uint32_t num_bytes,
-    const std::vector<Dispatcher*>* dispatchers,
-    MojoWriteMessageFlags flags) {
+    const void* /*bytes*/,
+    uint32_t /*num_bytes*/,
+    std::vector<DispatcherTransport>* /*transports*/,
+    MojoWriteMessageFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for message pipe dispatchers.
@@ -263,6 +263,33 @@ bool Dispatcher::IsBusyNoLock() const {
   // Most dispatchers support only "atomic" operations, so they are never busy
   // (in this sense).
   return false;
+}
+
+void Dispatcher::CloseNoLock() {
+  lock_.AssertAcquired();
+  DCHECK(!is_closed_);
+
+  is_closed_ = true;
+  CancelAllWaitersNoLock();
+  CloseImplNoLock();
+}
+
+scoped_refptr<Dispatcher>
+Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
+  lock_.AssertAcquired();
+  DCHECK(!is_closed_);
+
+  is_closed_ = true;
+  CancelAllWaitersNoLock();
+  return CreateEquivalentDispatcherAndCloseImplNoLock();
+}
+
+// DispatcherTransport ---------------------------------------------------------
+
+void DispatcherTransport::End() {
+  DCHECK(dispatcher_);
+  dispatcher_->lock_.Release();
+  dispatcher_ = NULL;
 }
 
 }  // namespace system

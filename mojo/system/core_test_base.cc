@@ -49,7 +49,7 @@ class MockDispatcher : public Dispatcher {
   virtual MojoResult WriteMessageImplNoLock(
       const void* bytes,
       uint32_t num_bytes,
-      const std::vector<Dispatcher*>* dispatchers,
+      std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
@@ -59,7 +59,7 @@ class MockDispatcher : public Dispatcher {
     if (num_bytes > kMaxMessageNumBytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-    if (dispatchers)
+    if (transports)
       return MOJO_RESULT_UNIMPLEMENTED;
 
     return MOJO_RESULT_OK;

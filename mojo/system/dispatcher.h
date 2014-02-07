@@ -5,9 +5,12 @@
 #ifndef MOJO_SYSTEM_DISPATCHER_H_
 #define MOJO_SYSTEM_DISPATCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
@@ -18,14 +21,19 @@ namespace system {
 
 class CoreImpl;
 class Dispatcher;
+class DispatcherTransport;
+class LocalMessagePipeEndpoint;
+class ProxyMessagePipeEndpoint;
 class Waiter;
 
-// These are actually implemented inline after |Dispatcher|'s definition.
 namespace test {
-base::Lock& GetDispatcherLock(const Dispatcher* dispatcher);
-// Must be called under the dispatcher lock.
-bool IsDispatcherClosedNoLock(const Dispatcher* dispatcher);
-}
+
+// Test helper.
+// TODO(vtl): We need to declare it here so we can friend it. We define it
+// inline below, but maybe it should be in a test-only file instead.
+DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher);
+
+}  // namespace test
 
 // A |Dispatcher| implements Mojo primitives that are "attached" to a particular
 // handle. This includes most (all?) primitives except for |MojoWait...()|. This
@@ -51,14 +59,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // prevents the various |...ImplNoLock()|s from releasing the lock as soon as
   // possible. If this becomes an issue, we can rethink this.
   MojoResult Close();
-  // |dispatchers| may be non-null if and only if there are handles to be
-  // written, in which case this will be called with all the dispatchers' locks
-  // held; |this| must not be in |dispatchers|. On success, all the dispatchers
-  // must have been moved to a closed state; on failure, they should remain in
-  // their original state.
+
+  // |transports| may be non-null if and only if there are handles to be
+  // written; not that |this| must not be in |transports|. On success, all the
+  // dispatchers in |transports| must have been moved to a closed state; on
+  // failure, they should remain in their original state.
   MojoResult WriteMessage(const void* bytes,
                           uint32_t num_bytes,
-                          const std::vector<Dispatcher*>* dispatchers,
+                          std::vector<DispatcherTransport>* transports,
                           MojoWriteMessageFlags flags);
   // |dispatchers| must be non-null but empty, if |num_dispatchers| is non-null
   // and nonzero. On success, it will be set to the dispatchers to be received
@@ -101,41 +109,24 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                        MojoResult wake_result);
   void RemoveWaiter(Waiter* waiter);
 
-  // Closes the dispatcher. This must be done under lock, and unlike |Close()|,
-  // the dispatcher must not be closed already. (This is the "equivalent" of
-  // |CreateEquivalentDispatcherAndCloseNoLock()|, for situations where the
-  // dispatcher must be disposed of instead of "transferred".)
-  void CloseNoLock();
-
-  // Creates an equivalent dispatcher -- representing the same resource as this
-  // dispatcher -- and close (i.e., disable) this dispatcher. I.e., this
-  // dispatcher will look as though it was closed, but the resource it
-  // represents will be assigned to the new dispatcher. This must be called
-  // under the dispatcher's lock.
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
-
-  // |CoreImpl| needs some special access, in particular to implement
-  // |WriteMessage()|.
+  // A dispatcher must be put into a special state in order to be sent across a
+  // message pipe. Outside of tests, only |CoreImplAccess| is allowed to do
+  // this, since there are requirements on the handle table (see below).
+  //
+  // In this special state, only a restricted set of operations is allowed.
+  // These are the ones available as |DispatcherTransport| methods. Other
+  // |Dispatcher| methods must not be called until |DispatcherTransport::End()|
+  // has been called.
   class CoreImplAccess {
    private:
     friend class CoreImpl;
+    // Tests also need this, to avoid needing |CoreImpl|.
+    friend DispatcherTransport test::DispatcherTryStartTransport(Dispatcher*);
 
-    static inline bool TryLock(const Dispatcher* dispatcher) {
-      return dispatcher->lock().Try();
-    }
-    static inline void ReleaseLock(const Dispatcher* dispatcher) {
-      dispatcher->lock().Release();
-    }
-    // The following must be called with the dispatcher lock held (obtained if
-    // |TryLock()| returns true).
-    static inline bool IsBusyNoLock(const Dispatcher* dispatcher) {
-      dispatcher->lock().AssertAcquired();
-      return dispatcher->IsBusyNoLock();
-    }
-    static inline bool IsClosedNoLock(const Dispatcher* dispatcher) {
-      dispatcher->lock().AssertAcquired();
-      return dispatcher->is_closed_;
-    }
+    // This must be called under the handle table lock and only if the handle
+    // table entry is not marked busy. The caller must maintain a reference to
+    // |dispatcher| until |DispatcherTransport::End()| is called.
+    static DispatcherTransport TryStartTransport(Dispatcher* dispatcher);
   };
 
  protected:
@@ -149,6 +140,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // when the dispatcher is being closed. They are called under |lock_|.
   virtual void CancelAllWaitersNoLock();
   virtual void CloseImplNoLock();
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
 
   // These are to be overridden by subclasses (if necessary). They are never
   // called after the dispatcher has been closed. They are called under |lock_|.
@@ -157,7 +150,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   virtual MojoResult WriteMessageImplNoLock(
       const void* bytes,
       uint32_t num_bytes,
-      const std::vector<Dispatcher*>* dispatchers,
+      std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags);
   virtual MojoResult ReadMessageImplNoLock(
       void* bytes,
@@ -184,26 +177,30 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                          MojoResult wake_result);
   virtual void RemoveWaiterImplNoLock(Waiter* waiter);
 
-  // This should be overridden to return true if/when there's an ongoing
-  // operation (e.g., two-phase read/writes on data pipes) that should prevent a
-  // handle from being sent over a message pipe (with status "busy").
-  virtual bool IsBusyNoLock() const;
-
-  // This must be implemented by subclasses, since only they can instantiate a
-  // new dispatcher of the same class. See
-  // |CreateEquivalentDispatcherAndCloseNoLock()| for more details.
-  virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
-
   // Available to subclasses. (Note: Returns a non-const reference, just like
   // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
 
  private:
-  // Test helpers to do the same sort of thing as |CoreImpl| (so things can be
-  // unit tested without involving |CoreImpl|).
-  friend base::Lock& test::GetDispatcherLock(const Dispatcher*);
-  friend bool test::IsDispatcherClosedNoLock(const Dispatcher*);
+  friend class DispatcherTransport;
+
+  // This should be overridden to return true if/when there's an ongoing
+  // operation (e.g., two-phase read/writes on data pipes) that should prevent a
+  // handle from being sent over a message pipe (with status "busy").
+  virtual bool IsBusyNoLock() const;
+
+  // Closes the dispatcher. This must be done under lock, and unlike |Close()|,
+  // the dispatcher must not be closed already. (This is the "equivalent" of
+  // |CreateEquivalentDispatcherAndCloseNoLock()|, for situations where the
+  // dispatcher must be disposed of instead of "transferred".)
+  void CloseNoLock();
+
+  // Creates an equivalent dispatcher -- representing the same resource as this
+  // dispatcher -- and close (i.e., disable) this dispatcher. I.e., this
+  // dispatcher will look as though it was closed, but the resource it
+  // represents will be assigned to the new dispatcher. This must be called
+  // under the dispatcher's lock.
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
 
   // This protects the following members as well as any state added by
   // subclasses.
@@ -213,15 +210,45 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
 
+// Wrapper around a |Dispatcher| pointer, while it's being processed to be
+// passed in a message pipe. See the comment about |Dispatcher::CoreImplAccess|
+// for more details.
+//
+// Note: This class is deliberately "thin" -- no more expensive than a
+// |Dispatcher*|.
+class MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport {
+ public:
+  DispatcherTransport() : dispatcher_(NULL) {}
+
+  void End();
+
+  Dispatcher::Type GetType() const { return dispatcher_->GetType(); }
+  bool IsBusy() const { return dispatcher_->IsBusyNoLock(); }
+  void Close() { dispatcher_->CloseNoLock(); }
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndClose() {
+    return dispatcher_->CreateEquivalentDispatcherAndCloseNoLock();
+  }
+
+  bool is_valid() const { return !!dispatcher_; }
+
+ protected:
+  Dispatcher* dispatcher() { return dispatcher_; }
+
+ private:
+  friend class Dispatcher::CoreImplAccess;
+
+  explicit DispatcherTransport(Dispatcher* dispatcher)
+      : dispatcher_(dispatcher) {}
+
+  Dispatcher* dispatcher_;
+
+  // Copy and assign allowed.
+};
+
 namespace test {
 
-inline base::Lock& GetDispatcherLock(const Dispatcher* dispatcher) {
-  return dispatcher->lock();
-}
-
-inline bool IsDispatcherClosedNoLock(const Dispatcher* dispatcher) {
-  dispatcher->lock().AssertAcquired();
-  return dispatcher->is_closed_;
+inline DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher) {
+  return Dispatcher::CoreImplAccess::TryStartTransport(dispatcher);
 }
 
 }  // namespace test

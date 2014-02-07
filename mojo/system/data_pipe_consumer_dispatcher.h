@@ -35,6 +35,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
   // |Dispatcher| implementation/overrides:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual void CloseImplNoLock() OVERRIDE;
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
   virtual MojoResult ReadDataImplNoLock(void* elements,
                                         uint32_t* num_bytes,
                                         MojoReadDataFlags flags) OVERRIDE;
@@ -47,8 +49,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
                                          MojoResult wake_result) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
   virtual bool IsBusyNoLock() const OVERRIDE;
-  virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
 
   // Protected by |lock()|:
   scoped_refptr<DataPipe> data_pipe_;  // This will be null if closed.

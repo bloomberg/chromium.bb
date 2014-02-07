@@ -196,14 +196,14 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
   MessageInTransit* own_message = MessageInTransit::Create(
       message.type(), message.subtype(), message.data(), message.data_size(),
       message.num_handles());
-  std::vector<Dispatcher*> dispatchers(message.num_handles());
+  std::vector<DispatcherTransport> transports(message.num_handles());
   // TODO(vtl): Create dispatchers for handles.
   // TODO(vtl): It's bad that the current API will create equivalent dispatchers
   // for the freshly-created ones, which is totally redundant. Make a version of
   // |EnqueueMessage()| that passes ownership.
   if (endpoint_info.message_pipe->EnqueueMessage(
           MessagePipe::GetPeerPort(endpoint_info.port), own_message,
-          message.num_handles() ? &dispatchers : NULL) != MOJO_RESULT_OK) {
+          message.num_handles() ? &transports : NULL) != MOJO_RESULT_OK) {
     HandleLocalError(base::StringPrintf(
         "Failed to enqueue message to local destination ID %u",
         static_cast<unsigned>(local_id)));

@@ -62,11 +62,11 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
 
 MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
     MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
-  DCHECK(!dispatchers || !dispatchers->empty());
+    std::vector<DispatcherTransport>* transports) {
+  DCHECK(!transports || !transports->empty());
 
-  if (dispatchers)
-    SerializeDispatchers(message, dispatchers);
+  if (transports)
+    AttachAndCloseDispatchers(message, transports);
 
   EnqueueMessageInternal(message);
   return MOJO_RESULT_OK;
@@ -104,16 +104,17 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   paused_message_queue_.clear();
 }
 
-void ProxyMessagePipeEndpoint::SerializeDispatchers(
+void ProxyMessagePipeEndpoint::AttachAndCloseDispatchers(
     MessageInTransit* message,
-    const std::vector<Dispatcher*>* dispatchers) {
-  DCHECK(!dispatchers->empty());
+    std::vector<DispatcherTransport>* transports) {
+  DCHECK(transports);
+  DCHECK(!transports->empty());
 
   // TODO(vtl)
   LOG(ERROR) << "Sending handles over remote message pipes not yet supported "
                 "(closing sent handles)";
-  for (size_t i = 0; i < dispatchers->size(); i++)
-    (*dispatchers)[i]->CloseNoLock();
+  for (size_t i = 0; i < transports->size(); i++)
+    (*transports)[i].Close();
 }
 
 // Note: We may have to enqueue messages even when our (local) peer isn't open
