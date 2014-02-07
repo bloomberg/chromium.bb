@@ -1326,6 +1326,7 @@ void RenderProcessHostImpl::ClearTransportDIBCache() {
 }
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
+  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
   if (!channel_) {
     if (!is_initialized_) {
       queued_messages_.push(msg);

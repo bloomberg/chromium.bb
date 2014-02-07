@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -103,6 +104,7 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
 // NOTE: The filters are applied successively. This simplifies the change.
 bool GestureEventQueue::ShouldForward(
     const GestureEventWithLatencyInfo& gesture_event) {
+  TRACE_EVENT0("input", "GestureEventQueue::ShouldForward");
   return ShouldForwardForZeroVelocityFlingStart(gesture_event) &&
       ShouldForwardForBounceReduction(gesture_event) &&
       ShouldForwardForGFCFiltering(gesture_event) &&
@@ -175,6 +177,8 @@ bool GestureEventQueue::ShouldForwardForCoalescing(
 void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
                                            WebInputEvent::Type type,
                                            const ui::LatencyInfo& latency) {
+  TRACE_EVENT0("input", "GestureEventQueue::ProcessGestureAck");
+
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;

@@ -1149,6 +1149,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
   if (flush_input_requested_ || !content_view_core_)
     return;
+  TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::OnSetNeedsFlushInput");
   flush_input_requested_ = true;
   content_view_core_->AddBeginFrameSubscriber();
 }

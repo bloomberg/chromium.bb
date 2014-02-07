@@ -30,6 +30,7 @@ void SyntheticGestureController::QueueSyntheticGesture(
 }
 
 void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
+  TRACE_EVENT0("benchmark", "SyntheticGestureController::Flush");
   if (pending_gesture_queue_.empty())
     return;
 

@@ -42,6 +42,10 @@ SyntheticGestureTargetBase::~SyntheticGestureTargetBase() {
 
 void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
+  TRACE_EVENT1("benchmark",
+               "SyntheticGestureTarget::DispatchInputEventToPlatform",
+               "type", WebInputEventTraits::GetName(event.type));
+
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 

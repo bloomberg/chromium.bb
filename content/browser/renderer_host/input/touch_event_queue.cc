@@ -307,6 +307,8 @@ TouchEventQueue::~TouchEventQueue() {
 }
 
 void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
+  TRACE_EVENT0("input", "TouchEventQueue::QueueEvent");
+
   // If the queueing of |event| was triggered by an ack dispatch, defer
   // processing the event until the dispatch has finished.
   if (touch_queue_.empty() && !dispatching_touch_ack_) {
@@ -338,6 +340,8 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
 
 void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
                                       const LatencyInfo& latency_info) {
+  TRACE_EVENT0("input", "TouchEventQueue::ProcessTouchAck");
+
   DCHECK(!dispatching_touch_ack_);
   dispatching_touch_ = false;
 
@@ -387,6 +391,8 @@ void TouchEventQueue::TryForwardNextEventToRenderer() {
 
 void TouchEventQueue::ForwardToRenderer(
     const TouchEventWithLatencyInfo& touch) {
+  TRACE_EVENT0("input", "TouchEventQueue::ForwardToRenderer");
+
   DCHECK(!dispatching_touch_);
   DCHECK_NE(touch_filtering_state_, DROP_ALL_TOUCHES);
 
