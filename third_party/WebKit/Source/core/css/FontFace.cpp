@@ -40,12 +40,13 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -363,7 +364,9 @@ void FontFace::load(ExecutionContext* context)
     fontDescription.setFamily(fontFamily);
     fontDescription.setTraitsMask(static_cast<FontTraitsMask>(traitsMask()));
 
-    m_cssFontFace->load(fontDescription, toDocument(context)->styleEngine()->fontSelector());
+    CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
+    m_cssFontFace->load(fontDescription, fontSelector);
+    fontSelector->loadPendingFonts();
 }
 
 ScriptPromise FontFace::ready(ExecutionContext* context)

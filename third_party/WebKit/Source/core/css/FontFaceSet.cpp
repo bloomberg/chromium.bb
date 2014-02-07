@@ -433,7 +433,8 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
         return ScriptPromise();
     }
 
-    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), promise, executionContext());
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
@@ -444,6 +445,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
         }
         face->loadFont(font.fontDescription(), nullToSpace(text), resolver);
     }
+    fontSelector->loadPendingFonts();
     return promise;
 }
 
