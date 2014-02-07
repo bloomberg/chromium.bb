@@ -373,6 +373,11 @@ void OmniboxViewViews::OnFocus() {
     SelectRange(saved_selection_for_focus_change_);
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
+
+  if (chrome::ShouldDisplayOriginChip()) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+    controller()->OnChanged();
+  }
 }
 
 void OmniboxViewViews::OnBlur() {
@@ -396,6 +401,19 @@ void OmniboxViewViews::OnBlur() {
 
   // Tell the model to reset itself.
   model()->OnKillFocus();
+
+  // If user input is not in progress, re-enable the origin chip and URL
+  // replacement.  This addresses the case where the URL was shown by a call
+  // to ShowURL().  If the Omnibox acheived focus by other means, the calls to
+  // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
+  // required (a call to OnChanged would be sufficient) but do no harm.
+  if (chrome::ShouldDisplayOriginChip() &&
+      !model()->user_input_in_progress()) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
+    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
+    model()->UpdatePermanentText();
+    RevertAll();
+  }
 
   // Make sure the beginning of the text is visible.
   SelectRange(gfx::Range(0));

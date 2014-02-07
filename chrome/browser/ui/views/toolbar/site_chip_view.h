@@ -38,8 +38,9 @@ class SiteChipView : public ToolbarButton,
 
   void Init();
 
-  // Returns true if the site chip experiment is enabled and thus the site chip
-  // should be shown in the toolbar.
+  // Returns true if the origin chip should be visible, based on whether the
+  // experiment is enabled and if the chip hasn't been hidden by clicking on it
+  // or interacting with the Omnibox.
   bool ShouldShow();
 
   // Recalculates the contents of the Site Chip based on the displayed tab.

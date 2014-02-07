@@ -249,7 +249,7 @@ void ToolbarView::Init() {
   location_bar_->Init();
 
   site_chip_view_->Init();
-  if (site_chip_view_->ShouldShow())
+  if (chrome::ShouldDisplayOriginChip())
     location_bar_->set_site_chip_view(site_chip_view_);
 
   show_home_button_.Init(prefs::kShowHomeButton,
@@ -281,7 +281,7 @@ void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
-  if (site_chip_view_->ShouldShow())
+  if (site_chip_view_->visible())
     site_chip_view_->Update(tab);
 
   if (browser_actions_)
@@ -504,7 +504,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
             reload_->GetPreferredSize().width() + kStandardSpacing +
             (show_home_button_.GetValue() ?
                 (home_->GetPreferredSize().width() + button_spacing) : 0) +
-            (site_chip_view_->ShouldShow() ?
+            (site_chip_view_->visible() ?
                 (site_chip_view_->GetPreferredSize().width() +
                     2 * kStandardSpacing) :
                 0) +
@@ -594,7 +594,8 @@ void ToolbarView::Layout() {
 
   chrome::OriginChipPosition origin_chip_position =
       chrome::GetOriginChipPosition();
-  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
+  if (site_chip_view_->visible() &&
+      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
     site_chip_view_->SetBounds(next_element_x, child_y,
                                site_chip_width, child_height);
     next_element_x = site_chip_view_->bounds().right() + kStandardSpacing;
@@ -606,7 +607,8 @@ void ToolbarView::Layout() {
                            std::max(available_width, 0), location_height);
   next_element_x = location_bar_->bounds().right();
 
-  if (origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR) {
+  if (site_chip_view_->visible() &&
+      origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR) {
     site_chip_view_->SetBounds(next_element_x + kStandardSpacing, child_y,
                                site_chip_width, child_height);
     next_element_x = site_chip_view_->bounds().right();
@@ -625,7 +627,8 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
-  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON) {
+  if (site_chip_view_->visible() &&
+      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON) {
     site_chip_view_->SetBounds(next_element_x, child_y,
                                site_chip_width, child_height);
     next_element_x = site_chip_view_->bounds().right() + kStandardSpacing;

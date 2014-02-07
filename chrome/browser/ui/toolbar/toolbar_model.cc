@@ -6,6 +6,7 @@
 
 ToolbarModel::ToolbarModel()
     : input_in_progress_(false),
+      origin_chip_enabled_(true),
       url_replacement_enabled_(true) {
 }
 

@@ -85,11 +85,25 @@ class ToolbarModel {
   // in the location bar.
   virtual bool ShouldDisplayURL() const = 0;
 
+  // Returns true if a call to GetText() would return an empty string instead of
+  // the URL that would have otherwise been displayed because the host/origin is
+  // instead being displayed in the origin chip.  This returns false when we
+  // wouldn't have displayed a URL to begin with (e.g. for the NTP).
+  virtual bool WouldOmitURLDueToOriginChip() const = 0;
+
   // Whether the text in the omnibox is currently being edited.
   void set_input_in_progress(bool input_in_progress) {
     input_in_progress_ = input_in_progress;
   }
   bool input_in_progress() const { return input_in_progress_; }
+
+  // Whether the origin chip should be enabled.
+  void set_origin_chip_enabled(bool enabled) {
+    origin_chip_enabled_ = enabled;
+  }
+  bool origin_chip_enabled() const {
+    return origin_chip_enabled_;
+  }
 
   // Whether URL replacement should be enabled.
   void set_url_replacement_enabled(bool enabled) {
@@ -103,13 +117,8 @@ class ToolbarModel {
   ToolbarModel();
 
  private:
-  // Returns true if a call to GetText() would return an empty string instead of
-  // the URL that would have otherwise been displayed because the host/origin is
-  // instead being displayed in the origin chip.  This returns false when we
-  // wouldn't have displayed a URL to begin with (e.g. for the NTP).
-  virtual bool WouldOmitURLDueToOriginChip() const = 0;
-
   bool input_in_progress_;
+  bool origin_chip_enabled_;
   bool url_replacement_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);

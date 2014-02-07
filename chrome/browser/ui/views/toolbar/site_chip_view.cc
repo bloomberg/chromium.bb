@@ -315,7 +315,8 @@ void SiteChipView::Init() {
 }
 
 bool SiteChipView::ShouldShow() {
-  return chrome::ShouldDisplayOriginChip();
+  return toolbar_view_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
+      toolbar_view_->GetToolbarModel()->origin_chip_enabled();
 }
 
 void SiteChipView::Update(content::WebContents* web_contents) {
