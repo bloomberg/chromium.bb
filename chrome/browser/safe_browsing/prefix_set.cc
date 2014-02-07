@@ -29,15 +29,15 @@ typedef struct {
   uint32 deltas_size;
 } FileHeader;
 
-// For |std::upper_bound()| to find a prefix w/in a vector of pairs.
-bool PrefixLess(const std::pair<SBPrefix,size_t>& a,
-                const std::pair<SBPrefix,size_t>& b) {
-  return a.first < b.first;
-}
-
 }  // namespace
 
 namespace safe_browsing {
+
+// For |std::upper_bound()| to find a prefix w/in a vector of pairs.
+// static
+bool PrefixSet::PrefixLess(const IndexPair& a, const IndexPair& b) {
+  return a.first < b.first;
+}
 
 PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
   if (sorted_prefixes.size()) {
@@ -91,8 +91,7 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
   }
 }
 
-PrefixSet::PrefixSet(std::vector<std::pair<SBPrefix,size_t> > *index,
-                     std::vector<uint16> *deltas) {
+PrefixSet::PrefixSet(IndexVector* index, std::vector<uint16>* deltas) {
   DCHECK(index && deltas);
   index_.swap(*index);
   deltas_.swap(*deltas);
@@ -105,10 +104,9 @@ bool PrefixSet::Exists(SBPrefix prefix) const {
     return false;
 
   // Find the first position after |prefix| in |index_|.
-  std::vector<std::pair<SBPrefix,size_t> >::const_iterator
-      iter = std::upper_bound(index_.begin(), index_.end(),
-                              std::pair<SBPrefix,size_t>(prefix, 0),
-                              PrefixLess);
+  IndexVector::const_iterator iter =
+      std::upper_bound(index_.begin(), index_.end(),
+                       IndexPair(prefix, 0), PrefixLess);
 
   // |prefix| comes before anything that's in the set.
   if (iter == index_.begin())
@@ -172,8 +170,14 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (header.magic != kMagic || header.version != kVersion)
     return NULL;
 
-  std::vector<std::pair<SBPrefix,size_t> > index;
+  IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;
+
+  // For a time, the second element of the index_ pair was a size_t rather than
+  // a fixed-size value.  This structure will be used to check, read and convert
+  // in case a 64-bit size_t was written.
+  std::vector<std::pair<SBPrefix,uint64> > alt_index;
+  const size_t alt_index_bytes = sizeof(alt_index[0]) * header.index_size;
 
   std::vector<uint16> deltas;
   const size_t deltas_bytes = sizeof(deltas[0]) * header.deltas_size;
@@ -181,8 +185,15 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // Check for bogus sizes before allocating any space.
   const size_t expected_bytes =
       sizeof(header) + index_bytes + deltas_bytes + sizeof(MD5Digest);
-  if (static_cast<int64>(expected_bytes) != size_64)
-    return NULL;
+  bool read_alt_index = false;
+  if (static_cast<int64>(expected_bytes) != size_64) {
+    const size_t alt_expected_bytes =
+        sizeof(header) + alt_index_bytes + deltas_bytes + sizeof(MD5Digest);
+    if (static_cast<int64>(alt_expected_bytes) != size_64)
+      return NULL;
+
+    read_alt_index = true;
+  }
 
   // The file looks valid, start building the digest.
   base::MD5Context context;
@@ -193,7 +204,24 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
   // is valid.
-  if (header.index_size) {
+  if (read_alt_index) {
+    alt_index.resize(header.index_size);
+    read = fread(&(alt_index[0]), sizeof(alt_index[0]), alt_index.size(),
+                 file.get());
+    if (read != alt_index.size())
+      return NULL;
+    base::MD5Update(&context,
+                    base::StringPiece(reinterpret_cast<char*>(&(alt_index[0])),
+                                      alt_index_bytes));
+
+    index.reserve(alt_index.size());
+    for (size_t i = 0; i < alt_index.size(); ++i) {
+      const uint32 ofs = static_cast<uint32>(alt_index[i].second);
+      if (static_cast<uint64>(ofs) != alt_index[i].second)
+        return NULL;
+      index.push_back(std::make_pair(alt_index[i].first, ofs));
+    }
+  } else if (header.index_size) {
     index.resize(header.index_size);
     read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
     if (read != index.size())

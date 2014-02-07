@@ -482,4 +482,52 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_FALSE(prefix_set.get());
 }
 
+// Test that files which had 64-bit size_t can be read.
+TEST_F(PrefixSetTest, SizeTRecovery) {
+  base::FilePath filename;
+  ASSERT_TRUE(GetPrefixSetFile(&filename));
+
+  // Open the file for rewrite.
+  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+
+  // Leave existing magic and version.
+  ASSERT_NE(-1, fseek(file.get(), sizeof(uint32) * 2, SEEK_SET));
+
+  // Indicate two index values and two deltas.
+  uint32 val = 2;
+  ASSERT_EQ(sizeof(val), fwrite(&val, 1, sizeof(val), file.get()));
+  ASSERT_EQ(sizeof(val), fwrite(&val, 1, sizeof(val), file.get()));
+
+  // Write two index values with 64-bit "size_t".
+  std::pair<SBPrefix, uint64> item = std::make_pair(17, 0);
+  ASSERT_EQ(sizeof(item), fwrite(&item, 1, sizeof(item), file.get()));
+  item.first = 100042;
+  item.second = 1;
+  ASSERT_EQ(sizeof(item), fwrite(&item, 1, sizeof(item), file.get()));
+
+  // Write two delta values.
+  uint16 delta = 23;
+  ASSERT_EQ(sizeof(delta), fwrite(&delta, 1, sizeof(delta), file.get()));
+  ASSERT_EQ(sizeof(delta), fwrite(&delta, 1, sizeof(delta), file.get()));
+
+  // Leave space for the digest at the end, and regenerate it.
+  base::MD5Digest dummy;
+  ASSERT_EQ(sizeof(dummy), fwrite(&dummy, 1, sizeof(dummy), file.get()));
+  ASSERT_TRUE(base::TruncateFile(file.get()));
+  CleanChecksum(file.get());
+  file.reset();  // Flush updates.
+
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
+  ASSERT_TRUE(prefix_set.get());
+
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set->GetPrefixes(&prefixes_copy);
+  EXPECT_EQ(prefixes_copy.size(), 4u);
+  EXPECT_EQ(prefixes_copy[0], 17);
+  EXPECT_EQ(prefixes_copy[1], 40);
+  EXPECT_EQ(prefixes_copy[2], 100042);
+  EXPECT_EQ(prefixes_copy[3], 100065);
+}
+
 }  // namespace

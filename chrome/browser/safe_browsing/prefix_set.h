@@ -81,16 +81,20 @@ class PrefixSet {
   // for |Exists()| under control.
   static const size_t kMaxRun = 100;
 
+  // Helpers to make |index_| easier to deal with.
+  typedef std::pair<SBPrefix,uint32> IndexPair;
+  typedef std::vector<IndexPair> IndexVector;
+  static bool PrefixLess(const IndexPair& a, const IndexPair& b);
+
   // Helper for |LoadFile()|.  Steals the contents of |index| and
   // |deltas| using |swap()|.
-  PrefixSet(std::vector<std::pair<SBPrefix,size_t> > *index,
-            std::vector<uint16> *deltas);
+  PrefixSet(IndexVector* index, std::vector<uint16>* deltas);
 
   // Top-level index of prefix to offset in |deltas_|.  Each pair
   // indicates a base prefix and where the deltas from that prefix
   // begin in |deltas_|.  The deltas for a pair end at the next pair's
   // index into |deltas_|.
-  std::vector<std::pair<SBPrefix,size_t> > index_;
+  IndexVector index_;
 
   // Deltas which are added to the prefix in |index_| to generate
   // prefixes.  Deltas are only valid between consecutive items from
