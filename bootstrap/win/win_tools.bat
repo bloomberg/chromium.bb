@@ -34,7 +34,7 @@ goto :GIT_180_CHECK
 set GIT_VERSION=1.8.5.2.chromium.1
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
-set GIT_ZIP_URL=http://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
+set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
 goto :GIT_COMMON
 
 
