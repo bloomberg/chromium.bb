@@ -48,9 +48,9 @@ public:
 
 protected:
     InstallPhaseEvent();
-    InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtrWillBeRawPtr<WaitUntilObserver>);
 
-    RefPtr<WaitUntilObserver> m_observer;
+    RefPtrWillBePersistent<WaitUntilObserver> m_observer;
 };
 
 } // namespace WebCore

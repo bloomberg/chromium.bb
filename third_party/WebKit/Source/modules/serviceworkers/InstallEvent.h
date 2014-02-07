@@ -42,7 +42,7 @@ class ExecutionContext;
 class InstallEvent FINAL : public InstallPhaseEvent {
 public:
     static PassRefPtr<InstallEvent> create();
-    static PassRefPtr<InstallEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    static PassRefPtr<InstallEvent> create(const AtomicString& type, const EventInit&, PassRefPtrWillBeRawPtr<WaitUntilObserver>);
     virtual ~InstallEvent() { }
 
     void replace();
@@ -53,7 +53,7 @@ public:
 
 private:
     InstallEvent();
-    InstallEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    InstallEvent(const AtomicString& type, const EventInit&, PassRefPtrWillBeRawPtr<WaitUntilObserver>);
 };
 
 } // namespace WebCore

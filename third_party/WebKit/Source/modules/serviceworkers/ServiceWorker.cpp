@@ -31,8 +31,9 @@
 #include "config.h"
 #include "ServiceWorker.h"
 
-
 namespace WebCore {
+
+DEFINE_GC_INFO(ServiceWorker);
 
 ServiceWorker::ServiceWorker(PassOwnPtr<blink::WebServiceWorker> worker)
     : m_outerWorker(worker)
