@@ -396,6 +396,19 @@ BackgroundDownloader::BackgroundDownloader(
 }
 
 BackgroundDownloader::~BackgroundDownloader() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The following objects have thread affinity and can't be destroyed on the
+  // UI thread. The resources managed by these objects are acquired at the
+  // beginning of a download and released at the end of the download. Most of
+  // the time, when this destructor is called, these resources have been already
+  // disposed by. Releasing the ownership here is a NOP. However, if the browser
+  // is shutting down while a download is in progress, the timer is active and
+  // the interface pointers are valid. Releasing the ownership means leaking
+  // these objects and their associated resources.
+  timer_.release();
+  bits_manager_.Detach();
+  job_.Detach();
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {

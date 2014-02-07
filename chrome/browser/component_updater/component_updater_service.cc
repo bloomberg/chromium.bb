@@ -155,8 +155,8 @@ void UnblockandReapAllThrottles(CUResourceThrottle::WeakPtrVector* throttles) {
 // the tasks. Also when we do network requests there is only one |url_fetcher_|
 // in flight at a time.
 // There are no locks in this code, the main structure |work_items_| is mutated
-// only from the UI thread. The unpack and installation is done in the file
-// thread and the network requests are done in the IO thread and in the file
+// only from the UI thread. The unpack and installation is done in a blocking
+// pool thread. The network requests are done in the IO thread or in the file
 // thread.
 class CrxUpdateService : public ComponentUpdateService {
  public:

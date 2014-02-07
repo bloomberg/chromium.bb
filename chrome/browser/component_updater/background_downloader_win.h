@@ -20,7 +20,9 @@ namespace component_updater {
 // Implements a downloader in terms of the BITS service. The public interface
 // of this class and the CrxDownloader overrides are expected to be called
 // from the UI thread. The rest of the class code runs on the FILE thread in
-// a single threaded apartment.
+// a single threaded apartment. Instances of this class are created and
+// destroyed in the UI thread. See the implementation of the class destructor
+// for details regarding the clean up of resources acquired in this class.
 class BackgroundDownloader : public CrxDownloader {
  protected:
   friend class CrxDownloader;
@@ -70,6 +72,9 @@ class BackgroundDownloader : public CrxDownloader {
   net::URLRequestContextGetter* context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
+  // The timer and the BITS interface pointers have thread affinity. These
+  // members are initialized on the FILE thread and they must be destroyed
+  // on the FILE thread.
   scoped_ptr<base::RepeatingTimer<BackgroundDownloader> > timer_;
 
   base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager_;
