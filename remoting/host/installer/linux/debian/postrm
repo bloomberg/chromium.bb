@@ -10,4 +10,30 @@ if [ "$1" = "purge" ]; then
   delgroup --quiet chrome-remote-desktop > /dev/null || true
 fi
 
+APT_CONFIG="`which apt-config 2> /dev/null`"
+
+apt_config_val() {
+  APTVAR="$1"
+  if [ -x "$APT_CONFIG" ]; then
+    "$APT_CONFIG" dump | sed -e "/^$APTVAR /"'!d' -e "s/^$APTVAR \"\(.*\)\".*/\1/"
+  fi
+}
+
+# Only remove the defaults file if it is not empty. An empty file was probably
+# put there by the sysadmin to disable automatic repository configuration, as
+# per the instructions on the package download page.
+DEFAULTS_FILE="/etc/default/chrome-remote-desktop"
+if [ -s "$DEFAULTS_FILE" ]; then
+  # Make sure the package defaults are removed before the repository config,
+  # otherwise it could result in the repository config being removed, but the
+  # package defaults remain and are set to not recreate the repository config.
+  # In that case, future installs won't recreate it and won't get auto-updated.
+  rm "$DEFAULTS_FILE" || exit 1
+fi
+# Remove Google repository added by the package.
+APTDIR=$(apt_config_val Dir)
+APTETC=$(apt_config_val 'Dir::Etc')
+APT_SOURCESDIR="$APTDIR$APTETC$(apt_config_val 'Dir::Etc::sourceparts')"
+rm -f "$APT_SOURCESDIR/chrome-remote-desktop.list"
+
 #DEBHELPER#

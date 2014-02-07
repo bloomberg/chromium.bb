@@ -10,6 +10,7 @@ TOOLS = $(SRC)/remoting/tools
 RELEASE = $(SRC)/out/Release
 
 INSTALL_DIR = $(DESTDIR)/opt/google/chrome-remote-desktop
+CRON_DIR = $(DESTDIR)/etc/cron.daily
 NATIVE_MESSAGING_DIR = $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
 
 ME2ME_PROGNAME = $(RELEASE)/remoting_me2me_host
@@ -25,7 +26,9 @@ all:
 
 install:
 	install -d "$(INSTALL_DIR)"
+	install -d "$(INSTALL_DIR)/remoting_locales"
 	install -d "$(NATIVE_MESSAGING_DIR)"
+	install -d "$(CRON_DIR)"
 
 	install "$(TOOLS)/me2me_virtual_host.py" \
 	  "$(INSTALL_DIR)/chrome-remote-desktop"
@@ -57,7 +60,10 @@ install:
 	install -m 0644 \
           "$(RELEASE)/icudtl.dat" "$(INSTALL_DIR)/icudtl.dat"
 
-	for locale in $(ls $(RELEASE)/remoting_locales); do \
-	  install "$(RELEASE)/remoting_locales/$locale \
-	    "$(INSTALL_DIR)/remoting_locales/$locale; \
+	for locale in $$(ls $(RELEASE)/remoting_locales); do \
+	  install "$(RELEASE)/remoting_locales/$$locale" \
+	    "$(INSTALL_DIR)/remoting_locales/$$locale"; \
 	done
+
+	install $(RELEASE)/remoting/installer/cron/chrome-remote-desktop \
+	  "$(CRON_DIR)/chrome-remote-desktop"

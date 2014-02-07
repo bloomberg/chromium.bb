@@ -5,12 +5,15 @@
 # found in the LICENSE file.
 
 SCRIPTDIR="$(dirname "$(readlink -f "$0")")"
-PACKAGE_NAME="chrome-remote-desktop"
+PACKAGE="chrome-remote-desktop"
+ARCHITECTURE=$(dpkg-architecture | awk -F '=' '/DEB_BUILD_ARCH=/{print $2}')
+REPOCONFIG="deb http://dl.google.com/linux/chrome-remote-desktop/deb/ stable main"
+
+source ${SCRIPTDIR}/../../../../chrome/installer/linux/common/installer.include
 
 guess_filename() {
-  ARCH=$(dpkg-architecture | awk -F '=' '/DEB_BUILD_ARCH=/{print $2}')
   VERSION_FULL=$(get_version_full)
-  echo ${PACKAGE_NAME}_${VERSION_FULL}_${ARCH}.deb
+  echo ${PACKAGE}_${VERSION_FULL}_${ARCHITECTURE}.deb
 }
 
 get_version_full() {
@@ -110,11 +113,18 @@ echo "Building version $version_full $revision_text"
 export DEBEMAIL="The Chromium Authors <chromium-dev@chromium.org>"
 rm -f debian/changelog
 debchange --create \
-  --package "$PACKAGE_NAME" \
+  --package "$PACKAGE" \
   --newversion "$version_full" \
   --force-distribution \
   --distribution unstable \
   "New Debian package $revision_text"
+
+
+CRON_SCRIPT_DIR="${SCRIPTDIR}/../../../../out/Release/remoting/installer/cron"
+mkdir -p ${CRON_SCRIPT_DIR}
+process_template \
+    "${SCRIPTDIR}/../../../../chrome/installer/linux/common/repo.cron" \
+    "${CRON_SCRIPT_DIR}/chrome-remote-desktop"
 
 # TODO(mmoss): This is a workaround for a problem where dpkg-shlibdeps was
 # resolving deps using some of our build output shlibs (i.e.
@@ -128,6 +138,6 @@ dpkg-buildpackage -b -us -uc
 LD_LIBRARY_PATH=$SAVE_LDLP
 
 if [[ "$OUTPUT_PATH" ]]; then
-  mv ../${PACKAGE_NAME}_*.deb "$OUTPUT_PATH"/
-  mv ../${PACKAGE_NAME}_*.changes "$OUTPUT_PATH"/
+  mv ../${PACKAGE}_*.deb "$OUTPUT_PATH"/
+  mv ../${PACKAGE}_*.changes "$OUTPUT_PATH"/
 fi
