@@ -81,8 +81,24 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
 
 }  // namespace
 
-scoped_refptr<Picture> Picture::Create(const gfx::Rect& layer_rect) {
-  return make_scoped_refptr(new Picture(layer_rect));
+scoped_refptr<Picture> Picture::Create(
+    const gfx::Rect& layer_rect,
+    ContentLayerClient* client,
+    const SkTileGridPicture::TileGridInfo& tile_grid_info,
+    bool gather_pixel_refs,
+    int num_raster_threads) {
+  scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
+
+  picture->Record(client, tile_grid_info);
+  if (gather_pixel_refs)
+    picture->GatherPixelRefs(tile_grid_info);
+  if (num_raster_threads > 0)
+    picture->CloneForDrawing(num_raster_threads);
+
+  // This picture may be rasterized on a different thread.
+  picture->raster_thread_checker_.DetachFromThread();
+
+  return picture;
 }
 
 Picture::Picture(const gfx::Rect& layer_rect)
@@ -188,10 +204,11 @@ void Picture::CloneForDrawing(int num_threads) {
   TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
 
   DCHECK(picture_);
+  DCHECK(clones_.empty());
+
   scoped_ptr<SkPicture[]> clones(new SkPicture[num_threads]);
   picture_->clone(&clones[0], num_threads);
 
-  clones_.clear();
   for (int i = 0; i < num_threads; i++) {
     scoped_refptr<Picture> clone = make_scoped_refptr(
         new Picture(skia::AdoptRef(new SkPicture(clones[i])),
@@ -201,6 +218,7 @@ void Picture::CloneForDrawing(int num_threads) {
     clones_.push_back(clone);
 
     clone->EmitTraceSnapshotAlias(this);
+    clone->raster_thread_checker_.DetachFromThread();
   }
 }
 
@@ -209,6 +227,7 @@ void Picture::Record(ContentLayerClient* painter,
   TRACE_EVENT1("cc", "Picture::Record",
                "data", AsTraceableRecordData());
 
+  DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
       layer_rect_.width(), layer_rect_.height(), tile_grid_info));
@@ -248,6 +267,7 @@ void Picture::GatherPixelRefs(
                "height", layer_rect_.height());
 
   DCHECK(picture_);
+  DCHECK(pixel_refs_.empty());
   if (!WillPlayBackBitmaps())
     return;
   cell_size_ = gfx::Size(
@@ -301,6 +321,7 @@ int Picture::Raster(
     SkDrawPictureCallback* callback,
     const Region& negated_content_region,
     float contents_scale) {
+  DCHECK(raster_thread_checker_.CalledOnValidThread());
   TRACE_EVENT_BEGIN1(
       "cc",
       "Picture::Raster",
@@ -327,6 +348,7 @@ int Picture::Raster(
 }
 
 void Picture::Replay(SkCanvas* canvas) {
+  DCHECK(raster_thread_checker_.CalledOnValidThread());
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
 
@@ -358,12 +380,12 @@ scoped_ptr<base::Value> Picture::AsValue() const {
   return res.PassAs<base::Value>();
 }
 
-void Picture::EmitTraceSnapshot() {
+void Picture::EmitTraceSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
 }
 
-void Picture::EmitTraceSnapshotAlias(Picture* original) {
+void Picture::EmitTraceSnapshotAlias(Picture* original) const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Picture",

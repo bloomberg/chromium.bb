@@ -11,22 +11,20 @@
 
 namespace cc {
 
-TracedPicture::TracedPicture(scoped_refptr<Picture> picture)
-  : picture_(picture),
-    is_alias_(false) {
-}
+TracedPicture::TracedPicture(scoped_refptr<const Picture> picture)
+    : picture_(picture), is_alias_(false) {}
 
 TracedPicture::~TracedPicture() {
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-    TracedPicture::AsTraceablePicture(Picture* picture) {
+TracedPicture::AsTraceablePicture(const Picture* picture) {
   return scoped_refptr<base::debug::ConvertableToTraceFormat>(
       new TracedPicture(picture));
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-    TracedPicture::AsTraceablePictureAlias(Picture* original) {
+TracedPicture::AsTraceablePictureAlias(const Picture* original) {
   scoped_refptr<TracedPicture> ptr = new TracedPicture(original);
   ptr->is_alias_ = true;
   return scoped_refptr<base::debug::ConvertableToTraceFormat>(ptr);

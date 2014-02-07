@@ -15,13 +15,13 @@ namespace cc {
 
 class TracedPicture : public base::debug::ConvertableToTraceFormat {
  public:
-  explicit TracedPicture(scoped_refptr<Picture>);
+  explicit TracedPicture(scoped_refptr<const Picture>);
 
   static scoped_refptr<base::debug::ConvertableToTraceFormat>
-    AsTraceablePicture(Picture* picture);
+      AsTraceablePicture(const Picture* picture);
 
   static scoped_refptr<base::debug::ConvertableToTraceFormat>
-    AsTraceablePictureAlias(Picture* original);
+      AsTraceablePictureAlias(const Picture* original);
 
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
 
@@ -31,7 +31,7 @@ class TracedPicture : public base::debug::ConvertableToTraceFormat {
   void AppendPicture(std::string* out) const;
   void AppendPictureAlias(std::string* out) const;
 
-  scoped_refptr<Picture> picture_;
+  scoped_refptr<const Picture> picture_;
   bool is_alias_;
 
   DISALLOW_COPY_AND_ASSIGN(TracedPicture);

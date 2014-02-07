@@ -218,25 +218,32 @@ bool PicturePile::Update(
     record_rect = PadRect(record_rect);
 
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
-    scoped_refptr<Picture> picture = Picture::Create(record_rect);
+    scoped_refptr<Picture> picture;
+    int num_raster_threads = RasterWorkerPool::GetNumRasterThreads();
+
+    // Note: Currently, gathering of pixel refs when using a single
+    // raster thread doesn't provide any benefit. This might change
+    // in the future but we avoid it for now to reduce the cost of
+    // Picture::Create.
+    bool gather_pixel_refs = num_raster_threads > 1;
 
     {
       base::TimeDelta best_duration = base::TimeDelta::FromInternalValue(
           std::numeric_limits<int64>::max());
       for (int i = 0; i < repeat_count; i++) {
         base::TimeTicks start_time = stats_instrumentation->StartRecording();
-        picture->Record(painter, tile_grid_info_);
+        picture = Picture::Create(record_rect,
+                                  painter,
+                                  tile_grid_info_,
+                                  gather_pixel_refs,
+                                  num_raster_threads);
         base::TimeDelta duration =
             stats_instrumentation->EndRecording(start_time);
         best_duration = std::min(duration, best_duration);
       }
       int recorded_pixel_count =
           picture->LayerRect().width() * picture->LayerRect().height();
-      int num_raster_threads = RasterWorkerPool::GetNumRasterThreads();
       stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
-      if (num_raster_threads > 1)
-        picture->GatherPixelRefs(tile_grid_info_);
-      picture->CloneForDrawing(num_raster_threads);
     }
 
     for (TilingData::Iterator it(&tiling_, record_rect);

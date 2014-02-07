@@ -116,13 +116,13 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (visible_content_rect.IsEmpty())
     return;
 
-  scoped_refptr<Picture> picture = Picture::Create(visible_content_rect);
 
   base::TimeDelta min_time =
       base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
   for (int i = 0; i < record_repeat_count_; ++i) {
     base::TimeTicks start = Now();
-    picture->Record(painter, tile_grid_info);
+    scoped_refptr<Picture> picture = Picture::Create(
+        visible_content_rect, painter, tile_grid_info, false, 0);
     base::TimeTicks end = Now();
     base::TimeDelta duration = end - start;
     if (duration < min_time)
