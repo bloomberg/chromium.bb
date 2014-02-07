@@ -12,6 +12,7 @@
 import driver_tools
 import filetype
 import ldtools
+import multiprocessing
 import os
 import pathtools
 import shutil
@@ -165,6 +166,10 @@ EXTRA_ENV = {
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
+  # Default to 0, which means unset by the user. In this cases the driver will
+  # use up to 4 modules if there are enough cores. If the user overrides,
+  # use as many modules as specified (which could be only 1).
+  'SPLIT_MODULE' : '0',
 }
 
 
@@ -220,6 +225,7 @@ TranslatorPatterns = [
 
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
+  ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)"),
 
   # Treat general linker flags as inputs so they don't get re-ordered
   ( '-Wl,(.*)',        "env.append('INPUTS', *($0).split(','))"),
@@ -256,6 +262,26 @@ def main(argv):
   else:
     bcfile = None
 
+  if not env.getbool('SPLIT_MODULE'):
+    try:
+      env.set('SPLIT_MODULE', str(min(4, multiprocessing.cpu_count())))
+    except NotImplementedError:
+      env.set('SPLIT_MODULE', '2')
+  elif int(env.getone('SPLIT_MODULE')) < 1:
+    Log.Fatal('Value given for -split-module must be > 0')
+  if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
+    env.getone('ARCH') == 'LINUX_X8632' or
+    env.getbool('SANDBOXED')):
+    # When llvm input is allowed, the pexe may not be ABI-stable, so do not
+    # split it. For now also do not support threading non-SFI baremetal mode,
+    # or for the sandboxed translator. Non-ABI-stable pexes may have symbol
+    # naming and visibility issues that the current splitting scheme doesn't
+    # account for.
+    env.set('SPLIT_MODULE', '1')
+  else:
+    env.append('LLC_FLAGS_EXTRA', '-split-module=' + env.getone('SPLIT_MODULE'))
+    env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
+
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
   output_type = env.getone('OUTPUT_TYPE')
@@ -287,6 +313,12 @@ def main(argv):
   if bcfile:
     inputs = ListReplace(inputs, bcfile, '__BITCODE__')
     env.set('INPUTS', *inputs)
+  if int(env.getone('SPLIT_MODULE')) > 1:
+    modules = int(env.getone('SPLIT_MODULE'))
+    for i in range(1, modules):
+      filename = ofile + '.module%d' % i
+      TempFiles.add(filename)
+      env.append('INPUTS', filename)
 
   if env.getone('ARCH') == 'LINUX_X8632':
     RunHostLD(ofile, output)
