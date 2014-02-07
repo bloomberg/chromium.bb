@@ -162,6 +162,13 @@ void RecordSuccessfulThunkSetup(HKEY* key) {
 
 namespace blacklist {
 
+#if defined(_WIN64)
+  // Allocate storage for the pointer to the old NtMapViewOfSectionFunction.
+#pragma section(".oldntmap",write,read)
+  __declspec(allocate(".oldntmap"))
+    NtMapViewOfSectionFunction g_nt_map_view_of_section_func = NULL;
+#endif
+
 bool LeaveSetupBeacon() {
   HKEY key = NULL;
   DWORD disposition = 0;
@@ -293,12 +300,6 @@ bool RemoveDllFromBlacklist(const wchar_t* dll_name) {
 }
 
 bool Initialize(bool force) {
-#if defined(_WIN64)
-  // TODO(robertshield): Implement 64-bit support by providing 64-bit
-  //                     interceptors.
-  return false;
-#endif
-
   // Check to see that we found the functions we need in ntdll.
   if (!InitializeInterceptImports())
     return false;
@@ -347,10 +348,12 @@ bool Initialize(bool force) {
   }
 
   // Create a thunk via the appropriate ServiceResolver instance.
-  sandbox::ServiceResolverThunk* thunk;
+  sandbox::ServiceResolverThunk* thunk = NULL;
 #if defined(_WIN64)
-  // TODO(robertshield): Use the appropriate thunk for 64-bit support
-  // when said support is implemented.
+  // Because Windows 8 and 8.1 have different stubs in 64-bit,
+  // ServiceResolverThunk can handle all the formats in 64-bit (instead only
+  // handling 1 like it does in 32-bit versions).
+  thunk = new sandbox::ServiceResolverThunk(current_process, kRelaxed);
 #else
   if (GetWOW64StatusForCurrentProcess() == WOW64_ENABLED) {
     if (os_info.version() >= VERSION_WIN8)
@@ -379,7 +382,32 @@ bool Initialize(bool force) {
 
   thunk->AllowLocalPatches();
 
-  // Get ntdll base, target name, interceptor address,
+  // We declare this early so it can be used in the 64-bit block below and
+  // still work on 32-bit build when referenced at the end of the function.
+  BOOL page_executable = false;
+
+  // Replace the default NtMapViewOfSection with our patched version.
+#if defined(_WIN64)
+  NTSTATUS ret = thunk->Setup(::GetModuleHandle(sandbox::kNtdllName),
+                              reinterpret_cast<void*>(&__ImageBase),
+                              "NtMapViewOfSection",
+                              NULL,
+                              &blacklist::BlNtMapViewOfSection64,
+                              thunk_storage,
+                              sizeof(sandbox::ThunkData),
+                              NULL);
+
+  // Keep a pointer to the original code, we don't have enough space to
+  // add it directly to the call.
+  g_nt_map_view_of_section_func = reinterpret_cast<NtMapViewOfSectionFunction>(
+      thunk_storage);
+
+  // Ensure that the pointer to the old function can't be changed.
+ page_executable = VirtualProtect(&g_nt_map_view_of_section_func,
+                                  sizeof(g_nt_map_view_of_section_func),
+                                  PAGE_EXECUTE_READ,
+                                  &old_protect);
+#else
   NTSTATUS ret = thunk->Setup(::GetModuleHandle(sandbox::kNtdllName),
                               reinterpret_cast<void*>(&__ImageBase),
                               "NtMapViewOfSection",
@@ -388,14 +416,14 @@ bool Initialize(bool force) {
                               thunk_storage,
                               sizeof(sandbox::ThunkData),
                               NULL);
-
+#endif
   delete thunk;
 
   // Mark the thunk storage as executable and prevent any future writes to it.
-  BOOL page_executable = VirtualProtect(&g_thunk_storage,
-                                        sizeof(g_thunk_storage),
-                                        PAGE_EXECUTE_READ,
-                                        &old_protect);
+  page_executable = page_executable && VirtualProtect(&g_thunk_storage,
+                                                      sizeof(g_thunk_storage),
+                                                      PAGE_EXECUTE_READ,
+                                                      &old_protect);
 
   RecordSuccessfulThunkSetup(&key);
 

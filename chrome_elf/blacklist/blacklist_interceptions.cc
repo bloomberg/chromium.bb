@@ -229,4 +229,14 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
   return ret;
 }
 
+#if defined(_WIN64)
+NTSTATUS WINAPI BlNtMapViewOfSection64(
+    HANDLE section, HANDLE process, PVOID *base, ULONG_PTR zero_bits,
+    SIZE_T commit_size, PLARGE_INTEGER offset, PSIZE_T view_size,
+    SECTION_INHERIT inherit, ULONG allocation_type, ULONG protect) {
+  return BlNtMapViewOfSection(g_nt_map_view_of_section_func, section, process,
+                              base, zero_bits, commit_size, offset, view_size,
+                              inherit, allocation_type, protect);
+}
+#endif
 }  // namespace blacklist

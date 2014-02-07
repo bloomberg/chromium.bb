@@ -56,7 +56,7 @@ struct ServiceEntryW8 {
   ULONG mov_r10_rcx_mov_eax;  // = 4C 8B D1 B8
   ULONG service_id;
   USHORT syscall;             // = 0F 05
-  BYTE ret;                   // = C2
+  BYTE ret;                   // = C3
   BYTE nop;                   // = 90
 };
 

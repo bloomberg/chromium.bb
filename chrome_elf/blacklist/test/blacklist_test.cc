@@ -117,8 +117,6 @@ TEST_F(BlacklistTest, AddAndRemoveModules) {
 }
 
 TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
-// TODO(robertshield): Add 64-bit support.
-#if !defined(_WIN64)
   base::FilePath current_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
 
@@ -167,5 +165,4 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
 
     EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(uppercase_name.c_str()));
   }
-#endif
 }

@@ -5,6 +5,10 @@
 #ifndef CHROME_ELF_BLACKLIST_BLACKLIST_H_
 #define CHROME_ELF_BLACKLIST_BLACKLIST_H_
 
+#if defined(_WIN64)
+#include "sandbox/win/src/sandbox_nt_types.h"
+#endif
+
 namespace blacklist {
 
 // Max size of the DLL blacklist.
@@ -36,6 +40,10 @@ enum BlacklistState {
   // Always keep this at the end.
   BLACKLIST_STATE_MAX,
 };
+
+#if defined(_WIN64)
+extern NtMapViewOfSectionFunction g_nt_map_view_of_section_func;
+#endif
 
 // Attempts to leave a beacon in the current user's registry hive.
 // If the blacklist beacon doesn't say it is enabled or there are any other
