@@ -3,16 +3,21 @@
 # found in the LICENSE file.
 
 # This file contains common system config stuff for the Android build.
+
+# TODO(brettw) bug 341772 put this into the is_android block when the toolchain
+# stuff is fixed in the GYP generator. The problem is that when we redo the
+# build in host mode, the OS is not android and the declarations are never
+# seen, which throws an error because these arguments are specified.
+declare_args() {
+  android_src = ""
+
+  # This is set when building the Android WebView inside the Android build
+  # system, using the 'android' gyp backend. The WebView code is still built
+  # when this is unset, but builds using the normal chromium build system.
+  is_android_webview_build = false
+}
+
 if (is_android) {
-  declare_args() {
-    android_src = ""
-
-    # This is set when building the Android WebView inside the Android build
-    # system, using the 'android' gyp backend. The WebView code is still built
-    # when this is unset, but builds using the normal chromium build system.
-    is_android_webview_build = false
-  }
-
   if (is_android_webview_build) {
     assert(android_src != "",
            "You must specify android_src for an Android WebView build.")
