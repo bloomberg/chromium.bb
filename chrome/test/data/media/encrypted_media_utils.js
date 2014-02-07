@@ -7,6 +7,7 @@ var mediaFile = QueryString.mediaFile;
 var mediaType = QueryString.mediaType || 'video/webm; codecs="vorbis, vp8"';
 var useMSE = QueryString.useMSE == 1;
 var forceInvalidResponse = QueryString.forceInvalidResponse == 1;
+var sessionToLoad = QueryString.sessionToLoad;
 var licenseServerURL = QueryString.licenseServerURL;
 // Number of possible retries used to get a license from license server.
 // This is used to avoid server boot up delays since there is no direct way
@@ -23,12 +24,21 @@ var KEY_ID = getInitDataFromKeyId("0123456789012345");
 // Heart beat message header.
 var HEART_BEAT_HEADER = 'HEARTBEAT';
 var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
+var PREFIXED_API_LOAD_SESSION_HEADER = "LOAD_SESSION|";
 var EXTERNAL_CLEAR_KEY_KEY_SYSTEM = "org.chromium.externalclearkey";
 var EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM =
     "org.chromium.externalclearkey.fileiotest";
 // Note that his URL has been normalized from the one in clear_key_cdm.cc.
 var EXTERNAL_CLEAR_KEY_HEARTBEAT_URL =
     'http://test.externalclearkey.chromium.org/';
+
+function stringToUint8Array(str) {
+    var result = new Uint8Array(str.length);
+    for(var i = 0; i < str.length; i++) {
+        result[i] = str.charCodeAt(i);
+    }
+    return result;
+}
 
 function hasPrefix(msg, prefix) {
   if (msg.length < prefix.length)
@@ -72,8 +82,11 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       return;
     keyRequested = true;
     console.log('onNeedKey', e);
+
+    var initData = sessionToLoad ? stringToUint8Array(
+        PREFIXED_API_LOAD_SESSION_HEADER + sessionToLoad) : e.initData;
     try {
-      video.webkitGenerateKeyRequest(keySystem, e.initData);
+      video.webkitGenerateKeyRequest(keySystem, initData);
     }
     catch(error) {
       setResultInTitle(error.name);
@@ -128,6 +141,10 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       failTest('Message unexpectedly has defaultURL: ' + message.defaultURL);
       return;
     }
+
+    // When loading a session, no need to call webkitAddKey().
+    if (sessionToLoad)
+      return;
 
     console.log('onKeyMessage - key request', message);
     if (forceInvalidResponse) {

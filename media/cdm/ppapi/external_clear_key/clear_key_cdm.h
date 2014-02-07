@@ -39,6 +39,9 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
       uint32 session_id,
       const char* type, uint32 type_size,
       const uint8* init_data, uint32 init_data_size) OVERRIDE;
+  virtual void LoadSession(
+      uint32_t session_id,
+      const char* web_session_id, uint32_t web_session_id_length) OVERRIDE;
   virtual void UpdateSession(
       uint32 session_id,
       const uint8* response, uint32 response_size) OVERRIDE;
@@ -65,6 +68,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
       uint32_t link_mask, uint32_t output_protection_mask) OVERRIDE;
 
  private:
+  // Emulates a session stored for |session_id_for_emulated_loadsession_|. This
+  // is necessary since aes_decryptor.cc does not support storing sessions.
+  void UpdateLoadableSession();
+
   // ContentDecryptionModule callbacks.
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
   void OnSessionMessage(uint32 session_id,
@@ -118,6 +125,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
   uint32 last_session_id_;
   std::string next_heartbeat_message_;
+
+  // TODO(xhwang): Extract testing code from main implementation.
+  // See http://crbug.com/341751
+  uint32 session_id_for_emulated_loadsession_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;

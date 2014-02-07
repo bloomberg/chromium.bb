@@ -39,7 +39,7 @@ class CdmAdapter : public pp::Instance,
                    public pp::ContentDecryptor_Private,
                    public cdm::Host_1,
                    public cdm::Host_2,
-                   public cdm::Host_3 {
+                   public cdm::Host_4 {
  public:
   CdmAdapter(PP_Instance instance, pp::Module* module);
   virtual ~CdmAdapter();
@@ -103,7 +103,7 @@ class CdmAdapter : public pp::Instance,
       cdm::StreamType stream_type,
       cdm::Status decoder_status) OVERRIDE;
 
-  // cdm::Host_3 implementation.
+  // cdm::Host_4 implementation.
   virtual void OnSessionCreated(uint32_t session_id,
                                 const char* web_session_id,
                                 uint32_t web_session_id_length) OVERRIDE;

@@ -152,6 +152,23 @@ class CdmWrapperImpl : public CdmWrapper {
                              uint32_t type_size,
                              const uint8_t* init_data,
                              uint32_t init_data_size) OVERRIDE {
+    // TODO(xhwang): Update the full MediaKeys stack to support LoadSession.
+    // See: http://crbug.com/338831
+    const uint8_t kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
+    const size_t kPrefixedApiLoadSessionHeaderSize =
+        sizeof(kPrefixedApiLoadSessionHeader) - 1;
+
+    if (init_data_size > kPrefixedApiLoadSessionHeaderSize &&
+        std::equal(init_data,
+                   init_data + kPrefixedApiLoadSessionHeaderSize,
+                   kPrefixedApiLoadSessionHeader)) {
+      cdm_->LoadSession(session_id,
+                        reinterpret_cast<const char*>(
+                            init_data + kPrefixedApiLoadSessionHeaderSize),
+                        init_data_size - kPrefixedApiLoadSessionHeaderSize);
+      return;
+    }
+
     cdm_->CreateSession(session_id, type, type_size, init_data, init_data_size);
   }
 
@@ -268,7 +285,7 @@ class CdmWrapperImpl : public CdmWrapper {
 
 // For ContentDecryptionModule_1 and ContentDecryptionModule_2,
 // CreateSession(), UpdateSession(), and ReleaseSession() call methods
-// are incompatible with ContentDecryptionModule_3. Use the following
+// are incompatible with ContentDecryptionModule_4. Use the following
 // templated functions to handle this.
 
 template <class CdmInterface>
@@ -441,13 +458,13 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
   COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                 cdm::ContentDecryptionModule_3::kVersion,
+                 cdm::ContentDecryptionModule_4::kVersion,
                  update_code_below);
 
-  // Ensure IsSupportedCdmInterfaceVersion matches this implementation.
+  // Ensure IsSupportedCdmInterfaceVersion() matches this implementation.
   // Always update this DCHECK when updating this function.
   // If this check fails, update this function and DCHECK or update
-  // IsSupportedCdmInterfaceVersion.
+  // IsSupportedCdmInterfaceVersion().
   PP_DCHECK(
       !IsSupportedCdmInterfaceVersion(
           cdm::ContentDecryptionModule::kVersion + 1) &&
@@ -482,7 +499,7 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 // does not have.
 // Also update supported_cdm_versions.h.
 COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                   cdm::ContentDecryptionModule_3::kVersion,
+                   cdm::ContentDecryptionModule_4::kVersion,
                ensure_cdm_wrapper_templates_have_old_version_support);
 
 }  // namespace media

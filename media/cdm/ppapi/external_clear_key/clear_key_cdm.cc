@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 
@@ -68,6 +69,16 @@ const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
+
+// Constants for the enumalted session that can be loaded by LoadSession().
+// These constants need to be in sync with
+// chrome/test/data/media/encrypted_media_utils.js
+const char kLoadableWebSessionId[] = "LoadableSession";
+const char kLoadableSessionContentType[] = "video/webm";
+const uint8 kLoadableSessionKeyId[] = "0123456789012345";
+const uint8 kLoadableSessionKey[] =
+    {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
+     0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c};
 
 const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
@@ -183,6 +194,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
       host_(host),
       key_system_(key_system),
       last_session_id_(MediaKeys::kInvalidSessionId),
+      session_id_for_emulated_loadsession_(MediaKeys::kInvalidSessionId),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -210,6 +222,26 @@ void ClearKeyCdm::CreateSession(uint32 session_id,
 
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();
+}
+
+// Loads a emulated stored session. Currently only |kLoadableWebSessionId|
+// (containing a |kLoadableSessionKey| for |kLoadableSessionKeyId|) is
+// supported.
+void ClearKeyCdm::LoadSession(uint32_t session_id,
+                              const char* web_session_id,
+                              uint32_t web_session_id_length) {
+  DVLOG(1) << __FUNCTION__;
+
+  if (std::string(kLoadableWebSessionId) !=
+      std::string(web_session_id, web_session_id_length)) {
+    // TODO(xhwang): Report "NotFoundError" when we support DOMError style.
+    OnSessionError(session_id, MediaKeys::kUnknownError, 0);
+    return;
+  }
+
+  session_id_for_emulated_loadsession_ = session_id;
+
+  decryptor_.CreateSession(session_id, kLoadableSessionContentType, NULL, 0);
 }
 
 void ClearKeyCdm::UpdateSession(uint32 session_id,
@@ -489,10 +521,30 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
   NOTIMPLEMENTED();
 };
 
+void ClearKeyCdm::UpdateLoadableSession() {
+  std::string jwk_set = GenerateJWKSet(kLoadableSessionKey,
+                                       sizeof(kLoadableSessionKey),
+                                       kLoadableSessionKeyId,
+                                       sizeof(kLoadableSessionKeyId) - 1);
+  // TODO(xhwang): This triggers OnSessionUpdated(). For prefixed EME support,
+  // this is okay. Check WD EME support.
+  decryptor_.UpdateSession(session_id_for_emulated_loadsession_,
+                           reinterpret_cast<const uint8*>(jwk_set.data()),
+                           jwk_set.size());
+}
+
 void ClearKeyCdm::OnSessionCreated(uint32 session_id,
                                    const std::string& web_session_id) {
+  std::string new_web_session_id = web_session_id;
+
+  if (session_id == session_id_for_emulated_loadsession_) {
+    new_web_session_id = kLoadableWebSessionId;
+    UpdateLoadableSession();
+    session_id_for_emulated_loadsession_ = MediaKeys::kInvalidSessionId;
+  }
+
   host_->OnSessionCreated(
-      session_id, web_session_id.data(), web_session_id.size());
+      session_id, new_web_session_id.data(), new_web_session_id.size());
 }
 
 void ClearKeyCdm::OnSessionMessage(uint32 session_id,

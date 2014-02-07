@@ -14,12 +14,17 @@
       function onTimeUpdate() {
         if (video.currentTime < 1)
           return;
-        // keyadded may be fired around the start of playback; check for it
-        // after a delay to avoid timing issues.
-        if (!video.receivedKeyAdded)
-          failTest('Key added event not received.');
-        if (video.isHeartbeatExpected && !video.receivedHeartbeat)
-          failTest('Heartbeat keymessage event not received.');
+        // For loadSession() tests, addKey() will not be called after
+        // loadSession() (the key is loaded internally). Do not check keyadded
+        // and heartbeat for these tests.
+        if (!sessionToLoad) {
+          // keyadded may be fired around the start of playback; check for it
+          // after a delay to avoid timing issues.
+          if (!video.receivedKeyAdded)
+            failTest('Key added event not received.');
+          if (video.isHeartbeatExpected && !video.receivedHeartbeat)
+            failTest('Heartbeat keymessage event not received.');
+        }
         video.removeEventListener('ended', failTest);
         installTitleEventHandler(video, 'ended');
         video.removeEventListener('timeupdate', onTimeUpdate);

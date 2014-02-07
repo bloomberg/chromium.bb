@@ -55,6 +55,11 @@ const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
+// Sessions to load.
+const char kNoSessionToLoad[] = "";
+const char kLoadableSession[] = "LoadableSession";
+const char kUnknownSession[] = "UnknownSession";
+
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
@@ -107,11 +112,20 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     RunMediaTestPage(html_page, query_params, expected_title, true);
   }
 
+  // Tests |html_page| using |media_file| (with |media_type|) and |key_system|.
+  // When |session_to_load| is not empty, the test will try to load
+  // |session_to_load| with stored keys, instead of creating a new session
+  // and trying to update it with licenses.
+  // When |force_invalid_response| is true, the test will provide invalid
+  // responses, which should trigger errors.
+  // TODO(xhwang): Find an easier way to pass multiple configuration test
+  // options.
   void RunEncryptedMediaTest(const std::string& html_page,
                              const std::string& media_file,
                              const std::string& media_type,
                              const std::string& key_system,
                              SrcType src_type,
+                             const std::string& session_to_load,
                              bool force_invalid_response,
                              const std::string& expected_title) {
     if (src_type == MSE && !IsMSESupported()) {
@@ -126,6 +140,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       query_params.push_back(std::make_pair("useMSE", "1"));
     if (force_invalid_response)
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
+    if (!session_to_load.empty())
+      query_params.push_back(std::make_pair("sessionToLoad", session_to_load));
     RunEncryptedMediaTestPage(html_page, key_system, &query_params,
                               expected_title);
   }
@@ -138,8 +154,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     if (!IsPlayBackPossible(key_system))
       expected_title = kEmeKeyError;
 
-    RunEncryptedMediaTest("encrypted_media_player.html", media_file,
-                          media_type, key_system, src_type, false,
+    RunEncryptedMediaTest("encrypted_media_player.html", media_file, media_type,
+                          key_system, src_type, kNoSessionToLoad, false,
                           expected_title);
     // Check KeyMessage received for all key systems.
     bool receivedKeyMessage = false;
@@ -266,6 +282,23 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 // Tests encrypted media playback using ExternalClearKey key system in
 // decrypt-and-decode mode.
 class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
+ public:
+  // We use special |key_system| names to do non-playback related tests, e.g.
+  // kExternalClearKeyFileIOTestKeySystem is used to test file IO.
+  void TestNonPlaybackCases(const std::string& key_system,
+                            const std::string& expected_title) {
+    // Since we do not test playback, arbitrarily choose a test file and source
+    // type.
+    RunEncryptedMediaTest("encrypted_media_player.html",
+                          "bear-a-enc_a.webm",
+                          kWebMAudioOnly,
+                          key_system,
+                          SRC,
+                          kNoSessionToLoad,
+                          false,
+                          expected_title);
+  }
+
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -316,6 +349,7 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
                           kWebMAudioVideo,
                           CurrentKeySystem(),
                           CurrentSourceType(),
+                          kNoSessionToLoad,
                           true,
                           kEmeKeyError);
   }
@@ -326,6 +360,7 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
                           kWebMAudioVideo,
                           CurrentKeySystem(),
                           CurrentSourceType(),
+                          kNoSessionToLoad,
                           false,
                           kEnded);
   }
@@ -455,6 +490,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
                         kWebMAudioOnly,
                         "com.widevine",
                         MSE,
+                        kNoSessionToLoad,
                         false,
                         kEmeNotSupportedError);
 }
@@ -462,33 +498,39 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
 
 #if defined(ENABLE_PEPPER_CDMS)
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
-  RunEncryptedMediaTest("encrypted_media_player.html",
-                        "bear-a-enc_a.webm",
-                        kWebMAudioOnly,
-                        kExternalClearKeyInitializeFailKeySystem,
-                        SRC,
-                        false,
-                        kEmeKeyError);
+  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem, kEmeKeyError);
 }
 
 // When CDM crashes, we should still get a decode error.
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
-  RunEncryptedMediaTest("encrypted_media_player.html",
-                        "bear-a-enc_a.webm",
-                        kWebMAudioOnly,
-                        kExternalClearKeyCrashKeySystem,
-                        SRC,
-                        false,
-                        kError);
+  TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
+  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem,
+                       kFileIOTestSuccess);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
   RunEncryptedMediaTest("encrypted_media_player.html",
-                        "bear-a-enc_a.webm",
-                        kWebMAudioOnly,
-                        kExternalClearKeyFileIOTestKeySystem,
+                        "bear-320x240-v-enc_v.webm",
+                        kWebMVideoOnly,
+                        kExternalClearKeyKeySystem,
                         SRC,
+                        kLoadableSession,
                         false,
-                        kFileIOTestSuccess);
+                        kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
+  // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
+  RunEncryptedMediaTest("encrypted_media_player.html",
+                        "bear-320x240-v-enc_v.webm",
+                        kWebMVideoOnly,
+                        kExternalClearKeyKeySystem,
+                        SRC,
+                        kUnknownSession,
+                        false,
+                        kEmeKeyError);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

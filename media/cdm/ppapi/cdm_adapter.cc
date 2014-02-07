@@ -982,7 +982,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return NULL;
 
   COMPILE_ASSERT(cdm::ContentDecryptionModule::Host::kVersion ==
-                 cdm::ContentDecryptionModule_3::Host::kVersion,
+                 cdm::ContentDecryptionModule_4::Host::kVersion,
                  update_code_below);
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
@@ -1004,8 +1004,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   CDM_DLOG() << "Create CDM Host with version " << host_interface_version;
   switch (host_interface_version) {
-    case cdm::Host_3::kVersion:
-      return static_cast<cdm::Host_3*>(cdm_adapter);
+    case cdm::Host_4::kVersion:
+      return static_cast<cdm::Host_4*>(cdm_adapter);
     case cdm::Host_2::kVersion:
       return static_cast<cdm::Host_2*>(cdm_adapter);
     case cdm::Host_1::kVersion:
