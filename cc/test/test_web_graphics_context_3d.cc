@@ -49,8 +49,7 @@ scoped_ptr<TestWebGraphicsContext3D> TestWebGraphicsContext3D::Create() {
 }
 
 TestWebGraphicsContext3D::TestWebGraphicsContext3D()
-    : FakeWebGraphicsContext3D(),
-      context_id_(s_context_id++),
+    : context_id_(s_context_id++),
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
       times_gen_mailbox_succeeds_(-1),
@@ -341,6 +340,8 @@ void TestWebGraphicsContext3D::CheckTextureIsBound(GLenum target) {
   DCHECK(BoundTextureId(target));
 }
 
+GLuint TestWebGraphicsContext3D::createQueryEXT() { return 1u; }
+
 void TestWebGraphicsContext3D::endQueryEXT(GLenum target) {
   if (times_end_query_succeeds_ >= 0) {
     if (!times_end_query_succeeds_) {
@@ -367,6 +368,63 @@ void TestWebGraphicsContext3D::getIntegerv(
     *value = max_texture_size_;
   else if (pname == GL_ACTIVE_TEXTURE)
     *value = GL_TEXTURE0;
+}
+
+void TestWebGraphicsContext3D::getProgramiv(GLuint program,
+                                            GLenum pname,
+                                            GLint* value) {
+  if (pname == GL_LINK_STATUS)
+    *value = 1;
+}
+
+void TestWebGraphicsContext3D::getShaderiv(GLuint shader,
+                                           GLenum pname,
+                                           GLint* value) {
+  if (pname == GL_COMPILE_STATUS)
+    *value = 1;
+}
+
+void TestWebGraphicsContext3D::getShaderPrecisionFormat(GLenum shadertype,
+                                                        GLenum precisiontype,
+                                                        GLint* range,
+                                                        GLint* precision) {
+  // Return the minimum precision requirements of the GLES2
+  // specification.
+  switch (precisiontype) {
+    case GL_LOW_INT:
+      range[0] = 8;
+      range[1] = 8;
+      *precision = 0;
+      break;
+    case GL_MEDIUM_INT:
+      range[0] = 10;
+      range[1] = 10;
+      *precision = 0;
+      break;
+    case GL_HIGH_INT:
+      range[0] = 16;
+      range[1] = 16;
+      *precision = 0;
+      break;
+    case GL_LOW_FLOAT:
+      range[0] = 8;
+      range[1] = 8;
+      *precision = 8;
+      break;
+    case GL_MEDIUM_FLOAT:
+      range[0] = 14;
+      range[1] = 14;
+      *precision = 10;
+      break;
+    case GL_HIGH_FLOAT:
+      range[0] = 62;
+      range[1] = 62;
+      *precision = 16;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
@@ -413,6 +471,13 @@ void TestWebGraphicsContext3D::finish() {
 void TestWebGraphicsContext3D::flush() {
   test_support_->CallAllSyncPointCallbacks();
 }
+
+GLint TestWebGraphicsContext3D::getAttribLocation(GLuint program,
+                                                  const GLchar* name) {
+  return 0;
+}
+
+GLenum TestWebGraphicsContext3D::getError() { return GL_NO_ERROR; }
 
 void TestWebGraphicsContext3D::bindBuffer(GLenum target,
                                           GLuint buffer) {

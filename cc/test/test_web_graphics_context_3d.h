@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/ordered_texture_map.h"
 #include "cc/test/test_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -26,7 +25,7 @@
 namespace cc {
 class TestContextSupport;
 
-class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+class TestWebGraphicsContext3D {
  public:
   static scoped_ptr<TestWebGraphicsContext3D> Create();
 
@@ -40,23 +39,20 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
                                       int height,
                                       float scale_factor);
 
-  virtual bool isContextLost() OVERRIDE;
+  virtual bool isContextLost();
 
-  virtual void attachShader(GLuint program, GLuint shader) OVERRIDE;
-  virtual void bindFramebuffer(
-      GLenum target, GLuint framebuffer) OVERRIDE;
-  virtual void bindRenderbuffer(
-      GLenum target, GLuint renderbuffer) OVERRIDE;
-  virtual void bindTexture(
-      GLenum target,
-      GLuint texture_id) OVERRIDE;
+  virtual void discardFramebufferEXT(GLenum target,
+                                     GLsizei num_attachments,
+                                     const GLenum* attachments) {}
 
-  virtual void texParameteri(GLenum target,
-                             GLenum pname,
-                             GLint param) OVERRIDE;
-  virtual void getTexParameteriv(GLenum target,
-                                 GLenum pname,
-                                 GLint* value) OVERRIDE;
+  virtual void activeTexture(GLenum texture) {}
+  virtual void attachShader(GLuint program, GLuint shader);
+  virtual void bindFramebuffer(GLenum target, GLuint framebuffer);
+  virtual void bindRenderbuffer(GLenum target, GLuint renderbuffer);
+  virtual void bindTexture(GLenum target, GLuint texture_id);
+
+  virtual void texParameteri(GLenum target, GLenum pname, GLint param);
+  virtual void getTexParameteriv(GLenum target, GLenum pname, GLint* value);
   virtual void asyncTexImage2DCHROMIUM(GLenum target,
                                        GLint level,
                                        GLenum internalformat,
@@ -78,63 +74,97 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void waitAsyncTexImage2DCHROMIUM(GLenum target) {}
   virtual void releaseTexImage2DCHROMIUM(GLenum target, GLint image_id) {}
 
-  virtual GLenum checkFramebufferStatus(GLenum target) OVERRIDE;
+  virtual GLenum checkFramebufferStatus(GLenum target);
 
-  virtual GLint getUniformLocation(
-      GLuint program,
-      const GLchar* name) OVERRIDE;
-  virtual GLsizeiptr getVertexAttribOffset(
-      GLuint index,
-      GLenum pname) OVERRIDE;
+  virtual void clear(GLbitfield mask) {}
+  virtual void clearColor(GLclampf red,
+                          GLclampf green,
+                          GLclampf blue,
+                          GLclampf alpha) {}
+  virtual void clearStencil(GLint s) {}
+  virtual void compressedTexImage2D(GLenum target,
+                                    GLint level,
+                                    GLenum internal_format,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLint border,
+                                    GLsizei image_size,
+                                    const void* data) {}
+  virtual GLint getUniformLocation(GLuint program, const GLchar* name);
+  virtual GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname);
 
-  virtual GLboolean isBuffer(GLuint buffer) OVERRIDE;
-  virtual GLboolean isEnabled(GLenum cap) OVERRIDE;
-  virtual GLboolean isFramebuffer(GLuint framebuffer) OVERRIDE;
-  virtual GLboolean isProgram(GLuint program) OVERRIDE;
-  virtual GLboolean isRenderbuffer(GLuint renderbuffer) OVERRIDE;
-  virtual GLboolean isShader(GLuint shader) OVERRIDE;
-  virtual GLboolean isTexture(GLuint texture) OVERRIDE;
+  virtual GLboolean isBuffer(GLuint buffer);
+  virtual GLboolean isEnabled(GLenum cap);
+  virtual GLboolean isFramebuffer(GLuint framebuffer);
+  virtual GLboolean isProgram(GLuint program);
+  virtual GLboolean isRenderbuffer(GLuint renderbuffer);
+  virtual GLboolean isShader(GLuint shader);
+  virtual GLboolean isTexture(GLuint texture);
 
-  virtual void useProgram(GLuint program) OVERRIDE;
+  virtual void useProgram(GLuint program);
 
-  virtual void genBuffers(GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void genFramebuffers(GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void genRenderbuffers(GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void genTextures(GLsizei count, GLuint* ids) OVERRIDE;
+  virtual void viewport(GLint x, GLint y, GLsizei width, GLsizei height) {}
 
-  virtual void deleteBuffers(GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void deleteFramebuffers(
-      GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void deleteRenderbuffers(
-      GLsizei count, GLuint* ids) OVERRIDE;
-  virtual void deleteTextures(GLsizei count, GLuint* ids) OVERRIDE;
+  virtual void genBuffers(GLsizei count, GLuint* ids);
+  virtual void genFramebuffers(GLsizei count, GLuint* ids);
+  virtual void genRenderbuffers(GLsizei count, GLuint* ids);
+  virtual void genTextures(GLsizei count, GLuint* ids);
 
-  virtual GLuint createBuffer() OVERRIDE;
-  virtual GLuint createFramebuffer() OVERRIDE;
-  virtual GLuint createRenderbuffer() OVERRIDE;
-  virtual GLuint createTexture() OVERRIDE;
+  virtual void deleteBuffers(GLsizei count, GLuint* ids);
+  virtual void deleteFramebuffers(GLsizei count, GLuint* ids);
+  virtual void deleteRenderbuffers(GLsizei count, GLuint* ids);
+  virtual void deleteTextures(GLsizei count, GLuint* ids);
 
-  virtual void deleteBuffer(GLuint id) OVERRIDE;
-  virtual void deleteFramebuffer(GLuint id) OVERRIDE;
-  virtual void deleteRenderbuffer(GLuint id) OVERRIDE;
-  virtual void deleteTexture(GLuint id) OVERRIDE;
+  virtual GLuint createBuffer();
+  virtual GLuint createFramebuffer();
+  virtual GLuint createRenderbuffer();
+  virtual GLuint createTexture();
 
-  virtual GLuint createProgram() OVERRIDE;
-  virtual GLuint createShader(GLenum) OVERRIDE;
+  virtual void deleteBuffer(GLuint id);
+  virtual void deleteFramebuffer(GLuint id);
+  virtual void deleteRenderbuffer(GLuint id);
+  virtual void deleteTexture(GLuint id);
+
+  virtual GLuint createProgram();
+  virtual GLuint createShader(GLenum);
   virtual GLuint createExternalTexture();
 
-  virtual void deleteProgram(GLuint id) OVERRIDE;
-  virtual void deleteShader(GLuint id) OVERRIDE;
+  virtual void deleteProgram(GLuint id);
+  virtual void deleteShader(GLuint id);
 
-  virtual void endQueryEXT(GLenum target) OVERRIDE;
-  virtual void getQueryObjectuivEXT(
-      GLuint query,
-      GLenum pname,
-      GLuint* params) OVERRIDE;
+  virtual void texStorage2DEXT(GLenum target,
+                               GLint levels,
+                               GLuint internalformat,
+                               GLint width,
+                               GLint height) {}
 
-  virtual void getIntegerv(
-      GLenum pname,
-      GLint* value) OVERRIDE;
+  virtual GLuint createQueryEXT();
+  virtual void deleteQueryEXT(GLuint query) {}
+  virtual void beginQueryEXT(GLenum target, GLuint query) {}
+  virtual void endQueryEXT(GLenum target);
+  virtual void getQueryObjectuivEXT(GLuint query, GLenum pname, GLuint* params);
+
+  virtual void scissor(GLint x, GLint y, GLsizei width, GLsizei height) {}
+
+  virtual void texImage2D(GLenum target,
+                          GLint level,
+                          GLenum internalformat,
+                          GLsizei width,
+                          GLsizei height,
+                          GLint border,
+                          GLenum format,
+                          GLenum type,
+                          const void* pixels) {}
+
+  virtual void texSubImage2D(GLenum target,
+                             GLint level,
+                             GLint xoffset,
+                             GLint yoffset,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum format,
+                             GLenum type,
+                             const void* pixels) {}
 
   virtual void genMailboxCHROMIUM(GLbyte* mailbox);
   virtual void produceTextureCHROMIUM(GLenum target,
@@ -142,34 +172,75 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void consumeTextureCHROMIUM(GLenum target,
                                       const GLbyte* mailbox) { }
 
-  virtual void loseContextCHROMIUM(GLenum current,
-                                   GLenum other) OVERRIDE;
+  virtual void loseContextCHROMIUM(GLenum current, GLenum other);
 
-  virtual void finish() OVERRIDE;
-  virtual void flush() OVERRIDE;
+  virtual void bindTexImage2DCHROMIUM(GLenum target, GLint image_id) {}
 
-  virtual void bindBuffer(GLenum target, GLuint buffer) OVERRIDE;
+  virtual void drawArrays(GLenum mode, GLint first, GLsizei count) {}
+  virtual void drawElements(GLenum mode,
+                            GLsizei count,
+                            GLenum type,
+                            GLintptr offset) {}
+  virtual void disable(GLenum cap) {}
+  virtual void enable(GLenum cap) {}
+  virtual void finish();
+  virtual void flush();
+  virtual void shallowFlushCHROMIUM() {}
+
+  virtual void getAttachedShaders(GLuint program,
+                                  GLsizei max_count,
+                                  GLsizei* count,
+                                  GLuint* shaders) {}
+  virtual GLint getAttribLocation(GLuint program, const GLchar* name);
+  virtual void getBooleanv(GLenum pname, GLboolean* value) {}
+  virtual void getBufferParameteriv(GLenum target, GLenum pname, GLint* value) {
+  }
+  virtual GLenum getError();
+  virtual void getFloatv(GLenum pname, GLfloat* value) {}
+  virtual void getFramebufferAttachmentParameteriv(GLenum target,
+                                                   GLenum attachment,
+                                                   GLenum pname,
+                                                   GLint* value) {}
+
+  virtual void getIntegerv(GLenum pname, GLint* value);
+
+  virtual void getProgramiv(GLuint program, GLenum pname, GLint* value);
+
+  virtual void getRenderbufferParameteriv(GLenum target,
+                                          GLenum pname,
+                                          GLint* value) {}
+
+  virtual void getShaderiv(GLuint shader, GLenum pname, GLint* value);
+
+  virtual void getShaderPrecisionFormat(GLenum shadertype,
+                                        GLenum precisiontype,
+                                        GLint* range,
+                                        GLint* precision);
+
+  virtual void getTexParameterfv(GLenum target, GLenum pname, GLfloat* value) {}
+  virtual void getUniformfv(GLuint program, GLint location, GLfloat* value) {}
+  virtual void getUniformiv(GLuint program, GLint location, GLint* value) {}
+  virtual void getVertexAttribfv(GLuint index, GLenum pname, GLfloat* value) {}
+  virtual void getVertexAttribiv(GLuint index, GLenum pname, GLint* value) {}
+
+  virtual void bindBuffer(GLenum target, GLuint buffer);
   virtual void bufferData(GLenum target,
                           GLsizeiptr size,
                           const void* data,
-                          GLenum usage) OVERRIDE;
+                          GLenum usage);
   virtual void* mapBufferCHROMIUM(GLenum target,
                                   GLenum access);
   virtual GLboolean unmapBufferCHROMIUM(GLenum target);
 
-  virtual GLuint createImageCHROMIUM(
-      GLsizei width,
-      GLsizei height,
-      GLenum internalformat) OVERRIDE;
-  virtual void destroyImageCHROMIUM(GLuint image_id) OVERRIDE;
-  virtual void getImageParameterivCHROMIUM(
-      GLuint image_id,
-      GLenum pname,
-      GLint* params) OVERRIDE;
-  virtual void* mapImageCHROMIUM(
-      GLuint image_id,
-      GLenum access) OVERRIDE;
-  virtual void unmapImageCHROMIUM(GLuint image_id) OVERRIDE;
+  virtual GLuint createImageCHROMIUM(GLsizei width,
+                                     GLsizei height,
+                                     GLenum internalformat);
+  virtual void destroyImageCHROMIUM(GLuint image_id);
+  virtual void getImageParameterivCHROMIUM(GLuint image_id,
+                                           GLenum pname,
+                                           GLint* params);
+  virtual void* mapImageCHROMIUM(GLuint image_id, GLenum access);
+  virtual void unmapImageCHROMIUM(GLuint image_id);
   virtual void texImageIOSurface2DCHROMIUM(GLenum target,
                                            GLsizei width,
                                            GLsizei height,
