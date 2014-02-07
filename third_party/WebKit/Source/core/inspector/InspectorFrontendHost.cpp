@@ -32,7 +32,7 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
-#include "core/dom/Pasteboard.h"
+#include "core/clipboard/Pasteboard.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Frame.h"
 #include "core/html/parser/TextResourceDecoder.h"

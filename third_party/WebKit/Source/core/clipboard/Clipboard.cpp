@@ -24,17 +24,17 @@
  */
 
 #include "config.h"
-#include "core/dom/Clipboard.h"
+#include "core/clipboard/Clipboard.h"
 
 #include "HTMLNames.h"
-#include "core/dom/DataObject.h"
-#include "core/dom/DataTransferItem.h"
-#include "core/dom/DataTransferItemList.h"
+#include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransferItem.h"
+#include "core/clipboard/DataTransferItemList.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
-#include "core/html/HTMLImageElement.h"
 #include "core/frame/Frame.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/DragImage.h"
@@ -67,7 +67,7 @@ static DragOperation dragOpFromIEOp(const String& op)
         return (DragOperation)(DragOperationLink | DragOperationGeneric | DragOperationMove);
     if (op == "all")
         return DragOperationEvery;
-    return DragOperationPrivate;  // really a marker for "no conversion"
+    return DragOperationPrivate; // really a marker for "no conversion"
 }
 
 static String IEOpFromDragOp(DragOperation op)

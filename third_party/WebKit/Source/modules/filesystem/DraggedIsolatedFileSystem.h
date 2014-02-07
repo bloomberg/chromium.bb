@@ -31,7 +31,7 @@
 #ifndef DraggedIsolatedFileSystem_h
 #define DraggedIsolatedFileSystem_h
 
-#include "core/dom/DataObject.h"
+#include "core/clipboard/DataObject.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

@@ -25,7 +25,7 @@
 #define Clipboard_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ClipboardAccessPolicy.h"
+#include "core/clipboard/ClipboardAccessPolicy.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"

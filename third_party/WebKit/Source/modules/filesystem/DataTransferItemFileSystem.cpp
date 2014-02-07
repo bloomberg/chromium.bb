@@ -31,9 +31,9 @@
 #include "config.h"
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
-#include "core/dom/Clipboard.h"
-#include "core/dom/DataObject.h"
-#include "core/dom/DataTransferItem.h"
+#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransferItem.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"

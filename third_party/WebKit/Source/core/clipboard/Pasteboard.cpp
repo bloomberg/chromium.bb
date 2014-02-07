@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/dom/Pasteboard.h"
+#include "core/clipboard/Pasteboard.h"
 
-#include "core/dom/DataObject.h"
+#include "core/clipboard/DataObject.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"

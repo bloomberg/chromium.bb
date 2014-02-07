@@ -26,7 +26,7 @@
 #ifndef SpellChecker_h
 #define SpellChecker_h
 
-#include "core/dom/ClipboardAccessPolicy.h"
+#include "core/clipboard/ClipboardAccessPolicy.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"

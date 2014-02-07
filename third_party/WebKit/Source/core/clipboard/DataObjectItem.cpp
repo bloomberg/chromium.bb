@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/dom/DataObjectItem.h"
+#include "core/clipboard/DataObjectItem.h"
 
-#include "core/dom/Pasteboard.h"
+#include "core/clipboard/Pasteboard.h"
 #include "core/fileapi/Blob.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/Platform.h"

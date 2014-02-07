@@ -26,7 +26,7 @@
 #ifndef Editor_h
 #define Editor_h
 
-#include "core/dom/ClipboardAccessPolicy.h"
+#include "core/clipboard/ClipboardAccessPolicy.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"

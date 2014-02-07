@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "core/dom/DataTransferItem.h"
+#include "core/clipboard/DataTransferItem.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/Clipboard.h"
-#include "core/dom/DataObjectItem.h"
+#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataObjectItem.h"
 #include "core/dom/StringCallback.h"
 #include "wtf/StdLibExtras.h"
 

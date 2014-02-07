@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/dom/DataTransferItemList.h"
+#include "core/clipboard/DataTransferItemList.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Clipboard.h"
-#include "core/dom/DataObject.h"
-#include "core/dom/DataTransferItem.h"
+#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {

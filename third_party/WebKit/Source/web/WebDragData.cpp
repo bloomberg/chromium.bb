@@ -30,8 +30,8 @@
 
 #include "config.h"
 
-#include "core/dom/DataObject.h"
-#include "core/dom/DataTransferItem.h"
+#include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransferItem.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/WebData.h"

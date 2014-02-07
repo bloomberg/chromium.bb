@@ -29,9 +29,9 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Clipboard.h"
-#include "core/dom/ClipboardAccessPolicy.h"
-#include "core/dom/DataObject.h"
+#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/ClipboardAccessPolicy.h"
+#include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"

@@ -31,7 +31,7 @@
 #ifndef DataObject_h
 #define DataObject_h
 
-#include "core/dom/DataObjectItem.h"
+#include "core/clipboard/DataObjectItem.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "wtf/ListHashSet.h"

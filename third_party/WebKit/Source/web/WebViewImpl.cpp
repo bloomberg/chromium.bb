@@ -76,7 +76,7 @@
 #include "WebWindowFeatures.h"
 #include "WorkerGlobalScopeProxyProviderImpl.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/dom/DataObject.h"
+#include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Text.h"

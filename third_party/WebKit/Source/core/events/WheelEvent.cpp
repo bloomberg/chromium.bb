@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/events/WheelEvent.h"
 
-#include "core/dom/Clipboard.h"
+#include "core/clipboard/Clipboard.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/PlatformWheelEvent.h"
 
