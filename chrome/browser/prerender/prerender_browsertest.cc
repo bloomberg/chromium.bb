@@ -230,8 +230,10 @@ class ChannelDestructionWatcher {
   DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
 };
 
-// A simple observer to wait on either a new load or a swap of a
-// WebContents. Note that the load must begin after the observer is attached.
+// A navigation observer to wait on either a new load or a swap of a
+// WebContents. On swap, if the new WebContents is still loading, wait for that
+// load to complete as well. Note that the load must begin after the observer is
+// attached.
 class NavigationOrSwapObserver : public WebContentsObserver,
                                  public TabStripModelObserver {
  public:
@@ -289,7 +291,16 @@ class NavigationOrSwapObserver : public WebContentsObserver,
                              int index) OVERRIDE {
     if (old_contents != web_contents())
       return;
-    loop_.Quit();
+    // Switch to observing the new WebContents.
+    Observe(new_contents);
+    if (new_contents->IsLoading()) {
+      // If the new WebContents is still loading, wait for it to complete. Only
+      // one load post-swap is supported.
+      did_start_loading_ = true;
+      number_of_loads_ = 1;
+    } else {
+      loop_.Quit();
+    }
   }
 
  private:
@@ -1997,9 +2008,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we get the right PPLT histograms for client redirect prerenders
 // and navigations when the referring page is Google.
-// Flaky: https://crbug.com/341570
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderLocationReplaceGWSHistograms) {
+                       PrerenderLocationReplaceGWSHistograms) {
   DisableJavascriptCalls();
   UMAHistogramHelper histograms;
 
@@ -3661,10 +3671,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
       ui_test_utils::BROWSER_TEST_NONE);
   swap_observer.Wait();
 
-  // The page only finishes navigating after the swap. Wait for it to if it
-  // hasn't yet.
-  content::WaitForLoadStop(GetActiveWebContents());
-
   // The prerender never observes the final load.
   EXPECT_EQ(0, prerender->number_of_loads());
 
@@ -3702,10 +3708,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       current_browser(), dest_url(), CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   swap_observer.Wait();
-
-  // The page only finishes navigating after the swap. Wait for it to if it
-  // hasn't yet.
-  content::WaitForLoadStop(GetActiveWebContents());
 
   // The prerender never observes the final load.
   EXPECT_EQ(0, prerender->number_of_loads());
