@@ -90,6 +90,7 @@ void TextRenderer::Flush(const base::Closure& callback) {
   for (TextTrackStateMap::iterator itr = text_track_state_map_.begin();
        itr != text_track_state_map_.end(); ++itr) {
     pending_eos_set_.insert(itr->first);
+    itr->second->text_ranges_.Reset();
   }
   DCHECK_EQ(pending_eos_set_.size(), text_track_state_map_.size());
   callback.Run();
@@ -306,12 +307,15 @@ void TextRenderer::CueReady(
   }
 
   base::TimeDelta start = text_cue->timestamp();
-  base::TimeDelta end = start + text_cue->duration();
 
-  state->text_track->addWebVTTCue(start, end,
-                                  text_cue->id(),
-                                  text_cue->text(),
-                                  text_cue->settings());
+  if (state->text_ranges_.AddCue(start)) {
+    base::TimeDelta end = start + text_cue->duration();
+
+    state->text_track->addWebVTTCue(start, end,
+                                    text_cue->id(),
+                                    text_cue->text(),
+                                    text_cue->settings());
+  }
 
   if (state_ == kPlaying) {
     Read(state, text_stream);

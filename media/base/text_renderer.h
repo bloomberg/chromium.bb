@@ -14,6 +14,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/text_ranges.h"
 #include "media/base/text_track.h"
 
 namespace base {
@@ -82,6 +83,7 @@ class MEDIA_EXPORT TextRenderer {
 
     ReadState read_state;
     scoped_ptr<TextTrack> text_track;
+    TextRanges text_ranges_;
   };
 
   // Callback delivered by the demuxer |text_stream| when
