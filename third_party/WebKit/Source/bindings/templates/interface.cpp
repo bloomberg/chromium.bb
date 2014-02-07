@@ -1159,8 +1159,6 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
 {##############################################################################}
 {% block create_wrapper %}
 {% if not has_custom_to_v8 %}
-{% set pass_ref_ptr = 'PassRefPtrWillBeRawPtr' if is_garbage_collected else
-                      'PassRefPtr' %}
 v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

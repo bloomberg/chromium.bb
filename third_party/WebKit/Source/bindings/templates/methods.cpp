@@ -344,7 +344,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% if is_constructor_call_with_document %}
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     {% endif %}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
+    {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())

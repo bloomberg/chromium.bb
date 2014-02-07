@@ -40,8 +40,6 @@
 #include "{{filename}}"
 {% endfor %}
 
-{% set pass_ref_ptr = 'PassRefPtrWillBeRawPtr' if is_garbage_collected else
-                      'PassRefPtr' %}
 namespace WebCore {
 
 {% if has_event_constructor %}

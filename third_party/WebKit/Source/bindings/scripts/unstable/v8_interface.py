@@ -88,16 +88,19 @@ def generate_interface(interface):
     if is_check_security:
         includes.add('bindings/v8/BindingSecurity.h')
 
-    # [SetWrapperReferenceFrom]
-    reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
-    if reachable_node_function:
-        includes.update(['bindings/v8/V8GCController.h',
-                         'core/dom/Element.h'])
+    # [GarbageCollected]
+    is_garbage_collected = 'GarbageCollected' in extended_attributes
 
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
         includes.add('core/frame/UseCounter.h')
+
+    # [SetWrapperReferenceFrom]
+    reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
+    if reachable_node_function:
+        includes.update(['bindings/v8/V8GCController.h',
+                         'core/dom/Element.h'])
 
     # [SetWrapperReferenceTo]
     set_wrapper_reference_to_list = [{
@@ -135,11 +138,14 @@ def generate_interface(interface):
         'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
-        'is_garbage_collected': 'GarbageCollected' in extended_attributes,  # [GarbageCollected]
+        'is_garbage_collected': is_garbage_collected,
         'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
+        'pass_ref_ptr': 'PassRefPtrWillBeRawPtr' if is_garbage_collected else
+                        'PassRefPtr',
         'reachable_node_function': reachable_node_function,
+        'ref_ptr': 'RefPtrWillBeRawPtr' if is_garbage_collected else 'RefPtr',
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
