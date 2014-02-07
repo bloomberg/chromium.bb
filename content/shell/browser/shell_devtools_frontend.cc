@@ -44,6 +44,17 @@ GURL GetDevToolsPathAsURL() {
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents) {
+  return ShowForElementAt(inspected_contents, -1, -1);
+}
+
+// static
+ShellDevToolsFrontend* ShellDevToolsFrontend::ShowForElementAt(
+    WebContents* inspected_contents, int x, int y) {
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetOrCreateFor(
+          inspected_contents->GetRenderViewHost()));
+  if (x > -1 && y > -1)
+    agent->InspectElement(x, y);
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,
@@ -51,8 +62,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
                                         gfx::Size());
   ShellDevToolsFrontend* devtools_frontend = new ShellDevToolsFrontend(
       shell,
-      DevToolsAgentHost::GetOrCreateFor(inspected_contents->GetRenderViewHost())
-          .get());
+      agent.get());
 
   ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
       shell_browser_main_parts()->devtools_delegate();

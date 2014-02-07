@@ -257,6 +257,11 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; the subviews are bound.
 }
 
+bool Shell::PlatformHandleContextMenu(
+    const content::ContextMenuParams& params) {
+  return false;
+}
+
 void Shell::Close() {
   if (headless_) {
     delete this;

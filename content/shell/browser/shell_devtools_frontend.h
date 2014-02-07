@@ -26,6 +26,8 @@ class ShellDevToolsFrontend : public WebContentsObserver,
                               public DevToolsFrontendHostDelegate {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
+  static ShellDevToolsFrontend* ShowForElementAt(
+      WebContents* inspected_contents, int x, int y);
   void Activate();
   void Focus();
   void Close();

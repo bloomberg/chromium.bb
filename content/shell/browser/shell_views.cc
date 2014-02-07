@@ -9,7 +9,9 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -70,13 +72,15 @@ class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
 };
 
 // Model for the "Debug" menu
-class DevToolsMenuModel : public ui::SimpleMenuModel,
-                          public ui::SimpleMenuModel::Delegate {
+class ContextMenuModel : public ui::SimpleMenuModel,
+                         public ui::SimpleMenuModel::Delegate {
  public:
-  explicit DevToolsMenuModel(Shell* shell)
+  explicit ContextMenuModel(
+      Shell* shell, const content::ContextMenuParams& params)
     : ui::SimpleMenuModel(this),
-      shell_(shell) {
-    AddItem(COMMAND_OPEN_DEVTOOLS, base::ASCIIToUTF16("Developer Tools"));
+      shell_(shell),
+      params_(params) {
+    AddItem(COMMAND_OPEN_DEVTOOLS, base::ASCIIToUTF16("Inspect Element"));
   }
 
   // ui::SimpleMenuModel::Delegate:
@@ -92,7 +96,7 @@ class DevToolsMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
     switch (command_id) {
       case COMMAND_OPEN_DEVTOOLS:
-        shell_->ShowDevTools();
+        shell_->ShowDevToolsForElementAt(params_.x, params_.y);
         break;
     };
   }
@@ -103,36 +107,9 @@ class DevToolsMenuModel : public ui::SimpleMenuModel,
   };
 
   Shell* shell_;
+  content::ContextMenuParams params_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsMenuModel);
-};
-
-class DebugMenuButton : public views::MenuButton,
-                        public views::MenuButtonListener {
- public:
-  explicit DebugMenuButton(Shell* shell)
-    : MenuButton(NULL, base::ASCIIToUTF16("Debug"), this, true),
-      menu_model_(shell) {
-  }
-
- private:
-  // MenuButtonListener:
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& point) OVERRIDE {
-      menu_runner_.reset(new views::MenuRunner(&menu_model_));
-
-      if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                  this, gfx::Rect(point, gfx::Size()),
-                  views::MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
-                  views::MenuRunner::HAS_MNEMONICS) ==
-              views::MenuRunner::MENU_DELETED)
-          return;
-  }
-
-  DevToolsMenuModel menu_model_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebugMenuButton);
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuModel);
 };
 
 // Maintain the UI controls and web view for content shell
@@ -190,6 +167,33 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       stop_button_->SetState(is_enabled ? views::CustomButton::STATE_NORMAL
           : views::CustomButton::STATE_DISABLED);
     }
+  }
+
+  void ShowWebViewContextMenu(const content::ContextMenuParams& params) {
+    gfx::Point screen_point(params.x, params.y);
+
+    // Convert from content coordinates to window coordinates.
+    // This code copied from chrome_web_contents_view_delegate_views.cc
+    aura::Window* web_contents_window =
+        shell_->web_contents()->GetView()->GetNativeView();
+    aura::Window* root_window = web_contents_window->GetRootWindow();
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root_window);
+    if (screen_position_client) {
+        screen_position_client->ConvertPointToScreen(web_contents_window,
+                &screen_point);
+    }
+
+    context_menu_model_.reset(new ContextMenuModel(shell_, params));
+    context_menu_runner_.reset(
+        new views::MenuRunner(context_menu_model_.get()));
+
+    if (context_menu_runner_->RunMenuAt(web_view_->GetWidget(),
+                NULL, gfx::Rect(screen_point, gfx::Size()),
+                views::MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
+                views::MenuRunner::CONTEXT_MENU) ==
+            views::MenuRunner::MENU_DELETED)
+        return;
   }
 
  private:
@@ -262,14 +266,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     views::GridLayout::FILL, 1,
                                     views::GridLayout::USE_PREF, 0, 0);
       toolbar_column_set->AddPaddingColumn(0, 2);
-      // Debug button
-      debug_button_ = new DebugMenuButton(shell_);
-      gfx::Size debug_button_size = debug_button_->GetPreferredSize();
-      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
-                                    views::GridLayout::CENTER, 0,
-                                    views::GridLayout::FIXED,
-                                    debug_button_size.width(),
-                                    debug_button_size.width() / 2);
 
       // Fill up the first row
       toolbar_layout->StartRow(0, 0);
@@ -278,7 +274,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       toolbar_layout->AddView(refresh_button_);
       toolbar_layout->AddView(stop_button_);
       toolbar_layout->AddView(url_entry_);
-      toolbar_layout->AddView(debug_button_);
 
       layout->AddView(toolbar_view_);
     }
@@ -396,7 +391,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   views::LabelButton* refresh_button_;
   views::LabelButton* stop_button_;
   views::Textfield* url_entry_;
-  DebugMenuButton* debug_button_;
+  scoped_ptr<ContextMenuModel> context_menu_model_;
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   // Contents view contains the web contents view
   View* contents_view_;
@@ -546,6 +542,16 @@ void Shell::PlatformSetTitle(const base::string16& title) {
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWindowTitle(title);
   window_widget_->UpdateWindowTitle();
+}
+
+bool Shell::PlatformHandleContextMenu(
+    const content::ContextMenuParams& params) {
+  if (headless_)
+    return true;
+  ShellWindowDelegateView* delegate_view =
+    static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
+  delegate_view->ShowWebViewContextMenu(params);
+  return true;
 }
 
 }  // namespace content

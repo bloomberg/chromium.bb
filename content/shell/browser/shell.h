@@ -68,6 +68,7 @@ class Shell : public WebContentsDelegate,
   void UpdateNavigationControls();
   void Close();
   void ShowDevTools();
+  void ShowDevToolsForElementAt(int x, int y);
   void CloseDevTools();
 #if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   // Resizes the main window to the given dimensions.
@@ -148,6 +149,8 @@ class Shell : public WebContentsDelegate,
   virtual void ActivateContents(WebContents* contents) OVERRIDE;
   virtual void DeactivateContents(WebContents* contents) OVERRIDE;
   virtual void WorkerCrashed(WebContents* source) OVERRIDE;
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params)
+      OVERRIDE;
 
  private:
   enum UIControl {
@@ -191,6 +194,8 @@ class Shell : public WebContentsDelegate,
   void PlatformSetIsLoading(bool loading);
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
+  // User right-clicked on the web view
+  bool PlatformHandleContextMenu(const content::ContextMenuParams& params);
 #if defined(OS_ANDROID)
   void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
                                           bool enter_fullscreen);

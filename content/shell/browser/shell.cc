@@ -212,11 +212,16 @@ void Shell::UpdateNavigationControls() {
 }
 
 void Shell::ShowDevTools() {
+  ShowDevToolsForElementAt(-1, -1);
+}
+
+void Shell::ShowDevToolsForElementAt(int x, int y) {
   if (devtools_frontend_) {
     devtools_frontend_->Focus();
     return;
   }
-  devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
+  devtools_frontend_ = ShellDevToolsFrontend::ShowForElementAt(
+      web_contents(), x, y);
   devtools_observer_.reset(new DevToolsWebContentsObserver(
       this, devtools_frontend_->frontend_shell()->web_contents()));
 }
@@ -340,6 +345,10 @@ void Shell::WorkerCrashed(WebContents* source) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->WorkerCrashed();
+}
+
+bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
+  return PlatformHandleContextMenu(params);
 }
 
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {

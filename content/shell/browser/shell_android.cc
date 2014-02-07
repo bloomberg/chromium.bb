@@ -86,6 +86,11 @@ bool Shell::PlatformIsFullscreenForTabOrPending(
   return Java_Shell_isFullscreenForTabOrPending(env, java_object_.obj());
 }
 
+bool Shell::PlatformHandleContextMenu(
+    const content::ContextMenuParams& params) {
+  return false;
+}
+
 void Shell::Close() {
   RemoveShellView(java_object_.obj());
   delete this;
