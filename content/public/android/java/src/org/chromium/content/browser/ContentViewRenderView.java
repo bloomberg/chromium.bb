@@ -67,7 +67,8 @@ public class ContentViewRenderView extends FrameLayout {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
                 assert mNativeContentViewRenderView != 0;
-                nativeSurfaceSetSize(mNativeContentViewRenderView, width, height);
+                nativeSurfaceChanged(mNativeContentViewRenderView,
+                        format, width, height, holder.getSurface());
                 if (mCurrentContentView != null) {
                     mCurrentContentView.getContentViewCore().onPhysicalBackingSizeChanged(
                             width, height);
@@ -77,7 +78,7 @@ public class ContentViewRenderView extends FrameLayout {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 assert mNativeContentViewRenderView != 0;
-                nativeSurfaceCreated(mNativeContentViewRenderView, holder.getSurface());
+                nativeSurfaceCreated(mNativeContentViewRenderView);
 
                 mPendingSwapBuffers = 0;
                 mPendingRenders = 0;
@@ -319,10 +320,10 @@ public class ContentViewRenderView extends FrameLayout {
     private native void nativeDestroy(long nativeContentViewRenderView);
     private native void nativeSetCurrentContentView(long nativeContentViewRenderView,
             long nativeContentView);
-    private native void nativeSurfaceCreated(long nativeContentViewRenderView, Surface surface);
+    private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
-    private native void nativeSurfaceSetSize(long nativeContentViewRenderView,
-            int width, int height);
+    private native void nativeSurfaceChanged(long nativeContentViewRenderView,
+            int format, int width, int height, Surface surface);
     private native boolean nativeComposite(long nativeContentViewRenderView);
     private native boolean nativeCompositeToBitmap(long nativeContentViewRenderView, Bitmap bitmap);
     private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,

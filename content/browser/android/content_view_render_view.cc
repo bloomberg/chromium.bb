@@ -35,7 +35,8 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)
     : buffers_swapped_during_composite_(false),
-      root_window_(root_window) {
+      root_window_(root_window),
+      current_surface_format_(0) {
   java_obj_.Reset(env, obj);
 }
 
@@ -67,17 +68,20 @@ void ContentViewRenderView::SetCurrentContentView(
 }
 
 void ContentViewRenderView::SurfaceCreated(
-    JNIEnv* env, jobject obj, jobject jsurface) {
+    JNIEnv* env, jobject obj) {
   InitCompositor();
-  compositor_->SetSurface(jsurface);
 }
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env, jobject obj) {
   compositor_->SetSurface(NULL);
 }
 
-void ContentViewRenderView::SurfaceSetSize(
-    JNIEnv* env, jobject obj, jint width, jint height) {
+void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
+    jint format, jint width, jint height, jobject surface) {
+  if (current_surface_format_ != format) {
+    current_surface_format_ = format;
+    compositor_->SetSurface(surface);
+  }
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 

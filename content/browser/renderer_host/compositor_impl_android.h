@@ -102,6 +102,7 @@ class CONTENT_EXPORT CompositorImpl
 
   gfx::Size size_;
   bool has_transparent_background_;
+  float device_scale_factor_;
 
   ANativeWindow* window_;
   int surface_id_;

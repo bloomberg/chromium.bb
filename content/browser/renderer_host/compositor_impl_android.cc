@@ -175,6 +175,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
       has_transparent_background_(false),
+      device_scale_factor_(1),
       window_(NULL),
       surface_id_(0),
       client_(client),
@@ -273,6 +274,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->SetLayerTreeHostClientReady();
     host_->SetViewportSize(size_);
     host_->set_has_transparent_background(has_transparent_background_);
+    host_->SetDeviceScaleFactor(device_scale_factor_);
     // Need to recreate the UI resources because a new LayerTreeHost has been
     // created.
     client_->DidLoseUIResources();
@@ -280,6 +282,7 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::setDeviceScaleFactor(float factor) {
+  device_scale_factor_ = factor;
   if (host_)
     host_->SetDeviceScaleFactor(factor);
 }

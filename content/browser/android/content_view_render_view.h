@@ -27,9 +27,10 @@ class ContentViewRenderView : public CompositorClient {
   // Methods called from Java via JNI -----------------------------------------
   void Destroy(JNIEnv* env, jobject obj);
   void SetCurrentContentView(JNIEnv* env, jobject obj, int native_content_view);
-  void SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface);
+  void SurfaceCreated(JNIEnv* env, jobject obj);
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
-  void SurfaceSetSize(JNIEnv* env, jobject obj, jint width, jint height);
+  void SurfaceChanged(JNIEnv* env, jobject obj,
+                      jint format, jint width, jint height, jobject surface);
   jboolean Composite(JNIEnv* env, jobject obj);
   jboolean CompositeToBitmap(JNIEnv* env, jobject obj, jobject java_bitmap);
   void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
@@ -51,6 +52,7 @@ class ContentViewRenderView : public CompositorClient {
   scoped_ptr<content::Compositor> compositor_;
 
   gfx::NativeWindow root_window_;
+  int current_surface_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };
