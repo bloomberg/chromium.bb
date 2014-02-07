@@ -27,9 +27,9 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
@@ -39,13 +39,12 @@ using blink::WebCString;
 using blink::WebData;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebElementCollection;
 using blink::WebFrame;
 using blink::WebNode;
-using blink::WebNodeCollection;
 using blink::WebNodeList;
 using blink::WebPageSerializer;
 using blink::WebPageSerializerClient;
-using blink::WebNode;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebView;
@@ -73,13 +72,10 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
     stack.pop_back();
     if (GURL(current_frame->document().url()) == url)
       return current_frame;
-    WebNodeCollection all = current_frame->document().all();
-    for (WebNode node = all.firstItem();
-         !node.isNull(); node = all.nextItem()) {
-      if (!node.isElementNode())
-        continue;
+    WebElementCollection all = current_frame->document().all();
+    for (WebElement element = all.firstItem();
+         !element.isNull(); element = all.nextItem()) {
       // Check frame tag and iframe tag
-      WebElement element = node.to<WebElement>();
       if (!element.hasTagName("frame") && !element.hasTagName("iframe"))
         continue;
       WebFrame* sub_frame = WebFrame::fromFrameOwnerElement(element);
@@ -614,13 +610,10 @@ class DomSerializerTests : public ContentBrowserTest,
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
     // Go through all descent nodes.
-    WebNodeCollection all = doc.all();
+    WebElementCollection all = doc.all();
     int original_base_tag_count = 0;
-    for (WebNode node = all.firstItem(); !node.isNull();
-         node = all.nextItem()) {
-      if (!node.isElementNode())
-        continue;
-      WebElement element = node.to<WebElement>();
+    for (WebElement element = all.firstItem(); !element.isNull();
+         element = all.nextItem()) {
       if (element.hasTagName("base")) {
         original_base_tag_count++;
       } else {

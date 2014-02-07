@@ -13,19 +13,19 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebElementCollection;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebNode;
-using blink::WebNodeCollection;
 using blink::WebNodeList;
 using blink::WebString;
 using blink::WebVector;
@@ -130,14 +130,10 @@ void GetAllSavableResourceLinksForFrame(WebFrame* current_frame,
   // Get current using document.
   WebDocument current_doc = current_frame->document();
   // Go through all descent nodes.
-  WebNodeCollection all = current_doc.all();
-  // Go through all node in this frame.
-  for (WebNode node = all.firstItem(); !node.isNull();
-       node = all.nextItem()) {
-    // We only save HTML resources.
-    if (!node.isElementNode())
-      continue;
-    WebElement element = node.to<WebElement>();
+  WebElementCollection all = current_doc.all();
+  // Go through all elements in this frame.
+  for (WebElement element = all.firstItem(); !element.isNull();
+       element = all.nextItem()) {
     GetSavableResourceLinkForElement(element,
                                      current_doc,
                                      unique_check,
