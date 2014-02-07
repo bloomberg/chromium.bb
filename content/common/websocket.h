@@ -18,7 +18,8 @@ namespace content {
 enum WebSocketMessageType {
   WEB_SOCKET_MESSAGE_TYPE_CONTINUATION = 0x0,
   WEB_SOCKET_MESSAGE_TYPE_TEXT = 0x1,
-  WEB_SOCKET_MESSAGE_TYPE_BINARY = 0x2
+  WEB_SOCKET_MESSAGE_TYPE_BINARY = 0x2,
+  WEB_SOCKET_MESSAGE_TYPE_LAST = WEB_SOCKET_MESSAGE_TYPE_BINARY
 };
 
 // Opening handshake request information which will be shown in the inspector.

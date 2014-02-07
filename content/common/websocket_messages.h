@@ -26,6 +26,9 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START WebSocketMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::WebSocketMessageType,
+                          content::WEB_SOCKET_MESSAGE_TYPE_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeRequest)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(headers)
@@ -100,8 +103,6 @@ IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyFailure,
                     std::string /* message */)
 
 // WebSocket messages that can be sent in either direction.
-
-IPC_ENUM_TRAITS(content::WebSocketMessageType)
 
 // Send a non-control frame on |channel_id|. If the sender is the renderer, it
 // will be sent to the remote server. If the sender is the browser, it comes
