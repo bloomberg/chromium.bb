@@ -194,6 +194,7 @@
         'cocoa/tray_view_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'message_center_impl_unittest.cc',
+        'notification_delegate_unittest.cc',
         'notification_list_unittest.cc',
         'test/run_all_unittests.cc',
       ],
