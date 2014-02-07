@@ -10,7 +10,6 @@
 :: returned.
 
 set WIN_TOOLS_ROOT_URL=https://src.chromium.org/svn/trunk/tools
-set GIT_BIN_DIR=git-1.8.0_bin
 :: It used to be %~dp0 but ADODB.Stream may fail to write to this directory if
 :: the directory DACL is set to elevated integrity level.
 set ZIP_DIR=%TEMP%
@@ -27,6 +26,27 @@ if "%1" == "force" (
 
 
 :GIT_CHECK
+if "%DEPOT_TOOLS_GIT_1852%" == "1" goto :GIT_1852_CHECK
+goto :GIT_180_CHECK
+
+
+:GIT_1852_CHECK
+set GIT_VERSION=1.8.5.2.chromium.1
+set GIT_BIN_DIR=git-%GIT_VERSION%_bin
+set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
+set GIT_ZIP_URL=http://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
+goto :GIT_COMMON
+
+
+:GIT_180_CHECK
+set GIT_VERSION=1.8.0
+set GIT_BIN_DIR=git-%GIT_VERSION%_bin
+set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
+set GIT_ZIP_URL=%WIN_TOOLS_ROOT_URL%/third_party/%GIT_ZIP_FILE%
+goto :GIT_COMMON
+
+
+:GIT_COMMON
 :: If the batch file exists, skip the git check.
 if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :MSYS_PATH_CHECK
 if "%CHROME_HEADLESS%" == "1" goto :SVN_CHECK
@@ -43,11 +63,11 @@ rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
 
 
 :GIT_INSTALL
-echo Installing git (avg 1-2 min download) ...
+echo Installing git %GIT_VERSION% (avg 1-2 min download) ...
 :: git is not accessible; check it out and create 'proxy' files.
 if exist "%ZIP_DIR%\git.zip" del "%ZIP_DIR%\git.zip"
-echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/git-1.8.0_bin.zip
-cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/git-1.8.0_bin.zip "%ZIP_DIR%\git.zip"
+echo Fetching from %GIT_ZIP_URL%
+cscript //nologo //e:jscript "%~dp0get_file.js" %GIT_ZIP_URL% "%ZIP_DIR%\git.zip"
 if errorlevel 1 goto :GIT_FAIL
 :: Cleanup svn directory if it was existing.
 if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
@@ -71,7 +91,7 @@ goto :SVN_CHECK
 echo ... Failed to checkout git automatically.
 echo Please visit http://code.google.com/p/msysgit to download the latest git
 echo client before continuing.
-echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/
+echo You can also get the "prebaked" version used at %GIT_ZIP_URL%
 set ERRORLEVEL=1
 goto :END
 
