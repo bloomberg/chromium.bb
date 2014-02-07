@@ -5,8 +5,18 @@ include_rules = [
   "+sandbox/linux/seccomp-bpf",
   "+sandbox/linux/services",
   "+sandbox/win/src",
-  "+native_client/src",
   "+ppapi/c",  # header files only
+
+  "+native_client/src/include",
+  "+native_client/src/public",
+  "+native_client/src/shared/platform/nacl_host_desc.h",
+  "+native_client/src/shared/srpc/nacl_srpc.h",
+  "+native_client/src/trusted/desc",
+  "+native_client/src/trusted/service_runtime/include",
+  "+native_client/src/trusted/service_runtime/nacl_error_code.h",
+  "+native_client/src/trusted/validator/nacl_file_info.h",
+  "+native_client/src/trusted/validator/validation_cache.h",
+  "+native_client/src/untrusted/irt/irt.h",
 
   # For message scanning and handle conversion in nacl_ipc_adapter.cc:
   "+ppapi/proxy/nacl_message_scanner.h",
