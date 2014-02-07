@@ -138,8 +138,6 @@ const char kSpeechSynthesisExtensionPath[] =
     "/usr/share/chromeos-assets/speech_synthesis/patts";
 const char kSpeechSynthesisExtensionId[] =
     "gjjabgpgjpampikjhjpfhneeoapjbjaf";
-const char kHighQuality_en_US_ExtensionId[] =
-    "efdojdlmjknacnljjdedapanceanigkh";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 const char kFirstRunDialogId[] = "jdgcneonijmofocbhmijhacgchbihela";
 #else

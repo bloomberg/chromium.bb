@@ -6,6 +6,10 @@
 
 #include <string>
 
+bool TtsPlatformImpl::LoadBuiltInTtsExtension(Profile* profile) {
+  return false;
+}
+
 std::string TtsPlatformImpl::error() {
   return error_;
 }

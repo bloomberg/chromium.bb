@@ -933,7 +933,6 @@
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_warning_badge_service_unittest.cc',
         'browser/extensions/extension_warning_service_unittest.cc',
-        'browser/extensions/external_component_loader_unittest.cc',
         'browser/extensions/external_policy_loader_unittest.cc',
         'browser/extensions/external_provider_impl_unittest.cc',
         'browser/extensions/external_provider_impl_chromeos_unittest.cc',

@@ -2101,6 +2101,8 @@
         'browser/speech/tts_chromeos.cc',
         'browser/speech/tts_controller.cc',
         'browser/speech/tts_controller.h',
+        'browser/speech/tts_extension_loader_chromeos.cc',
+        'browser/speech/tts_extension_loader_chromeos.h',
         'browser/speech/tts_linux.cc',
         'browser/speech/tts_mac.mm',
         'browser/speech/tts_platform.cc',

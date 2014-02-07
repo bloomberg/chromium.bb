@@ -276,7 +276,6 @@ extern const char kMultiProfileNeverShowIntro[];
 extern const char kMultiProfileWarningShowDismissed[];
 extern const char kMultiProfileNotificationDismissed[];
 extern const char kMultiProfileUserBehavior[];
-extern const char kHighQualitySpeechSynthesisLanguages[];
 extern const char kFirstRunTutorialShown[];
 extern const char kSAMLOfflineSigninTimeLimit[];
 extern const char kSAMLLastGAIASignInTime[];

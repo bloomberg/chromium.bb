@@ -33,10 +33,6 @@
 class PrefService;
 class ProfileSyncService;
 
-namespace extensions {
-class ExternalComponentLoaderTest;
-}
-
 namespace policy {
 struct DeviceLocalAccount;
 }
@@ -172,7 +168,6 @@ class UserManagerImpl
   void StopPolicyObserverForTesting();
 
  private:
-  friend class extensions::ExternalComponentLoaderTest;
   friend class SupervisedUserManagerImpl;
   friend class UserManager;
   friend class WallpaperManager;
