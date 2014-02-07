@@ -1053,6 +1053,7 @@ bool RenderBox::hasOverrideWidth() const
 
 void RenderBox::setOverrideLogicalContentHeight(LayoutUnit height)
 {
+    ASSERT(height >= 0);
     if (!gOverrideHeightMap)
         gOverrideHeightMap = new OverrideSizeMap();
     gOverrideHeightMap->set(this, height);
@@ -1060,6 +1061,7 @@ void RenderBox::setOverrideLogicalContentHeight(LayoutUnit height)
 
 void RenderBox::setOverrideLogicalContentWidth(LayoutUnit width)
 {
+    ASSERT(width >= 0);
     if (!gOverrideWidthMap)
         gOverrideWidthMap = new OverrideSizeMap();
     gOverrideWidthMap->set(this, width);

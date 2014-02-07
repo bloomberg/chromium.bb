@@ -4906,7 +4906,7 @@ void RenderBlock::fitBorderToLinesIfNeeded()
     LayoutUnit leftEdge = borderLeft() + paddingLeft();
     LayoutUnit rightEdge = leftEdge + oldWidth;
     left = min(rightEdge, max(leftEdge, left));
-    right = max(leftEdge, min(rightEdge, right));
+    right = max(left, min(rightEdge, right));
 
     LayoutUnit newContentWidth = right - left;
     if (newContentWidth == oldWidth)
