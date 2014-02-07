@@ -151,6 +151,11 @@
             "type": "array",
             "items": {"type": "string"},
             "minItems": 1
+          },
+          {
+            "name": "isFromTouch",
+            "type": "boolean",
+            "description": "True if the drag was initiated from touch"
           }
         ]
       },

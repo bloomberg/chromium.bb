@@ -33,6 +33,12 @@ cr.define('dnd', function() {
   var removeDropIndicatorTimer;
 
   /**
+    * The element currently targeted by a touch.
+    * @type {Element}
+    */
+  var currentTouchTarget;
+
+  /**
     * The element that had a style applied it to indicate the drop location.
     * This is used to easily remove the style when necessary.
     * @type {Element}
@@ -313,6 +319,8 @@ cr.define('dnd', function() {
     // Determine the selected bookmarks.
     var target = e.target;
     var draggedNodes = [];
+    var isFromTouch = target == currentTouchTarget;
+
     if (target instanceof ListItem) {
       // Use selected items.
       draggedNodes = target.parentNode.selectedItems;
@@ -336,7 +344,7 @@ cr.define('dnd', function() {
 
       chrome.bookmarkManagerPrivate.startDrag(draggedNodes.map(function(node) {
         return node.id;
-      }));
+      }), isFromTouch);
     }
   }
 
@@ -482,6 +490,17 @@ cr.define('dnd', function() {
     dropIndicator.finish();
   }
 
+  function setCurrentTouchTarget(e) {
+    // Only set a new target for a single touch point.
+    if (e.touches.length == 1)
+      currentTouchTarget = getBookmarkElement(e.target);
+  }
+
+  function clearCurrentTouchTarget(e) {
+    if (getBookmarkElement(e.target) == currentTouchTarget)
+      currentTouchTarget = null;
+  }
+
   function clearDragData() {
     dragInfo.clearDragData();
     dropDestination = null;
@@ -501,6 +520,10 @@ cr.define('dnd', function() {
     document.addEventListener('drop', handleDrop);
     document.addEventListener('dragend', deferredClearData);
     document.addEventListener('mouseup', deferredClearData);
+    document.addEventListener('mousedown', clearCurrentTouchTarget);
+    document.addEventListener('touchcancel', clearCurrentTouchTarget);
+    document.addEventListener('touchend', clearCurrentTouchTarget);
+    document.addEventListener('touchstart', setCurrentTouchTarget);
 
     chrome.bookmarkManagerPrivate.onDragEnter.addListener(
         dragInfo.handleChromeDragEnter);

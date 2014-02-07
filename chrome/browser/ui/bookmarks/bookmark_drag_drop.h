@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BookmarkNode;
@@ -15,10 +16,11 @@ class Profile;
 
 namespace chrome {
 
-// Stars the process of dragging a folder of bookmarks.
+// Starts the process of dragging a folder of bookmarks.
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view);
+                   gfx::NativeView view,
+                   ui::DragDropTypes::DragEventSource source);
 
 // Drops the bookmark nodes that are in |data| onto |parent_node| at |index|.
 // Returns the drop type used.

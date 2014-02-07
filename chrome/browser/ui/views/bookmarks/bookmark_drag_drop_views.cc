@@ -21,7 +21,8 @@ namespace chrome {
 
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view) {
+                   gfx::NativeView view,
+                   ui::DragDropTypes::DragEventSource source) {
   DCHECK(!nodes.empty());
 
   // Set up our OLE machinery
@@ -37,15 +38,13 @@ void DragBookmarks(Profile* profile,
                   ui::DragDropTypes::DRAG_MOVE |
                   ui::DragDropTypes::DRAG_LINK;
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
-  // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
+
   if (widget) {
-    widget->RunShellDrag(NULL, data, gfx::Point(), operation,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+    widget->RunShellDrag(NULL, data, gfx::Point(), operation, source);
   } else {
     // We hit this case when we're using WebContentsViewWin or
     // WebContentsViewAura, instead of WebContentsViewViews.
-    views::RunShellDrag(view, data, gfx::Point(), operation,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+    views::RunShellDrag(view, data, gfx::Point(), operation, source);
   }
 
   base::MessageLoop::current()->SetNestableTasksAllowed(was_nested);

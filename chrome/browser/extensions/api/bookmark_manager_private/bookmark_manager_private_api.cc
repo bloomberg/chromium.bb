@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -430,8 +431,14 @@ bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);
+
+    ui::DragDropTypes::DragEventSource source =
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+    if (params->is_from_touch)
+      source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+
     chrome::DragBookmarks(
-        GetProfile(), nodes, web_contents->GetView()->GetNativeView());
+        GetProfile(), nodes, web_contents->GetView()->GetNativeView(), source);
 
     return true;
   } else {

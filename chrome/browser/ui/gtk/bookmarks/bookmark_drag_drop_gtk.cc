@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/custom_drag.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace {
 
@@ -49,7 +50,8 @@ namespace chrome {
 
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view) {
+                   gfx::NativeView view,
+                   ui::DragDropTypes::DragEventSource source) {
   DCHECK(!nodes.empty());
 
   // This starts the drag process, the lifetime of this object is tied to the

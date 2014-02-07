@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #include "grit/ui_resources.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -129,7 +130,8 @@ NSImage* DragImageForBookmark(NSImage* favicon, const base::string16& title) {
 
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view) {
+                   gfx::NativeView view,
+                   ui::DragDropTypes::DragEventSource source) {
   DCHECK(!nodes.empty());
 
   // Allow nested message loop so we get DnD events as we drag this around.
