@@ -115,6 +115,11 @@ bool CompareMemoryToString(
   return true;
 }
 
+ACTION_P(ReturnSyncBackendHost, callback) {
+  return new browser_sync::SyncBackendHostForProfileSyncTest(
+      arg1, arg2, callback);
+}
+
 }  // namespace
 
 class ProfileSyncServiceSessionTest
@@ -200,7 +205,8 @@ class ProfileSyncServiceSessionTest
         signin,
         oauth2_token_service,
         ProfileSyncService::AUTO_START));
-    sync_service_->set_backend_init_callback(callback);
+    EXPECT_CALL(*factory, CreateSyncBackendHost(_,_,_)).
+        WillOnce(ReturnSyncBackendHost(callback));
 
     // Register the session data type.
     SessionDataTypeController *dtc = new SessionDataTypeController(factory,

@@ -205,7 +205,15 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
               ProfileSyncServiceFactory::GetInstance()->
                   SetTestingFactoryAndUse(profile_.get(),
                       &PasswordTestProfileSyncService::Build));
-      sync->set_backend_init_callback(root_callback);
+    ProfileSyncComponentsFactoryMock* components =
+        sync->components_factory_mock();
+     EXPECT_CALL(*components,
+                CreateSyncBackendHost(_,_,_)).
+        WillOnce(Return(
+            new browser_sync::SyncBackendHostForProfileSyncTest(
+                profile_.get(),
+                sync->sync_prefs_.AsWeakPtr(),
+                root_callback)));
       sync->set_passphrase_accept_callback(node_callback);
       sync_service_ = sync;
 
@@ -217,8 +225,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           new PasswordDataTypeController(sync_service_->factory(),
                                          profile_.get(),
                                          sync_service_);
-      ProfileSyncComponentsFactoryMock* components =
-          sync_service_->components_factory_mock();
       if (password_store_.get()) {
         EXPECT_CALL(*components, CreatePasswordSyncComponents(_, _, _))
             .Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.

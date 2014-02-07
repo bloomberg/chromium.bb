@@ -216,11 +216,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       SigninManagerBase* signin =
           SigninManagerFactory::GetForProfile(profile_.get());
       signin->SetAuthenticatedUsername("test");
-      sync_service_ = static_cast<TestProfileSyncService*>(
-          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile_.get(),
-              &TestProfileSyncService::BuildAutoStartAsyncInit));
-      sync_service_->set_backend_init_callback(callback);
+      sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(
+          profile_.get(), callback);
       ProfileSyncComponentsFactoryMock* components =
           sync_service_->components_factory_mock();
       TypedUrlDataTypeController* data_type_controller =

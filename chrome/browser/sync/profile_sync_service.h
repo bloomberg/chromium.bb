@@ -724,14 +724,6 @@ class ProfileSyncService
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
-  // Test need to override this to create backends that allow setting up
-  // initial conditions, such as populating sync nodes.
-  //
-  // TODO(akalin): Figure out a better way to do this.  Ideally, we'd
-  // construct the backend outside this class and pass it in to the
-  // contructor or Initialize().
-  virtual void CreateBackend();
-
   const browser_sync::DataTypeController::TypeMap& data_type_controllers() {
     return data_type_controllers_;
   }

@@ -39,7 +39,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
-      base::Closure& callback);
+      base::Closure callback);
   virtual ~SyncBackendHostForProfileSyncTest();
 
   virtual void RequestConfigureSyncer(
@@ -61,7 +61,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
   // Allows extra initialization work to be performed before the backend comes
   // up.
-  base::Closure& callback_;
+  base::Closure callback_;
 };
 
 }  // namespace browser_sync
@@ -85,21 +85,16 @@ class TestProfileSyncService : public ProfileSyncService {
   // We implement our own version to avoid some DCHECKs.
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
 
-  static BrowserContextKeyedService* BuildAutoStartAsyncInit(
-      content::BrowserContext* profile);
+  static TestProfileSyncService* BuildAutoStartAsyncInit(
+      Profile* profile, base::Closure callback);
 
   ProfileSyncComponentsFactoryMock* components_factory_mock();
-
-  // |callback| can be used to populate nodes before the OnBackendInitialized
-  // callback fires.
-  void set_backend_init_callback(const base::Closure& callback) {
-    callback_ = callback;
-  }
 
   syncer::TestIdFactory* id_factory();
 
  protected:
-  virtual void CreateBackend() OVERRIDE;
+  static BrowserContextKeyedService* TestFactoryFunction(
+      content::BrowserContext* profile);
 
   // Return NULL handle to use in backend initialization to avoid receiving
   // js messages on UI loop when it's being destroyed, which are not deleted
@@ -109,8 +104,6 @@ class TestProfileSyncService : public ProfileSyncService {
 
  private:
   syncer::TestIdFactory id_factory_;
-
-  base::Closure callback_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

@@ -161,10 +161,8 @@ class ProfileSyncServicePreferenceTest
     SigninManagerBase* signin =
          SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
-    sync_service_ = static_cast<TestProfileSyncService*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));
-    sync_service_->set_backend_init_callback(callback);
+    sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(
+        profile_.get(), callback);
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
         prefs_->GetSyncableService(syncer::PREFERENCES));
     if (!pref_sync_service_)

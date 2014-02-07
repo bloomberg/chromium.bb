@@ -556,14 +556,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       network_resources_.get());
 }
 
-void ProfileSyncService::CreateBackend() {
-  backend_.reset(
-      factory_->CreateSyncBackendHost(
-          profile_->GetDebugName(),
-          profile_,
-          sync_prefs_.AsWeakPtr()));
-}
-
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   if (encryption_pending())
     return true;
@@ -676,7 +668,11 @@ void ProfileSyncService::StartUpSlowBackendComponents() {
   }
 
   DCHECK(IsSyncEnabledAndLoggedIn());
-  CreateBackend();
+  backend_.reset(
+      factory_->CreateSyncBackendHost(
+          profile_->GetDebugName(),
+          profile_,
+          sync_prefs_.AsWeakPtr()));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
