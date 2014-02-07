@@ -46,8 +46,11 @@ namespace WebCore {
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
 class GraphicsContextState {
+    WTF_MAKE_NONCOPYABLE(GraphicsContextState);
 private:
     friend class GraphicsContext;
+
+    static PassOwnPtr<GraphicsContextState> create() { return adoptPtr(new GraphicsContextState()); }
 
     GraphicsContextState()
         : m_fillColor(Color::black)
@@ -62,30 +65,32 @@ private:
 #else
         , m_interpolationQuality(InterpolationHigh)
 #endif
+        , m_saveCount(0)
         , m_shouldAntialias(true)
         , m_shouldSmoothFonts(true)
         , m_shouldClampToSourceRect(true)
     {
     }
 
-    GraphicsContextState(const GraphicsContextState& other)
-        : m_strokeData(other.m_strokeData)
-        , m_fillColor(other.m_fillColor)
-        , m_fillRule(other.m_fillRule)
-        , m_fillGradient(other.m_fillGradient)
-        , m_fillPattern(other.m_fillPattern)
-        , m_looper(other.m_looper)
-        , m_textDrawingMode(other.m_textDrawingMode)
-        , m_alpha(other.m_alpha)
-        , m_xferMode(other.m_xferMode)
-        , m_colorFilter(other.m_colorFilter)
-        , m_compositeOperator(other.m_compositeOperator)
-        , m_blendMode(other.m_blendMode)
-        , m_interpolationQuality(other.m_interpolationQuality)
-        , m_shouldAntialias(other.m_shouldAntialias)
-        , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
-        , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect)
+    void copy(GraphicsContextState* source)
     {
+        m_strokeData = source->m_strokeData;
+        m_fillColor = source->m_fillColor;
+        m_fillRule = source->m_fillRule;
+        m_fillGradient = source->m_fillGradient;
+        m_fillPattern = source->m_fillPattern;
+        m_looper = source->m_looper;
+        m_textDrawingMode = source->m_textDrawingMode;
+        m_alpha = source->m_alpha;
+        m_xferMode = source->m_xferMode;
+        m_colorFilter = source->m_colorFilter;
+        m_compositeOperator = source->m_compositeOperator;
+        m_blendMode = source->m_blendMode;
+        m_interpolationQuality = source->m_interpolationQuality;
+        m_saveCount = 0;
+        m_shouldAntialias = source->m_shouldAntialias;
+        m_shouldSmoothFonts = source->m_shouldSmoothFonts;
+        m_shouldClampToSourceRect = source->m_shouldClampToSourceRect;
     }
 
     // Helper function for applying the state's alpha value to the given input
@@ -101,12 +106,6 @@ private:
         int a = SkAlphaMul(SkColorGetA(c), s);
         return (c & 0x00FFFFFF) | (a << 24);
     }
-
-    // Returns a new State with all of this object's inherited properties copied.
-    PassOwnPtr<GraphicsContextState> clone() { return adoptPtr(new GraphicsContextState(*this)); }
-
-    // Not supported. No implementations.
-    void operator=(const GraphicsContextState&);
 
     // Stroke.
     StrokeData m_strokeData;
@@ -134,6 +133,9 @@ private:
 
     // Image interpolation control.
     InterpolationQuality m_interpolationQuality;
+
+    // The number of GraphicsContext::save calls since this state was pushed.
+    uint16_t m_saveCount;
 
     bool m_shouldAntialias : 1;
     bool m_shouldSmoothFonts : 1;

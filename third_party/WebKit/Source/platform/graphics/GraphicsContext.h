@@ -80,7 +80,7 @@ public:
     SkCanvas* canvas()
     {
         // Flush any pending saves.
-        realizeSave(SkCanvas::kMatrixClip_SaveFlag);
+        realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
 
         return m_canvas;
     }
@@ -97,41 +97,41 @@ public:
     void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
     void restoreLayer();
 
-    float strokeThickness() const { return m_state->m_strokeData.thickness(); }
-    void setStrokeThickness(float thickness) { m_state->m_strokeData.setThickness(thickness); }
+    float strokeThickness() const { return m_paintState->m_strokeData.thickness(); }
+    void setStrokeThickness(float thickness) { mutableState()->m_strokeData.setThickness(thickness); }
 
-    StrokeStyle strokeStyle() const { return m_state->m_strokeData.style(); }
-    void setStrokeStyle(StrokeStyle style) { m_state->m_strokeData.setStyle(style); }
+    StrokeStyle strokeStyle() const { return m_paintState->m_strokeData.style(); }
+    void setStrokeStyle(StrokeStyle style) { mutableState()->m_strokeData.setStyle(style); }
 
-    Color strokeColor() const { return m_state->m_strokeData.color(); }
+    Color strokeColor() const { return m_paintState->m_strokeData.color(); }
     void setStrokeColor(const Color&);
 
-    Pattern* strokePattern() const { return m_state->m_strokeData.pattern(); }
+    Pattern* strokePattern() const { return m_paintState->m_strokeData.pattern(); }
     void setStrokePattern(PassRefPtr<Pattern>);
 
-    Gradient* strokeGradient() const { return m_state->m_strokeData.gradient(); }
+    Gradient* strokeGradient() const { return m_paintState->m_strokeData.gradient(); }
     void setStrokeGradient(PassRefPtr<Gradient>);
 
-    void setLineCap(LineCap cap) { m_state->m_strokeData.setLineCap(cap); }
-    void setLineDash(const DashArray& dashes, float dashOffset) { m_state->m_strokeData.setLineDash(dashes, dashOffset); }
-    void setLineJoin(LineJoin join) { m_state->m_strokeData.setLineJoin(join); }
-    void setMiterLimit(float limit) { m_state->m_strokeData.setMiterLimit(limit); }
+    void setLineCap(LineCap cap) { mutableState()->m_strokeData.setLineCap(cap); }
+    void setLineDash(const DashArray& dashes, float dashOffset) { mutableState()->m_strokeData.setLineDash(dashes, dashOffset); }
+    void setLineJoin(LineJoin join) { mutableState()->m_strokeData.setLineJoin(join); }
+    void setMiterLimit(float limit) { mutableState()->m_strokeData.setMiterLimit(limit); }
 
-    WindRule fillRule() const { return m_state->m_fillRule; }
-    void setFillRule(WindRule fillRule) { m_state->m_fillRule = fillRule; }
+    WindRule fillRule() const { return m_paintState->m_fillRule; }
+    void setFillRule(WindRule fillRule) { mutableState()->m_fillRule = fillRule; }
 
-    Color fillColor() const { return m_state->m_fillColor; }
+    Color fillColor() const { return m_paintState->m_fillColor; }
     void setFillColor(const Color&);
-    SkColor effectiveFillColor() const { return m_state->applyAlpha(m_state->m_fillColor.rgb()); }
+    SkColor effectiveFillColor() const { return m_paintState->applyAlpha(m_paintState->m_fillColor.rgb()); }
 
     void setFillPattern(PassRefPtr<Pattern>);
-    Pattern* fillPattern() const { return m_state->m_fillPattern.get(); }
+    Pattern* fillPattern() const { return m_paintState->m_fillPattern.get(); }
 
     void setFillGradient(PassRefPtr<Gradient>);
-    Gradient* fillGradient() const { return m_state->m_fillGradient.get(); }
+    Gradient* fillGradient() const { return m_paintState->m_fillGradient.get(); }
 
-    SkDrawLooper* drawLooper() const { return m_state->m_looper.get(); }
-    SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeData.color().rgb()); }
+    SkDrawLooper* drawLooper() const { return m_paintState->m_looper.get(); }
+    SkColor effectiveStrokeColor() const { return m_paintState->applyAlpha(m_paintState->m_strokeData.color().rgb()); }
 
     int getNormalizedAlpha() const;
 
@@ -140,30 +140,30 @@ public:
     SkMatrix getTotalMatrix() const;
     bool isPrintingDevice() const;
 
-    void setShouldAntialias(bool antialias) { m_state->m_shouldAntialias = antialias; }
-    bool shouldAntialias() const { return m_state->m_shouldAntialias; }
+    void setShouldAntialias(bool antialias) { mutableState()->m_shouldAntialias = antialias; }
+    bool shouldAntialias() const { return m_paintState->m_shouldAntialias; }
 
-    void setShouldClampToSourceRect(bool clampToSourceRect) { m_state->m_shouldClampToSourceRect = clampToSourceRect; }
-    bool shouldClampToSourceRect() const { return m_state->m_shouldClampToSourceRect; }
+    void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->m_shouldClampToSourceRect = clampToSourceRect; }
+    bool shouldClampToSourceRect() const { return m_paintState->m_shouldClampToSourceRect; }
 
-    void setShouldSmoothFonts(bool smoothFonts) { m_state->m_shouldSmoothFonts = smoothFonts; }
-    bool shouldSmoothFonts() const { return m_state->m_shouldSmoothFonts; }
+    void setShouldSmoothFonts(bool smoothFonts) { mutableState()->m_shouldSmoothFonts = smoothFonts; }
+    bool shouldSmoothFonts() const { return m_paintState->m_shouldSmoothFonts; }
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*);
     bool couldUseLCDRenderedText();
 
-    TextDrawingModeFlags textDrawingMode() const { return m_state->m_textDrawingMode; }
-    void setTextDrawingMode(TextDrawingModeFlags mode) { m_state->m_textDrawingMode = mode; }
+    void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->m_textDrawingMode = mode; }
+    TextDrawingModeFlags textDrawingMode() const { return m_paintState->m_textDrawingMode; }
 
-    void setAlpha(float alpha) { m_state->m_alpha = alpha; }
+    void setAlpha(float alpha) { mutableState()->m_alpha = alpha;}
 
-    void setImageInterpolationQuality(InterpolationQuality quality) { m_state->m_interpolationQuality = quality; }
-    InterpolationQuality imageInterpolationQuality() const { return m_state->m_interpolationQuality; }
+    void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->m_interpolationQuality = quality; }
+    InterpolationQuality imageInterpolationQuality() const { return m_paintState->m_interpolationQuality; }
 
     void setCompositeOperation(CompositeOperator, blink::WebBlendMode = blink::WebBlendModeNormal);
-    CompositeOperator compositeOperation() const { return m_state->m_compositeOperator; }
-    blink::WebBlendMode blendModeOperation() const { return m_state->m_blendMode; }
+    CompositeOperator compositeOperation() const { return m_paintState->m_compositeOperator; }
+    blink::WebBlendMode blendModeOperation() const { return m_paintState->m_blendMode; }
 
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
@@ -171,7 +171,7 @@ public:
 
     // If true we are (most likely) rendering to a web page and the
     // canvas has been prepared with an opaque background. If false,
-    // the canvas may havbe transparency (as is the case when rendering
+    // the canvas may have transparency (as is the case when rendering
     // to a canvas object).
     void setCertainlyOpaque(bool isOpaque) { m_isCertainlyOpaque = isOpaque; }
     bool isCertainlyOpaque() const { return m_isCertainlyOpaque; }
@@ -375,6 +375,14 @@ public:
     void endAnnotation();
 
 private:
+    const GraphicsContextState* immutableState() const { return m_paintState; }
+
+    GraphicsContextState* mutableState()
+    {
+        realizePaintSave();
+        return m_paintState;
+    }
+
     static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
     static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, IntSize, IntSize, IntSize, IntSize);
@@ -428,12 +436,26 @@ private:
     // common code between setupPaintFor[Filling,Stroking]
     void setupShader(SkPaint*, Gradient*, Pattern*, SkColor) const;
 
-    // Apply deferred saves
-    void realizeSave(SkCanvas::SaveFlags flags)
+    // Apply deferred paint state saves
+    void realizePaintSave()
     {
-        if (m_deferredSaveFlags & flags) {
-            m_canvas->save((SkCanvas::SaveFlags)m_deferredSaveFlags);
-            m_deferredSaveFlags = 0;
+        if (m_paintState->m_saveCount) {
+            --m_paintState->m_saveCount;
+            ++m_paintStateIndex;
+            if (m_paintStateStack.size() == m_paintStateIndex)
+                m_paintStateStack.append(GraphicsContextState::create());
+            GraphicsContextState* priorPaintState = m_paintState;
+            m_paintState = m_paintStateStack[m_paintStateIndex].get();
+            m_paintState->copy(priorPaintState);
+        }
+    }
+
+    // Apply deferred canvas state saves
+    void realizeCanvasSave(SkCanvas::SaveFlags flags)
+    {
+        if (m_canvasSaveFlags & flags) {
+            m_canvas->save((SkCanvas::SaveFlags)m_canvasSaveFlags);
+            m_canvasSaveFlags = 0;
         }
     }
 
@@ -446,19 +468,24 @@ private:
     // null indicates painting is disabled. Never delete this object.
     SkCanvas* m_canvas;
 
-    // Pointer to the current drawing state. This is a cached value of m_stateStack.last().
-    GraphicsContextState* m_state;
-    // States stack. Enables local drawing state change with save()/restore() calls.
-    // Use OwnPtr to avoid copying the large state structure.
-    Vector<OwnPtr<GraphicsContextState> > m_stateStack;
+    // Paint states stack. Enables local drawing state change with save()/restore() calls.
+    // This state controls the appearance of drawn content.
+    // We do not delete from this stack to avoid memory churn.
+    Vector<OwnPtr<GraphicsContextState> > m_paintStateStack;
+    // Current index on the stack. May not be the last thing on the stack.
+    unsigned m_paintStateIndex;
+    // Raw pointer to the current state.
+    GraphicsContextState* m_paintState;
 
-    // Currently pending save flags.
+    // Currently pending save flags for Skia Canvas state.
+    // Canvas state includes the canavs, it's matrix and clips. Think of it as _where_
+    // the draw operations will happen.
     // FIXME: While defined as a bitmask of SkCanvas::SaveFlags, this is mostly used as a bool.
     //        It will come in handy when adding granular save() support (clip vs. matrix vs. paint).
     // crbug.com/233713
-    struct DeferredSaveState;
-    unsigned m_deferredSaveFlags;
-    Vector<DeferredSaveState> m_saveStateStack;
+    struct CanvasSaveState;
+    unsigned m_canvasSaveFlags;
+    Vector<CanvasSaveState> m_canvasStateStack;
 
     AnnotationModeFlags m_annotationMode;
 
