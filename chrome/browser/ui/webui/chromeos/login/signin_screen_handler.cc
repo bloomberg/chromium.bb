@@ -1255,9 +1255,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
                                "SendUserList");
   BootTimesLoader::Get()->RecordCurrentStats("login-send-user-list");
 
-  size_t max_non_owner_users = kMaxUsers - 1;
-  size_t non_owner_count = 0;
-
   base::ListValue users_list;
   size_t first_non_public_account_index  = 0;
   const UserList& users = delegate_->GetUsers();
@@ -1270,15 +1267,21 @@ void SigninScreenHandler::SendUserList(bool animated) {
   bool single_user = users.size() == 1;
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+  bool has_owner = owner.size() > 0;
+  // if public accounts available, that means there's no device owner
+  size_t max_non_owner_users = has_owner ? kMaxUsers - 1 : kMaxUsers;
+  size_t non_owner_count = 0;
+
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
     bool is_owner = (email == owner);
+    bool is_public_account =
+        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
 
-    if (non_owner_count < max_non_owner_users || is_owner) {
+    if (is_public_account || non_owner_count < max_non_owner_users ||
+        is_owner) {
       base::DictionaryValue* user_dict = new base::DictionaryValue();
       FillUserDictionary(*it, is_owner, is_signin_to_add, user_dict);
-      bool is_public_account =
-          ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
       bool signed_in = (*it)->is_logged_in();
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
@@ -1287,15 +1290,18 @@ void SigninScreenHandler::SendUserList(bool animated) {
           !is_public_account && !signed_in && !is_signin_to_add;
       user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
-      // public accounts come first in the list
-      if (is_public_account)
-        users_list.Insert(first_non_public_account_index++, user_dict);
-      else
-        users_list.Append(user_dict);
       if (!is_owner)
         ++non_owner_count;
+      // public accounts come first in the list
+      if (is_public_account) {
+        users_list.Insert(first_non_public_account_index++, user_dict);
+      } else {
+        users_list.Append(user_dict);
+      }
     }
   }
+  while (users_list.GetSize() > kMaxUsers)
+    users_list.Remove(kMaxUsers, NULL);
 
   CallJS("login.AccountPickerScreen.loadUsers", users_list, animated,
          delegate_->IsShowGuest());
