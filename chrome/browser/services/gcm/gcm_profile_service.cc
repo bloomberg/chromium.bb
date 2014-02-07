@@ -5,9 +5,12 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 
 #include "base/base64.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
@@ -18,6 +21,8 @@
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -27,14 +32,59 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "google_apis/gcm/protocol/android_checkin.pb.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using extensions::Extension;
 
 namespace gcm {
 
+namespace {
+
 const char kRegistrationKey[] = "gcm.registration";
 const char kSendersKey[] = "senders";
 const char kRegistrationIDKey[] = "reg_id";
+
+checkin_proto::ChromeBuildProto_Platform GetPlatform() {
+#if defined(OS_WIN)
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_WIN;
+#elif defined(OS_MACOSX)
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_MAC;
+#elif defined(OS_CHROMEOS)
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_CROS;
+#elif defined(OS_LINUX)
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
+#else
+  // For all other platforms, return as LINUX.
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
+#endif
+}
+
+std::string GetVersion() {
+  chrome::VersionInfo version_info;
+  return version_info.Version();
+}
+
+checkin_proto::ChromeBuildProto_Channel GetChannel() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_CANARY;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_DEV;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_BETA;
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_STABLE;
+    default:
+      NOTREACHED();
+      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
+  };
+}
+
+}  // namespace
 
 // Helper class to save tasks to run until we're ready to execute them.
 class GCMProfileService::DelayedTaskController {
@@ -203,7 +253,11 @@ class GCMProfileService::IOWorker
   virtual void OnGCMReady() OVERRIDE;
 
   // Called on IO thread.
-  void Initialize();
+  void Initialize(
+      scoped_ptr<GCMClient> gcm_client,
+      const base::FilePath& store_path,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter);
   void SetUser(const std::string& username);
   void RemoveUser();
   void CheckIn();
@@ -223,8 +277,7 @@ class GCMProfileService::IOWorker
 
   const base::WeakPtr<GCMProfileService> service_;
 
-  // Not owned.
-  GCMClient* gcm_client_;
+  scoped_ptr<GCMClient> gcm_client_;
 
   // The username (email address) of the signed-in user.
   std::string username_;
@@ -236,18 +289,38 @@ class GCMProfileService::IOWorker
 
 GCMProfileService::IOWorker::IOWorker(
     const base::WeakPtr<GCMProfileService>& service)
-    : service_(service),
-      gcm_client_(NULL) {
+    : service_(service) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 GCMProfileService::IOWorker::~IOWorker() {
 }
 
-void GCMProfileService::IOWorker::Initialize() {
+void GCMProfileService::IOWorker::Initialize(
+    scoped_ptr<GCMClient> gcm_client,
+    const base::FilePath& store_path,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  gcm_client_ = GCMClientFactory::GetClient();
+  gcm_client_ = gcm_client.Pass();
+
+  checkin_proto::ChromeBuildProto chrome_build_proto;
+  chrome_build_proto.set_platform(GetPlatform());
+  chrome_build_proto.set_chrome_version(GetVersion());
+  chrome_build_proto.set_channel(GetChannel());
+
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  gcm_client_->Initialize(chrome_build_proto,
+                          store_path,
+                          blocking_task_runner,
+                          url_request_context_getter);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -482,7 +555,7 @@ GCMProfileService::~GCMProfileService() {
                  io_worker_));
 }
 
-void GCMProfileService::Initialize() {
+void GCMProfileService::Initialize(GCMClientFactory* gcm_client_factory) {
   delayed_task_controller_.reset(new DelayedTaskController);
 
   // This has to be done first since CheckIn depends on it.
@@ -492,12 +565,20 @@ void GCMProfileService::Initialize() {
   js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
 #endif
 
+  scoped_ptr<GCMClient> gcm_client(gcm_client_factory->BuildInstance());
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      profile_->GetRequestContext();
+
   // This initializes GCMClient and also does the check to find out if GCMClient
   // is ready.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::Initialize, io_worker_));
+      base::Bind(&GCMProfileService::IOWorker::Initialize,
+                 io_worker_,
+                 base::Passed(&gcm_client),
+                 profile_->GetPath().Append(chrome::kGCMStoreDirname),
+                 url_request_context_getter));
 
   // In case that the profile has been signed in before GCMProfileService is
   // created.

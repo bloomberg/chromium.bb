@@ -6,11 +6,7 @@
 #define CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_FACTORY_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
+#include "base/memory/scoped_ptr.h"
 
 namespace gcm {
 
@@ -18,22 +14,14 @@ class GCMClient;
 
 class GCMClientFactory {
  public:
-  // Creates the single instance of GCMClient if not yet created.
-  // Called on UI thread.
-  static void  BuildClientFromUI();
+  GCMClientFactory();
+  virtual ~GCMClientFactory();
 
-  // Returns a single instance of GCMClient.
-  // This should be called on IO thread.
-  static GCMClient* GetClient();
-
-  // Passes a mocked instance for testing purpose.
-  typedef GCMClient* (*TestingFactoryFunction)();
-  static void SetTestingFactory(TestingFactoryFunction factory);
+  // Creates a new instance of GCMClient. The testing code could override this
+  // to provide a mocked instance.
+  virtual scoped_ptr<GCMClient> BuildInstance();
 
  private:
-  GCMClientFactory();
-  ~GCMClientFactory();
-
   DISALLOW_COPY_AND_ASSIGN(GCMClientFactory);
 };
 

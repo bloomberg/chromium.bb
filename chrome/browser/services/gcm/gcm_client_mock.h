@@ -14,11 +14,22 @@ namespace gcm {
 
 class GCMClientMock : public GCMClient {
  public:
-  GCMClientMock();
+  enum Status {
+    NOT_READY,
+    READY
+  };
+
+  explicit GCMClientMock(Status status);
   virtual ~GCMClientMock();
 
   // Overridden from GCMClient:
   // Called on IO thread.
+  virtual void Initialize(
+      const checkin_proto::ChromeBuildProto& chrome_build_proto,
+      const base::FilePath& store_path,
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter) OVERRIDE;
   virtual void SetUserDelegate(const std::string& username,
                                Delegate* delegate) OVERRIDE;
   virtual void CheckIn(const std::string& username) OVERRIDE;
@@ -45,7 +56,8 @@ class GCMClientMock : public GCMClient {
     simulate_server_error_ = simulate_server_error;
   }
 
-  void SetReady(bool ready);
+  // Can only transition from non-ready to ready.
+  void SetReady();
 
   static CheckinInfo GetCheckinInfoFromUsername(const std::string& username);
   static std::string GetRegistrationIdFromSenderIds(
@@ -74,7 +86,7 @@ class GCMClientMock : public GCMClient {
 
   std::map<std::string, Delegate*> delegates_;
 
-  bool ready_;
+  Status status_;
 
   // The testing code could set this to simulate the server error in order to
   // test the error scenario.

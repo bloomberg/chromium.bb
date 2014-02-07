@@ -25,12 +25,20 @@ uint64 HashToUInt64(const std::string& hash) {
 
 }  // namespace
 
-GCMClientMock::GCMClientMock()
-    : ready_(true),
+GCMClientMock::GCMClientMock(Status status)
+    : status_(status),
       simulate_server_error_(false) {
 }
 
 GCMClientMock::~GCMClientMock() {
+}
+
+void GCMClientMock::Initialize(
+    const checkin_proto::ChromeBuildProto& chrome_build_proto,
+    const base::FilePath& store_path,
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
 }
 
 void GCMClientMock::SetUserDelegate(const std::string& username,
@@ -98,7 +106,7 @@ void GCMClientMock::Send(const std::string& username,
 }
 
 bool GCMClientMock::IsReady() const {
-  return ready_;
+  return status_ == READY;
 }
 
 void GCMClientMock::ReceiveMessage(const std::string& username,
@@ -129,15 +137,11 @@ void GCMClientMock::DeleteMessages(const std::string& username,
                  app_id));
 }
 
-void GCMClientMock::SetReady(bool ready) {
+void GCMClientMock::SetReady() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(status_, NOT_READY);
 
-  if (ready == ready_)
-    return;
-  ready_ = ready;
-
-  if (!ready_)
-    return;
+  status_ = READY;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

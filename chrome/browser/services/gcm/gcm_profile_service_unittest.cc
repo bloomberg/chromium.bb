@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/leak_annotations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -207,6 +206,31 @@ class FakeGCMEventRouter : public GCMEventRouter {
   GCMClient::Result send_error_result_;
 };
 
+class FakeGCMClientFactory : public GCMClientFactory {
+ public:
+  explicit FakeGCMClientFactory(GCMClientMock::Status gcm_client_initial_status)
+      : gcm_client_initial_status_(gcm_client_initial_status),
+        gcm_client_(NULL) {
+  }
+
+  virtual ~FakeGCMClientFactory() {
+  }
+
+  virtual scoped_ptr<GCMClient> BuildInstance() OVERRIDE {
+    DCHECK(!gcm_client_);
+    gcm_client_ = new GCMClientMock(gcm_client_initial_status_);
+    return scoped_ptr<GCMClient>(gcm_client_);
+  }
+
+  GCMClientMock* gcm_client() const { return gcm_client_; }
+
+ private:
+  GCMClientMock::Status gcm_client_initial_status_;
+  GCMClientMock* gcm_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeGCMClientFactory);
+};
+
 class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
  public:
   static BrowserContextKeyedService* BuildFakeSigninManager(
@@ -223,6 +247,7 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
       : waiter_(waiter),
         extension_service_(NULL),
         signin_manager_(NULL),
+        gcm_client_initial_status_(GCMClientMock::READY),
         registration_result_(GCMClient::SUCCESS),
         has_persisted_registration_info_(false),
         send_result_(GCMClient::SUCCESS) {
@@ -299,7 +324,9 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
         GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), &GCMProfileServiceTestConsumer::BuildGCMProfileService));
     gcm_profile_service->set_testing_delegate(this);
-    gcm_profile_service->Initialize();
+    gcm_client_factory_.reset(
+        new FakeGCMClientFactory(gcm_client_initial_status_));
+    gcm_profile_service->Initialize(gcm_client_factory_.get());
   }
 
   void CheckIn(const std::string& username) {
@@ -371,6 +398,10 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
     return GCMProfileServiceFactory::GetForProfile(profile());
   }
 
+  GCMClientMock* GetGCMClient() const {
+    return gcm_client_factory_->gcm_client();
+  }
+
   const std::string& GetUsername() const {
     return GetGCMProfileService()->username_;
   }
@@ -383,6 +414,10 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
   FakeSigninManager* signin_manager() const { return signin_manager_; }
   FakeGCMEventRouter* gcm_event_router() const {
     return gcm_event_router_.get();
+  }
+
+  void set_gcm_client_initial_status(GCMClientMock::Status status) {
+    gcm_client_initial_status_ = status;
   }
 
   GCMClient::CheckinInfo checkin_info() const { return checkin_info_; }
@@ -418,6 +453,9 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
   ExtensionService* extension_service_;  // Not owned.
   FakeSigninManager* signin_manager_;  // Not owned.
   scoped_ptr<FakeGCMEventRouter> gcm_event_router_;
+  scoped_ptr<FakeGCMClientFactory> gcm_client_factory_;
+
+  GCMClientMock::Status gcm_client_initial_status_;
 
   GCMClient::CheckinInfo checkin_info_;
 
@@ -433,11 +471,6 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
 
 class GCMProfileServiceTest : public testing::Test {
  public:
-  static GCMClient* BuildGCMClient() {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    return new GCMClientMock();
-  }
-
   GCMProfileServiceTest() {
   }
 
@@ -460,9 +493,6 @@ class GCMProfileServiceTest : public testing::Test {
 #if defined(OS_MACOSX)
     Encryptor::UseMockKeychain(true);
 #endif
-
-    // Mock a GCMClient.
-    GCMClientFactory::SetTestingFactory(&GCMProfileServiceTest::BuildGCMClient);
 
     // Create a main profile consumer.
     consumer_.reset(new GCMProfileServiceTestConsumer(&waiter_));
@@ -508,21 +538,21 @@ class GCMProfileServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
 };
 
-static GCMClientMock* GetGCMClientMock() {
-  return static_cast<GCMClientMock*>(GCMClientFactory::GetClient());
-}
-
 class ScopedGCMClientMockSimulateServerError {
  public:
-  ScopedGCMClientMockSimulateServerError() {
-    GetGCMClientMock()->set_simulate_server_error(true);
+  ScopedGCMClientMockSimulateServerError(
+      GCMProfileServiceTestConsumer* consumer)
+      : consumer_(consumer) {
+    consumer_->GetGCMClient()->set_simulate_server_error(true);
   }
 
   ~ScopedGCMClientMockSimulateServerError() {
-    GetGCMClientMock()->set_simulate_server_error(false);
+    consumer_->GetGCMClient()->set_simulate_server_error(false);
   }
 
  private:
+  GCMProfileServiceTestConsumer* consumer_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedGCMClientMockSimulateServerError);
 };
 
@@ -629,7 +659,8 @@ TEST_F(GCMProfileServiceSingleProfileTest, CheckInFromPrefsStore) {
 
   // Check-in should not reach the server. Forcing GCMClient server error should
   // help catch this.
-  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error;
+  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error(
+      consumer());
 
   // Recreate GCMProfileService to test reading the check-in info from the
   // prefs store.
@@ -787,7 +818,8 @@ TEST_F(GCMProfileServiceSingleProfileTest, ReadRegistrationFromStateStore) {
 
   // Register should not reach the server. Forcing GCMClient server error should
   // help catch this.
-  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error;
+  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error(
+      consumer());
 
   // This should read the registration info from the extension's state store.
   // We still need to wait since the reading from state store might happen at
@@ -815,8 +847,8 @@ TEST_F(GCMProfileServiceSingleProfileTest,
   // preparation to call register 2nd time.
   consumer()->clear_registration_result();
 
-  // Mark that GCMClient is not ready.
-  GetGCMClientMock()->SetReady(false);
+  // Needs to create a GCMClient instance that is not ready initiallly.
+  consumer()->set_gcm_client_initial_status(GCMClientMock::NOT_READY);
 
   // Simulate start-up by recreating GCMProfileService.
   consumer()->CreateGCMProfileServiceInstance();
@@ -832,7 +864,7 @@ TEST_F(GCMProfileServiceSingleProfileTest,
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, consumer()->registration_result());
 
   // Register operation will be invoked after GCMClient becomes ready.
-  GetGCMClientMock()->SetReady(true);
+  consumer()->GetGCMClient()->SetReady();
   WaitUntilCompleted();
   EXPECT_EQ(old_registration_id, consumer()->registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
@@ -933,7 +965,8 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
-  GetGCMClientMock()->ReceiveMessage(kTestingUsername, kTestingAppId, message);
+  consumer()->GetGCMClient()->ReceiveMessage(
+      kTestingUsername, kTestingAppId, message);
   WaitUntilCompleted();
   EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
             consumer()->gcm_event_router()->received_event());
@@ -948,7 +981,8 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceivedAfterSignOut) {
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
-  GetGCMClientMock()->ReceiveMessage(kTestingUsername, kTestingAppId, message);
+  consumer()->GetGCMClient()->ReceiveMessage(
+      kTestingUsername, kTestingAppId, message);
   PumpIOLoop();
 
   EXPECT_EQ(FakeGCMEventRouter::NO_EVENT,
@@ -957,7 +991,7 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceivedAfterSignOut) {
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, MessagesDeleted) {
-  GetGCMClientMock()->DeleteMessages(kTestingUsername, kTestingAppId);
+  consumer()->GetGCMClient()->DeleteMessages(kTestingUsername, kTestingAppId);
   WaitUntilCompleted();
   EXPECT_EQ(FakeGCMEventRouter::MESSAGES_DELETED_EVENT,
             consumer()->gcm_event_router()->received_event());
@@ -968,7 +1002,7 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessagesDeletedAfterSignOut) {
   // This will trigger check-out.
   consumer()->signin_manager()->SignOut();
 
-  GetGCMClientMock()->DeleteMessages(kTestingUsername, kTestingAppId);
+  consumer()->GetGCMClient()->DeleteMessages(kTestingUsername, kTestingAppId);
   PumpIOLoop();
 
   EXPECT_EQ(FakeGCMEventRouter::NO_EVENT,
@@ -1107,12 +1141,13 @@ TEST_F(GCMProfileServiceMultiProfileTest, MessageReceived) {
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
-  GetGCMClientMock()->ReceiveMessage(kTestingUsername, kTestingAppId, message);
+  consumer()->GetGCMClient()->ReceiveMessage(
+      kTestingUsername, kTestingAppId, message);
 
   // Trigger an incoming message for the same app in another profile.
   GCMClient::IncomingMessage message2;
   message2.data["foo"] = "bar";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer2()->GetGCMClient()->ReceiveMessage(
       kTestingUsername2, kTestingAppId, message2);
 
   WaitUntilCompleted();
@@ -1132,7 +1167,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, MessageReceived) {
   GCMClient::IncomingMessage message3;
   message3.data["bar1"] = "foo1";
   message3.data["bar2"] = "foo2";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer2()->GetGCMClient()->ReceiveMessage(
       kTestingUsername2, kTestingAppId2, message3);
 
   WaitUntilCompleted();
@@ -1203,7 +1238,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   GCMClient::IncomingMessage in_message;
   in_message.data["in1"] = "in_data1";
   in_message.data["in1_2"] = "in_data1_2";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer()->GetGCMClient()->ReceiveMessage(
       kTestingUsername, kTestingAppId, in_message);
 
   WaitUntilCompleted();
@@ -1218,13 +1253,13 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   // profile.
   GCMClient::IncomingMessage in_message2;
   in_message2.data["in2"] = "in_data2";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer2()->GetGCMClient()->ReceiveMessage(
       kTestingUsername2, kTestingAppId2, in_message2);
 
   GCMClient::IncomingMessage in_message3;
   in_message3.data["in3"] = "in_data3";
   in_message3.data["in3_2"] = "in_data3_2";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer2()->GetGCMClient()->ReceiveMessage(
       kTestingUsername2, kTestingAppId, in_message3);
 
   consumer2()->gcm_event_router()->clear_results();
@@ -1273,7 +1308,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   // Incoming message will be ingored for the signed-out profile.
   GCMClient::IncomingMessage in_message4;
   in_message4.data["in4"] = "in_data4";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer()->GetGCMClient()->ReceiveMessage(
       kTestingUsername, kTestingAppId, in_message4);
 
   consumer()->gcm_event_router()->clear_results();
@@ -1284,7 +1319,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   EXPECT_TRUE(consumer()->gcm_event_router()->app_id().empty());
 
   // Deleted messages event will be ingored for the signed-out profile.
-  GetGCMClientMock()->DeleteMessages(kTestingUsername, kTestingAppId);
+  consumer()->GetGCMClient()->DeleteMessages(kTestingUsername, kTestingAppId);
 
   PumpIOLoop();
 
@@ -1293,7 +1328,8 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   EXPECT_TRUE(consumer()->gcm_event_router()->app_id().empty());
 
   // Deleted messages event will go through for another signed-in profile.
-  GetGCMClientMock()->DeleteMessages(kTestingUsername2, kTestingAppId2);
+  consumer2()->GetGCMClient()->DeleteMessages(
+      kTestingUsername2, kTestingAppId2);
 
   consumer2()->gcm_event_router()->clear_results();
   WaitUntilCompleted();
@@ -1327,7 +1363,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   WaitUntilCompleted();
 
   // Incoming message will still be ingored for the signed-out user.
-  GetGCMClientMock()->ReceiveMessage(
+  consumer()->GetGCMClient()->ReceiveMessage(
       kTestingUsername, kTestingAppId, in_message4);
 
   consumer()->gcm_event_router()->clear_results();
@@ -1340,7 +1376,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   // Incoming message will go through for the new signed-in user.
   GCMClient::IncomingMessage in_message5;
   in_message5.data["in5"] = "in_data5";
-  GetGCMClientMock()->ReceiveMessage(
+  consumer()->GetGCMClient()->ReceiveMessage(
       kTestingUsername3, kTestingAppId, in_message5);
 
   consumer()->gcm_event_router()->clear_results();

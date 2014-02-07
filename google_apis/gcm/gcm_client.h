@@ -12,6 +12,21 @@
 #include "base/basictypes.h"
 #include "google_apis/gcm/base/gcm_export.h"
 
+template <class T> class scoped_refptr;
+
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
+}
+
+namespace checkin_proto {
+class ChromeBuildProto;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace gcm {
 
 // Interface that encapsulates the network communications with the Google Cloud
@@ -132,6 +147,14 @@ class GCM_EXPORT GCMClient {
 
   GCMClient();
   virtual ~GCMClient();
+
+  // Begins initialization of the GCM Client.
+  virtual void Initialize(
+      const checkin_proto::ChromeBuildProto& chrome_build_proto,
+      const base::FilePath& store_path,
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter) = 0;
 
   // Sets the delegate to interact with related to a specific user.
   // |username|: the username (email address) used to check in with the server.

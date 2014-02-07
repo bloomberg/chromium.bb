@@ -141,7 +141,7 @@ GCMClientImpl::~GCMClientImpl() {
 void GCMClientImpl::Initialize(
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
     const base::FilePath& path,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
   DCHECK_EQ(UNINITIALIZED, state_);

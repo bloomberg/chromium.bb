@@ -34,6 +34,7 @@ class PrefRegistrySyncable;
 
 namespace gcm {
 
+class GCMClientFactory;
 class GCMEventRouter;
 class GCMProfileServiceTestConsumer;
 
@@ -63,7 +64,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   explicit GCMProfileService(Profile* profile);
   virtual ~GCMProfileService();
 
-  void Initialize();
+  void Initialize(GCMClientFactory* gcm_client_factory);
 
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.

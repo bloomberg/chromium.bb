@@ -37,13 +37,12 @@ GCMProfileServiceFactory::~GCMProfileServiceFactory() {
 
 BrowserContextKeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  GCMClientFactory::BuildClientFromUI();
-
   Profile* profile = static_cast<Profile*>(context);
   if (!gcm::GCMProfileService::IsGCMEnabled(profile))
     return NULL;
   GCMProfileService* service = new GCMProfileService(profile);
-  service->Initialize();
+  GCMClientFactory gcm_client_factory;
+  service->Initialize(&gcm_client_factory);
   return service;
 }
 
