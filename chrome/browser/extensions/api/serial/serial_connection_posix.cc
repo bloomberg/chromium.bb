@@ -107,7 +107,13 @@ bool SetCustomBitrate(base::PlatformFile file,
   return ioctl(file, TIOCSSERIAL, &serial) >= 0;
 #elif defined(OS_MACOSX)
   speed_t speed = static_cast<speed_t>(bitrate);
-  return ioctl(file, IOSSIOSPEED, &speed) != -1;
+  if (ioctl(file, IOSSIOSPEED, &speed) >= 0)
+    return true;
+  // Where IOSSIOSPEED is unsupported, attempt to set
+  // the speed directly to the requested value.
+  cfsetispeed(config, speed);
+  cfsetospeed(config, speed);
+  return true;
 #else
   return false;
 #endif
