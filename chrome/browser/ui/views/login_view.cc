@@ -4,18 +4,12 @@
 
 #include "chrome/browser/ui/views/login_view.h"
 
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/root_view.h"
 
 static const int kMessageWidth = 320;
 static const int kTextfieldStackHorizontalSpacing = 30;
@@ -89,11 +83,11 @@ LoginView::~LoginView() {
     login_model_->RemoveObserver(this);
 }
 
-base::string16 LoginView::GetUsername() {
+const base::string16& LoginView::GetUsername() const {
   return username_field_->text();
 }
 
-base::string16 LoginView::GetPassword() {
+const base::string16& LoginView::GetPassword() const {
   return password_field_->text();
 }
 

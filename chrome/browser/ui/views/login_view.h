@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "ui/views/view.h"
 
 namespace views {
 class Label;
 class Textfield;
-class LoginModel;
-}  // namespace views
+}
 
 // This class is responsible for displaying the contents of a login window
 // for HTTP/FTP authentication.
@@ -24,8 +24,8 @@ class LoginView : public views::View, public LoginModelObserver {
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.
-  base::string16 GetUsername();
-  base::string16 GetPassword();
+  const base::string16& GetUsername() const;
+  const base::string16& GetPassword() const;
 
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const base::string16& username,
