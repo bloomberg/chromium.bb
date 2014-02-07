@@ -2,11 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#extension-error-overlay .highlighted-source {
-  background-color: rgba(255, 195, 200, 255);
+#extension-error-overlay .content-area {
+  display: flex;
+  flex-direction: column;
 }
 
-#extension-error-overlay .content-area {
+.extension-error-overlay-runtime-content {
+  flex: none;
+}
+
+#extension-error-overlay .highlighted-source {
+  background-color: rgba(255, 195, 200, 255);
 }
 
 #extension-error-overlay-code {
@@ -14,6 +20,7 @@
   border: 1px solid #ccc;
   font-family: monospace;
   font-size: 1.2em;
+  overflow: auto;
   padding: 10px;
 }
 

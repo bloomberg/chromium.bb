@@ -41,6 +41,46 @@ cr.define('extensions', function() {
     return div;
   }
 
+  /**
+   * The manifest filename.
+   * @type {string}
+   * @const
+   * @private
+   */
+  ExtensionError.MANIFEST_FILENAME_ = 'manifest.json';
+
+  /**
+   * Determine whether or not chrome can load the source for a given file; this
+   * can only be done if the file belongs to the extension.
+   * @param {string} file The file to load.
+   * @param {string} extensionUrl The url for the extension, in the form
+   *     chrome-extension://<extension-id>/.
+   * @return {boolean} True if the file can be loaded, false otherwise.
+   * @private
+   */
+  ExtensionError.canLoadFileSource_ = function(file, extensionUrl) {
+    return RegExp('^' + extensionUrl).test(file) ||
+           file.toLowerCase() == ExtensionError.MANIFEST_FILENAME_;
+  };
+
+  /**
+   * Determine whether or not there are any user-friendly (non-internal) frames
+   * in the error's stack trace.
+   * @param {Object} error The error to examine.
+   * @return {boolean} True if there are user-friendly stack frames for the
+   *     error, false otherwise.
+   * @private
+   */
+  ExtensionError.hasExternalStackFrames_ = function(error) {
+    // All our internal source begins with the "extensions::" prefix.
+    var extensionPrefix = /^extensions::/;
+    for (var i = 0; i < error.stackTrace.length; ++i) {
+      if (!extensionPrefix.test(error.stackTrace[i].url))
+        return true;
+    }
+    return false;
+  };
+
   ExtensionError.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -63,6 +103,15 @@ cr.define('extensions', function() {
       messageSpan.title = error.message;
 
       var extensionUrl = 'chrome-extension://' + error.extensionId + '/';
+      var viewDetailsLink = this.querySelector('.extension-error-view-details');
+
+      // If we cannot open the file source and there are no external frames in
+      // the stack, then there are no details to display.
+      if (!ExtensionError.canLoadFileSource_(error.source, extensionUrl) &&
+          !ExtensionError.hasExternalStackFrames_(error)) {
+        viewDetailsLink.hidden = true;
+        return;
+      }
 
       // The relative url is the url without the preceeding
       // "chrome-extension://<id>"; this is the format which the
@@ -75,7 +124,6 @@ cr.define('extensions', function() {
                                    message: error.message,
                                    pathSuffix: relativeUrl};
 
-      var viewDetailsLink = this.querySelector('.extension-error-view-details');
       var viewDetailsStringId;
       if (relativeUrl.toLowerCase() == 'manifest.json') {
         requestFileSourceArgs.manifestKey = error.manifestKey;
@@ -90,8 +138,17 @@ cr.define('extensions', function() {
       viewDetailsLink.textContent = loadTimeData.getString(viewDetailsStringId);
 
       viewDetailsLink.addEventListener('click', function(e) {
-        extensions.ExtensionErrorOverlay.getInstance().setError(error);
-        chrome.send('extensionErrorRequestFileSource', [requestFileSourceArgs]);
+        var overlay = extensions.ExtensionErrorOverlay.getInstance();
+        overlay.setError(error);
+
+        // If we can, request the file source to show to the user in the
+        // overlay. Otherwise, simply show the overlay.
+        if (ExtensionError.canLoadFileSource_(error.source, extensionUrl)) {
+          chrome.send('extensionErrorRequestFileSource',
+                      [requestFileSourceArgs]);
+        } else {
+          overlay.requestFileSourceResponse(null);
+        }
       }.bind(this));
     },
   };

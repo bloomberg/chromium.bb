@@ -83,6 +83,9 @@ void ExtensionErrorHandler::GetLocalizedValues(
   source->AddString(
       "extensionErrorOverlayContextUnknown",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN));
+  source->AddString(
+      "extensionErrorOverlayNoCodeToDisplay",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY));
 }
 
 void ExtensionErrorHandler::RegisterMessages() {

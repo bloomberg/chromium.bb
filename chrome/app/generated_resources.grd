@@ -4847,6 +4847,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN" desc="Text indicating that the context URL for an error is unknown.">
         Unknown
       </message>
+      <message name="IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY" desc="Text indicating that there is no code to be displayed for a given error.">
+        Sorry, we can't show the code for this error.
+      </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable
       </message>
