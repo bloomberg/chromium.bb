@@ -29,7 +29,8 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   // Do not show page info if the user has been editing the location
   // bar, or the location bar is at the NTP.
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty() &&
-      !chrome::ShouldDisplayOriginChip())
+      !chrome::ShouldDisplayOriginChip() &&
+      !chrome::ShouldDisplayOriginChipV2())
     return;
 
   WebContents* tab = location_bar_->GetWebContents();

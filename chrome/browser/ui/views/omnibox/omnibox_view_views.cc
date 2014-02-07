@@ -374,7 +374,7 @@ void OmniboxViewViews::OnFocus() {
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
-  if (chrome::ShouldDisplayOriginChip()) {
+  if (chrome::ShouldDisplayOriginChipV2()) {
     controller()->GetToolbarModel()->set_origin_chip_enabled(false);
     controller()->OnChanged();
   }
@@ -407,7 +407,7 @@ void OmniboxViewViews::OnBlur() {
   // to ShowURL().  If the Omnibox acheived focus by other means, the calls to
   // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
   // required (a call to OnChanged would be sufficient) but do no harm.
-  if (chrome::ShouldDisplayOriginChip() &&
+  if (chrome::ShouldDisplayOriginChipV2() &&
       !model()->user_input_in_progress()) {
     controller()->GetToolbarModel()->set_origin_chip_enabled(true);
     controller()->GetToolbarModel()->set_url_replacement_enabled(true);
@@ -464,7 +464,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  if (chrome::ShouldDisplayOriginChip())
+  if (chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2())
     set_placeholder_text(GetHintText());
 
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
@@ -914,7 +914,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip()) {
+  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip() ||
+      chrome::ShouldDisplayOriginChipV2()) {
     int select_all_position = menu_contents->GetIndexOfCommandId(
         IDS_APP_SELECT_ALL);
     DCHECK_GE(select_all_position, 0);

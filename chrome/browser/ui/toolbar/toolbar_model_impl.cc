@@ -164,7 +164,9 @@ bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
     }
   }
 
-  return chrome::ShouldDisplayOriginChip() && delegate_->InTabbedBrowser() &&
+  bool should_display_origin_chip =
+      chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2();
+  return should_display_origin_chip && delegate_->InTabbedBrowser() &&
       ShouldDisplayURL() && url_replacement_enabled();
 }
 
@@ -219,8 +221,8 @@ int ToolbarModelImpl::GetIcon() const {
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
 
-  // When the site chip experiment is running, the icon in the location bar,
-  // when not the search icon, should be the page icon.
+  // When the original site chip experiment is running, the icon in the location
+  // bar, when not the search icon, should be the page icon.
   if (chrome::ShouldDisplayOriginChip())
     return GetIconForSecurityLevel(NONE);
 

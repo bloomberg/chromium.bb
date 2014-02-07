@@ -249,7 +249,7 @@ void ToolbarView::Init() {
   location_bar_->Init();
 
   site_chip_view_->Init();
-  if (chrome::ShouldDisplayOriginChip())
+  if (chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2())
     location_bar_->set_site_chip_view(site_chip_view_);
 
   show_home_button_.Init(prefs::kShowHomeButton,
@@ -595,7 +595,8 @@ void ToolbarView::Layout() {
   chrome::OriginChipPosition origin_chip_position =
       chrome::GetOriginChipPosition();
   if (site_chip_view_->visible() &&
-      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
+      (chrome::ShouldDisplayOriginChipV2() ||
+       origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR)) {
     site_chip_view_->SetBounds(next_element_x, child_y,
                                site_chip_width, child_height);
     next_element_x = site_chip_view_->bounds().right() + kStandardSpacing;
