@@ -15,7 +15,6 @@
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
-#include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,14 +36,6 @@ using content::WebContents;
 namespace {
 
 const char kSpdyProxyRealm[] = "/SpdyProxy";
-void ReportOsPassword() {
-  password_manager_util::OsPasswordStatus status =
-      password_manager_util::GetOsPasswordStatus();
-
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
-                            status,
-                            password_manager_util::MAX_PASSWORD_STATUS);
-}
 
 // This routine is called when PasswordManagers are constructed.
 //
@@ -61,13 +52,6 @@ void ReportMetrics(bool password_manager_enabled) {
   if (ran_once)
     return;
   ran_once = true;
-
-  // Avoid checking OS password until later on in browser startup
-  // since it calls a few Windows APIs.
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ReportOsPassword),
-      base::TimeDelta::FromSeconds(10));
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }

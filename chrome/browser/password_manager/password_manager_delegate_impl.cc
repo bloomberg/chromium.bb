@@ -15,6 +15,7 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
+#include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -28,6 +29,19 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+void ReportOsPassword() {
+  password_manager_util::OsPasswordStatus status =
+      password_manager_util::GetOsPasswordStatus();
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
+                            status,
+                            password_manager_util::MAX_PASSWORD_STATUS);
+}
+
+}  // namespace
 
 // SavePasswordInfoBarDelegate ------------------------------------------------
 
@@ -211,7 +225,14 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl);
 
 PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), driver_(web_contents, this) {}
+    : web_contents_(web_contents), driver_(web_contents, this) {
+  // Avoid checking OS password until later on in browser startup
+  // since it calls a few Windows APIs.
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ReportOsPassword),
+      base::TimeDelta::FromSeconds(10));
+}
 
 PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 }
