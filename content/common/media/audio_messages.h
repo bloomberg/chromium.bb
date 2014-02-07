@@ -20,8 +20,11 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START AudioMsgStart
 
-IPC_ENUM_TRAITS(media::AudioInputIPCDelegate::State)
-IPC_ENUM_TRAITS(media::AudioOutputIPCDelegate::State)
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegate::State,
+                          media::AudioInputIPCDelegate::kStateLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegate::State,
+                          media::AudioOutputIPCDelegate::kStateLast)
 
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)

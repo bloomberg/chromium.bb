@@ -21,7 +21,8 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   enum State {
     kRecording,
     kStopped,
-    kError
+    kError,
+    kStateLast = kError
   };
 
   // Called when an AudioInputController has been created.

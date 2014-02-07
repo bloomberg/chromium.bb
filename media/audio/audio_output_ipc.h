@@ -23,7 +23,8 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
   enum State {
     kPlaying,
     kPaused,
-    kError
+    kError,
+    kStateLast = kError
   };
 
   // Called when state of an audio stream has changed.
