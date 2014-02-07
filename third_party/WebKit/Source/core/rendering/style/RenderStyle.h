@@ -1115,6 +1115,7 @@ public:
 
     void setWhiteSpace(EWhiteSpace v) { inherited_flags._white_space = v; }
 
+    // FIXME: Remove these two and replace them with respective FontBuilder calls.
     void setWordSpacing(float);
     void setLetterSpacing(float);
 

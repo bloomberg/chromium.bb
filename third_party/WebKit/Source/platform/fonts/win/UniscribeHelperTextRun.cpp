@@ -56,9 +56,9 @@ UniscribeHelperTextRun::UniscribeHelperTextRun(const TextRun& run,
     }
 
     setDirectionalOverride(run.directionalOverride());
-    setLetterSpacing(font.letterSpacing());
+    setLetterSpacing(font.fontDescription().letterSpacing());
     setSpaceWidth(font.spaceWidth());
-    setWordSpacing(font.wordSpacing());
+    setWordSpacing(font.fontDescription().wordSpacing());
     setAscent(font.fontMetrics().ascent());
     setRangeProperties(font.fontDescription().featureSettings());
 

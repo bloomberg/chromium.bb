@@ -114,7 +114,7 @@ void RenderCombineText::combineText()
         static const FontWidthVariant widthVariants[] = { HalfWidth, ThirdWidth, QuarterWidth };
         for (size_t i = 0 ; i < WTF_ARRAY_LENGTH(widthVariants) ; ++i) {
             description.setWidthVariant(widthVariants[i]);
-            Font compressedFont = Font(description, style()->font().letterSpacing(), style()->font().wordSpacing());
+            Font compressedFont = Font(description);
             compressedFont.update(fontSelector);
             float runWidth = compressedFont.width(run);
             if (runWidth <= emWidth) {

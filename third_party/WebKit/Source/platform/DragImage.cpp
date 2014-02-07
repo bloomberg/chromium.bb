@@ -114,7 +114,7 @@ static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescr
     description.setWeight(fontWeight);
     description.setSpecifiedSize(size);
     description.setComputedSize(size);
-    Font result(description, 0, 0);
+    Font result(description);
     result.update(0);
     return result;
 }

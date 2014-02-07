@@ -758,7 +758,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
                 isSpace = false;
             }
             if (isSpace && i > start)
-                w += f.wordSpacing();
+                w += f.fontDescription().wordSpacing();
         }
         return w;
     }
@@ -822,7 +822,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
             float spaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, &space, 1, style(), direction));
             maxWidth -= spaceWidth;
         } else {
-            maxWidth += font.wordSpacing();
+            maxWidth += font.fontDescription().wordSpacing();
         }
     }
 

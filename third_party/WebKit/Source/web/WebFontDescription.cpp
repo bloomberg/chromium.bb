@@ -37,8 +37,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebFontDescription::WebFontDescription(const FontDescription& desc,
-                                       short fontLetterSpacing, short fontWordSpacing)
+WebFontDescription::WebFontDescription(const FontDescription& desc)
 {
     family = desc.family().family();
     genericFamily = static_cast<GenericFamily>(desc.genericFamily());
@@ -47,8 +46,8 @@ WebFontDescription::WebFontDescription(const FontDescription& desc,
     smallCaps = desc.smallCaps();
     weight = static_cast<Weight>(desc.weight());
     smoothing = static_cast<Smoothing>(desc.fontSmoothing());
-    letterSpacing = fontLetterSpacing;
-    wordSpacing = fontWordSpacing;
+    letterSpacing = desc.letterSpacing();
+    wordSpacing = desc.wordSpacing();
 }
 
 WebFontDescription::operator WebCore::FontDescription() const
@@ -65,6 +64,8 @@ WebFontDescription::operator WebCore::FontDescription() const
     desc.setSmallCaps(smallCaps);
     desc.setWeight(static_cast<FontWeight>(weight));
     desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
+    desc.setLetterSpacing(letterSpacing);
+    desc.setWordSpacing(wordSpacing);
     return desc;
 }
 

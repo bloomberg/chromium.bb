@@ -102,7 +102,7 @@ public:
     {
         FontDescription fontDescription;
         fontDescription.setComputedSize(12.0);
-        Font font(fontDescription, 0, 0);
+        Font font(fontDescription);
         font.update(0);
         return PopupMenuStyle(Color::black, Color::white, font, true, false, Length(), TextDirection(), false /* has text direction override */);
     }

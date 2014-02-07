@@ -382,7 +382,7 @@ float InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inlin
             RenderText* rt = toRenderText(text->renderer());
             if (rt->textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt->characterAt(text->start())))
-                    logicalLeft += rt->style(isFirstLineStyle())->font().wordSpacing();
+                    logicalLeft += rt->style(isFirstLineStyle())->font().fontDescription().wordSpacing();
                 needsWordSpacing = !isSpaceOrNewline(rt->characterAt(text->end()));
             }
             text->setLogicalLeft(logicalLeft);
@@ -862,7 +862,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     // If letter-spacing is negative, we should factor that into right layout overflow. (Even in RTL, letter-spacing is
     // applied to the right, so this is not an issue with left overflow.
-    rightGlyphOverflow -= min(0, (int)style->font().letterSpacing());
+    rightGlyphOverflow -= min(0, (int)style->font().fontDescription().letterSpacing());
 
     LayoutUnit textShadowLogicalTop;
     LayoutUnit textShadowLogicalBottom;

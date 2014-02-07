@@ -48,18 +48,18 @@ namespace blink {
 
 WebFont* WebFont::create(const WebFontDescription& desc)
 {
-    return new WebFontImpl(desc, desc.letterSpacing, desc.wordSpacing);
+    return new WebFontImpl(desc);
 }
 
-WebFontImpl::WebFontImpl(const FontDescription& desc, float letterSpacing, float wordSpacing)
-    : m_font(desc, letterSpacing, wordSpacing)
+WebFontImpl::WebFontImpl(const FontDescription& desc)
+    : m_font(desc)
 {
     m_font.update(0);
 }
 
 WebFontDescription WebFontImpl::fontDescription() const
 {
-    return WebFontDescription(m_font.fontDescription(), m_font.letterSpacing(), m_font.wordSpacing());
+    return WebFontDescription(m_font.fontDescription());
 }
 
 int WebFontImpl::ascent() const

@@ -135,7 +135,7 @@ void RenderListBox::updateFromElement()
                 text = toHTMLOptGroupElement(element)->groupLabelText();
                 FontDescription d = itemFont.fontDescription();
                 d.setWeight(d.bolderWeight());
-                itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
+                itemFont = Font(d);
                 itemFont.update(document().styleEngine()->fontSelector());
             }
 
@@ -444,7 +444,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     if (element->hasTagName(optgroupTag)) {
         FontDescription d = itemFont.fontDescription();
         d.setWeight(d.bolderWeight());
-        itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
+        itemFont = Font(d);
         itemFont.update(document().styleEngine()->fontSelector());
     }
 

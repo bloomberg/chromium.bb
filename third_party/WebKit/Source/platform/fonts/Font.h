@@ -78,7 +78,7 @@ struct GlyphOverflow {
 class PLATFORM_EXPORT Font {
 public:
     Font();
-    Font(const FontDescription&, float letterSpacing, float wordSpacing);
+    Font(const FontDescription&);
     ~Font();
 
     Font(const Font&);
@@ -88,6 +88,9 @@ public:
     bool operator!=(const Font& other) const { return !(*this == other); }
 
     const FontDescription& fontDescription() const { return m_fontDescription; }
+    // FIXME: This is currently used by RenderStyle::setWordSpacing and RenderStyle::setLetterSpacing.
+    // They are being removed. Do NOT add new uses of this function. Use FontBuilder instead.
+    FontDescription& mutableFontDescription() { return m_fontDescription; }
 
     void update(PassRefPtr<FontSelector>) const;
 
@@ -101,15 +104,11 @@ public:
     int offsetForPosition(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1) const;
 
-    float wordSpacing() const { return m_wordSpacing; }
-    float letterSpacing() const { return m_letterSpacing; }
-    void setWordSpacing(float s) { m_wordSpacing = s; }
-    void setLetterSpacing(float s) { m_letterSpacing = s; }
     bool isFixedPitch() const;
 
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }
-    float spaceWidth() const { return primaryFont()->spaceWidth() + m_letterSpacing; }
+    float spaceWidth() const { return primaryFont()->spaceWidth() + fontDescription().letterSpacing(); }
     float tabWidth(const SimpleFontData&, unsigned tabSize, float position) const;
     float tabWidth(unsigned tabSize, float position) const { return tabWidth(*primaryFont(), tabSize, position); }
 
@@ -181,8 +180,6 @@ private:
 
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;
-    float m_letterSpacing;
-    float m_wordSpacing;
 };
 
 inline Font::~Font()
@@ -215,8 +212,8 @@ inline FontSelector* Font::fontSelector() const
 inline float Font::tabWidth(const SimpleFontData& fontData, unsigned tabSize, float position) const
 {
     if (!tabSize)
-        return letterSpacing();
-    float tabWidth = tabSize * fontData.spaceWidth() + letterSpacing();
+        return fontDescription().letterSpacing();
+    float tabWidth = tabSize * fontData.spaceWidth() + fontDescription().letterSpacing();
     return tabWidth - fmodf(position, tabWidth);
 }
 

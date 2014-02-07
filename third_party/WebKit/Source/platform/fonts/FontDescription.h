@@ -78,6 +78,8 @@ public:
     FontDescription()
         : m_specifiedSize(0)
         , m_computedSize(0)
+        , m_letterSpacing(0)
+        , m_wordSpacing(0)
         , m_orientation(Horizontal)
         , m_nonCJKGlyphOrientation(NonCJKGlyphOrientationVerticalRight)
         , m_widthVariant(RegularWidth)
@@ -138,6 +140,8 @@ public:
     bool useSubpixelPositioning() const { return m_subpixelTextPosition; }
 
     FontTraitsMask traitsMask() const;
+    float wordSpacing() const { return m_wordSpacing; }
+    float letterSpacing() const { return m_letterSpacing; }
     bool isSpecifiedFont() const { return m_isSpecifiedFont; }
     FontOrientation orientation() const { return static_cast<FontOrientation>(m_orientation); }
     NonCJKGlyphOrientation nonCJKGlyphOrientation() const { return static_cast<NonCJKGlyphOrientation>(m_nonCJKGlyphOrientation); }
@@ -175,6 +179,8 @@ public:
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
     void setTraitsMask(FontTraitsMask);
+    void setWordSpacing(float s) { m_wordSpacing = s; }
+    void setLetterSpacing(float s) { m_letterSpacing = s; }
 
     TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
 
@@ -193,6 +199,9 @@ private:
     float m_specifiedSize;   // Specified CSS value. Independent of rendering issues such as integer
                              // rounding, minimum font sizes, and zooming.
     float m_computedSize;    // Computed size adjusted for the minimum font size and the zoom factor.
+
+    float m_letterSpacing;
+    float m_wordSpacing;
 
     unsigned m_orientation : 1; // FontOrientation - Whether the font is rendering on a horizontal line or a vertical line.
     unsigned m_nonCJKGlyphOrientation : 1; // NonCJKGlyphOrientation - Only used by vertical text. Determines the default orientation for non-ideograph glyphs.
@@ -237,6 +246,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
     return m_familyList == other.m_familyList
         && m_specifiedSize == other.m_specifiedSize
         && m_computedSize == other.m_computedSize
+        && m_letterSpacing == other.m_letterSpacing
+        && m_wordSpacing == other.m_wordSpacing
         && m_italic == other.m_italic
         && m_smallCaps == other.m_smallCaps
         && m_isAbsoluteSize == other.m_isAbsoluteSize

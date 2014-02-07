@@ -512,7 +512,7 @@ void ComplexTextController::adjustGlyphsAndAdvances()
 {
     CGFloat widthSinceLastCommit = 0;
     size_t runCount = m_complexTextRuns.size();
-    bool hasExtraSpacing = (m_font.letterSpacing() || m_font.wordSpacing() || m_expansion) && !m_run.spacingDisabled();
+    bool hasExtraSpacing = (m_font.fontDescription().letterSpacing() || m_font.fontDescription().wordSpacing() || m_expansion) && !m_run.spacingDisabled();
     for (size_t r = 0; r < runCount; ++r) {
         ComplexTextRun& complexTextRun = *m_complexTextRuns[r];
         unsigned glyphCount = complexTextRun.glyphCount();
@@ -580,8 +580,8 @@ void ComplexTextController::adjustGlyphsAndAdvances()
             if (hasExtraSpacing) {
                 // If we're a glyph with an advance, go ahead and add in letter-spacing.
                 // That way we weed out zero width lurkers.  This behavior matches the fast text code path.
-                if (advance.width && m_font.letterSpacing())
-                    advance.width += m_font.letterSpacing();
+                if (advance.width && m_font.fontDescription().letterSpacing())
+                    advance.width += m_font.fontDescription().letterSpacing();
 
                 // Handle justification and word-spacing.
                 if (treatAsSpace || Character::isCJKIdeographOrSymbol(ch)) {
@@ -608,8 +608,8 @@ void ComplexTextController::adjustGlyphsAndAdvances()
                         m_afterExpansion = false;
 
                     // Account for word-spacing.
-                    if (treatAsSpace && (ch != '\t' || !m_run.allowTabs()) && (characterIndex > 0 || r > 0) && m_font.wordSpacing())
-                        advance.width += m_font.wordSpacing();
+                    if (treatAsSpace && (ch != '\t' || !m_run.allowTabs()) && (characterIndex > 0 || r > 0) && m_font.fontDescription().wordSpacing())
+                        advance.width += m_font.fontDescription().wordSpacing();
                 } else
                     m_afterExpansion = false;
             }

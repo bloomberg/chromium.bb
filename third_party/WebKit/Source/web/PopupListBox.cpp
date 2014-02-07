@@ -468,7 +468,7 @@ Font PopupListBox::getRowFont(int rowIndex)
         // Bold-ify labels (ie, an <optgroup> heading).
         FontDescription d = itemFont.fontDescription();
         d.setWeight(FontWeightBold);
-        Font font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
+        Font font(d);
         font.update(0);
         return font;
     }

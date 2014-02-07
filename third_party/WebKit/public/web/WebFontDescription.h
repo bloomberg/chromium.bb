@@ -95,7 +95,7 @@ struct WebFontDescription {
     short wordSpacing;
 
 #if BLINK_IMPLEMENTATION
-    WebFontDescription(const WebCore::FontDescription&, short fontLetterSpacing, short fontWordSpacing);
+    WebFontDescription(const WebCore::FontDescription&);
 
     operator WebCore::FontDescription() const;
 #endif

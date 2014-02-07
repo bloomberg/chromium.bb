@@ -40,7 +40,7 @@ namespace blink {
 
 class WebFontImpl FINAL : public WebFont {
 public:
-    WebFontImpl(const WebCore::FontDescription&, float letterSpacing, float wordSpacing);
+    WebFontImpl(const WebCore::FontDescription&);
 
     virtual WebFontDescription fontDescription() const OVERRIDE;
 

@@ -142,7 +142,7 @@ template <typename TextIterator>
 inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
 {
     bool rtl = m_run.rtl();
-    bool hasExtraSpacing = (m_font->letterSpacing() || m_font->wordSpacing() || m_expansion) && !m_run.spacingDisabled();
+    bool hasExtraSpacing = (m_font->fontDescription().letterSpacing() || m_font->fontDescription().wordSpacing() || m_expansion) && !m_run.spacingDisabled();
 
     float widthSinceLastRounding = m_runWidthSoFar;
     m_runWidthSoFar = floorf(m_runWidthSoFar);
@@ -204,8 +204,8 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
         if (hasExtraSpacing) {
             // Account for letter-spacing.
-            if (width && m_font->letterSpacing())
-                width += m_font->letterSpacing();
+            if (width && m_font->fontDescription().letterSpacing())
+                width += m_font->fontDescription().letterSpacing();
 
             static bool expandAroundIdeographs = FontPlatformFeatures::canExpandAroundIdeographsInComplexText();
             bool treatAsSpace = Character::treatAsSpace(character);
@@ -240,8 +240,8 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
                 // Account for word spacing.
                 // We apply additional space between "words" by adding width to the space character.
-                if (treatAsSpace && (character != '\t' || !m_run.allowTabs()) && (textIterator.currentCharacter() || character == noBreakSpace) && m_font->wordSpacing())
-                    width += m_font->wordSpacing();
+                if (treatAsSpace && (character != '\t' || !m_run.allowTabs()) && (textIterator.currentCharacter() || character == noBreakSpace) && m_font->fontDescription().wordSpacing())
+                    width += m_font->fontDescription().wordSpacing();
             } else
                 m_isAfterExpansion = false;
         }

@@ -94,13 +94,13 @@ float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderS
     UChar lastCharacter = m_lastCharacter;
     m_lastCharacter = currentCharacter;
 
-    if (!kerning && !m_font.letterSpacing() && !m_font.wordSpacing())
+    if (!kerning && !m_font.fontDescription().letterSpacing() && !m_font.fontDescription().wordSpacing())
         return 0;
 
-    float spacing = m_font.letterSpacing() + kerning;
-    if (currentCharacter && lastCharacter && m_font.wordSpacing()) {
+    float spacing = m_font.fontDescription().letterSpacing() + kerning;
+    if (currentCharacter && lastCharacter && m_font.fontDescription().wordSpacing()) {
         if (Character::treatAsSpace(currentCharacter) && !Character::treatAsSpace(lastCharacter))
-            spacing += m_font.wordSpacing();
+            spacing += m_font.fontDescription().wordSpacing();
     }
 
     return spacing;

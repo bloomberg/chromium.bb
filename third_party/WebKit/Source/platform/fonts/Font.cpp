@@ -44,23 +44,17 @@ CodePath Font::s_codePath = AutoPath;
 // ============================================================================================
 
 Font::Font()
-    : m_letterSpacing(0)
-    , m_wordSpacing(0)
 {
 }
 
-Font::Font(const FontDescription& fd, float letterSpacing, float wordSpacing)
+Font::Font(const FontDescription& fd)
     : m_fontDescription(fd)
-    , m_letterSpacing(letterSpacing)
-    , m_wordSpacing(wordSpacing)
 {
 }
 
 Font::Font(const Font& other)
     : m_fontDescription(other.m_fontDescription)
     , m_fontFallbackList(other.m_fontFallbackList)
-    , m_letterSpacing(other.m_letterSpacing)
-    , m_wordSpacing(other.m_wordSpacing)
 {
 }
 
@@ -68,8 +62,6 @@ Font& Font::operator=(const Font& other)
 {
     m_fontDescription = other.m_fontDescription;
     m_fontFallbackList = other.m_fontFallbackList;
-    m_letterSpacing = other.m_letterSpacing;
-    m_wordSpacing = other.m_wordSpacing;
     return *this;
 }
 
@@ -85,8 +77,6 @@ bool Font::operator==(const Font& other) const
 
     return first == second
         && m_fontDescription == other.m_fontDescription
-        && m_letterSpacing == other.m_letterSpacing
-        && m_wordSpacing == other.m_wordSpacing
         && (m_fontFallbackList ? m_fontFallbackList->fontSelectorVersion() : 0) == (other.m_fontFallbackList ? other.m_fontFallbackList->fontSelectorVersion() : 0)
         && (m_fontFallbackList ? m_fontFallbackList->generation() : 0) == (other.m_fontFallbackList ? other.m_fontFallbackList->generation() : 0);
 }
@@ -151,7 +141,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     }
 
     bool hasKerningOrLigatures = fontDescription().typesettingFeatures() & (Kerning | Ligatures);
-    bool hasWordSpacingOrLetterSpacing = wordSpacing() || letterSpacing();
+    bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing() || fontDescription().letterSpacing();
     float* cacheEntry = m_fontFallbackList->widthCache().add(run, std::numeric_limits<float>::quiet_NaN(), hasKerningOrLigatures, hasWordSpacingOrLetterSpacing, glyphOverflow);
     if (cacheEntry && !std::isnan(*cacheEntry))
         return *cacheEntry;
