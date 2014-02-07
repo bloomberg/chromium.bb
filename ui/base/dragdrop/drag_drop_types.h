@@ -22,6 +22,7 @@ class UI_BASE_EXPORT DragDropTypes {
   enum DragEventSource {
     DRAG_EVENT_SOURCE_MOUSE,
     DRAG_EVENT_SOURCE_TOUCH,
+    DRAG_EVENT_SOURCE_LAST = DRAG_EVENT_SOURCE_TOUCH
   };
 
 #if defined(OS_WIN)
