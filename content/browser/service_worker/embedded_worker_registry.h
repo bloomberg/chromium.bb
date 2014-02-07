@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_REGISTRY_H_
 
 #include <map>
-#include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -86,7 +85,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   // Map from process_id to embedded_worker_id.
   // This map only contains running workers.
-  std::map<int, std::set<int> > worker_process_map_;
+  std::map<int, int> worker_process_map_;
 
   int next_embedded_worker_id_;
 

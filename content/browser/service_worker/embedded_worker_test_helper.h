@@ -49,11 +49,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateAddProcess(int embedded_worker_id, int process_id);
   void SimulateRemoveProcess(int embedded_worker_id, int process_id);
 
-  // Call to create a new worker and also associate a process to
-  // it. Returns the new embedded worker id which can be used for
-  // SimulateRemoveProcess.
-  int SimulateCreateWorker(int process_id);
-
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 

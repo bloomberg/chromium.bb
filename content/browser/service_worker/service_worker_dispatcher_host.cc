@@ -114,7 +114,6 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   context_->RegisterServiceWorker(
       pattern,
       script_url,
-      render_process_id_,
       base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
                  this,
                  thread_id,
@@ -139,7 +138,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 
   context_->UnregisterServiceWorker(
       pattern,
-      render_process_id_,
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
                  this,
                  thread_id,

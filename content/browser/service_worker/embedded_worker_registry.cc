@@ -45,14 +45,13 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
 
 void EmbeddedWorkerRegistry::OnWorkerStarted(
     int process_id, int thread_id, int embedded_worker_id) {
-  DCHECK(!ContainsKey(worker_process_map_, process_id) ||
-         worker_process_map_[process_id].count(embedded_worker_id) == 0);
+  DCHECK(!ContainsKey(worker_process_map_, process_id));
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
   if (found == worker_map_.end()) {
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
     return;
   }
-  worker_process_map_[process_id].insert(embedded_worker_id);
+  worker_process_map_[process_id] = embedded_worker_id;
   DCHECK_EQ(found->second->process_id(), process_id);
   found->second->OnStarted(thread_id);
 }
@@ -65,7 +64,7 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
     return;
   }
   DCHECK_EQ(found->second->process_id(), process_id);
-  worker_process_map_[process_id].erase(embedded_worker_id);
+  worker_process_map_.erase(process_id);
   found->second->OnStopped();
 }
 
@@ -94,17 +93,11 @@ void EmbeddedWorkerRegistry::AddChildProcessSender(
 
 void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
   process_sender_map_.erase(process_id);
-  std::map<int, std::set<int> >::iterator found =
-      worker_process_map_.find(process_id);
+  std::map<int, int>::iterator found = worker_process_map_.find(process_id);
   if (found != worker_process_map_.end()) {
-    const std::set<int>& worker_set = worker_process_map_[process_id];
-    for (std::set<int>::const_iterator it = worker_set.begin();
-         it != worker_set.end();
-         ++it) {
-      int embedded_worker_id = *it;
-      DCHECK(ContainsKey(worker_map_, embedded_worker_id));
-      worker_map_[embedded_worker_id]->OnStopped();
-    }
+    int embedded_worker_id = found->second;
+    DCHECK(ContainsKey(worker_map_, embedded_worker_id));
+    worker_map_[embedded_worker_id]->OnStopped();
     worker_process_map_.erase(found);
   }
 }

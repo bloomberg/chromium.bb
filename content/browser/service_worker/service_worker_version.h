@@ -22,6 +22,7 @@ class GURL;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 struct ServiceWorkerFetchRequest;
 

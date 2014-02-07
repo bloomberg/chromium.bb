@@ -10,11 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class ServiceWorkerJobCoordinator;
 
 // A ServiceWorkerRegisterJob lives only for the lifetime of a single
@@ -31,22 +29,17 @@ class ServiceWorkerRegisterJob {
                                   registration)> RegistrationCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status)>
       UnregistrationCallback;
-  // TODO(alecflett): Unify this with RegistrationCallback
-  typedef base::Callback<
-      void(const scoped_refptr<ServiceWorkerRegistration>& registration,
-           ServiceWorkerStatusCode status)> StatusCallback;
 
   // All type of jobs (Register and Unregister) complete through a
   // single call to this callback on the IO thread.
   ServiceWorkerRegisterJob(ServiceWorkerStorage* storage,
-                           EmbeddedWorkerRegistry* worker_registry,
                            ServiceWorkerJobCoordinator* coordinator,
                            const GURL& pattern,
                            const GURL& script_url,
                            RegistrationType type);
   ~ServiceWorkerRegisterJob();
 
-  void AddCallback(const RegistrationCallback& callback, int process_id);
+  void AddCallback(const RegistrationCallback& callback);
 
   void Start();
 
@@ -84,17 +77,12 @@ class ServiceWorkerRegisterJob {
       ServiceWorkerStatusCode previous_status,
       const scoped_refptr<ServiceWorkerRegistration>& previous_registration);
 
-  void StartWorkerAndContinue(
-      const StatusCallback& callback,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-
   // These methods are the last internal callback in the callback
   // chain, and ultimately call callback_.
   void UnregisterComplete(ServiceWorkerStatusCode status);
   void RegisterComplete(
-      const scoped_refptr<ServiceWorkerRegistration>& registration,
-      ServiceWorkerStatusCode start_status);
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void RunCallbacks(
       ServiceWorkerStatusCode status,
@@ -108,14 +96,11 @@ class ServiceWorkerRegisterJob {
   // because we may be cancelling while there are outstanding
   // callbacks that expect access to storage_.
   ServiceWorkerStorage* storage_;
-  EmbeddedWorkerRegistry* worker_registry_;
   ServiceWorkerJobCoordinator* coordinator_;
-  scoped_refptr<ServiceWorkerVersion> pending_version_;
   const GURL pattern_;
   const GURL script_url_;
   const RegistrationType type_;
   std::vector<RegistrationCallback> callbacks_;
-  std::vector<int> pending_process_ids_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

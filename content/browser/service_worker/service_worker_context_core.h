@@ -70,20 +70,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // The callback will be called on the IO thread.
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
-                             int source_process_id,
                              const RegistrationCallback& callback);
 
   // The callback will be called on the IO thread.
   void UnregisterServiceWorker(const GURL& pattern,
-                               int source_process_id,
                                const UnregistrationCallback& callback);
 
   EmbeddedWorkerRegistry* embedded_worker_registry() {
     return embedded_worker_registry_.get();
-  }
-
-  ServiceWorkerJobCoordinator* job_coordinator() {
-    return job_coordinator_.get();
   }
 
  private:
@@ -101,8 +95,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
-  scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

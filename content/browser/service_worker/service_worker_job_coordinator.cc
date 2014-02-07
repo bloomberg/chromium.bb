@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 
 #include "base/stl_util.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 
 namespace content {
@@ -13,14 +12,11 @@ namespace content {
 ServiceWorkerJobCoordinator::JobQueue::JobQueue() {}
 
 ServiceWorkerJobCoordinator::JobQueue::~JobQueue() {
-  DCHECK(jobs_.empty()) << "Destroying JobQueue with " << jobs_.size()
-                        << " unfinished jobs";
   STLDeleteElements(&jobs_);
 }
 
 void ServiceWorkerJobCoordinator::JobQueue::Push(
     scoped_ptr<ServiceWorkerRegisterJob> job,
-    int source_process_id,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   if (jobs_.empty()) {
     job->Start();
@@ -28,10 +24,9 @@ void ServiceWorkerJobCoordinator::JobQueue::Push(
   } else if (!job->Equals(jobs_.back())) {
     jobs_.push_back(job.release());
   }
-  // Note we are releasing 'job' here.
 
   DCHECK(!jobs_.empty());
-  jobs_.back()->AddCallback(callback, source_process_id);
+  jobs_.back()->AddCallback(callback);
 }
 
 void ServiceWorkerJobCoordinator::JobQueue::Pop(ServiceWorkerRegisterJob* job) {
@@ -43,47 +38,36 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(ServiceWorkerRegisterJob* job) {
 }
 
 ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(
-    ServiceWorkerStorage* storage,
-    EmbeddedWorkerRegistry* worker_registry)
-    : storage_(storage),
-      worker_registry_(worker_registry),
-      weak_factory_(this) {}
+    ServiceWorkerStorage* storage)
+    : storage_(storage), weak_factory_(this) {}
 
-ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
-  DCHECK(jobs_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
-                        << jobs_.size() << " job queues";
-}
+ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {}
 
 void ServiceWorkerJobCoordinator::Register(
     const GURL& pattern,
     const GURL& script_url,
-    int source_process_id,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   scoped_ptr<ServiceWorkerRegisterJob> job = make_scoped_ptr(
       new ServiceWorkerRegisterJob(storage_,
-                                   worker_registry_,
                                    this,
                                    pattern,
                                    script_url,
                                    ServiceWorkerRegisterJob::REGISTER));
-  jobs_[pattern].Push(job.Pass(), source_process_id, callback);
+  jobs_[pattern].Push(job.Pass(), callback);
 }
 
 void ServiceWorkerJobCoordinator::Unregister(
     const GURL& pattern,
-    int source_process_id,
     const ServiceWorkerRegisterJob::UnregistrationCallback& callback) {
 
   scoped_ptr<ServiceWorkerRegisterJob> job = make_scoped_ptr(
       new ServiceWorkerRegisterJob(storage_,
-                                   worker_registry_,
                                    this,
                                    pattern,
                                    GURL(),
                                    ServiceWorkerRegisterJob::UNREGISTER));
   jobs_[pattern]
       .Push(job.Pass(),
-            source_process_id,
             base::Bind(&ServiceWorkerJobCoordinator::UnregisterComplete,
                        weak_factory_.GetWeakPtr(),
                        callback));
