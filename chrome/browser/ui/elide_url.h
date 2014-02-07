@@ -39,7 +39,7 @@ base::string16 ElideUrl(const GURL& url,
 // This function takes a GURL object and elides the host to fit within
 // the given width. The function will never elide past the TLD+1 point,
 // but after that, will leading-elide the domain name to fit the width.
-// Example: http://sub.domain.com ---> "...domain.com", or "s...domain.com"
+// Example: http://sub.domain.com ---> "...domain.com", or "...b.domain.com"
 // depending on the width.
 base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
