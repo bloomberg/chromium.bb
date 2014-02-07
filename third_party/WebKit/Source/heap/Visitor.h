@@ -197,9 +197,7 @@ public:
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
 template<typename Collection>
-struct OffHeapCollectionTraceTrait {
-    static void trace(Visitor*, const Collection&);
-};
+struct OffHeapCollectionTraceTrait;
 
 template<typename T>
 struct ObjectAliveTrait {
@@ -353,9 +351,10 @@ private:
             *cell = 0;
     }
 };
+
 template<typename T, typename HashFunctions, typename Traits>
-struct OffHeapCollectionTraceTrait<WTF::HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> > {
-    typedef WTF::HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> HashSet;
+struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::DefaultAllocator> > {
+    typedef WTF::HashSet<T, HashFunctions, Traits, WTF::DefaultAllocator> HashSet;
 
     static void trace(Visitor* visitor, const HashSet& set)
     {
@@ -383,8 +382,8 @@ struct OffHeapCollectionTraceTrait<WTF::ListHashSet<T, inlineCapacity, HashFunct
 };
 
 template<typename Key, typename Value, typename HashFunctions, typename KeyTraits, typename ValueTraits>
-struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> > {
-    typedef WTF::HashMap<Key, Value, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> HashMap;
+struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> > {
+    typedef WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> HashMap;
 
     static void trace(Visitor* visitor, const HashMap& map)
     {
@@ -398,6 +397,22 @@ struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, WTF::DefaultAllocato
         }
         COMPILE_ASSERT(!KeyTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous1);
         COMPILE_ASSERT(!ValueTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous2);
+    }
+};
+
+// We trace vectors by using the trace trait on each element, which means you
+// can have vectors of general objects (not just pointers to objects) that can
+// be traced.
+template<typename T, size_t N>
+struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
+    typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
+
+    static void trace(Visitor* visitor, const Vector& vector)
+    {
+        if (vector.isEmpty())
+            return;
+        for (typename Vector::const_iterator it = vector.begin(), end = vector.end(); it != end; ++it)
+            TraceTrait<T>::trace(visitor, const_cast<T*>(it));
     }
 };
 
@@ -442,32 +457,6 @@ inline void doNothingTrace(Visitor*, void*) { }
 ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
 
 #undef DECLARE_DO_NOTHING_TRAIT
-
-// Vectors are simple collections, and it's possible to mark vectors in a more
-// general way so that collections of objects (not pointers to objects) can be
-// marked.
-template<typename T, size_t N>
-struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
-    typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
-
-    static void trace(Visitor* visitor, const Vector& vector)
-    {
-        if (vector.isEmpty())
-            return;
-        for (typename Vector::const_iterator it = vector.begin(), end = vector.end(); it != end; ++it)
-            TraceTrait<T>::trace(visitor, const_cast<T*>(it));
-    }
-};
-
-// Fallback definition.
-template<typename Collection>
-void OffHeapCollectionTraceTrait<Collection>::trace(Visitor* visitor, const Collection& collection)
-{
-    if (collection.isEmpty())
-        return;
-    for (typename Collection::const_iterator it = collection.begin(), end = collection.end(); it != end; ++it)
-        visitor->trace(*it);
-}
 
 #ifndef NDEBUG
 template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)

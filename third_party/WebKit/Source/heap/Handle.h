@@ -41,7 +41,6 @@
 namespace WebCore {
 
 template<typename T> class Member;
-template<typename T> struct OffHeapCollectionTraceTrait;
 
 class PersistentNode {
 public:
