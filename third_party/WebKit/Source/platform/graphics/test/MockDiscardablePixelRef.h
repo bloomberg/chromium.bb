@@ -32,8 +32,9 @@ namespace WebCore {
 
 class MockDiscardablePixelRef : public SkPixelRef {
 public:
-    MockDiscardablePixelRef(const SkImageInfo& info)
+    MockDiscardablePixelRef(const SkImageInfo& info, size_t rowbytes)
         : SkPixelRef(info)
+        , m_rowBytes(rowbytes)
         , discarded(false)
     {
         setURI("discardable");
@@ -54,7 +55,7 @@ public:
             if (!dst->asImageInfo(&info)) {
                 return false;
             }
-            SkAutoTUnref<SkPixelRef> pr(new MockDiscardablePixelRef(info));
+            SkAutoTUnref<SkPixelRef> pr(new MockDiscardablePixelRef(info, dst->rowBytes()));
             dst->setPixelRef(pr);
             return true;
         }
@@ -81,7 +82,7 @@ protected:
         m_lockedMemory = &discarded;
         rec->fPixels = m_lockedMemory;
         rec->fColorTable = 0;
-        rec->fRowBytes = 1;
+        rec->fRowBytes = m_rowBytes;
         return true;
     }
 
@@ -92,6 +93,7 @@ protected:
 
 private:
     void* m_lockedMemory;
+    size_t m_rowBytes;
     bool discarded;
 };
 
