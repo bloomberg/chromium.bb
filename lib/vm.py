@@ -6,13 +6,13 @@
 
 import logging
 import os
+import time
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import remote_access
-from chromite.lib import timeout_util
 
 
 class VMError(Exception):
@@ -85,8 +85,8 @@ class VMStopError(VMError):
 class VMInstance(object):
   """This is a wrapper of a VM instance."""
 
-  STARTUP_TIMEOUT = 60 * 5
-  STARTUP_CHECK_INTERNAL = 30
+  MAX_LAUNCH_ATTEMPTS = 5
+  TIME_BETWEEN_LAUNCH_ATTEMPTS = 30
 
   # VM needs a longer timeout.
   SSH_CONNECT_TIMEOUT = 120
@@ -157,20 +157,23 @@ class VMInstance(object):
     try to start the VM multiple times if the VM fails to start up. This is
     inspired by retry_until_ssh in crosutils/lib/cros_vm_lib.sh.
     """
-    self._Start()
+    for _ in range(self.MAX_LAUNCH_ATTEMPTS):
+      try:
+        self._Start()
+      except VMStartupError:
+        logging.warning('VM failed to start.')
+        continue
 
-    def _log():
+      if self.Connect():
+        # VM is started up successfully if we can connect to it.
+        break
+
       logging.warning('Cannot connect to VM...')
-
-    try:
-      timeout_util.WaitForReturnTrue(self.Connect,
-                                     self.STARTUP_TIMEOUT,
-                                     period=self.STARTUP_CHECK_INTERNAL,
-                                     side_effect_func=_log)
-    except timeout_util.TimeoutError:
       self.Stop(ignore_error=True)
-      raise timeout_util.TimeoutError(
-          'Timeout connecting VM after %s seconds.' % self.STARTUP_TIMEOUT)
+      time.sleep(self.TIME_BETWEEN_LAUNCH_ATTEMPTS)
+    else:
+      raise VMStartupError('Max attempts (%d) to start VM exceeded.'
+                           % self.MAX_LAUNCH_ATTEMPTS)
 
     logging.info('VM started at port %d', self.port)
 
