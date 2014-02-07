@@ -1837,6 +1837,7 @@
         'common/extensions/manifest_tests/extension_manifests_validapp_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_accessible_resources_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_webview_accessible_resources_unittest.cc',
         'common/extensions/manifest_unittest.cc',
         'common/extensions/message_bundle_unittest.cc',
         'common/extensions/permissions/media_galleries_permission_unittest.cc',

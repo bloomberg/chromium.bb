@@ -169,8 +169,9 @@ extern const char kVersion[];
 extern const char kWebAccessibleResources[];
 extern const char kWebURLs[];
 extern const char kWebview[];
+extern const char kWebviewName[];
 extern const char kWebviewAccessibleResources[];
-extern const char kWebviewPrivilegedPartitions[];
+extern const char kWebviewPartitions[];
 
 }  // namespace manifest_keys
 
@@ -424,8 +425,9 @@ extern const char kInvalidWebAccessibleResource[];
 extern const char kInvalidWebview[];
 extern const char kInvalidWebviewAccessibleResourcesList[];
 extern const char kInvalidWebviewAccessibleResource[];
-extern const char kInvalidWebviewPrivilegedPartitionList[];
-extern const char kInvalidWebviewPrivilegedPartition[];
+extern const char kInvalidWebviewPartition[];
+extern const char kInvalidWebviewPartitionName[];
+extern const char kInvalidWebviewPartitionsList[];
 extern const char kInvalidWebURL[];
 extern const char kInvalidWebURLs[];
 extern const char kInvalidZipHash[];

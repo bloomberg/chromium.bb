@@ -7,15 +7,19 @@
 
 #include <string>
 
+#include "base/memory/scoped_vector.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
 namespace extensions {
 
-// A structure to hold the <webview> accessible extension resources
+class PartitionItem;
+
+// A class to hold the <webview> accessible extension resources
 // that may be specified in the manifest of an extension using the
 // "webview" key.
-struct WebviewInfo : public Extension::ManifestData {
+class WebviewInfo : public Extension::ManifestData {
+ public:
   // Define out of line constructor/destructor to please Clang.
   WebviewInfo();
   virtual ~WebviewInfo();
@@ -25,13 +29,10 @@ struct WebviewInfo : public Extension::ManifestData {
                                           const std::string& partition_id,
                                           const std::string& relative_path);
 
-  // Returns true when 'webview_accessible_resources' are defined for the
-  // app.
-  static bool HasWebviewAccessibleResources(const Extension* extension);
+  void AddPartitionItem(scoped_ptr<PartitionItem> item);
 
-  // Optional list of webview accessible extension resources.
-  std::vector<std::string> webview_privileged_partitions_;
-  URLPatternSet webview_accessible_resources_;
+ private:
+  ScopedVector<PartitionItem> partition_items_;
 };
 
 // Parses the "webview" manifest key.

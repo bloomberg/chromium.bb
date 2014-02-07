@@ -1,6 +1,7 @@
 {
-  "name": "Platform App Test: <webview>",
+  "name": "test",
   "version": "2",
+  "manifest_version": 2,
   "permissions": [
     "webview"
   ],
@@ -11,12 +12,7 @@
   },
   "webview": {
     "partitions": [
-      {
-        "name": "foobar",
-        "accessible_resources": [
-          "guest.html"
-        ]
-      }
+      []
     ]
   }
 }

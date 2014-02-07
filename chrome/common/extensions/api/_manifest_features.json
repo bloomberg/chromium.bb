@@ -427,7 +427,7 @@
     }
   ],
   "webview": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "min_manifest_version": 2
   }
