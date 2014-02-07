@@ -4,13 +4,17 @@
 
 #include "content/child/child_thread.h"
 
+#include <signal.h>
+
 #include <string>
 
 #include "base/allocator/allocator_extension.h"
 #include "base/base_switches.h"
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -64,6 +68,50 @@ base::LazyInstance<base::ThreadLocalPointer<ChildThread> > g_lazy_tls =
 // plugins), PluginThread has EnsureTerminateMessageFilter.
 #if defined(OS_POSIX)
 
+// A thread delegate that waits for |duration| and then signals the process
+// with SIGALRM.
+class WaitAndExitDelegate : public base::PlatformThread::Delegate {
+ public:
+  explicit WaitAndExitDelegate(base::TimeDelta duration)
+      : duration_(duration) {}
+  virtual ~WaitAndExitDelegate() OVERRIDE {}
+
+  virtual void ThreadMain() OVERRIDE {
+    base::PlatformThread::Sleep(duration_);
+    // This used to be implemented with alarm(2). Make sure to not break
+    // anything that requires the process being signaled.
+    CHECK_EQ(0, raise(SIGALRM));
+
+    base::PlatformThread::Sleep((base::TimeDelta::FromSeconds(10)));
+    // If something erroneously blocked SIGALRM, this will trigger.
+    NOTREACHED();
+    _exit(0);
+  }
+
+ private:
+  const base::TimeDelta duration_;
+  DISALLOW_COPY_AND_ASSIGN(WaitAndExitDelegate);
+};
+
+// This is similar to using alarm(2), except it will spawn a thread
+// which will sleep for |duration| before raising SIGALRM.
+bool CreateAlarmThread(base::TimeDelta duration) {
+  scoped_ptr<WaitAndExitDelegate> delegate(new WaitAndExitDelegate(duration));
+
+  const bool thread_created = base::PlatformThread::CreateNonJoinable(
+      0 /* stack_size */, delegate.get());
+  if (!thread_created)
+    return false;
+
+  // A non joinable thread has been created. The thread will either terminate
+  // the process or will be terminated by the process. Therefore, keep the
+  // delegate object alive for the lifetime of the process.
+  WaitAndExitDelegate* leaking_delegate = delegate.release();
+  ANNOTATE_LEAKING_OBJECT_PTR(leaking_delegate);
+  ignore_result(leaking_delegate);
+  return true;
+}
+
 class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   // IPC::ChannelProxy::MessageFilter
@@ -89,7 +137,7 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
       // it 60 seconds to run exit handlers. Exit handlers may including ones
       // that write profile data to disk (which happens under profile collection
       // mode).
-      alarm(60);
+      CHECK(CreateAlarmThread(base::TimeDelta::FromSeconds(60)));
 #if defined(LEAK_SANITIZER)
       // Invoke LeakSanitizer early to avoid detecting shutdown-only leaks. If
       // leaks are found, the process will exit here.
