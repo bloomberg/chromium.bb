@@ -39,9 +39,16 @@ String ServiceWorkerError::errorString(WebServiceWorkerError::ErrorType type)
     switch (type) {
     case WebServiceWorkerError::DisabledError:
         return "DisabledError";
-    default:
-        ASSERT_NOT_REACHED();
+    case WebServiceWorkerError::SecurityError:
+        return "SecurityError";
+    case WebServiceWorkerError::InstallError:
+        return "InstallError";
+    case WebServiceWorkerError::ActivateError:
+        return "ActivateError";
+    case WebServiceWorkerError::UnknownError:
+        return "UnknownError";
     }
+    ASSERT_NOT_REACHED();
     return String();
 }
 
