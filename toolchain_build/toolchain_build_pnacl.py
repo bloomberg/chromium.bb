@@ -170,6 +170,13 @@ def CmakeHostArchFlags(host, options):
     cc, cxx = CompilersForHost(host)
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
 
+  if NativeTriple() != host and pynacl.platform.Is64BitLinux():
+    # Currently the only supported "cross" build is 64-bit Linux to 32-bit
+    # Linux. Enable it, and disable libxml because Ubuntu doesn't have a
+    # 32-bit libxml build.
+    cmake_flags.extend(['-DLLVM_BUILD_32_BITS=ON',
+                        '-DLLVM_ENABLE_LIBXML=OFF'])
+
   if options.sanitize:
     cmake_flags.extend(['-DCMAKE_%s_FLAGS=-fsanitize=%s' % (c, options.sanitize)
                         for c in ('C', 'CXX')])
@@ -357,13 +364,13 @@ def HostTools(host, options):
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DLLVM_ENABLE_ASSERTIONS=ON',
-                  '-ULLVM_ENABLE_ZLIB',
+                  '-DLLVM_ENABLE_ZLIB=OFF',
                   '-DLLVM_BUILD_TESTS=ON',
                   '-DLLVM_APPEND_VC_REV=ON',
                   '-DLLVM_BINUTILS_INCDIR=%(abs_binutils_pnacl_src)s/include',
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
                   '%(llvm_src)s']),
-              command.Command(['ninja']),
+              command.Command(['ninja', '-v']),
               command.Command(['ninja', 'install']),
         ],
       },
