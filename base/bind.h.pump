@@ -93,13 +93,13 @@ $if ARITY > 0 [[, ]] $for ARG , [[const P$(ARG)& p$(ARG)]]) {
   typedef typename internal::FunctorTraits<Functor>::RunnableType RunnableType;
   typedef typename internal::FunctorTraits<Functor>::RunType RunType;
 
+$if ARITY > 0 [[
+
   // Use RunnableType::RunType instead of RunType above because our
   // checks should below for bound references need to know what the actual
   // functor is going to interpret the argument as.
   typedef internal::FunctionTraits<typename RunnableType::RunType>
       BoundFunctorTraits;
-
-$if ARITY > 0 [[
 
   // Do not allow binding a non-const reference parameter. Non-const reference
   // parameters are disallowed by the Google style guide.  Also, binding a
