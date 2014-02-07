@@ -9,8 +9,9 @@
 
 // directory names
 extern const wchar_t kAppDataDirName[];
-extern const wchar_t kPreferencesFilename[];
+extern const wchar_t kCanaryAppDataDirName[];
 extern const wchar_t kLocalStateFilename[];
+extern const wchar_t kPreferencesFilename[];
 extern const wchar_t kUserDataDirName[];
 
 #endif  // CHROME_ELF_CHROME_ELF_CONSTANTS_H_

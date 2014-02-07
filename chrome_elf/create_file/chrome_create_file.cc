@@ -243,6 +243,11 @@ HANDLE CreateFileNTDLL(
   return file_handle;
 }
 
+bool IsCanary(LPWSTR exe_path) {
+  wchar_t* found = wcsstr(exe_path, L"Google\\Chrome SxS");
+  return !!found;
+}
+
 bool ShouldBypass(LPCWSTR file_path) {
   // If the shell functions are not present, forward the call to kernel32.
   if (!PopulateShellFunctions())
@@ -259,10 +264,17 @@ bool ShouldBypass(LPCWSTR file_path) {
   HRESULT appdata_result = g_get_folder_func(
       NULL, CSIDL_LOCAL_APPDATA, NULL, 0, local_appdata_path);
 
+  wchar_t buffer[MAX_PATH] = {};
+  if (!GetModuleFileNameW(NULL, buffer, MAX_PATH))
+    return false;
+
+  bool is_canary = IsCanary(buffer);
+
   // If getting the %LOCALAPPDATA% path or appending to it failed, then forward
   // the call to kernel32.
   if (!SUCCEEDED(appdata_result) ||
-      !g_path_append_func(local_appdata_path, kAppDataDirName) ||
+      !g_path_append_func(local_appdata_path, is_canary ?
+          kCanaryAppDataDirName : kAppDataDirName) ||
       !g_path_append_func(local_appdata_path, kUserDataDirName)) {
     return false;
   }
