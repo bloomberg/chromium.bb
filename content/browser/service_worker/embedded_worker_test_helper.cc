@@ -23,6 +23,14 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 }
 
+int EmbeddedWorkerTestHelper::SimulateCreateWorker(int process_id) {
+  scoped_ptr<EmbeddedWorkerInstance> worker = registry()->CreateWorker();
+
+  int embedded_worker_id = worker->embedded_worker_id();
+  SimulateAddProcess(embedded_worker_id, process_id);
+  return embedded_worker_id;
+}
+
 void EmbeddedWorkerTestHelper::SimulateAddProcess(
     int embedded_worker_id,
     int process_id) {
