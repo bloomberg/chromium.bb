@@ -146,3 +146,6 @@ FrameTreeBrowserTest.NavigateWithLeftoverFrames
 
 # http://crbug.com/338421
 GinBrowserTest.GinAndGarbageCollection
+
+# http://crbug.com/341995
+TracingControllerTest.EnableCaptureAndDisableMonitoringWithFilePath
