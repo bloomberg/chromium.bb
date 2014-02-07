@@ -163,12 +163,16 @@ void PrintJob::Stop() {
   // Be sure to live long enough.
   scoped_refptr<PrintJob> handle(this);
 
-  if (worker_->message_loop()) {
+  base::MessageLoop* worker_loop = worker_->message_loop();
+  if (worker_loop) {
     ControlledWorkerShutdown();
-  } else {
-    // Flush the cached document.
-    UpdatePrintedDocument(NULL);
+
+    is_job_pending_ = false;
+    registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
+                      content::Source<PrintJob>(this));
   }
+  // Flush the cached document.
+  UpdatePrintedDocument(NULL);
 }
 
 void PrintJob::Cancel() {
@@ -323,14 +327,32 @@ void PrintJob::ControlledWorkerShutdown() {
   // deadlock is eliminated.
   worker_->StopSoon();
 
-  // Delay shutdown until the worker terminates.  We want this code path
-  // to wait on the thread to quit before continuing.
-  if (worker_->IsRunning()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrintJob::ControlledWorkerShutdown, this),
-        base::TimeDelta::FromMilliseconds(100));
-    return;
+  // Run a tight message loop until the worker terminates. It may seems like a
+  // hack but I see no other way to get it to work flawlessly. The issues here
+  // are:
+  // - We don't want to run tasks while the thread is quitting.
+  // - We want this code path to wait on the thread to quit before continuing.
+  MSG msg;
+  HANDLE thread_handle = worker_->thread_handle().platform_handle();
+  for (; thread_handle;) {
+    // Note that we don't do any kind of message prioritization since we don't
+    // execute any pending task or timer.
+    DWORD result = MsgWaitForMultipleObjects(1, &thread_handle,
+                                             FALSE, INFINITE, QS_ALLINPUT);
+    if (result == WAIT_OBJECT_0 + 1) {
+      while (PeekMessage(&msg, NULL, 0, 0, TRUE) > 0) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      }
+      // Continue looping.
+    } else if (result == WAIT_OBJECT_0) {
+      // The thread quit.
+      break;
+    } else {
+      // An error occurred. Assume the thread quit.
+      NOTREACHED();
+      break;
+    }
   }
 #endif
 
@@ -343,16 +365,13 @@ void PrintJob::ControlledWorkerShutdown() {
       FROM_HERE,
       base::Bind(&PrintJobWorker::Stop,
                  base::Unretained(worker_.get())),
-      base::Bind(&PrintJob::HoldUntilStopIsCalled, this),
+      base::Bind(&PrintJob::HoldUntilStopIsCalled,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 scoped_refptr<PrintJob>(this)),
       false);
-
-  is_job_pending_ = false;
-  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                    content::Source<PrintJob>(this));
-  UpdatePrintedDocument(NULL);
 }
 
-void PrintJob::HoldUntilStopIsCalled() {
+void PrintJob::HoldUntilStopIsCalled(const scoped_refptr<PrintJob>&) {
   is_stopped_ = true;
   is_stopping_ = false;
 }
