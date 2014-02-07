@@ -31,7 +31,7 @@ class CastSenderImpl : public CastSender {
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      const CastInitializationCallback& initialization_status,
+      const CastInitializationCallback& initialization_callback,
       transport::CastTransportSender* const transport_sender);
 
   virtual ~CastSenderImpl();

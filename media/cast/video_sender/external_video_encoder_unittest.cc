@@ -100,7 +100,13 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment_,
         video_config_,
-        new test::FakeGpuVideoAcceleratorFactories(task_runner_)));
+        new test::FakeGpuVideoAcceleratorFactories(task_runner_),
+        base::Bind(&ExternalVideoEncoderTest::CheckInitializationResult,
+                   base::Unretained(this))));
+  }
+
+  void CheckInitializationResult(CastInitializationStatus result) {
+    EXPECT_EQ(result, STATUS_INITIALIZED);
   }
 
   virtual ~ExternalVideoEncoderTest() {}

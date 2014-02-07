@@ -64,7 +64,7 @@ Vp8Encoder::~Vp8Encoder() {
   vpx_img_free(raw_image_);
 }
 
-void Vp8Encoder::Initialize() {
+bool Vp8Encoder::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
   config_.reset(new vpx_codec_enc_cfg_t());
   encoder_.reset(new vpx_codec_ctx_t());
@@ -79,14 +79,15 @@ void Vp8Encoder::Initialize() {
     acked_frame_buffers_[i] = true;
     used_buffers_frame_id_[i] = kStartFrameId;
   }
-  InitEncode(cast_config_.number_of_cores);
+  return InitEncode(cast_config_.number_of_cores);
 }
 
-void Vp8Encoder::InitEncode(int number_of_cores) {
+bool Vp8Encoder::InitEncode(int number_of_cores) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Populate encoder configuration with default values.
   if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), config_.get(), 0)) {
-    DCHECK(false) << "Invalid return value";
+    NOTREACHED() << "Invalid return value";
+    return false;
   }
   config_->g_w = cast_config_.width;
   config_->g_h = cast_config_.height;
@@ -130,15 +131,16 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
   // TODO(mikhal): Tune settings.
   if (vpx_codec_enc_init(
           encoder_.get(), vpx_codec_vp8_cx(), config_.get(), flags)) {
-    DCHECK(false) << "vpx_codec_enc_init() failed.";
+    NOTREACHED() << "vpx_codec_enc_init() failed.";
     encoder_.reset();
-    return;
+    return false;
   }
   vpx_codec_control(encoder_.get(), VP8E_SET_STATIC_THRESHOLD, 1);
   vpx_codec_control(encoder_.get(), VP8E_SET_NOISE_SENSITIVITY, 0);
   vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, -6);
   vpx_codec_control(
       encoder_.get(), VP8E_SET_MAX_INTRA_BITRATE_PCT, rc_max_intra_target);
+  return true;
 }
 
 bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,

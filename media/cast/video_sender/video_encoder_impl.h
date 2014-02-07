@@ -31,6 +31,7 @@ class VideoEncoderImpl : public VideoEncoder {
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config,
+                   const CastInitializationCallback& initialization_callback,
                    uint8 max_unacked_frames);
 
   virtual ~VideoEncoderImpl();
@@ -57,6 +58,7 @@ class VideoEncoderImpl : public VideoEncoder {
  private:
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
+  const CastInitializationCallback initialization_callback_;
   CodecDynamicConfig dynamic_config_;
   bool skip_next_frame_;
   int skip_count_;

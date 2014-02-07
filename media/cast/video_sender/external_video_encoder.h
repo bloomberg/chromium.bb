@@ -28,7 +28,8 @@ class ExternalVideoEncoder : public VideoEncoder {
   ExternalVideoEncoder(
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
-      scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories);
+      scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories,
+      const CastInitializationCallback& initialization_callback);
 
   virtual ~ExternalVideoEncoder();
 
@@ -52,14 +53,14 @@ class ExternalVideoEncoder : public VideoEncoder {
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  protected:
-  void EncoderInitialized();
-  void EncoderError();
+  void InitializationResult(bool success);
 
  private:
   friend class LocalVideoEncodeAcceleratorClient;
 
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
+  const CastInitializationCallback initialization_callback_;
 
   bool encoder_active_;
   bool key_frame_requested_;

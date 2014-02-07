@@ -183,7 +183,8 @@ class LocalVideoEncodeAcceleratorClient
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(&ExternalVideoEncoder::EncoderInitialized, weak_owner_));
+        base::Bind(
+            &ExternalVideoEncoder::InitializationResult, weak_owner_, true));
   }
 
   virtual void NotifyError(VideoEncodeAccelerator::Error error) OVERRIDE {
@@ -197,7 +198,8 @@ class LocalVideoEncodeAcceleratorClient
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(&ExternalVideoEncoder::EncoderError, weak_owner_));
+        base::Bind(
+            &ExternalVideoEncoder::InitializationResult, weak_owner_, false));
   }
 
   // Called to allocate the input and output buffers.
@@ -350,9 +352,11 @@ class LocalVideoEncodeAcceleratorClient
 ExternalVideoEncoder::ExternalVideoEncoder(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
-    scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories)
+    scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories,
+    const CastInitializationCallback& initialization_callback)
     : video_config_(video_config),
       cast_environment_(cast_environment),
+      initialization_callback_(initialization_callback),
       encoder_active_(false),
       key_frame_requested_(false),
       skip_next_frame_(false),
@@ -378,14 +382,19 @@ ExternalVideoEncoder::~ExternalVideoEncoder() {
                  video_accelerator_client_));
 }
 
-void ExternalVideoEncoder::EncoderInitialized() {
+void ExternalVideoEncoder::InitializationResult(bool success) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  encoder_active_ = true;
-}
+  encoder_active_ = success;
 
-void ExternalVideoEncoder::EncoderError() {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  encoder_active_ = false;
+  CastInitializationStatus result;
+  if (success)
+    result = STATUS_INITIALIZED;
+  else
+    result = STATUS_GPU_ACCELERATION_ERROR;
+
+  cast_environment_->PostTask(CastEnvironment::MAIN,
+                              FROM_HERE,
+                              base::Bind(initialization_callback_, result));
 }
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
