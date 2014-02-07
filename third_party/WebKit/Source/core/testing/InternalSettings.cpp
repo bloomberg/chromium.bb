@@ -232,6 +232,7 @@ void InternalSettings::setStandardFontFamily(const AtomicString& family, const S
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setStandard(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -242,6 +243,7 @@ void InternalSettings::setSerifFontFamily(const AtomicString& family, const Stri
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setSerif(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -252,6 +254,7 @@ void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const 
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setSansSerif(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -262,6 +265,7 @@ void InternalSettings::setFixedFontFamily(const AtomicString& family, const Stri
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setFixed(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -272,6 +276,7 @@ void InternalSettings::setCursiveFontFamily(const AtomicString& family, const St
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setCursive(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -282,6 +287,7 @@ void InternalSettings::setFantasyFontFamily(const AtomicString& family, const St
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setFantasy(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -292,6 +298,7 @@ void InternalSettings::setPictographFontFamily(const AtomicString& family, const
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setPictograph(family, code);
+    settings()->notifyGenericFontFamilyChange();
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 

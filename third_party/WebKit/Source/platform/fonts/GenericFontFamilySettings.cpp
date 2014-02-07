@@ -44,6 +44,18 @@ GenericFontFamilySettings::GenericFontFamilySettings(const GenericFontFamilySett
 {
 }
 
+GenericFontFamilySettings& GenericFontFamilySettings::operator=(const GenericFontFamilySettings& other)
+{
+    m_standardFontFamilyMap = other.m_standardFontFamilyMap;
+    m_serifFontFamilyMap = other.m_serifFontFamilyMap;
+    m_fixedFontFamilyMap = other.m_fixedFontFamilyMap;
+    m_sansSerifFontFamilyMap = other.m_sansSerifFontFamilyMap;
+    m_cursiveFontFamilyMap = other.m_cursiveFontFamilyMap;
+    m_fantasyFontFamilyMap = other.m_fantasyFontFamilyMap;
+    m_pictographFontFamilyMap = other.m_pictographFontFamilyMap;
+    return *this;
+}
+
 // Sets the entry in the font map for the given script. If family is the empty string, removes the entry instead.
 void GenericFontFamilySettings::setGenericFontFamilyMap(ScriptFontFamilyMap& fontMap, const AtomicString& family, UScriptCode script)
 {

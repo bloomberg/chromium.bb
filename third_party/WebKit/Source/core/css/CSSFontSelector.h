@@ -90,6 +90,7 @@ public:
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
+    void updateGenericFontFamilySettings(Document&);
 
     void beginLoadingFontSoon(FontResource*);
     void loadPendingFonts();
