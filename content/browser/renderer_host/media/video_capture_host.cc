@@ -186,7 +186,11 @@ void VideoCaptureHost::OnStartCapture(int device_id,
            << " (" << (params.allow_resolution_change ? "variable" : "constant")
            << ")";
   VideoCaptureControllerID controller_id(device_id);
-  DCHECK(entries_.find(controller_id) == entries_.end());
+  if (entries_.find(controller_id) != entries_.end()) {
+    Send(new VideoCaptureMsg_StateChanged(device_id,
+                                          VIDEO_CAPTURE_STATE_ERROR));
+    return;
+  }
 
   entries_[controller_id] = base::WeakPtr<VideoCaptureController>();
   media_stream_manager_->video_capture_manager()->StartCaptureForClient(
