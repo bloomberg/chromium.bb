@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,20 +86,53 @@ struct AcceleratorMapping {
   int modifiers;
   int command_id;
 };
+
 const AcceleratorMapping kAppWindowAcceleratorMap[] = {
   { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
   { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
   { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
 };
 
+// These accelerators will only be available in kiosk mode. These allow the
+// user to manually zoom app windows. This is only necessary in kiosk mode
+// (in normal mode, the user can zoom via the screen magnifier).
+// TODO(xiyuan): Write a test for kiosk accelerators.
+const AcceleratorMapping kAppWindowKioskAppModeAcceleratorMap[] = {
+  { ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
+  { ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_ZOOM_MINUS },
+  { ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
+  { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+  { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+  { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+  { ui::VKEY_0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
+  { ui::VKEY_NUMPAD0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
+};
+
+void AddAcceleratorsFromMapping(const AcceleratorMapping mapping[],
+                                size_t mapping_length,
+                                std::map<ui::Accelerator, int>* accelerators) {
+  for (size_t i = 0; i < mapping_length; ++i) {
+    ui::Accelerator accelerator(mapping[i].keycode, mapping[i].modifiers);
+    (*accelerators)[accelerator] = mapping[i].command_id;
+  }
+}
+
 const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
   typedef std::map<ui::Accelerator, int> AcceleratorMap;
   CR_DEFINE_STATIC_LOCAL(AcceleratorMap, accelerators, ());
   if (accelerators.empty()) {
-    for (size_t i = 0; i < arraysize(kAppWindowAcceleratorMap); ++i) {
-      ui::Accelerator accelerator(kAppWindowAcceleratorMap[i].keycode,
-                                  kAppWindowAcceleratorMap[i].modifiers);
-      accelerators[accelerator] = kAppWindowAcceleratorMap[i].command_id;
+    AddAcceleratorsFromMapping(
+        kAppWindowAcceleratorMap,
+        arraysize(kAppWindowAcceleratorMap),
+        &accelerators);
+
+    // Add accelerators for kiosk mode.
+    if (chrome::IsRunningInForcedAppMode()) {
+      AddAcceleratorsFromMapping(
+          kAppWindowKioskAppModeAcceleratorMap,
+          arraysize(kAppWindowKioskAppModeAcceleratorMap),
+          &accelerators);
     }
   }
   return accelerators;
@@ -303,6 +337,17 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   const std::map<ui::Accelerator, int>& accelerator_table =
       GetAcceleratorTable();
   const bool is_kiosk_app_mode = chrome::IsRunningInForcedAppMode();
+
+  // Ensures that kiosk mode accelerators are enabled when in kiosk mode (to be
+  // future proof). This is needed because GetAcceleratorTable() uses a static
+  // to store data and only checks kiosk mode once. If a platform app is
+  // launched before kiosk mode starts, the kiosk accelerators will not be
+  // registered. This DCHECK catches the case.
+  DCHECK(!is_kiosk_app_mode ||
+         accelerator_table.size() ==
+             arraysize(kAppWindowAcceleratorMap) +
+                 arraysize(kAppWindowKioskAppModeAcceleratorMap));
+
   for (std::map<ui::Accelerator, int>::const_iterator iter =
            accelerator_table.begin();
        iter != accelerator_table.end(); ++iter) {
@@ -863,6 +908,18 @@ bool NativeAppWindowViews::AcceleratorPressed(
   switch (command_id) {
     case IDC_CLOSE_WINDOW:
       Close();
+      return true;
+    case IDC_ZOOM_MINUS:
+      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+                             content::PAGE_ZOOM_OUT);
+      return true;
+    case IDC_ZOOM_NORMAL:
+      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+                             content::PAGE_ZOOM_RESET);
+      return true;
+    case IDC_ZOOM_PLUS:
+      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+                             content::PAGE_ZOOM_IN);
       return true;
     default:
       NOTREACHED() << "Unknown accelerator sent to app window.";
