@@ -4843,7 +4843,7 @@ All users must sign out to continue.
     Next
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CONFIRM_SAFE_CHARGER_TITLE" desc="Title on the confirm safe charger page">
-    Your charger is up to update
+    Your charger is up to date.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CONFIRM_SAFE_CHARGER_TO_GO" desc="Text on confirm user has a safe charger to go with">
     You're good to go.
