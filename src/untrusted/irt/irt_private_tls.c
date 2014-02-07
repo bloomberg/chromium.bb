@@ -37,7 +37,10 @@ void *nacl_tls_get(void) {
    * lot faster.
    */
   void *result;
-  __asm__("mov %%gs:4, %0" : "=r"(result));
+  /*
+   * tls_edit is now responsible for changing the gs offset to 4
+   */
+  __asm__("mov %%gs:0, %0" : "=r"(result));
   return result;
 #else
   return NACL_SYSCALL(second_tls_get)();

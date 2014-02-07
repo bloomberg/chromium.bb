@@ -74,14 +74,6 @@
         '-lgio',
         '-lm',
       ],
-      'conditions': [
-        # See comment in native_client/src/untrusted/irt/nacl.scons
-        # regarding -Ttext-segment.
-        ['target_arch=="arm"', {
-          'sources': ['<@(irt_sources)',
-                      'aeabi_read_tp.S'],
-        }],
-      ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',

@@ -69,14 +69,6 @@ irt_support_objs += [
         '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c'),
     ]
 
-if env.Bit('target_arm'):
-  read_tp_obj = blob_env.ComponentObject('aeabi_read_tp.o', 'aeabi_read_tp.S')
-  irt_support_objs.append(read_tp_obj)
-  # Publish the object file for tests/irt_private_pthread to use.
-  # Putting aeabi_read_tp.o into libirt_support_private is not
-  # sufficient because of link ordering issues.
-  env.Replicate('${STAGING_DIR}', read_tp_obj)
-
 # Build a library so that irt_support_objs can be used in tests that
 # cover IRT-internal code.
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
