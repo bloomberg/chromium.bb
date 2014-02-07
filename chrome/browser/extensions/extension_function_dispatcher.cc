@@ -13,12 +13,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -376,7 +373,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_context(browser_context_);
   function->set_include_incognito(
-      extensions::util::CanCrossIncognito(extension, browser_context_));
+      ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
+          extension, browser_context_));
 
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;
