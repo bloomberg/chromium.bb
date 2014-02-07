@@ -67,12 +67,18 @@ class SyncedNotificationAppInfo {
   void set_icon(const gfx::Image& icon) { icon_ = icon; }
   const gfx::Image& icon() const { return icon_; }
 
+  void set_small_icon(const gfx::Image& small_icon) {
+    small_icon_ = small_icon;
+  }
+  const gfx::Image& small_icon() const { return small_icon_; }
+
   const message_center::NotifierId GetNotifierId() const;
 
  private:
   std::string app_id_;
   base::string16 service_name_;
   gfx::Image icon_;
+  gfx::Image small_icon_;
   base::string16 title_;
   base::string16 message_;
 };
@@ -104,9 +110,13 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile,
   // to dynamically get the name and icon for each synced notification sending
   // service.  Until then, we use hardcoded service icons for all services.
   // crbug.com/248337
-  app_info_data_.push_back(new SyncedNotificationAppInfo(
+  SyncedNotificationAppInfo* temp_app_info = new SyncedNotificationAppInfo(
       kFirstSyncedNotificationServiceId,
-      l10n_util::GetStringUTF16(IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME)));
+      l10n_util::GetStringUTF16(IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME));
+  temp_app_info->set_small_icon(
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_TEMPORARY_GOOGLE_PLUS_ICON));
+  app_info_data_.push_back(temp_app_info);
 
   InitializePrefs();
 }
@@ -410,7 +420,7 @@ void ChromeNotifierService::GetSyncedNotificationServices(
     message_center::Notifier* app_info_notifier = new message_center::Notifier(
         notifier_id, app_info->service_name(), app_enabled);
 
-    app_info_notifier->icon = app_info->icon();
+    app_info_notifier->icon = app_info->small_icon();
 
     // |notifiers| takes ownership of |app_info_notifier|.
     notifiers->push_back(app_info_notifier);
