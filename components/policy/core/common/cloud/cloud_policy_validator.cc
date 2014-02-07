@@ -24,10 +24,22 @@ namespace {
 const int kTimestampGraceIntervalSeconds = 60;
 
 // DER-encoded ASN.1 object identifier for the SHA1-RSA signature algorithm.
-const uint8 kSignatureAlgorithm[] = {
+const uint8 kSHA1SignatureAlgorithm[] = {
     0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
     0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00
 };
+
+// DER-encoded ASN.1 object identifier for the SHA256-RSA signature algorithm
+// (source: http://tools.ietf.org/html/rfc5754 section 3.2).
+const uint8 kSHA256SignatureAlgorithm[] = {
+    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+    0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00
+};
+
+COMPILE_ASSERT(sizeof(kSHA256SignatureAlgorithm) ==
+               sizeof(kSHA1SignatureAlgorithm), invalid_algorithm_size);
+
+const int kSignatureAlgorithmSize = sizeof(kSHA1SignatureAlgorithm);
 
 const char kMetricPolicyKeyVerification[] = "Enterprise.PolicyKeyVerification";
 
@@ -266,11 +278,10 @@ bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
                               METRIC_POLICY_KEY_VERIFICATION_FAILED,
                               METRIC_POLICY_KEY_VERIFICATION_SIZE);
-    // TODO(atwilson): Update this code to include the domain name in the
-    // signature, and return an error once the server starts returning this.
-    return true;
+    return false;
   }
   // Signature verification succeeded - return success to the caller.
+  DVLOG(1) << "Signature verification succeeded";
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
                             METRIC_POLICY_KEY_VERIFICATION_SUCCEEDED,
                             METRIC_POLICY_KEY_VERIFICATION_SIZE);
@@ -283,7 +294,7 @@ bool CloudPolicyValidatorBase::CheckVerificationKeySignature(
     const std::string& signature) {
   // TODO(atwilson): Update this routine to include the domain name in the
   // signed data.
-  return VerifySignature(key, verification_key, signature);
+  return VerifySignature(key, verification_key, signature, SHA256);
 }
 
 void CloudPolicyValidatorBase::set_verification_key(
@@ -299,7 +310,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
     signature_key = &policy_->new_public_key();
     if (!policy_->has_new_public_key_signature() ||
         !VerifySignature(policy_->new_public_key(), key_,
-                         policy_->new_public_key_signature())) {
+                         policy_->new_public_key_signature(), SHA1)) {
       LOG(ERROR) << "New public key rotation signature verification failed";
       return VALIDATION_BAD_SIGNATURE;
     }
@@ -312,19 +323,19 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
 
   if (!policy_->has_policy_data_signature() ||
       !VerifySignature(policy_->policy_data(), *signature_key,
-                       policy_->policy_data_signature())) {
+                       policy_->policy_data_signature(), SHA1)) {
     LOG(ERROR) << "Policy signature validation failed";
     return VALIDATION_BAD_SIGNATURE;
   }
 
   // If a key verification signature is available, then verify the base signing
   // key as well.
-  if (!key_signature_.empty() &&
+  if (!key_signature_.empty() && !verification_key_.empty() &&
       !CheckVerificationKeySignature(key_, verification_key_, key_signature_)) {
     LOG(ERROR) << "Verification key signature verification failed";
-    // TODO(atwilson): Update to return an error once the server is properly
-    // generating a verification signature (http://crbug.com/275291).
-    // return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+    return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+  } else {
+    DVLOG(1) << "Verification key signature verification succeeded";
   }
 
   return VALIDATION_OK;
@@ -334,7 +345,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
   if (!policy_->has_new_public_key() ||
       !policy_->has_policy_data_signature() ||
       !VerifySignature(policy_->policy_data(), policy_->new_public_key(),
-                       policy_->policy_data_signature())) {
+                       policy_->policy_data_signature(), SHA1)) {
     LOG(ERROR) << "Initial policy signature validation failed";
     return VALIDATION_BAD_INITIAL_SIGNATURE;
   }
@@ -463,14 +474,28 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPayload() {
 // static
 bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
                                                const std::string& key,
-                                               const std::string& signature) {
+                                               const std::string& signature,
+                                               SignatureType signature_type) {
   crypto::SignatureVerifier verifier;
+  const uint8* algorithm = NULL;
+  switch (signature_type) {
+    case SHA1:
+      algorithm = kSHA1SignatureAlgorithm;
+      break;
+    case SHA256:
+      algorithm = kSHA256SignatureAlgorithm;
+      break;
+    default:
+      NOTREACHED() << "Invalid signature type: " << signature_type;
+      return false;
+  }
 
-  if (!verifier.VerifyInit(kSignatureAlgorithm, sizeof(kSignatureAlgorithm),
+  if (!verifier.VerifyInit(algorithm, kSignatureAlgorithmSize,
                            reinterpret_cast<const uint8*>(signature.c_str()),
                            signature.size(),
                            reinterpret_cast<const uint8*>(key.c_str()),
                            key.size())) {
+    DLOG(ERROR) << "Invalid verification signature/key format";
     return false;
   }
   verifier.VerifyUpdate(reinterpret_cast<const uint8*>(data.c_str()),

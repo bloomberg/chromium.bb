@@ -205,7 +205,11 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATE_PAYLOAD     = 1 << 6,
     VALIDATE_SIGNATURE   = 1 << 7,
     VALIDATE_INITIAL_KEY = 1 << 8,
-    VALIDATE_SIGNED_KEY  = 1 << 9,
+  };
+
+  enum SignatureType {
+    SHA1,
+    SHA256
   };
 
   // Performs validation, called on a background thread.
@@ -247,10 +251,12 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   Status CheckSignature();
   Status CheckInitialKey();
 
-  // Verifies the SHA1/RSA |signature| on |data| against |key|.
+  // Verifies the SHA1/ or SHA256/RSA |signature| on |data| against |key|.
+  // |signature_type| specifies the type of signature (SHA1 or SHA256).
   static bool VerifySignature(const std::string& data,
                               const std::string& key,
-                              const std::string& signature);
+                              const std::string& signature,
+                              SignatureType signature_type);
 
   Status status_;
   scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;

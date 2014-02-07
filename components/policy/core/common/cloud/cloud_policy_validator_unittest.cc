@@ -291,6 +291,16 @@ TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeySignature) {
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
+#if !defined(OS_CHROMEOS)
+// Validation key is not currently checked on Chrome OS
+// (http://crbug.com/328038).
+TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeyVerificationSignature) {
+  policy_.policy().set_new_public_key_verification_signature("invalid");
+  Validate(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE));
+}
+#endif
+
 TEST_F(CloudPolicyValidatorTest, ErrorNoRotationAllowed) {
   allow_key_rotation_ = false;
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
