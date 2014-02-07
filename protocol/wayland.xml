@@ -1201,6 +1201,11 @@
 
 	A newly created surface has its buffer transformation set to normal.
 
+	wl_surface.set_buffer_transform changes the pending buffer
+	transformation. wl_surface.commit copies the pending buffer
+	transformation to the current one. Otherwise, the pending and current
+	values are never changed.
+
 	The purpose of this request is to allow clients to render content
 	according to the output transform, thus permiting the compositor to
 	use certain optimizations even if the display is rotated. Using
@@ -1226,6 +1231,10 @@
 	Buffer scale is double-buffered state, see wl_surface.commit.
 
 	A newly created surface has its buffer scale set to 1.
+
+	wl_surface.set_buffer_scale changes the pending buffer scale.
+	wl_surface.commit copies the pending buffer scale to the current one.
+	Otherwise, the pending and current values are never changed.
 
 	The purpose of this request is to allow clients to supply higher
 	resolution buffer data for use on high resolution outputs. Its
