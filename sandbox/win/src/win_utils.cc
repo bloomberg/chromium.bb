@@ -114,7 +114,7 @@ DWORD IsReparsePoint(const base::string16& full_path, bool* result) {
     }
 
     last_pos = path.rfind(L'\\');
-  } while (last_pos != base::string16::npos);
+  } while (last_pos > 2);  // Skip root dir.
 
   *result = false;
   return ERROR_SUCCESS;
