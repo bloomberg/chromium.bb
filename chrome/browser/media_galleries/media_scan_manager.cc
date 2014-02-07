@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
@@ -31,7 +33,9 @@ typedef std::set<std::string /*extension id*/> ScanningExtensionIdSet;
 const int kContainerDirectoryMinimumPercent = 80;
 
 struct LocationInfo {
-  LocationInfo() {}
+  LocationInfo()
+      : pref_id(kInvalidMediaGalleryPrefId),
+        type(MediaGalleryPrefInfo::kInvalidType) {}
   LocationInfo(MediaGalleryPrefId pref_id, MediaGalleryPrefInfo::Type type,
                base::FilePath path)
       : pref_id(pref_id), type(type), path(path) {}
@@ -307,6 +311,7 @@ void MediaScanManager::StartScan(Profile* profile,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
+  // We expect that an MediaScanManagerObserver has already been registered.
   DCHECK(scans_for_profile != observers_.end());
   bool start_scan = !ScanInProgress();
   // Ignore requests for extensions that are already scanning.
@@ -314,6 +319,14 @@ void MediaScanManager::StartScan(Profile* profile,
   scanning_extensions = &scans_for_profile->second.scanning_extensions;
   if (!start_scan && ContainsKey(*scanning_extensions, extension_id))
     return;
+
+  // On first scan for the |profile|, register to listen for extension unload.
+  if (scanning_extensions->empty()) {
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        content::Source<Profile>(profile));
+  }
 
   scanning_extensions->insert(extension_id);
   scans_for_profile->second.observer->OnScanStarted(extension_id);
@@ -336,7 +349,7 @@ void MediaScanManager::CancelScan(Profile* profile,
                                   const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // Ignore requests for extensions that are NOT already scanning.
+  // Erases the logical scan if found, early exit otherwise.
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
   if (scans_for_profile == observers_.end() ||
       !scans_for_profile->second.scanning_extensions.erase(extension_id)) {
@@ -344,6 +357,14 @@ void MediaScanManager::CancelScan(Profile* profile,
   }
 
   scans_for_profile->second.observer->OnScanCancelled(extension_id);
+
+  // No more scanning extensions for |profile|, so stop listening for unloads.
+  if (scans_for_profile->second.scanning_extensions.empty()) {
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        content::Source<Profile>(profile));
+  }
 
   if (!ScanInProgress())
     folder_finder_.reset();
@@ -354,8 +375,27 @@ void MediaScanManager::SetMediaFolderFinderFactory(
   testing_folder_finder_factory_ = factory;
 }
 
-MediaScanManager::ScanObservers::ScanObservers() {}
+MediaScanManager::ScanObservers::ScanObservers() : observer(NULL) {}
 MediaScanManager::ScanObservers::~ScanObservers() {}
+
+void MediaScanManager::Observe(
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      extensions::Extension* extension = const_cast<extensions::Extension*>(
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension);
+      DCHECK(extension);
+      CancelScan(profile, extension->id());
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
 
 bool MediaScanManager::ScanInProgress() const {
   for (ScanObserverMap::const_iterator it = observers_.begin();
@@ -426,5 +466,6 @@ void MediaScanManager::OnFoundContainerDirectories(
     }
     scanning_extensions->clear();
   }
+  registrar_.RemoveAll();
   folder_finder_.reset();
 }

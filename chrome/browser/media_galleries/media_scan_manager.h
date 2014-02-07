@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class MediaScanManagerObserver;
@@ -23,7 +25,7 @@ class MediaScanManagerObserver;
 // This class manages multiple 'virtual' media scans, up to one per extension
 // per profile, and also manages the one physical scan backing them.
 // This class lives and is called on the UI thread.
-class MediaScanManager {
+class MediaScanManager : public content::NotificationObserver {
  public:
   MediaScanManager();
   virtual ~MediaScanManager();
@@ -60,6 +62,11 @@ class MediaScanManager {
   };
   typedef std::map<Profile*, ScanObservers> ScanObserverMap;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   bool ScanInProgress() const;
 
   void OnScanCompleted(
@@ -77,6 +84,9 @@ class MediaScanManager {
 
   // Set of extensions (on all profiles) that have an in-progress scan.
   ScanObserverMap observers_;
+
+  // Used to listen for NOTIFICATION_EXTENSION_UNLOADED events.
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<MediaScanManager> weak_factory_;
 
