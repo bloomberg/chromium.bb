@@ -77,7 +77,6 @@
         'gfx/gfx.gyp:gfx_geometry_unittests',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
-        'shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         'ui.gyp:ui',
         'ui_test_support',
       ],
@@ -164,7 +163,6 @@
         'gfx/sequential_id_generator_unittest.cc',
         'gfx/transform_util_unittest.cc',
         'gfx/utf16_indexing_unittest.cc',
-        'shell_dialogs/select_file_dialog_win_unittest.cc',
       ],
       'include_dirs': [
         '../',
