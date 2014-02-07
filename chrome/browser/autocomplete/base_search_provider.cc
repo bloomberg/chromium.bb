@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -16,7 +17,26 @@
 BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
                                        Profile* profile,
                                        AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, profile, type) {}
+    : AutocompleteProvider(listener, profile, type),
+      field_trial_triggered_(false),
+      field_trial_triggered_in_session_(false) {}
+
+void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(AsOmniboxEventProviderType());
+  new_entry.set_provider_done(done_);
+  std::vector<uint32> field_trial_hashes;
+  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
+  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
+    if (field_trial_triggered_)
+      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
+    if (field_trial_triggered_in_session_) {
+      new_entry.mutable_field_trial_triggered_in_session()->Add(
+          field_trial_hashes[i]);
+     }
+  }
+}
 
 BaseSearchProvider::~BaseSearchProvider() {}
 

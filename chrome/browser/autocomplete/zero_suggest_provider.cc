@@ -98,23 +98,6 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results) {
   }
 }
 
-void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
-  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
-  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
-  new_entry.set_provider(AsOmniboxEventProviderType());
-  new_entry.set_provider_done(done_);
-  std::vector<uint32> field_trial_hashes;
-  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
-    if (field_trial_triggered_)
-      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
-    if (field_trial_triggered_in_session_) {
-      new_entry.mutable_field_trial_triggered_in_session()->Add(
-          field_trial_hashes[i]);
-     }
-  }
-}
-
 void ZeroSuggestProvider::ResetSession() {
   // The user has started editing in the omnibox, so leave
   // |field_trial_triggered_in_session_| unchanged and set
@@ -188,8 +171,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       have_pending_request_(false),
       verbatim_relevance_(kDefaultVerbatimZeroSuggestRelevance),
-      field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
       weak_ptr_factory_(this) {
 }
 

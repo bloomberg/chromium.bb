@@ -14,10 +14,6 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -56,9 +52,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                      bool /*minimal_changes*/) OVERRIDE;
   virtual void Stop(bool clear_cached_results) OVERRIDE;
 
-  // Adds provider-specific information to omnibox event logs.
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
-
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
 
@@ -72,10 +65,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
       const GURL& curent_page_url,
       AutocompleteInput::PageClassification page_classification,
       const base::string16& permanent_text);
-
-  bool field_trial_triggered_in_session() const {
-    return field_trial_triggered_in_session_;
-  }
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
@@ -166,17 +155,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   MatchMap query_matches_map_;
   // The relevance score for the URL of the current page.
   int verbatim_relevance_;
-
-  // Whether a field trial, if any, has triggered in the most recent
-  // autocomplete query. This field is set to true if the last request
-  // was a zero suggest request, the provider has completed and their
-  // corresponding response contained '"google:fieldtrialtriggered":true'.
-  bool field_trial_triggered_;
-  // Whether a zero suggest request triggered a field trial in the omnibox
-  // session.  The user could have clicked on a suggestion when zero suggest
-  // triggered (same condition as field_trial_triggered_), or triggered zero
-  // suggest but kept typing.
-  bool field_trial_triggered_in_session_;
 
   history::MostVisitedURLList most_visited_urls_;
 

@@ -34,6 +34,13 @@ class BaseSearchProvider : public AutocompleteProvider,
                      Profile* profile,
                      AutocompleteProvider::Type type);
 
+  // AutocompleteProvider:
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+
+  bool field_trial_triggered_in_session() const {
+    return field_trial_triggered_in_session_;
+  }
+
  protected:
   virtual ~BaseSearchProvider();
 
@@ -241,6 +248,16 @@ class BaseSearchProvider : public AutocompleteProvider,
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
+
+  // Whether a field trial, if any, has triggered in the most recent
+  // autocomplete query. This field is set to true only if the suggestion
+  // provider has completed and the response contained
+  // '"google:fieldtrialtriggered":true'.
+  bool field_trial_triggered_;
+
+  // Same as above except that it is maintained across the current Omnibox
+  // session.
+  bool field_trial_triggered_in_session_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);

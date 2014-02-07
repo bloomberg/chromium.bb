@@ -218,9 +218,7 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
     : BaseSearchProvider(listener, profile, AutocompleteProvider::TYPE_SEARCH),
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
-      suggest_results_pending_(0),
-      field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {
+      suggest_results_pending_(0) {
 }
 
 // static
@@ -295,23 +293,6 @@ bool SearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
 // static
 std::string SearchProvider::GetSuggestMetadata(const AutocompleteMatch& match) {
   return match.GetAdditionalInfo(kSuggestMetadataKey);
-}
-
-void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
-  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
-  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
-  new_entry.set_provider(AsOmniboxEventProviderType());
-  new_entry.set_provider_done(done_);
-  std::vector<uint32> field_trial_hashes;
-  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
-    if (field_trial_triggered_)
-      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
-    if (field_trial_triggered_in_session_) {
-      new_entry.mutable_field_trial_triggered_in_session()->Add(
-          field_trial_hashes[i]);
-    }
-  }
 }
 
 void SearchProvider::DeleteMatch(const AutocompleteMatch& match) {

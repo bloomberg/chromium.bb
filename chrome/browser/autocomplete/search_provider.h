@@ -11,10 +11,6 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -70,13 +66,8 @@ class SearchProvider : public BaseSearchProvider {
   static std::string GetSuggestMetadata(const AutocompleteMatch& match);
 
   // AutocompleteProvider:
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
   virtual void ResetSession() OVERRIDE;
-
-  bool field_trial_triggered_in_session() const {
-    return field_trial_triggered_in_session_;
-  }
 
   // This URL may be sent with suggest requests; see comments on CanSendURL().
   void set_current_page_url(const GURL& current_page_url) {
@@ -468,18 +459,6 @@ class SearchProvider : public BaseSearchProvider {
   // that a server delete a personalized suggestion. Making this a ScopedVector
   // causes us to auto-cancel all such requests on shutdown.
   SuggestionDeletionHandlers deletion_handlers_;
-
-  // Whether a field trial, if any, has triggered in the most recent
-  // autocomplete query.  This field is set to false in Start() and may be set
-  // to true if either the default provider or keyword provider has completed
-  // and their corresponding suggest response contained
-  // '"google:fieldtrialtriggered":true'.
-  // If the autocomplete query has not returned, this field is set to false.
-  bool field_trial_triggered_;
-
-  // Same as above except that it is maintained across the current Omnibox
-  // session.
-  bool field_trial_triggered_in_session_;
 
   GURL current_page_url_;
 
