@@ -10,6 +10,7 @@ import logging
 import os
 import shutil
 import tempfile
+import time
 import urlparse
 
 from chromite import cros
@@ -18,7 +19,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
 from chromite.lib import remote_access
-from chromite.lib import timeout_util
 
 
 # The folder in devserver's static_dir that cros flash uses to store
@@ -140,8 +140,7 @@ using-the-dev-server/xbuddy-for-devserver
   DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
-  # Timeout for update engine to update the device.
-  UPDATE_ENGINE_TIMEOUT = 60 * 5
+  UPDATE_CHECK_INTERVAL = 10
   # Root working directory on the device. This directory is in the
   # stateful partition and thus has enough space to store the payloads.
   DEVICE_WORK_DIR = '/mnt/stateful_partition/cros-flash'
@@ -254,8 +253,8 @@ using-the-dev-server/xbuddy-for-devserver
     if status != 'UPDATE_STATUS_IDLE':
       raise DeviceUpdateError('Update engine is not idle. Status: %s' % status)
 
+    logging.info('Updating rootfs partition')
     try:
-      logging.info('Updating rootfs partition')
       ds.Start()
 
       omaha_url = ds.GetDevServerURL(ip=remote_access.LOCALHOST_IP,
@@ -265,26 +264,24 @@ using-the-dev-server/xbuddy-for-devserver
              '-omaha_url=%s' % omaha_url]
       device.RunCommand(cmd)
 
-      def _CheckUpdateStatus(status):
-        op, progress = status
+      # Loop until update is complete.
+      while True:
+        op, progress = self.GetUpdateStatus(device, ['CURRENT_OP', 'PROGRESS'])
         logging.info('Waiting for update...status: %s at progress %s',
                      op, progress)
+
         if op == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
-          return False
-        elif op == 'UPDATE_STATUS_IDLE':
+          break
+
+        if op == 'UPDATE_STATUS_IDLE':
           raise DeviceUpdateError(
               'Update failed with unexpected update status: %s' % status)
 
-        return True
+        time.sleep(self.UPDATE_CHECK_INTERVAL)
 
-      timeout_util.WaitForSuccess(
-          _CheckUpdateStatus, self.GetUpdateStatus,
-          timeout=self.UPDATE_ENGINE_TIMEOUT, period=15,
-          func_args=[device], func_kwargs={'keys': ['CURRENT_OP', 'PROGRESS']})
-
-    except timeout_util.TimeoutError:
-      raise DeviceUpdateError('Timed out updating rootfs.')
-    except ds_wrapper.DevServerException:
+      ds.Stop()
+    except Exception:
+      logging.error('Rootfs update failed.')
       ds_log = ds.TailLog()
       if ds_log:
         logging.error(ds_log)
@@ -501,10 +498,7 @@ using-the-dev-server/xbuddy-for-devserver
           logging.info('Rebooting device..')
           device.Reboot()
 
-    except ds_wrapper.DevServerException:
-      # DevServerException should have been properly handled by now.
-      logging.error('Cros Flash failed before completing.')
-    except Exception:
+    except (Exception, KeyboardInterrupt):
       logging.error('Cros Flash failed before completing.')
       raise
     else:
