@@ -118,7 +118,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // Called at shutdown when running a nested message loop.
   void Quit();
 
-  void HoldUntilStopIsCalled(const scoped_refptr<PrintJob>& job);
+  void HoldUntilStopIsCalled();
 
   content::NotificationRegistrar registrar_;
 
