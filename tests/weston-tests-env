@@ -17,13 +17,11 @@ OUTLOG="$LOGDIR/$1-log.txt"
 
 rm -f "$SERVERLOG"
 
-if test x$WAYLAND_DISPLAY != x; then
-	BACKEND=$abs_builddir/.libs/wayland-backend.so
-elif test x$DISPLAY != x; then
-	BACKEND=$abs_builddir/.libs/x11-backend.so
-else
-	BACKEND=$abs_builddir/.libs/wayland-backend.so
+if test -z "$BACKEND"; then
+	BACKEND=headless-backend.so
 fi
+
+BACKEND=$abs_builddir/.libs/$BACKEND
 
 case $TESTNAME in
 	*.la|*.so)
