@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -396,12 +397,14 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
       profiles = GetLoggedInProfileInfoList();
 
   // Check the multi-profile support.
-  chrome::MultiUserWindowManager* const window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  if (!window_manager) {
+  if (!profiles::IsMultipleProfilesEnabled()) {
     SetError("Multi-profile support is not enabled.");
     return false;
   }
+
+  chrome::MultiUserWindowManager* const window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  DCHECK(window_manager);
 
   // Check if the target user is logged-in or not.
   bool logged_in = false;
