@@ -82,6 +82,7 @@ void StartPageUI::InitDataSource() {
 
   source->AddResourcePath("start_page.css", IDR_APP_LIST_START_PAGE_CSS);
   source->AddResourcePath("start_page.js", IDR_APP_LIST_START_PAGE_JS);
+  source->AddResourcePath("hotword_nacl.nmf", IDR_APP_LIST_HOTWORD_NACL_NMF);
   source->SetDefaultResource(IDR_APP_LIST_START_PAGE_HTML);
 
 #if defined(OS_CHROMEOS)

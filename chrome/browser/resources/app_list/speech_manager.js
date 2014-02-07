@@ -32,14 +32,6 @@ cr.define('speech', function() {
   function SpeechManager() {
     this.audioManager_ = new speech.AudioManager();
     this.audioManager_.addEventListener('audio', this.onAudioLevel_.bind(this));
-    if (speech.isPluginAvailable()) {
-      var pluginManager = new speech.PluginManager(
-          this.onHotwordRecognizerReady_.bind(this),
-          this.onHotwordRecognized_.bind(this));
-      pluginManager.scheduleInitialize(
-          this.audioManager_.getSampleRate(),
-          'chrome://app-list/okgoogle_hotword.config');
-    }
     this.shown_ = false;
     this.speechRecognitionManager_ = new speech.SpeechRecognitionManager(this);
     this.setState_(SpeechState.READY);
@@ -163,6 +155,22 @@ cr.define('speech', function() {
   SpeechManager.prototype.onSpeechRecognitionError = function(e) {
     if (this.state != SpeechState.STOPPING)
       this.setState_(SpeechState.READY);
+  };
+
+  /**
+   * Initialize the hotword plugin manager, or do nothing if already
+   * initialization is on.
+   */
+  SpeechManager.prototype.maybeInitializePlugin = function() {
+    if ($('recognizer'))
+      return;
+
+    var pluginManager = new speech.PluginManager(
+        this.onHotwordRecognizerReady_.bind(this),
+        this.onHotwordRecognized_.bind(this));
+    pluginManager.scheduleInitialize(
+        this.audioManager_.getSampleRate(),
+        'chrome://app-list/okgoogle_hotword.config');
   };
 
   /**

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/events/event_constants.h"
 
@@ -105,6 +107,15 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   recommended_apps_->AddObserver(this);
 
   SendRecommendedApps();
+
+#if defined(OS_CHROMEOS)
+  // TODO(mukai): respect the configuration of the availability of the hotword
+  // plugin.
+  if (app_list::switches::IsVoiceSearchEnabled() &&
+      base::SysInfo::IsRunningOnChromeOS()) {
+    web_ui()->CallJavascriptFunction("appList.startPage.maybeInitializePlugin");
+  }
+#endif
 }
 
 void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
@@ -146,7 +157,8 @@ void StartPageHandler::HandleSpeechSoundLevel(const base::ListValue* args) {
 
   StartPageService* service =
       StartPageService::Get(Profile::FromWebUI(web_ui()));
-  service->OnSpeechSoundLevelChanged(static_cast<int16>(level));
+  if (service)
+    service->OnSpeechSoundLevelChanged(static_cast<int16>(level));
 }
 
 void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
@@ -167,7 +179,8 @@ void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
 
   StartPageService* service =
       StartPageService::Get(Profile::FromWebUI(web_ui()));
-  service->OnSpeechRecognitionStateChanged(new_state);
+  if (service)
+    service->OnSpeechRecognitionStateChanged(new_state);
 }
 
 }  // namespace app_list
