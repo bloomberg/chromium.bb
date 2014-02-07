@@ -9,6 +9,7 @@ namespace translate {
 namespace switches {
 
 extern const char kDisableTranslate[];
+extern const char kTranslateScriptURL[];
 extern const char kTranslateSecurityOrigin[];
 
 }  // namespace switches

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_script.h"
 #include "net/url_request/url_request_context_getter.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -19,8 +20,6 @@ class PrefService;
 
 // Manages the downloaded resources for Translate, such as the translate script
 // and the language list.
-// TODO(droger): TranslateDownloadManager should own TranslateScript.
-// See http://crbug.com/335074.
 class TranslateDownloadManager {
  public:
   // Returns the singleton instance.
@@ -45,6 +44,9 @@ class TranslateDownloadManager {
 
   // The language list.
   TranslateLanguageList* language_list() { return language_list_.get(); }
+
+  // The translate script.
+  TranslateScript* script() { return script_.get(); }
 
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
@@ -77,12 +79,25 @@ class TranslateDownloadManager {
   // Must be called to shut Translate down. Cancels any pending fetches.
   void Shutdown();
 
+  // Clears the translate script, so it will be fetched next time we translate.
+  void ClearTranslateScriptForTesting();
+
+  // Used by unit-tests to override some defaults:
+  // Delay after which the translate script is fetched again from the
+  // translation server.
+  void SetTranslateScriptExpirationDelay(int delay_ms);
+
  private:
   friend struct DefaultSingletonTraits<TranslateDownloadManager>;
   TranslateDownloadManager();
   virtual ~TranslateDownloadManager();
 
   scoped_ptr<TranslateLanguageList> language_list_;
+
+  // An instance of TranslateScript which manages JavaScript source for
+  // Translate.
+  scoped_ptr<TranslateScript> script_;
+
   std::string application_locale_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };

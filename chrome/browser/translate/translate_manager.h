@@ -28,7 +28,6 @@ struct ShortcutConfiguration;
 class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
 class TranslateInfoBarDelegate;
-class TranslateScript;
 
 namespace content {
 class WebContents;
@@ -76,10 +75,6 @@ class TranslateManager : public content::NotificationObserver {
   // used only for tests.
   static void SetUseInfobar(bool value);
 
-  // Allows caller to cleanup pending URLFetcher objects to make sure they
-  // get released in the appropriate thread... Mainly for tests.
-  void CleanupPendingUlrFetcher();
-
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
   // script is not yet available.
@@ -96,18 +91,10 @@ class TranslateManager : public content::NotificationObserver {
   // under options in the translate infobar.
   void ReportLanguageDetectionError(content::WebContents* web_contents);
 
-  // Clears the translate script, so it will be fetched next time we translate.
-  void ClearTranslateScript();
-
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Used by unit-tests to override some defaults:
-  // Delay after which the translate script is fetched again from the
-  // translation server.
-  void SetTranslateScriptExpirationDelay(int delay_ms);
 
   // Number of attempts before waiting for a page to be fully reloaded.
   void set_translate_max_reload_attemps(int attempts) {
@@ -197,10 +184,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;
-
-  // An instance of TranslateScript which manages JavaScript source for
-  // Translate.
-  scoped_ptr<TranslateScript> script_;
 
   // An instance of TranslateAcceptLanguages which manages Accept languages of
   // each profiles.

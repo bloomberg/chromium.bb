@@ -30,7 +30,7 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-	{
+        {
           'action_name': 'invalidations_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/invalidations_resources.grd',
@@ -63,7 +63,7 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            '../components/components.gyp:dom_distiller_resources',
+            '../components/component_resources.gyp:component_resources',
             '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
             '../content/browser/tracing/tracing_resources.gyp:tracing_resources',
           ],

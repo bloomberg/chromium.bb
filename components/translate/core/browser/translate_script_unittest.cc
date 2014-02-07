@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_script.h"
+#include "components/translate/core/browser/translate_script.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/common/translate_switches.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -84,6 +84,8 @@ TEST_F(TranslateScriptTest, CheckScriptParameters) {
       url, TranslateScript::kCallbackQueryName, &callback);
   EXPECT_EQ(std::string(TranslateScript::kCallbackQueryValue), callback);
 
+#if !defined(OS_IOS)
+  // iOS does not have specific loaders for the isolated world.
   std::string css_loader_callback;
   net::GetValueForKeyInQuery(
       url, TranslateScript::kCssLoaderCallbackQueryName, &css_loader_callback);
@@ -97,12 +99,13 @@ TEST_F(TranslateScriptTest, CheckScriptParameters) {
       &javascript_loader_callback);
   EXPECT_EQ(std::string(TranslateScript::kJavascriptLoaderCallbackQueryValue),
             javascript_loader_callback);
+#endif  // !defined(OS_IOS)
 }
 
 TEST_F(TranslateScriptTest, CheckScriptURL) {
   const std::string script_url("http://www.tamurayukari.com/mero-n.js");
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kTranslateScriptURL,
+  command_line->AppendSwitchASCII(translate::switches::kTranslateScriptURL,
                                   script_url);
 
   Request();

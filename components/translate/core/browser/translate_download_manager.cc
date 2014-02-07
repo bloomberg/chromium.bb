@@ -16,12 +16,14 @@ TranslateDownloadManager* TranslateDownloadManager::GetInstance() {
 }
 
 TranslateDownloadManager::TranslateDownloadManager()
-    : language_list_(new TranslateLanguageList) {}
+    : language_list_(new TranslateLanguageList),
+      script_(new TranslateScript) {}
 
 TranslateDownloadManager::~TranslateDownloadManager() {}
 
 void TranslateDownloadManager::Shutdown() {
   language_list_.reset();
+  script_.reset();
   request_context_ = NULL;
 }
 
@@ -105,4 +107,20 @@ bool TranslateDownloadManager::IsAlphaLanguage(const std::string& language) {
   }
 
   return language_list->IsAlphaLanguage(language);
+}
+
+void TranslateDownloadManager::ClearTranslateScriptForTesting() {
+  if (script_.get() == NULL) {
+    NOTREACHED();
+    return;
+  }
+  script_->Clear();
+}
+
+void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
+  if (script_.get() == NULL) {
+    NOTREACHED();
+    return;
+  }
+  script_->set_expiration_delay(delay_ms);
 }

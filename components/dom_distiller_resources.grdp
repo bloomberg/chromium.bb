@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_ABOUT_DOM_DISTILLER_HTML" file="dom_distiller/webui/resources/about_dom_distiller.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_ABOUT_DOM_DISTILLER_CSS" file="dom_distiller/webui/resources/about_dom_distiller.css" type="BINDATA" />
+  <include name="IDR_ABOUT_DOM_DISTILLER_JS" file="dom_distiller/webui/resources/about_dom_distiller.js" type="BINDATA" />
+  <include name="IDR_DOM_DISTILLER_VIEWER_HTML" file="dom_distiller/content/resources/dom_distiller_viewer.html" type="BINDATA" />
+  <include name="IDR_DISTILLER_JS" file="../third_party/readability/js/readability.js" type="BINDATA" />
+  <include name="IDR_DISTILLER_CSS" file="../third_party/readability/css/readability.css" type="BINDATA" />
+</grit-part>

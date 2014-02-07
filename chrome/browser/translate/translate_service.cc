@@ -42,7 +42,6 @@ void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
   TranslateDownloadManager* download_manager =
       TranslateDownloadManager::GetInstance();
   if (cleanup_pending_fetcher) {
-    TranslateManager::GetInstance()->CleanupPendingUlrFetcher();
     download_manager->Shutdown();
   } else {
     // This path is only used by tests.

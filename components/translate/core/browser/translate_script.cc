@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_script.h"
+#include "components/translate/core/browser/translate_script.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,12 +11,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "components/translate/core/browser/translate_url_util.h"
+#include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
 #include "google_apis/google_api_keys.h"
-#include "grit/browser_resources.h"
+#include "grit/component_resources.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -62,9 +62,9 @@ void TranslateScript::Request(const Callback& callback) {
   GURL translate_script_url;
   // Check if command-line contains an alternative URL for translate service.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTranslateScriptURL)) {
-    translate_script_url = GURL(
-        command_line.GetSwitchValueASCII(switches::kTranslateScriptURL));
+  if (command_line.HasSwitch(translate::switches::kTranslateScriptURL)) {
+    translate_script_url = GURL(command_line.GetSwitchValueASCII(
+        translate::switches::kTranslateScriptURL));
     if (!translate_script_url.is_valid() ||
         !translate_script_url.query().empty()) {
       LOG(WARNING) << "The following translate URL specified at the "

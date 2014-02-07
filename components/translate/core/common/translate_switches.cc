@@ -12,6 +12,9 @@ namespace switches {
 // disable translate with the preference.
 const char kDisableTranslate[] = "disable-translate";
 
+// Overrides the default server used for Google Translate.
+const char kTranslateScriptURL[] = "translate-script-url";
+
 // Overrides security-origin with which Translate runs in an isolated world.
 const char kTranslateSecurityOrigin[] = "translate-security-origin";
 

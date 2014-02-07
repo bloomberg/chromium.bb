@@ -920,6 +920,8 @@
         '../components/components.gyp:autofill_content_test_support',
         '../components/components.gyp:dom_distiller_test_support',
         '../components/components.gyp:dom_distiller_content',
+        '../components/components.gyp:translate_core_common',
+        '../components/component_resources.gyp:component_resources',
         '../components/component_strings.gyp:component_strings',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../google_apis/google_apis.gyp:google_apis_test_support',

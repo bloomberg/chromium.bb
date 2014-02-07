@@ -10,10 +10,10 @@
           'target_name': 'dom_distiller_webui',
           'type': 'static_library',
           'dependencies': [
+            'component_resources.gyp:component_resources',
             'component_strings.gyp:component_strings',
             'distilled_page_proto',
             'dom_distiller_core',
-            'dom_distiller_resources',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../skia/skia.gyp:skia',
@@ -30,28 +30,11 @@
           ],
         },
         {
-          'target_name': 'dom_distiller_resources',
-          'type': 'none',
-          'variables': {
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
-          },
-          'actions': [
-            {
-              'action_name': 'dom_distiller_resources',
-              'variables': {
-                'grit_grd_file': 'dom_distiller_resources.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ],
-            },
-          ],
-          'includes': [ '../build/grit_target.gypi' ],
-        },
-        {
           'target_name': 'dom_distiller_core',
           'type': 'static_library',
           'dependencies': [
+            'component_resources.gyp:component_resources',
             'distilled_page_proto',
-            'dom_distiller_resources',
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
@@ -131,9 +114,9 @@
               'target_name': 'dom_distiller_content',
               'type': 'static_library',
               'dependencies': [
+                'component_resources.gyp:component_resources',
                 'component_strings.gyp:component_strings',
                 'dom_distiller_core',
-                'dom_distiller_resources',
                 '../net/net.gyp:net',
                 '../skia/skia.gyp:skia',
                 '../sync/sync.gyp:sync',

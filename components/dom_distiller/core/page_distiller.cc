@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
-#include "grit/dom_distiller_resources.h"
+#include "grit/component_resources.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"

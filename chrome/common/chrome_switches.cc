@@ -1457,9 +1457,6 @@ const char kTestType[]                      = "test-type";
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
-// Overrides the default server used for Google Translate.
-const char kTranslateScriptURL[]            = "translate-script-url";
-
 // Disables same-origin check on HTTP resources pushed via a SPDY proxy.
 // The value is the host:port of the trusted proxy.
 const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";

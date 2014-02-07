@@ -6,7 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/core/common/translate_errors.h"
-#include "grit/browser_resources.h"
+#include "grit/component_resources.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -7,6 +7,8 @@
 
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
+class PrefService;
+
 // Singleton managing the resources required for Translate.
 class TranslateService : public ResourceRequestAllowedNotifier::Observer {
  public:
@@ -15,6 +17,11 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
 
   // Must be called to shut down the Translate feature.
   static void Shutdown(bool cleanup_pending_fetcher);
+
+  // Let the caller decide if and when we should fetch the language list from
+  // the translate server. This is a NOOP if switches::kDisableTranslate is set
+  // or if prefs::kEnableTranslate is set to false.
+  static void FetchLanguageListFromTranslateServer(PrefService* prefs);
 
  private:
   TranslateService();

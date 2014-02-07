@@ -36,7 +36,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kEnableBrowserPluginForAllViewTypes,
     extensions::switches::kExtensionsOnChromeURLs,
     // This parameter should be used only for server side developments.
-    switches::kTranslateScriptURL,
+    translate::switches::kTranslateScriptURL,
     translate::switches::kTranslateSecurityOrigin,
   #if defined(ENABLE_WEBRTC)
     // This flag disables security of media packets in WebRTC.

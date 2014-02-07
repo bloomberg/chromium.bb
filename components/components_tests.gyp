@@ -50,6 +50,7 @@
             'test/run_all_unittests.cc',
             'translate/core/browser/language_state_unittest.cc',
             'translate/core/browser/translate_browser_metrics_unittest.cc',
+            'translate/core/browser/translate_script_unittest.cc',
             'translate/core/common/translate_metrics_unittest.cc',
             'translate/core/common/translate_util_unittest.cc',
             'translate/language_detection/language_detection_util_unittest.cc',

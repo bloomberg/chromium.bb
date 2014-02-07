@@ -20,7 +20,6 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -38,6 +37,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_script.h"
 #include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
@@ -122,14 +122,6 @@ bool TranslateManager::IsAcceptLanguage(Profile* profile,
   }
   NOTREACHED();
   return false;
-}
-
-void TranslateManager::SetTranslateScriptExpirationDelay(int delay_ms) {
-  if (script_.get() == NULL) {
-    NOTREACHED();
-    return;
-  }
-  script_->set_expiration_delay(delay_ms);
 }
 
 void TranslateManager::Observe(int type,
@@ -258,7 +250,6 @@ TranslateManager::TranslateManager()
   notification_registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
                               content::NotificationService::AllSources());
   accept_languages_.reset(new TranslateAcceptLanguages);
-  script_.reset(new TranslateScript);
 }
 
 void TranslateManager::InitiateTranslation(WebContents* web_contents,
@@ -449,11 +440,12 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
         ShortcutConfig());
   }
 
-  DCHECK(script_.get() != NULL);
+  TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
+  DCHECK(script != NULL);
 
-  const std::string& translate_script = script_->data();
-  if (!translate_script.empty()) {
-    DoTranslatePage(web_contents, translate_script, source_lang, target_lang);
+  const std::string& script_data = script->data();
+  if (!script_data.empty()) {
+    DoTranslatePage(web_contents, script_data, source_lang, target_lang);
     return;
   }
 
@@ -468,10 +460,10 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   request.target_lang = target_lang;
   pending_requests_.push_back(request);
 
-  if (script_->HasPendingRequest())
+  if (script->HasPendingRequest())
     return;
 
-  script_->Request(
+  script->Request(
       base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
                  base::Unretained(this)));
 }
@@ -520,14 +512,6 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
 
   chrome::AddSelectedTabWithURL(browser, report_error_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-}
-
-void TranslateManager::ClearTranslateScript() {
-  if (script_.get() == NULL) {
-    NOTREACHED();
-    return;
-  }
-  script_->Clear();
 }
 
 void TranslateManager::DoTranslatePage(WebContents* web_contents,
@@ -588,10 +572,6 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
   }
 }
 
-void TranslateManager::CleanupPendingUlrFetcher() {
-  script_.reset();
-}
-
 void TranslateManager::OnTranslateScriptFetchComplete(
     bool success, const std::string& data) {
   std::vector<PendingRequest>::const_iterator iter;
@@ -613,8 +593,10 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 
     if (success) {
       // Translate the page.
-      const std::string& translate_script = script_->data();
-      DoTranslatePage(web_contents, translate_script,
+      TranslateScript* translate_script =
+          TranslateDownloadManager::GetInstance()->script();
+      DCHECK(translate_script);
+      DoTranslatePage(web_contents, translate_script->data(),
                       request.source_lang, request.target_lang);
     } else {
       if (IsTranslateBubbleEnabled()) {

@@ -21,7 +21,6 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,6 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_script.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/navigation_details.h"
@@ -179,7 +179,8 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   }
 
   void ExpireTranslateScriptImmediately() {
-    TranslateManager::GetInstance()->SetTranslateScriptExpirationDelay(0);
+    TranslateDownloadManager::GetInstance()->SetTranslateScriptExpirationDelay(
+        0);
   }
 
   // If there is 1 infobar and it is a translate infobar, deny translation and
@@ -237,9 +238,10 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     // everytime and sets the expiration delay to a large value by default (in
     // case it was zeroed in a previous test).
     TranslateService::Initialize();
-    TranslateManager::GetInstance()->ClearTranslateScript();
-    TranslateManager::GetInstance()->
-        SetTranslateScriptExpirationDelay(60 * 60 * 1000);
+    TranslateDownloadManager* download_manager =
+        TranslateDownloadManager::GetInstance();
+    download_manager->ClearTranslateScriptForTesting();
+    download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
     TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
     TranslateManager::SetUseInfobar(true);
 
