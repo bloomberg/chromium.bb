@@ -116,7 +116,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
 #endif
   {
-    12, extensions::pref_names::kKnownDisabled, true,
+    12, extensions::pref_names::kKnownDisabled, false,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
