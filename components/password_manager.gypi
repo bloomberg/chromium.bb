@@ -25,6 +25,13 @@
         'password_manager/core/browser/login_database_mac.cc',
         'password_manager/core/browser/login_database_posix.cc',
         'password_manager/core/browser/login_database_win.cc',
+        'password_manager/core/browser/password_store.cc',
+        'password_manager/core/browser/password_store.h',
+        'password_manager/core/browser/password_store_change.h',
+        'password_manager/core/browser/password_store_consumer.cc',
+        'password_manager/core/browser/password_store_consumer.h',
+        'password_manager/core/browser/password_store_default.cc',
+        'password_manager/core/browser/password_store_default.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
       ],
@@ -55,6 +62,8 @@
       'sources': [
         'password_manager/core/browser/password_form_data.cc',
         'password_manager/core/browser/password_form_data.h',
+        'password_manager/core/browser/test_password_store.cc',
+        'password_manager/core/browser/test_password_store.h',
       ],
     },
     {

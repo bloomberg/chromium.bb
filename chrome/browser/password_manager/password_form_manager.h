@@ -12,9 +12,9 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace content {
 class WebContents;

@@ -32,7 +32,6 @@
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -51,6 +50,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/password_manager/core/browser/password_store.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"

@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 

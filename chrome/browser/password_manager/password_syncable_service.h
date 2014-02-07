@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/password_manager/password_store_change.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"

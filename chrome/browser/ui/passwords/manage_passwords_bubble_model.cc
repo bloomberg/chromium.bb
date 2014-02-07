@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/url_constants.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

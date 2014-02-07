@@ -8,8 +8,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "net/base/escape.h"
 #include "sync/api/sync_error_factory.h"
 

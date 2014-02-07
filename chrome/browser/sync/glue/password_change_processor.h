@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/sync_driver/data_type_error_handler.h"
 
 class PasswordStore;

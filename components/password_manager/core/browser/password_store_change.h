@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_CHANGE_H__
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_CHANGE_H__
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CHANGE_H__
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CHANGE_H__
 
 #include <vector>
 
@@ -50,4 +50,4 @@ class PasswordStoreChange {
 
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_CHANGE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CHANGE_H_

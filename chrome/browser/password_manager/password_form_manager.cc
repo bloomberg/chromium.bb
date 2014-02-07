@@ -10,13 +10,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 using autofill::FormStructure;
 using autofill::PasswordForm;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/null_password_store_service.h"
 
-#include "chrome/browser/password_manager/password_store.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 // static
 BrowserContextKeyedService* NullPasswordStoreService::Build(

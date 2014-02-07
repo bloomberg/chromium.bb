@@ -4,11 +4,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;

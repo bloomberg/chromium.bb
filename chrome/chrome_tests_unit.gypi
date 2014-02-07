@@ -155,8 +155,6 @@
         'browser/password_manager/mock_password_store_service.h',
         'browser/password_manager/null_password_store_service.cc',
         'browser/password_manager/null_password_store_service.h',
-        'browser/password_manager/test_password_store.cc',
-        'browser/password_manager/test_password_store.h',
         'browser/password_manager/test_password_store_service.cc',
         'browser/password_manager/test_password_store_service.h',
         'browser/policy/test/local_policy_test_server.cc',

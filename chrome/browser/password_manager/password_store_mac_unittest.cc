@@ -11,10 +11,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/mock_apple_keychain.h"
 

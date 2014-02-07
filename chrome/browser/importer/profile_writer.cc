@@ -20,7 +20,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 namespace {
 

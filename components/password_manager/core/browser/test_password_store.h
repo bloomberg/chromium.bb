@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_TEST_PASSWORD_STORE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_TEST_PASSWORD_STORE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_TEST_PASSWORD_STORE_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_TEST_PASSWORD_STORE_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/password_manager/password_store.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 namespace content {
 class BrowserContext;
@@ -69,4 +69,4 @@ class TestPasswordStore : public PasswordStore {
   DISALLOW_COPY_AND_ASSIGN(TestPasswordStore);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_TEST_PASSWORD_STORE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_TEST_PASSWORD_STORE_H_

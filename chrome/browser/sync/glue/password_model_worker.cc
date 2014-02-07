@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/password_manager/password_store.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 using base::WaitableEvent;
 

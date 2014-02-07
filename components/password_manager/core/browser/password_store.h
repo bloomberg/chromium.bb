@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 
 #include <vector>
 
@@ -15,8 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/common/cancelable_request.h"
-#include "chrome/browser/password_manager/password_store_change.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -280,4 +279,4 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_

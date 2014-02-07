@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -10,8 +10,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 
 using autofill::PasswordForm;
 using std::vector;

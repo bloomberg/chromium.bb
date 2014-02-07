@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 namespace crypto {
 class AppleKeychain;

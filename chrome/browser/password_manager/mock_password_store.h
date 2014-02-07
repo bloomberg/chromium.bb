@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_MOCK_PASSWORD_STORE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_MOCK_PASSWORD_STORE_H_
 
-#include "chrome/browser/password_manager/password_store.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
