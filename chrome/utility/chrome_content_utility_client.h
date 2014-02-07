@@ -91,6 +91,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       base::PlatformFile bitmap_file);
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
+  void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
   void OnStartupPing();
   void OnAnalyzeZipFileForDownloadProtection(
       const IPC::PlatformFileForTransit& zip_file);

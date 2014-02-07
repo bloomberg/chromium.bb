@@ -46,6 +46,35 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(defaults_mime_type)
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS(printing::DuplexMode)
+
+#if defined(OS_WIN)
+IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(size_um)
+IPC_STRUCT_TRAITS_END()
+#endif
+
+IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
+  IPC_STRUCT_TRAITS_MEMBER(color_changeable)
+  IPC_STRUCT_TRAITS_MEMBER(color_default)
+#if defined(USE_CUPS)
+  IPC_STRUCT_TRAITS_MEMBER(color_model)
+  IPC_STRUCT_TRAITS_MEMBER(bw_model)
+#endif
+#if defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(collate_capable)
+  IPC_STRUCT_TRAITS_MEMBER(collate_default)
+  IPC_STRUCT_TRAITS_MEMBER(copies_capable)
+  IPC_STRUCT_TRAITS_MEMBER(papers)
+  IPC_STRUCT_TRAITS_MEMBER(default_paper)
+  IPC_STRUCT_TRAITS_MEMBER(dpis)
+  IPC_STRUCT_TRAITS_MEMBER(default_dpi)
+#endif
+  IPC_STRUCT_TRAITS_MEMBER(duplex_capable)
+  IPC_STRUCT_TRAITS_MEMBER(duplex_default)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
   IPC_STRUCT_TRAITS_MEMBER(extension_id)
   IPC_STRUCT_TRAITS_MEMBER(version)
@@ -167,6 +196,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseJSON,
 // crashes by executing this in a separate process. This does not run in a
 // sandbox.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
+                     std::string /* printer name */)
+
+// Tells the utility process to get capabilities and defaults for the specified
+// printer. Used on Windows to isolate the service process from printer driver
+// crashes by executing this in a separate process. This does not run in a
+// sandbox. Returns result as printing::PrinterSemanticCapsAndDefaults.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                      std::string /* printer name */)
 
 #if defined(OS_CHROMEOS)
@@ -317,12 +353,25 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Failed,
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
                      std::string /* printer name */,
                      printing::PrinterCapsAndDefaults)
+
+// Reply when the utility process has succeeded in obtaining the printer
+// semantic capabilities and defaults.
+IPC_MESSAGE_CONTROL2(
+    ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Succeeded,
+    std::string /* printer name */,
+    printing::PrinterSemanticCapsAndDefaults)
 #endif
 
 // Reply when the utility process has failed to obtain the printer
 // capabilities and defaults.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                      std::string /* printer name */)
+
+// Reply when the utility process has failed to obtain the printer
+// semantic capabilities and defaults.
+IPC_MESSAGE_CONTROL1(
+  ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed,
+  std::string /* printer name */)
 
 #if defined(OS_CHROMEOS)
 // Reply when the utility process has succeeded in creating the zip file.

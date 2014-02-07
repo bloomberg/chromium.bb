@@ -60,7 +60,7 @@ class ServiceSandboxedProcessLauncherDelegate
 using content::ChildProcessHost;
 
 namespace {
-  enum ServiceUtilityProcessHostEvent {
+enum ServiceUtilityProcessHostEvent {
   SERVICE_UTILITY_STARTED,
   SERVICE_UTILITY_DISCONNECTED,
   SERVICE_UTILITY_METAFILE_REQUEST,
@@ -69,6 +69,9 @@ namespace {
   SERVICE_UTILITY_CAPS_REQUEST,
   SERVICE_UTILITY_CAPS_SUCCEEDED,
   SERVICE_UTILITY_CAPS_FAILED,
+  SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST,
+  SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED,
+  SERVICE_UTILITY_SEMANTIC_CAPS_FAILED,
   SERVICE_UTILITY_EVENT_MAX,
 };
 }  // namespace
@@ -128,6 +131,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
                     DUPLICATE_SAME_ACCESS);
   if (!pdf_file_in_utility_process)
     return false;
+  DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
   return child_process_host_->Send(
       new ChromeUtilityMsg_RenderPDFPagesToMetafile(
@@ -147,9 +151,25 @@ bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
   base::FilePath exposed_path;
   if (!StartProcess(true, exposed_path))
     return false;
+  DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
   return child_process_host_->Send(
       new ChromeUtilityMsg_GetPrinterCapsAndDefaults(printer_name));
+}
+
+bool ServiceUtilityProcessHost::StartGetPrinterSemanticCapsAndDefaults(
+    const std::string& printer_name) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST,
+                            SERVICE_UTILITY_EVENT_MAX);
+  start_time_ = base::Time::Now();
+  base::FilePath exposed_path;
+  if (!StartProcess(true, exposed_path))
+    return false;
+  DCHECK(!waiting_for_reply_);
+  waiting_for_reply_ = true;
+  return child_process_host_->Send(
+      new ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults(printer_name));
 }
 
 bool ServiceUtilityProcessHost::StartProcess(
@@ -237,6 +257,12 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
         OnGetPrinterCapsAndDefaultsSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                         OnGetPrinterCapsAndDefaultsFailed)
+    IPC_MESSAGE_HANDLER(
+        ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Succeeded,
+        OnGetPrinterSemanticCapsAndDefaultsSucceeded)
+    IPC_MESSAGE_HANDLER(
+        ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed,
+        OnGetPrinterSemanticCapsAndDefaultsFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -291,6 +317,22 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
                  printer_name, caps_and_defaults));
 }
 
+void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
+    const std::string& printer_name,
+    const printing::PrinterSemanticCapsAndDefaults& caps_and_defaults) {
+  DCHECK(waiting_for_reply_);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilitySemanticCapsTime",
+                      base::Time::Now() - start_time_);
+  waiting_for_reply_ = false;
+  client_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults, client_.get(),
+                 true, printer_name, caps_and_defaults));
+}
+
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
     const std::string& printer_name) {
   DCHECK(waiting_for_reply_);
@@ -304,6 +346,22 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
       FROM_HERE,
       base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
                  printer_name, printing::PrinterCapsAndDefaults()));
+}
+
+void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
+    const std::string& printer_name) {
+  DCHECK(waiting_for_reply_);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_SEMANTIC_CAPS_FAILED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilitySemanticCapsFailTime",
+                      base::Time::Now() - start_time_);
+  waiting_for_reply_ = false;
+  client_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                 client_.get(), false, printer_name,
+                 printing::PrinterSemanticCapsAndDefaults()));
 }
 
 void ServiceUtilityProcessHost::Client::MetafileAvailable(

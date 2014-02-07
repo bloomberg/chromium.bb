@@ -34,6 +34,7 @@ namespace printing {
 class Emf;
 struct PageRange;
 struct PrinterCapsAndDefaults;
+struct PrinterSemanticCapsAndDefaults;
 }  // namespace printing
 
 // Acts as the service-side host to a utility child process. A
@@ -61,11 +62,18 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     virtual void OnRenderPDFPagesToMetafileFailed() {}
 
     // Called when the printer capabilities and defaults have been
-    // retrieved successfully.
+    // retrieved successfully or if retrieval failed.
     virtual void OnGetPrinterCapsAndDefaults(
         bool succedded,
         const std::string& printer_name,
         const printing::PrinterCapsAndDefaults& caps_and_defaults) {}
+
+    // Called when the printer capabilities and defaults have been
+    // retrieved successfully or if retrieval failed.
+    virtual void OnGetPrinterSemanticCapsAndDefaults(
+        bool succedded,
+        const std::string& printer_name,
+        const printing::PrinterSemanticCapsAndDefaults& caps_and_defaults) {}
 
    protected:
     virtual ~Client() {}
@@ -100,6 +108,12 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // in a sandbox.
   bool StartGetPrinterCapsAndDefaults(const std::string& printer_name);
 
+  // Starts a process to get capabilities and defaults for the specified
+  // printer. Used on Windows to isolate the service process from printer driver
+  // crashes by executing this in a separate process. The process does not run
+  // in a sandbox. Returns result as printing::PrinterSemanticCapsAndDefaults.
+  bool StartGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
+
  protected:
   // Allows this method to be overridden for tests.
   virtual base::FilePath GetUtilityProcessCmd();
@@ -132,6 +146,11 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
   void OnGetPrinterCapsAndDefaultsFailed(const std::string& printer_name);
+  void OnGetPrinterSemanticCapsAndDefaultsSucceeded(
+      const std::string& printer_name,
+      const printing::PrinterSemanticCapsAndDefaults& caps_and_defaults);
+  void OnGetPrinterSemanticCapsAndDefaultsFailed(
+      const std::string& printer_name);
 
   scoped_ptr<content::ChildProcessHost> child_process_host_;
   base::ProcessHandle handle_;

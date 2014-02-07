@@ -348,6 +348,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
+                        OnGetPrinterSemanticCapsAndDefaults)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_StartupPing, OnStartupPing)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
@@ -742,6 +744,29 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
 #endif
   {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
+        printer_name));
+  }
+  ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnGetPrinterSemanticCapsAndDefaults(
+    const std::string& printer_name) {
+#if defined(ENABLE_FULL_PRINTING)
+  scoped_refptr<printing::PrintBackend> print_backend =
+      printing::PrintBackend::CreateInstance(NULL);
+  printing::PrinterSemanticCapsAndDefaults printer_info;
+
+  crash_keys::ScopedPrinterInfo crash_key(
+      print_backend->GetPrinterDriverInfo(printer_name));
+
+  if (print_backend->GetPrinterSemanticCapsAndDefaults(printer_name,
+                                                       &printer_info)) {
+    Send(new ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Succeeded(
+        printer_name, printer_info));
+  } else  // NOLINT
+#endif
+  {
+    Send(new ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed(
         printer_name));
   }
   ReleaseProcessIfNeeded();
