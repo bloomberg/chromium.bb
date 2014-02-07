@@ -12,6 +12,7 @@ chrome.test.runTests([
         chrome.test.assertEq(4, result.numOfProcessors);
         chrome.test.assertEq("x86", result.archName);
         chrome.test.assertEq("unknown", result.modelName);
+        chrome.test.assertEq(["mmx", "avx"], result.features);
       }));
     }
   }

@@ -17,6 +17,10 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
     info_.num_of_processors = 4;
     info_.arch_name = "x86";
     info_.model_name = "unknown";
+
+    info_.features.clear();
+    info_.features.push_back("mmx");
+    info_.features.push_back("avx");
     return true;
   }
 
