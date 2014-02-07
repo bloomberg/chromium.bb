@@ -54,25 +54,33 @@ class PasswordSyncableService : public syncer::SyncableService {
   // Notifies sync of changes to the password database.
   void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
 
-  // Returns the unique tag that will serve as the sync identifier for the
-  // |password| entry.
-  static std::string MakeTag(const autofill::PasswordForm& password);
-  static std::string MakeTag(const sync_pb::PasswordSpecificsData& password);
-  static std::string MakeTag(const std::string& origin_url,
-                             const std::string& username_element,
-                             const std::string& username_value,
-                             const std::string& password_element,
-                             const std::string& signon_realm);
-
  private:
   typedef std::vector<autofill::PasswordForm*> PasswordForms;
+  typedef std::map<std::string, autofill::PasswordForm*> PasswordEntryMap;
 
   // Use the |PasswordStore| APIs to add and update entries.
-  void WriteToPasswordStore(PasswordForms* new_entries,
-                            PasswordForms* udpated_entries);
+  void WriteToPasswordStore(const PasswordForms& new_entries,
+                            const PasswordForms& updated_entries);
 
-  // Converts the |PasswordForm| to |SyncData| suitable for syncing.
-  syncer::SyncData CreateSyncData(const autofill::PasswordForm& password);
+  // Notifies password store of a change that was performed by sync.
+  // Virtual so tests can override.
+  virtual void NotifyPasswordStoreOfLoginChanges(
+      const PasswordStoreChangeList& changes);
+
+  // Checks if |data|, the entry in sync db, needs to be created or updated
+  // in the passwords db. Depending on what action needs to be performed, the
+  // entry may be added to |new_sync_entries| or to |updated_sync_entries|. If
+  // the item is identical to an entry in the passwords db, no action is
+  // performed. If an item needs to be updated in the sync db, then the item is
+  // also added to |updated_db_entries| list. If |data|'s tag is identical to
+  // an entry's tag in |umatched_data_from_password_db| then that entry will be
+  // removed from |umatched_data_from_password_db|.
+  void CreateOrUpdateEntry(
+      const syncer::SyncData& data,
+      PasswordEntryMap* umatched_data_from_password_db,
+      ScopedVector<autofill::PasswordForm>* new_sync_entries,
+      ScopedVector<autofill::PasswordForm>* updated_sync_entries,
+      syncer::SyncChangeList* updated_db_entries);
 
   // The factory that creates sync errors. |SyncError| has rich data
   // suitable for debugging.
@@ -85,5 +93,15 @@ class PasswordSyncableService : public syncer::SyncableService {
   scoped_refptr<PasswordStore> password_store_;
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_SYNCABLE_SERVICE_H__
+// Converts the |password| into a SyncData object.
+syncer::SyncData SyncDataFromPassword(const autofill::PasswordForm& password);
 
+// Extracts the |PasswordForm| data from sync's protobuffer format.
+void PasswordFromSpecifics(const sync_pb::PasswordSpecificsData& password,
+                           autofill::PasswordForm* new_password);
+
+// Returns the unique tag that will serve as the sync identifier for the
+// |password| entry.
+std::string MakePasswordSyncTag(const sync_pb::PasswordSpecificsData& password);
+
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_SYNCABLE_SERVICE_H__
