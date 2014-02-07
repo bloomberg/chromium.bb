@@ -128,10 +128,6 @@ const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 const char kFileManagerEnableNewAudioPlayer[] =
     "file-manager-enable-new-audio-player";
 
-// Enables the webstore integration feature in the Files.app.
-const char kFileManagerEnableWebstoreIntegration[] =
-    "file-manager-enable-webstore-integration";
-
 // Enables the multi-profile support in the Files.app.
 const char kFileManagerEnableMultiProfile[] =
     "file-manager-enable-multi-profile";

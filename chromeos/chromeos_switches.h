@@ -52,7 +52,6 @@ CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentSkipRobotAuth[];
 CHROMEOS_EXPORT extern const char kFileManagerShowCheckboxes[];
 CHROMEOS_EXPORT extern const char kFileManagerEnableNewAudioPlayer[];
-CHROMEOS_EXPORT extern const char kFileManagerEnableWebstoreIntegration[];
 CHROMEOS_EXPORT extern const char kFileManagerEnableMultiProfile[];
 CHROMEOS_EXPORT extern const char kFirstExecAfterBoot[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];

@@ -360,11 +360,6 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
 
   var onViewFilesFailure = function() {
     var fm = this.fileManager_;
-    if (fm.enableExperimentalWebStoreIntegration_) {
-      showAlert();
-      return;
-    }
-
     if (!fm.isOnDrive() ||
         !entries[0] ||
         FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1) {
