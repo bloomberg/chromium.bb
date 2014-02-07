@@ -53,7 +53,7 @@ class MockNotificationView : public NotificationView {
 MockNotificationView::MockNotificationView(MessageCenterController* controller,
                                            const Notification& notification,
                                            Test* test)
-    : NotificationView(controller, notification, true),
+    : NotificationView(controller, notification),
       test_(test) {
 }
 
@@ -104,7 +104,6 @@ class MessageCenterViewTest : public testing::Test,
   virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) OVERRIDE;
-  virtual void ExpandNotification(const std::string& notification_id) OVERRIDE;
 
   // Overridden from MockNotificationView::Test
   virtual void RegisterCall(CallType type) OVERRIDE;
@@ -203,12 +202,6 @@ bool MessageCenterViewTest::HasClickedListener(
 void MessageCenterViewTest::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::ExpandNotification(
-    const std::string& notification_id) {
   // For this test, this method should not be invoked.
   NOTREACHED();
 }

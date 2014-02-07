@@ -112,9 +112,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Marks a specific popup item as displayed.
   void MarkSinglePopupAsDisplayed(const std::string& id);
 
-  // Marks the specified notification as expanded in the notification center.
-  void MarkNotificationAsExpanded(const std::string& id);
-
   NotificationDelegate* GetNotificationDelegate(const std::string& id);
 
   bool quiet_mode() const { return quiet_mode_; }

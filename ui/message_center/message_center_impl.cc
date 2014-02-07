@@ -772,14 +772,6 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
   }
 }
 
-void MessageCenterImpl::ExpandNotification(const std::string& id) {
-  if (!HasNotification(id))
-    return;
-  notification_list_->MarkNotificationAsExpanded(id);
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationUpdated(id));
-}
-
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   if (!HasNotification(id))
     return;

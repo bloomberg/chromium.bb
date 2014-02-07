@@ -250,12 +250,6 @@ void NotificationList::MarkSinglePopupAsDisplayed(const std::string& id) {
     (*iter)->set_is_read(true);
 }
 
-void NotificationList::MarkNotificationAsExpanded(const std::string& id) {
-  Notifications::iterator iter = GetNotification(id);
-  if (iter != notifications_.end())
-    (*iter)->set_is_expanded(true);
-}
-
 NotificationDelegate* NotificationList::GetNotificationDelegate(
     const std::string& id) {
   Notifications::iterator iter = GetNotification(id);

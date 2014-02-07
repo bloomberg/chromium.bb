@@ -279,11 +279,6 @@ bool NotificationsApiFunction::CreateNotification(
       }
     }
 
-    if (options->expanded_message.get()) {
-      optional_fields.expanded_message =
-          base::UTF8ToUTF16(*options->expanded_message);
-    }
-
     if (options->context_message) {
       optional_fields.context_message =
           base::UTF8ToUTF16(*options->context_message);
@@ -395,11 +390,6 @@ bool NotificationsApiFunction::UpdateNotification(
     if (options->context_message) {
       notification->set_context_message(
           base::UTF8ToUTF16(*options->context_message));
-    }
-
-    if (options->expanded_message) {
-      notification->set_expanded_message(
-          base::UTF8ToUTF16(*options->expanded_message));
     }
 
     gfx::Image image;

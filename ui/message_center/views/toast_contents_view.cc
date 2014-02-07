@@ -319,12 +319,6 @@ void ToastContentsView::ClickOnNotificationButton(
     collection_->ClickOnNotificationButton(notification_id, button_index);
 }
 
-void ToastContentsView::ExpandNotification(
-    const std::string& notification_id) {
-  if (collection_)
-    collection_->ExpandNotification(notification_id);
-}
-
 void ToastContentsView::CreateWidget(gfx::NativeView parent) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.keep_on_top = true;

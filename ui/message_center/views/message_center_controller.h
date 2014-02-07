@@ -29,7 +29,6 @@ class MessageCenterController {
   virtual bool HasClickedListener(const std::string& notification_id) = 0;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;
-  virtual void ExpandNotification(const std::string& notification_id) = 0;
 };
 
 }  // namespace message_center

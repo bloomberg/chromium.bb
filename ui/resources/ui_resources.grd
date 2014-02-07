@@ -351,9 +351,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
       </if>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND" file="common/notification_expand.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_HOVER" file="common/notification_expand_hover.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_PRESSED" file="common/notification_expand_pressed.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB" file="common/notification_do_not_disturb.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER" file="common/notification_do_not_disturb_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED" file="common/notification_do_not_disturb_pressed.png"/>

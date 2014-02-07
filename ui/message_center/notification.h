@@ -42,7 +42,6 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   int priority;
   bool never_timeout;
   base::Time timestamp;
-  base::string16 expanded_message;
   base::string16 context_message;
   gfx::Image image;
   gfx::Image small_image;
@@ -70,7 +69,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   virtual ~Notification();
 
   // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
-  // is_read, is_expanded, and never_timeout.
+  // is_read, and never_timeout.
   void CopyState(Notification* base);
 
   NotificationType type() const { return type_; }
@@ -100,13 +99,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   base::Time timestamp() const { return optional_fields_.timestamp; }
   void set_timestamp(const base::Time& timestamp) {
     optional_fields_.timestamp = timestamp;
-  }
-
-  const base::string16& expanded_message() const {
-    return optional_fields_.expanded_message;
-  }
-  void set_expanded_message(const base::string16& expanded_message) {
-    optional_fields_.expanded_message = expanded_message;
   }
 
   const base::string16& context_message() const {
@@ -156,10 +148,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   // Read status in the message center.
   bool IsRead() const;
   void set_is_read(bool read) { is_read_ = read; }
-
-  // Expanded status in the message center (not the popups).
-  bool is_expanded() const { return is_expanded_; }
-  void set_is_expanded(bool expanded) { is_expanded_ = expanded; }
 
   // Used to keep the order of notifications with the same timestamp.
   // The notification with lesser serial_number is considered 'older'.
@@ -227,7 +215,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   RichNotificationData optional_fields_;
   bool shown_as_popup_;  // True if this has been shown as a popup.
   bool is_read_;  // True if this has been seen in the message center.
-  bool is_expanded_;  // True if this has been expanded in the message center.
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

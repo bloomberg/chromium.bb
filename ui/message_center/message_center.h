@@ -103,15 +103,11 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
                                          int button_index,
                                          const gfx::Image& image) = 0;
 
-  // Operations happening especially from GUIs: click, expand, disable,
-  // and settings.
+  // Operations happening especially from GUIs: click, disable, and settings.
   // Searches through the notifications and disables any that match the
   // extension id given.
   virtual void DisableNotificationsByNotifier(
       const NotifierId& notifier_id) = 0;
-
-  // Reformat a notification to show its entire text content.
-  virtual void ExpandNotification(const std::string& id) = 0;
 
   // This should be called by UI classes when a notification is clicked to
   // trigger the notification's delegate callback and also update the message

@@ -135,11 +135,6 @@ void MessagePopupCollection::ClickOnNotificationButton(
   message_center_->ClickOnNotificationButton(notification_id, button_index);
 }
 
-void MessagePopupCollection::ExpandNotification(
-    const std::string& notification_id) {
-  message_center_->ExpandNotification(notification_id);
-}
-
 void MessagePopupCollection::MarkAllPopupsShown() {
   std::set<std::string> closed_ids = CloseAllWidgets();
   for (std::set<std::string>::iterator iter = closed_ids.begin();
@@ -167,13 +162,9 @@ void MessagePopupCollection::UpdateWidgets() {
     if (FindToast((*iter)->id()))
       continue;
 
-    bool expanded = true;
-    if (IsExperimentalNotificationUIEnabled())
-      expanded = (*iter)->is_expanded();
     NotificationView* view =
         NotificationView::Create(NULL,
                                  *(*iter),
-                                 expanded,
                                  true); // Create top-level notification.
     view->set_context_menu_controller(context_menu_controller_.get());
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
@@ -481,10 +472,6 @@ void MessagePopupCollection::OnNotificationUpdated(
     if ((*iter)->id() != notification_id)
       continue;
 
-    bool expanded = true;
-    if (IsExperimentalNotificationUIEnabled())
-      expanded = (*iter)->is_expanded();
-
     const RichNotificationData& optional_fields =
         (*iter)->rich_notification_data();
     bool a11y_feedback_for_updates =
@@ -493,7 +480,6 @@ void MessagePopupCollection::OnNotificationUpdated(
     NotificationView* view =
         NotificationView::Create(*toast_iter,
                                  *(*iter),
-                                 expanded,
                                  true); // Create top-level notification.
     view->set_context_menu_controller(context_menu_controller_.get());
     (*toast_iter)->SetContents(view, a11y_feedback_for_updates);

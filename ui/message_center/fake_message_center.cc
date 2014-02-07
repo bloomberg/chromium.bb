@@ -95,9 +95,6 @@ void FakeMessageCenter::DisableNotificationsByNotifier(
     const NotifierId& notifier_id) {
 }
 
-void FakeMessageCenter::ExpandNotification(const std::string& id) {
-}
-
 void FakeMessageCenter::ClickOnNotification(const std::string& id) {
 }
 

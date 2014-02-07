@@ -879,15 +879,8 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == id) {
-      bool expanded = true;
-      if (IsExperimentalNotificationUIEnabled())
-        expanded = (*iter)->is_expanded();
       NotificationView* view =
-          NotificationView::Create(this,
-                                   *(*iter),
-                                   expanded,
-                                   false); // Not creating a top-level
-                                           // notification.
+          NotificationView::Create(this, *(*iter), false);  // Not top-level.
       view->set_context_menu_controller(context_menu_controller_.get());
       view->set_scroller(scroller_);
       message_list_view_->UpdateNotificationAt(view, index);
@@ -922,10 +915,6 @@ void MessageCenterView::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {
   message_center_->ClickOnNotificationButton(notification_id, button_index);
-}
-
-void MessageCenterView::ExpandNotification(const std::string& notification_id) {
-  message_center_->ExpandNotification(notification_id);
 }
 
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
@@ -976,17 +965,8 @@ void MessageCenterView::AddMessageViewAt(MessageView* view, int index) {
 
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
-  // NotificationViews are expanded by default here until
-  // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
-  bool expanded = true;
-  if (IsExperimentalNotificationUIEnabled())
-    expanded = notification.is_expanded();
   NotificationView* view =
-      NotificationView::Create(this,
-                               notification,
-                               expanded,
-                               false);  // Not creating a top-level
-                                        // notification.
+      NotificationView::Create(this, notification, false);  // Not top-level.
   view->set_context_menu_controller(context_menu_controller_.get());
   notification_views_[notification.id()] = view;
   AddMessageViewAt(view, index);

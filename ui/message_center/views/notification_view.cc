@@ -50,8 +50,6 @@ namespace {
 const int kProgressBarWidth = message_center::kNotificationWidth -
     message_center::kTextLeftPadding - message_center::kTextRightPadding;
 const int kProgressBarBottomPadding = 0;
-const int kExpandIconBottomPadding = 8;
-const int kExpandIconRightPadding = 11;
 
 // static
 scoped_ptr<views::Border> MakeEmptyBorder(int top,
@@ -265,7 +263,6 @@ namespace message_center {
 // static
 NotificationView* NotificationView::Create(MessageCenterController* controller,
                                            const Notification& notification,
-                                           bool expanded,
                                            bool top_level) {
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
@@ -287,7 +284,7 @@ NotificationView* NotificationView::Create(MessageCenterController* controller,
 
   // Currently all roads lead to the generic NotificationView.
   NotificationView* notification_view =
-      new NotificationView(controller, notification, expanded);
+      new NotificationView(controller, notification);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Don't create shadows for notification toasts on linux wih aura.
@@ -300,16 +297,14 @@ NotificationView* NotificationView::Create(MessageCenterController* controller,
 }
 
 NotificationView::NotificationView(MessageCenterController* controller,
-                                   const Notification& notification,
-                                   bool expanded)
+                                   const Notification& notification)
     : MessageView(this,
                   notification.id(),
                   notification.notifier_id(),
                   notification.small_image().AsImageSkia(),
                   notification.display_source()),
       controller_(controller),
-      clickable_(notification.clickable()),
-      is_expanded_(expanded) {
+      clickable_(notification.clickable()) {
   std::vector<base::string16> accessible_lines;
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
@@ -349,7 +344,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
     message_view_ = new BoundedLabel(
         gfx::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
-    message_view_->SetVisible(!is_expanded_ || !notification.items().size());
+    message_view_->SetVisible(!notification.items().size());
     message_view_->SetColors(message_center::kRegularTextColor,
                              kDimTextBackgroundColor);
     message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
@@ -390,7 +385,6 @@ NotificationView::NotificationView(MessageCenterController* controller,
   std::vector<NotificationItem> items = notification.items();
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     ItemView* item_view = new ItemView(items[i]);
-    item_view->SetVisible(is_expanded_);
     item_view->SetBorder(MakeTextBorder(padding, i ? 0 : 4, 0));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
@@ -419,7 +413,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
       views::Background::CreateSolidBackground(kIconBackgroundColor));
 
   // Create the bottom_view_, which collects into a vertical box all content
-  // below the notification icon except for the expand button.
+  // below the notification icon.
   bottom_view_ = new views::View();
   bottom_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -430,7 +424,6 @@ NotificationView::NotificationView(MessageCenterController* controller,
     gfx::Size image_size(
         kNotificationPreferredImageWidth, kNotificationPreferredImageHeight);
     image_view_ = MakeNotificationImage(notification.image(), image_size);
-    image_view_->SetVisible(is_expanded_);
     bottom_view_->AddChildView(image_view_);
   }
 
@@ -448,27 +441,15 @@ NotificationView::NotificationView(MessageCenterController* controller,
     bottom_view_->AddChildView(button);
   }
 
-  // Create expand button
-  expand_button_ = new PaddedButton(this);
-  expand_button_->SetPadding(-kExpandIconRightPadding,
-                             -kExpandIconBottomPadding);
-  expand_button_->SetNormalImage(IDR_NOTIFICATION_EXPAND);
-  expand_button_->SetHoveredImage(IDR_NOTIFICATION_EXPAND_HOVER);
-  expand_button_->SetPressedImage(IDR_NOTIFICATION_EXPAND_PRESSED);
-  expand_button_->set_animate_on_state_change(false);
-  expand_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-
   // Put together the different content and control views. Layering those allows
-  // for proper layout logic and it also allows the close and expand buttons to
-  // overlap the content as needed to provide large enough click and touch areas
-  // (<http://crbug.com/168822> and <http://crbug.com/168856>).
+  // for proper layout logic and it also allows the close button and small
+  // image to overlap the content as needed to provide large enough click and
+  // touch areas (<http://crbug.com/168822> and <http://crbug.com/168856>).
   AddChildView(top_view_);
   AddChildView(icon_view_);
   AddChildView(bottom_view_);
   AddChildView(small_image());
   AddChildView(close_button());
-  AddChildView(expand_button_);
   set_accessible_name(JoinString(accessible_lines, '\n'));
 }
 
@@ -515,7 +496,6 @@ void NotificationView::Layout() {
   MessageView::Layout();
   gfx::Insets insets = GetInsets();
   int content_width = width() - insets.width();
-  int content_right = width() - insets.right();
 
   // Before any resizing, set or adjust the number of message lines.
   if (message_view_)
@@ -533,13 +513,6 @@ void NotificationView::Layout() {
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
-
-  // Expand button.
-  gfx::Size expand_size(expand_button_->GetPreferredSize());
-  int expand_y = bottom_y - expand_size.height();
-  expand_button_->SetVisible(IsExpansionNeeded(width()));
-  expand_button_->SetBounds(content_right - expand_size.width(), expand_y,
-                             expand_size.width(), expand_size.height());
 }
 
 void NotificationView::OnFocus() {
@@ -563,7 +536,6 @@ views::View* NotificationView::GetEventHandlerForRect(const gfx::Rect& rect) {
   // called. But buttons are exceptions, they'll have their own event handlings.
   std::vector<views::View*> buttons(action_buttons_);
   buttons.push_back(close_button());
-  buttons.push_back(expand_button_);
 
   for (size_t i = 0; i < buttons.size(); ++i) {
     gfx::Point point_in_child = point;
@@ -601,21 +573,6 @@ void NotificationView::ButtonPressed(views::Button* sender,
     }
   }
 
-  // Adjust notification subviews for expansion.
-  if (sender == expand_button_) {
-    if (message_view_ && item_views_.size())
-      message_view_->SetVisible(false);
-    for (size_t i = 0; i < item_views_.size(); ++i)
-      item_views_[i]->SetVisible(true);
-    if (image_view_)
-      image_view_->SetVisible(true);
-
-    is_expanded_ = true;
-    // ExpandNotification can cause destruction of |this|.
-    controller_->ExpandNotification(id);
-    return;
-  }
-
   // Let the superclass handled anything other than action buttons.
   // Warning: This may cause the NotificationView itself to be deleted,
   // so don't do anything afterwards.
@@ -631,24 +588,10 @@ void NotificationView::RemoveNotification(const std::string& notification_id,
   controller_->RemoveNotification(notification_id, by_user);
 }
 
-bool NotificationView::IsExpansionNeeded(int width) {
-  return (!is_expanded_ &&
-              (image_view_ ||
-                  item_views_.size() ||
-                  IsMessageExpansionNeeded(width)));
-}
-
-bool NotificationView::IsMessageExpansionNeeded(int width) {
-  int current = GetMessageLines(width, GetMessageLineLimit(width));
-  int expanded = GetMessageLines(width,
-                                 message_center::kMessageExpandedLineLimit);
-  return current < expanded;
-}
-
 int NotificationView::GetMessageLineLimit(int width) {
-  // Expanded notifications get a larger limit, except for image notifications,
-  // whose images must be kept flush against their icons.
-  if (is_expanded_ && !image_view_)
+  // Image notifications require that the image must be kept flush against
+  // their icons, but we can allow more text if no image.
+  if (!image_view_)
     return message_center::kMessageExpandedLineLimit;
 
   int message_line_limit = message_center::kMessageCollapsedLineLimit;
