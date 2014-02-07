@@ -617,6 +617,7 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
         const SimpleFontData* currentFontData = nextFontData;
         UScriptCode currentScript = nextScript;
 
+        UChar32 lastCharacter = character;
         for (iterator.advance(clusterLength); iterator.consume(character, clusterLength); iterator.advance(clusterLength)) {
             if (Character::treatAsZeroWidthSpace(character))
                 continue;
@@ -631,9 +632,12 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
             nextScript = uscript_getScript(character, &errorCode);
             if (U_FAILURE(errorCode))
                 return false;
+            if (lastCharacter == zeroWidthJoiner)
+                currentFontData = nextFontData;
             if ((nextFontData != currentFontData) || ((currentScript != nextScript) && (nextScript != USCRIPT_INHERITED) && (!uscript_hasScript(character, currentScript))))
                 break;
             currentCharacterPosition = iterator.characters();
+            lastCharacter = character;
         }
 
         CandidateRun run = { character, startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript };
