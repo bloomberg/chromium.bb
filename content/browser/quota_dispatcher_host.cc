@@ -117,7 +117,6 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     // requires int64 values.
     // TODO(nhiroki): The backend should accept uint64 values.
     requested_quota_ = base::saturated_cast<int64>(requested_quota);
-    DCHECK_GT(requested_quota_, 0);
   }
   virtual ~RequestQuotaDispatcher() {}
 
