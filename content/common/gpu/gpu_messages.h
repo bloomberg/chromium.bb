@@ -41,6 +41,24 @@
 
 #define IPC_MESSAGE_START GpuMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
+                          content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
+                          gfx::GpuPreferenceLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
+                          gfx::SURFACE_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
+                          gpu::MemoryAllocation::CUTOFF_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
+                          gpu::error::kContextLostReasonLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
+                          media::VideoEncodeAccelerator::kErrorMax)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
+                          media::VideoFrame::HISTOGRAM_MAX)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
+                              media::VIDEO_CODEC_PROFILE_MIN,
+                              media::VIDEO_CODEC_PROFILE_MAX)
+
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32, share_group_id)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
@@ -200,7 +218,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_visible)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_visible)
 IPC_STRUCT_TRAITS_END()
-IPC_ENUM_TRAITS(gpu::MemoryAllocation::PriorityCutoff)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::ManagedMemoryStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_required)
@@ -209,22 +226,11 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::ManagedMemoryStats)
   IPC_STRUCT_TRAITS_MEMBER(backbuffer_requested)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(gfx::SurfaceType)
 IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
   IPC_STRUCT_TRAITS_MEMBER(handle)
   IPC_STRUCT_TRAITS_MEMBER(transport_type)
   IPC_STRUCT_TRAITS_MEMBER(parent_client_id)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
-IPC_ENUM_TRAITS(gfx::GpuPreference)
-IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
-
-IPC_ENUM_TRAITS(media::VideoCodecProfile)
-
-IPC_ENUM_TRAITS(media::VideoFrame::Format)
-
-IPC_ENUM_TRAITS(media::VideoEncodeAccelerator::Error)
 
 //------------------------------------------------------------------------------
 // GPU Messages

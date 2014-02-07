@@ -39,7 +39,8 @@ namespace error {
     kInnocent,
 
     // It is unknown whether this context provoked the loss of context.
-    kUnknown
+    kUnknown,
+    kContextLostReasonLast = kUnknown
   };
 }
 

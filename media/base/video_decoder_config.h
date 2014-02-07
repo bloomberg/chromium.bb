@@ -43,6 +43,7 @@ enum VideoCodecProfile {
   // for example), and keep the values for a particular format grouped
   // together for clarity.
   VIDEO_CODEC_PROFILE_UNKNOWN = -1,
+  VIDEO_CODEC_PROFILE_MIN = VIDEO_CODEC_PROFILE_UNKNOWN,
   H264PROFILE_MIN = 0,
   H264PROFILE_BASELINE = H264PROFILE_MIN,
   H264PROFILE_MAIN = 1,

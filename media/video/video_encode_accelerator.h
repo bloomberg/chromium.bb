@@ -45,6 +45,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // failures, GPU library failures, GPU process programming errors, and so
     // on.
     kPlatformFailureError,
+    kErrorMax = kPlatformFailureError
   };
 
   // Interface for clients that use VideoEncodeAccelerator.

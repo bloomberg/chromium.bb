@@ -16,7 +16,8 @@ namespace gfx {
 // implemented on more operating systems.
 enum GpuPreference {
   PreferIntegratedGpu,
-  PreferDiscreteGpu
+  PreferDiscreteGpu,
+  GpuPreferenceLast = PreferDiscreteGpu
 };
 
 }  // namespace gfx

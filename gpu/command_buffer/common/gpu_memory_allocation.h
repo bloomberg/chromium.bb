@@ -25,6 +25,7 @@ struct MemoryAllocation {
     CUTOFF_ALLOW_NICE_TO_HAVE,
     // Allow all allocations.
     CUTOFF_ALLOW_EVERYTHING,
+    CUTOFF_LAST = CUTOFF_ALLOW_EVERYTHING
   };
 
   // Limits when this renderer is visible.
