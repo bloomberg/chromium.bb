@@ -39,8 +39,8 @@ static const int kMediaPlayerThreshold = 1;
 // prevent unnecessarily large messages from being passed around, and the sizes
 // are somewhat arbitrary as the EME specification doesn't specify any limits.
 static const size_t kEmeUuidSize = 16;
-static const size_t kEmeInitDataMaximum = 10240;  // 10 KB
-static const size_t kEmeResponseMaximum = 10240;  // 10 KB
+static const size_t kEmeInitDataMaximum = 64 * 1024;  // 64 KB
+static const size_t kEmeResponseMaximum = 64 * 1024;  // 64 KB
 
 namespace content {
 
@@ -609,6 +609,8 @@ void BrowserMediaPlayerManager::OnCreateSession(
     MediaKeysHostMsg_CreateSession_Type type,
     const std::vector<uint8>& init_data) {
   if (init_data.size() > kEmeInitDataMaximum) {
+    LOG(WARNING) << "InitData for ID: " << media_keys_id
+                 << " too long: " << init_data.size();
     OnSessionError(
         media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
@@ -680,8 +682,8 @@ void BrowserMediaPlayerManager::OnUpdateSession(
   }
 
   if (response.size() > kEmeResponseMaximum) {
-    DLOG(WARNING) << "Response for ID: " << media_keys_id
-                  << " too long: " << response.size();
+    LOG(WARNING) << "Response for ID: " << media_keys_id
+                 << " too long: " << response.size();
     OnSessionError(
         media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
