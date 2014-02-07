@@ -218,8 +218,9 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     ASSERT(m_mainScriptLoader);
 
     if (m_mainScriptLoader->failed() || m_askedToTerminate) {
-        m_workerContextClient->workerContextFailedToStart();
         m_mainScriptLoader.clear();
+        // This may delete 'this'.
+        m_workerContextClient->workerContextFailedToStart();
         return;
     }
 
