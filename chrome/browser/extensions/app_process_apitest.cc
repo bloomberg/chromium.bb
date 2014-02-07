@@ -377,7 +377,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
 // 3. page2 redirects back to a page in the app
 // The final navigation should end up in the app process.
 // See http://crbug.com/61757
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
+// Flaky - see http://crbug.com/341898
+IN_PROC_BROWSER_TEST_F(AppApiTest, FLAKY_AppProcessRedirectBack) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
