@@ -401,6 +401,8 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-b
 
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
+crbug.com/341682 editing/selection/4960116.html [ ImageOnlyFailure Pass ]
+
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
