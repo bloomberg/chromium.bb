@@ -2416,7 +2416,15 @@ class RenderViewBrowserTest : public ContentBrowserTest {
   TestShellContentRendererClient* renderer_client_;
 };
 
-IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
+#if defined(OS_ANDROID)
+// Flaky https://crbug.com/341745
+#define MAYBE_ConfirmCacheInformationPlumbed DISABLED_ConfirmCacheInformationPlumbed
+#else
+#define MAYBE_ConfirmCacheInformationPlumbed ConfirmCacheInformationPlumbed
+#endif
+
+IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
+                       MAYBE_ConfirmCacheInformationPlumbed) {
   ASSERT_TRUE(test_server()->Start());
 
   // Load URL with "nocache" set, to create stale cache.
