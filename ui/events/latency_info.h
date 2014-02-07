@@ -98,6 +98,9 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   static bool Verify(const std::vector<LatencyInfo>& latency_info,
                      const char* referring_msg);
 
+  // Copy LatencyComponents with type |type| from |other| into |this|.
+  void CopyLatencyFrom(const LatencyInfo& other, LatencyComponentType type);
+
   // Add LatencyComponents that are in |other| but not in |this|.
   void AddNewLatencyFrom(const LatencyInfo& other);
 

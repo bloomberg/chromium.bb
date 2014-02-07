@@ -2097,10 +2097,14 @@ void RenderWidgetHostImpl::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   TouchEventWithLatencyInfo touch_event = event;
-  // TouchEvent latency does not end when acked since it could later on
-  // become gesture events.
   touch_event.latency.AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, 0, 0);
+  // TouchEvent latency ends at ack if it didn't cause any rendering.
+  if (!touch_event.latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL)) {
+    touch_event.latency.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
+  }
   ComputeTouchLatency(touch_event.latency);
   if (view_)
     view_->ProcessAckedTouchEvent(touch_event, ack_result);
