@@ -24,8 +24,8 @@ const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 // Enables fetching and storing cloud policy for components.
 const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 
-// Disables the verification of policy signing keys.
-const char kSkipPolicyKeyVerification[] = "skip-policy-key-verification";
+// Enables the verification of policy signing keys.
+const char kEnablePolicyKeyVerification[] = "enable-policy-key-verification";
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // Registers for cloud policy using the BROWSER client type instead of the

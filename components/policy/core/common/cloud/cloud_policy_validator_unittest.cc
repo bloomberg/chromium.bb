@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -13,6 +14,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +43,11 @@ class CloudPolicyValidatorTest : public testing::Test {
         allow_key_rotation_(true),
         existing_dm_token_(PolicyBuilder::kFakeToken) {
     policy_.SetDefaultNewSigningKey();
+  }
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePolicyKeyVerification);
   }
 
   void Validate(testing::Action<void(UserCloudPolicyValidator*)> check_action) {

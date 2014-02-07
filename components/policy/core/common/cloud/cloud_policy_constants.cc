@@ -88,10 +88,10 @@ std::string GetPolicyVerificationKey() {
   // the policy blob securely.
   return std::string();
 #else
-  // Allow disabling key verification until we update the test servers with
-  // verification signatures for all QA domains (http://crbug.com/328038).
+  // Disable key verification by default until production servers generate
+  // the proper signatures.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kSkipPolicyKeyVerification)) {
+  if (!command_line->HasSwitch(switches::kEnablePolicyKeyVerification)) {
     return std::string();
   } else {
     return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
