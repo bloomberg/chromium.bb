@@ -29,19 +29,20 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorIndexedDBAgent.h"
+#include "modules/indexeddb/InspectorIndexedDBAgent.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/inspector/InjectedScript.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorState.h"
 #include "core/frame/Frame.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorState.h"
+#include "core/page/Page.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -350,8 +351,9 @@ static PassRefPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
             keyArray.append(idbKeyFromInspectorObject(object.get()));
         }
         idbKey = IDBKey::createArray(keyArray);
-    } else
+    } else {
         return 0;
+    }
 
     return idbKey.release();
 }
@@ -386,9 +388,9 @@ class DataLoader;
 
 class OpenCursorCallback FINAL : public EventListener {
 public:
-    static PassRefPtr<OpenCursorCallback> create(InjectedScript injectedScript, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static PassRefPtr<OpenCursorCallback> create(PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
-        return adoptRef(new OpenCursorCallback(injectedScript, requestCallback, skipCount, pageSize));
+        return adoptRef(new OpenCursorCallback(requestCallback, skipCount, pageSize));
     }
 
     virtual ~OpenCursorCallback() { }
@@ -440,10 +442,15 @@ public:
             return;
         }
 
+        Document* document = toDocument(context);
+        if (!document)
+            return;
+        ScriptState* scriptState = mainWorldScriptState(document->frame());
+
         RefPtr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(m_injectedScript.wrapObject(idbCursor->key(context), String()))
-            .setPrimaryKey(m_injectedScript.wrapObject(idbCursor->primaryKey(context), String()))
-            .setValue(m_injectedScript.wrapObject(idbCursor->value(context), String()));
+            .setKey(idbCursor->key(context).toJSONValue(scriptState)->toJSONString())
+            .setPrimaryKey(idbCursor->primaryKey(context).toJSONValue(scriptState)->toJSONString())
+            .setValue(idbCursor->value(context).toJSONValue(scriptState)->toJSONString());
         m_result->addItem(dataEntry);
 
     }
@@ -456,16 +463,14 @@ public:
     }
 
 private:
-    OpenCursorCallback(InjectedScript injectedScript, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    OpenCursorCallback(PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
-        , m_injectedScript(injectedScript)
         , m_requestCallback(requestCallback)
         , m_skipCount(skipCount)
         , m_pageSize(pageSize)
     {
         m_result = Array<DataEntry>::create();
     }
-    InjectedScript m_injectedScript;
     RefPtr<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
@@ -474,9 +479,9 @@ private:
 
 class DataLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(ExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(ExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
-        return adoptRef(new DataLoader(context, requestCallback, injectedScript, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
+        return adoptRef(new DataLoader(context, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
 
     virtual ~DataLoader() { }
@@ -497,7 +502,7 @@ public:
             return;
         }
 
-        RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(m_injectedScript, m_requestCallback, m_skipCount, m_pageSize);
+        RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(m_requestCallback, m_skipCount, m_pageSize);
 
         RefPtr<IDBRequest> idbRequest;
         if (!m_indexName.isEmpty()) {
@@ -515,17 +520,15 @@ public:
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
-    DataLoader(ExecutionContext* executionContext, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    DataLoader(ExecutionContext* executionContext, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(executionContext)
         , m_requestCallback(requestCallback)
-        , m_injectedScript(injectedScript)
         , m_objectStoreName(objectStoreName)
         , m_indexName(indexName)
         , m_idbKeyRange(idbKeyRange)
         , m_skipCount(skipCount)
         , m_pageSize(pageSize) { }
     RefPtr<RequestDataCallback> m_requestCallback;
-    InjectedScript m_injectedScript;
     String m_objectStoreName;
     String m_indexName;
     RefPtr<IDBKeyRange> m_idbKeyRange;
@@ -533,12 +536,27 @@ public:
     unsigned m_pageSize;
 };
 
+Frame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin)
+{
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
+        if (documentOrigin->toRawString() == securityOrigin)
+            return frame;
+    }
+    return 0;
+}
+
 } // namespace
 
-InspectorIndexedDBAgent::InspectorIndexedDBAgent(InjectedScriptManager* injectedScriptManager, InspectorPageAgent* pageAgent)
+void InspectorIndexedDBAgent::provideTo(Page* page)
+{
+    OwnPtr<InspectorIndexedDBAgent> agent(adoptPtr(new InspectorIndexedDBAgent(page)));
+    page->inspectorController().registerModuleAgent(agent.release());
+}
+
+InspectorIndexedDBAgent::InspectorIndexedDBAgent(Page* page)
     : InspectorBaseAgent<InspectorIndexedDBAgent>("IndexedDB")
-    , m_injectedScriptManager(injectedScriptManager)
-    , m_pageAgent(pageAgent)
+    , m_page(page)
 {
 }
 
@@ -596,7 +614,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
 
 void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback> requestCallback)
 {
-    Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -621,7 +639,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
 
 void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback> requestCallback)
 {
-    Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -641,15 +659,13 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
 
 void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback> requestCallback)
 {
-    Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
     IDBFactory* idbFactory = assertIDBFactory(errorString, document);
     if (!idbFactory)
         return;
-
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(mainWorldScriptState(frame));
 
     RefPtr<IDBKeyRange> idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange->get()) : 0;
     if (keyRange && !idbKeyRange) {
@@ -663,7 +679,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
-    RefPtr<DataLoader> dataLoader = DataLoader::create(document, requestCallback, injectedScript, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
+    RefPtr<DataLoader> dataLoader = DataLoader::create(document, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
@@ -753,7 +769,7 @@ private:
 
 void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
 {
-    Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;

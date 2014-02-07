@@ -121,6 +121,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "modules/geolocation/GeolocationController.h"
+#include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/notifications/NotificationController.h"
 #include "painting/ContinuousPainter.h"
 #include "platform/ContextMenu.h"
@@ -406,6 +407,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
     provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
+    InspectorIndexedDBAgent::provideTo(m_page.get());
     provideStorageQuotaClientTo(m_page.get(), StorageQuotaClientImpl::create());
     m_validationMessage = ValidationMessageClientImpl::create(*this);
     m_page->setValidationMessageClient(m_validationMessage.get());

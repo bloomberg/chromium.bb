@@ -37,17 +37,14 @@
 
 namespace WebCore {
 
-class InjectedScriptManager;
-class InspectorPageAgent;
+class Page;
 
 typedef String ErrorString;
 
 class InspectorIndexedDBAgent FINAL : public InspectorBaseAgent<InspectorIndexedDBAgent>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
-    static PassOwnPtr<InspectorIndexedDBAgent> create(InjectedScriptManager* injectedScriptManager, InspectorPageAgent* pageAgent)
-    {
-        return adoptPtr(new InspectorIndexedDBAgent(injectedScriptManager, pageAgent));
-    }
+    static void provideTo(Page*);
+
     virtual ~InspectorIndexedDBAgent();
 
     virtual void clearFrontend() OVERRIDE;
@@ -62,10 +59,9 @@ public:
     virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) OVERRIDE;
 
 private:
-    InspectorIndexedDBAgent(InjectedScriptManager*, InspectorPageAgent*);
+    InspectorIndexedDBAgent(Page*);
 
-    InjectedScriptManager* m_injectedScriptManager;
-    InspectorPageAgent* m_pageAgent;
+    Page* m_page;
 };
 
 } // namespace WebCore

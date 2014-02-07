@@ -389,6 +389,8 @@
       'indexeddb/IDBVersionChangeEvent.cpp',
       'indexeddb/IDBVersionChangeEvent.h',
       'indexeddb/IndexedDB.h',
+      'indexeddb/InspectorIndexedDBAgent.cpp',
+      'indexeddb/InspectorIndexedDBAgent.h',
       'indexeddb/PageGroupIndexedDatabase.cpp',
       'indexeddb/PageGroupIndexedDatabase.h',
       'indexeddb/WebIDBCallbacksImpl.cpp',

@@ -1151,8 +1151,6 @@
             'inspector/InspectorHeapProfilerAgent.h',
             'inspector/InspectorHistory.cpp',
             'inspector/InspectorHistory.h',
-            'inspector/InspectorIndexedDBAgent.cpp',
-            'inspector/InspectorIndexedDBAgent.h',
             'inspector/InspectorInputAgent.cpp',
             'inspector/InspectorInputAgent.h',
             'inspector/InspectorInspectorAgent.cpp',
