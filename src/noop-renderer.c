@@ -49,6 +49,21 @@ noop_renderer_flush_damage(struct weston_surface *surface)
 static void
 noop_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
+	struct wl_shm_buffer *shm_buffer;
+
+	if (!buffer)
+		return;
+
+	shm_buffer = wl_shm_buffer_get(buffer->resource);
+
+	if (!shm_buffer) {
+		weston_log("No-op renderer supports only SHM buffers\n");
+		return;
+	}
+
+	buffer->shm_buffer = shm_buffer;
+	buffer->width = wl_shm_buffer_get_width(shm_buffer);
+	buffer->height = wl_shm_buffer_get_height(shm_buffer);
 }
 
 static void
