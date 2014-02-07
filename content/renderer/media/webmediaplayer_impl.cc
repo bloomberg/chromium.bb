@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -164,7 +165,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChange)),
       video_frame_provider_client_(NULL),
       text_track_index_(0),
-      web_cdm_(NULL) {
+      web_cdm_(NULL),
+      destroy_reason_(0u) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -204,7 +206,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   if (delegate_.get())
     delegate_->PlayerGone(this);
 
-  Destroy();
+  Destroy(WEBMEDIAPLAYER_DESTROYED);
 }
 
 namespace {
@@ -488,6 +490,13 @@ double WebMediaPlayerImpl::maxTimeSeekable() const {
 
 bool WebMediaPlayerImpl::didLoadingProgress() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // TODO(scherkus): Remove after tracking down cause for crashes
+  // http://crbug.com/341184 http://crbug.com/341186
+  uint32 reason = this->destroy_reason_;
+  base::debug::Alias(&reason);
+  CHECK(pipeline_);
+
   return pipeline_->DidLoadingProgress();
 }
 
@@ -861,7 +870,7 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
 }
 
 void WebMediaPlayerImpl::OnDestruct() {
-  Destroy();
+  Destroy(RENDERFRAME_DESTROYED);
 }
 
 void WebMediaPlayerImpl::InvalidateOnMainThread() {
@@ -927,6 +936,10 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 void WebMediaPlayerImpl::OnPipelineBufferingState(
     media::Pipeline::BufferingState buffering_state) {
   DVLOG(1) << "OnPipelineBufferingState(" << buffering_state << ")";
+
+  // TODO(scherkus): Remove after tracking down cause for crashes
+  // http://crbug.com/341184 http://crbug.com/341186
+  CHECK(pipeline_);
 
   switch (buffering_state) {
     case media::Pipeline::kHaveMetadata:
@@ -1193,8 +1206,13 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   client_->readyStateChanged();
 }
 
-void WebMediaPlayerImpl::Destroy() {
+void WebMediaPlayerImpl::Destroy(DestroyReason reason) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // TODO(scherkus): Remove after tracking down cause for crashes
+  // http://crbug.com/341184 http://crbug.com/341186
+  CHECK((destroy_reason_ & reason) == 0);
+  destroy_reason_ |= reason;
 
   // Abort any pending IO so stopping the pipeline doesn't get blocked.
   if (data_source_)

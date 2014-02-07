@@ -229,7 +229,14 @@ class WebMediaPlayerImpl
   void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
   // Destroy resources held.
-  void Destroy();
+  //
+  // TODO(scherkus): Remove |reason| after tracking down cause for crashes
+  // http://crbug.com/341184 http://crbug.com/341186
+  enum DestroyReason {
+    WEBMEDIAPLAYER_DESTROYED = 1 << 0,
+    RENDERFRAME_DESTROYED = 1 << 1,
+  };
+  void Destroy(DestroyReason reason);
 
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
@@ -375,6 +382,10 @@ class WebMediaPlayerImpl
   WebContentDecryptionModuleImpl* web_cdm_;
 
   media::DecryptorReadyCB decryptor_ready_cb_;
+
+  // TODO(scherkus): Remove after tracking down cause for crashes
+  // http://crbug.com/341184 http://crbug.com/341186
+  uint32 destroy_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
