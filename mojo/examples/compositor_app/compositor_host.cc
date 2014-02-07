@@ -54,10 +54,11 @@ void CompositorHost::SetupScene() {
 void CompositorHost::WillBeginMainFrame(int frame_id) {}
 void CompositorHost::DidBeginMainFrame() {}
 
-void CompositorHost::Animate(double frame_begin_time) {
+void CompositorHost::Animate(base::TimeTicks frame_begin_time) {
   // TODO(jamesr): Should use cc's animation system.
   static const double kDegreesPerSecond = 70.0;
-  double child_rotation_degrees = kDegreesPerSecond * frame_begin_time;
+  double time_in_seconds = (frame_begin_time - base::TimeTicks()).InSecondsF();
+  double child_rotation_degrees = kDegreesPerSecond * time_in_seconds;
   gfx::Transform child_transform;
   child_transform.Translate(200, 200);
   child_transform.Rotate(child_rotation_degrees);

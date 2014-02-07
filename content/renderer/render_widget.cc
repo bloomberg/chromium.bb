@@ -1407,7 +1407,7 @@ void RenderWidget::AnimateIfNeeded() {
                            &RenderWidget::AnimationCallback);
     animation_update_pending_ = false;
     if (is_accelerated_compositing_active_ && compositor_) {
-      compositor_->Animate(base::TimeTicks::Now());
+      compositor_->UpdateAnimations(base::TimeTicks::Now());
     } else {
       double frame_begin_time =
         (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();

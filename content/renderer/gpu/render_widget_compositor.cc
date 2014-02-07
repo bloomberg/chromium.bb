@@ -308,7 +308,7 @@ bool RenderWidgetCompositor::BeginMainFrameRequested() const {
   return layer_tree_host_->BeginMainFrameRequested();
 }
 
-void RenderWidgetCompositor::Animate(base::TimeTicks time) {
+void RenderWidgetCompositor::UpdateAnimations(base::TimeTicks time) {
   layer_tree_host_->UpdateClientAnimations(time);
 }
 
@@ -559,8 +559,9 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
   widget_->InstrumentDidBeginFrame();
 }
 
-void RenderWidgetCompositor::Animate(double frame_begin_time) {
-  widget_->webwidget()->animate(frame_begin_time);
+void RenderWidgetCompositor::Animate(base::TimeTicks frame_begin_time) {
+  widget_->webwidget()->animate(
+      (frame_begin_time - base::TimeTicks()).InSecondsF());
 }
 
 void RenderWidgetCompositor::Layout() {

@@ -31,7 +31,7 @@ class CompositorHost : public cc::LayerTreeHostClient {
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;
   virtual void DidBeginMainFrame() OVERRIDE;
-  virtual void Animate(double frame_begin_time) OVERRIDE;
+  virtual void Animate(base::TimeTicks frame_begin_time) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float page_scale) OVERRIDE;

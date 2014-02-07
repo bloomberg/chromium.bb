@@ -246,7 +246,7 @@ void LayerTreeHost::DidBeginMainFrame() {
 
 void LayerTreeHost::UpdateClientAnimations(base::TimeTicks frame_begin_time) {
   animating_ = true;
-  client_->Animate((frame_begin_time - base::TimeTicks()).InSecondsF());
+  client_->Animate(frame_begin_time);
   animating_ = false;
 }
 
