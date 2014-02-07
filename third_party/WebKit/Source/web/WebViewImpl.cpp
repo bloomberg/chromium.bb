@@ -1445,16 +1445,18 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = 0;
 }
 
-PassOwnPtr<WebHelperPlugin> WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
+WebHelperPlugin* WebViewImpl::createHelperPlugin(const WebString& pluginType, const WebDocument& hostDocument)
 {
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypeHelperPlugin);
     ASSERT(popupWidget);
-    OwnPtr<WebHelperPluginImpl> helperPlugin = adoptPtr(toWebHelperPluginImpl(popupWidget));
+    WebHelperPluginImpl* helperPlugin = toWebHelperPluginImpl(popupWidget);
 
-    if (!helperPlugin->initialize(pluginType, hostDocument, this))
-        helperPlugin.clear();
+    if (!helperPlugin->initialize(pluginType, hostDocument, this)) {
+        closeAndDeleteHelperPluginSoon(helperPlugin);
+        return 0;
+    }
 
-    return helperPlugin.release();
+    return helperPlugin;
 }
 
 void WebViewImpl::closeAndDeleteHelperPluginSoon(WebHelperPluginImpl* helperPlugin)

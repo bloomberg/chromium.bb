@@ -65,7 +65,7 @@ public:
 
 private:
     explicit WebHelperPluginImpl(WebWidgetClient*);
-    bool initializePage(const String& pluginType, const WebDocument& hostDocument);
+    bool initializePage(const WebString& pluginType, const WebDocument& hostDocument);
     void destroyPage();
 
     // This object needs to be destroyed by calling closeAndDelete().
@@ -91,17 +91,5 @@ private:
 DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebWidget, widget, widget->isHelperPlugin(), widget.isHelperPlugin());
 
 } // namespace blink
-
-namespace WTF {
-
-template<typename T> struct OwnedPtrDeleter;
-template<> struct OwnedPtrDeleter<blink::WebHelperPluginImpl> {
-    static void deletePtr(blink::WebHelperPluginImpl* plugin)
-    {
-        OwnedPtrDeleter<blink::WebHelperPlugin>::deletePtr(plugin);
-    }
-};
-
-} // namespace WTF
 
 #endif // WebHelperPluginImpl_h

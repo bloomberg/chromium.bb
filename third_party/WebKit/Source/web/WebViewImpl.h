@@ -240,6 +240,9 @@ public:
     virtual void performMediaPlayerAction(
         const WebMediaPlayerAction& action,
         const WebPoint& location) OVERRIDE;
+    virtual WebHelperPlugin* createHelperPlugin(
+        const WebString& pluginType,
+        const WebDocument& hostDocument) OVERRIDE;
     virtual void performPluginAction(
         const WebPluginAction&,
         const WebPoint&) OVERRIDE;
@@ -443,9 +446,6 @@ public:
     // PagePopupDriver functions.
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
-
-    // Creates a Helper Plugin of |pluginType| for |hostDocument|.
-    PassOwnPtr<WebHelperPlugin> createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.

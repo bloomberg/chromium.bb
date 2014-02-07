@@ -56,7 +56,7 @@ namespace blink {
 static const char documentStartLiteral[] = "<!DOCTYPE html><head><meta charset='UTF-8'></head><body>\n<object type=\"";
 static const char documentEndLiteral[] = "\"></object></body>\n";
 
-static void writeDocument(const String& pluginType, const WebURL& url, WebCore::FrameLoader& loader)
+static void writeDocument(const WebString& pluginType, const WebURL& url, WebCore::FrameLoader& loader)
 {
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     data->append(documentStartLiteral, sizeof(documentStartLiteral) - 1);
@@ -200,7 +200,7 @@ WebPlugin* WebHelperPluginImpl::getPlugin()
     return plugin;
 }
 
-bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocument& hostDocument)
+bool WebHelperPluginImpl::initializePage(const WebString& pluginType, const WebDocument& hostDocument)
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);

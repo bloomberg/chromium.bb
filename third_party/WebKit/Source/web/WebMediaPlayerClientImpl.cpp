@@ -150,7 +150,7 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
 {
     ASSERT(!m_helperPlugin);
 
-    m_helperPlugin = toWebViewImpl(frame->view())->createHelperPlugin(pluginType, frame->document());
+    m_helperPlugin = adoptPtr(frame->view()->createHelperPlugin(pluginType, frame->document()));
     if (!m_helperPlugin)
         return 0;
 
