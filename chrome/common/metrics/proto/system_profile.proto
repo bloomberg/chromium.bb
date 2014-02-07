@@ -83,7 +83,7 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
-  // Next tag for Hardware: 14
+  // Next tag for Hardware: 16
   // Information on the user's hardware.
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
@@ -219,6 +219,21 @@ message SystemProfileProto {
       repeated PairedDevice paired_device = 3;
     }
     optional Bluetooth bluetooth = 11;
+
+    // Whether the internal display produces touch events. Omitted if unknown.
+    // Logged on ChromeOS only.
+    optional bool internal_display_supports_touch = 14;
+
+    // Vendor ids and product ids of external touchscreens.
+    message TouchScreen {
+      // Touch screen vendor id.
+      optional uint32 vendor_id = 1;
+      // Touch screen product id.
+      optional uint32 product_id = 2;
+    }
+    // Lists vendor and product ids of external touchscreens.
+    // Logged on ChromeOS only.
+    repeated TouchScreen external_touchscreen = 15;
   }
   optional Hardware hardware = 6;
 

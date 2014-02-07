@@ -14,11 +14,16 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/x/touch_factory_x11.h"
+#include "ui/gfx/screen.h"
 
 using metrics::ChromeUserMetricsExtension;
 using metrics::PerfDataProto;
 using metrics::SystemProfileProto;
 typedef SystemProfileProto::Hardware::Bluetooth::PairedDevice PairedDevice;
+
+namespace {
 
 PairedDevice::Type AsBluetoothDeviceType(
     device::BluetoothDevice::DeviceType device_type) {
@@ -57,6 +62,21 @@ PairedDevice::Type AsBluetoothDeviceType(
   return PairedDevice::DEVICE_UNKNOWN;
 }
 
+void WriteExternalTouchscreensProto(SystemProfileProto::Hardware* hardware) {
+  std::set<std::pair<int, int> > touchscreen_ids =
+      ui::TouchFactory::GetInstance()->GetTouchscreenIds();
+  for (std::set<std::pair<int, int> >::iterator it = touchscreen_ids.begin();
+       it != touchscreen_ids.end();
+       ++it) {
+    SystemProfileProto::Hardware::TouchScreen* touchscreen =
+        hardware->add_external_touchscreen();
+    touchscreen->set_vendor_id(it->first);
+    touchscreen->set_product_id(it->second);
+  }
+}
+
+}  // namespace
+
 MetricsLogChromeOS::~MetricsLogChromeOS() {
 }
 
@@ -72,6 +92,15 @@ void MetricsLogChromeOS::LogChromeOSMetrics() {
 
   WriteBluetoothProto();
   UpdateMultiProfileUserCount();
+
+  SystemProfileProto::Hardware* hardware =
+      uma_proto_->mutable_system_profile()->mutable_hardware();
+  gfx::Display::TouchSupport has_touch = ui::GetInternalDisplayTouchSupport();
+  if (has_touch == gfx::Display::TOUCH_SUPPORT_AVAILABLE)
+    hardware->set_internal_display_supports_touch(true);
+  else if (has_touch == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE)
+    hardware->set_internal_display_supports_touch(false);
+  WriteExternalTouchscreensProto(hardware);
 }
 
 void MetricsLogChromeOS::WriteRealtimeStabilityAttributes(PrefService* pref) {

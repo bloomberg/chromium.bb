@@ -4,6 +4,7 @@
 
 #include "ui/events/x/touch_factory_x11.h"
 
+#include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -81,6 +82,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
+  touchscreen_ids_.clear();
   max_touch_points_ = -1;
 
 #if !defined(USE_XI2_MT)
@@ -131,6 +133,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
               reinterpret_cast<XITouchClassInfo *>(xiclassinfo);
           // Only care direct touch device (such as touch screen) right now
           if (tci->mode == XIDirectTouch) {
+            CacheTouchscreenIds(display, devinfo->deviceid);
             touch_device_lookup_[devinfo->deviceid] = true;
             touch_device_list_[devinfo->deviceid] = true;
             touch_device_available_ = true;
@@ -266,6 +269,45 @@ void TouchFactory::SetPointerDeviceForTest(
        iter != devices.end(); ++iter) {
     pointer_device_lookup_[*iter] = true;
   }
+}
+
+void TouchFactory::CacheTouchscreenIds(Display* display, int device_id) {
+  XDevice* device = XOpenDevice(display, device_id);
+  if (!device)
+    return;
+
+  Atom actual_type_return;
+  int actual_format_return;
+  unsigned long nitems_return;
+  unsigned long bytes_after_return;
+  unsigned char *prop_return;
+
+  const char kDeviceProductIdString[] = "Device Product ID";
+  Atom device_product_id_atom =
+      XInternAtom(display, kDeviceProductIdString, false);
+
+  if (device_product_id_atom != None &&
+      XGetDeviceProperty(display, device, device_product_id_atom, 0, 2,
+                         False, XA_INTEGER, &actual_type_return,
+                         &actual_format_return, &nitems_return,
+                         &bytes_after_return, &prop_return) == Success) {
+    if (actual_type_return == XA_INTEGER &&
+        actual_format_return == 32 &&
+        nitems_return == 2) {
+      // An actual_format_return of 32 implies that the returned data is an
+      // array of longs. See the description of |prop_return| in `man
+      // XGetDeviceProperty` for details.
+      long* ptr = reinterpret_cast<long*>(prop_return);
+
+      // Internal displays will have a vid and pid of 0. Ignore them.
+      // ptr[0] is the vid, and ptr[1] is the pid.
+      if (ptr[0] || ptr[1])
+        touchscreen_ids_.insert(std::make_pair(ptr[0], ptr[1]));
+    }
+    XFree(prop_return);
+  }
+
+  XCloseDevice(display, device);
 }
 
 }  // namespace ui
