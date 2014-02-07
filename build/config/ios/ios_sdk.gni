@@ -8,15 +8,25 @@ declare_args() {
   ios_sdk_path = ""
 
   # Set to true when targeting a simulator build on iOS. False means that the
-  # target is for running on the device.
-  use_ios_simulator = true
+  # target is for running on the device. The default value (the empty string)
+  # means to pick the default based on the generator.
+  use_ios_simulator = ""
 
+  # Version of iOS that we're targeting.
   ios_deployment_target = "6.0"
 }
 
-if (!is_gyp_xcode_generator) {
-  # The Ninja build currently only targets the simulator.
-  assert(use_ios_simulator, "You can't do an iOS device build using Ninja yet.")
+if (use_ios_simulator == "") {
+  # Pick the default based on the generator. Currently, the Ninja build only
+  # supports the simulator, while we default to device builds on Xcode.
+  use_ios_simulator = !is_gyp_xcode_generator
+} else {
+  # Simulator flag explicitly passed in.
+  if (!is_gyp_xcode_generator) {
+    # The Ninja build currently only targets the simulator.
+    assert(use_ios_simulator,
+           "You can't do an iOS device build using Ninja yet.")
+  }
 }
 
 if (ios_sdk_path == "") {

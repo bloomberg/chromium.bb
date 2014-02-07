@@ -483,8 +483,10 @@ void GypBinaryTargetWriter::WriteMacFlags(const Target* target,
     } else {
       Indent(indent + kExtraIndent) << "'SDKROOT': 'iphoneos',\n";
       std::string min_ver = GetIPhoneVersionMin(&flags.cflags);
-      if (!min_ver.empty())
-        Indent(indent + kExtraIndent) << "'IPHONEOS_DEPLOYMENT_TARGET': '',\n";
+      if (!min_ver.empty()) {
+        Indent(indent + kExtraIndent) << "'IPHONEOS_DEPLOYMENT_TARGET': '"
+                                      << min_ver << "',\n";
+      }
     }
   } else {
     // When doing regular Mac and "host" iOS (which look like regular Mac)
