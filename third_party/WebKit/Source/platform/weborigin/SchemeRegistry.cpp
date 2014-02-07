@@ -55,6 +55,7 @@ static URLSchemesMap& secureSchemes()
         secureSchemes.add("https");
         secureSchemes.add("about");
         secureSchemes.add("data");
+        secureSchemes.add("wss");
     }
 
     return secureSchemes;

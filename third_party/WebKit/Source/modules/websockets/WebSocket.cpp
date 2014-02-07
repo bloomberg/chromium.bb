@@ -299,6 +299,11 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         exceptionState.throwDOMException(SyntaxError, "The URL's scheme must be either 'ws' or 'wss'. '" + m_url.protocol() + "' is not allowed.");
         return;
     }
+    if (MixedContentChecker::isMixedContent(executionContext()->securityOrigin(), m_url)) {
+        // FIXME: Throw an exception and close the connection.
+        String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
+        executionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+    }
     if (m_url.hasFragmentIdentifier()) {
         m_state = CLOSED;
         exceptionState.throwDOMException(SyntaxError, "The URL contains a fragment identifier ('" + m_url.fragmentIdentifier() + "'). Fragment identifiers are not allowed in WebSocket URLs.");
