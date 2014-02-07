@@ -260,6 +260,37 @@ public:
         const_cast<T&>(t).trace(this);
     }
 
+    // The following mark methods are for off-heap collections.
+    template<typename T, size_t inlineCapacity>
+    void trace(const Vector<T, inlineCapacity, WTF::DefaultAllocator>& vector)
+    {
+        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator> >::trace(this, vector);
+    }
+
+    template<typename T, typename U, typename V>
+    void trace(const HashSet<T, U, V, WTF::DefaultAllocator>& hashSet)
+    {
+        OffHeapCollectionTraceTrait<HashSet<T, U, V, WTF::DefaultAllocator> >::trace(this, hashSet);
+    }
+
+    template<typename T, size_t inlineCapacity, typename U>
+    void trace(const ListHashSet<T, inlineCapacity, U>& hashSet)
+    {
+        OffHeapCollectionTraceTrait<ListHashSet<T, inlineCapacity, U> >::trace(this, hashSet);
+    }
+
+    template<typename T, size_t N>
+    void trace(const Deque<T, N>& deque)
+    {
+        OffHeapCollectionTraceTrait<Deque<T, N> >::trace(this, deque);
+    }
+
+    template<typename T, typename U, typename V, typename W, typename X>
+    void trace(const HashMap<T, U, V, W, X, WTF::DefaultAllocator>& map)
+    {
+        OffHeapCollectionTraceTrait<HashMap<T, U, V, W, X, WTF::DefaultAllocator> >::trace(this, map);
+    }
+
     // OwnPtrs that are traced are treated as part objects and the
     // trace method of the owned object is called.
     template<typename T>
@@ -413,6 +444,19 @@ struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
             return;
         for (typename Vector::const_iterator it = vector.begin(), end = vector.end(); it != end; ++it)
             TraceTrait<T>::trace(visitor, const_cast<T*>(it));
+    }
+};
+
+template<typename T, size_t N>
+struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
+    typedef WTF::Deque<T, N> Deque;
+
+    static void trace(Visitor* visitor, const Deque& deque)
+    {
+        if (deque.isEmpty())
+            return;
+        for (typename Deque::const_iterator it = deque.begin(), end = deque.end(); it != end; ++it)
+            TraceTrait<T>::trace(visitor, const_cast<T*>(&(*it)));
     }
 };
 

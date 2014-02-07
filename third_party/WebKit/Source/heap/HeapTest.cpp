@@ -1483,6 +1483,48 @@ public:
     }
 };
 
+struct ShouldBeTraced {
+    explicit ShouldBeTraced(IntWrapper* wrapper) : m_wrapper(wrapper) { }
+    void trace(Visitor* visitor) { visitor->trace(m_wrapper); }
+    Member<IntWrapper> m_wrapper;
+};
+
+class OffHeapContainer : public GarbageCollectedFinalized<OffHeapContainer> {
+    DECLARE_GC_INFO
+public:
+    static OffHeapContainer* create() { return new OffHeapContainer(); }
+
+    OffHeapContainer()
+    {
+        m_deque1.append(ShouldBeTraced(IntWrapper::create(1)));
+        m_vector1.append(ShouldBeTraced(IntWrapper::create(2)));
+        m_deque2.append(IntWrapper::create(3));
+        m_vector2.append(IntWrapper::create(4));
+        m_hashSet.add(IntWrapper::create(5));
+        m_hashMap.add(this, IntWrapper::create(6));
+        m_listHashSet.add(IntWrapper::create(7));
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_deque1);
+        visitor->trace(m_vector1);
+        visitor->trace(m_deque2);
+        visitor->trace(m_vector2);
+        visitor->trace(m_hashSet);
+        visitor->trace(m_hashMap);
+        visitor->trace(m_listHashSet);
+    }
+
+    Deque<ShouldBeTraced> m_deque1;
+    Vector<ShouldBeTraced> m_vector1;
+    Deque<Member<IntWrapper> > m_deque2;
+    Vector<Member<IntWrapper> > m_vector2;
+    HashSet<Member<IntWrapper> > m_hashSet;
+    HashMap<void*, Member<IntWrapper> > m_hashMap;
+    ListHashSet<Member<IntWrapper> > m_listHashSet;
+};
+
 TEST(HeapTest, HeapVectorWithInlineCapacity)
 {
     IntWrapper* one = IntWrapper::create(1);
@@ -2185,6 +2227,19 @@ TEST(HeapTest, CheckAndMarkPointer)
     clearOutOldGarbage(&initialHeapStats);
 }
 
+TEST(HeapTest, VisitOffHeapCollections)
+{
+    HeapStats initialHeapStats;
+    clearOutOldGarbage(&initialHeapStats);
+    IntWrapper::s_destructorCalls = 0;
+    Persistent<OffHeapContainer> container = OffHeapContainer::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    container = 0;
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(7, IntWrapper::s_destructorCalls);
+}
+
 DEFINE_GC_INFO(Bar);
 DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);
@@ -2194,6 +2249,7 @@ DEFINE_GC_INFO(HeapAllocatedArray);
 DEFINE_GC_INFO(HeapTestSuperClass);
 DEFINE_GC_INFO(IntWrapper);
 DEFINE_GC_INFO(LargeObject);
+DEFINE_GC_INFO(OffHeapContainer);
 DEFINE_GC_INFO(PointsBack);
 DEFINE_GC_INFO(RefCountedAndGarbageCollected);
 DEFINE_GC_INFO(RefCountedAndGarbageCollected2);

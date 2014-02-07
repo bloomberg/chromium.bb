@@ -67,7 +67,7 @@ public:
 
     blink::WebContentDecryptionModule* contentDecryptionModule();
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 protected:
     MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule>);
@@ -85,7 +85,10 @@ protected:
             : session(session)
             , contentType(contentType)
             , initData(initData) { }
-        RefPtrWillBePersistent<MediaKeySession> session;
+
+        void trace(Visitor*);
+
+        RefPtrWillBeMember<MediaKeySession> session;
         String contentType;
         RefPtr<Uint8Array> initData;
     };

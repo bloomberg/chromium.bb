@@ -153,4 +153,14 @@ void MediaKeys::initializeNewSessionTimerFired(Timer<MediaKeys>*)
     }
 }
 
+void MediaKeys::trace(Visitor* visitor)
+{
+    visitor->trace(m_pendingInitializeNewSessionData);
+}
+
+void MediaKeys::InitializeNewSessionData::trace(Visitor* visitor)
+{
+    visitor->trace(session);
+}
+
 }
