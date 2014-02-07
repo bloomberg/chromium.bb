@@ -391,7 +391,6 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
 
   if (!pending_input_method_.empty())
     ChangeInputMethodInternal(pending_input_method_, false);
-
 }
 
 void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
