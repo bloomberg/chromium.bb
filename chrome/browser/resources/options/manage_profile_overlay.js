@@ -568,8 +568,8 @@ cr.define('options', function() {
       $('create-profile-ok').disabled = true;
 
       $('create-profile-managed').checked = false;
+      $('import-existing-managed-user-link').hidden = true;
       if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
-        $('import-existing-managed-user-link').hidden = false;
         $('create-profile-managed').onchange = function() {
           ManageProfileOverlay.getInstance().onNameChanged_('create');
         };
@@ -718,7 +718,11 @@ cr.define('options', function() {
      * @private
      */
     updateImportExistingManagedUserLink_: function(enable) {
+      if (loadTimeData.getBoolean('disableCreateExistingManagedUsers'))
+        return;
+
       var importManagedUserElement = $('import-existing-managed-user-link');
+      importManagedUserElement.hidden = false;
       importManagedUserElement.disabled = !enable;
       importManagedUserElement.textContent = enable ?
           loadTimeData.getString('importExistingManagedUserLink') :
