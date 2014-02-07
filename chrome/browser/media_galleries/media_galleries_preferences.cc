@@ -203,13 +203,16 @@ bool PopulateGalleryPrefInfoFromDictionary(
     volume_metadata_valid = true;
   }
 
-  if (type == MediaGalleryPrefInfo::kScanResult &&
-      dict.GetInteger(kMediaGalleriesScanAudioCountKey, &audio_count) &&
+  if (dict.GetInteger(kMediaGalleriesScanAudioCountKey, &audio_count) &&
       dict.GetInteger(kMediaGalleriesScanImageCountKey, &image_count) &&
       dict.GetInteger(kMediaGalleriesScanVideoCountKey, &video_count)) {
     out_gallery_info->audio_count = audio_count;
     out_gallery_info->image_count = image_count;
     out_gallery_info->video_count = video_count;
+  } else {
+    out_gallery_info->audio_count = 0;
+    out_gallery_info->image_count = 0;
+    out_gallery_info->video_count = 0;
   }
 
   out_gallery_info->pref_id = pref_id;
@@ -249,11 +252,9 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
     dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
   }
 
-  if (gallery.type == MediaGalleryPrefInfo::kScanResult) {
-    dict->SetInteger(kMediaGalleriesScanAudioCountKey, gallery.audio_count);
-    dict->SetInteger(kMediaGalleriesScanImageCountKey, gallery.image_count);
-    dict->SetInteger(kMediaGalleriesScanVideoCountKey, gallery.video_count);
-  }
+  dict->SetInteger(kMediaGalleriesScanAudioCountKey, gallery.audio_count);
+  dict->SetInteger(kMediaGalleriesScanImageCountKey, gallery.image_count);
+  dict->SetInteger(kMediaGalleriesScanVideoCountKey, gallery.video_count);
 
   // Version 0 of the prefs format was that the display_name was always
   // used to show the user-visible name of the gallery. Version 1 means
@@ -820,7 +821,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
          (existing.last_attach_time != last_attach_time));
 
     bool update_scan_counts =
-      (new_type == MediaGalleryPrefInfo::kScanResult) &&
+      new_type != MediaGalleryPrefInfo::kRemovedScan &&
+      new_type != MediaGalleryPrefInfo::kBlackListed &&
       (audio_count > 0 || image_count > 0 || video_count > 0);
 
     if (!update_gallery_name && !update_gallery_type &&
@@ -926,14 +928,23 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
                             kCurrentPrefsVersion);
 }
 
-void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
+void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId id) {
+  EraseOrBlacklistGalleryById(id, false);
+}
+
+void MediaGalleriesPreferences::EraseGalleryById(MediaGalleryPrefId id) {
+  EraseOrBlacklistGalleryById(id, true);
+}
+
+void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
+    MediaGalleryPrefId id, bool erase) {
   DCHECK(IsInitialized());
   PrefService* prefs = profile_->GetPrefs();
   scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
       prefs, prefs::kMediaGalleriesRememberedGalleries));
   base::ListValue* list = update->Get();
 
-  if (!ContainsKey(known_galleries_, pref_id))
+  if (!ContainsKey(known_galleries_, id))
     return;
 
   for (base::ListValue::iterator iter = list->begin();
@@ -941,10 +952,10 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
     base::DictionaryValue* dict;
     MediaGalleryPrefId iter_id;
     if ((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
-        pref_id == iter_id) {
-      RemoveGalleryPermissionsFromPrefs(pref_id);
+        id == iter_id) {
+      RemoveGalleryPermissionsFromPrefs(id);
       MediaGalleryPrefInfo::Type type;
-      if (GetType(*dict, &type) &&
+      if (!erase && GetType(*dict, &type) &&
           (type == MediaGalleryPrefInfo::kAutoDetected ||
            type == MediaGalleryPrefInfo::kScanResult)) {
         if (type == MediaGalleryPrefInfo::kAutoDetected) {
@@ -965,10 +976,42 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
       InitFromPrefs();
       FOR_EACH_OBSERVER(GalleryChangeObserver,
                         gallery_change_observers_,
-                        OnGalleryRemoved(this, pref_id));
+                        OnGalleryRemoved(this, id));
       return;
     }
   }
+}
+
+bool MediaGalleriesPreferences::NonAutoGalleryHasPermission(
+    MediaGalleryPrefId id) const {
+  DCHECK(IsInitialized());
+  DCHECK(!ContainsKey(known_galleries_, id) ||
+         known_galleries_.find(id)->second.type !=
+             MediaGalleryPrefInfo::kAutoDetected);
+  ExtensionPrefs* prefs = GetExtensionPrefs();
+  const base::DictionaryValue* extensions =
+      prefs->pref_service()->GetDictionary(extensions::pref_names::kExtensions);
+  if (!extensions)
+    return true;
+
+  for (base::DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (!extensions::Extension::IdIsValid(iter.key())) {
+      NOTREACHED();
+      continue;
+    }
+    std::vector<MediaGalleryPermission> permissions =
+        GetGalleryPermissionsFromPrefs(iter.key());
+    for (std::vector<MediaGalleryPermission>::const_iterator it =
+             permissions.begin(); it != permissions.end(); ++it) {
+      if (it->pref_id == id) {
+        if (it->has_permission)
+          return true;
+        break;
+      }
+    }
+  }
+  return false;
 }
 
 MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(

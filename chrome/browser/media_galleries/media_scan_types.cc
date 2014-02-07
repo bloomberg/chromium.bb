@@ -4,6 +4,12 @@
 
 #include "chrome/browser/media_galleries/media_scan_types.h"
 
+MediaGalleryScanResult::MediaGalleryScanResult()
+    : audio_count(0),
+      image_count(0),
+      video_count(0) {
+}
+
 bool IsEmptyScanResult(const MediaGalleryScanResult& scan_result) {
   return (scan_result.audio_count == 0 &&
           scan_result.image_count == 0 &&

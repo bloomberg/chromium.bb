@@ -14,8 +14,10 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
+#include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/chrome_paths.h"
@@ -47,6 +49,30 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("C:\\qux");
 #else
 base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 #endif
+
+void DoNothingMediaFolderFinderResultCallback(
+    bool /*success*/,
+    const MediaFolderFinder::MediaFolderFinderResults& /*results*/) {
+}
+
+class DoNothingMediaFolderFinder : public MediaFolderFinder {
+ public:
+  explicit DoNothingMediaFolderFinder(
+      const MediaFolderFinderResultsCallback& callback)
+      : MediaFolderFinder(callback) {
+  }
+  virtual ~DoNothingMediaFolderFinder() {}
+
+  static MediaFolderFinder* CreateDoNothingMediaFolderFinder(
+      const MediaFolderFinderResultsCallback& callback) {
+    return new DoNothingMediaFolderFinder(
+        base::Bind(&DoNothingMediaFolderFinderResultCallback));
+  }
+
+  virtual void StartScan() OVERRIDE {}
+
+ private:
+};
 
 }  // namespace
 
@@ -325,6 +351,13 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     return ensure_media_directories_exists_.get();
   }
 
+  void InstallDoNothingFolderFinder() {
+    MediaScanManager * scan_manager =
+        g_browser_process->media_file_system_registry()->media_scan_manager();
+    scan_manager->SetMediaFolderFinderFactory(base::Bind(
+        &DoNothingMediaFolderFinder::CreateDoNothingMediaFolderFinder));
+  }
+
  private:
   MediaGalleriesPreferences* GetAndInitializePreferences() {
     MediaGalleriesPreferences* preferences =
@@ -448,6 +481,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 #endif  // defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, Scan) {
-  RemoveAllGalleries();
+  InstallDoNothingFolderFinder();
   ASSERT_TRUE(RunMediaGalleriesTest("scan")) << message_;
 }

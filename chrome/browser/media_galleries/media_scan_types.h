@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_SCAN_TYPES_H_
 
 struct MediaGalleryScanResult {
-  int image_count;
+  MediaGalleryScanResult();
   int audio_count;
+  int image_count;
   int video_count;
 };
 

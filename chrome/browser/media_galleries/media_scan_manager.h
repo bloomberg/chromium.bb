@@ -11,6 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/media_galleries/media_folder_finder.h"
+#include "chrome/browser/media_galleries/media_scan_types.h"
 
 class Profile;
 class MediaScanManagerObserver;
@@ -38,13 +42,43 @@ class MediaScanManager {
   void StartScan(Profile* profile, const std::string& extension_id);
   void CancelScan(Profile* profile, const std::string& extension_id);
 
+ protected:
+  friend class MediaGalleriesPlatformAppBrowserTest;
+
+  typedef base::Callback<MediaFolderFinder*(
+      const MediaFolderFinder::MediaFolderFinderResultsCallback&)>
+          MediaFolderFinderFactory;
+
+  void SetMediaFolderFinderFactory(const MediaFolderFinderFactory& factory);
+
  private:
-  typedef std::map<Profile*, std::set<std::string> > ScanningExtensionsMap;
-  typedef std::map<Profile*, MediaScanManagerObserver*> ObserverMap;
+  struct ScanObservers {
+    ScanObservers();
+    ~ScanObservers();
+    MediaScanManagerObserver* observer;
+    std::set<std::string /*extension id*/> scanning_extensions;
+  };
+  typedef std::map<Profile*, ScanObservers> ScanObserverMap;
+
+  bool ScanInProgress() const;
+
+  void OnScanCompleted(
+      bool success,
+      const MediaFolderFinder::MediaFolderFinderResults& found_folders);
+
+  void OnFoundContainerDirectories(
+      const MediaFolderFinder::MediaFolderFinderResults& found_folders,
+      const MediaFolderFinder::MediaFolderFinderResults& container_folders);
+
+  scoped_ptr<MediaFolderFinder> folder_finder_;
+
+  // If not NULL, used to create |folder_finder_|. Used for testing.
+  MediaFolderFinderFactory testing_folder_finder_factory_;
 
   // Set of extensions (on all profiles) that have an in-progress scan.
-  ScanningExtensionsMap scanning_extensions_;
-  ObserverMap observers_;
+  ScanObserverMap observers_;
+
+  base::WeakPtrFactory<MediaScanManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaScanManager);
 };

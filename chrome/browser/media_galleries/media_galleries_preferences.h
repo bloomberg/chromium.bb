@@ -222,8 +222,20 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   MediaGalleryPrefId AddGalleryByPath(const base::FilePath& path,
                                       MediaGalleryPrefInfo::Type type);
 
-  // Removes the gallery identified by |id| from the store.
+  // Logically removes the gallery identified by |id| from the store. For
+  // auto added or scan result galleries, this means moving them into a
+  // blacklisted state, otherwise they may come back when they are detected
+  // again.
   void ForgetGalleryById(MediaGalleryPrefId id);
+
+  // Remove the gallery identified by |id| from the store entirely. If it is an
+  // auto added or scan result gallery, it could get added again when the
+  // location is noticed again.
+  void EraseGalleryById(MediaGalleryPrefId id);
+
+  // Returns true if some extension has permission for |id|, which may not be
+  // an auto detected type.
+  bool NonAutoGalleryHasPermission(MediaGalleryPrefId id) const;
 
   MediaGalleryPrefIdSet GalleriesForExtension(
       const extensions::Extension& extension) const;
@@ -293,6 +305,8 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                         int image_count,
                                         int video_count,
                                         int prefs_version);
+
+  void EraseOrBlacklistGalleryById(MediaGalleryPrefId id, bool erase);
 
   // Sets permission for the media galleries identified by |gallery_id| for the
   // extension in the given |prefs|. Returns true only if anything changed.

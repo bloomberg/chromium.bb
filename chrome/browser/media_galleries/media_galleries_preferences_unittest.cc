@@ -88,6 +88,16 @@ class MockGalleryChangeObserver
   DISALLOW_COPY_AND_ASSIGN(MockGalleryChangeObserver);
 };
 
+base::FilePath MakePath(const std::string& dir) {
+#if defined(OS_WIN)
+  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
+#elif defined(OS_POSIX)
+  return base::FilePath(FILE_PATH_LITERAL("/")).AppendASCII(dir);
+#else
+  NOTREACHED();
+#endif
+}
+
 }  // namespace
 
 class MediaGalleriesPreferencesTest : public testing::Test {
@@ -158,6 +168,15 @@ class MediaGalleriesPreferencesTest : public testing::Test {
          it != known_galleries.end();
          ++it) {
       VerifyGalleryInfo(it->second, it->first);
+      if (it->second.type != MediaGalleryPrefInfo::kAutoDetected &&
+          it->second.type != MediaGalleryPrefInfo::kBlackListed) {
+        if (!ContainsKey(expected_galleries_for_all, it->first) &&
+            !ContainsKey(expected_galleries_for_regular, it->first)) {
+          EXPECT_FALSE(gallery_prefs_->NonAutoGalleryHasPermission(it->first));
+        } else {
+          EXPECT_TRUE(gallery_prefs_->NonAutoGalleryHasPermission(it->first));
+        }
+      }
     }
 
     for (DeviceIdPrefIdsMap::const_iterator it = expected_device_map.begin();
@@ -271,6 +290,22 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         false, 0, 0, 0, 2);
   }
 
+  MediaGalleryPrefId AddFixedGalleryWithExepectation(
+      const std::string& path_name, const std::string& name,
+      MediaGalleryPrefInfo::Type type) {
+    base::FilePath path = MakePath(path_name);
+    StorageInfo info;
+    base::FilePath relative_path;
+    MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+    info.set_name(ASCIIToUTF16(name));
+    MediaGalleryPrefId id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                                                relative_path, type);
+    AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                          type);
+    Verify();
+    return id;
+  }
+
   bool UpdateDeviceIDForSingletonType(const std::string& device_id) {
     return gallery_prefs()->UpdateDeviceIDForSingletonType(device_id);
   }
@@ -306,16 +341,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferencesTest);
 };
-
-base::FilePath MakePath(const std::string& dir) {
-#if defined(OS_WIN)
-  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
-#elif defined(OS_POSIX)
-  return base::FilePath(FILE_PATH_LITERAL("/")).AppendASCII(dir);
-#else
-  NOTREACHED();
-#endif
-}
 
 TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   MediaGalleryPrefId auto_id, user_added_id, scan_id, id;
@@ -447,6 +472,85 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   gallery_prefs()->ForgetGalleryById(user_added_id);
   expected_galleries_.erase(user_added_id);
   expected_device_map[user_added_device_id].erase(user_added_id);
+  Verify();
+}
+
+TEST_F(MediaGalleriesPreferencesTest, ForgetAndErase) {
+  MediaGalleryPrefId user_erase =
+      AddFixedGalleryWithExepectation("user_erase", "UserErase",
+                                     MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(default_galleries_count() + 1UL, user_erase);
+  MediaGalleryPrefId user_forget =
+      AddFixedGalleryWithExepectation("user_forget", "UserForget",
+                                      MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(default_galleries_count() + 2UL, user_forget);
+
+  MediaGalleryPrefId auto_erase =
+      AddFixedGalleryWithExepectation("auto_erase", "AutoErase",
+                                      MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(default_galleries_count() + 3UL, auto_erase);
+  MediaGalleryPrefId auto_forget =
+      AddFixedGalleryWithExepectation("auto_forget", "AutoForget",
+                                      MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(default_galleries_count() + 4UL, auto_forget);
+
+  MediaGalleryPrefId scan_erase =
+      AddFixedGalleryWithExepectation("scan_erase", "ScanErase",
+                                      MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 5UL, scan_erase);
+  MediaGalleryPrefId scan_forget =
+      AddFixedGalleryWithExepectation("scan_forget", "ScanForget",
+                                      MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 6UL, scan_forget);
+
+  Verify();
+  std::string device_id;
+
+  gallery_prefs()->ForgetGalleryById(user_forget);
+  device_id = expected_galleries_[user_forget].device_id;
+  expected_galleries_.erase(user_forget);
+  expected_device_map[device_id].erase(user_forget);
+  Verify();
+
+  gallery_prefs()->ForgetGalleryById(auto_forget);
+  expected_galleries_[auto_forget].type = MediaGalleryPrefInfo::kBlackListed;
+  expected_galleries_for_all.erase(auto_forget);
+  Verify();
+
+  gallery_prefs()->ForgetGalleryById(scan_forget);
+  expected_galleries_[scan_forget].type = MediaGalleryPrefInfo::kRemovedScan;
+  Verify();
+
+  gallery_prefs()->EraseGalleryById(user_erase);
+  device_id = expected_galleries_[user_erase].device_id;
+  expected_galleries_.erase(user_erase);
+  expected_device_map[device_id].erase(user_erase);
+  Verify();
+
+  gallery_prefs()->EraseGalleryById(auto_erase);
+  device_id = expected_galleries_[auto_erase].device_id;
+  expected_galleries_.erase(auto_erase);
+  expected_device_map[device_id].erase(auto_erase);
+  expected_galleries_for_all.erase(auto_erase);
+  Verify();
+
+  gallery_prefs()->EraseGalleryById(scan_erase);
+  device_id = expected_galleries_[scan_erase].device_id;
+  expected_galleries_.erase(scan_erase);
+  expected_device_map[device_id].erase(scan_erase);
+  Verify();
+
+  // Also erase the previously forgetten ones to check erasing blacklisted ones.
+  gallery_prefs()->EraseGalleryById(auto_forget);
+  device_id = expected_galleries_[auto_forget].device_id;
+  expected_galleries_.erase(auto_forget);
+  expected_device_map[device_id].erase(auto_forget);
+  Verify();
+
+  gallery_prefs()->EraseGalleryById(scan_forget);
+  device_id = expected_galleries_[scan_forget].device_id;
+  expected_galleries_.erase(scan_forget);
+  expected_device_map[device_id].erase(scan_forget);
   Verify();
 }
 
