@@ -117,13 +117,20 @@ public:
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
     bool hasMaskLayer() const { return m_maskLayer; }
+    GraphicsLayer* maskLayer() const { return m_maskLayer.get(); }
+
     bool hasChildClippingMaskLayer() const { return m_childClippingMaskLayer; }
+    GraphicsLayer* childClippingMaskLayer() const { return m_childClippingMaskLayer.get(); }
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
     // localRootForOwningLayer does not include the m_squashingContainmentLayer, which is technically not associated with this CLM's owning layer.
     GraphicsLayer* localRootForOwningLayer() const;
+
+    GraphicsLayer* squashingContainmentLayer() const { return m_squashingContainmentLayer.get(); }
     GraphicsLayer* squashingLayer() const { return m_squashingLayer.get(); }
+    // Contains the bottommost layer in the hierarchy tha can contain the children transform.
+    GraphicsLayer* layerForChildrenTransform() const;
 
     // Returns true for a composited layer that has no backing store of its own, so
     // paints into some ancestor layer.
@@ -164,6 +171,8 @@ public:
 
     void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
+    void updateRenderingContext();
+    void updateShouldFlattenTransform();
 
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime) OVERRIDE;
@@ -219,6 +228,7 @@ private:
     void updateClipParent(RenderLayer*);
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent(bool isSimpleContainer);
+    void updateChildrenTransform();
     void registerScrollingLayers();
 
     void adjustBoundsForSubPixelAccumulation(const RenderLayer* compositedAncestor, IntRect& localCompositingBounds, IntRect& relativeCompositingBounds, IntPoint& delta);

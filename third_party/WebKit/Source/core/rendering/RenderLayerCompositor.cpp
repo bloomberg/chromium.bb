@@ -1221,6 +1221,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
 
     layer->stackingNode()->updateLayerListsIfNeeded();
+    layer->update3dRenderingContext();
 
     // Used for gathering UMA data about the effect on memory usage of promoting all layers
     // that have a webkit-transition on opacity or transform and intersect the viewport.

@@ -648,9 +648,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     m_graphicsLayer->setContentsVisible(contentsVisible);
 
     RenderStyle* style = renderer()->style();
-    // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
-    bool preserves3D = style->transformStyle3D() == TransformStyle3DPreserve3D && !renderer()->hasReflection();
-    m_graphicsLayer->setPreserves3D(preserves3D);
     m_graphicsLayer->setBackfaceVisibility(style->backfaceVisibility() == BackfaceVisibilityVisible);
 
     RenderLayer* compAncestor = m_owningLayer->ancestorCompositingLayer();
@@ -750,13 +747,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
 
-        TransformationMatrix perspective = m_owningLayer->perspectiveTransform(); // Identity if style has no perspective.
-        if (GraphicsLayer* clipLayer = clippingLayer()) {
-            clipLayer->setChildrenTransform(perspective);
-            m_graphicsLayer->setChildrenTransform(TransformationMatrix());
-        } else {
-            m_graphicsLayer->setChildrenTransform(perspective);
-        }
     } else {
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
@@ -868,6 +858,9 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     updateDrawsContent(isSimpleContainer);
     updateContentsOpaque();
     updateAfterWidgetResize();
+    updateRenderingContext();
+    updateShouldFlattenTransform();
+    updateChildrenTransform();
     registerScrollingLayers();
 
     updateCompositingReasons();
@@ -987,6 +980,29 @@ void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
         m_backgroundLayer->setDrawsContent(hasPaintedContent);
 }
 
+static void updateChildrenTransformForLayer(GraphicsLayer* layer, GraphicsLayer* target, const TransformationMatrix& perspective)
+{
+    if (layer)
+        layer->setChildrenTransform(layer == target ? perspective : TransformationMatrix());
+}
+
+void CompositedLayerMapping::updateChildrenTransform()
+{
+    GraphicsLayer* target = layerForChildrenTransform();
+    TransformationMatrix perspective = m_owningLayer->perspectiveTransform(); // Identity if style has no perspective.
+    updateChildrenTransformForLayer(clippingLayer(), target, perspective);
+    updateChildrenTransformForLayer(m_graphicsLayer.get(), target, perspective);
+    updateChildrenTransformForLayer(m_scrollingLayer.get(), target, perspective);
+
+    // Note, if the target is the scrolling layer, we need to ensure that the
+    // scrolling content layer doesn't flatten the transform. (It would be nice
+    // if we could apply transform to the scrolling content layer, but that's
+    // too late, we need the children transform to be applied _before_ the
+    // scrolling offset.)
+    if (target == m_scrollingLayer.get())
+        m_scrollingContentsLayer->setShouldFlattenTransform(false);
+}
+
 // Return true if the layers changed.
 bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip)
 {
@@ -1102,6 +1118,98 @@ bool CompositedLayerMapping::hasUnpositionedOverflowControlsLayers() const
     }
 
     return false;
+}
+
+enum ApplyToGraphicsLayersModeFlags {
+    ApplyToCoreLayers = (1 << 0),
+    ApplyToSquashingLayer = (1 << 1),
+    ApplyToScrollbarLayers = (1 << 2),
+    ApplyToBackgroundLayer = (1 << 3),
+    ApplyToMaskLayers = (1 << 4),
+    ApplyToContentLayers = (1 << 5),
+    ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToCoreLayers | ApplyToContentLayers)
+};
+typedef unsigned ApplyToGraphicsLayersMode;
+
+template <typename Func>
+static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const Func& f, ApplyToGraphicsLayersMode mode)
+{
+    ASSERT(mode);
+
+    if ((mode & ApplyToCoreLayers) && mapping->squashingContainmentLayer())
+        f(mapping->squashingContainmentLayer());
+    if ((mode & ApplyToCoreLayers) && mapping->ancestorClippingLayer())
+        f(mapping->ancestorClippingLayer());
+    if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->mainGraphicsLayer())
+        f(mapping->mainGraphicsLayer());
+    if ((mode & ApplyToCoreLayers) && mapping->clippingLayer())
+        f(mapping->clippingLayer());
+    if ((mode & ApplyToCoreLayers) && mapping->scrollingLayer())
+        f(mapping->scrollingLayer());
+    if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->scrollingContentsLayer())
+        f(mapping->scrollingContentsLayer());
+    if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
+        f(mapping->foregroundLayer());
+
+    if ((mode & ApplyToSquashingLayer) && mapping->squashingLayer())
+        f(mapping->squashingLayer());
+
+    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers)) && mapping->maskLayer())
+        f(mapping->maskLayer());
+    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers)) && mapping->childClippingMaskLayer())
+        f(mapping->childClippingMaskLayer());
+
+    if (((mode & ApplyToBackgroundLayer) || (mode & ApplyToContentLayers)) && mapping->backgroundLayer())
+        f(mapping->backgroundLayer());
+
+    if ((mode & ApplyToScrollbarLayers) && mapping->layerForHorizontalScrollbar())
+        f(mapping->layerForHorizontalScrollbar());
+    if ((mode & ApplyToScrollbarLayers) && mapping->layerForVerticalScrollbar())
+        f(mapping->layerForVerticalScrollbar());
+    if ((mode & ApplyToScrollbarLayers) && mapping->layerForScrollCorner())
+        f(mapping->layerForScrollCorner());
+}
+
+struct UpdateRenderingContextFunctor {
+    void operator() (GraphicsLayer* layer) const { layer->setRenderingContext(renderingContext); }
+    int renderingContext;
+};
+
+void CompositedLayerMapping::updateRenderingContext()
+{
+    // All layers but the squashing layer (which contains 'alien' content) should be included in this
+    // rendering context.
+    int id = 0;
+    // NB, it is illegal at this point to query an ancestor's compositing state. Some compositing
+    // reasons depend on the compositing state of ancestors. So if we want a rendering context id
+    // for the context root, we cannot ask for the id of its associated WebLayer now; it may not have
+    // one yet. We could do a second past after doing the compositing updates to get these ids,
+    // but this would actually be harmful. We do not want to attach any semantic meaning to
+    // the context id other than the fact that they group a number of layers together for the
+    // sake of 3d sorting. So instead we will ask the compositor to vend us an arbitrary, but
+    // consistent id.
+    if (RenderLayer* root = m_owningLayer->renderingContextRoot()) {
+        if (Node* node = root->renderer()->node())
+            id = static_cast<int>(WTF::PtrHash<Node*>::hash(node));
+    }
+
+    UpdateRenderingContextFunctor functor = { id };
+    ApplyToGraphicsLayersMode mode = ApplyToAllGraphicsLayers & ~ApplyToSquashingLayer;
+    ApplyToGraphicsLayers<UpdateRenderingContextFunctor>(this, functor, mode);
+}
+
+struct UpdateShouldFlattenTransformFunctor {
+    void operator() (GraphicsLayer* layer) const { layer->setShouldFlattenTransform(shouldFlatten); }
+    bool shouldFlatten;
+};
+
+void CompositedLayerMapping::updateShouldFlattenTransform()
+{
+    // All CLM-managed layers that could affect a descendant layer should update their
+    // should-flatten-transform value (the other layers' transforms don't matter here).
+    UpdateShouldFlattenTransformFunctor functor = { m_owningLayer->shouldFlattenTransform() };
+    ApplyToGraphicsLayersMode mode = ApplyToCoreLayers;
+    ApplyToGraphicsLayers(this, functor, mode);
 }
 
 bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
@@ -1284,9 +1392,6 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
 
             // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
             m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonOverlap);
-            // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
-            bool preserves3D = renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D && !renderer()->hasReflection();
-            m_squashingContainmentLayer->setPreserves3D(preserves3D);
             layersChanged = true;
         }
 
@@ -1663,6 +1768,15 @@ GraphicsLayer* CompositedLayerMapping::childForSuperlayers() const
     return localRootForOwningLayer();
 }
 
+GraphicsLayer* CompositedLayerMapping::layerForChildrenTransform() const
+{
+    if (GraphicsLayer* clipLayer = clippingLayer())
+        return clipLayer;
+    if (m_scrollingLayer)
+        return m_scrollingLayer.get();
+    return m_graphicsLayer.get();
+}
+
 bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestorLayer)
 {
     bool previousRequiresOwnBackingStoreForAncestorReasons = m_requiresOwnBackingStoreForAncestorReasons;
@@ -1716,44 +1830,41 @@ void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
     }
 }
 
-static void setCotentNeedsDisplayInLayer(const OwnPtr<GraphicsLayer>& layer)
-{
-    if (layer && layer->drawsContent())
-        layer->setNeedsDisplay();
-}
+struct SetContentsNeedsDisplayFunctor {
+    void operator() (GraphicsLayer* layer) const
+    {
+        if (layer->drawsContent())
+            layer->setNeedsDisplay();
+    }
+};
 
 void CompositedLayerMapping::setContentsNeedDisplay()
 {
+    // FIXME: need to split out repaints for the background.
     ASSERT(!paintsIntoCompositedAncestor());
-    setCotentNeedsDisplayInLayer(m_graphicsLayer);
-    setCotentNeedsDisplayInLayer(m_foregroundLayer);
-    setCotentNeedsDisplayInLayer(m_backgroundLayer);
-    setCotentNeedsDisplayInLayer(m_maskLayer);
-    setCotentNeedsDisplayInLayer(m_childClippingMaskLayer);
-    setCotentNeedsDisplayInLayer(m_scrollingContentsLayer);
+    ApplyToGraphicsLayers(this, SetContentsNeedsDisplayFunctor(), ApplyToContentLayers);
 }
 
-static void setNeedsDisplayInRect(const OwnPtr<GraphicsLayer>& layer, const IntRect& r)
-{
-    if (layer && layer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-layer->offsetFromRenderer());
-        layer->setNeedsDisplayInRect(layerDirtyRect);
+struct SetContentsNeedsDisplayInRectFunctor {
+    void operator() (GraphicsLayer* layer) const
+    {
+        if (layer->drawsContent()) {
+            IntRect layerDirtyRect = r;
+            layerDirtyRect.move(-layer->offsetFromRenderer());
+            layer->setNeedsDisplayInRect(layerDirtyRect);
+        }
     }
-}
+
+    IntRect r;
+};
 
 // r is in the coordinate space of the layer's render object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
 {
-    ASSERT(!paintsIntoCompositedAncestor());
-
-    setNeedsDisplayInRect(m_graphicsLayer, r);
-    setNeedsDisplayInRect(m_foregroundLayer, r);
     // FIXME: need to split out repaints for the background.
-    setNeedsDisplayInRect(m_backgroundLayer, r);
-    setNeedsDisplayInRect(m_maskLayer, r);
-    setNeedsDisplayInRect(m_childClippingMaskLayer, r);
-    setNeedsDisplayInRect(m_scrollingContentsLayer, r);
+    ASSERT(!paintsIntoCompositedAncestor());
+    SetContentsNeedsDisplayInRectFunctor functor = { r };
+    ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
 void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
@@ -1905,27 +2016,16 @@ bool CompositedLayerMapping::isTrackingRepaints() const
     return client ? client->isTrackingRepaints() : false;
 }
 
-static void collectTrackedRepaintRectsForGraphicsLayer(GraphicsLayer* graphicsLayer, Vector<FloatRect>& rects)
-{
-    if (graphicsLayer)
-        graphicsLayer->collectTrackedRepaintRects(rects);
-}
+struct CollectTrackedRepaintRectsFunctor {
+    void operator() (GraphicsLayer* layer) const { layer->collectTrackedRepaintRects(*rects); }
+    Vector<FloatRect>* rects;
+};
 
 PassOwnPtr<Vector<FloatRect> > CompositedLayerMapping::collectTrackedRepaintRects() const
 {
     OwnPtr<Vector<FloatRect> > rects = adoptPtr(new Vector<FloatRect>);
-    collectTrackedRepaintRectsForGraphicsLayer(m_ancestorClippingLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_graphicsLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_childContainmentLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_scrollingLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_scrollingContentsLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_maskLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_childClippingMaskLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_foregroundLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_backgroundLayer.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_layerForHorizontalScrollbar.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_layerForVerticalScrollbar.get(), *rects);
-    collectTrackedRepaintRectsForGraphicsLayer(m_layerForScrollCorner.get(), *rects);
+    CollectTrackedRepaintRectsFunctor functor = { rects.get() };
+    ApplyToGraphicsLayers(this, functor, ApplyToAllGraphicsLayers);
     return rects.release();
 }
 

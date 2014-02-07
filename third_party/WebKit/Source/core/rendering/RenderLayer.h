@@ -192,6 +192,8 @@ public:
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
 
     void updateTransform();
+    void update3dRenderingContext();
+    RenderLayer* renderingContextRoot() const { return m_3dRenderingContextRoot; }
 
     const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
@@ -339,6 +341,9 @@ public:
     FloatPoint perspectiveOrigin() const;
     bool preserves3D() const { return renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
     bool has3DTransform() const { return m_transform && !m_transform->isAffine(); }
+
+    // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
+    bool shouldFlattenTransform() const { return renderer()->hasReflection() || !renderer()->style() || renderer()->style()->transformStyle3D() != TransformStyle3DPreserve3D; }
 
     void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
@@ -697,6 +702,10 @@ protected:
 
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
     RenderLayer* m_enclosingPaginationLayer;
+
+    // Pointer to the enclosing RenderLayer that establishes the 3d rendering context in which this layer participates.
+    // If it 0, it does not participate in a 3d rendering context.
+    RenderLayer* m_3dRenderingContextRoot;
 
     // Properties that are computed while updating compositing layers. These values may be dirty/invalid if
     // compositing status is not up-to-date before using them.

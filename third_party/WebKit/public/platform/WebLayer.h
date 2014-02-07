@@ -108,7 +108,13 @@ public:
     virtual void setDrawsContent(bool) = 0;
     virtual bool drawsContent() const = 0;
 
-    virtual void setPreserves3D(bool) = 0;
+    // Sets whether the layer's transform should be flattened.
+    virtual void setShouldFlattenTransform(bool) = 0;
+
+    // Sets the id of the layer's 3d rendering context. Layers in the same 3d
+    // rendering context id are sorted with one another according to their 3d
+    // position rather than their tree order.
+    virtual void setRenderingContext(int id) = 0;
 
     // Mark that this layer should use its parent's transform and double-sided
     // properties in determining this layer's backface visibility instead of
@@ -214,6 +220,9 @@ public:
     virtual bool isOrphan() const = 0;
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
+
+    // TODO(vollick) Remove after https://codereview.chromium.org/147833003/ lands.
+    virtual void setPreserves3D(bool) { }
 };
 
 } // namespace blink

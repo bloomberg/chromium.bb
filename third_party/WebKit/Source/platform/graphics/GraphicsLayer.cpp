@@ -83,7 +83,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_zPosition(0)
     , m_blendMode(blink::WebBlendModeNormal)
     , m_contentsOpaque(false)
-    , m_preserves3D(false)
+    , m_shouldFlattenTransform(true)
     , m_backfaceVisibility(true)
     , m_masksToBounds(false)
     , m_drawsContent(false)
@@ -103,6 +103,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_scrollableArea(0)
+    , m_3dRenderingContext(0)
 {
 #ifndef NDEBUG
     if (m_client)
@@ -343,29 +344,6 @@ void GraphicsLayer::setZPosition(float position)
     m_zPosition = position;
 }
 
-float GraphicsLayer::accumulatedOpacity() const
-{
-    if (!preserves3D())
-        return 1;
-
-    return m_opacity * (parent() ? parent()->accumulatedOpacity() : 1);
-}
-
-void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
-{
-    // If this is a transform layer we need to distribute our opacity to all our children
-
-    // Incoming accumulatedOpacity is the contribution from our parent(s). We mutiply this by our own
-    // opacity to get the total contribution
-    accumulatedOpacity *= m_opacity;
-
-    if (preserves3D()) {
-        size_t numChildren = children().size();
-        for (size_t i = 0; i < numChildren; ++i)
-            children()[i]->distributeOpacity(accumulatedOpacity);
-    }
-}
-
 void GraphicsLayer::updateChildList()
 {
     WebLayer* childHost = m_layer->layer();
@@ -493,6 +471,8 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
     m_layer->layer()->insertChild(m_contentsLayer, 0);
     WebLayer* borderWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
     m_contentsLayer->setMaskLayer(borderWebLayer);
+
+    m_contentsLayer->setRenderingContext(m_3dRenderingContext);
 }
 
 void GraphicsLayer::clearContentsLayerIfUnregistered()
@@ -554,7 +534,7 @@ void GraphicsLayer::collectTrackedRepaintRects(Vector<FloatRect>& rects) const
         rects.append(repaintIt->value);
 }
 
-void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags) const
+void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
     writeIndent(ts, indent);
     ts << "(" << "GraphicsLayer";
@@ -565,12 +545,12 @@ void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags) 
     }
 
     ts << "\n";
-    dumpProperties(ts, indent, flags);
+    dumpProperties(ts, indent, flags, renderingContextMap);
     writeIndent(ts, indent);
     ts << ")\n";
 }
 
-void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags flags) const
+void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
     if (m_position != FloatPoint()) {
         writeIndent(ts, indent + 1);
@@ -612,9 +592,21 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << "(contentsOpaque " << m_contentsOpaque << ")\n";
     }
 
-    if (m_preserves3D) {
+    if (!m_shouldFlattenTransform) {
         writeIndent(ts, indent + 1);
-        ts << "(preserves3D " << m_preserves3D << ")\n";
+        ts << "(shouldFlattenTransform " << m_shouldFlattenTransform << ")\n";
+    }
+
+    if (m_3dRenderingContext) {
+        RenderingContextMap::const_iterator it = renderingContextMap.find(m_3dRenderingContext);
+        int contextId = renderingContextMap.size() + 1;
+        if (it == renderingContextMap.end())
+            renderingContextMap.set(m_3dRenderingContext, contextId);
+        else
+            contextId = it->value;
+
+        writeIndent(ts, indent + 1);
+        ts << "(3dRenderingContext " << contextId << ")\n";
     }
 
     if (m_drawsContent) {
@@ -673,7 +665,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         if (flags & LayerTreeIncludesDebugInfo)
             ts << " " << m_replicaLayer;
         ts << ")\n";
-        m_replicaLayer->dumpLayer(ts, indent + 2, flags);
+        m_replicaLayer->dumpLayer(ts, indent + 2, flags, renderingContextMap);
     }
 
     if (m_replicatedLayer) {
@@ -750,7 +742,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
 
         unsigned i;
         for (i = 0; i < m_children.size(); i++)
-            m_children[i]->dumpLayer(ts, indent + 2, flags);
+            m_children[i]->dumpLayer(ts, indent + 2, flags, renderingContextMap);
         writeIndent(ts, indent + 1);
         ts << ")\n";
     }
@@ -760,7 +752,8 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
 {
     TextStream ts;
 
-    dumpLayer(ts, 0, flags);
+    RenderingContextMap renderingContextMap;
+    dumpLayer(ts, 0, flags, renderingContextMap);
     return ts.release();
 }
 
@@ -838,13 +831,30 @@ void GraphicsLayer::setChildrenTransform(const TransformationMatrix& transform)
     platformLayer()->setSublayerTransform(TransformationMatrix::toSkMatrix44(m_childrenTransform));
 }
 
-void GraphicsLayer::setPreserves3D(bool preserves3D)
+void GraphicsLayer::setShouldFlattenTransform(bool shouldFlatten)
 {
-    if (preserves3D == m_preserves3D)
+    if (shouldFlatten == m_shouldFlattenTransform)
         return;
 
-    m_preserves3D = preserves3D;
-    m_layer->layer()->setPreserves3D(m_preserves3D);
+    m_shouldFlattenTransform = shouldFlatten;
+
+    // FIXME: once cc has transitioned to rendering-context/should-flatten-transform
+    // this can be removed.
+    m_layer->layer()->setPreserves3D(!shouldFlatten);
+
+    m_layer->layer()->setShouldFlattenTransform(shouldFlatten);
+}
+
+void GraphicsLayer::setRenderingContext(int context)
+{
+    if (m_3dRenderingContext == context)
+        return;
+
+    m_3dRenderingContext = context;
+    m_layer->layer()->setRenderingContext(context);
+
+    if (m_contentsLayer)
+        m_contentsLayer->setRenderingContext(m_3dRenderingContext);
 }
 
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)

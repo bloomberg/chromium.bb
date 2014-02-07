@@ -165,8 +165,11 @@ public:
     const TransformationMatrix& childrenTransform() const { return m_childrenTransform; }
     void setChildrenTransform(const TransformationMatrix&);
 
-    bool preserves3D() const { return m_preserves3D; }
-    void setPreserves3D(bool);
+    bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
+    void setShouldFlattenTransform(bool);
+
+    int renderingContext() const { return m_3dRenderingContext; }
+    void setRenderingContext(int id);
 
     bool masksToBounds() const { return m_masksToBounds; }
     void setMasksToBounds(bool);
@@ -248,16 +251,14 @@ public:
     void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
     CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
 
-    void dumpLayer(TextStream&, int indent, LayerTreeFlags) const;
+    typedef HashMap<int, int> RenderingContextMap;
+    void dumpLayer(TextStream&, int indent, LayerTreeFlags, RenderingContextMap&) const;
 
     int paintCount() const { return m_paintCount; }
 
     // z-position is the z-equivalent of position(). It's only used for debugging purposes.
     float zPosition() const { return m_zPosition; }
     void setZPosition(float);
-
-    void distributeOpacity(float);
-    float accumulatedOpacity() const;
 
     // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
     // for example to allocate new tiles.
@@ -319,7 +320,7 @@ private:
 
     int incrementPaintCount() { return ++m_paintCount; }
 
-    void dumpProperties(TextStream&, int indent, LayerTreeFlags) const;
+    void dumpProperties(TextStream&, int indent, LayerTreeFlags, RenderingContextMap&) const;
 
     // Helper functions used by settors to keep layer's the state consistent.
     void updateChildList();
@@ -354,7 +355,7 @@ private:
     FilterOperations m_filters;
 
     bool m_contentsOpaque : 1;
-    bool m_preserves3D: 1;
+    bool m_shouldFlattenTransform: 1;
     bool m_backfaceVisibility : 1;
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
@@ -400,6 +401,7 @@ private:
 
     ScrollableArea* m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
+    int m_3dRenderingContext;
 };
 
 
@@ -407,7 +409,7 @@ private:
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showGraphicsLayerTree(const WebCore::GraphicsLayer* layer);
+void PLATFORM_EXPORT showGraphicsLayerTree(const WebCore::GraphicsLayer*);
 #endif
 
 #endif // GraphicsLayer_h

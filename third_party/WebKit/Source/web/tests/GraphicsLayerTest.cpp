@@ -95,7 +95,7 @@ private:
     MockGraphicsLayerClient m_client;
 };
 
-TEST_F(GraphicsLayerTest, updateLayerPreserves3DWithAnimations)
+TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 {
     ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
 
@@ -107,7 +107,7 @@ TEST_F(GraphicsLayerTest, updateLayerPreserves3DWithAnimations)
 
     ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
 
-    m_graphicsLayer->setPreserves3D(true);
+    m_graphicsLayer->setShouldFlattenTransform(false);
 
     m_platformLayer = m_graphicsLayer->platformLayer();
     ASSERT_TRUE(m_platformLayer);
@@ -116,7 +116,7 @@ TEST_F(GraphicsLayerTest, updateLayerPreserves3DWithAnimations)
     m_platformLayer->removeAnimation(animationId);
     ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
 
-    m_graphicsLayer->setPreserves3D(false);
+    m_graphicsLayer->setShouldFlattenTransform(true);
 
     m_platformLayer = m_graphicsLayer->platformLayer();
     ASSERT_TRUE(m_platformLayer);

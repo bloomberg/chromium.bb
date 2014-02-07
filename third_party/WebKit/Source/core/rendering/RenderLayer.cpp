@@ -134,6 +134,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_enclosingPaginationLayer(0)
+    , m_3dRenderingContextRoot(0)
     , m_groupedMapping(0)
     , m_repainter(renderer)
     , m_clipper(renderer)
@@ -534,6 +535,22 @@ void RenderLayer::updateTransform()
 
     if (had3DTransform != has3DTransform())
         dirty3DTransformedDescendantStatus();
+}
+
+// Note: this function assumes that all ancestors have an updated 3d rendering context root.
+void RenderLayer::update3dRenderingContext()
+{
+    m_3dRenderingContextRoot = 0;
+
+    if (!shouldFlattenTransform())
+        m_3dRenderingContextRoot = this;
+
+    if (RenderObject* containingBlock = renderer()->containingBlock()) {
+        if (RenderLayer* ancestorLayer = containingBlock->enclosingLayer()) {
+            if (!ancestorLayer->shouldFlattenTransform())
+                m_3dRenderingContextRoot = ancestorLayer->renderingContextRoot();
+        }
+    }
 }
 
 TransformationMatrix RenderLayer::currentTransform(RenderStyle::ApplyTransformOrigin applyOrigin) const
