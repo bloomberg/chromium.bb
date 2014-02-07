@@ -13,7 +13,8 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START VideoCaptureMsgStart
 
-IPC_ENUM_TRAITS(content::VideoCaptureState)
+IPC_ENUM_TRAITS_MAX_VALUE(content::VideoCaptureState,
+                          content::VIDEO_CAPTURE_STATE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
   IPC_STRUCT_TRAITS_MEMBER(requested_format)
