@@ -976,6 +976,8 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   const int audio_bytes_per_frame =
       media::SampleFormatToBytesPerChannel(sample_format) *
       audio_channel_count_;
+  if (audio_bytes_per_frame <= 0)
+    return false;
 
   // Allocate space for the channel pointers given to AudioBuffer.
   std::vector<const uint8*> channel_ptrs(
