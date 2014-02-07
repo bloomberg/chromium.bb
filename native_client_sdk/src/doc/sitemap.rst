@@ -54,6 +54,8 @@ Contents:
    reference/pnacl-bitcode-abi.rst
    reference/pnacl-c-cpp-language-support.rst
    reference/nacl-manifest-format.rst
+   reference/sandbox_internals/index.rst
+   reference/sandbox_internals/arm-32-bit-sandbox.rst
    publications-and-presentations.rst
    faq.rst
    help.rst

@@ -75,6 +75,10 @@ toc:
     path: /native-client/dev/reference/pnacl-bitcode-abi
   - title: "PNaCl C/C++ Language Support"
     path: /native-client/dev/reference/pnacl-c-cpp-language-support
+  - title: "Sandbox Internals"
+    section:
+    - title "ARM 32-bit Sandbox"
+      path: /native-client/dev/reference/sandbox_internals/arm-32-bit-sandbox
 - title: "Help"
   section:
   - title: "FAQ"
