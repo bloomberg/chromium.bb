@@ -89,17 +89,4 @@ class AutofillDialogCocoa;
 @end
 
 
-// Mirrors the TestableAutofillDialogView API on the C++ side.
-@interface AutofillDialogWindowController (TestableAutofillDialogView)
-
-- (void)setTextContents:(NSString*)text
-                forType:(autofill::ServerFieldType)type;
-- (void)setTextContents:(NSString*)text
- ofSuggestionForSection:(autofill::DialogSection)section;
-- (void)activateFieldForType:(autofill::ServerFieldType)type;
-- (content::WebContents*)getSignInWebContents;
-- (BOOL)isShowingOverlay;
-
-@end
-
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_WINDOW_CONTROLLER_H_

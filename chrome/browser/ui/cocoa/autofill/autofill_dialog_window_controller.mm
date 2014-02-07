@@ -461,37 +461,3 @@ const CGFloat kMinimumContentsHeight = 101;
 }
 
 @end
-
-
-@implementation AutofillDialogWindowController (TestableAutofillDialogView)
-
-- (void)setTextContents:(NSString*)text
-               forType:(autofill::ServerFieldType)type {
-  for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
-    autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
-    // TODO(groby): Need to find the section for an input directly - wasteful.
-    [[mainContainer_ sectionForId:section] setFieldValue:text forType:type];
-  }
-}
-
-- (void)setTextContents:(NSString*)text
- ofSuggestionForSection:(autofill::DialogSection)section {
-  [[mainContainer_ sectionForId:section] setSuggestionFieldValue:text];
-}
-
-- (void)activateFieldForType:(autofill::ServerFieldType)type {
-  for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
-    autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
-    [[mainContainer_ sectionForId:section] activateFieldForType:type];
-  }
-}
-
-- (content::WebContents*)getSignInWebContents {
-  return [signInContainer_ webContents];
-}
-
-- (BOOL)isShowingOverlay {
-  return ![[overlayController_ view] isHidden];
-}
-
-@end

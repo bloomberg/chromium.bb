@@ -29,7 +29,7 @@
 @implementation AutofillDialogWindowController (AutofillDialogViewTesterCocoa)
 
 - (void)setTextContents:(NSString*)text
-               forType:(autofill::ServerFieldType)type {
+                forType:(autofill::ServerFieldType)type {
   for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
     // TODO(groby): Need to find the section for an input directly - wasteful.
