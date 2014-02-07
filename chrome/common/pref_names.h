@@ -132,7 +132,6 @@ extern const char kWebKitPasswordEchoEnabled[];
 #endif
 extern const char kPasswordManagerEnabled[];
 extern const char kPasswordManagerAllowShowPasswords[];
-extern const char kPasswordManagerGroupsForDomains[];
 extern const char kAutologinEnabled[];
 extern const char kReverseAutologinEnabled[];
 extern const char kReverseAutologinRejectedEmailList[];

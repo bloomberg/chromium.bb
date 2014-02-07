@@ -32,6 +32,8 @@
         'password_manager/core/browser/password_store_consumer.h',
         'password_manager/core/browser/password_store_default.cc',
         'password_manager/core/browser/password_store_default.h',
+        'password_manager/core/browser/password_manager_metrics_util.cc',
+        'password_manager/core/browser/password_manager_metrics_util.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
       ],
@@ -75,6 +77,8 @@
         '..',
       ],
       'sources': [
+        'password_manager/core/common/password_manager_pref_names.cc',
+        'password_manager/core/common/password_manager_pref_names.h',
         'password_manager/core/common/password_manager_switches.cc',
         'password_manager/core/common/password_manager_switches.h',
       ],

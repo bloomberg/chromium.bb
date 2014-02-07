@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 #include <iterator>
 #include <map>
@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PasswordManagerMetricsUtilTest : public testing::Test {

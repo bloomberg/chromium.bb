@@ -1451,8 +1451,6 @@
         'browser/password_manager/password_manager_delegate_impl.cc',
         'browser/password_manager/password_manager_delegate_impl.h',
         'browser/password_manager/password_manager_driver.h',
-        'browser/password_manager/password_manager_metrics_util.cc',
-        'browser/password_manager/password_manager_metrics_util.h',
         'browser/password_manager/password_manager_util.h',
         'browser/password_manager/password_manager_util_android.cc',
         'browser/password_manager/password_manager_util_mac.mm',

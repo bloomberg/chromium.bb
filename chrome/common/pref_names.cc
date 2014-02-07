@@ -309,13 +309,6 @@ const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 
-// A list of numbers. Each number corresponds to one of the domains monitored
-// for save-password-prompt breakages. That number is a random index into
-// the array of groups containing the monitored domain. That group should be
-// used for reporting that domain.
-const char kPasswordManagerGroupsForDomains[] =
-    "profile.password_manager_groups_for_domains";
-
 // Booleans identifying whether normal and reverse auto-logins are enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
