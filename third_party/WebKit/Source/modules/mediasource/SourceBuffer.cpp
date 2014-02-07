@@ -108,11 +108,8 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
     // 1. Let new mode equal the new value being assigned to this attribute.
     // 2. If new mode does not equal "segments" or "sequence", then throw an INVALID_ACCESS_ERR exception and abort
     //    these steps.
-    if (newMode != segmentsKeyword() && newMode != sequenceKeyword()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return;
-    }
-
+    //    Step 2 is unnecessary: IDL enforcement prevents this case and should just return immediately to script
+    //    without calling this method in this case.
     // 3. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
     //    an INVALID_STATE_ERR exception and abort these steps.
     // 4. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.

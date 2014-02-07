@@ -21,11 +21,16 @@
           {
               sourceBuffer.mode = 'sequence';
               assert_equals(sourceBuffer.mode, 'sequence', 'mode after setting it to \'sequence\'');
+
+              // Setting a mode that is not in AppendMode IDL enum should be ignored and not cause exception.
+              sourceBuffer.mode = 'invalidmode';
+              sourceBuffer.mode = null;
+              sourceBuffer.mode = '';
+              sourceBuffer.mode = 'Segments';
+              assert_equals(sourceBuffer.mode, 'sequence', 'mode unchanged by attempts to set invalid modes');
+
               sourceBuffer.mode = 'segments';
               assert_equals(sourceBuffer.mode, 'segments', 'mode after setting it to \'segments\'');
-              assert_throws('InvalidAccessError',
-                  function() { sourceBuffer.mode = 'invalidmode'; },
-                  'Setting invalid sourceBuffer.mode should throw InvalidAccessError.');
               test.done();
           }, 'Test setting SourceBuffer.mode');
 
