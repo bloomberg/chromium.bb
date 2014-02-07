@@ -26,6 +26,7 @@
 #include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
 #include "media/audio/win/audio_manager_win.h"
+#include "media/audio/win/audio_unified_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/audio/win/device_enumeration_win.h"
 #include "media/audio/win/wavein_input_win.h"
@@ -352,7 +353,8 @@ AudioOutputStream* AudioManagerWin::MakeLinearOutputStream(
 // - WASAPIAudioOutputStream: Based on Core Audio (WASAPI) API.
 AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const std::string& input_device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   if (params.channels() > kWinMaxChannels)
     return NULL;
@@ -365,6 +367,15 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
     DVLOG(1) << "Using WaveOut since WASAPI requires at least Vista.";
     return new PCMWaveOutAudioOutputStream(
         this, params, NumberOfWaveOutBuffers(), WAVE_MAPPER);
+  }
+
+  // TODO(rtoy): support more than stereo input.
+  if (params.input_channels() > 0) {
+    DVLOG(1) << "WASAPIUnifiedStream is created.";
+    DLOG_IF(ERROR, !device_id.empty() &&
+        device_id != AudioManagerBase::kDefaultDeviceId)
+        << "Opening by device id not supported by WASAPIUnifiedStream";
+    return new WASAPIUnifiedStream(this, params, input_device_id);
   }
 
   // Pass an empty string to indicate that we want the default device

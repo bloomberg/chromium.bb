@@ -16,6 +16,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/audio/pulse/pulse_input.h"
 #include "media/audio/pulse/pulse_output.h"
+#include "media/audio/pulse/pulse_unified.h"
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/channel_layout.h"
 
@@ -132,15 +133,16 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(
     const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return MakeOutputStream(params);
+  return MakeOutputStream(params, std::string());
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const std::string& input_device_id) {
   DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  return MakeOutputStream(params);
+  return MakeOutputStream(params, input_device_id);
 }
 
 AudioInputStream* AudioManagerPulse::MakeLinearInputStream(
@@ -187,7 +189,11 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerPulse::MakeOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
+  if (params.input_channels()) {
+    return new PulseAudioUnifiedStream(params, input_device_id, this);
+  }
+
   return new PulseAudioOutputStream(params, this);
 }
 

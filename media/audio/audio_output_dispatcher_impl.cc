@@ -19,10 +19,12 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
     AudioManager* audio_manager,
     const AudioParameters& params,
     const std::string& output_device_id,
+    const std::string& input_device_id,
     const base::TimeDelta& close_delay)
     : AudioOutputDispatcher(audio_manager,
                             params,
-                            output_device_id),
+                            output_device_id,
+                            input_device_id),
       idle_proxies_(0),
       close_timer_(FROM_HERE,
                    close_delay,
@@ -129,7 +131,7 @@ void AudioOutputDispatcherImpl::Shutdown() {
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
-      params_, device_id_);
+      params_, output_device_id_, input_device_id_);
   if (!stream)
     return false;
 
@@ -141,7 +143,7 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   const int stream_id = audio_stream_id_++;
   audio_stream_ids_[stream] = stream_id;
   audio_log_->OnCreated(
-      stream_id, params_, device_id_);
+      stream_id, params_, input_device_id_, output_device_id_);
 
   idle_streams_.push_back(stream);
   return true;

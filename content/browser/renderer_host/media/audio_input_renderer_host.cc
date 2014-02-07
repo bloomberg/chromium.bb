@@ -314,7 +314,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   MediaStreamManager::SendMessageToNativeLog(
       "Audio input stream created successfully.");
-  audio_log_->OnCreated(stream_id, audio_params, device_id);
+  audio_log_->OnCreated(stream_id, audio_params, device_id, std::string());
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {

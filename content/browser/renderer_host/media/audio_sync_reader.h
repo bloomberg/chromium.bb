@@ -26,7 +26,8 @@ namespace content {
 class AudioSyncReader : public media::AudioOutputController::SyncReader {
  public:
   AudioSyncReader(base::SharedMemory* shared_memory,
-                  const media::AudioParameters& params);
+                  const media::AudioParameters& params,
+                  int input_channels);
 
   virtual ~AudioSyncReader();
 
@@ -51,6 +52,9 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   const base::SharedMemory* const shared_memory_;
 
+  // Number of input channels for synchronized I/O.
+  const int input_channels_;
+
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.
   const bool mute_audio_;
@@ -64,6 +68,9 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   // Shared memory wrapper used for transferring audio data to Read() callers.
   scoped_ptr<media::AudioBus> output_bus_;
+
+  // Shared memory wrapper used for transferring audio data from Read() callers.
+  scoped_ptr<media::AudioBus> input_bus_;
 
   // Maximum amount of audio data which can be transferred in one Read() call.
   const int packet_size_;

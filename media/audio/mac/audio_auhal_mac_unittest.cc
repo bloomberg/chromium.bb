@@ -45,7 +45,7 @@ class AUHALStreamTest : public testing::Test {
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
-        manager_->GetDefaultOutputStreamParameters(), "");
+        manager_->GetDefaultOutputStreamParameters(), "", "");
   }
 
   bool CanRunAudioTests() {

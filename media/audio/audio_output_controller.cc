@@ -36,11 +36,13 @@ AudioOutputController::AudioOutputController(
     EventHandler* handler,
     const AudioParameters& params,
     const std::string& output_device_id,
+    const std::string& input_device_id,
     SyncReader* sync_reader)
     : audio_manager_(audio_manager),
       params_(params),
       handler_(handler),
       output_device_id_(output_device_id),
+      input_device_id_(input_device_id),
       stream_(NULL),
       diverting_to_stream_(NULL),
       volume_(1.0),
@@ -70,6 +72,7 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     EventHandler* event_handler,
     const AudioParameters& params,
     const std::string& output_device_id,
+    const std::string& input_device_id,
     SyncReader* sync_reader) {
   DCHECK(audio_manager);
   DCHECK(sync_reader);
@@ -78,7 +81,8 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     return NULL;
 
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
-      audio_manager, event_handler, params, output_device_id, sync_reader));
+      audio_manager, event_handler, params, output_device_id, input_device_id,
+      sync_reader));
   controller->message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoCreate, controller, false));
   return controller;
@@ -137,7 +141,8 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
 
   stream_ = diverting_to_stream_ ?
       diverting_to_stream_ :
-      audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_);
+      audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_,
+                                                 input_device_id_);
   if (!stream_) {
     state_ = kError;
     handler_->OnError();

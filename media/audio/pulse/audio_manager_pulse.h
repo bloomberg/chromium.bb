@@ -37,7 +37,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
       const AudioParameters& params) OVERRIDE;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) OVERRIDE;
+      const std::string& device_id,
+      const std::string& input_device_id) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
@@ -69,7 +70,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
                                      void* user_data);
 
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
-  AudioOutputStream* MakeOutputStream(const AudioParameters& params);
+  AudioOutputStream* MakeOutputStream(const AudioParameters& params,
+                                      const std::string& input_device_id);
 
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,

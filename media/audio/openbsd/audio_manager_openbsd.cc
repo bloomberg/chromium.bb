@@ -92,7 +92,8 @@ AudioOutputStream* AudioManagerOpenBSD::MakeLinearOutputStream(
 
 AudioOutputStream* AudioManagerOpenBSD::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const std::string& input_device_id) {
   DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format);
   return MakeOutputStream(params);

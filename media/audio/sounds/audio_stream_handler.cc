@@ -59,7 +59,7 @@ class AudioStreamHandler::AudioStreamContainer
                                    p.bits_per_sample(),
                                    kDefaultFrameCount);
       stream_ = AudioManager::Get()->MakeAudioOutputStreamProxy(
-          params, std::string());
+          params, std::string(), std::string());
       if (!stream_ || !stream_->Open()) {
         LOG(ERROR) << "Failed to open an output stream.";
         return;

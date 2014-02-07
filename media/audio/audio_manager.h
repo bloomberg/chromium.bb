@@ -88,6 +88,11 @@ class MEDIA_EXPORT AudioManager {
   // To create a stream for the default output device, pass an empty string
   // for |device_id|, otherwise the specified audio device will be opened.
   //
+  // The |input_device_id| is used for low-latency unified streams
+  // (input+output) only and then only if the audio parameters specify a >0
+  // input channel count.  In other cases this id is ignored and should be
+  // empty.
+  //
   // Returns NULL if the combination of the parameters is not supported, or if
   // we have reached some other platform specific limit.
   //
@@ -100,7 +105,8 @@ class MEDIA_EXPORT AudioManager {
   // Do not free the returned AudioOutputStream. It is owned by AudioManager.
   virtual AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const std::string& input_device_id) = 0;
 
   // Creates new audio output proxy. A proxy implements
   // AudioOutputStream interface, but unlike regular output stream
@@ -108,7 +114,8 @@ class MEDIA_EXPORT AudioManager {
   // sound is actually playing.
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const std::string& input_device_id) = 0;
 
   // Factory to create audio recording streams.
   // |channels| can be 1 or 2.

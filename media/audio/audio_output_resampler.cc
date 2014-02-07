@@ -135,7 +135,7 @@ void AudioOutputResampler::SetupFallbackParams() {
       AudioParameters::AUDIO_PCM_LINEAR, params_.channel_layout(),
       params_.sample_rate(), params_.bits_per_sample(),
       frames_per_buffer);
-  device_id_ = "";
+  output_device_id_ = "";
   Initialize();
 #endif
 }
@@ -144,8 +144,10 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                                            const AudioParameters& input_params,
                                            const AudioParameters& output_params,
                                            const std::string& output_device_id,
+                                           const std::string& input_device_id,
                                            const base::TimeDelta& close_delay)
-    : AudioOutputDispatcher(audio_manager, input_params, output_device_id),
+    : AudioOutputDispatcher(audio_manager, input_params, output_device_id,
+                            input_device_id),
       close_delay_(close_delay),
       output_params_(output_params),
       streams_opened_(false) {
@@ -167,7 +169,8 @@ void AudioOutputResampler::Initialize() {
   DCHECK(!streams_opened_);
   DCHECK(callbacks_.empty());
   dispatcher_ = new AudioOutputDispatcherImpl(
-      audio_manager_, output_params_, device_id_, close_delay_);
+      audio_manager_, output_params_, output_device_id_, input_device_id_,
+      close_delay_);
 }
 
 bool AudioOutputResampler::OpenStream() {

@@ -36,6 +36,7 @@ class AudioRendererHost::AudioEntry
              int render_view_id,
              const media::AudioParameters& params,
              const std::string& output_device_id,
+             const std::string& input_device_id,
              scoped_ptr<base::SharedMemory> shared_memory,
              scoped_ptr<media::AudioOutputController::SyncReader> reader);
   virtual ~AudioEntry();
@@ -88,13 +89,15 @@ AudioRendererHost::AudioEntry::AudioEntry(
     AudioRendererHost* host, int stream_id, int render_view_id,
     const media::AudioParameters& params,
     const std::string& output_device_id,
+    const std::string& input_device_id,
     scoped_ptr<base::SharedMemory> shared_memory,
     scoped_ptr<media::AudioOutputController::SyncReader> reader)
     : host_(host),
       stream_id_(stream_id),
       render_view_id_(render_view_id),
       controller_(media::AudioOutputController::Create(
-          host->audio_manager_, this, params, output_device_id, reader.get())),
+          host->audio_manager_, this, params, output_device_id,
+          input_device_id, reader.get())),
       shared_memory_(shared_memory.Pass()),
       reader_(reader.Pass()) {
   DCHECK(controller_.get());
@@ -311,24 +314,45 @@ void AudioRendererHost::OnCreateStream(
   DCHECK_GT(render_view_id, 0);
 
   // media::AudioParameters is validated in the deserializer.
-  if (LookupById(stream_id) != NULL) {
+  int input_channels = params.input_channels();
+  if (input_channels < 0 ||
+      input_channels > media::limits::kMaxChannels ||
+      LookupById(stream_id) != NULL) {
     SendErrorMessage(stream_id);
     return;
   }
 
+  // When the |input_channels| is valid, clients are trying to create a unified
+  // IO stream which opens an input device mapping to the |session_id|.
   // Initialize the |output_device_id| to an empty string which indicates that
   // the default device should be used. If a StreamDeviceInfo instance was found
   // though, then we use the matched output device.
-  std::string output_device_id;
+  std::string input_device_id, output_device_id;
   const StreamDeviceInfo* info = media_stream_manager_->
       audio_input_device_manager()->GetOpenedDeviceInfoById(session_id);
   if (info)
     output_device_id = info->device.matched_output_device_id;
 
+  if (input_channels > 0) {
+    if (!info) {
+      SendErrorMessage(stream_id);
+      DLOG(WARNING) << "No permission has been granted to input stream with "
+                    << "session_id=" << session_id;
+      return;
+    }
+
+    input_device_id = info->device.id;
+  }
+
+  // Calculate output and input memory size.
+  int output_memory_size = AudioBus::CalculateMemorySize(params);
+  int frames = params.frames_per_buffer();
+  int input_memory_size = AudioBus::CalculateMemorySize(input_channels, frames);
+
   // Create the shared memory and share with the renderer process.
   // For synchronized I/O (if input_channels > 0) then we allocate
   // extra memory after the output data for the input data.
-  uint32 shared_memory_size = AudioBus::CalculateMemorySize(params);;
+  uint32 shared_memory_size = output_memory_size + input_memory_size;
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {
     SendErrorMessage(stream_id);
@@ -336,7 +360,7 @@ void AudioRendererHost::OnCreateStream(
   }
 
   scoped_ptr<AudioSyncReader> reader(
-      new AudioSyncReader(shared_memory.get(), params));
+      new AudioSyncReader(shared_memory.get(), params, input_channels));
   if (!reader->Init()) {
     SendErrorMessage(stream_id);
     return;
@@ -349,14 +373,14 @@ void AudioRendererHost::OnCreateStream(
 
   scoped_ptr<AudioEntry> entry(new AudioEntry(
       this, stream_id, render_view_id, params, output_device_id,
-      shared_memory.Pass(),
+      input_device_id, shared_memory.Pass(),
       reader.PassAs<media::AudioOutputController::SyncReader>()));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(
         render_process_id_, entry->render_view_id(), entry->controller());
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
-  audio_log_->OnCreated(stream_id, params, output_device_id);
+  audio_log_->OnCreated(stream_id, params, input_device_id, output_device_id);
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

@@ -64,14 +64,16 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   virtual AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) OVERRIDE;
+      const std::string& device_id,
+      const std::string& input_device_id) OVERRIDE;
 
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
 
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
       const AudioParameters& params,
-      const std::string& device_id) OVERRIDE;
+      const std::string& device_id,
+      const std::string& input_device_id) OVERRIDE;
 
   // Called internally by the audio stream when it has been closed.
   virtual void ReleaseOutputStream(AudioOutputStream* stream);
@@ -83,9 +85,11 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const AudioParameters& params) = 0;
 
   // Creates the output stream for the |AUDIO_PCM_LOW_LATENCY| format.
+  // |input_device_id| is used by unified IO to open the correct input device.
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const std::string& input_device_id) = 0;
 
   // Creates the input stream for the |AUDIO_PCM_LINEAR| format. The legacy
   // name is also from |AUDIO_PCM_LINEAR|.

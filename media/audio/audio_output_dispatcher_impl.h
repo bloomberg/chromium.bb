@@ -36,6 +36,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   AudioOutputDispatcherImpl(AudioManager* audio_manager,
                             const AudioParameters& params,
                             const std::string& output_device_id,
+                            const std::string& input_device_id,
                             const base::TimeDelta& close_delay);
 
   // Opens a new physical stream if there are no pending streams in
