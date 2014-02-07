@@ -32,6 +32,7 @@
 #define WorkerGlobalScopePerformance_h
 
 #include "core/workers/WorkerSupplementable.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -50,7 +51,7 @@ private:
     WorkerPerformance* performance();
     static const char* supplementName();
 
-    RefPtr<WorkerPerformance> m_performance;
+    RefPtrWillBePersistent<WorkerPerformance> m_performance;
 };
 
 } // namespace WebCore

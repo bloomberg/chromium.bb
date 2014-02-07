@@ -41,12 +41,15 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class WorkerPerformance : public ScriptWrappable, public RefCounted<WorkerPerformance> {
+class WorkerPerformance : public RefCountedWillBeGarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<WorkerPerformance> create() { return adoptRef(new WorkerPerformance()); }
+    static PassRefPtrWillBeRawPtr<WorkerPerformance> create() { return adoptRefWillBeNoop(new WorkerPerformance()); }
     ~WorkerPerformance();
 
     double now(ExecutionContext*) const;
+
+    void trace(Visitor*) { }
 
 private:
     WorkerPerformance();
