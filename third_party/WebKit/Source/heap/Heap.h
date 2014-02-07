@@ -1316,6 +1316,46 @@ public:
     }
 };
 
+template<typename T>
+struct ThreadingTrait<Member<T> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+template<typename T>
+struct ThreadingTrait<WeakMember<T> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+template<typename Key, typename Value, typename T, typename U, typename V>
+struct ThreadingTrait<HashMap<Key, Value, HeapAllocator, T, U, V> > {
+    static const ThreadAffinity Affinity =
+        (ThreadingTrait<Key>::Affinity == MainThreadOnly)
+        && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
+};
+
+template<typename T, typename U, typename V>
+struct ThreadingTrait<HashSet<T, HeapAllocator, U, V> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+template<typename T, typename Traits>
+struct ThreadingTrait<HeapVectorBacking<T, Traits> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct ThreadingTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
+    static const ThreadAffinity Affinity =
+        (ThreadingTrait<Key>::Affinity == MainThreadOnly)
+        && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
+};
+
 template<typename Key, typename Value>
 struct ThreadingTrait<HeapHashMap<Key, Value> > : public ThreadingTrait<HashMap<Key, Value, HeapAllocator> > { };
 template<typename Value>
