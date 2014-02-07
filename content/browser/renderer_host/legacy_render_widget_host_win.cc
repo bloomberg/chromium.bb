@@ -147,7 +147,10 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseActivate(UINT message,
   // it lost activation.
   // Our dummy window should not interfere with focus and activation in
   // the parent. Return MA_ACTIVATE here ensures that focus state in the parent
-  // is preserved.
+  // is preserved. The only exception is if the parent was created with the
+  // WS_EX_NOACTIVATE style.
+  if (::GetWindowLong(GetParent(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)
+    return MA_NOACTIVATE;
   return MA_ACTIVATE;
 }
 
