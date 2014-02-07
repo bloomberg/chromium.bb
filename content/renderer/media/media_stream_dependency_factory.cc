@@ -453,7 +453,6 @@ MediaStreamDependencyFactory::GetPcFactory() {
 
 void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!pc_factory_.get());
-  DCHECK(!audio_device_.get());
   DCHECK(!signaling_thread_);
   DCHECK(!worker_thread_);
   DCHECK(!network_manager_);
@@ -523,18 +522,16 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   }
 #endif
 
-  scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
-      new WebRtcAudioDeviceImpl());
+  EnsureWebRtcAudioDeviceImpl();
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
       webrtc::CreatePeerConnectionFactory(worker_thread_,
                                           signaling_thread_,
-                                          audio_device.get(),
+                                          audio_device_.get(),
                                           encoder_factory.release(),
                                           decoder_factory.release()));
   CHECK(factory);
 
-  audio_device_ = audio_device;
   pc_factory_ = factory;
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
   factory_options.disable_sctp_data_channels =
@@ -648,6 +645,8 @@ MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source) {
+  DCHECK(GetWebRtcAudioDevice());
+
   // Creates an adapter to hold all the libjingle objects.
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
       WebRtcLocalAudioTrackAdapter::Create(blink_track.id().utf8(), source));
@@ -749,6 +748,8 @@ MediaStreamDependencyFactory::CreateAudioCapturer(
   // view, for example, by an extension.
   DCHECK_GE(render_view_id, 0);
 
+  EnsureWebRtcAudioDeviceImpl();
+  DCHECK(GetWebRtcAudioDevice());
   return WebRtcAudioCapturer::CreateCapturer(render_view_id, device_info,
                                              constraints,
                                              GetWebRtcAudioDevice());
@@ -828,6 +829,13 @@ void MediaStreamDependencyFactory::StartAecDump(
  // fails, |aec_dump_file| will be closed.
  if (!GetPcFactory()->StartAecDump(aec_dump_file))
    VLOG(1) << "Could not start AEC dump.";
+}
+
+void MediaStreamDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
+  if (audio_device_)
+    return;
+
+  audio_device_ = new WebRtcAudioDeviceImpl();
 }
 
 }  // namespace content

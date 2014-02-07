@@ -233,6 +233,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   void StartAecDump(const base::PlatformFile& aec_dump_file);
 
+  // Helper method to create a WebRtcAudioDeviceImpl.
+  void EnsureWebRtcAudioDeviceImpl();
+
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   IpcNetworkManager* network_manager_;
