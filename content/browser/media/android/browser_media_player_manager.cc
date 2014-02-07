@@ -201,7 +201,7 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
   if (!player)
     return;
   if (release_media_player)
-    player->Release();
+    ReleaseFullscreenPlayer(player);
   else
     player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
@@ -851,6 +851,11 @@ void BrowserMediaPlayerManager::CreateSessionIfPermitted(
   MediaPlayerAndroid* player = GetPlayer(media_keys_id);
   if (player->IsPlaying())
     OnProtectedSurfaceRequested(media_keys_id);
+}
+
+void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(
+    MediaPlayerAndroid* player) {
+    player->Release();
 }
 
 }  // namespace content

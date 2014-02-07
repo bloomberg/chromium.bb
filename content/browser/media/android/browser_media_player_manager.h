@@ -137,6 +137,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSetVolume(int player_id, double volume);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
+  virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
   void OnInitializeCDM(int media_keys_id,
                        const std::vector<uint8>& uuid,
                        const GURL& frame_url);
