@@ -4,11 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Chromium presubmit script for src/chrome/browser/externsions.
+"""Chromium presubmit script for src/chrome/browser/ui/libgtk2ui.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into gcl.
 """
 
 def GetPreferredTrySlaves():
-  return ['linux_aura']
+  return ['linux_rel']

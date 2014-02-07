@@ -1244,17 +1244,6 @@ def GetDefaultTryConfigs(bots=None):
       #'webkit_unit_tests',
   ]
 
-  linux_aura_tests = [
-      'app_list_unittests',
-      'aura_unittests',
-      'browser_tests',
-      'compositor_unittests',
-      'content_browsertests',
-      'content_unittests',
-      'events_unittests',
-      'interactive_ui_tests',
-      'unit_tests',
-  ]
   builders_and_tests = {
       # TODO(maruel): Figure out a way to run 'sizes' where people can
       # effectively update the perf expectation correctly.  This requires a
@@ -1280,7 +1269,7 @@ def GetDefaultTryConfigs(bots=None):
       'ios_rel_device': ['compile'],
       'linux_asan': ['defaulttests'],
       #TODO(stip): Change the name of this builder to reflect that it's release.
-      'linux_aura': linux_aura_tests,
+      'linux_gtk': standard_tests,
       'linux_chromeos_asan': ['defaulttests'],
       'linux_chromeos_clang': ['compile'],
       # Note: It is a Release builder even if its name convey otherwise.
@@ -1301,9 +1290,13 @@ def GetDefaultTryConfigs(bots=None):
       'linux_clang': ['compile'],
       'linux_nacl_sdk_build': ['compile'],
       'linux_rel': standard_tests + [
+          'app_list_unittests',
+          'aura_unittests',
           'cc_unittests',
           'chromedriver_unittests',
           'components_unittests',
+          'compositor_unittests',
+          'events_unittests',
           'google_apis_unittests',
           'nacl_integration',
           'remoting_unittests',
@@ -1429,7 +1422,7 @@ def GetPreferredTrySlaves(project, change):
       'android_dbg',
       'ios_dbg_simulator',
       'ios_rel_device',
-      'linux_aura',
+      'linux_gtk',
       'linux_asan',
       'linux_chromeos',
       'linux_clang',

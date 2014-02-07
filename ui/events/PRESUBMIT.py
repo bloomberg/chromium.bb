@@ -15,7 +15,7 @@ def GetPreferredTrySlaves():
                'keyboard_unittests',
                'views_unittests'])
 
-  return [('linux_aura', tests),
+  return [('linux_rel', tests),
           ('linux_chromeos', tests),
           ('linux_chromeos_asan', tests),
           ('win', tests),
