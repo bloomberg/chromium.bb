@@ -13,6 +13,7 @@ enum AddressFamily {
   ADDRESS_FAMILY_UNSPECIFIED,   // AF_UNSPEC
   ADDRESS_FAMILY_IPV4,          // AF_INET
   ADDRESS_FAMILY_IPV6,          // AF_INET6
+  ADDRESS_FAMILY_LAST = ADDRESS_FAMILY_IPV6
 };
 
 // HostResolverFlags is a bitflag enum used by host resolver procedures to
