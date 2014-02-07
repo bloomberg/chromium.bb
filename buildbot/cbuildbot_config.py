@@ -1447,7 +1447,6 @@ internal_paladin.add_config('falco-paladin',
 internal_paladin.add_config('fox_wtm2-paladin',
   boards=['fox_wtm2'],
   paladin_builder_name='fox_wtm2 paladin',
-  vm_tests=None,
   important=False,
 )
 
@@ -1504,7 +1503,6 @@ internal_paladin.add_config('rambi-paladin',
 internal_paladin.add_config('samus-paladin',
   boards=['samus'],
   paladin_builder_name='samus paladin',
-  vm_tests=None,
   important=False,
 )
 
@@ -1538,7 +1536,6 @@ internal_paladin.add_config('monroe-paladin',
   hw_tests=[],
   important=False,
   quick_unit=False,
-  vm_tests=None,
   paladin_builder_name='monroe paladin',
 )
 
@@ -1546,7 +1543,6 @@ internal_paladin.add_config('panther-paladin',
   boards=['panther'],
   hw_tests=[],
   quick_unit=False,
-  vm_tests=None,
   paladin_builder_name='panther paladin',
 )
 
@@ -1582,10 +1578,11 @@ internal_paladin.add_config('x86-zgb-paladin',
 
 internal_paladin.add_config('stumpy_moblab-paladin',
   boards=['stumpy_moblab'],
+  images=['base'],
+  build_tests=False,
   important=False,
   paladin_builder_name='stumpy_moblab paladin',
   hw_tests=[],
-  vm_tests=None,
 )
 
 
@@ -1986,6 +1983,8 @@ _arm_brillo_release.add_config('duck-release',
 
 _release.add_config('stumpy_moblab-release',
   boards=['stumpy_moblab'],
+  images=['base'],
+  build_tests=False,
   hw_tests=[],
   vm_tests=None,
 )
