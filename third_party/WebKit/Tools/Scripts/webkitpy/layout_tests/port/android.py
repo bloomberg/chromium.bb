@@ -631,11 +631,11 @@ class AndroidPort(base.Port):
     def _build_path_with_configuration(self, configuration, *comps):
         return self._host_port._build_path_with_configuration(configuration, *comps)
 
-    def _path_to_apache(self):
-        return self._host_port._path_to_apache()
+    def path_to_apache(self):
+        return self._host_port.path_to_apache()
 
-    def _path_to_apache_config_file(self):
-        return self._host_port._path_to_apache_config_file()
+    def path_to_apache_config_file(self):
+        return self._host_port.path_to_apache_config_file()
 
     def _path_to_driver(self, configuration=None):
         return self._build_path_with_configuration(configuration, self._driver_details.apk_name())
@@ -646,13 +646,13 @@ class AndroidPort(base.Port):
     def _path_to_image_diff(self):
         return self._host_port._path_to_image_diff()
 
-    def _path_to_lighttpd(self):
+    def path_to_lighttpd(self):
         return self._host_port._path_to_lighttpd()
 
-    def _path_to_lighttpd_modules(self):
+    def path_to_lighttpd_modules(self):
         return self._host_port._path_to_lighttpd_modules()
 
-    def _path_to_lighttpd_php(self):
+    def path_to_lighttpd_php(self):
         return self._host_port._path_to_lighttpd_php()
 
     def _path_to_wdiff(self):

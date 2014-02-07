@@ -144,30 +144,30 @@ class WinPort(base.Port):
         path = filename[len(self.layout_tests_dir()) + 1:]
         return path.replace('\\', '/')
 
+    def uses_apache(self):
+        return False
+
+    def path_to_apache(self):
+        return self.path_from_chromium_base('third_party', 'cygwin', 'usr', 'sbin', 'httpd')
+
+    def path_to_apache_config_file(self):
+        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'cygwin-httpd.conf')
+
+    def path_to_lighttpd(self):
+        return self._lighttpd_path('LightTPD.exe')
+
+    def path_to_lighttpd_modules(self):
+        return self._lighttpd_path('lib')
+
+    def path_to_lighttpd_php(self):
+        return self._lighttpd_path('php5', 'php-cgi.exe')
+
     #
     # PROTECTED ROUTINES
     #
 
-    def _uses_apache(self):
-        return False
-
     def _lighttpd_path(self, *comps):
         return self.path_from_chromium_base('third_party', 'lighttpd', 'win', *comps)
-
-    def _path_to_apache(self):
-        return self.path_from_chromium_base('third_party', 'cygwin', 'usr', 'sbin', 'httpd')
-
-    def _path_to_apache_config_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'cygwin-httpd.conf')
-
-    def _path_to_lighttpd(self):
-        return self._lighttpd_path('LightTPD.exe')
-
-    def _path_to_lighttpd_modules(self):
-        return self._lighttpd_path('lib')
-
-    def _path_to_lighttpd_php(self):
-        return self._lighttpd_path('php5', 'php-cgi.exe')
 
     def _path_to_driver(self, configuration=None):
         binary_name = '%s.exe' % self.driver_name()

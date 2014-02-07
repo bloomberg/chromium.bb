@@ -101,19 +101,19 @@ class MacPort(base.Port):
     def _wdiff_missing_message(self):
         return 'wdiff is not installed; please install from MacPorts or elsewhere'
 
-    def _path_to_apache(self):
+    def path_to_apache(self):
         return '/usr/sbin/httpd'
 
-    def _path_to_apache_config_file(self):
+    def path_to_apache_config_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'apache2-httpd.conf')
 
-    def _path_to_lighttpd(self):
+    def path_to_lighttpd(self):
         return self._lighttpd_path('bin', 'lighttpd')
 
-    def _path_to_lighttpd_modules(self):
+    def path_to_lighttpd_modules(self):
         return self._lighttpd_path('lib')
 
-    def _path_to_lighttpd_php(self):
+    def path_to_lighttpd_php(self):
         return self._lighttpd_path('bin', 'php-cgi')
 
     def _path_to_driver(self, configuration=None):

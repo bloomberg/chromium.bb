@@ -44,7 +44,7 @@ class WinPortTest(port_testcase.PortTestCase):
     os_version = 'xp'
 
     def test_uses_apache(self):
-        self.assertFalse(self.make_port()._uses_apache())
+        self.assertFalse(self.make_port().uses_apache())
 
     def test_setup_environ_for_server(self):
         port = self.make_port()

@@ -154,7 +154,7 @@ class PortTestCase(unittest.TestCase):
         self.assertTrue('--foo=baz' in cmd_line)
 
     def test_uses_apache(self):
-        self.assertTrue(self.make_port()._uses_apache())
+        self.assertTrue(self.make_port().uses_apache())
 
     def assert_servers_are_down(self, host, ports):
         for port in ports:
@@ -448,22 +448,22 @@ class PortTestCase(unittest.TestCase):
         saved_environ = os.environ.copy()
         try:
             os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
-            self.assertRaises(IOError, port._path_to_apache_config_file)
+            self.assertRaises(IOError, port.path_to_apache_config_file)
             port._filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
             os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
-            self.assertEqual(port._path_to_apache_config_file(), '/existing/httpd.conf')
+            self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
         finally:
             os.environ = saved_environ.copy()
 
         # Mock out _apache_config_file_name_for_platform to ignore the passed sys.platform value.
         port._apache_config_file_name_for_platform = lambda platform: 'httpd.conf'
-        self.assertEqual(port._path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
+        self.assertEqual(port.path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.
         saved_environ = os.environ.copy()
         try:
             os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
-            self.assertEqual(port._path_to_apache_config_file(), '/existing/httpd.conf')
+            self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
         finally:
             os.environ = saved_environ.copy()
 

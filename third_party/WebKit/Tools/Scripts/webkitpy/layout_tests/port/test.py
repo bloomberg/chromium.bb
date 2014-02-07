@@ -508,19 +508,19 @@ class TestPort(Port):
     def release_http_lock(self):
         pass
 
-    def _path_to_lighttpd(self):
+    def path_to_lighttpd(self):
         return "/usr/sbin/lighttpd"
 
-    def _path_to_lighttpd_modules(self):
+    def path_to_lighttpd_modules(self):
         return "/usr/lib/lighttpd"
 
-    def _path_to_lighttpd_php(self):
+    def path_to_lighttpd_php(self):
         return "/usr/bin/php-cgi"
 
-    def _path_to_apache(self):
+    def path_to_apache(self):
         return "/usr/sbin/httpd"
 
-    def _path_to_apache_config_file(self):
+    def path_to_apache_config_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'httpd.conf')
 
     def path_to_generic_test_expectations_file(self):

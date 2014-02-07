@@ -432,10 +432,10 @@ class Port(object):
         return 'wdiff is not installed; please install it to generate word-by-word diffs.'
 
     def check_httpd(self):
-        if self._uses_apache():
-            httpd_path = self._path_to_apache()
+        if self.uses_apache():
+            httpd_path = self.path_to_apache()
         else:
-            httpd_path = self._path_to_lighttpd()
+            httpd_path = self.path_to_lighttpd()
 
         try:
             server_name = self._filesystem.basename(httpd_path)
@@ -1097,7 +1097,7 @@ class Port(object):
         Ports can stub this out if they don't need a web server to be running."""
         assert not self._http_server, 'Already running an http server.'
 
-        if self._uses_apache():
+        if self.uses_apache():
             server = apache_http_server.LayoutTestApacheHttpd(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
         else:
             server = http_server.Lighttpd(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
@@ -1367,48 +1367,18 @@ class Port(object):
     def clobber_old_port_specific_results(self):
         pass
 
-    #
-    # PROTECTED ROUTINES
-    #
-    # The routines below should only be called by routines in this class
-    # or any of its subclasses.
-    #
-
-    def _uses_apache(self):
+    def uses_apache(self):
         return True
 
     # FIXME: This does not belong on the port object.
     @memoized
-    def _path_to_apache(self):
+    def path_to_apache(self):
         """Returns the full path to the apache binary.
 
         This is needed only by ports that use the apache_http_server module."""
-        raise NotImplementedError('Port._path_to_apache')
+        raise NotImplementedError('Port.path_to_apache')
 
-    # FIXME: This belongs on some platform abstraction instead of Port.
-    def _is_redhat_based(self):
-        return self._filesystem.exists('/etc/redhat-release')
-
-    def _is_debian_based(self):
-        return self._filesystem.exists('/etc/debian_version')
-
-    def _apache_version(self):
-        config = self._executive.run_command([self._path_to_apache(), '-v'])
-        return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*', r'\1', config)
-
-    # We pass sys_platform into this method to make it easy to unit test.
-    def _apache_config_file_name_for_platform(self, sys_platform):
-        if sys_platform == 'cygwin':
-            return 'cygwin-httpd.conf'  # CYGWIN is the only platform to still use Apache 1.3.
-        if sys_platform.startswith('linux'):
-            if self._is_redhat_based():
-                return 'fedora-httpd-' + self._apache_version() + '.conf'
-            if self._is_debian_based():
-                return 'debian-httpd-' + self._apache_version() + '.conf'
-        # All platforms use apache2 except for CYGWIN (and Mac OS X Tiger and prior, which we no longer support).
-        return "apache2-httpd.conf"
-
-    def _path_to_apache_config_file(self):
+    def path_to_apache_config_file(self):
         """Returns the full path to the apache configuration file.
 
         If the WEBKIT_HTTP_SERVER_CONF_PATH environment variable is set, its
@@ -1423,6 +1393,55 @@ class Port(object):
 
         config_file_name = self._apache_config_file_name_for_platform(sys.platform)
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
+
+    def path_to_lighttpd(self):
+        """Returns the path to the LigHTTPd binary.
+
+        This is needed only by ports that use the http_server.py module."""
+        raise NotImplementedError('Port._path_to_lighttpd')
+
+    def path_to_lighttpd_modules(self):
+        """Returns the path to the LigHTTPd modules directory.
+
+        This is needed only by ports that use the http_server.py module."""
+        raise NotImplementedError('Port._path_to_lighttpd_modules')
+
+    def path_to_lighttpd_php(self):
+        """Returns the path to the LigHTTPd PHP executable.
+
+        This is needed only by ports that use the http_server.py module."""
+        raise NotImplementedError('Port._path_to_lighttpd_php')
+
+
+    #
+    # PROTECTED ROUTINES
+    #
+    # The routines below should only be called by routines in this class
+    # or any of its subclasses.
+    #
+
+    # FIXME: This belongs on some platform abstraction instead of Port.
+    def _is_redhat_based(self):
+        return self._filesystem.exists('/etc/redhat-release')
+
+    def _is_debian_based(self):
+        return self._filesystem.exists('/etc/debian_version')
+
+    def _apache_version(self):
+        config = self._executive.run_command([self.path_to_apache(), '-v'])
+        return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*', r'\1', config)
+
+    # We pass sys_platform into this method to make it easy to unit test.
+    def _apache_config_file_name_for_platform(self, sys_platform):
+        if sys_platform == 'cygwin':
+            return 'cygwin-httpd.conf'  # CYGWIN is the only platform to still use Apache 1.3.
+        if sys_platform.startswith('linux'):
+            if self._is_redhat_based():
+                return 'fedora-httpd-' + self._apache_version() + '.conf'
+            if self._is_debian_based():
+                return 'debian-httpd-' + self._apache_version() + '.conf'
+        # All platforms use apache2 except for CYGWIN (and Mac OS X Tiger and prior, which we no longer support).
+        return "apache2-httpd.conf"
 
     def _path_to_driver(self, configuration=None):
         """Returns the full path to the test driver."""
@@ -1445,24 +1464,6 @@ class Port(object):
 
         This is likely used only by diff_image()"""
         return self._build_path('image_diff')
-
-    def _path_to_lighttpd(self):
-        """Returns the path to the LigHTTPd binary.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd')
-
-    def _path_to_lighttpd_modules(self):
-        """Returns the path to the LigHTTPd modules directory.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd_modules')
-
-    def _path_to_lighttpd_php(self):
-        """Returns the path to the LigHTTPd PHP executable.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd_php')
 
     @memoized
     def _path_to_wdiff(self):

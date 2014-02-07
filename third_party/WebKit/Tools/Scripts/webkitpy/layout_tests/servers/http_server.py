@@ -109,7 +109,7 @@ class Lighttpd(http_server_base.HttpServerBase):
                  '               ".pl"   => "/usr/bin/env",\n'
                  '               ".asis" => "/bin/cat",\n'
                  '               ".php"  => "%s" )\n\n') %
-                                     self._port_obj._path_to_lighttpd_php())
+                                     self._port_obj.path_to_lighttpd_php())
 
         # Setup log files
         f.write(('server.errorlog = "%s"\n'
@@ -161,8 +161,8 @@ class Lighttpd(http_server_base.HttpServerBase):
                      '}\n\n') % (mapping['port'], mapping['docroot']))
         f.close()
 
-        executable = self._port_obj._path_to_lighttpd()
-        module_path = self._port_obj._path_to_lighttpd_modules()
+        executable = self._port_obj.path_to_lighttpd()
+        module_path = self._port_obj.path_to_lighttpd_modules()
         start_cmd = [executable,
                      # Newly written config file
                      '-f', os.path.join(self._output_dir, 'lighttpd.conf'),

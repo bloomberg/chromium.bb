@@ -151,8 +151,8 @@ class LinuxPort(base.Port):
     #
 
     def _check_apache_install(self):
-        result = self._check_file_exists(self._path_to_apache(), "apache2")
-        result = self._check_file_exists(self._path_to_apache_config_file(), "apache2 config file") and result
+        result = self._check_file_exists(self.path_to_apache(), "apache2")
+        result = self._check_file_exists(self.path_to_apache_config_file(), "apache2 config file") and result
         if not result:
             _log.error('    Please install using: "sudo apt-get install apache2 libapache2-mod-php5"')
             _log.error('')
@@ -171,7 +171,7 @@ class LinuxPort(base.Port):
     def _wdiff_missing_message(self):
         return 'wdiff is not installed; please install using "sudo apt-get install wdiff"'
 
-    def _path_to_apache(self):
+    def path_to_apache(self):
         # The Apache binary path can vary depending on OS and distribution
         # See http://wiki.apache.org/httpd/DistrosDefaultLayout
         for path in ["/usr/sbin/httpd", "/usr/sbin/apache2"]:
@@ -180,13 +180,13 @@ class LinuxPort(base.Port):
         _log.error("Could not find apache. Not installed or unknown path.")
         return None
 
-    def _path_to_lighttpd(self):
+    def path_to_lighttpd(self):
         return "/usr/sbin/lighttpd"
 
-    def _path_to_lighttpd_modules(self):
+    def path_to_lighttpd_modules(self):
         return "/usr/lib/lighttpd"
 
-    def _path_to_lighttpd_php(self):
+    def path_to_lighttpd_php(self):
         return "/usr/bin/php-cgi"
 
     def _path_to_driver(self, configuration=None):

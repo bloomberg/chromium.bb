@@ -68,11 +68,10 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
         error_log = self._filesystem.join(output_dir, "error_log.txt")
         document_root = self._filesystem.join(test_dir, "http", "tests")
 
-        # FIXME: We shouldn't be calling a protected method of _port_obj!
-        executable = self._port_obj._path_to_apache()
+        executable = self._port_obj.path_to_apache()
 
         start_cmd = [executable,
-            '-f', "\"%s\"" % self._get_apache_config_file_path(test_dir, output_dir),
+            '-f', "\"%s\"" % self._port_obj.path_to_apache_config_file(),
             '-C', "\'DocumentRoot \"%s\"\'" % document_root,
             '-c', "\'Alias /js-test-resources \"%s\"'" % js_test_resources_dir,
             '-c', "\'Alias /media-resources \"%s\"'" % media_resources_dir,
@@ -121,7 +120,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
                           '-c', "\'MaxSpareServers %d\'" % self._number_of_servers]
 
         stop_cmd = [executable,
-            '-f', "\"%s\"" % self._get_apache_config_file_path(test_dir, output_dir),
+            '-f', "\"%s\"" % self._port_obj.path_to_apache_config_file(),
             '-c', "\'PidFile %s'" % self._pid_file,
             '-k', "stop"]
 
@@ -132,21 +131,6 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
         # FIXME: It's unclear if this is still needed.
         self._start_cmd = " ".join(start_cmd)
         self._stop_cmd = " ".join(stop_cmd)
-
-    def _get_apache_config_file_path(self, test_dir, output_dir):
-        """Returns the path to the apache config file to use.
-        Args:
-          test_dir: absolute path to the LayoutTests directory.
-          output_dir: absolute path to the layout test results directory.
-        """
-        httpd_config = self._port_obj._path_to_apache_config_file()
-        httpd_config_copy = os.path.join(output_dir, "httpd.conf")
-        httpd_conf = self._filesystem.read_text_file(httpd_config)
-
-        # FIXME: Why do we need to copy the config file since we're not modifying it?
-        self._filesystem.write_text_file(httpd_config_copy, httpd_conf)
-
-        return httpd_config_copy
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))

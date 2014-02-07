@@ -332,7 +332,7 @@ class PortTest(unittest.TestCase):
 
     def test_check_httpd_success(self):
         port = self.make_port(executive=MockExecutive2())
-        port._path_to_apache = lambda: '/usr/sbin/httpd'
+        port.path_to_apache = lambda: '/usr/sbin/httpd'
         capture = OutputCapture()
         capture.capture_output()
         self.assertTrue(port.check_httpd())
@@ -341,7 +341,7 @@ class PortTest(unittest.TestCase):
 
     def test_httpd_returns_error_code(self):
         port = self.make_port(executive=MockExecutive2(exit_code=1))
-        port._path_to_apache = lambda: '/usr/sbin/httpd'
+        port.path_to_apache = lambda: '/usr/sbin/httpd'
         capture = OutputCapture()
         capture.capture_output()
         self.assertFalse(port.check_httpd())
