@@ -124,6 +124,7 @@ private:
 
     bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
 
+    bool inActiveDocumentContext() const;
     void forEachInternal(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue* thisArg) const;
     void incrementLoadingCount();
     void decrementLoadingCount();

@@ -1,3 +1,6 @@
+<html>
+<head>
+<script src="../../resources/gc.js"></script>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -14,7 +17,23 @@ d.fonts.load('10px f');
 d.fonts.ready();
 d.fonts.forEach(function(){});
 d.fonts.status;
+
+fontFaceSet = d.fonts;
+delete d;
+gc();
+
+fontFaceSet.add(face);
+fontFaceSet.delete(face);
+fontFaceSet.has(face);
+fontFaceSet.clear();
+fontFaceSet.check('10px f');
+fontFaceSet.load('10px f');
+fontFaceSet.ready();
+fontFaceSet.forEach(function(){});
+fontFaceSet.status;
 </script>
+</head>
 <body>
 This test passes if it does not crash.
 </body>
+</html>

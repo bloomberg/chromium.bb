@@ -136,6 +136,12 @@ Document* FontFaceSet::document() const
     return toDocument(executionContext());
 }
 
+bool FontFaceSet::inActiveDocumentContext() const
+{
+    ExecutionContext* context = executionContext();
+    return context && toDocument(context)->isActive();
+}
+
 void FontFaceSet::addFontFacesToFontFaceCache(FontFaceCache* fontFaceCache, CSSFontSelector* fontSelector)
 {
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
@@ -249,6 +255,8 @@ void FontFaceSet::decrementLoadingCount()
 
 ScriptPromise FontFaceSet::ready()
 {
+    if (!inActiveDocumentContext())
+        return ScriptPromise();
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(promise, executionContext());
     m_readyResolvers.append(resolver.release());
@@ -258,7 +266,7 @@ ScriptPromise FontFaceSet::ready()
 
 void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
@@ -279,7 +287,7 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
 
 void FontFaceSet::clear()
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return;
     FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it) {
@@ -292,7 +300,7 @@ void FontFaceSet::clear()
 
 bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return false;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
@@ -313,7 +321,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
 
 bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return false;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
@@ -346,7 +354,7 @@ void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback) const
 
 void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue* thisArg) const
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return;
     const ListHashSet<RefPtr<FontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
     Vector<RefPtr<FontFace> > fontFaces;
@@ -367,7 +375,7 @@ void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callbac
 
 unsigned long FontFaceSet::size() const
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return m_nonCSSConnectedFaces.size();
     return cssConnectedFontFaceList().size() + m_nonCSSConnectedFaces.size();
 }
@@ -416,7 +424,7 @@ static const String& nullToSpace(const String& s)
 
 ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return ScriptPromise();
 
     Font font;
@@ -441,7 +449,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
 
 bool FontFaceSet::check(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
-    if (!document()->isActive())
+    if (!inActiveDocumentContext())
         return false;
 
     Font font;
