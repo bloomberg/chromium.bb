@@ -72,11 +72,6 @@ void OpenBrowserWindowForProfile(
     is_first_run = chrome::startup::IS_FIRST_RUN;
   }
 
-  // If we are not showing any browsers windows (we could be showing the
-  // desktop User Manager, for example), then this is a process startup browser.
-  if (BrowserList::GetInstance(desktop_type)->size() == 0)
-    is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
-
   // If |always_create| is false, and we have a |callback| to run, check
   // whether a browser already exists so that we can run the callback. We don't
   // want to rely on the observer listening to OnBrowserSetLastActive in this
