@@ -9,6 +9,7 @@ declare_args() {
   disable_iterator_debugging = false
 }
 
+# TODO(brettw) this is a hack to set the feature flags we use.
 config("my_msvs") {
   defines = [
       "CHROMIUM_BUILD",
@@ -47,6 +48,8 @@ config("my_msvs") {
 config("feature_flags") {
 }
 
+# Debug/release ----------------------------------------------------------------
+
 config("debug") {
   defines = [
     "_DEBUG",
@@ -70,5 +73,75 @@ config("debug") {
 }
 
 config("release") {
+}
 
+# Default libraries ------------------------------------------------------------
+
+# This config defines the default libraries applied to all targets.
+config("default_libs") {
+  if (is_win) {
+    # TODO(brettw) this list of defaults should probably be smaller, and
+    # instead the targets that use the less common ones (e.g. wininet or
+    # winspool) should include those explicitly.
+    libs = [
+      "advapi32.lib",
+      "comdlg32.lib",
+      "dbghelp.lib",
+      "delayimp.lib",
+      "dnsapi.lib",
+      "gdi32.lib",
+      "kernel32.lib",
+      "msimg32.lib",
+      "odbc32.lib",
+      "odbccp32.lib",
+      "ole32.lib",
+      "oleaut32.lib",
+      "psapi.lib",
+      "shell32.lib",
+      "shlwapi.lib",
+      "user32.lib",
+      "usp10.lib",
+      "uuid.lib",
+      "version.lib",
+      "wininet.lib",
+      "winmm.lib",
+      "winspool.lib",
+      "ws2_32.lib",
+    ]
+  } else if (is_android) {
+    # Android uses -nostdlib so we need to add even libc here.
+    libs = [
+      # TODO(brettw) write a version of this, hopefully we can express this
+      # without forking out to GCC just to get the library name. The android
+      # toolchain directory should probably be extracted into a .gni file that
+      # this file and the android toolchain .gn file can share.
+      #   # Manually link the libgcc.a that the cross compiler uses.
+      #   '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
+      "c",
+      "dl",
+      "m"
+    ]
+  } else if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "ApplicationServices.framework",
+      "Carbon.framework",
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+      "Security.framework",
+    ]
+  } else if (is_ios) {
+    libs = [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "Foundation.framework",
+      "UIKit.framework",
+    ]
+  } else if (is_linux) {
+    libs = [
+      "dl",
+    ]
+  }
 }

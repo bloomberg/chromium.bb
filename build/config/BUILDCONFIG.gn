@@ -395,7 +395,9 @@ if (is_win) {
 }
 
 set_defaults("executable") {
-  configs = native_compiler_configs
+  configs = native_compiler_configs + [
+    "//build/config:default_libs",
+  ]
   if (is_win) {
     configs += windows_linker_configs
   } else if (is_mac) {
@@ -410,7 +412,9 @@ set_defaults("static_library") {
 }
 
 set_defaults("shared_library") {
-  configs = native_compiler_configs
+  configs = native_compiler_configs + [
+    "//build/config:default_libs",
+  ]
   if (is_win) {
     configs += windows_linker_configs
   } else if (is_mac) {

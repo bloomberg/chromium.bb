@@ -714,8 +714,6 @@ component("base") {
     "//third_party/modp_b64",
   ]
 
-  libs = []
-
   if (!is_chromeos) {
     sources -= [
       "sys_info_chromeos.cc",
@@ -766,7 +764,6 @@ component("base") {
   } else if (!is_nacl) {
     # Non-Windows.
     deps += [ "//third_party/libevent" ]
-    libs += [ "dl" ]
   }
 
   # Mac.
@@ -777,29 +774,9 @@ component("base") {
       "strings/sys_string_conversions_posix.cc",
     ]
     deps += [ "//third_party/mach_override" ]
-    libs += [
-      "AppKit.framework",
-      "ApplicationServices.framework",
-      "Carbon.framework",
-      "CoreFoundation.framework",
-      "Foundation.framework",
-      "IOKit.framework",
-      "Security.framework",
-    ]
   } else {
     # Non-Mac.
     sources -= [ "files/file_path_watcher_kqueue.cc" ]
-  }
-
-  # IOS.
-  if (is_ios) {
-    libs += [
-      "CoreFoundation.framework",
-      "CoreGraphics.framework",
-      "CoreText.framework",
-      "Foundation.framework",
-      "UIKit.framework",
-    ]
   }
 
   # Linux.
