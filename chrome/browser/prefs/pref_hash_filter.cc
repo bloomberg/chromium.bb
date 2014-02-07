@@ -11,6 +11,7 @@
 #include "base/prefs/pref_store.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_split_preference.h"
 
@@ -19,8 +20,9 @@ PrefHashFilter::PrefHashFilter(
     const TrackedPreferenceMetadata tracked_preferences[],
     size_t tracked_preferences_size,
     size_t reporting_ids_count,
-    EnforcementLevel enforcement_level) {
-  DCHECK(pref_hash_store);
+    EnforcementLevel enforcement_level) :
+        pref_hash_store_(pref_hash_store.Pass()) {
+  DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences_size);
 
   for (size_t i = 0; i < tracked_preferences_size; ++i) {
@@ -35,15 +37,13 @@ PrefHashFilter::PrefHashFilter(
         tracked_preference.reset(
             new TrackedAtomicPreference(metadata.name, metadata.reporting_id,
                                         reporting_ids_count,
-                                        enforcement_level_for_pref,
-                                        pref_hash_store.get()));
+                                        enforcement_level_for_pref));
         break;
       case TRACKING_STRATEGY_SPLIT:
         tracked_preference.reset(
             new TrackedSplitPreference(metadata.name, metadata.reporting_id,
                                        reporting_ids_count,
-                                       enforcement_level_for_pref,
-                                       pref_hash_store.get()));
+                                       enforcement_level_for_pref));
         break;
     }
     DCHECK(tracked_preference);
@@ -52,11 +52,6 @@ PrefHashFilter::PrefHashFilter(
                                      tracked_preference.Pass()).second;
     DCHECK(is_new);
   }
-
-  // Retain const-ownership of |pref_hash_store| in this class, non-const access
-  // was granted to this class' TrackedPreferences above which should be used
-  // for any further interaction with the |pref_hash_store|.
-  pref_hash_store_ = pref_hash_store.Pass();
 }
 
 PrefHashFilter::~PrefHashFilter() {
@@ -66,13 +61,15 @@ PrefHashFilter::~PrefHashFilter() {
 }
 
 void PrefHashFilter::Initialize(const PrefStore& pref_store) {
+  scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
+      pref_hash_store_->BeginTransaction());
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end(); ++it) {
     const std::string& initialized_path = it->first;
     const TrackedPreference* initialized_preference = it->second;
     const base::Value* value = NULL;
     pref_store.GetValue(initialized_path, &value);
-    initialized_preference->OnNewValue(value);
+    initialized_preference->OnNewValue(value, hash_store_transaction.get());
   }
 }
 
@@ -81,9 +78,14 @@ void PrefHashFilter::Initialize(const PrefStore& pref_store) {
 void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
   DCHECK(pref_store_contents);
   base::TimeTicks checkpoint = base::TimeTicks::Now();
-  for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
-       it != tracked_paths_.end(); ++it) {
-    it->second->EnforceAndReport(pref_store_contents);
+  {
+    scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
+        pref_hash_store_->BeginTransaction());
+    for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
+         it != tracked_paths_.end(); ++it) {
+      it->second->EnforceAndReport(pref_store_contents,
+                                   hash_store_transaction.get());
+    }
   }
   // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
   // data has been gathered from the wild to be confident this doesn't
@@ -107,15 +109,19 @@ void PrefHashFilter::FilterSerializeData(
     const base::DictionaryValue* pref_store_contents) {
   if (!changed_paths_.empty()) {
     base::TimeTicks checkpoint = base::TimeTicks::Now();
-    for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
-         it != changed_paths_.end(); ++it) {
-      const std::string& changed_path = it->first;
-      const TrackedPreference* changed_preference = it->second;
-      const base::Value* value = NULL;
-      pref_store_contents->Get(changed_path, &value);
-      changed_preference->OnNewValue(value);
+    {
+      scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
+          pref_hash_store_->BeginTransaction());
+      for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
+           it != changed_paths_.end(); ++it) {
+        const std::string& changed_path = it->first;
+        const TrackedPreference* changed_preference = it->second;
+        const base::Value* value = NULL;
+        pref_store_contents->Get(changed_path, &value);
+        changed_preference->OnNewValue(value, hash_store_transaction.get());
+      }
+      changed_paths_.clear();
     }
-    changed_paths_.clear();
     // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
     // data has been gathered from the wild to be confident this doesn't
     // significantly affect performance on the UI thread.

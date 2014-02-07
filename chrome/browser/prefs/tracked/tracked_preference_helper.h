@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 
 // A TrackedPreferenceHelper is a helper class for TrackedPreference which
 // handles decision making and reporting for TrackedPreference's
@@ -33,10 +33,12 @@ class TrackedPreferenceHelper {
   // on observing |value_state| or not (DONT_RESET). |allow_changes_|,
   // |allow_seeding_|, and |allow_migration_| make the decision softer in favor
   // of WANTED_RESET over DO_RESET in various scenarios.
-  ResetAction GetAction(PrefHashStore::ValueState value_state) const;
+  ResetAction GetAction(
+      PrefHashStoreTransaction::ValueState value_state) const;
 
   // Reports |value_state| via UMA under |reporting_id_|.
-  void ReportValidationResult(PrefHashStore::ValueState value_state) const;
+  void ReportValidationResult(
+      PrefHashStoreTransaction::ValueState value_state) const;
 
   // Reports |reset_action| via UMA under |reporting_id_|.
   void ReportAction(ResetAction reset_action) const;

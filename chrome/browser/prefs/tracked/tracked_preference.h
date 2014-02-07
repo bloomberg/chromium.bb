@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PREFS_TRACKED_TRACKED_PREFERENCE_H_
 #define CHROME_BROWSER_PREFS_TRACKED_TRACKED_PREFERENCE_H_
 
+class PrefHashStoreTransaction;
+
 namespace base {
 class DictionaryValue;
 class Value;
@@ -16,14 +18,19 @@ class TrackedPreference {
  public:
   virtual ~TrackedPreference() {}
 
-  // Notifies the underlying TrackedPreference about its new |value|.
-  virtual void OnNewValue(const base::Value* value) const = 0;
+  // Notifies the underlying TrackedPreference about its new |value| which
+  // can update hashes in the corresponding hash store via |transaction|.
+  virtual void OnNewValue(const base::Value* value,
+                          PrefHashStoreTransaction* transaction) const = 0;
 
   // Verifies that the value of this TrackedPreference in |pref_store_contents|
   // is valid. Responds to verification failures according to
   // preference-specific and browser-wide policy and reports results to via UMA.
+  // May use |transaction| to check/modify hashes in the corresponding hash
+  // store.
   virtual void EnforceAndReport(
-      base::DictionaryValue* pref_store_contents) const = 0;
+      base::DictionaryValue* pref_store_contents,
+      PrefHashStoreTransaction* transaction) const = 0;
 };
 
 #endif  // CHROME_BROWSER_PREFS_TRACKED_TRACKED_PREFERENCE_H_

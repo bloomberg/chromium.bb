@@ -21,57 +21,59 @@ TrackedPreferenceHelper::TrackedPreferenceHelper(
 }
 
 TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
-    PrefHashStore::ValueState value_state) const {
+    PrefHashStoreTransaction::ValueState value_state) const {
   switch (value_state) {
-    case PrefHashStore::UNCHANGED:
+    case PrefHashStoreTransaction::UNCHANGED:
       // Desired case, nothing to do.
       return DONT_RESET;
-    case PrefHashStore::CLEARED:
+    case PrefHashStoreTransaction::CLEARED:
       // Unfortunate case, but there is nothing we can do.
       return DONT_RESET;
-    case PrefHashStore::TRUSTED_UNKNOWN_VALUE:
+    case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
       // It is okay to seed the hash in this case.
       return DONT_RESET;
-    case PrefHashStore::MIGRATED:
+    case PrefHashStoreTransaction::MIGRATED:
       return allow_migration_ ? WANTED_RESET : DO_RESET;
-    case PrefHashStore::UNTRUSTED_UNKNOWN_VALUE:
+    case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
       return allow_seeding_ ? WANTED_RESET : DO_RESET;
-    case PrefHashStore::CHANGED:
+    case PrefHashStoreTransaction::CHANGED:
       return allow_changes_ ? WANTED_RESET : DO_RESET;
   }
-  NOTREACHED() << "Unexpected PrefHashStore::ValueState: " << value_state;
+  NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
+               << value_state;
   return DONT_RESET;
 }
 
 void TrackedPreferenceHelper::ReportValidationResult(
-    PrefHashStore::ValueState value_state) const {
+    PrefHashStoreTransaction::ValueState value_state) const {
   switch (value_state) {
-    case PrefHashStore::UNCHANGED:
+    case PrefHashStoreTransaction::UNCHANGED:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceUnchanged",
                                 reporting_id_, reporting_ids_count_);
       return;
-    case PrefHashStore::CLEARED:
+    case PrefHashStoreTransaction::CLEARED:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceCleared",
                                 reporting_id_, reporting_ids_count_);
       return;
-    case PrefHashStore::MIGRATED:
+    case PrefHashStoreTransaction::MIGRATED:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceMigrated",
                                 reporting_id_, reporting_ids_count_);
       return;
-    case PrefHashStore::CHANGED:
+    case PrefHashStoreTransaction::CHANGED:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceChanged",
                                 reporting_id_, reporting_ids_count_);
       return;
-    case PrefHashStore::UNTRUSTED_UNKNOWN_VALUE:
+    case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceInitialized",
                                 reporting_id_, reporting_ids_count_);
       return;
-    case PrefHashStore::TRUSTED_UNKNOWN_VALUE:
+    case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceTrustedInitialized",
                                 reporting_id_, reporting_ids_count_);
       return;
   }
-  NOTREACHED() << "Unexpected PrefHashStore::ValueState: " << value_state;
+  NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
+               << value_state;
 }
 
 void TrackedPreferenceHelper::ReportAction(ResetAction reset_action) const {

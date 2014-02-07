@@ -94,12 +94,7 @@ class PrefHashFilter : public PrefFilter {
   // aren't owned by this map).
   typedef std::map<std::string, const TrackedPreference*> ChangedPathsMap;
 
-  // |pref_hash_store_| is owned by this PrefHashFilter, but this PrefHashFilter
-  // should never interact directly with the PrefHashStore (hence why it's
-  // const). The non-const PrefHashStore was passed down to this
-  // PrefHashFilter's TrackedPreferences which are meant to handle the
-  // interaction with the PrefHashStore.
-  scoped_ptr<const PrefHashStore> pref_hash_store_;
+  scoped_ptr<PrefHashStore> pref_hash_store_;
 
   TrackedPreferencesMap tracked_paths_;
 

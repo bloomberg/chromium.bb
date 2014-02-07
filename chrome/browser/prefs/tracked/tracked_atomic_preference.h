@@ -13,8 +13,6 @@
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 
-class PrefHashStore;
-
 // A TrackedAtomicPreference is tracked as a whole. A hash is stored for its
 // entire value and it is entirely reset on mismatch.
 class TrackedAtomicPreference : public TrackedPreference {
@@ -23,18 +21,18 @@ class TrackedAtomicPreference : public TrackedPreference {
       const std::string& pref_path,
       size_t reporting_id,
       size_t reporting_ids_count,
-      PrefHashFilter::EnforcementLevel enforcement_level,
-      PrefHashStore* pref_hash_store);
+      PrefHashFilter::EnforcementLevel enforcement_level);
 
   // TrackedPreference implementation.
-  virtual void OnNewValue(const base::Value* value) const OVERRIDE;
+  virtual void OnNewValue(const base::Value* value,
+                          PrefHashStoreTransaction* transaction) const OVERRIDE;
   virtual void EnforceAndReport(
-      base::DictionaryValue* pref_store_contents) const OVERRIDE;
+      base::DictionaryValue* pref_store_contents,
+      PrefHashStoreTransaction* transaction) const OVERRIDE;
 
  private:
   const std::string pref_path_;
   const TrackedPreferenceHelper helper_;
-  PrefHashStore* pref_hash_store_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedAtomicPreference);
 };

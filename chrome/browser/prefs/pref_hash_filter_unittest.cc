@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -63,12 +64,19 @@ class MockPrefHashStore : public PrefHashStore {
   typedef std::pair<const void*, PrefHashFilter::PrefTrackingStrategy>
       ValuePtrStrategyPair;
 
-  MockPrefHashStore() {}
+  MockPrefHashStore() : transactions_expected_(1),
+                        transactions_performed_(0),
+                        transaction_active_(false) {}
+
+  virtual ~MockPrefHashStore() {
+    EXPECT_EQ(transactions_expected_, transactions_performed_);
+    EXPECT_FALSE(transaction_active_);
+  }
 
   // Set the result that will be returned when |path| is passed to
   // |CheckValue/CheckSplitValue|.
   void SetCheckResult(const std::string& path,
-                      PrefHashStore::ValueState result);
+                      PrefHashStoreTransaction::ValueState result);
 
   // Set the invalid_keys that will be returned when |path| is passed to
   // |CheckSplitValue|. SetCheckResult should already have been called for
@@ -76,6 +84,10 @@ class MockPrefHashStore : public PrefHashStore {
   void SetInvalidKeysResult(
       const std::string& path,
       const std::vector<std::string>& invalid_keys_result);
+
+  void set_transactions_expected(size_t transactions_expected) {
+    transactions_expected_ = transactions_expected;
+  }
 
   // Returns the number of paths checked.
   size_t checked_paths_count() const {
@@ -91,7 +103,7 @@ class MockPrefHashStore : public PrefHashStore {
   // |CheckHash/CheckSplitHash| for |path|. The returned pointer could since
   // have been freed and is thus not safe to dereference.
   ValuePtrStrategyPair checked_value(const std::string& path) const {
-    std::map<std::string, ValuePtrStrategyPair>::iterator value =
+    std::map<std::string, ValuePtrStrategyPair>::const_iterator value =
         checked_values_.find(path);
     if (value != checked_values_.end())
       return value->second;
@@ -115,40 +127,76 @@ class MockPrefHashStore : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual bool IsInitialized() const OVERRIDE;
-  virtual PrefHashStore::ValueState CheckValue(
-      const std::string& path, const base::Value* value) const OVERRIDE;
-  virtual void StoreHash(const std::string& path,
-                         const base::Value* new_value) OVERRIDE;
-  virtual PrefHashStore::ValueState CheckSplitValue(
-      const std::string& path,
-      const base::DictionaryValue* initial_split_value,
-      std::vector<std::string>* invalid_keys) const OVERRIDE;
-  virtual void StoreSplitHash(
-      const std::string& path,
-      const base::DictionaryValue* split_value) OVERRIDE;
+  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
 
  private:
+  // A MockPrefHashStoreTransaction is handed to the caller on
+  // MockPrefHashStore::BeginTransaction(). It then stores state in its
+  // underlying MockPrefHashStore about calls it receives from that same caller
+  // which can later be verified in tests.
+  class MockPrefHashStoreTransaction : public PrefHashStoreTransaction {
+   public:
+    explicit MockPrefHashStoreTransaction(MockPrefHashStore* outer)
+        : outer_(outer) {}
+
+    virtual ~MockPrefHashStoreTransaction() {
+      outer_->transaction_active_ = false;
+      ++outer_->transactions_performed_;
+    }
+
+    // PrefHashStoreTransaction implementation.
+    virtual PrefHashStoreTransaction::ValueState CheckValue(
+        const std::string& path, const base::Value* value) const OVERRIDE;
+    virtual void StoreHash(const std::string& path,
+                           const base::Value* new_value) OVERRIDE;
+    virtual PrefHashStoreTransaction::ValueState CheckSplitValue(
+        const std::string& path,
+        const base::DictionaryValue* initial_split_value,
+        std::vector<std::string>* invalid_keys) const OVERRIDE;
+    virtual void StoreSplitHash(
+        const std::string& path,
+        const base::DictionaryValue* split_value) OVERRIDE;
+
+   private:
+    MockPrefHashStore* outer_;
+
+    DISALLOW_COPY_AND_ASSIGN(MockPrefHashStoreTransaction);
+  };
+
   // Records a call to this mock's CheckValue/CheckSplitValue methods.
-  PrefHashStore::ValueState RecordCheckValue(
+  PrefHashStoreTransaction::ValueState RecordCheckValue(
       const std::string& path,
       const base::Value* value,
-      PrefHashFilter::PrefTrackingStrategy strategy) const;
+      PrefHashFilter::PrefTrackingStrategy strategy);
 
   // Records a call to this mock's StoreHash/StoreSplitHash methods.
   void RecordStoreHash(const std::string& path,
                        const base::Value* new_value,
                        PrefHashFilter::PrefTrackingStrategy strategy);
 
-  std::map<std::string, PrefHashStore::ValueState> check_results_;
+  std::map<std::string, PrefHashStoreTransaction::ValueState> check_results_;
   std::map<std::string, std::vector<std::string> > invalid_keys_results_;
-  mutable std::map<std::string, ValuePtrStrategyPair> checked_values_;
+  std::map<std::string, ValuePtrStrategyPair> checked_values_;
   std::map<std::string, ValuePtrStrategyPair> stored_values_;
+
+  // Number of transactions that are expected to be performed in the scope of
+  // this test (defaults to 1).
+  size_t transactions_expected_;
+
+  // Number of transactions that were performed via this MockPrefHashStore.
+  // Verified to match |transactions_expected_| when this MockPrefHashStore is
+  // deleted.
+  size_t transactions_performed_;
+
+  // Whether a transaction is currently active (only one transaction should be
+  // active at a time).
+  bool transaction_active_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrefHashStore);
 };
 
 void MockPrefHashStore::SetCheckResult(
-    const std::string& path, PrefHashStore::ValueState result) {
+    const std::string& path, PrefHashStoreTransaction::ValueState result) {
   check_results_.insert(std::make_pair(path, result));
 }
 
@@ -156,10 +204,11 @@ void MockPrefHashStore::SetInvalidKeysResult(
     const std::string& path,
     const std::vector<std::string>& invalid_keys_result) {
   // Ensure |check_results_| has a CHANGED entry for |path|.
-  std::map<std::string, PrefHashStore::ValueState>::const_iterator result =
+  std::map<std::string,
+          PrefHashStoreTransaction::ValueState>::const_iterator result =
       check_results_.find(path);
   ASSERT_TRUE(result != check_results_.end());
-  ASSERT_EQ(PrefHashStore::CHANGED, result->second);
+  ASSERT_EQ(PrefHashStoreTransaction::CHANGED, result->second);
 
   invalid_keys_results_.insert(std::make_pair(path, invalid_keys_result));
 }
@@ -169,53 +218,26 @@ bool MockPrefHashStore::IsInitialized() const {
   return true;
 }
 
-PrefHashStore::ValueState MockPrefHashStore::CheckValue(
-    const std::string& path, const base::Value* value) const {
-  return RecordCheckValue(path, value,
-                          PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+scoped_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction() {
+  EXPECT_FALSE(transaction_active_);
+  return scoped_ptr<PrefHashStoreTransaction>(
+      new MockPrefHashStoreTransaction(this));
 }
 
-void MockPrefHashStore::StoreHash(const std::string& path,
-                                  const base::Value* new_value) {
-  RecordStoreHash(path, new_value, PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
-}
-
-PrefHashStore::ValueState MockPrefHashStore::CheckSplitValue(
-    const std::string& path,
-    const base::DictionaryValue* initial_split_value,
-    std::vector<std::string>* invalid_keys) const {
-  EXPECT_TRUE(invalid_keys && invalid_keys->empty());
-
-  std::map<std::string, std::vector<std::string> >::const_iterator
-      invalid_keys_result = invalid_keys_results_.find(path);
-  if (invalid_keys_result != invalid_keys_results_.end()) {
-    invalid_keys->insert(invalid_keys->begin(),
-                         invalid_keys_result->second.begin(),
-                         invalid_keys_result->second.end());
-  }
-
-  return RecordCheckValue(path, initial_split_value,
-                          PrefHashFilter::TRACKING_STRATEGY_SPLIT);
-}
-
-void MockPrefHashStore::StoreSplitHash(const std::string& path,
-                                       const base::DictionaryValue* new_value) {
-  RecordStoreHash(path, new_value, PrefHashFilter::TRACKING_STRATEGY_SPLIT);
-}
-
-PrefHashStore::ValueState MockPrefHashStore::RecordCheckValue(
+PrefHashStoreTransaction::ValueState MockPrefHashStore::RecordCheckValue(
     const std::string& path,
     const base::Value* value,
-    PrefHashFilter::PrefTrackingStrategy strategy) const {
+    PrefHashFilter::PrefTrackingStrategy strategy) {
   // Record that |path| was checked and validate that it wasn't previously
   // checked.
   EXPECT_TRUE(checked_values_.insert(
       std::make_pair(path, std::make_pair(value, strategy))).second);
-  std::map<std::string, PrefHashStore::ValueState>::const_iterator result =
+  std::map<std::string,
+           PrefHashStoreTransaction::ValueState>::const_iterator result =
       check_results_.find(path);
   if (result != check_results_.end())
     return result->second;
-  return PrefHashStore::UNCHANGED;
+  return PrefHashStoreTransaction::UNCHANGED;
 }
 
 void MockPrefHashStore::RecordStoreHash(
@@ -224,6 +246,46 @@ void MockPrefHashStore::RecordStoreHash(
     PrefHashFilter::PrefTrackingStrategy strategy) {
   EXPECT_TRUE(stored_values_.insert(
       std::make_pair(path, std::make_pair(new_value, strategy))).second);
+}
+
+PrefHashStoreTransaction::ValueState
+MockPrefHashStore::MockPrefHashStoreTransaction::CheckValue(
+    const std::string& path, const base::Value* value) const {
+  return outer_->RecordCheckValue(path, value,
+                                  PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+}
+
+void MockPrefHashStore::MockPrefHashStoreTransaction::StoreHash(
+    const std::string& path,
+    const base::Value* new_value) {
+  outer_->RecordStoreHash(path, new_value,
+                          PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+}
+
+PrefHashStoreTransaction::ValueState
+MockPrefHashStore::MockPrefHashStoreTransaction::CheckSplitValue(
+    const std::string& path,
+    const base::DictionaryValue* initial_split_value,
+    std::vector<std::string>* invalid_keys) const {
+  EXPECT_TRUE(invalid_keys && invalid_keys->empty());
+
+  std::map<std::string, std::vector<std::string> >::const_iterator
+      invalid_keys_result = outer_->invalid_keys_results_.find(path);
+  if (invalid_keys_result != outer_->invalid_keys_results_.end()) {
+    invalid_keys->insert(invalid_keys->begin(),
+                         invalid_keys_result->second.begin(),
+                         invalid_keys_result->second.end());
+  }
+
+  return outer_->RecordCheckValue(path, initial_split_value,
+                                  PrefHashFilter::TRACKING_STRATEGY_SPLIT);
+}
+
+void MockPrefHashStore::MockPrefHashStoreTransaction::StoreSplitHash(
+    const std::string& path,
+    const base::DictionaryValue* new_value) {
+  outer_->RecordStoreHash(path, new_value,
+                          PrefHashFilter::TRACKING_STRATEGY_SPLIT);
 }
 
 // Creates a PrefHashFilter that uses a MockPrefHashStore. The
@@ -318,6 +380,10 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
 }
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
+  // No transaction should even be started on FilterSerializeData() if there are
+  // no updates to perform.
+  mock_pref_hash_store_->set_transactions_expected(0);
+
   base::DictionaryValue root_dict;
   root_dict.Set("untracked", base::Value::CreateStringValue("some value"));
   pref_hash_filter_->FilterUpdate("untracked");
@@ -382,10 +448,10 @@ TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
   ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
   ASSERT_FALSE(pref_store_contents_.Get(kSplitPref, NULL));
   // NULL values are always trusted by the PrefHashStore.
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
-                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
-  mock_pref_hash_store_->SetCheckResult(kSplitPref,
-                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kAtomicPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kSplitPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -417,10 +483,10 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
   ASSERT_TRUE(pref_store_contents_.Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_.Get(kSplitPref, NULL));
 
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
-                                        PrefHashStore::UNTRUSTED_UNKNOWN_VALUE);
-  mock_pref_hash_store_->SetCheckResult(kSplitPref,
-                                        PrefHashStore::UNTRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kAtomicPref, PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kSplitPref, PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -470,10 +536,10 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   ASSERT_TRUE(pref_store_contents_.Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_.Get(kSplitPref, NULL));
 
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
-                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
-  mock_pref_hash_store_->SetCheckResult(kSplitPref,
-                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kAtomicPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
+  mock_pref_hash_store_->SetCheckResult(
+      kSplitPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -514,8 +580,10 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
   ASSERT_TRUE(pref_store_contents_.Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_.Get(kSplitPref, NULL));
 
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref, PrefHashStore::CHANGED);
-  mock_pref_hash_store_->SetCheckResult(kSplitPref, PrefHashStore::CHANGED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
+                                        PrefHashStoreTransaction::CHANGED);
+  mock_pref_hash_store_->SetCheckResult(kSplitPref,
+                                        PrefHashStoreTransaction::CHANGED);
 
   std::vector<std::string> mock_invalid_keys;
   mock_invalid_keys.push_back("a");
@@ -574,8 +642,10 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
 TEST_P(PrefHashFilterTest, EmptyCleared) {
   ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
   ASSERT_FALSE(pref_store_contents_.Get(kSplitPref, NULL));
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref, PrefHashStore::CLEARED);
-  mock_pref_hash_store_->SetCheckResult(kSplitPref, PrefHashStore::CLEARED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
+                                        PrefHashStoreTransaction::CLEARED);
+  mock_pref_hash_store_->SetCheckResult(kSplitPref,
+                                        PrefHashStoreTransaction::CLEARED);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -608,7 +678,8 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
 
   ASSERT_TRUE(pref_store_contents_.Get(kAtomicPref, NULL));
 
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref, PrefHashStore::MIGRATED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
+                                        PrefHashStoreTransaction::MIGRATED);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -650,12 +721,14 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   ASSERT_TRUE(pref_store_contents_.Get(kReportOnlyPref, NULL));
   ASSERT_TRUE(pref_store_contents_.Get(kReportOnlySplitPref, NULL));
 
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref, PrefHashStore::CHANGED);
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref2, PrefHashStore::CHANGED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
+                                        PrefHashStoreTransaction::CHANGED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref2,
+                                        PrefHashStoreTransaction::CHANGED);
   mock_pref_hash_store_->SetCheckResult(kReportOnlyPref,
-                                        PrefHashStore::CHANGED);
+                                        PrefHashStoreTransaction::CHANGED);
   mock_pref_hash_store_->SetCheckResult(kReportOnlySplitPref,
-                                        PrefHashStore::CHANGED);
+                                        PrefHashStoreTransaction::CHANGED);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   // All prefs should be checked and a new hash should be stored for each tested
   // pref.
@@ -710,7 +783,7 @@ PrefHashFilter::EnforcementLevel operator+(
 }
 
 INSTANTIATE_TEST_CASE_P(
-    PrefEnforcementLevels, PrefHashFilterTest,
+    PrefHashFilterTestInstance, PrefHashFilterTest,
     testing::Range(PrefHashFilter::NO_ENFORCEMENT,
                    static_cast<PrefHashFilter::EnforcementLevel>(
                        PrefHashFilter::ENFORCE_ALL + 1),

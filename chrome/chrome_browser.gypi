@@ -1601,6 +1601,7 @@
         'browser/prefs/pref_hash_store.h',
         'browser/prefs/pref_hash_store_impl.cc',
         'browser/prefs/pref_hash_store_impl.h',
+        'browser/prefs/pref_hash_store_transaction.h',
         'browser/prefs/pref_metrics_service.cc',
         'browser/prefs/pref_metrics_service.h',
         'browser/prefs/pref_model_associator.cc',

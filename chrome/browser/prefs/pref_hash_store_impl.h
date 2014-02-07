@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_hash_calculator.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 
+class PrefHashStoreTransaction;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -20,6 +21,16 @@ namespace base {
 class DictionaryValue;
 class Value;
 }
+
+namespace internals {
+
+// Hash of hashes for each profile, used to validate the existing hashes when
+// debating whether an unknown value is to be trusted, will be stored as a
+// string under
+// |kProfilePreferenceHashes|.|kHashOfHashesPref|.|hash_stored_id_|.
+const char kHashOfHashesPref[] = "hash_of_hashes";
+
+}  // namespace internals
 
 // Implements PrefHashStoreImpl by storing preference hashes in a PrefService.
 class PrefHashStoreImpl : public PrefHashStore {
@@ -46,48 +57,23 @@ class PrefHashStoreImpl : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual bool IsInitialized() const OVERRIDE;
-  virtual ValueState CheckValue(const std::string& path,
-                                const base::Value* value) const OVERRIDE;
-  virtual void StoreHash(const std::string& path,
-                         const base::Value* value) OVERRIDE;
-  virtual ValueState CheckSplitValue(
-      const std::string& path,
-      const base::DictionaryValue* initial_split_value,
-      std::vector<std::string>* invalid_keys) const OVERRIDE;
-  virtual void StoreSplitHash(
-      const std::string& path,
-      const base::DictionaryValue* split_value) OVERRIDE;
+  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
 
  private:
-  // Clears any hashes stored for |path| through |update|.
-  void ClearPath(const std::string& path,
-                 DictionaryPrefUpdate* update);
-
-  // Returns true if there are split hashes stored for |path|.
-  bool HasSplitHashesAtPath(const std::string& path) const;
-
-  // Used by StoreHash and StoreSplitHash to store the hash of |new_value| at
-  // |path| under |update|. Allows multiple hashes to be stored under the same
-  // |update|.
-  void StoreHashInternal(const std::string& path,
-                         const base::Value* new_value,
-                         DictionaryPrefUpdate* update);
-
-  // Updates kHashOfHashesPref to reflect the last changes to the |hashes_dict|.
-  // Must be called after every change to the |hashes_dict|, within the scope of
-  // |update|.
-  void UpdateHashOfHashes(const base::DictionaryValue* hashes_dict,
-                          DictionaryPrefUpdate* update);
+  class PrefHashStoreTransactionImpl;
 
   // Returns true if the dictionary of hashes stored for |hash_store_id_| is
   // trusted (which implies unknown values can be trusted as newly tracked
   // values).
   bool IsHashDictionaryTrusted() const;
 
-  std::string hash_store_id_;
-  PrefHashCalculator pref_hash_calculator_;
+  const std::string hash_store_id_;
+  const PrefHashCalculator pref_hash_calculator_;
   PrefService* local_state_;
-  bool initial_hashes_dictionary_trusted_;
+  // Must come after |local_state_| and |pref_hash_calculator_| in the
+  // initialization list as it depends on them to compute its value via
+  // IsHashDictionaryTrusted().
+  const bool initial_hashes_dictionary_trusted_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);
 };
