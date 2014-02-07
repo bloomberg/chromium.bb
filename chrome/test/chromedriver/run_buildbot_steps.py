@@ -241,21 +241,27 @@ def _MaybeRelease(platform):
           GS_CONTINUOUS_URL, platform, version),
       [])
   assert result == 0 and output, 'No release candidates found'
-  candidates = [b.split('/')[-1] for b in output.strip().split('\n')]
   candidate_pattern = re.compile(
-      r'chromedriver_%s_%s\.\d+\.zip' % (platform, version))
-
-  # Release the first candidate build that passed Android, if any.
-  for candidate in candidates:
-    if not candidate_pattern.match(candidate):
-      print 'Ignored candidate "%s"' % candidate
+      r'chromedriver_%s_%s\.(\d+)\.zip' % (platform, version))
+  candidates = []
+  for line in output.strip().split('\n'):
+    result = candidate_pattern.match(line)
+    if not result:
+      print 'Ignored line "%s"' % line
       continue
-    revision = candidate.split('.')[-2]
-    android_result = _RevisionState(android_test_results, int(revision))
+    candidates.append(int(result.group(1)))
+
+  # Release the latest candidate build that passed Android, if any.
+  # In this way, if a hot fix is needed, we can delete the release from
+  # the chromedriver bucket instead of bumping up the release version number.
+  candidates.sort(reverse=True)
+  for revision in candidates:
+    android_result = _RevisionState(android_test_results, revision)
     if android_result == 'failed':
       print 'Android tests did not pass at revision', revision
     elif android_result == 'passed':
       print 'Android tests passed at revision', revision
+      candidate = 'chromedriver_%s_%s.%s.zip' % (platform, version, revision)
       _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), version, platform)
       break
     else:
