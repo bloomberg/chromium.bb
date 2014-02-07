@@ -31,6 +31,7 @@
 #ifndef HTMLImport_h
 #define HTMLImport_h
 
+#include "core/html/HTMLImportState.h"
 #include "wtf/TreeNode.h"
 #include "wtf/Vector.h"
 
@@ -108,12 +109,8 @@ public:
     Document* master();
     HTMLImportsController* controller();
     bool isRoot() const { return !isChild(); }
-
     bool isCreatedByParser() const { return m_createdByParser; }
-
-    bool isStateBlockedFromRunningScript() const { return state() <= BlockedFromRunningScript; }
-    bool isStateBlockedFromCreatingDocument() const { return state() <= BlockedFromCreatingDocument; }
-    bool isStateReady() const { return state() == Ready; }
+    const HTMLImportState& state() const { return m_state; }
 
     void appendChild(HTMLImport*);
 
@@ -128,24 +125,14 @@ public:
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const { return 0; }
     virtual void stateDidChange();
 
-    enum State {
-        BlockedFromCreatingDocument = 0,
-        BlockedFromRunningScript,
-        Active,
-        Ready,
-        Invalid
-    };
-
 protected:
     // Stating from most conservative state.
     // It will be corrected through state update flow.
     explicit HTMLImport(bool createdByParser = false)
-        : m_cachedState(BlockedFromCreatingDocument)
-        , m_createdByParser(createdByParser)
+        : m_createdByParser(createdByParser)
     { }
 
     void stateWillChange();
-    State state() const;
     static void recalcTreeState(HTMLImport* root);
 
 #if !defined(NDEBUG)
@@ -155,21 +142,9 @@ protected:
 #endif
 
 private:
-    void recalcState();
-    void forceBlock();
-    void invalidateCachedState() { m_cachedState = Invalid; }
-    bool isStateCacheValid() const { return m_cachedState != Invalid; }
-
-    State m_cachedState;
+    HTMLImportState m_state;
     bool m_createdByParser : 1;
 };
-
-inline HTMLImport::State HTMLImport::state() const
-{
-    ASSERT(isStateCacheValid());
-    return m_cachedState;
-}
-
 
 // An abstract class to decouple its sublcass HTMLImportsController.
 class HTMLImportRoot : public HTMLImport {

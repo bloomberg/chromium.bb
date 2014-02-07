@@ -797,7 +797,7 @@ void Document::didLoadAllImports()
 
 bool Document::haveImportsLoaded() const
 {
-    return !m_import || !m_import->isStateBlockedFromRunningScript();
+    return !m_import || !m_import->state().shouldBlockScriptExecution();
 }
 
 DOMWindow* Document::executingWindow()

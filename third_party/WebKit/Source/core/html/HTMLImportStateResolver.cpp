@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/html/HTMLImportStateResolver.h"
 
+#include "core/html/HTMLImport.h"
+
 namespace WebCore {
 
 inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
@@ -39,10 +41,10 @@ inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
         return true;
     if (!import->ownsLoader())
         return false;
-    return !import->isStateReady();
+    return !import->state().isReady();
 }
 
-inline bool HTMLImportStateResolver::isBlockedFromCreatingDocument() const
+inline bool HTMLImportStateResolver::shouldBlockDocumentCreation() const
 {
     // If any of its preceeding imports isn't ready, this import
     // cannot start loading because such preceeding onces can include
@@ -55,7 +57,7 @@ inline bool HTMLImportStateResolver::isBlockedFromCreatingDocument() const
     return false;
 }
 
-inline bool HTMLImportStateResolver::isBlockedFromRunningScript() const
+inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
 {
     for (HTMLImport* child = m_import->firstChild(); child; child = child->next()) {
         if (child->isCreatedByParser() && isBlockingFollowers(child))
@@ -70,15 +72,15 @@ inline bool HTMLImportStateResolver::isActive() const
     return !m_import->isDone();
 }
 
-HTMLImport::State HTMLImportStateResolver::resolve() const
+HTMLImportState HTMLImportStateResolver::resolve() const
 {
-    if (isBlockedFromCreatingDocument())
-        return HTMLImport::BlockedFromCreatingDocument;
-    if (isBlockedFromRunningScript())
-        return HTMLImport::BlockedFromRunningScript;
+    if (shouldBlockDocumentCreation())
+        return HTMLImportState(HTMLImportState::BlockingDocumentCreation);
+    if (shouldBlockScriptExecution())
+        return HTMLImportState(HTMLImportState::BlockingScriptExecution);
     if (isActive())
-        return HTMLImport::Active;
-    return HTMLImport::Ready;
+        return HTMLImportState(HTMLImportState::Active);
+    return HTMLImportState(HTMLImportState::Ready);
 }
 
 }

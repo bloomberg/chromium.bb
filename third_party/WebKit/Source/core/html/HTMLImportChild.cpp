@@ -86,7 +86,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     // preceding imports load the sharable imports.
     // In that case preceding one should win because it comes first in the tree order.
     // See also didUnblockFromCreatingDocument().
-    if (isStateBlockedFromCreatingDocument())
+    if (state().shouldBlockDocumentCreation())
         return;
 
     ensureLoader();
@@ -156,9 +156,9 @@ void HTMLImportChild::stateDidChange()
     // Once all preceding imports are loaded,
     // HTMLImportChild can decide whether it should load the import by itself
     // or it can share existing one.
-    if (!isStateBlockedFromCreatingDocument())
+    if (!state().shouldBlockDocumentCreation())
         ensureLoader();
-    if (isStateReady())
+    if (state().isReady())
         didFinish();
 }
 
@@ -175,7 +175,7 @@ void HTMLImportChild::ensureLoader()
 
 void HTMLImportChild::createLoader()
 {
-    ASSERT(!isStateBlockedFromCreatingDocument());
+    ASSERT(!state().shouldBlockDocumentCreation());
     ASSERT(!m_loader);
     m_loader = HTMLImportLoader::create(this);
     m_loader->addClient(this);

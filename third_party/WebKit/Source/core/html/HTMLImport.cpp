@@ -58,29 +58,17 @@ void HTMLImport::appendChild(HTMLImport* child)
     // This prevents HTML parser from going beyond the
     // blockage line before the precise state is computed by recalcState().
     if (child->isCreatedByParser())
-        forceBlock();
+        m_state = HTMLImportState::blockedState();
 
     stateWillChange();
 }
 
 void HTMLImport::stateDidChange()
 {
-    if (!isStateBlockedFromRunningScript()) {
+    if (!state().shouldBlockScriptExecution()) {
         if (Document* document = this->document())
             document->didLoadAllImports();
     }
-}
-
-void HTMLImport::recalcState()
-{
-    ASSERT(!isStateCacheValid());
-    m_cachedState = HTMLImportStateResolver(this).resolve();
-}
-
-void HTMLImport::forceBlock()
-{
-    ASSERT(m_cachedState != Ready);
-    m_cachedState = BlockedFromCreatingDocument;
 }
 
 void HTMLImport::stateWillChange()
@@ -92,26 +80,27 @@ void HTMLImport::recalcTreeState(HTMLImport* root)
 {
     ASSERT(root == root->root());
 
-    HashMap<HTMLImport*, State> snapshot;
+    HashMap<HTMLImport*, HTMLImportState> snapshot;
     Vector<HTMLImport*> updated;
 
     for (HTMLImport* i = root; i; i = traverseNext(i)) {
         snapshot.add(i, i->state());
-        i->invalidateCachedState();
+        i->m_state = HTMLImportState::invalidState();
     }
 
     // The post-visit DFS order matters here because
     // HTMLImportStateResolver in recalcState() Depends on
-    // |m_cachedState| of its children and precedents of ancestors.
+    // |m_state| of its children and precedents of ancestors.
     // Accidental cycle dependency of state computation is prevented
     // by invalidateCachedState() and isStateCacheValid() check.
     for (HTMLImport* i = traverseFirstPostOrder(root); i; i = traverseNextPostOrder(i)) {
-        i->recalcState();
+        ASSERT(!i->m_state.isValid());
+        i->m_state = HTMLImportStateResolver(i).resolve();
 
-        State newState = i->state();
-        State oldState = snapshot.get(i);
+        HTMLImportState newState = i->state();
+        HTMLImportState oldState = snapshot.get(i);
         // Once the state reaches Ready, it shouldn't go back.
-        ASSERT(oldState != Ready || oldState <= newState);
+        ASSERT(!oldState.isReady() || oldState <= newState);
         if (newState != oldState)
             updated.append(i);
     }
@@ -147,7 +136,7 @@ void HTMLImport::showTree(HTMLImport* highlight, unsigned depth)
 
 void HTMLImport::showThis()
 {
-    fprintf(stderr, "%p state=%d", this, m_cachedState);
+    fprintf(stderr, "%p state=%d", this, m_state.peekValueForDebug());
 }
 #endif
 

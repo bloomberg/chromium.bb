@@ -28,34 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportStateResolver_h
-#define HTMLImportStateResolver_h
+#ifndef HTMLImportState_h
+#define HTMLImportState_h
 
-#include "core/html/HTMLImportState.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 
-class HTMLImport;
-
-class HTMLImportStateResolver {
+class HTMLImportState {
 public:
-    explicit HTMLImportStateResolver(HTMLImport* import)
-        : m_import(import)
+    enum Value {
+        BlockingDocumentCreation = 0,
+        BlockingScriptExecution,
+        Active,
+        Ready,
+        Invalid
+    };
+
+    explicit HTMLImportState(Value value = BlockingDocumentCreation)
+        : m_value(value)
     { }
 
-    HTMLImportState resolve() const;
+    bool shouldBlockScriptExecution() const { return checkedValue() <= BlockingScriptExecution; }
+    bool shouldBlockDocumentCreation() const { return checkedValue() <= BlockingDocumentCreation; }
+    bool isReady() const { return checkedValue() == Ready; }
+    bool isValid() const { return m_value != Invalid; }
+    bool operator==(const HTMLImportState& other) const { return m_value == other.m_value; }
+    bool operator!=(const HTMLImportState& other) const { return !(*this == other); }
+    bool operator<=(const HTMLImportState& other) const { return m_value <= other.m_value; }
 
+#if !defined(NDEBUG)
+    Value peekValueForDebug() const { return m_value; }
+#endif
+
+    static HTMLImportState invalidState() { return HTMLImportState(Invalid); }
+    static HTMLImportState blockedState() { return HTMLImportState(BlockingDocumentCreation); }
 private:
-    static bool isBlockingFollowers(HTMLImport*);
-
-    bool shouldBlockDocumentCreation() const;
-    bool shouldBlockScriptExecution() const;
-    bool isActive() const;
-
-    HTMLImport* m_import;
+    Value checkedValue() const;
+    Value m_value;
 };
+
+inline HTMLImportState::Value HTMLImportState::checkedValue() const
+{
+    ASSERT(isValid());
+    return m_value;
+}
 
 }
 
-#endif // HTMLImportStateResolver_h
-
+#endif
