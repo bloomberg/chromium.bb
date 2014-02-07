@@ -31,47 +31,14 @@
 #include "config.h"
 #include "WebNodeList.h"
 
-#include "core/dom/Element.h"
+#include "WebNode.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
-#include "core/html/HTMLCollection.h"
 #include "wtf/PassRefPtr.h"
-
-#include "WebNode.h"
 
 using namespace WebCore;
 
 namespace blink {
-
-// FIXME(crbug.com/235008): Remove once chromium has been updated to stop using
-// WebCollection as a WebNodeList.
-class NodeListWithInternalCollection FINAL : public NodeList {
-public:
-    static PassRefPtr<NodeListWithInternalCollection> create(HTMLCollection* collection)
-    {
-        return adoptRef(new NodeListWithInternalCollection(collection));
-    }
-
-    // We have null checks in the following methods because WebNodeList does not have a isNull() method
-    // and callers need to be moved to WebElementCollection and need to handle null using
-    // WebElementCollection::isNull().
-    virtual unsigned length() const OVERRIDE { return m_collection ? m_collection->length() : 0; }
-    virtual Node* item(unsigned index) const OVERRIDE { return m_collection ? m_collection->item(index) : 0; }
-
-private:
-    explicit NodeListWithInternalCollection(HTMLCollection* collection)
-        : m_collection(collection)
-    {
-    }
-
-    RefPtr<HTMLCollection> m_collection;
-};
-
-WebNodeList::WebNodeList(const WebElementCollection& n)
-    : m_private(0)
-{
-    assign(NodeListWithInternalCollection::create(n.m_private).leakRef());
-}
 
 void WebNodeList::reset()
 {
