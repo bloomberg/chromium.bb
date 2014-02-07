@@ -615,7 +615,6 @@ class SyncDataModel(object):
     generation methods.
 
     Args:
-      datatype: The sync type (python enum) of the identified object.
       tag: The unique, known-to-the-client tag of a server-generated item.
     Returns:
       The string value of the computed server ID.
@@ -1197,7 +1196,6 @@ class SyncDataModel(object):
     entity.parent_id_string = self._ServerTagToId(
         'google_chrome_synced_notifications')
     entity.name = 'Synced notification added for testing'
-    entity.server_defined_unique_tag = unique_notification_id
 
     # Set the version to one more than the greatest version number already seen.
     entries = sorted(self._entries.values(), key=operator.attrgetter('version'))
@@ -1208,7 +1206,7 @@ class SyncDataModel(object):
     entity.client_defined_unique_tag = self._CreateSyncedNotificationClientTag(
         specifics.synced_notification.coalesced_notification.key)
     entity.id_string = self._ClientTagToId(GetEntryType(entity),
-                                          entity.client_defined_unique_tag)
+                                           entity.client_defined_unique_tag)
 
     self._entries[entity.id_string] = copy.deepcopy(entity)
 
