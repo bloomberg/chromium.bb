@@ -6,13 +6,17 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -22,11 +26,33 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service || !extension_service->extensions_enabled())
     return NULL;
+
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
   DCHECK(browser);
+
   GURL url = tab->GetURL();
-  if (browser->is_app() && tab->GetController().GetEntryCount())
-    url = tab->GetController().GetEntryAtIndex(0)->GetURL();
+  if (browser->is_app()) {
+    // Only consider the original URL of an app window when determining its
+    // associated extension.
+    if (tab->GetController().GetEntryCount())
+      url = tab->GetController().GetEntryAtIndex(0)->GetURL();
+
+    // Bookmark app windows should match their launch url extension despite
+    // their web extents.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableStreamlinedHostedApps)) {
+      const extensions::ExtensionSet& extensions =
+          extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+      for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+           it != extensions.end(); ++it) {
+        if (it->get()->from_bookmark() &&
+            extensions::AppLaunchInfo::GetLaunchWebURL(it->get()) == url) {
+          return it->get();
+        }
+      }
+    }
+  }
+
   return extension_service->GetInstalledApp(url);
 }
 
