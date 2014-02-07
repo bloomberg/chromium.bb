@@ -91,12 +91,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   RenderViewHost* GetRenderViewHost() const;
 #endif
 
-  // TODO(nasko): This should move to InterstitialPageNavigatorImpl, but in
-  // the meantime make it public, so it can be called directly.
-  void DidNavigate(
-      RenderViewHost* render_view_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
-
  protected:
   // NotificationObserver method:
   virtual void Observe(int type,
@@ -117,6 +111,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
                            const base::string16& title,

@@ -9,7 +9,6 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,7 +30,7 @@ const int64 kFrameId = 13UL;
 }  // namespace
 
 
-void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
                         PageTransition transition) {
@@ -275,60 +274,86 @@ bool TestRenderViewHost::IsRenderViewLive() const {
 }
 
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
-  main_render_frame_host_->SendNavigate(page_id, url);
+  SendNavigateWithTransition(page_id, url, PAGE_TRANSITION_LINK);
 }
 
 void TestRenderViewHost::SendFailedNavigate(int page_id, const GURL& url) {
-  main_render_frame_host_->SendFailedNavigate(page_id, url);
+  SendNavigateWithTransitionAndResponseCode(
+      page_id, url, PAGE_TRANSITION_LINK, 500);
 }
 
 void TestRenderViewHost::SendNavigateWithTransition(
-    int page_id,
-    const GURL& url,
-    PageTransition transition) {
-  main_render_frame_host_->SendNavigateWithTransition(page_id, url, transition);
+    int page_id, const GURL& url, PageTransition transition) {
+  SendNavigateWithTransitionAndResponseCode(page_id, url, transition, 200);
 }
 
 void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
-    int page_id,
-    const GURL& url,
-    const GURL& original_request_url) {
-  main_render_frame_host_->SendNavigateWithOriginalRequestURL(
-      page_id, url, original_request_url);
+    int page_id, const GURL& url, const GURL& original_request_url) {
+  main_render_frame_host()->OnDidStartProvisionalLoadForFrame(
+      kFrameId, -1, true, url);
+  SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
+                             original_request_url, 200, 0);
 }
 
 void TestRenderViewHost::SendNavigateWithFile(
-    int page_id,
-    const GURL& url,
-    const base::FilePath& file_path) {
-  main_render_frame_host_->SendNavigateWithFile(page_id, url, file_path);
+    int page_id, const GURL& url, const base::FilePath& file_path) {
+  SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
+                             url, 200, &file_path);
 }
 
 void TestRenderViewHost::SendNavigateWithParams(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  main_render_frame_host_->SendNavigateWithParams(params);
+    ViewHostMsg_FrameNavigate_Params* params) {
+  params->frame_id = kFrameId;
+  ViewHostMsg_FrameNavigate msg(1, *params);
+  OnNavigate(msg);
 }
 
 void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
-    int page_id,
-    const GURL& url,
-    PageTransition transition,
+    int page_id, const GURL& url, PageTransition transition,
     int response_code) {
-  main_render_frame_host_->SendNavigateWithTransitionAndResponseCode(
-      page_id, url, transition, response_code);
+  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
+  // so we keep a copy of it to use in SendNavigateWithParameters.
+  GURL url_copy(url);
+  main_render_frame_host()->OnDidStartProvisionalLoadForFrame(
+      kFrameId, -1, true, url_copy);
+  SendNavigateWithParameters(page_id, url_copy, transition, url_copy,
+                             response_code, 0);
 }
 
 void TestRenderViewHost::SendNavigateWithParameters(
-    int page_id,
-    const GURL& url,
-    PageTransition transition,
-    const GURL& original_request_url,
-    int response_code,
+    int page_id, const GURL& url, PageTransition transition,
+    const GURL& original_request_url, int response_code,
     const base::FilePath* file_path_for_history_item) {
+  ViewHostMsg_FrameNavigate_Params params;
+  params.page_id = page_id;
+  params.frame_id = kFrameId;
+  params.url = url;
+  params.referrer = Referrer();
+  params.transition = transition;
+  params.redirects = std::vector<GURL>();
+  params.should_update_history = true;
+  params.searchable_form_url = GURL();
+  params.searchable_form_encoding = std::string();
+  params.security_info = std::string();
+  params.gesture = NavigationGestureUser;
+  params.contents_mime_type = contents_mime_type_;
+  params.is_post = false;
+  params.was_within_same_page = false;
+  params.http_status_code = response_code;
+  params.socket_address.set_host("2001:db8::1");
+  params.socket_address.set_port(80);
+  params.was_fetched_via_proxy = simulate_fetch_via_proxy_;
+  params.history_list_was_cleared = simulate_history_list_was_cleared_;
+  params.original_request_url = original_request_url;
 
-  main_render_frame_host_->SendNavigateWithParameters(
-      page_id, url, transition, original_request_url, response_code,
+  params.page_state = PageState::CreateForTesting(
+      url,
+      false,
+      file_path_for_history_item ? "data" : NULL,
       file_path_for_history_item);
+
+  ViewHostMsg_FrameNavigate msg(1, params);
+  OnNavigate(msg);
 }
 
 void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
@@ -338,7 +363,6 @@ void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
 
 void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
-  main_render_frame_host_->set_contents_mime_type(mime_type);
 }
 
 void TestRenderViewHost::SimulateSwapOutACK() {
@@ -377,7 +401,6 @@ void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
 
 void TestRenderViewHost::set_simulate_history_list_was_cleared(bool cleared) {
   simulate_history_list_was_cleared_ = cleared;
-  main_render_frame_host_->set_simulate_history_list_was_cleared(cleared);
 }
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {

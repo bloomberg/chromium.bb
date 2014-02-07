@@ -16,7 +16,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
 class NavigationEntryImpl;
@@ -136,10 +136,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // and it will return false.
   //
   // TODO(creis): Change RenderViewHost to RenderFrameHost.
-  bool RendererDidNavigate(
-      RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      LoadCommittedDetails* details);
+  bool RendererDidNavigate(RenderViewHost* rvh,
+                           const ViewHostMsg_FrameNavigate_Params& params,
+                           LoadCommittedDetails* details);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
   // so that we know to load URLs that were pending as "lazy" loads.
@@ -236,7 +235,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
+      const ViewHostMsg_FrameNavigate_Params& params) const;
 
   // Causes the controller to load the specified entry. The function assumes
   // ownership of the pointer since it is put in the navigation list.
@@ -259,24 +258,24 @@ class CONTENT_EXPORT NavigationControllerImpl
   // TODO(creis): Change RenderViewHost to RenderFrameHost.
   void RendererDidNavigateToNewPage(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const ViewHostMsg_FrameNavigate_Params& params,
       bool replace_entry);
   void RendererDidNavigateToExistingPage(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const ViewHostMsg_FrameNavigate_Params& params);
   void RendererDidNavigateToSamePage(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const ViewHostMsg_FrameNavigate_Params& params);
   void RendererDidNavigateInPage(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const ViewHostMsg_FrameNavigate_Params& params,
       bool* did_replace_entry);
   void RendererDidNavigateNewSubframe(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const ViewHostMsg_FrameNavigate_Params& params);
   bool RendererDidNavigateAutoSubframe(
       RenderViewHost* rvh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const ViewHostMsg_FrameNavigate_Params& params);
 
   // Helper function for code shared between Reload() and ReloadIgnoringCache().
   void ReloadInternal(bool check_for_repost, ReloadType reload_type);

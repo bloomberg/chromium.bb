@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -397,7 +396,7 @@ void InterstitialPageImpl::RenderViewTerminated(
 
 void InterstitialPageImpl::DidNavigate(
     RenderViewHost* render_view_host,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& params) {
   // A fast user could have navigated away from the page that triggered the
   // interstitial while the interstitial was loading, that would have disabled
   // us. In that case we can dismiss ourselves.

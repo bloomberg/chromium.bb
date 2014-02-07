@@ -524,7 +524,6 @@
     'browser/frame_host/navigator.h',
     'browser/frame_host/navigator_impl.cc',
     'browser/frame_host/navigator_impl.h',
-    'browser/frame_host/navigator_delegate.cc',
     'browser/frame_host/navigator_delegate.h',
     'browser/frame_host/cross_process_frame_connector.cc',
     'browser/frame_host/cross_process_frame_connector.h',

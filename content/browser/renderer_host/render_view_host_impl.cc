@@ -43,7 +43,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
-#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/speech_recognition_messages.h"
@@ -1221,6 +1220,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnRunModal)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnNavigate(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnUpdateEncoding)
@@ -1434,10 +1434,97 @@ void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(
   NOTREACHED();
 }
 
+// Called when the renderer navigates.  For every frame loaded, we'll get this
+// notification containing parameters identifying the navigation.
+//
+// Subframes are identified by the page transition type.  For subframes loaded
+// as part of a wider page load, the page_id will be the same as for the top
+// level frame.  If the user explicitly requests a subframe navigation, we will
+// get a new page_id because we need to create a new navigation entry for that
+// action.
 void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
-  // TODO(nasko): Forward calls to the top level RenderFrameHost until all
-  // callers of this method on RenderViewHost are removed.
-  delegate_->GetFrameTree()->GetMainFrame()->OnMessageReceived(msg);
+  // Read the parameters out of the IPC message directly to avoid making another
+  // copy when we filter the URLs.
+  PickleIterator iter(msg);
+  ViewHostMsg_FrameNavigate_Params validated_params;
+  if (!IPC::ParamTraits<ViewHostMsg_FrameNavigate_Params>::
+      Read(&msg, &iter, &validated_params))
+    return;
+
+  // If we're waiting for a cross-site beforeunload ack from this renderer and
+  // we receive a Navigate message from the main frame, then the renderer was
+  // navigating already and sent it before hearing the ViewMsg_Stop message.
+  // We do not want to cancel the pending navigation in this case, since the
+  // old page will soon be stopped.  Instead, treat this as a beforeunload ack
+  // to allow the pending navigation to continue.
+  if (is_waiting_for_beforeunload_ack_ &&
+      unload_ack_is_for_cross_site_transition_ &&
+      PageTransitionIsMainFrame(validated_params.transition)) {
+    OnShouldCloseACK(true, send_should_close_start_time_,
+                        base::TimeTicks::Now());
+    return;
+  }
+
+  // If we're waiting for an unload ack from this renderer and we receive a
+  // Navigate message, then the renderer was navigating before it received the
+  // unload request.  It will either respond to the unload request soon or our
+  // timer will expire.  Either way, we should ignore this message, because we
+  // have already committed to closing this renderer.
+  if (is_waiting_for_unload_ack_)
+    return;
+
+  // Cache the main frame id, so we can use it for creating the frame tree
+  // root node when needed.
+  if (PageTransitionIsMainFrame(validated_params.transition)) {
+    if (main_frame_id_ == -1) {
+      main_frame_id_ = validated_params.frame_id;
+    } else {
+      // TODO(nasko): We plan to remove the usage of frame_id in navigation
+      // and move to routing ids. This is in place to ensure that a
+      // renderer is not misbehaving and sending us incorrect data.
+      DCHECK_EQ(main_frame_id_, validated_params.frame_id);
+    }
+  }
+  RenderProcessHost* process = GetProcess();
+
+  // Attempts to commit certain off-limits URL should be caught more strictly
+  // than our FilterURL checks below.  If a renderer violates this policy, it
+  // should be killed.
+  if (!CanCommitURL(validated_params.url)) {
+    VLOG(1) << "Blocked URL " << validated_params.url.spec();
+    validated_params.url = GURL(kAboutBlankURL);
+    RecordAction(base::UserMetricsAction("CanCommitURL_BlockedAndKilled"));
+    // Kills the process.
+    process->ReceivedBadMessage();
+  }
+
+  // Now that something has committed, we don't need to track whether the
+  // initial page has been accessed.
+  has_accessed_initial_document_ = false;
+
+  // Without this check, an evil renderer can trick the browser into creating
+  // a navigation entry for a banned URL.  If the user clicks the back button
+  // followed by the forward button (or clicks reload, or round-trips through
+  // session restore, etc), we'll think that the browser commanded the
+  // renderer to load the URL and grant the renderer the privileges to request
+  // the URL.  To prevent this attack, we block the renderer from inserting
+  // banned URLs into the navigation controller in the first place.
+  process->FilterURL(false, &validated_params.url);
+  process->FilterURL(true, &validated_params.referrer.url);
+  for (std::vector<GURL>::iterator it(validated_params.redirects.begin());
+      it != validated_params.redirects.end(); ++it) {
+    process->FilterURL(false, &(*it));
+  }
+  process->FilterURL(true, &validated_params.searchable_form_url);
+
+  // Without this check, the renderer can trick the browser into using
+  // filenames it can't access in a future session restore.
+  if (!CanAccessFilesOfPageState(validated_params.page_state)) {
+    GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
+  delegate_->DidNavigate(this, validated_params);
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
@@ -1876,6 +1963,15 @@ void RenderViewHostImpl::SendOrientationChangeEvent(int orientation) {
 
 void RenderViewHostImpl::ToggleSpeechInput() {
   Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
+}
+
+bool RenderViewHostImpl::CanCommitURL(const GURL& url) {
+  // TODO(creis): We should also check for WebUI pages here.  Also, when the
+  // out-of-process iframes implementation is ready, we should check for
+  // cross-site URLs that are not allowed to commit in this process.
+
+  // Give the client a chance to disallow URLs from committing.
+  return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
 }
 
 void RenderViewHostImpl::ExitFullscreen() {

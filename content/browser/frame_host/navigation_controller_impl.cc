@@ -20,7 +20,6 @@
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -737,7 +736,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
 
 bool NavigationControllerImpl::RendererDidNavigate(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    const ViewHostMsg_FrameNavigate_Params& params,
     LoadCommittedDetails* details) {
   is_initial_navigation_ = false;
 
@@ -854,7 +853,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
 NavigationType NavigationControllerImpl::ClassifyNavigation(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
+    const ViewHostMsg_FrameNavigate_Params& params) const {
   if (params.page_id == -1) {
     // The renderer generates the page IDs, and so if it gives us the invalid
     // page ID (-1) we know it didn't actually navigate. This happens in a few
@@ -989,7 +988,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 
 void NavigationControllerImpl::RendererDidNavigateToNewPage(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    const ViewHostMsg_FrameNavigate_Params& params,
     bool replace_entry) {
   NavigationEntryImpl* new_entry;
   bool update_virtual_url;
@@ -1053,7 +1052,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& params) {
   // We should only get here for main frame navigations.
   DCHECK(PageTransitionIsMainFrame(params.transition));
 
@@ -1106,7 +1105,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
 void NavigationControllerImpl::RendererDidNavigateToSamePage(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& params) {
   // This mode implies we have a pending entry that's the same as an existing
   // entry for this page ID. This entry is guaranteed to exist by
   // ClassifyNavigation. All we need to do is update the existing entry.
@@ -1133,7 +1132,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
 
 void NavigationControllerImpl::RendererDidNavigateInPage(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    const ViewHostMsg_FrameNavigate_Params& params,
     bool* did_replace_entry) {
   DCHECK(PageTransitionIsMainFrame(params.transition)) <<
       "WebKit should only tell us about in-page navs for the main frame.";
@@ -1162,7 +1161,7 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& params) {
   if (PageTransitionCoreTypeIs(params.transition,
                                PAGE_TRANSITION_AUTO_SUBFRAME)) {
     // This is not user-initiated. Ignore.
@@ -1184,7 +1183,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     RenderViewHost* rvh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& params) {
   // We're guaranteed to have a previously committed entry, and we now need to
   // handle navigation inside of a subframe in it without creating a new entry.
   DCHECK(GetLastCommittedEntry());

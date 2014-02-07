@@ -20,10 +20,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -31,11 +29,6 @@
 namespace content {
 
 namespace {
-
-content::RenderFrameHostManager* GetRenderManager(
-    content::RenderFrameHostImpl* rfh) {
-  return rfh->frame_tree_node()->render_manager();
-}
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
     BrowserContext* browser_context, const NavigationEntryImpl& entry,
@@ -366,166 +359,6 @@ bool NavigatorImpl::NavigateToPendingEntry(
 
 base::TimeTicks NavigatorImpl::GetCurrentLoadStart() {
   return current_load_start_;
-}
-
-void NavigatorImpl::DidNavigate(
-    RenderFrameHostImpl* render_frame_host,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
-  FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
-  FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
-  RenderViewHostImpl* rvh = render_frame_host->render_view_host();
-  bool use_site_per_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
-  if (frame_tree->IsFirstNavigationAfterSwap()) {
-    // First navigation should be a main frame navigation.
-    // TODO(creis): This DCHECK is currently disabled for --site-per-process
-    // because cross-process subframe navigations still have a main frame
-    // PageTransition.
-    if (!use_site_per_process)
-      DCHECK(PageTransitionIsMainFrame(params.transition));
-    frame_tree->OnFirstNavigationAfterSwap(params.frame_id);
-  }
-
-  // When using --site-per-process, look up the FrameTreeNode ID that the
-  // renderer-specific frame ID corresponds to.
-  int64 frame_tree_node_id = frame_tree->root()->frame_tree_node_id();
-  if (use_site_per_process) {
-    frame_tree_node_id =
-        render_frame_host->frame_tree_node()->frame_tree_node_id();
-    DCHECK_EQ(params.frame_id,
-              render_frame_host->frame_tree_node()->frame_id());
-
-    // TODO(creis): In the short term, cross-process subframe navigations are
-    // happening in the pending RenderViewHost's top-level frame.  (We need to
-    // both mirror the frame tree and get the navigation to occur in the correct
-    // subframe to fix this.)  Until then, we should check whether we have a
-    // pending NavigationEntry with a frame ID and if so, treat the
-    // cross-process "main frame" navigation as a subframe navigation.  This
-    // limits us to a single cross-process subframe per RVH, and it affects
-    // NavigateToEntry, NavigatorImpl::DidStartProvisionalLoad, and
-    // OnDidFinishLoad.
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(
-            controller_->GetPendingEntry());
-    int root_ftn_id = frame_tree->root()->frame_tree_node_id();
-    if (pending_entry &&
-        pending_entry->frame_tree_node_id() != -1 &&
-        pending_entry->frame_tree_node_id() != root_ftn_id) {
-      params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
-      frame_tree_node_id = pending_entry->frame_tree_node_id();
-    }
-  }
-
-  if (PageTransitionIsMainFrame(params.transition)) {
-    // When overscroll navigation gesture is enabled, a screenshot of the page
-    // in its current state is taken so that it can be used during the
-    // nav-gesture. It is necessary to take the screenshot here, before calling
-    // RenderFrameHostManager::DidNavigateMainFrame, because that can change
-    // WebContents::GetRenderViewHost to return the new host, instead of the one
-    // that may have just been swapped out.
-    if (delegate_ && delegate_->CanOverscrollContent())
-      controller_->TakeScreenshot();
-
-    if (!use_site_per_process)
-      GetRenderManager(render_frame_host)->DidNavigateMainFrame(rvh);
-  }
-
-  // When using --site-per-process, we notify the RFHM for all navigations,
-  // not just main frame navigations.
-  if (use_site_per_process) {
-    FrameTreeNode* frame = frame_tree->FindByID(frame_tree_node_id);
-    // TODO(creis): Rename to DidNavigateFrame.
-    frame->render_manager()->DidNavigateMainFrame(rvh);
-  }
-
-  // Update the site of the SiteInstance if it doesn't have one yet, unless
-  // assigning a site is not necessary for this URL.  In that case, the
-  // SiteInstance can still be considered unused until a navigation to a real
-  // page.
-  SiteInstanceImpl* site_instance =
-      static_cast<SiteInstanceImpl*>(render_frame_host->GetSiteInstance());
-  if (!site_instance->HasSite() &&
-      ShouldAssignSiteForURL(params.url)) {
-    site_instance->SetSite(params.url);
-  }
-
-  // Need to update MIME type here because it's referred to in
-  // UpdateNavigationCommands() called by RendererDidNavigate() to
-  // determine whether or not to enable the encoding menu.
-  // It's updated only for the main frame. For a subframe,
-  // RenderView::UpdateURL does not set params.contents_mime_type.
-  // (see http://code.google.com/p/chromium/issues/detail?id=2929 )
-  // TODO(jungshik): Add a test for the encoding menu to avoid
-  // regressing it again.
-  // TODO(nasko): Verify the correctness of the above comment, since some of the
-  // code doesn't exist anymore. Also, move this code in the
-  // PageTransitionIsMainFrame code block above.
-  if (PageTransitionIsMainFrame(params.transition) && delegate_)
-    delegate_->SetMainFrameMimeType(params.contents_mime_type);
-
-  LoadCommittedDetails details;
-  bool did_navigate = controller_->RendererDidNavigate(rvh, params, &details);
-
-  // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
-  // us estimate our process count for implementing OOP iframes.
-  // TODO(creis): Remove this when we track which pages commit in each frame.
-  frame_tree->SetFrameUrl(params.frame_id, params.url);
-
-  // Send notification about committed provisional loads. This notification is
-  // different from the NAV_ENTRY_COMMITTED notification which doesn't include
-  // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
-  if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
-    // For AUTO_SUBFRAME navigations, an event for the main frame is generated
-    // that is not recorded in the navigation history. For the purpose of
-    // tracking navigation events, we treat this event as a sub frame navigation
-    // event.
-    bool is_main_frame = did_navigate ? details.is_main_frame : false;
-    PageTransition transition_type = params.transition;
-    // Whether or not a page transition was triggered by going backward or
-    // forward in the history is only stored in the navigation controller's
-    // entry list.
-    if (did_navigate &&
-        (controller_->GetLastCommittedEntry()->GetTransitionType() &
-            PAGE_TRANSITION_FORWARD_BACK)) {
-      transition_type = PageTransitionFromInt(
-          params.transition | PAGE_TRANSITION_FORWARD_BACK);
-    }
-
-    delegate_->DidCommitProvisionalLoad(params.frame_id,
-                                        params.frame_unique_name,
-                                        is_main_frame,
-                                        params.url,
-                                        transition_type,
-                                        render_frame_host);
-  }
-
-  if (!did_navigate)
-    return;  // No navigation happened.
-
-  // DO NOT ADD MORE STUFF TO THIS FUNCTION! Your component should either listen
-  // for the appropriate notification (best) or you can add it to
-  // DidNavigateMainFramePostCommit / DidNavigateAnyFramePostCommit (only if
-  // necessary, please).
-
-  // Run post-commit tasks.
-  if (delegate_) {
-    if (details.is_main_frame)
-      delegate_->DidNavigateMainFramePostCommit(details, params);
-
-    delegate_->DidNavigateAnyFramePostCommit(
-        render_frame_host, details, params);
-  }
-}
-
-bool NavigatorImpl::ShouldAssignSiteForURL(const GURL& url) {
-  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
-  // still be used for a normal web site.
-  if (url == GURL(kAboutBlankURL))
-    return false;
-
-  // The embedder will then have the opportunity to determine if the URL
-  // should "use up" the SiteInstance.
-  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
 }  // namespace content

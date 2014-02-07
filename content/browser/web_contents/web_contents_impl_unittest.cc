@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
-#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -152,7 +151,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
   void TestDidNavigate(int page_id, const GURL& url) {
-    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, page_id, url, PAGE_TRANSITION_TYPED);
     DidNavigate(GetRenderViewHostForTesting(), params);
   }
@@ -299,7 +298,7 @@ class TestWebContentsObserver : public WebContentsObserver {
 TEST_F(WebContentsImplTest, UpdateTitle) {
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   LoadCommittedDetails details;
@@ -347,7 +346,7 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
       ViewMsg_EnableViewSourceMode::ID));
 
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, kGURL, PAGE_TRANSITION_TYPED);
   LoadCommittedDetails details;
   cont.RendererDidNavigate(test_rvh(), params, &details);
@@ -1094,7 +1093,7 @@ TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
   // flight.  We should ignore it, wait for the unload ack, and let the pending
   // request continue.  Otherwise, the contents may close spontaneously or stop
   // responding to navigation requests.  (See bug 23942.)
-  FrameHostMsg_DidCommitProvisionalLoad_Params params1a;
+  ViewHostMsg_FrameNavigate_Params params1a;
   InitNavigateParams(&params1a, 2, GURL("http://www.google.com/foo"),
                      PAGE_TRANSITION_TYPED);
   orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));

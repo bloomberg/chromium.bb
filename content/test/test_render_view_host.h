@@ -26,7 +26,7 @@
 //
 // To use, derive your test base class from RenderViewHostImplTestHarness.
 
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+struct ViewHostMsg_FrameNavigate_Params;
 
 namespace gfx {
 class Rect;
@@ -40,7 +40,7 @@ class TestWebContents;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
 // with given |page_id|, |url| and |transition_type|.
-void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
                         PageTransition transition_type);
@@ -236,18 +236,15 @@ class TestRenderViewHost
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
+  virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) OVERRIDE;
+  virtual void SendNavigateWithTransition(int page_id, const GURL& url,
+                                          PageTransition transition) OVERRIDE;
   virtual void SendShouldCloseACK(bool proceed) OVERRIDE;
   virtual void SetContentsMimeType(const std::string& mime_type) OVERRIDE;
   virtual void SimulateSwapOutACK() OVERRIDE;
   virtual void SimulateWasHidden() OVERRIDE;
   virtual void SimulateWasShown() OVERRIDE;
-
-  // NOTE: These methods are deprecated and the equivalents in
-  // TestRenderFrameHost should be used.
-  virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
-  virtual void SendFailedNavigate(int page_id, const GURL& url) OVERRIDE;
-  virtual void SendNavigateWithTransition(int page_id, const GURL& url,
-                                          PageTransition transition) OVERRIDE;
 
   // Calls OnNavigate on the RenderViewHost with the given information,
   // including a custom original request URL.  Sets the rest of the
@@ -259,8 +256,7 @@ class TestRenderViewHost
   void SendNavigateWithFile(
       int page_id, const GURL& url, const base::FilePath& file_path);
 
-  void SendNavigateWithParams(
-      FrameHostMsg_DidCommitProvisionalLoad_Params* params);
+  void SendNavigateWithParams(ViewHostMsg_FrameNavigate_Params* params);
 
   void TestOnUpdateStateWithFile(
       int process_id, const base::FilePath& file_path);
@@ -303,8 +299,7 @@ class TestRenderViewHost
   void set_simulate_fetch_via_proxy(bool proxy);
 
   // If set, navigations will appear to have cleared the history list in the
-  // RenderView
-  // (FrameHostMsg_DidCommitProvisionalLoad_Params::history_list_was_cleared).
+  // RenderView (ViewHostMsg_FrameNavigate_Params::history_list_was_cleared).
   // False by default.
   void set_simulate_history_list_was_cleared(bool cleared);
 

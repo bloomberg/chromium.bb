@@ -460,12 +460,11 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   const IPC::Message* frame_navigate_msg =
       render_thread_->sink().GetUniqueMessageMatching(
-          FrameHostMsg_DidCommitProvisionalLoad::ID);
+          ViewHostMsg_FrameNavigate::ID);
   EXPECT_TRUE(frame_navigate_msg);
 
-  FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
-  FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
-                                              &host_nav_params);
+  ViewHostMsg_FrameNavigate::Param host_nav_params;
+  ViewHostMsg_FrameNavigate::Read(frame_navigate_msg, &host_nav_params);
   EXPECT_TRUE(host_nav_params.a.is_post);
 
   // Check post data sent to browser matches
@@ -719,13 +718,12 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   // Verify page A committed, not swappedout://.
   const IPC::Message* frame_navigate_msg =
       render_thread_->sink().GetUniqueMessageMatching(
-          FrameHostMsg_DidCommitProvisionalLoad::ID);
+          ViewHostMsg_FrameNavigate::ID);
   EXPECT_TRUE(frame_navigate_msg);
 
   // Read URL out of the parent trait of the params object.
-  FrameHostMsg_DidCommitProvisionalLoad::Param commit_params;
-  FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
-                                              &commit_params);
+  ViewHostMsg_FrameNavigate::Param commit_params;
+  ViewHostMsg_FrameNavigate::Read(frame_navigate_msg, &commit_params);
   EXPECT_NE(GURL("swappedout://"), commit_params.a.url);
 }
 
@@ -1724,7 +1722,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
   EXPECT_EQ(1, view()->history_list_length_);
@@ -1733,7 +1731,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id + 1);
   EXPECT_EQ(0, view()->history_list_length_);
@@ -1741,7 +1739,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, -1);
   EXPECT_EQ(1, view()->history_list_length_);
@@ -1750,7 +1748,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
   EXPECT_EQ(3, view()->history_list_length_);
@@ -1761,7 +1759,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id + 1);
   EXPECT_EQ(2, view()->history_list_length_);
@@ -1771,7 +1769,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, -1);
   EXPECT_EQ(3, view()->history_list_length_);
@@ -1784,9 +1782,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   int expected_page_id_2 = -1;
 
   // No history to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
@@ -1797,9 +1795,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id_2);
@@ -1810,9 +1808,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
 
   // No history to merge and two committed pages, both of which the browser was
   // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, -1);
@@ -1823,9 +1821,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
@@ -1838,9 +1836,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id_2);
@@ -1853,9 +1851,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
 
   // History to merge and two committed pages, both of which the browser was
   // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  view()->didCommitProvisionalLoad(GetMainFrame(), true);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, -1);
