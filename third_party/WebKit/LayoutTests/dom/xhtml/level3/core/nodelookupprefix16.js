@@ -98,7 +98,7 @@ function nodelookupprefix16() {
       doc = load(docRef, "doc", "barfoo");
       elem = doc.createElementNS("http://www.w3.org/1999/xhtml","dom3:p");
       attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
-      attNode = elem.setAttributeNodeNS(attr);
+      attNode = elem.setAttributeNode(attr);
       prefix = attr.lookupPrefix("http://www.w3.org/XML/1998/namespace");
       assertNull("nodelookupprefix16",prefix);
     

@@ -11,10 +11,6 @@ PASS element.removeAttributeNode("style"); threw exception TypeMismatchError: Fa
 PASS element.removeAttributeNode(null); threw exception TypeMismatchError: Failed to execute 'removeAttributeNode' on 'Element': The node provided is invalid..
 PASS element.removeAttributeNode(undefined); threw exception TypeMismatchError: Failed to execute 'removeAttributeNode' on 'Element': The node provided is invalid..
 PASS element.removeAttributeNode(new Object); threw exception TypeMismatchError: Failed to execute 'removeAttributeNode' on 'Element': The node provided is invalid..
-PASS element.setAttributeNodeNS("style"); threw exception TypeMismatchError: Failed to execute 'setAttributeNodeNS' on 'Element': The node provided is invalid..
-PASS element.setAttributeNodeNS(null); threw exception TypeMismatchError: Failed to execute 'setAttributeNodeNS' on 'Element': The node provided is invalid..
-PASS element.setAttributeNodeNS(undefined); threw exception TypeMismatchError: Failed to execute 'setAttributeNodeNS' on 'Element': The node provided is invalid..
-PASS element.setAttributeNodeNS(new Object); threw exception TypeMismatchError: Failed to execute 'setAttributeNodeNS' on 'Element': The node provided is invalid..
 PASS successfullyParsed is true
 
 TEST COMPLETE

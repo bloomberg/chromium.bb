@@ -104,7 +104,7 @@ function nodecomparedocumentposition15() {
 
       docFrag = doc.createDocumentFragment();
       attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
-      attrNode = docElem.setAttributeNodeNS(attr);
+      attrNode = docElem.setAttributeNode(attr);
       appendedChild = docFrag.appendChild(docElem);
       docFragChild = docFrag.firstChild;
 

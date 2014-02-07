@@ -278,7 +278,7 @@ public:
         HTMLElementInnerText,
         HTMLElementOuterText,
         ReplaceDocumentViaJavaScriptURL,
-        ElementSetAttributeNodeNS, // Removed from DOM4.
+        REMOVEDElementSetAttributeNodeNS, // Removed from DOM4.
         ElementPrefixedMatchesSelector,
         DOMImplementationCreateCSSStyleSheet,
         CSSStyleSheetRules,

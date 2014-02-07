@@ -100,7 +100,7 @@ function nodegettextcontent08() {
       doc = load(docRef, "doc", "barfoo");
       elem = doc.createElementNS("http://www.w3.org/1999/xhtml","p");
       att = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
-      replacedAttr = elem.setAttributeNodeNS(att);
+      replacedAttr = elem.setAttributeNode(att);
       attr = elem.getAttributeNodeNS("http://www.w3.org/XML/1998/namespace","lang");
       textContent = attr.textContent;
 

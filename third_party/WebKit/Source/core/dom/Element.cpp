@@ -2021,11 +2021,6 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     return oldAttrNode.release();
 }
 
-PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
-{
-    return setAttributeNode(attr, exceptionState);
-}
-
 PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
     if (!attr) {

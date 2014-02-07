@@ -99,7 +99,7 @@ function nodelookupnamespaceuri16() {
       doc = load(docRef, "doc", "hc_staff");
       elem = doc.createElementNS("http://www.w3.org/1999/xhtml","dom3:p");
       attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
-      attNode = elem.setAttributeNodeNS(attr);
+      attNode = elem.setAttributeNode(attr);
       namespaceURI = attr.lookupNamespaceURI("xml");
       assertNull("nodelookupnamespaceuri16",namespaceURI);
     

@@ -100,7 +100,7 @@ function nodecomparedocumentposition11() {
       elemList = doc.getElementsByTagName("p");
       elem = elemList.item(3);
       newAttr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
-      replacedAttr = elem.setAttributeNodeNS(newAttr);
+      replacedAttr = elem.setAttributeNode(newAttr);
       attrPosition = newAttr.compareDocumentPosition(doc);
       assertEquals("nodecomparedocumentpositionPRECEDINGContains11",10,attrPosition);
        

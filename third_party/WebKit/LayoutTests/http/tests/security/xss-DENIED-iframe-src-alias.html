@@ -30,11 +30,6 @@ window.onload = function()
             a.nodeValue = alertMsg("setAttributeNode");
             iFrame.setAttributeNode(a);
         },
-        function(iFrame) {
-            var a = document.createAttribute('src');
-            a.nodeValue = alertMsg("setAttributeNodeNS");
-            iFrame.setAttributeNodeNS(a);
-        },
         // Child manipulation methods
         function(iFrame) { 
             var src = iFrame.attributes['src'];
