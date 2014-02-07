@@ -45,6 +45,10 @@ class PasswordManagerDelegate {
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name);
 
+  // Returns true if password sync is enabled in the embedder. The default
+  // implementation returns false.
+  virtual bool IsPasswordSyncEnabled();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegate);
 };

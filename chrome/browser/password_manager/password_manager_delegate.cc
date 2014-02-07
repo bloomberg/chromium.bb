@@ -9,3 +9,7 @@ PasswordManagerDelegate::GetProbabilityForExperiment(
     const std::string& experiment_name) {
   return 0;
 }
+
+bool PasswordManagerDelegate::IsPasswordSyncEnabled() {
+  return false;
+}

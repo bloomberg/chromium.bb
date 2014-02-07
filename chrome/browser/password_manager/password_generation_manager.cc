@@ -7,9 +7,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -67,26 +64,12 @@ void PasswordGenerationManager::DetectAccountCreationForms(
 // (1) Password sync is enabled, and
 // (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
-  if (!web_contents_)
-    return false;
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-
   if (!driver_->GetPasswordManager()->IsSavingEnabled()) {
     DVLOG(2) << "Generation disabled because password saving is disabled";
     return false;
   }
 
-  bool password_sync_enabled = false;
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (sync_service) {
-    syncer::ModelTypeSet sync_set = sync_service->GetActiveDataTypes();
-    password_sync_enabled = (sync_service->HasSyncSetupCompleted() &&
-                             sync_set.Has(syncer::PASSWORDS));
-  }
-  if (!password_sync_enabled) {
+  if (!delegate_->IsPasswordSyncEnabled()) {
     DVLOG(2) << "Generation disabled because passwords are not being synced";
     return false;
   }

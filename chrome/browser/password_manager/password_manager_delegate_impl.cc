@@ -16,6 +16,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -296,6 +298,14 @@ PasswordManagerDelegateImpl::GetProbabilityForExperiment(
     }
   }
   return enabled_probability;
+}
+
+bool PasswordManagerDelegateImpl::IsPasswordSyncEnabled() {
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(GetProfile());
+  if (sync_service && sync_service->HasSyncSetupCompleted())
+    return sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS);
+  return false;
 }
 
 // static
