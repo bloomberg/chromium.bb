@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>TestNetscapePlugIn</string>
+	<string>test_netscape_plugin</string>
 	<key>CFBundleGetInfoString</key>
 	<string>420+, Copyright 2006-2009 Apple Inc.</string>
 	<key>CFBundleIconFile</key>

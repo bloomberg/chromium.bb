@@ -5,5 +5,5 @@ icudt42.dll
 icudt46.dll
 icudt.dll
 icudtl.dat
-plugins\npTestNetscapePlugIn.dll
+plugins\np_test_netscape_plugin.dll
 fonts\*

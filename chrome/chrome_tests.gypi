@@ -3052,9 +3052,9 @@
           'target_name': 'browser_tests_run',
           'type': 'none',
           'dependencies': [
+            '../content/content_shell_and_tests.gyp:copy_test_netscape_plugin',
             'browser_tests',
             'chrome',
-            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
           'includes': [
             '../build/isolate.gypi',

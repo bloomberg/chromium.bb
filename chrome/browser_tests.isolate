@@ -106,8 +106,8 @@
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/lib32/',
-          '<(PRODUCT_DIR)/plugins/TestNetscapePlugIn.plugin/',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
+          '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
         ],
       },
     }],
