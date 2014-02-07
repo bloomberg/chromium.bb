@@ -186,11 +186,14 @@ LDPatterns = [
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
+  ( ('--output', '(.+)'), "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
+
   ( '-r',              "env.set('RELOCATABLE', '1')"),
   ( '-relocatable',    "env.set('RELOCATABLE', '1')"),
+  ( '-i',              "env.set('RELOCATABLE', '1')"),
 
   ( ('-L', '(.+)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
@@ -235,7 +238,9 @@ LDPatterns = [
   ( ('-?-soname', '(.*)'),        "env.set('SONAME', $0)"),
 
   ( '(-M)',                       AddToBCLinkFlags),
+  ( '(--print-map)',              AddToBCLinkFlags),
   ( '(-t)',                       AddToBCLinkFlags),
+  ( '(--trace)',                  AddToBCLinkFlags),
   ( ('(-y)','(.*)'),              AddToBCLinkFlags),
   ( ('(-defsym)','(.*)'),         AddToBCLinkFlags),
 
@@ -271,6 +276,8 @@ LDPatterns = [
   # Inputs and options that need to be kept in order
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
   ( ('(-l)','(.*)'),       "env.append('INPUTS', $0+$1)"),
+  ( ('--library', '(.*)'), "env.append('INPUTS', '-l'+$0)"),
+
   ( '(--no-as-needed)',    "env.append('INPUTS', $0)"),
   ( '(--as-needed)',       "env.append('INPUTS', $0)"),
   ( '(--start-group)',     "env.append('INPUTS', $0)"),
@@ -279,6 +286,8 @@ LDPatterns = [
   ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
   ( '(--undefined=.*)',    "env.append('INPUTS', $0)"),
+  ( ('(-u)','(.*)'),       "env.append('INPUTS', $0+$1)"),
+  ( '(-u.*)',              "env.append('INPUTS', $0)"),
   ( '(-.*)',               UnrecognizedOption),
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
@@ -582,7 +591,7 @@ def get_help(unused_argv):
 
 Bitcode linker for PNaCl.  Similar to the binutils "ld" tool,
 but links bitcode instead of native code.  Supports many of the
-"ld" flags.
+"ld" flags. Below are a subset of them.
 
 OPTIONS:
 
@@ -591,7 +600,7 @@ OPTIONS:
   -L DIRECTORY, --library-path DIRECTORY
                               Add DIRECTORY to library search path
 
-  -r, --relocatable           Generate relocatable output
+  -r, -relocatable            Generate relocatable output
 
   -O<opt-level>               Optimize output file
   -M, --print-map             Print map file on standard output
@@ -599,7 +608,7 @@ OPTIONS:
   --no-whole-archive          Turn off --whole-archive
   -s, --strip-all             Strip all symbols
   -S, --strip-debug           Strip debugging symbols
-  --undefined SYMBOL          Start with undefined reference to SYMBOL
+  -u SYM, --undefined=SYM     Start with undefined reference to SYM
 
   -help | -h                  Output this help.
 """
