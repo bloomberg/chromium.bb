@@ -39,14 +39,10 @@ public:
 
     const String& contentSecurityPolicy() const { return m_contentSecurityPolicy; }
     const String& contentSecurityPolicyReportOnly() const { return m_contentSecurityPolicyReportOnly; }
-    const String& xWebKitCSP() const { return m_xWebKitCSP; }
-    const String& xWebKitCSPReportOnly() const { return m_xWebKitCSPReportOnly; }
 
 private:
     String m_contentSecurityPolicy;
     String m_contentSecurityPolicyReportOnly;
-    String m_xWebKitCSP;
-    String m_xWebKitCSPReportOnly;
 };
 
 }

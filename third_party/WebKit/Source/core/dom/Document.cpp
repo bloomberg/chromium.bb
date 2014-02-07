@@ -2879,10 +2879,7 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
         parseDNSPrefetchControlHeader(content);
     else if (equalIgnoringCase(equiv, "x-frame-options"))
         processHttpEquivXFrameOptions(content);
-    else if (equalIgnoringCase(equiv, "content-security-policy")
-        || equalIgnoringCase(equiv, "content-security-policy-report-only")
-        || equalIgnoringCase(equiv, "x-webkit-csp")
-        || equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
+    else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only"))
         processHttpEquivContentSecurityPolicy(equiv, content);
 }
 
@@ -2892,11 +2889,6 @@ void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, 
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce, ContentSecurityPolicy::HeaderSourceMeta);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report, ContentSecurityPolicy::HeaderSourceMeta);
-    // FIXME: Remove deprecation messages after the next release branch.
-    else if (equalIgnoringCase(equiv, "x-webkit-csp"))
-        UseCounter::countDeprecation(this, UseCounter::PrefixedContentSecurityPolicy);
-    else if (equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
-        UseCounter::countDeprecation(this, UseCounter::PrefixedContentSecurityPolicyReportOnly);
     else
         ASSERT_NOT_REACHED();
 }

@@ -615,11 +615,6 @@ void UseCounter::countDeprecation(const Document& document, Feature feature)
 String UseCounter::deprecationMessage(Feature feature)
 {
     switch (feature) {
-    // Content Security Policy
-    case PrefixedContentSecurityPolicy:
-    case PrefixedContentSecurityPolicyReportOnly:
-        return "The 'X-WebKit-CSP' headers are no longer supported. Please consider using the canonical 'Content-Security-Policy' header instead.";
-
     // Quota
     case PrefixedStorageInfo:
         return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";

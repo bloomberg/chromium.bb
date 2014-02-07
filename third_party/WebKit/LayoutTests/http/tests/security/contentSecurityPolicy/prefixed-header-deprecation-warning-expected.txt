@@ -1,3 +1,0 @@
-CONSOLE WARNING: The 'X-WebKit-CSP' headers are no longer supported. Please consider using the canonical 'Content-Security-Policy' header instead.
-ALERT: PASS
-This test passes if it alerts "PASS", and a deprecation warning is presented in the console.

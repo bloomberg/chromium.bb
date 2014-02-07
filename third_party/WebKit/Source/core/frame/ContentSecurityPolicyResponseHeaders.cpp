@@ -33,8 +33,6 @@ namespace WebCore {
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
     : m_contentSecurityPolicy(response.httpHeaderField("Content-Security-Policy"))
     , m_contentSecurityPolicyReportOnly(response.httpHeaderField("Content-Security-Policy-Report-Only"))
-    , m_xWebKitCSP(response.httpHeaderField("X-WebKit-CSP"))
-    , m_xWebKitCSPReportOnly(response.httpHeaderField("X-WebKit-CSP-Report-Only"))
 {
 }
 

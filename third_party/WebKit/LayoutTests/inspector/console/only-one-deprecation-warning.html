@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
-    <meta http-equiv="X-WebKit-CSP" content="img-src http://127.0.0.1:*">
     <script>
         if (window.testRunner)
             testRunner.dumpAsText();
+
+        // These three all map to PrefixedPerformanceTimeline
+        var x = window.performance.webkitGetEntries();
+        x = window.performance.webkitGetEntriesByName('');
+        x = window.performance.webkitGetEntriesByType('');
     </script>
 </head>
 <body>

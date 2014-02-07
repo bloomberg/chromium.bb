@@ -1683,15 +1683,6 @@ void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyRespons
         didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicy::Enforce, ContentSecurityPolicy::HeaderSourceHTTP);
     if (!headers.contentSecurityPolicyReportOnly().isEmpty())
         didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicy::Report, ContentSecurityPolicy::HeaderSourceHTTP);
-
-    // FIXME: Remove this reporting (and the 'xWebKitCSP*' methods) after the next release branch.
-    if (m_client->isDocument()) {
-        Document* document = static_cast<Document*>(m_client);
-        if (!headers.xWebKitCSP().isEmpty())
-            UseCounter::countDeprecation(*document, UseCounter::PrefixedContentSecurityPolicy);
-        if (!headers.xWebKitCSPReportOnly().isEmpty())
-            UseCounter::countDeprecation(*document, UseCounter::PrefixedContentSecurityPolicyReportOnly);
-    }
 }
 
 void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType type, HeaderSource source)
