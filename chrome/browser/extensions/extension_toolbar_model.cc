@@ -62,13 +62,6 @@ ExtensionToolbarModel::ExtensionToolbarModel(
 
   visible_icon_count_ = prefs_->GetInteger(
       extensions::pref_names::kToolbarSize);
-  // Visible count can be -1, meaning: 'show all'. Since UMA converts negative
-  // values to 0, this would be counted as 'show none' unless we convert it to
-  // max.
-  UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsVisible",
-                           visible_icon_count_ == -1 ?
-                               base::HistogramBase::kSampleType_MAX :
-                               visible_icon_count_);
   pref_change_registrar_.Init(prefs_);
   pref_change_callback_ =
       base::Bind(&ExtensionToolbarModel::OnExtensionToolbarPrefChange,
@@ -392,6 +385,16 @@ void ExtensionToolbarModel::Populate(
 
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            toolbar_items_.size());
+
+  if (!toolbar_items_.empty()) {
+    // Visible count can be -1, meaning: 'show all'. Since UMA converts negative
+    // values to 0, this would be counted as 'show none' unless we convert it to
+    // max.
+    UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsVisible",
+                             visible_icon_count_ == -1 ?
+                                 base::HistogramBase::kSampleType_MAX :
+                                 visible_icon_count_);
+  }
 
   // Inform observers.
   for (size_t i = 0; i < toolbar_items_.size(); i++) {
