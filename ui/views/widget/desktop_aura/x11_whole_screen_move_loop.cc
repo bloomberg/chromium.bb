@@ -129,8 +129,12 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 }
 
 void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
-  DCHECK(in_move_loop_);
-  GrabPointerWithCursor(cursor);
+  if (in_move_loop_) {
+    // If we're still in the move loop, regrab the pointer with the updated
+    // cursor. Note: we can be called from handling an XdndStatus message after
+    // EndMoveLoop() was called, but before we return from the nested RunLoop.
+    GrabPointerWithCursor(cursor);
+  }
 }
 
 void X11WholeScreenMoveLoop::EndMoveLoop() {
