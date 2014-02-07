@@ -45,8 +45,10 @@ int kLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
 int kSmallWallpaperWidth = 256;
 int kSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
 
-const char kTestUser1[] = "test@domain.com";
-const char kTestUser1Hash[] = "test@domain.com-hash";
+const char kTestUser1[] = "test1@domain.com";
+const char kTestUser1Hash[] = "test1@domain.com-hash";
+const char kTestUser2[] = "test2@domain.com";
+const char kTestUser2Hash[] = "test2@domain.com-hash";
 
 }  // namespace
 
@@ -333,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        HotPlugInScreenAtGAIALoginScreen) {
   UpdateDisplay("800x600");
   // Set initial wallpaper to the default wallpaper.
-  WallpaperManager::Get()->SetDefaultWallpaperNow();
+  WallpaperManager::Get()->SetDefaultWallpaperNow(UserManager::kStubUser);
   WaitAsyncWallpaperLoadFinished();
 
   // Hook up a 2000x2000 display. The large resolution custom wallpaper should
@@ -429,6 +431,121 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
                        RestoreWallpaper) {
   EXPECT_EQ(1, LoadedWallpapers());
+}
+
+class WallpaperManagerBrowserTestCacheUpdate
+    : public WallpaperManagerBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(::switches::kMultiProfiles);
+    command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
+    command_line->AppendSwitchASCII(switches::kLoginProfile,
+        CryptohomeClient::GetStubSanitizedUsername(kTestUser1));
+  }
+ protected:
+  // Creates a test image of size 1x1.
+  gfx::ImageSkia CreateTestImage(SkColor color) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+    bitmap.allocPixels();
+    bitmap.eraseColor(color);
+    return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  }
+};
+
+// Sets kTestUser1's wallpaper to a custom wallpaper.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
+                       PRE_VerifyWallpaperCache) {
+  // Add kTestUser1 to user list. kTestUser1 is the default login profile.
+  LogIn(kTestUser1, kTestUser1Hash);
+
+  std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+  base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
+      kSmallWallpaperSubDir,
+      kTestUser1Hash,
+      id);
+  base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
+      kLargeWallpaperSubDir,
+      kTestUser1Hash,
+      id);
+
+  // Saves the small/large resolution wallpapers to small/large custom
+  // wallpaper paths.
+  SaveUserWallpaperData(small_wallpaper_path,
+                        kSmallWallpaperResourceId);
+  SaveUserWallpaperData(large_wallpaper_path,
+                        kLargeWallpaperResourceId);
+
+  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
+  // Saves wallpaper info to local state for user |kTestUser1|.
+  WallpaperInfo info = {
+      relative_path,
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
+      User::CUSTOMIZED,
+      base::Time::Now().LocalMidnight()
+  };
+  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+  wallpaper_manager->SetUserWallpaperNow(kTestUser1);
+  WaitAsyncWallpaperLoadFinished();
+  scoped_ptr<WallpaperManager::TestApi> test_api;
+  test_api.reset(new WallpaperManager::TestApi(wallpaper_manager));
+  // Verify SetUserWallpaperNow updates wallpaper cache.
+  EXPECT_FALSE(test_api->CachedWallpaper(kTestUser1).isNull());
+}
+
+// Tests for crbug.com/339576. Wallpaper cache should be updated in
+// multi-profile mode when user:
+// 1. chooses an online wallpaper from wallpaper
+//    picker(calls SetWallpaperFromImageSkia);
+// 2. chooses a custom wallpaper from wallpaper
+//    picker(calls SetCustomWallpaper);
+// 3. reverts to a default wallpaper.
+// Also, when user login at multi-profile mode, previous logged in users'
+// wallpaper cache should not be deleted.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
+                       VerifyWallpaperCache) {
+  WaitAsyncWallpaperLoadFinished();
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+  scoped_ptr<WallpaperManager::TestApi> test_api;
+  test_api.reset(new WallpaperManager::TestApi(wallpaper_manager));
+  // Previous custom wallpaper should be cached after user login.
+  EXPECT_FALSE(test_api->CachedWallpaper(kTestUser1).isNull());
+
+  LogIn(kTestUser2, kTestUser2Hash);
+  WaitAsyncWallpaperLoadFinished();
+  // Login another user should not delete logged in user's wallpaper cache.
+  // Note active user is still kTestUser1.
+  EXPECT_FALSE(test_api->CachedWallpaper(kTestUser1).isNull());
+
+  gfx::ImageSkia red_wallpaper = CreateTestImage(SK_ColorRED);
+  wallpaper_manager->SetWallpaperFromImageSkia(kTestUser1,
+                                               red_wallpaper,
+                                               WALLPAPER_LAYOUT_CENTER);
+  WaitAsyncWallpaperLoadFinished();
+  // SetWallpaperFromImageSkia should update wallpaper cache when multi-profile
+  // is turned on.
+  EXPECT_TRUE(test_api->CachedWallpaper(kTestUser1).BackedBySameObjectAs(
+      red_wallpaper));
+
+  gfx::ImageSkia green_wallpaper = CreateTestImage(SK_ColorGREEN);
+  chromeos::UserImage image(green_wallpaper);
+  wallpaper_manager->SetCustomWallpaper(kTestUser1,
+                                        kTestUser1Hash,
+                                        "dummy",  // dummy file name
+                                        WALLPAPER_LAYOUT_CENTER,
+                                        User::CUSTOMIZED,
+                                        image);
+  WaitAsyncWallpaperLoadFinished();
+  // SetCustomWallpaper should also update wallpaper cache when multi-profile is
+  // turned on.
+  EXPECT_TRUE(test_api->CachedWallpaper(kTestUser1).BackedBySameObjectAs(
+      green_wallpaper));
+
+  wallpaper_manager->SetDefaultWallpaperNow(kTestUser1);
+  WaitAsyncWallpaperLoadFinished();
+  // SetDefaultWallpaper should invalidate the user's wallpaper cache.
+  EXPECT_TRUE(test_api->CachedWallpaper(kTestUser1).isNull());
 }
 
 }  // namespace chromeos

@@ -80,6 +80,8 @@ class WallpaperManager: public content::NotificationObserver {
 
     base::FilePath current_wallpaper_path();
 
+    gfx::ImageSkia CachedWallpaper(const std::string& user_id);
+
    private:
     WallpaperManager* wallpaper_manager_;  // not owned
 
@@ -104,7 +106,7 @@ class WallpaperManager: public content::NotificationObserver {
   class PendingWallpaper : public base::RefCountedThreadSafe<PendingWallpaper> {
    public:
     // Do LoadWallpaper() - image not found in cache.
-    PendingWallpaper(const base::TimeDelta delay, const std::string& username);
+    PendingWallpaper(const base::TimeDelta delay, const std::string& user_id);
 
     // There are 4 cases in SetUserWallpaper:
     // 1) gfx::ImageSkia is found in cache.
@@ -139,7 +141,7 @@ class WallpaperManager: public content::NotificationObserver {
     // This method is called by callback, when load request is finished.
     void OnWallpaperSet();
 
-    std::string username_;
+    std::string user_id_;
     WallpaperInfo info_;
     gfx::ImageSkia user_wallpaper_;
     base::FilePath wallpaper_path_;
@@ -195,7 +197,7 @@ class WallpaperManager: public content::NotificationObserver {
                              gfx::ImageSkia* wallpaper);
 
   // Returns filepath to save original custom wallpaper for the given user.
-  base::FilePath GetOriginalWallpaperPathForUser(const std::string& username);
+  base::FilePath GetOriginalWallpaperPathForUser(const std::string& user_id);
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
@@ -232,7 +234,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences.
-  void SetCustomWallpaper(const std::string& username,
+  void SetCustomWallpaper(const std::string& user_id,
                           const std::string& user_id_hash,
                           const std::string& file,
                           ash::WallpaperLayout layout,
@@ -240,19 +242,19 @@ class WallpaperManager: public content::NotificationObserver {
                           const UserImage& wallpaper);
 
   // Sets wallpaper to default wallpaper (asynchronously with zero delay).
-  void SetDefaultWallpaperNow();
+  void SetDefaultWallpaperNow(const std::string& user_id);
 
   // Sets wallpaper to default wallpaper (asynchronously with default delay).
-  void SetDefaultWallpaperDelayed();
+  void SetDefaultWallpaperDelayed(const std::string& user_id);
 
   // Initialize wallpaper for the specified user to default and saves this
   // settings in local state.
-  void InitInitialUserWallpaper(const std::string& username,
+  void InitInitialUserWallpaper(const std::string& user_id,
                                 bool is_persistent);
 
-  // Sets selected wallpaper information for |username| and saves it to Local
+  // Sets selected wallpaper information for |user_id| and saves it to Local
   // State if |is_persistent| is true.
-  void SetUserWallpaperInfo(const std::string& username,
+  void SetUserWallpaperInfo(const std::string& user_id,
                             const WallpaperInfo& info,
                             bool is_persistent);
 
@@ -266,7 +268,8 @@ class WallpaperManager: public content::NotificationObserver {
   void SetUserWallpaperDelayed(const std::string& email);
 
   // Sets wallpaper to |wallpaper| (asynchronously with zero delay).
-  void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
+  void SetWallpaperFromImageSkia(const std::string& email,
+                                 const gfx::ImageSkia& wallpaper,
                                  ash::WallpaperLayout layout);
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
@@ -397,7 +400,9 @@ class WallpaperManager: public content::NotificationObserver {
   void ScheduleSetUserWallpaper(const std::string& email, bool delayed);
 
   // Sets wallpaper to default.
-  void DoSetDefaultWallpaper(MovableOnDestroyCallbackHolder on_finish);
+  void DoSetDefaultWallpaper(
+      const std::string& user_id,
+      MovableOnDestroyCallbackHolder on_finish);
 
   // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
   // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
@@ -415,7 +420,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Returns modifiable PendingWallpaper.
   // Returns pending_inactive_ or creates new PendingWallpaper if necessary.
-  PendingWallpaper* GetPendingWallpaper(const std::string& username,
+  PendingWallpaper* GetPendingWallpaper(const std::string& user_id,
                                         bool delayed);
 
   // Calculate delay for next wallpaper load.

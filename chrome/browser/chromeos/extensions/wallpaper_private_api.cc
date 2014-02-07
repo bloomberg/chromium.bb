@@ -290,7 +290,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
   params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_ = chromeos::UserManager::Get()->GetActiveUser()->email();
 
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
@@ -360,7 +360,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  wallpaper_manager->SetWallpaperFromImageSkia(wallpaper, layout);
+  wallpaper_manager->SetWallpaperFromImageSkia(user_id_, wallpaper, layout);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
@@ -369,8 +369,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
       chromeos::User::ONLINE,
       base::Time::Now().LocalMidnight()
   };
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
-  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
   SetResult(base::Value::CreateBooleanValue(true));
   SendResponse(true);
 }
@@ -392,7 +391,7 @@ bool WallpaperPrivateSetWallpaperFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Gets email address while at UI thread.
-  email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_ = chromeos::UserManager::Get()->GetActiveUser()->email();
 
   StartDecode(params->wallpaper);
 
@@ -463,7 +462,9 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  wallpaper_manager->SetWallpaperFromImageSkia(*wallpaper.get(), layout);
+  wallpaper_manager->SetWallpaperFromImageSkia(user_id_,
+                                               *wallpaper.get(),
+                                               layout);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
@@ -472,7 +473,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
       chromeos::User::ONLINE,
       base::Time::Now().LocalMidnight()
   };
-  wallpaper_manager->SetUserWallpaperInfo(email_, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
   SendResponse(true);
 }
 
@@ -487,7 +488,7 @@ bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
       chromeos::WallpaperManager::Get();
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
 
-  std::string email = user_manager->GetLoggedInUser()->email();
+  std::string email = user_manager->GetActiveUser()->email();
   wallpaper_manager->RemoveUserWallpaperInfo(email);
 
   chromeos::WallpaperInfo info = {
@@ -499,7 +500,7 @@ bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
   bool is_persistent =
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
-  wallpaper_manager->SetDefaultWallpaperNow();
+  wallpaper_manager->SetDefaultWallpaperNow(email);
   return true;
 }
 
@@ -514,9 +515,9 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Gets email address and username hash while at UI thread.
-  email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_ = chromeos::UserManager::Get()->GetActiveUser()->email();
   user_id_hash_ =
-      chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
+      chromeos::UserManager::Get()->GetActiveUser()->username_hash();
 
   StartDecode(params->wallpaper);
 
@@ -543,7 +544,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  wallpaper_manager->SetCustomWallpaper(email_,
+  wallpaper_manager->SetCustomWallpaper(user_id_,
                                         user_id_hash_,
                                         params->file_name,
                                         layout,
@@ -618,7 +619,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunImpl() {
   info.layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  std::string email = chromeos::UserManager::Get()->GetActiveUser()->email();
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
@@ -669,7 +670,7 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath thumbnail_path;
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  std::string email = chromeos::UserManager::Get()->GetActiveUser()->email();
   if (params->source == get_thumbnail::Params::SOURCE_ONLINE) {
     std::string file_name = GURL(params->url_or_file).ExtractFileName();
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,

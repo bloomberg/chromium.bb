@@ -55,6 +55,9 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   scoped_ptr<extensions::api::wallpaper_private::SetWallpaperIfExists::Params>
       params;
 
+  // User id of the active user when this api is been called.
+  std::string user_id_;
+
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
@@ -88,8 +91,8 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   // FILE thread to resize and save wallpaper to disk.
   gfx::ImageSkia wallpaper_;
 
-  // Email address of logged in user.
-  std::string email_;
+  // User id of the active user when this api is been called.
+  std::string user_id_;
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -139,8 +142,8 @@ class WallpaperPrivateSetCustomWallpaperFunction
   scoped_ptr<extensions::api::wallpaper_private::SetCustomWallpaper::Params>
       params;
 
-  // Email address of logged in user.
-  std::string email_;
+  // User id of the active user when this api is been called.
+  std::string user_id_;
 
   // User id hash of the logged in user.
   std::string user_id_hash_;

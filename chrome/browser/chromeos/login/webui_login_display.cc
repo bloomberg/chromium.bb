@@ -291,7 +291,7 @@ void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-  WallpaperManager::Get()->SetDefaultWallpaperDelayed();
+  WallpaperManager::Get()->SetDefaultWallpaperDelayed(UserManager::kSignInUser);
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

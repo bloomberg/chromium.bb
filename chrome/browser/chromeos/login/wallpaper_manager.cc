@@ -148,8 +148,8 @@ class MovableOnDestroyCallback {
 
 WallpaperManager::PendingWallpaper::PendingWallpaper(
     const base::TimeDelta delay,
-    const std::string& username)
-    : username_(username),
+    const std::string& user_id)
+    : user_id_(user_id),
       default_(false),
       on_finish_(new MovableOnDestroyCallback(
           base::Bind(&WallpaperManager::PendingWallpaper::OnWallpaperSet,
@@ -206,7 +206,7 @@ void WallpaperManager::PendingWallpaper::ProcessRequest() {
   started_load_at_ = base::Time::Now();
 
   if (default_) {
-    manager->DoSetDefaultWallpaper(on_finish_.Pass());
+    manager->DoSetDefaultWallpaper(user_id_, on_finish_.Pass());
   } else if (!user_wallpaper_.isNull()) {
     ash::Shell::GetInstance()->
         desktop_background_controller()->
@@ -216,13 +216,13 @@ void WallpaperManager::PendingWallpaper::ProcessRequest() {
         FROM_HERE,
         base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
                    base::Unretained(manager),
-                   username_,
+                   user_id_,
                    info_,
                    wallpaper_path_,
                    true /* update wallpaper */,
                    base::Passed(on_finish_.Pass())));
   } else if (!info_.file.empty()) {
-    manager->LoadWallpaper(username_, info_, true, on_finish_.Pass());
+    manager->LoadWallpaper(user_id_, info_, true, on_finish_.Pass());
   } else {
     // PendingWallpaper was created and never initialized?
     NOTREACHED();
@@ -276,6 +276,15 @@ WallpaperManager::TestApi::~TestApi() {
 
 base::FilePath WallpaperManager::TestApi::current_wallpaper_path() {
   return wallpaper_manager_->current_wallpaper_path_;
+}
+
+gfx::ImageSkia WallpaperManager::TestApi::CachedWallpaper(
+    const std::string& user_id) {
+  CustomWallpaperMap::const_iterator it =
+      wallpaper_manager_->wallpaper_cache_.find(user_id);
+  if (it != wallpaper_manager_->wallpaper_cache_.end())
+    return it->second;
+  return gfx::ImageSkia();
 }
 
 // static
@@ -358,7 +367,28 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
 void WallpaperManager::ClearWallpaperCache() {
   // Cancel callback for previous cache requests.
   weak_factory_.InvalidateWeakPtrs();
-  wallpaper_cache_.clear();
+  if (!UserManager::IsMultipleProfilesAllowed()) {
+    wallpaper_cache_.clear();
+  } else {
+    // Keep the wallpaper of logged in users in cache at multi-profile mode.
+    std::set<std::string> logged_in_users_names;
+    const UserList& logged_users = UserManager::Get()->GetLoggedInUsers();
+    for (UserList::const_iterator it = logged_users.begin();
+         it != logged_users.end();
+         ++it) {
+      logged_in_users_names.insert((*it)->email());
+    }
+
+    for (CustomWallpaperMap::iterator it = wallpaper_cache_.begin();
+         it != wallpaper_cache_.end(); ) {
+      if (logged_in_users_names.find(it->first) ==
+          logged_in_users_names.end()) {
+        wallpaper_cache_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 }
 
 base::FilePath WallpaperManager::GetCustomWallpaperPath(
@@ -381,8 +411,8 @@ bool WallpaperManager::GetWallpaperFromCache(const std::string& email,
 }
 
 base::FilePath WallpaperManager::GetOriginalWallpaperPathForUser(
-    const std::string& username) {
-  std::string filename = username + kOriginalCustomWallpaperSuffix;
+    const std::string& user_id) {
+  std::string filename = user_id + kOriginalCustomWallpaperSuffix;
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   return user_data_dir.AppendASCII(filename);
@@ -428,7 +458,7 @@ void WallpaperManager::InitializeWallpaper() {
 
   if (!user_manager->IsUserLoggedIn()) {
     if (!StartupUtils::IsDeviceRegistered())
-      SetDefaultWallpaperDelayed();
+      SetDefaultWallpaperDelayed(UserManager::kSignInUser);
     else
       InitializeRegisteredDeviceWallpaper();
     return;
@@ -565,7 +595,7 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
   }
 }
 
-void WallpaperManager::SetCustomWallpaper(const std::string& username,
+void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
                                           const std::string& user_id_hash,
                                           const std::string& file,
                                           ash::WallpaperLayout layout,
@@ -583,12 +613,12 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   // If decoded wallpaper is empty, we are probably failed to decode the file.
   // Use default wallpaper in this case.
   if (wallpaper.image().isNull()) {
-    SetDefaultWallpaperDelayed();
+    SetDefaultWallpaperDelayed(user_id);
     return;
   }
 
   bool is_persistent =
-      !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username);
+      !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user_id);
 
   wallpaper.image().EnsureRepsForSupportedScales();
   scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
@@ -615,8 +645,6 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
                  wallpaper_info,
                  base::Passed(&deep_copy),
                  wallpaper.raw_image()));
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetCustomWallpaper(wallpaper.image(), layout);
 
   std::string relative_path = base::FilePath(user_id_hash).Append(file).value();
   // User's custom wallpaper path is determined by relative path and the
@@ -627,23 +655,30 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
-  SetUserWallpaperInfo(username, info, is_persistent);
+  SetUserWallpaperInfo(user_id, info, is_persistent);
+  GetPendingWallpaper(user_id, false)->ResetSetWallpaperImage(
+      wallpaper.image(), info);
+
+  if (UserManager::IsMultipleProfilesAllowed())
+    wallpaper_cache_[user_id] = wallpaper.image();
 }
 
-void WallpaperManager::SetDefaultWallpaperNow() {
-  GetPendingWallpaper(std::string(), false)->ResetSetDefaultWallpaper();
+void WallpaperManager::SetDefaultWallpaperNow(const std::string& user_id) {
+  GetPendingWallpaper(user_id, false)->ResetSetDefaultWallpaper();
 }
 
-void WallpaperManager::SetDefaultWallpaperDelayed() {
-  GetPendingWallpaper(std::string(), true)->ResetSetDefaultWallpaper();
+void WallpaperManager::SetDefaultWallpaperDelayed(const std::string& user_id) {
+  GetPendingWallpaper(user_id, true)->ResetSetDefaultWallpaper();
 }
 
 void WallpaperManager::DoSetDefaultWallpaper(
+    const std::string& user_id,
     MovableOnDestroyCallbackHolder on_finish) {
   // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
   current_wallpaper_path_.clear();
+  wallpaper_cache_.erase(user_id);
   // Some browser tests do not have a shell instance. As no wallpaper is needed
   // in these tests anyway, avoid loading one, preventing crashes and speeding
   // up the tests.
@@ -654,7 +689,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
     loaded_wallpapers_++;
 }
 
-void WallpaperManager::InitInitialUserWallpaper(const std::string& username,
+void WallpaperManager::InitInitialUserWallpaper(const std::string& user_id,
                                                 bool is_persistent) {
   current_user_wallpaper_info_.file = "";
   current_user_wallpaper_info_.layout = ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
@@ -662,10 +697,10 @@ void WallpaperManager::InitInitialUserWallpaper(const std::string& username,
   current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
 
   WallpaperInfo info = current_user_wallpaper_info_;
-  SetUserWallpaperInfo(username, info, is_persistent);
+  SetUserWallpaperInfo(user_id, info, is_persistent);
 }
 
-void WallpaperManager::SetUserWallpaperInfo(const std::string& username,
+void WallpaperManager::SetUserWallpaperInfo(const std::string& user_id,
                                             const WallpaperInfo& info,
                                             bool is_persistent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -683,7 +718,7 @@ void WallpaperManager::SetUserWallpaperInfo(const std::string& username,
   wallpaper_info_dict->SetString(kNewWallpaperFileNodeName, info.file);
   wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
   wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
-  wallpaper_update->SetWithoutPathExpansion(username, wallpaper_info_dict);
+  wallpaper_update->SetWithoutPathExpansion(user_id, wallpaper_info_dict);
 }
 
 void WallpaperManager::SetLastSelectedUser(
@@ -705,7 +740,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& email,
   // Some unit tests come here without a UserManager or without a pref system.
   if (!UserManager::IsInitialized() || !g_browser_process->local_state())
     return;
-  // There is no visible background in  kiosk mode.
+  // There is no visible background in kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
   // Guest user, regular user in ephemeral mode, or kiosk app.
@@ -774,6 +809,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& email,
 }
 
 void WallpaperManager::SetWallpaperFromImageSkia(
+    const std::string& user_id,
     const gfx::ImageSkia& wallpaper,
     ash::WallpaperLayout layout) {
   // There is no visible background in  kiosk mode.
@@ -781,6 +817,8 @@ void WallpaperManager::SetWallpaperFromImageSkia(
     return;
   WallpaperInfo info;
   info.layout = layout;
+  if (UserManager::IsMultipleProfilesAllowed())
+    wallpaper_cache_[user_id] = wallpaper;
   GetPendingWallpaper(last_selected_user_, false /* Not delayed */)->
       ResetSetWallpaperImage(wallpaper, info);
 }
@@ -793,7 +831,7 @@ void WallpaperManager::UpdateWallpaper() {
   // be set. It could result a black screen on external monitors.
   // See http://crbug.com/265689 for detail.
   if (last_selected_user_.empty()) {
-    SetDefaultWallpaperNow();
+    SetDefaultWallpaperNow(UserManager::kSignInUser);
     return;
   }
   SetUserWallpaperNow(last_selected_user_);
@@ -976,7 +1014,7 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   const chromeos::UserList& users = UserManager::Get()->GetUsers();
   if (!show_users || users.empty()) {
     // Boot into sign in form, preload default wallpaper.
-    SetDefaultWallpaperDelayed();
+    SetDefaultWallpaperDelayed(UserManager::kSignInUser);
     return;
   }
 
@@ -1028,7 +1066,7 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
     // In unexpected cases, revert to default wallpaper to fail safely. See
     // crosbug.com/38429.
     LOG(ERROR) << "Wallpaper reverts to default unexpected.";
-    DoSetDefaultWallpaper(on_finish.Pass());
+    DoSetDefaultWallpaper(email, on_finish.Pass());
   }
 }
 
@@ -1156,6 +1194,7 @@ void WallpaperManager::GetCustomWallpaperInternal(
                             FROM_HERE,
                             base::Bind(&WallpaperManager::DoSetDefaultWallpaper,
                                        base::Unretained(this),
+                                       email,
                                        base::Passed(on_finish.Pass())));
   } else {
     BrowserThread::PostTask(BrowserThread::UI,
@@ -1192,13 +1231,13 @@ void WallpaperManager::OnWallpaperDecoded(
     SetUserWallpaperInfo(email, info, true);
 
     if (update_wallpaper)
-      DoSetDefaultWallpaper(on_finish.Pass());
+      DoSetDefaultWallpaper(email, on_finish.Pass());
     return;
   }
 
   // Only cache the user wallpaper at login screen and for multi profile users.
   if (!UserManager::Get()->IsUserLoggedIn() ||
-      (UserManager::Get()->GetLoggedInUsers().size() > 1)) {
+      UserManager::IsMultipleProfilesAllowed()) {
     wallpaper_cache_[email] = wallpaper.image();
   }
 
@@ -1325,13 +1364,13 @@ base::TimeDelta WallpaperManager::GetWallpaperLoadDelay() const {
 }
 
 WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
-    const std::string& username,
+    const std::string& user_id,
     bool delayed) {
   if (!pending_inactive_) {
     loading_.push_back(new WallpaperManager::PendingWallpaper(
         (delayed ? GetWallpaperLoadDelay()
                  : base::TimeDelta::FromMilliseconds(0)),
-        username));
+        user_id));
     pending_inactive_ = loading_.back();
   }
   return pending_inactive_;
