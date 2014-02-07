@@ -88,6 +88,12 @@ class PrintJob : public PrintJobWorkerOwner,
   // and the end of the spooling.
   bool is_job_pending() const;
 
+  // Returns true if the worker thread is in the process of stopping.
+  bool is_stopping() const;
+
+  // Returns true if the worker thread has stopped.
+  bool is_stopped() const;
+
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
@@ -112,7 +118,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // Called at shutdown when running a nested message loop.
   void Quit();
 
-  void HoldUntilStopIsCalled();
+  void HoldUntilStopIsCalled(const scoped_refptr<PrintJob>& job);
 
   content::NotificationRegistrar registrar_;
 
@@ -141,6 +147,12 @@ class PrintJob : public PrintJobWorkerOwner,
   // Is Canceling? If so, try to not cause recursion if on FAILED notification,
   // the notified calls Cancel() again.
   bool is_canceling_;
+
+  // Is the worker thread stopping.
+  bool is_stopping_;
+
+  // Is the worker thread stopped.
+  bool is_stopped_;
 
   // Used at shutdown so that we can quit a nested message loop.
   base::WeakPtrFactory<PrintJob> quit_factory_;
