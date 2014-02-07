@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -58,6 +59,9 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
 
   scoped_ptr<PolicyOAuth2TokenFetcher> token_fetcher_;
   scoped_ptr<UserInfoFetcher> user_info_fetcher_;
+
+  base::Time start_timestamp_;
+  base::Time token_available_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(WildcardLoginChecker);
 };

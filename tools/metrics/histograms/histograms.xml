@@ -3677,6 +3677,24 @@ other types of suffix sets.
   <summary>Network error during OAuth2 access token fetch.</summary>
 </histogram>
 
+<histogram name="Enterprise.WildcardLoginCheck.DelayPolicyTokenFetch"
+    units="milliseconds">
+  <summary>
+    Delay incurred by the token fetching step of the wildcard login check.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.WildcardLoginCheck.DelayTotal" units="milliseconds">
+  <summary>Total delay incurred by the wildcard login check.</summary>
+</histogram>
+
+<histogram name="Enterprise.WildcardLoginCheck.DelayUserInfoFetch"
+    units="milliseconds">
+  <summary>
+    Delay incurred by the user info fetching step of the wildcard login check.
+  </summary>
+</histogram>
+
 <histogram name="EnterpriseCheck.DomainBindSucceeded" enum="BooleanSuccess">
   <summary>
     Whether we were able to contact the AD Domain Controller. This check is

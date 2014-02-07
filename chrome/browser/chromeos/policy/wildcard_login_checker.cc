@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -19,6 +20,14 @@ namespace {
 // on a hosted domain.
 const char kHostedDomainKey[] = "hd";
 
+// UMA histogram names.
+const char kUMADelayPolicyTokenFetch[] =
+    "Enterprise.WildcardLoginCheck.DelayPolicyTokenFetch";
+const char kUMADelayUserInfoFetch[] =
+    "Enterprise.WildcardLoginCheck.DelayUserInfoFetch";
+const char kUMADelayTotal[] =
+    "Enterprise.WildcardLoginCheck.DelayTotal";
+
 }  // namespace
 
 WildcardLoginChecker::WildcardLoginChecker() {}
@@ -30,6 +39,9 @@ void WildcardLoginChecker::Start(
     const StatusCallback& callback) {
   CHECK(!token_fetcher_);
   CHECK(!user_info_fetcher_);
+
+  start_timestamp_ = base::Time::Now();
+
   callback_ = callback;
   token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
       signin_context,
@@ -51,6 +63,14 @@ void WildcardLoginChecker::StartWithAccessToken(
 
 void WildcardLoginChecker::OnGetUserInfoSuccess(
     const base::DictionaryValue* response) {
+  if (!start_timestamp_.is_null()) {
+    base::Time now = base::Time::Now();
+    UMA_HISTOGRAM_MEDIUM_TIMES(kUMADelayUserInfoFetch,
+                               now - token_available_timestamp_);
+    UMA_HISTOGRAM_MEDIUM_TIMES(kUMADelayTotal,
+                               now - start_timestamp_);
+  }
+
   OnCheckCompleted(response->HasKey(kHostedDomainKey));
 }
 
@@ -67,6 +87,12 @@ void WildcardLoginChecker::OnPolicyTokenFetched(
     LOG(ERROR) << "Failed to fetch policy token " << error.ToString();
     OnCheckCompleted(false);
     return;
+  }
+
+  if (!start_timestamp_.is_null()) {
+    token_available_timestamp_ = base::Time::Now();
+    UMA_HISTOGRAM_MEDIUM_TIMES(kUMADelayPolicyTokenFetch,
+                               token_available_timestamp_ - start_timestamp_);
   }
 
   token_fetcher_.reset();
