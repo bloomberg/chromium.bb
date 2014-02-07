@@ -603,452 +603,486 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Right to Left
       </message>
 
-      <!-- content area context menus -->
-      <if expr="is_macosx or is_linux">
-          <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-            Look Up in Dictionary
+      <!-- content area context menus. Android does not use it -->
+      <if expr="not is_android">
+        <if expr="is_macosx or is_linux">
+            <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+              Look Up in Dictionary
+            </message>
+        </if>
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
+            &amp;Back
           </message>
+          <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="The name of the Forward command in the content area context menu">
+            &amp;Forward
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
+            Save &amp;as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
+            P&amp;rint...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
+            &amp;View page source
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="The name of the Open Link With... command in the content area context menu">
+            Open link with...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
+            Configure...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
+            View page &amp;info
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
+            I&amp;nspect element
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="The name of the Inspect Background Page command in the packaged app content area context menu">
+            Inspect &amp;background page
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
+            Re&amp;load
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="The name of the Restart Packaged App command in the packaged app context menu.">
+            Simulate browser restart
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
+            Re&amp;load app
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
+            &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
+            Reload frame
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
+            Save &amp;frame as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
+            P&amp;rint frame...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
+            &amp;View frame source
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="The name of the View Frame Info command in the content area context menu">
+            View frame &amp;info
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="The name of the Open Link in New Tab command in the content area context menu">
+            Open link in new &amp;tab
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="The name of the Open Link in New Window command in the content area context menu">
+            Open link in new &amp;window
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="The name of the open a link in incognito window command">
+            Open link in inco&amp;gnito window
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
+            Save lin&amp;k as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="The name of the Copy Link Location command in the content area context menu">
+            Copy link addr&amp;ess
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="The name of the Copy Email Address command in the content area context menu">
+            Copy &amp;email address
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
+            Sa&amp;ve image as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
+            C&amp;opy image URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu">
+            Cop&amp;y image
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="The name of the Open Image in New Tab command in the content area context menu">
+            Open &amp;image in new tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
+            &amp;Loop
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PLAY" desc="The name of the Play command for audio and video playback in the content area context menu">
+            &amp;Play
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="The name of the Pause command for audio and video playback in the content area context menu">
+            &amp;Pause
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_MUTE" desc="The name of the Mute command for audio and video playback in the content area context menu">
+            &amp;Mute
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
+            Un&amp;mute
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="The name of the Show Controls command for audio and video playback in the content area context menu">
+            Show &amp;controls
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ROTATECW" desc="The name of the Rotate clockwise command for plugins in the content area context menu">
+            Rotate &amp;clockwise
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ROTATECCW" desc="The name of the Rotate counterclockwise command for plugins in the content area context menu">
+            Rotate c&amp;ounterclockwise
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
+            Sa&amp;ve video as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
+            C&amp;opy video URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
+            &amp;Open video in new tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
+            Sa&amp;ve audio as...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
+            C&amp;opy audio URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
+            &amp;Open audio in new tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
+            &amp;Undo
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_REDO" desc="The name of the Redo command in the content area context menu">
+            &amp;Redo
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_CUT" desc="The name of the Cut command in the content area context menu">
+            Cu&amp;t
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPY" desc="The name of the Copy command in the content area context menu">
+            &amp;Copy
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu" meaning="'Paste' menu command in sentence case">
+            &amp;Paste
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="The name of the 'Paste as plain text' command in the content area context menu">
+            Paste as plain text
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
+            &amp;Delete
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
+            &amp;Add to dictionary
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="The name of the No Spelling Suggestions display in the content area context menu">
+            &amp;No spelling suggestions
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+            Ask Google for suggestions
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
+            Enable
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="The button text that disallows integrating the spelling service of Google.">
+            No thanks
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
+            Loading suggestion
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
+            No more suggestions from Google
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
+            Automatically correct spelling
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
+            Select &amp;all
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for 'string' command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="The name of the Search For Image command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this image
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
+            &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
+            Add as search en&amp;gine...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="The name of the input method submenu in the content area context menu">
+            Input &amp;methods
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="The name of the Speech input options submenu in the content area context menu">
+            Voice recognition options
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="The name of the offensive word filtering command in the content area context menu">
+            Block offensive words
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="The name of the Speech input About command in the content area context menu">
+            About voice recognition
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
+            &amp;Back
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="In Title Case: The name of the Forward command in the content area context menu">
+            &amp;Forward
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="In Title Case: The name of the Save Page As command in the content area context menu">
+            Save &amp;As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
+            P&amp;rint...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="In Title Case: The name of the View Page Source command in the content area context menu">
+            &amp;View Page Source
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="In Title Case: The name of the Open Link With... command in the content area context menu">
+            Open Link With...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
+            Configure...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
+            View Page &amp;Info
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="In Title Case: The name of the Inspect Element command in the content area context menu">
+            I&amp;nspect Element
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="In Title Case: The name of the Inspect Background Page command in the packaged app content area context menu">
+            Inspect &amp;Background Page
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
+            Re&amp;load
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="In Title Case: The name of the Restart Packaged App command in the packaged app context menu.">
+            Simulate Browser Restart
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="In Title Case: The name of the Reload Packaged App command in the packaged app content area context menu">
+            Re&amp;load App
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
+            &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">
+            Reload Frame
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="In Title Case: The name of the Save Frame As command in the content area context menu">
+            Save &amp;Frame As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="In Title Case: The name of the Print Frame command in the content area context menu">
+            P&amp;rint Frame...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
+            &amp;View Frame Source
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="In Title Case: The name of the View Frame Info command in the content area context menu">
+            View Frame &amp;Info
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="In Title Case: The name of the Open Link in New Tab command in the content area context menu">
+            Open Link in New &amp;Tab
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="In Title Case: The name of the Open Link in New Window command in the content area context menu">
+            Open Link in New &amp;Window
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="In Title Case: The name of the open a link in incognito window command">
+            Open Link in Inco&amp;gnito Window
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="In Title Case: The name of the Save Link As command in the content area context menu">
+            Save Lin&amp;k As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="In Title Case: The name of the Copy Link Location command in the content area context menu">
+            Copy Link Addr&amp;ess
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="In Title Case: The name of the Copy Email Address command in the content area context menu">
+            Copy &amp;Email Address
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="In Title Case: The name of the Save Image As command in the content area context menu">
+            Sa&amp;ve Image As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="In Title Case: The name of the Copy Image Location command in the content area context menu">
+            C&amp;opy Image URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="In Title Case: The name of the Copy Image command in the content area context menu">
+            Cop&amp;y Image
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="In Title Case: The name of the Open Image in New Tab command in the content area context menu">
+            Open &amp;Image in New Tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_LOOP" desc="In Title Case: The name of the Loop command for audio and video playback in the content area context menu">
+            &amp;Loop
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PLAY" desc="In Title Case: The name of the Play command for audio and video playback in the content area context menu">
+            &amp;Play
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="In Title Case: The name of the Pause command for audio and video playback in the content area context menu">
+            &amp;Pause
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_MUTE" desc="In Title Case: The name of the Mute command for audio and video playback in the content area context menu">
+            &amp;Mute
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="In Title Case: The name of the Unmute command for audio and video playback in the content area context menu">
+            Un&amp;mute
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="In Title Case: The name of the Show Controls command for audio and video playback in the content area context menu">
+            Show &amp;Controls
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ROTATECW" desc="In Title Case: The name of the Rotate Clockwise command for plugins in the content area context menu">
+            Rotate &amp;Clockwise
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ROTATECCW" desc="In Title Case: The name of the Rotate Counterclockwise command for plugins in the content area context menu">
+            Rotate C&amp;ounterclockwise
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
+           Sa&amp;ve Video As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
+            C&amp;opy Video URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
+            &amp;Open Video in New Tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="In Title Case: The name of the Save Audio As command in the content area context menu">
+            Sa&amp;ve Audio As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="In Title Case: The name of the Copy Audio Location command in the content area context menu">
+            C&amp;opy Audio URL
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
+            &amp;Open Audio in New Tab
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_UNDO" desc="In Title Case: The name of the Undo command in the content area context menu">
+            &amp;Undo
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_REDO" desc="In Title Case: The name of the Redo command in the content area context menu">
+            &amp;Redo
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_CUT" desc="In Title Case: The name of the Cut command in the content area context menu">
+            Cu&amp;t
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPY" desc="In Title Case: The name of the Copy command in the content area context menu">
+            &amp;Copy
+          </message>
+          <!-- Paste and Match Style / Paste as Plain Text -->
+          <if expr="is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PASTE" desc="Mac/In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command for Mac">
+              &amp;Paste
+            </message>
+            <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="Mac/In Title Case: The name of the 'Paste and Match Style' command in the content area context menu">
+              Paste and Match Style
+            </message>
+          </if>
+          <if expr="not is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command in title case">
+              &amp;Paste
+            </message>
+            <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="In Title Case: The name of the 'Paste as plain text' command in the content area context menu">
+              Paste As Plain Text
+            </message>
+          </if>
+          <message name="IDS_CONTENT_CONTEXT_DELETE" desc="In Title Case: The name of the Delete command in the content area context menu">
+            &amp;Delete
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="In Title Case: The name of the Add to dictionary command in the content area context menu">
+            &amp;Add to Dictionary
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="In Title Case: The name of the No Spelling Suggestions display in the content area context menu">
+            &amp;No Spelling Suggestions
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+            Ask Google for Suggestions
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
+            Enable
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="In Title Case: The button text that disallows integrating the spelling service of Google.">
+            No Thanks
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
+            Loading suggestion
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
+            No more suggestions from Google
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="In Title Case: The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
+            Automatically Correct Spelling
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
+            Select &amp;All
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for 'string' command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="In Title Case: The name of the Search For Image command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this Image
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
+            &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
+            Add As Search En&amp;gine...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
+            Input &amp;Methods
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="In Title Case: The name of the Speech input options submenu in the content area context menu">
+            Voice Recognition Options
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="In Title Case: The name of the offensive word filtering command in the content area context menu">
+            Block Offensive Words
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="In Title Case: The name of the Speech input About command in the content area context menu">
+            About Voice Recognition
+          </message>
+        </if>
+
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
+          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+        </message>
       </if>
+
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
-          &amp;Back
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="The name of the Forward command in the content area context menu">
-          &amp;Forward
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
-          Save &amp;as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
-          P&amp;rint...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
-          &amp;View page source
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="The name of the Open Link With... command in the content area context menu">
-          Open link with...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
-          Configure...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
-          View page &amp;info
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
-          I&amp;nspect element
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="The name of the Inspect Background Page command in the packaged app content area context menu">
-          Inspect &amp;background page
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
-          Re&amp;load
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="The name of the Restart Packaged App command in the packaged app context menu.">
-          Simulate browser restart
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
-          Re&amp;load app
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
-          &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
-          Reload frame
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
-          Save &amp;frame as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
-          P&amp;rint frame...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
-          &amp;View frame source
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="The name of the View Frame Info command in the content area context menu">
-          View frame &amp;info
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="The name of the Open Link in New Tab command in the content area context menu">
-          Open link in new &amp;tab
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="The name of the Open Link in New Window command in the content area context menu">
-          Open link in new &amp;window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="The name of the open a link in incognito window command">
-          Open link in inco&amp;gnito window
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
-          Save lin&amp;k as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="The name of the Copy Link Location command in the content area context menu">
-          Copy link addr&amp;ess
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="The name of the Copy Email Address command in the content area context menu">
-          Copy &amp;email address
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
-          Sa&amp;ve image as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
-          C&amp;opy image URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu">
-          Cop&amp;y image
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="The name of the Open Image in New Tab command in the content area context menu">
-          Open &amp;image in new tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
-          &amp;Loop
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PLAY" desc="The name of the Play command for audio and video playback in the content area context menu">
-          &amp;Play
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="The name of the Pause command for audio and video playback in the content area context menu">
-          &amp;Pause
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_MUTE" desc="The name of the Mute command for audio and video playback in the content area context menu">
-          &amp;Mute
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
-          Un&amp;mute
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="The name of the Show Controls command for audio and video playback in the content area context menu">
-          Show &amp;controls
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ROTATECW" desc="The name of the Rotate clockwise command for plugins in the content area context menu">
-          Rotate &amp;clockwise
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ROTATECCW" desc="The name of the Rotate counterclockwise command for plugins in the content area context menu">
-          Rotate c&amp;ounterclockwise
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
-          Sa&amp;ve video as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
-          C&amp;opy video URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
-          &amp;Open video in new tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
-          Sa&amp;ve audio as...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
-          C&amp;opy audio URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
-          &amp;Open audio in new tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
-          &amp;Undo
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_REDO" desc="The name of the Redo command in the content area context menu">
-          &amp;Redo
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_CUT" desc="The name of the Cut command in the content area context menu">
-          Cu&amp;t
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPY" desc="The name of the Copy command in the content area context menu">
-          &amp;Copy
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu" meaning="'Paste' menu command in sentence case">
-          &amp;Paste
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
-          &amp;Delete
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
-          &amp;Add to dictionary
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="The name of the No Spelling Suggestions display in the content area context menu">
-          &amp;No spelling suggestions
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-          Ask Google for suggestions
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
-          Enable
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="The button text that disallows integrating the spelling service of Google.">
-          No thanks
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
-          Loading suggestion
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
-          No more suggestions from Google
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
-          Automatically correct spelling
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
-          Select &amp;all
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for 'string' command in the content area context menu">
-          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="The name of the Search For Image command in the content area context menu">
-          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this image
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
-          &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
-          Add as search en&amp;gine...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="The name of the input method submenu in the content area context menu">
-          Input &amp;methods
-        </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="The name of the Run command on the blocked plugin context menu">
           Run this plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="The name of the Hide command on the blocked plugin context menu">
           Hide this plug-in
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="The name of the Speech input options submenu in the content area context menu">
-          Voice recognition options
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="The name of the offensive word filtering command in the content area context menu">
-          Block offensive words
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="The name of the Speech input About command in the content area context menu">
-          About voice recognition
-        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
-          &amp;Back
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="In Title Case: The name of the Forward command in the content area context menu">
-          &amp;Forward
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="In Title Case: The name of the Save Page As command in the content area context menu">
-          Save &amp;As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
-          P&amp;rint...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="In Title Case: The name of the View Page Source command in the content area context menu">
-          &amp;View Page Source
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="In Title Case: The name of the Open Link With... command in the content area context menu">
-          Open Link With...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
-          Configure...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
-          View Page &amp;Info
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="In Title Case: The name of the Inspect Element command in the content area context menu">
-          I&amp;nspect Element
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="In Title Case: The name of the Inspect Background Page command in the packaged app content area context menu">
-          Inspect &amp;Background Page
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
-          Re&amp;load
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="In Title Case: The name of the Restart Packaged App command in the packaged app context menu.">
-          Simulate Browser Restart
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="In Title Case: The name of the Reload Packaged App command in the packaged app content area context menu">
-          Re&amp;load App
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
-          &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">
-          Reload Frame
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="In Title Case: The name of the Save Frame As command in the content area context menu">
-          Save &amp;Frame As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="In Title Case: The name of the Print Frame command in the content area context menu">
-          P&amp;rint Frame...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
-          &amp;View Frame Source
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="In Title Case: The name of the View Frame Info command in the content area context menu">
-          View Frame &amp;Info
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="In Title Case: The name of the Open Link in New Tab command in the content area context menu">
-          Open Link in New &amp;Tab
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="In Title Case: The name of the Open Link in New Window command in the content area context menu">
-          Open Link in New &amp;Window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="In Title Case: The name of the open a link in incognito window command">
-          Open Link in Inco&amp;gnito Window
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="In Title Case: The name of the Save Link As command in the content area context menu">
-          Save Lin&amp;k As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="In Title Case: The name of the Copy Link Location command in the content area context menu">
-          Copy Link Addr&amp;ess
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="In Title Case: The name of the Copy Email Address command in the content area context menu">
-          Copy &amp;Email Address
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="In Title Case: The name of the Save Image As command in the content area context menu">
-          Sa&amp;ve Image As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="In Title Case: The name of the Copy Image Location command in the content area context menu">
-          C&amp;opy Image URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="In Title Case: The name of the Copy Image command in the content area context menu">
-          Cop&amp;y Image
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="In Title Case: The name of the Open Image in New Tab command in the content area context menu">
-          Open &amp;Image in New Tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_LOOP" desc="In Title Case: The name of the Loop command for audio and video playback in the content area context menu">
-          &amp;Loop
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PLAY" desc="In Title Case: The name of the Play command for audio and video playback in the content area context menu">
-          &amp;Play
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="In Title Case: The name of the Pause command for audio and video playback in the content area context menu">
-          &amp;Pause
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_MUTE" desc="In Title Case: The name of the Mute command for audio and video playback in the content area context menu">
-          &amp;Mute
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="In Title Case: The name of the Unmute command for audio and video playback in the content area context menu">
-          Un&amp;mute
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="In Title Case: The name of the Show Controls command for audio and video playback in the content area context menu">
-          Show &amp;Controls
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ROTATECW" desc="In Title Case: The name of the Rotate Clockwise command for plugins in the content area context menu">
-          Rotate &amp;Clockwise
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ROTATECCW" desc="In Title Case: The name of the Rotate Counterclockwise command for plugins in the content area context menu">
-          Rotate C&amp;ounterclockwise
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
-         Sa&amp;ve Video As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
-          C&amp;opy Video URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
-          &amp;Open Video in New Tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="In Title Case: The name of the Save Audio As command in the content area context menu">
-          Sa&amp;ve Audio As...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="In Title Case: The name of the Copy Audio Location command in the content area context menu">
-          C&amp;opy Audio URL
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
-          &amp;Open Audio in New Tab
-        </message>
-
-        <message name="IDS_CONTENT_CONTEXT_UNDO" desc="In Title Case: The name of the Undo command in the content area context menu">
-          &amp;Undo
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_REDO" desc="In Title Case: The name of the Redo command in the content area context menu">
-          &amp;Redo
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_CUT" desc="In Title Case: The name of the Cut command in the content area context menu">
-          Cu&amp;t
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_COPY" desc="In Title Case: The name of the Copy command in the content area context menu">
-          &amp;Copy
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_DELETE" desc="In Title Case: The name of the Delete command in the content area context menu">
-          &amp;Delete
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="In Title Case: The name of the Add to dictionary command in the content area context menu">
-          &amp;Add to Dictionary
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="In Title Case: The name of the No Spelling Suggestions display in the content area context menu">
-          &amp;No Spelling Suggestions
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-          Ask Google for Suggestions
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
-          Enable
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="In Title Case: The button text that disallows integrating the spelling service of Google.">
-          No Thanks
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
-          Loading suggestion
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
-          No more suggestions from Google
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="In Title Case: The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
-          Automatically Correct Spelling
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
-          Select &amp;All
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for 'string' command in the content area context menu">
-          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="In Title Case: The name of the Search For Image command in the content area context menu">
-          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this Image
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
-          &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
-          Add As Search En&amp;gine...
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
-          Input &amp;Methods
-        </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
           Run This Plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="In Title Case: The name of the Hide command on the blocked plugin context menu">
           Hide This Plug-in
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="In Title Case: The name of the Speech input options submenu in the content area context menu">
-          Voice Recognition Options
+      </if>
+
+      <!-- Ash multi-user warning dialog -->
+      <if expr="pp_ifdef('use_ash')">
+        <message name="IDS_VISIT_DESKTOP_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
+          Careful, this feature may bite
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="In Title Case: The name of the offensive word filtering command in the content area context menu">
-          Block Offensive Words
+        <message name="IDS_VISIT_DESKTOP_WARNING_MESSAGE" desc="The message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
+          Moving windows to another desktop may result in unexpected behaviour.
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="In Title Case: The name of the Speech input About command in the content area context menu">
-          About Voice Recognition
+        <message name="IDS_VISIT_DESKTOP_WARNING_EXPLANATION" desc="The explanation message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
+          Subsequent notifications, windows and dialogs may be split between desktops.
+        </message>
+        <message name="IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
+          Got it, don't show me again.
         </message>
       </if>
-      <if expr="is_macosx">
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="Mac/In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command for Mac">
-          &amp;Paste
-        </message>
-      </if>
-      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command in title case">
-          &amp;Paste
-        </message>
-      </if>
-      <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-        Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
-      </message>
 
       <!-- Spelling submenu -->
       <if expr="is_macosx">
@@ -1099,218 +1133,187 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
 
-      <!-- Paste and Match Style / Paste as Plain Text -->
-      <if expr="is_macosx">
-        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="Mac/In Title Case: The name of the 'Paste and Match Style' command in the content area context menu">
-          Paste and Match Style
-        </message>
-      </if>
-      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="In Title Case: The name of the 'Paste as plain text' command in the content area context menu">
-          Paste As Plain Text
-        </message>
-      </if>
-      <if expr="not is_macosx and not pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="The name of the 'Paste as plain text' command in the content area context menu">
-          Paste as plain text
-        </message>
+      <!-- Page menu. Android has separate strings for its menu -->
+      <if expr="not is_android">
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
+            New &amp;tab
+          </message>
+          <message name="IDS_SHOW_AS_TAB" desc="The text label for the Show As tab menu item">
+            &amp;Show as tab
+          </message>
+          <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
+            &amp;New window
+          </message>
+          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+            New &amp;incognito window
+          </message>
+          <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
+            Pin this page to Start screen...
+          </message>
+          <message name="IDS_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
+            Unpin this page from Start screen...
+          </message>
+          <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
+            Edit
+          </message>
+          <message name="IDS_UNDO" desc="The text label of the Undo menu item">
+            &amp;Undo
+          </message>
+          <message name="IDS_CUT" desc="The text label of the Cut menu item">
+            Cu&amp;t
+          </message>
+          <message name="IDS_COPY" desc="The text label of the Copy menu item">
+            &amp;Copy
+          </message>
+          <message name="IDS_PASTE" desc="The text label of the Paste menu item" meaning="'Paste' menu command in sentence case">
+            &amp;Paste
+          </message>
+          <message name="IDS_DELETE" desc="The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
+            &amp;Delete
+          </message>
+          <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
+            Select &amp;all
+          </message>
+          <message name="IDS_FIND" desc="The text label of the Find... menu item">
+            &amp;Find...
+          </message>
+          <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
+            Save page &amp;as...
+          </message>
+          <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
+            &amp;Print...
+          </message>
+          <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
+            Too&amp;ls
+          </message>
+          <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
+            More too&amp;ls
+          </message>
+          <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
+            &amp;Zoom
+          </message>
+          <message name="IDS_ZOOM_MENU2" desc="The text label of the Zoom menu in the merged menu">
+            Zoom
+          </message>
+          <message name="IDS_ZOOM_PLUS" desc="The text label of the Make Text Larger menu item">
+            &amp;Larger
+          </message>
+          <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
+            +
+          </message>
+          <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
+            &amp;Normal
+          </message>
+          <message name="IDS_ZOOM_MINUS" desc="The text label of the Make Text Smaller menu item">
+            &amp;Smaller
+          </message>
+          <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
+            &#8722;
+          </message>
+          <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
+            <ph name="VALUE">$1<ex>100</ex></ph>%
+          </message>
+          <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
+            &amp;Encoding
+          </message>
+          <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Detect submenu">
+            Auto detect
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
+            New &amp;Tab
+          </message>
+          <message name="IDS_SHOW_AS_TAB" desc="In Title Case: The text label for the Show As tab menu item">
+            &amp;Show As Tab
+          </message>
+          <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of the New Window menu item">
+            &amp;New Window
+          </message>
+          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
+            New &amp;Incognito Window
+          </message>
+          <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
+            Pin this Page to Start Screen...
+          </message>
+          <message name="IDS_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
+            Unpin this Page from Start Screen...
+          </message>
+          <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
+            &amp;Undo
+          </message>
+          <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
+            Cu&amp;t
+          </message>
+          <message name="IDS_COPY" desc="In Title Case: The text label of the Copy menu item">
+            &amp;Copy
+          </message>
+          <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item" meaning="'Paste' menu command for Mac">
+            &amp;Paste
+          </message>
+          <message name="IDS_DELETE" desc="In Title Case: The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
+            &amp;Delete
+          </message>
+          <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
+            Select &amp;All
+          </message>
+          <message name="IDS_FIND" desc="In Title Case: The text label of the Find... menu item">
+            &amp;Find...
+          </message>
+          <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
+            Save Page &amp;As...
+          </message>
+          <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
+            &amp;Print...
+          </message>
+          <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
+            Too&amp;ls
+          </message>
+          <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
+            More too&amp;ls
+          </message>
+          <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
+            &amp;Zoom
+          </message>
+          <message name="IDS_ZOOM_PLUS" desc="In Title Case: The text label of the Make Text Larger menu item">
+            &amp;Larger
+          </message>
+          <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
+            +
+          </message>
+          <message name="IDS_ZOOM_NORMAL" desc="In Title Case: The text label of the Make Text Normal Size menu item">
+            &amp;Normal
+          </message>
+          <message name="IDS_ZOOM_MINUS" desc="In Title Case: The text label of the Make Text Smaller menu item">
+            &amp;Smaller
+          </message>
+          <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
+            &#8722;
+          </message>
+          <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
+          <ph name="VALUE">$1<ex>100</ex></ph>%
+          </message>
+          <message name="IDS_ENCODING_MENU" desc="In Title Case: The text label of the Encoding submenu">
+            &amp;Encoding
+          </message>
+          <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Detect submenu">
+            Auto Detect
+          </message>
+        </if>
       </if>
 
-      <!-- Page menu -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
-          New &amp;tab
-        </message>
-        <message name="IDS_SHOW_AS_TAB" desc="The text label for the Show As tab menu item">
-          &amp;Show as tab
-        </message>
-        <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
-          &amp;New window
-        </message>
-        <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-          New &amp;incognito window
-        </message>
-        <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
-          Pin this page to Start screen...
-        </message>
-        <message name="IDS_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
-          Unpin this page from Start screen...
-        </message>
-        <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
-          Edit
-        </message>
-        <message name="IDS_UNDO" desc="The text label of the Undo menu item">
-          &amp;Undo
-        </message>
-        <message name="IDS_CUT" desc="The text label of the Cut menu item">
-          Cu&amp;t
-        </message>
-        <message name="IDS_COPY" desc="The text label of the Copy menu item">
-          &amp;Copy
-        </message>
-        <message name="IDS_PASTE" desc="The text label of the Paste menu item" meaning="'Paste' menu command in sentence case">
-          &amp;Paste
-        </message>
-        <message name="IDS_DELETE" desc="The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
-          &amp;Delete
-        </message>
-        <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
-          Select &amp;all
-        </message>
-        <message name="IDS_FIND" desc="The text label of the Find... menu item">
-          &amp;Find...
-        </message>
-        <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
-          Save page &amp;as...
-        </message>
-        <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
-          &amp;Print...
-        </message>
-        <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
-          Too&amp;ls
-        </message>
-        <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
-          More too&amp;ls
-        </message>
-        <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
-          &amp;Zoom
-        </message>
-        <message name="IDS_ZOOM_MENU2" desc="The text label of the Zoom menu in the merged menu">
-          Zoom
-        </message>
-        <message name="IDS_ZOOM_PLUS" desc="The text label of the Make Text Larger menu item">
-          &amp;Larger
-        </message>
-        <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
-          +
-        </message>
-        <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
-          &amp;Normal
-        </message>
-        <message name="IDS_ZOOM_MINUS" desc="The text label of the Make Text Smaller menu item">
-          &amp;Smaller
-        </message>
-        <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
-          &#8722;
-        </message>
-        <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
-          <ph name="VALUE">$1<ex>100</ex></ph>%
-        </message>
-        <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
-          &amp;Encoding
-        </message>
-        <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Detect submenu">
-          Auto detect
-        </message>
-        <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
-          Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-          Careful, this feature may bite
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_MESSAGE" desc="The message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-          Moving windows to another desktop may result in unexpected behaviour.
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_EXPLANATION" desc="The explanation message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-          Subsequent notifications, windows and dialogs may be split between desktops.
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
-          Got it, don't show me again.
-        </message>
-      </if>
+      <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
+        Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
+      </message>
+
       <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
         Make Text Larger
       </message>
       <message name="IDS_ACCNAME_ZOOM_MINUS2" desc="The accessible description of the Make Text Smaller menu item in the merged menu">
         Make Text Smaller
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
-          New &amp;Tab
-        </message>
-        <message name="IDS_SHOW_AS_TAB" desc="In Title Case: The text label for the Show As tab menu item">
-          &amp;Show As Tab
-        </message>
-        <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of the New Window menu item">
-          &amp;New Window
-        </message>
-        <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
-          New &amp;Incognito Window
-        </message>
-        <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
-          Pin this page to Start Screen...
-        </message>
-        <message name="IDS_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
-          Unpin this page from Start Screen...
-        </message>
-        <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
-          &amp;Undo
-        </message>
-        <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
-          Cu&amp;t
-        </message>
-        <message name="IDS_COPY" desc="In Title Case: The text label of the Copy menu item">
-          &amp;Copy
-        </message>
-        <message name="IDS_DELETE" desc="In Title Case: The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
-          &amp;Delete
-        </message>
-        <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
-          Select &amp;All
-        </message>
-        <message name="IDS_FIND" desc="In Title Case: The text label of the Find... menu item">
-          &amp;Find...
-        </message>
-        <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
-          Save Page &amp;As...
-        </message>
-        <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
-          &amp;Print...
-        </message>
-        <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
-          Too&amp;ls
-        </message>
-        <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
-          More too&amp;ls
-        </message>
-        <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
-          &amp;Zoom
-        </message>
-        <message name="IDS_ZOOM_PLUS" desc="In Title Case: The text label of the Make Text Larger menu item">
-          &amp;Larger
-        </message>
-        <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
-          +
-        </message>
-        <message name="IDS_ZOOM_NORMAL" desc="In Title Case: The text label of the Make Text Normal Size menu item">
-          &amp;Normal
-        </message>
-        <message name="IDS_ZOOM_MINUS" desc="In Title Case: The text label of the Make Text Smaller menu item">
-          &amp;Smaller
-        </message>
-        <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
-          &#8722;
-        </message>
-        <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
-        <ph name="VALUE">$1<ex>100</ex></ph>%
-        </message>
-        <message name="IDS_ENCODING_MENU" desc="In Title Case: The text label of the Encoding submenu">
-          &amp;Encoding
-        </message>
-        <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Detect submenu">
-          Auto Detect
-        </message>
-      </if>
-      <if expr="is_macosx">
-        <message name="IDS_PASTE" desc="Mac/In Title Case: The text label of the Paste menu item" meaning="'Paste' menu command for Mac">
-          &amp;Paste
-        </message>
-      </if>
-      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item" meaning="'Paste' menu command in title case">
-          &amp;Paste
-        </message>
-      </if>
+
       <message name="IDS_ENCODING_DISPLAY_TEMPLATE" desc="The format of encodings in the encoding menu. Encoding categories are Unicode, Western, Turkish, Cyrillic, Chinese Simplified, Thai, Arabic, Hebrew and so forth. Encoding names are UTF-8, ISO-8859-1, Windows-1251, GB2312, etc.">
         <ph name="ENCODING_CATEGORY">$1<ex>Japanese</ex></ph> (<ph name="ENCODING_NAME">$2<ex>Shift_JIS</ex></ph>)
       </message>
