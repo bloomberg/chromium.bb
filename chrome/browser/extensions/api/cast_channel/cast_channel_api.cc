@@ -87,11 +87,6 @@ void CastChannelAPI::OnError(const CastSocket* socket,
   scoped_ptr<Event> event(new Event(OnError::kEventName, results.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
     DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
-
-  // Destroy the socket that caused the error.
-  ApiResourceManager<CastSocket>* manager =
-    ApiResourceManager<CastSocket>::Get(profile_);
-  manager->Remove(socket->owner_extension_id(), socket->id());
 }
 
 void CastChannelAPI::OnMessage(const CastSocket* socket,
