@@ -33,7 +33,8 @@ CastTransportConfig::~CastTransportConfig() {}
 EncodedVideoFrame::EncodedVideoFrame() {}
 EncodedVideoFrame::~EncodedVideoFrame() {}
 
-EncodedAudioFrame::EncodedAudioFrame() {}
+EncodedAudioFrame::EncodedAudioFrame()
+    : codec(kOpus), frame_id(0), rtp_timestamp(0) {}
 EncodedAudioFrame::~EncodedAudioFrame() {}
 
 RtcpSenderFrameLogMessage::RtcpSenderFrameLogMessage ()

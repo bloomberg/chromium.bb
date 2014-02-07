@@ -77,7 +77,6 @@ class AudioReceiver : public base::NonThreadSafe,
 
   bool PostEncodedAudioFrame(
       const AudioFrameEncodedCallback& callback,
-      uint32 rtp_timestamp,
       bool next_frame,
       scoped_ptr<transport::EncodedAudioFrame>* encoded_frame);
 

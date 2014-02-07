@@ -24,7 +24,6 @@ RtpPacketizerConfig::RtpPacketizerConfig()
       payload_type(-1),
       max_payload_length(kMaxIpPacketSize - 28),  // Default is IP-v4/UDP.
       sequence_number(0),
-      rtp_timestamp(0),
       frequency(8000),
       ssrc(0),
       channels(0) {}
@@ -38,7 +37,7 @@ RtpPacketizer::RtpPacketizer(PacedSender* const transport,
       transport_(transport),
       packet_storage_(packet_storage),
       sequence_number_(config_.sequence_number),
-      rtp_timestamp_(config_.rtp_timestamp),
+      rtp_timestamp_(0),
       packet_id_(0),
       send_packets_count_(0),
       send_octet_count_(0) {
@@ -68,11 +67,15 @@ void RtpPacketizer::IncomingEncodedAudioFrame(
     const EncodedAudioFrame* audio_frame,
     const base::TimeTicks& recorded_time) {
   DCHECK(config_.audio) << "Invalid state";
-  if (!config_.audio) return;
+  if (!config_.audio)
+    return;
 
-  rtp_timestamp_ += audio_frame->samples;  // Timestamp is in samples for audio.
   time_last_sent_rtp_timestamp_ = recorded_time;
-  Cast(true, audio_frame->frame_id, 0, rtp_timestamp_, audio_frame->data);
+  Cast(true,
+       audio_frame->frame_id,
+       0,
+       audio_frame->rtp_timestamp,
+       audio_frame->data);
 }
 
 uint16 RtpPacketizer::NextSequenceNumber() {

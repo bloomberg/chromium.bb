@@ -394,7 +394,6 @@ TEST_F(FramerTest, InOrderReferenceFrameSelection) {
 TEST_F(FramerTest, AudioWrap) {
   // All audio frames are marked as key frames.
   transport::EncodedAudioFrame frame;
-  uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
 
@@ -403,8 +402,7 @@ TEST_F(FramerTest, AudioWrap) {
 
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(254u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -418,14 +416,12 @@ TEST_F(FramerTest, AudioWrap) {
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(255u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
 
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(256u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -434,7 +430,6 @@ TEST_F(FramerTest, AudioWrap) {
 TEST_F(FramerTest, AudioWrapWithMissingFrame) {
   // All audio frames are marked as key frames.
   transport::EncodedAudioFrame frame;
-  uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
 
@@ -443,8 +438,7 @@ TEST_F(FramerTest, AudioWrapWithMissingFrame) {
   rtp_header_.frame_id = 253;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(253u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -458,13 +452,11 @@ TEST_F(FramerTest, AudioWrapWithMissingFrame) {
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
   // Get third and fourth packets.
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_FALSE(next_frame);
   EXPECT_EQ(255u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
-  EXPECT_TRUE(
-      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
+  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(256u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);

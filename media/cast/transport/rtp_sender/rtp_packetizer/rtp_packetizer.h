@@ -27,7 +27,6 @@ struct RtpPacketizerConfig {
   int payload_type;
   uint16 max_payload_length;
   uint16 sequence_number;
-  uint32 rtp_timestamp;
   int frequency;
 
   // SSRC.

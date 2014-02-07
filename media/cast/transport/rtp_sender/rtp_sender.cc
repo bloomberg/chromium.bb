@@ -48,8 +48,6 @@ RtpSender::RtpSender(
   }
   // Randomly set start values.
   config_.sequence_number = base::RandInt(0, 65535);
-  config_.rtp_timestamp = base::RandInt(0, 65535);
-  config_.rtp_timestamp += base::RandInt(0, 65535) << 16;
   packetizer_.reset(new RtpPacketizer(transport, storage_.get(), config_));
 }
 

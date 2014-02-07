@@ -25,8 +25,7 @@ class FrameBuffer {
                     const RtpCastHeader& rtp_header);
   bool Complete() const;
 
-  bool GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
-                            uint32* rtp_timestamp) const;
+  bool GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame) const;
 
   bool GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
                             uint32* rtp_timestamp) const;

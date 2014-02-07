@@ -253,7 +253,6 @@ void AudioReceiver::DecodeAudioFrameThread(
     queued_decoded_callbacks_.push_back(callback_data);
     return;
   }
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   cast_environment_->PostTask(
       CastEnvironment::MAIN,
@@ -296,13 +295,11 @@ void AudioReceiver::PlayoutTimeout() {
     // Already released by incoming packet.
     return;
   }
-  uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
       new transport::EncodedAudioFrame());
 
-  if (!audio_buffer_->GetEncodedAudioFrame(
-           encoded_frame.get(), &rtp_timestamp, &next_frame)) {
+  if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(), &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
     // Since the application can post multiple AudioFrameEncodedCallback and
     // we only check the next frame to play out we might have multiple timeout
@@ -316,10 +313,8 @@ void AudioReceiver::PlayoutTimeout() {
     return;
   }
 
-  if (PostEncodedAudioFrame(queued_encoded_callbacks_.front(),
-                            rtp_timestamp,
-                            next_frame,
-                            &encoded_frame)) {
+  if (PostEncodedAudioFrame(
+          queued_encoded_callbacks_.front(), next_frame, &encoded_frame)) {
     // Call succeed remove callback from list.
     queued_encoded_callbacks_.pop_front();
   }
@@ -330,13 +325,11 @@ void AudioReceiver::GetEncodedAudioFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
 
-  uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
       new transport::EncodedAudioFrame());
 
-  if (!audio_buffer_->GetEncodedAudioFrame(
-           encoded_frame.get(), &rtp_timestamp, &next_frame)) {
+  if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(), &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
     VLOG(1) << "Wait for more audio packets in frame";
     queued_encoded_callbacks_.push_back(callback);
@@ -347,8 +340,7 @@ void AudioReceiver::GetEncodedAudioFrame(
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
-  if (!PostEncodedAudioFrame(
-           callback, rtp_timestamp, next_frame, &encoded_frame)) {
+  if (!PostEncodedAudioFrame(callback, next_frame, &encoded_frame)) {
     // We have an audio frame; however we are missing packets and we have time
     // to wait for new packet(s).
     queued_encoded_callbacks_.push_back(callback);
@@ -357,14 +349,15 @@ void AudioReceiver::GetEncodedAudioFrame(
 
 bool AudioReceiver::PostEncodedAudioFrame(
     const AudioFrameEncodedCallback& callback,
-    uint32 rtp_timestamp,
     bool next_frame,
     scoped_ptr<transport::EncodedAudioFrame>* encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
+  DCHECK(encoded_frame) << "Invalid encoded_frame";
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
+  base::TimeTicks playout_time =
+      GetPlayoutTime(now, (*encoded_frame)->rtp_timestamp);
   base::TimeDelta time_until_playout = playout_time - now;
   base::TimeDelta min_wait_delta =
       base::TimeDelta::FromMilliseconds(kMaxAudioFrameWaitMs);

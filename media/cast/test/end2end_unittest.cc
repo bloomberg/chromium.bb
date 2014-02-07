@@ -1151,17 +1151,12 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
 
   // Basic tests.
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  // EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
+  EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   // Logging tests.
   LoggingImpl* sender_log = cast_environment_->Logging();
   // Verify that all frames and all required events were logged.
   FrameRawMap frame_raw_log = sender_log->GetFrameRawData();
-  // TODO(mikhal): Results are wrong. Need to resolve passing/calculation of
-  // rtp_timestamp for audio for this to work.
-  // Should have logged both audio and video. Every frame should have only one
-  // entry.
-  // EXPECT_EQ(static_cast<unsigned int>(i - 1), frame_raw_log.size());
   FrameRawMap::const_iterator frame_it = frame_raw_log.begin();
   // Choose a video frame, and verify that all events were logged.
   std::vector<CastLoggingEvent> event_log = frame_it->second.type;
@@ -1171,14 +1166,14 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
   EXPECT_TRUE(
       (std::find(event_log.begin(), event_log.end(), kAudioFrameEncoded)) !=
       event_log.end());
-  // EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-  //              kAudioPlayoutDelay)) != event_log.end());
-  // TODO(mikhal): Plumb this one through.
   EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kAudioFrameDecoded)) ==
+      (std::find(event_log.begin(), event_log.end(), kAudioPlayoutDelay)) !=
+      event_log.end());
+  EXPECT_TRUE(
+      (std::find(event_log.begin(), event_log.end(), kAudioFrameDecoded)) !=
       event_log.end());
   // Verify that there were no other events logged with respect to this frame.
-  EXPECT_EQ(2u, event_log.size());
+  EXPECT_EQ(4u, event_log.size());
 }
 
 // TODO(pwestin): Add repeatable packet loss test.

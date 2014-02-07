@@ -52,7 +52,7 @@ bool TransportAudioSender::EncryptAudioFrame(
 
   encrypted_frame->codec = audio_frame.codec;
   encrypted_frame->frame_id = audio_frame.frame_id;
-  encrypted_frame->samples = audio_frame.samples;
+  encrypted_frame->rtp_timestamp = audio_frame.rtp_timestamp;
   return true;
 }
 

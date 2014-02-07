@@ -49,7 +49,6 @@ class Framer {
                             bool* next_frame);
 
   bool GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
-                            uint32* rtp_timestamp,
                             bool* next_frame);
 
   void ReleaseFrame(uint32 frame_id);

@@ -41,7 +41,7 @@ class TestEncodedAudioFrameReceiver {
     EXPECT_EQ(codec_, encoded_frame->codec);
     EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
               encoded_frame->frame_id);
-    EXPECT_LT(0, encoded_frame->samples);
+    EXPECT_LT(0u, encoded_frame->rtp_timestamp);
     EXPECT_TRUE(!encoded_frame->data.empty());
 
     EXPECT_LE(lower_bound_, recorded_time);

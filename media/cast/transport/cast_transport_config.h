@@ -83,8 +83,7 @@ struct EncodedAudioFrame {
 
   AudioCodec codec;
   uint32 frame_id;  // Needed to release the frame.
-  int samples;  // Needed send side to advance the RTP timestamp.
-                // Not used receive side.
+  uint32 rtp_timestamp;
   // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
   static const int kMaxNumberOfSamples = 48 * 2 * 100;
   std::string data;

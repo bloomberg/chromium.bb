@@ -63,15 +63,13 @@ bool FrameBuffer::Complete() const {
 }
 
 bool FrameBuffer::GetEncodedAudioFrame(
-    transport::EncodedAudioFrame* audio_frame,
-    uint32* rtp_timestamp) const {
+    transport::EncodedAudioFrame* audio_frame) const {
   if (!Complete())
     return false;
 
-  *rtp_timestamp = rtp_timestamp_;
-
   // Frame is complete -> construct.
   audio_frame->frame_id = frame_id_;
+  audio_frame->rtp_timestamp = rtp_timestamp_;
 
   // Build the data vector.
   audio_frame->data.clear();
