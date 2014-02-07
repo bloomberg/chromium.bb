@@ -196,6 +196,8 @@
         'browser/extensions/api/commands/commands.h',
         'browser/extensions/api/context_menus/context_menus_api.cc',
         'browser/extensions/api/context_menus/context_menus_api.h',
+        'browser/extensions/api/context_menus/context_menus_api_helpers.cc',
+        'browser/extensions/api/context_menus/context_menus_api_helpers.h',
         'browser/extensions/api/cookies/cookies_api.cc',
         'browser/extensions/api/cookies/cookies_api.h',
         'browser/extensions/api/cookies/cookies_api_constants.cc',
