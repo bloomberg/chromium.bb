@@ -1476,10 +1476,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
                     int32 /* page_id */,
                     content::PageState /* state */)
 
-// Notifies the browser that a document has been loaded in a frame.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
-                    int64 /* frame_id */)
-
 // Notifies the browser that a frame finished loading.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_DidFinishLoad,
                     int64 /* frame_id */,

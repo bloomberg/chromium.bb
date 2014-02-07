@@ -164,6 +164,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRedirectProvisionalLoad,
                     GURL /* source_url*/,
                     GURL /* target_url */)
 
+// Notifies the browser that a document has been loaded.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishDocumentLoad,
+                    int64 /* frame_id */)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

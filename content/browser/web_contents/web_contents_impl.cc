@@ -428,9 +428,14 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     if (observer->OnMessageReceived(message))
       return true;
 
-  // Message handlers should be aware of which RenderViewHost sent the
-  // message, which is temporarily stored in render_view_message_source_.
-  render_view_message_source_ = render_view_host;
+  // Message handlers should be aware of which
+  // RenderViewHost/RenderFrameHost sent the message, which is temporarily
+  // stored in render_(view|frame)_message_source_.
+  if (render_frame_host)
+    render_frame_message_source_ = render_frame_host;
+  else
+    render_view_message_source_ = render_view_host;
+
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
@@ -442,7 +447,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDidDisplayInsecureContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentLoadedInFrame,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailLoadWithError,
@@ -491,6 +496,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   render_view_message_source_ = NULL;
+  render_frame_message_source_ = NULL;
 
   if (!message_is_ok) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD"));
@@ -2139,9 +2145,14 @@ void WebContentsImpl::OnDidRunInsecureContent(
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
-  FOR_EACH_OBSERVER(
-      WebContentsObserver, observers_,
-      DocumentLoadedInFrame(frame_id, render_view_message_source_));
+  CHECK(render_frame_message_source_);
+  CHECK(!render_view_message_source_);
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DocumentLoadedInFrame(frame_id, rfh->render_view_host()));
 }
 
 void WebContentsImpl::OnDidFinishLoad(

@@ -1113,9 +1113,19 @@ void RenderFrameImpl::didChangeIcon(blink::WebFrame* frame,
 }
 
 void RenderFrameImpl::didFinishDocumentLoad(blink::WebFrame* frame) {
-  // TODO(nasko): Move implementation here. No state needed, just observers
-  // notification in before updating encoding.
+  WebDataSource* ds = frame->dataSource();
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  document_state->set_finish_document_load_time(Time::Now());
+
+  Send(
+      new FrameHostMsg_DidFinishDocumentLoad(routing_id_, frame->identifier()));
+
+  // Call back to RenderViewImpl for observers to be notified.
+  // TODO(nasko): Remove once we have RenderFrameObserver for this method.
   render_view_->didFinishDocumentLoad(frame);
+
+  // Check whether we have new encoding name.
+  render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebFrame* frame) {

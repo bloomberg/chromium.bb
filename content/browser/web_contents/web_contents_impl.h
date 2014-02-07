@@ -1034,10 +1034,11 @@ class CONTENT_EXPORT WebContentsImpl
   // member variables that are gone.
   NotificationRegistrar registrar_;
 
-  // Used during IPC message dispatching from the RenderView so that the
-  // handlers can get a pointer to the RVH through which the message was
+  // Used during IPC message dispatching from the RenderView/RenderFrame so that
+  // the handlers can get a pointer to the RVH through which the message was
   // received.
   RenderViewHost* render_view_message_source_;
+  RenderFrameHost* render_frame_message_source_;
 
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.
