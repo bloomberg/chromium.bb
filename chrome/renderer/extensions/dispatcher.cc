@@ -1207,25 +1207,28 @@ void Dispatcher::DidCreateScriptContext(
   // unblessed extension context as well.
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
-  if (extension && extension->HasAPIPermission(APIPermission::kWebView)) {
-    module_system->Require("webView");
-    if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
-      module_system->Require("webViewExperimental");
-    } else {
-      // TODO(asargent) We need a whitelist for webview experimental.
-      // crbug.com/264852
-      std::string id_hash = base::SHA1HashString(extension->id());
-      std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
-                                                       id_hash.length());
-      if (hexencoded_id_hash == "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578" ||
-          hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB" ||
-          hexencoded_id_hash == "1A26E32DE447A17CBE5E9750CDBA78F58539B39C" ||
-          hexencoded_id_hash == "59048028102D7B4C681DBC7BC6CD980C3DC66DA3") {
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT ||
+      context_type == Feature::UNBLESSED_EXTENSION_CONTEXT) {
+    if (extension->HasAPIPermission(APIPermission::kWebView)) {
+      module_system->Require("webView");
+      if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
         module_system->Require("webViewExperimental");
+      } else {
+        // TODO(asargent) We need a whitelist for webview experimental.
+        // crbug.com/264852
+        std::string id_hash = base::SHA1HashString(extension->id());
+        std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
+                                                        id_hash.length());
+        if (hexencoded_id_hash == "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578" ||
+            hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB" ||
+            hexencoded_id_hash == "1A26E32DE447A17CBE5E9750CDBA78F58539B39C" ||
+            hexencoded_id_hash == "59048028102D7B4C681DBC7BC6CD980C3DC66DA3") {
+          module_system->Require("webViewExperimental");
+        }
       }
+    } else {
+      module_system->Require("denyWebView");
     }
-  } else {
-    module_system->Require("denyWebView");
   }
 
   // Same comment as above for <adview> tag.
