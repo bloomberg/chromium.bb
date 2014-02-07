@@ -2992,19 +2992,23 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
 }
 
 // Checks that the favicon is properly loaded on prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderFavicon) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   scoped_ptr<TestPrerender> prerender =
       PrerenderTestURL("files/prerender/prerender_favicon.html",
                        FINAL_STATUS_USED,
                        1);
-  ASSERT_TRUE(prerender->contents());
-  content::WindowedNotificationObserver favicon_update_watcher(
-      chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<WebContents>(
-          prerender->contents()->prerender_contents()));
   NavigateToDestURL();
-  favicon_update_watcher.Wait();
+
+  if (!FaviconTabHelper::FromWebContents(
+          GetActiveWebContents())->FaviconIsValid()) {
+    // If the favicon has not been set yet, wait for it to be.
+    content::WindowedNotificationObserver favicon_update_watcher(
+        chrome::NOTIFICATION_FAVICON_UPDATED,
+        content::Source<WebContents>(GetActiveWebContents()));
+    favicon_update_watcher.Wait();
+  }
+  EXPECT_TRUE(FaviconTabHelper::FromWebContents(
+      GetActiveWebContents())->FaviconIsValid());
 }
 
 // Checks that when a prerendered page is swapped in to a referring page, the

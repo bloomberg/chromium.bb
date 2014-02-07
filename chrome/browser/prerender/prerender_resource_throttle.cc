@@ -40,8 +40,9 @@ void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&PrerenderResourceThrottle::WillStartRequestOnUI,
-                 AsWeakPtr(), request_->method(), info->GetChildID(),
-                 info->GetRenderFrameID(), request_->url()));
+                 AsWeakPtr(), request_->method(), info->GetResourceType(),
+                 info->GetChildID(), info->GetRenderFrameID(),
+                 request_->url()));
 }
 
 void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
@@ -75,6 +76,7 @@ void PrerenderResourceThrottle::Cancel() {
 void PrerenderResourceThrottle::WillStartRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& method,
+    ResourceType::Type resource_type,
     int render_process_id,
     int render_frame_id,
     const GURL& url) {
@@ -91,6 +93,13 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
       prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
       ReportUnsupportedPrerenderScheme(url);
       cancel = true;
+#if defined(OS_ANDROID)
+    } else if (resource_type == ResourceType::FAVICON) {
+      // Delay icon fetching until the contents are getting swapped in
+      // to conserve network usage in mobile devices.
+      prerender_contents->AddResourceThrottle(throttle);
+      return;
+#endif
     }
   }
 

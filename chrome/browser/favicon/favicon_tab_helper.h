@@ -57,12 +57,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
     return favicon_urls_;
   }
 
-  // Allows the client to determine if they want to fetch the Favicons as
-  // they are discovered.
-  void set_should_fetch_icons(bool fetch) {
-    should_fetch_icons_ = fetch;
-  }
-
   // content::WebContentsObserver override. Must be public, because also
   // called from PrerenderContents.
   virtual void DidUpdateFaviconURL(
@@ -98,7 +92,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
 
   Profile* profile_;
-  bool should_fetch_icons_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 

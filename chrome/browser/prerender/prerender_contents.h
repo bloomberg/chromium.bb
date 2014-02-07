@@ -30,7 +30,6 @@ class ProcessMetrics;
 }
 
 namespace content {
-struct FaviconURL;
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
@@ -162,7 +161,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   base::string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
-  GURL icon_url() const { return icon_url_; }
   const GURL& prerender_url() const { return prerender_url_; }
   const content::Referrer& referrer() const { return referrer_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
@@ -221,8 +219,6 @@ class PrerenderContents : public content::NotificationObserver,
   virtual void DidGetRedirectForResourceRequest(
       content::RenderViewHost* render_view_host,
       const content::ResourceRedirectDetails& details) OVERRIDE;
-  virtual void DidUpdateFaviconURL(int32 page_id,
-      const std::vector<content::FaviconURL>& urls) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
@@ -385,7 +381,6 @@ class PrerenderContents : public content::NotificationObserver,
   base::string16 title_;
   int32 page_id_;
   GURL url_;
-  GURL icon_url_;
   content::NotificationRegistrar notification_registrar_;
 
   // A vector of URLs that this prerendered page matches against.

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -38,7 +37,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ui/gfx/rect.h"
 
@@ -301,12 +299,6 @@ void PrerenderContents::StartPrerendering(
   prerender_contents_.reset(
       CreateWebContents(alias_session_storage_namespace.get()));
   TabHelpers::AttachTabHelpers(prerender_contents_.get());
-#if defined(OS_ANDROID)
-  // Delay icon fetching until the contents are getting swapped in
-  // to conserve network usage in mobile devices.
-  FaviconTabHelper::FromWebContents(
-      prerender_contents_.get())->set_should_fetch_icons(false);
-#endif  // defined(OS_ANDROID)
   content::WebContentsObserver::Observe(prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
@@ -496,20 +488,6 @@ void PrerenderContents::NotifyPrerenderCreatedMatchCompleteReplacement(
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnPrerenderCreatedMatchCompleteReplacement(this,
                                                                replacement));
-}
-
-void PrerenderContents::DidUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<content::FaviconURL>& urls) {
-  VLOG(1) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
-  for (std::vector<content::FaviconURL>::const_iterator it = urls.begin();
-       it != urls.end(); ++it) {
-    if (it->icon_type == content::FaviconURL::FAVICON) {
-      icon_url_ = it->icon_url;
-      VLOG(1) << icon_url_;
-      return;
-    }
-  }
 }
 
 bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {

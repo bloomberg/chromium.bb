@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -61,7 +60,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request_context.h"
@@ -605,24 +603,6 @@ WebContents* PrerenderManager::SwapInternal(
                       true,
                       prerender_contents->has_finished_loading());
   prerender_contents->CommitHistory(new_web_contents);
-
-  GURL icon_url = prerender_contents->icon_url();
-
-  if (!icon_url.is_empty()) {
-#if defined(OS_ANDROID)
-    // Do the delayed icon fetch since we didn't download
-    // the favicon during prerendering on mobile devices.
-    FaviconTabHelper * favicon_tap_helper =
-        FaviconTabHelper::FromWebContents(new_web_contents);
-    favicon_tap_helper->set_should_fetch_icons(true);
-    favicon_tap_helper->FetchFavicon(icon_url);
-#endif  // defined(OS_ANDROID)
-
-    std::vector<content::FaviconURL> urls;
-    urls.push_back(content::FaviconURL(icon_url, content::FaviconURL::FAVICON));
-    FaviconTabHelper::FromWebContents(new_web_contents)->
-        DidUpdateFaviconURL(prerender_contents->page_id(), urls);
-  }
 
   // Update PPLT metrics:
   // If the tab has finished loading, record a PPLT of 0.
