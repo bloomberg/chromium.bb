@@ -2152,6 +2152,20 @@ Even if you have downloaded files from this website before, the website might ha
         No
       </message>
 
+      <!-- Dialog that asks whether user wants to participate in download feedback service -->
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
+        Help make Chrome better
+      </message>
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
+        You can help make Chrome safer and easier to use by sending suspicious downloaded files to Google.
+      </message>
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL" desc="Button that elects to upload suspected malicious files for analysis">
+        Yes, I want to help
+      </message>
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that elects not to upload suspected malicious files for analysis (default button)">
+        No, thanks
+      </message>
+
       <!-- Bookmark app bubble -->
       <message name="IDS_BOOKMARK_APP_BUBBLE_TITLE" desc="Title of the bubble to add a bookmark app.">
         Add shortcut?

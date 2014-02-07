@@ -13,6 +13,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -22,12 +23,15 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/download_danger_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -550,9 +554,33 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     shelf_->RemoveDownloadView(this);
     return;
   }
-  if (model_.ShouldAllowDownloadFeedback() && BeginDownloadFeedback())
-    return;
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
+  if (model_.ShouldAllowDownloadFeedback() &&
+      !shelf_->browser()->profile()->IsOffTheRecord()) {
+    DownloadFeedbackDialogView::DownloadReportingStatus pref_value =
+        static_cast<DownloadFeedbackDialogView::DownloadReportingStatus>(
+            shelf_->browser()->profile()->GetPrefs()->GetInteger(
+                prefs::kSafeBrowsingDownloadReportingEnabled));
+    switch (pref_value) {
+      case DownloadFeedbackDialogView::kDialogNotYetShown:
+        DownloadFeedbackDialogView::Show(
+            shelf_->get_parent()->GetNativeWindow(),
+            shelf_->browser()->profile(),
+            base::Bind(
+                &DownloadItemView::PossiblySubmitDownloadToFeedbackService,
+                weak_ptr_factory_.GetWeakPtr()));
+        break;
+
+      case DownloadFeedbackDialogView::kDownloadReportingEnabled:
+      case DownloadFeedbackDialogView::kDownloadReportingDisabled:
+        PossiblySubmitDownloadToFeedbackService(pref_value);
+        break;
+
+      case DownloadFeedbackDialogView::kMaxValue:
+        NOTREACHED();
+    }
+    return;
+  }
   download()->Remove();
 }
 
@@ -890,7 +918,7 @@ void DownloadItemView::OpenDownload() {
   UpdateAccessibleName();
 }
 
-bool DownloadItemView::BeginDownloadFeedback() {
+bool DownloadItemView::SubmitDownloadToFeedbackService() {
 #if defined(FULL_SAFE_BROWSING)
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   if (!sb_service)
@@ -899,11 +927,6 @@ bool DownloadItemView::BeginDownloadFeedback() {
       sb_service->download_protection_service();
   if (!download_protection_service)
     return false;
-  base::TimeDelta warning_duration = base::TimeDelta();
-  if (!time_download_warning_shown_.is_null())
-    warning_duration = base::Time::Now() - time_download_warning_shown_;
-  UMA_HISTOGRAM_LONG_TIMES("clickjacking.report_and_discard_download",
-                           warning_duration);
   download_protection_service->feedback_service()->BeginFeedbackForDownload(
       download());
   // WARNING: we are deleted at this point.  Don't access 'this'.
@@ -912,6 +935,15 @@ bool DownloadItemView::BeginDownloadFeedback() {
   NOTREACHED();
   return false;
 #endif
+}
+
+void DownloadItemView::PossiblySubmitDownloadToFeedbackService(
+    DownloadFeedbackDialogView::DownloadReportingStatus status) {
+  if (status != DownloadFeedbackDialogView::kDownloadReportingEnabled ||
+      !SubmitDownloadToFeedbackService()) {
+    download()->Remove();
+  }
+  // WARNING: 'this' is deleted at this point. Don't access 'this'.
 }
 
 void DownloadItemView::LoadIcon() {
@@ -1141,8 +1173,6 @@ void DownloadItemView::ShowWarningDialog() {
   }
   int discard_button_message = model_.IsMalicious() ?
       IDS_DISMISS_DOWNLOAD : IDS_DISCARD_DOWNLOAD;
-  if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback())
-    discard_button_message = IDS_REPORT_AND_DISCARD_DOWNLOAD;
   discard_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(discard_button_message));
   discard_button_->SetStyle(views::Button::STYLE_BUTTON);

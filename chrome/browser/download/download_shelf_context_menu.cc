@@ -350,8 +350,6 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaybeMaliciousMenuModel() {
   maybe_malicious_download_menu_model_.reset(new ui::SimpleMenuModel(this));
 
   maybe_malicious_download_menu_model_->AddItemWithStringId(
-      DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
-  maybe_malicious_download_menu_model_->AddItemWithStringId(
       KEEP, IDS_DOWNLOAD_MENU_KEEP);
   maybe_malicious_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   maybe_malicious_download_menu_model_->AddItemWithStringId(

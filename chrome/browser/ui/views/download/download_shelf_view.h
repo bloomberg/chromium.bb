@@ -56,6 +56,9 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // i.e. the |browser_|.
   content::PageNavigator* GetNavigator();
 
+  // Returns the parent_.
+  BrowserView* get_parent() { return parent_; }
+
   // Implementation of View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;

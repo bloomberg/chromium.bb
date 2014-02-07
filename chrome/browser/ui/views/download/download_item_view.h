@@ -27,6 +27,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -146,10 +147,15 @@ class DownloadItemView : public views::ButtonListener,
 
   void OpenDownload();
 
-  // Submit the downloaded file to the safebrowsing download feedback service.
-  // If true is returned, the DownloadItem and |this| have been deleted.  If
-  // false is returned, nothing has changed.
-  bool BeginDownloadFeedback();
+  // Submits the downloaded file to the safebrowsing download feedback service.
+  // Returns whether submission was successful. On successful submission,
+  // |this| and the DownloadItem will have been deleted.
+  bool SubmitDownloadToFeedbackService();
+
+  // If the user has enabled uploading, calls SubmitDownloadToFeedbackService.
+  // Otherwise, it simply removes the DownloadItem without uploading.
+  void PossiblySubmitDownloadToFeedbackService(
+      DownloadFeedbackDialogView::DownloadReportingStatus status);
 
   void LoadIcon();
   void LoadIconIfItemPathChanged();
