@@ -359,8 +359,9 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(rawMessage) {
         console.log('Got echo reply: ' + message.data['data']);
         break;
       default:
-        if (!this.onExtensionMessage_(message.data['type'],
-                                      message.data['data'])) {
+        if (!this.onExtensionMessage_(
+            (/** @type {string} */ message.data['type']),
+            (/** @type {string} */ message.data['data']))) {
           console.log('Unexpected message received: ' +
                       message.data['type'] + ': ' + message.data['data']);
         }
