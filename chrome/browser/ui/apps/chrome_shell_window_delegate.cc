@@ -9,6 +9,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -36,6 +37,63 @@ namespace {
 
 bool disable_external_open_for_testing_ = false;
 
+// Opens a URL with Chromium (not external browser) with the right profile.
+content::WebContents* OpenURLFromTabInternal(
+    Profile* profile,
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  // Force all links to open in a new tab, even if they were trying to open a
+  // window.
+  chrome::NavigateParams new_tab_params(
+      static_cast<Browser*>(NULL), params.url, params.transition);
+  new_tab_params.disposition = params.disposition == NEW_BACKGROUND_TAB
+                                   ? params.disposition
+                                   : NEW_FOREGROUND_TAB;
+  new_tab_params.initiating_profile = profile;
+  chrome::Navigate(&new_tab_params);
+
+  return new_tab_params.target_contents;
+}
+
+// Helper class that opens a URL based on if this browser instance is the
+// default system browser. If it is the default, open the URL directly instead
+// of asking the system to open it.
+class OpenURLFromTabBasedOnBrowserDefault
+    : public ShellIntegration::DefaultWebClientObserver {
+ public:
+  OpenURLFromTabBasedOnBrowserDefault(content::WebContents* source,
+                                      const content::OpenURLParams& params)
+      : source_(source), params_(params) {}
+
+  // Opens a URL when called with the result of if this is the default system
+  // browser or not.
+  virtual void SetDefaultWebClientUIState(
+      ShellIntegration::DefaultWebClientUIState state) OVERRIDE {
+    Profile* profile =
+        Profile::FromBrowserContext(source_->GetBrowserContext());
+    DCHECK(profile);
+    if (!profile)
+      return;
+    switch (state) {
+      case ShellIntegration::STATE_PROCESSING:
+        break;
+      case ShellIntegration::STATE_IS_DEFAULT:
+        OpenURLFromTabInternal(profile, source_, params_);
+        break;
+      case ShellIntegration::STATE_NOT_DEFAULT:
+      case ShellIntegration::STATE_UNKNOWN:
+        platform_util::OpenExternal(profile, params_.url);
+        break;
+    }
+  }
+
+  virtual bool IsOwnedByWorker() OVERRIDE { return true; }
+
+ private:
+  content::WebContents* source_;
+  const content::OpenURLParams params_;
+};
+
 }  // namespace
 
 ShellWindowLinkDelegate::ShellWindowLinkDelegate() {}
@@ -48,10 +106,16 @@ content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (source) {
-    platform_util::OpenExternal(
-        Profile::FromBrowserContext(source->GetBrowserContext()), params.url);
+    scoped_refptr<ShellIntegration::DefaultWebClientWorker>
+        check_if_default_browser_worker =
+            new ShellIntegration::DefaultBrowserWorker(
+                new OpenURLFromTabBasedOnBrowserDefault(source, params));
+    // Object lifetime notes: The OpenURLFromTabBasedOnBrowserDefault is owned
+    // by check_if_default_browser_worker. StartCheckIsDefault() takes lifetime
+    // ownership of check_if_default_browser_worker and will clean up after
+    // the asynchronous tasks.
+    check_if_default_browser_worker->StartCheckIsDefault();
   }
-  delete source;
   return NULL;
 }
 
@@ -87,16 +151,7 @@ content::WebContents* ChromeShellWindowDelegate::OpenURLFromTab(
     Profile* profile,
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  // Force all links to open in a new tab, even if they were trying to open a
-  // window.
-  chrome::NavigateParams new_tab_params(
-      static_cast<Browser*>(NULL), params.url, params.transition);
-  new_tab_params.disposition = params.disposition == NEW_BACKGROUND_TAB ?
-      params.disposition : NEW_FOREGROUND_TAB;
-  new_tab_params.initiating_profile = profile;
-  chrome::Navigate(&new_tab_params);
-
-  return new_tab_params.target_contents;
+  return OpenURLFromTabInternal(profile, source, params);
 }
 
 void ChromeShellWindowDelegate::AddNewContents(
