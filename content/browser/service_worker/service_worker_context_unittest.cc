@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -50,13 +52,22 @@ class ServiceWorkerContextTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    helper_.reset(new EmbeddedWorkerTestHelper(context_.get()));
+
+    render_process_id_ = 99;
+    helper_->SimulateCreateWorker(render_process_id_);
   }
 
-  virtual void TearDown() OVERRIDE { context_.reset(); }
+  virtual void TearDown() OVERRIDE {
+    helper_.reset();
+    context_.reset();
+  }
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<ServiceWorkerContextCore> context_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  int render_process_id_;
 };
 
 void RegistrationCallback(
@@ -72,13 +83,15 @@ TEST_F(ServiceWorkerContextTest, Register) {
   context_->RegisterServiceWorker(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(called);
+  EXPECT_TRUE(called);
 
-  ASSERT_NE(-1L, registration_id);
+  EXPECT_EQ(1UL, helper_->ipc_sink()->message_count());
+  EXPECT_NE(-1L, registration_id);
 }
 
 // Make sure registrations are cleaned up when they are unregistered.
@@ -90,6 +103,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   context_->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
@@ -97,7 +111,8 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   ASSERT_TRUE(called);
 
   called = false;
-  context_->UnregisterServiceWorker(pattern, MakeUnregisteredCallback(&called));
+  context_->UnregisterServiceWorker(
+      pattern, render_process_id_, MakeUnregisteredCallback(&called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -114,6 +129,7 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   context_->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       MakeRegisteredCallback(&called, &old_registration_id));
 
   ASSERT_FALSE(called);
@@ -125,6 +141,7 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   context_->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker_new.js"),
+      render_process_id_,
       MakeRegisteredCallback(&called, &new_registration_id));
 
   ASSERT_FALSE(called);
@@ -145,6 +162,7 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   context_->RegisterServiceWorker(
       pattern,
       script_url,
+      render_process_id_,
       MakeRegisteredCallback(&called, &old_registration_id));
 
   ASSERT_FALSE(called);
@@ -156,6 +174,7 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   context_->RegisterServiceWorker(
       pattern,
       script_url,
+      render_process_id_,
       MakeRegisteredCallback(&called, &new_registration_id));
 
   ASSERT_FALSE(called);

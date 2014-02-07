@@ -45,6 +45,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   const GURL& script_url() const { return script_url_; }
   const GURL& pattern() const { return pattern_; }
 
+  int64 next_version_id() { return next_version_id_++; }
+
   ServiceWorkerVersion* active_version() const {
     DCHECK(!is_shutdown_);
     return active_version_.get();
@@ -70,12 +72,13 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void ActivatePendingVersion();
 
  private:
-  virtual ~ServiceWorkerRegistration();
+  ~ServiceWorkerRegistration();
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
   const GURL pattern_;
   const GURL script_url_;
   const int64 registration_id_;
+  int64 next_version_id_;
 
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> pending_version_;

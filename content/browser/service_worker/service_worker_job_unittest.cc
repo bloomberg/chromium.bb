@@ -6,10 +6,14 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Unit tests for testing all job registration tasks.
@@ -88,38 +92,57 @@ ServiceWorkerRegisterJob::UnregistrationCallback SaveUnregistration(
 class ServiceWorkerJobTest : public testing::Test {
  public:
   ServiceWorkerJobTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        render_process_id_(-1) {}
 
   virtual void SetUp() OVERRIDE {
-    storage_.reset(new ServiceWorkerStorage(base::FilePath(), NULL));
-    job_coordinator_.reset(new ServiceWorkerJobCoordinator(storage_.get()));
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    helper_.reset(new EmbeddedWorkerTestHelper(context_.get()));
+
+    scoped_ptr<EmbeddedWorkerInstance> worker =
+        context_->embedded_worker_registry()->CreateWorker();
+
+    render_process_id_ = 88;
+    int embedded_worker_id = worker->embedded_worker_id();
+    helper_->SimulateAddProcess(embedded_worker_id, render_process_id_);
   }
 
-  virtual void TearDown() OVERRIDE { storage_.reset(); }
+  virtual void TearDown() OVERRIDE {
+    helper_.reset();
+    context_.reset();
+  }
+
+  ServiceWorkerJobCoordinator* job_coordinator() const {
+    return context_->job_coordinator();
+  }
+  ServiceWorkerStorage* storage() const { return context_->storage(); }
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<ServiceWorkerStorage> storage_;
-  scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  scoped_ptr<ServiceWorkerContextCore> context_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+
+  int render_process_id_;
 };
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> original_registration;
   bool called;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &original_registration));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
   scoped_refptr<ServiceWorkerRegistration> registration1;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
 
@@ -138,9 +161,10 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
 TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   bool called;
   scoped_refptr<ServiceWorkerRegistration> original_registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &original_registration));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -149,7 +173,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
             original_registration.get());
 
   scoped_refptr<ServiceWorkerRegistration> registration1;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/one"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
 
@@ -158,7 +182,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   EXPECT_TRUE(called);
 
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/two"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
   EXPECT_FALSE(called);
@@ -171,16 +195,18 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
 TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   bool called1;
   scoped_refptr<ServiceWorkerRegistration> original_registration1;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       GURL("http://www.example.com/one/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called1, &original_registration1));
 
   bool called2;
   scoped_refptr<ServiceWorkerRegistration> original_registration2;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       GURL("http://www.example.com/two/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called2, &original_registration2));
 
   EXPECT_FALSE(called1);
@@ -190,11 +216,11 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   EXPECT_TRUE(called1);
 
   scoped_refptr<ServiceWorkerRegistration> registration1;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/one/"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called1, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage_->FindRegistrationForDocument(
+  storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/two/"),
       SaveFoundRegistration(true, SERVICE_WORKER_OK, &called2, &registration2));
 
@@ -211,9 +237,10 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
 TEST_F(ServiceWorkerJobTest, Register) {
   bool called = false;
   scoped_refptr<ServiceWorkerRegistration> registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
 
   ASSERT_FALSE(called);
@@ -229,17 +256,19 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
 
   bool called;
   scoped_refptr<ServiceWorkerRegistration> registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  job_coordinator_->Unregister(pattern,
-                               SaveUnregistration(SERVICE_WORKER_OK, &called));
+  job_coordinator()->Unregister(pattern,
+                                render_process_id_,
+                                SaveUnregistration(SERVICE_WORKER_OK, &called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -247,7 +276,7 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
 
   ASSERT_TRUE(registration->HasOneRef());
 
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(false, SERVICE_WORKER_OK, &called, &registration));
 
@@ -265,9 +294,10 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
 
   bool called;
   scoped_refptr<ServiceWorkerRegistration> old_registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &old_registration));
 
   ASSERT_FALSE(called);
@@ -275,7 +305,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   ASSERT_TRUE(called);
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
@@ -288,9 +318,10 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   old_registration_by_pattern = NULL;
 
   scoped_refptr<ServiceWorkerRegistration> new_registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       GURL("http://www.example.com/service_worker_new.js"),
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
@@ -302,10 +333,10 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   ASSERT_NE(old_registration, new_registration);
 
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called,
-                            &new_registration));
+      SaveFoundRegistration(
+          true, SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -322,9 +353,10 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 
   bool called;
   scoped_refptr<ServiceWorkerRegistration> old_registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url,
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &old_registration));
 
   ASSERT_FALSE(called);
@@ -332,7 +364,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_TRUE(called);
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
@@ -343,9 +375,10 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_TRUE(old_registration_by_pattern);
 
   scoped_refptr<ServiceWorkerRegistration> new_registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url,
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
@@ -357,7 +390,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_FALSE(old_registration->HasOneRef());
 
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           true, SERVICE_WORKER_OK, &called, &new_registration_by_pattern));
@@ -377,14 +410,17 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
 
   bool registration_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url,
+      render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &registration_called, &registration));
 
   bool unregistration_called = false;
-  job_coordinator_->Unregister(
-      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration_called));
+  job_coordinator()->Unregister(
+      pattern,
+      render_process_id_,
+      SaveUnregistration(SERVICE_WORKER_OK, &unregistration_called));
 
   ASSERT_FALSE(registration_called);
   ASSERT_FALSE(unregistration_called);
@@ -395,7 +431,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   ASSERT_TRUE(registration->is_shutdown());
 
   bool find_called = false;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           false, SERVICE_WORKER_OK, &find_called, &registration));
@@ -414,20 +450,22 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   GURL script_url1("http://www.example.com/service_worker1.js");
   bool registration1_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url1,
-      SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
-                       &registration1));
+      render_process_id_,
+      SaveRegistration(
+          SERVICE_WORKER_OK, &registration1_called, &registration1));
 
   GURL script_url2("http://www.example.com/service_worker2.js");
   bool registration2_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url2,
-      SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
-                       &registration2));
+      render_process_id_,
+      SaveRegistration(
+          SERVICE_WORKER_OK, &registration2_called, &registration2));
 
   ASSERT_FALSE(registration1_called);
   ASSERT_FALSE(registration2_called);
@@ -437,7 +475,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool find_called = false;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           true, SERVICE_WORKER_OK, &find_called, &registration));
@@ -458,19 +496,21 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   GURL script_url("http://www.example.com/service_worker1.js");
   bool registration1_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url,
-      SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
-                       &registration1));
+      render_process_id_,
+      SaveRegistration(
+          SERVICE_WORKER_OK, &registration1_called, &registration1));
 
   bool registration2_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  job_coordinator_->Register(
+  job_coordinator()->Register(
       pattern,
       script_url,
-      SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
-                       &registration2));
+      render_process_id_,
+      SaveRegistration(
+          SERVICE_WORKER_OK, &registration2_called, &registration2));
 
   ASSERT_FALSE(registration1_called);
   ASSERT_FALSE(registration2_called);
@@ -482,7 +522,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool find_called = false;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           true, SERVICE_WORKER_OK, &find_called, &registration));
@@ -497,12 +537,16 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
 
   GURL script_url("http://www.example.com/service_worker.js");
   bool unregistration1_called = false;
-  job_coordinator_->Unregister(
-      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
+  job_coordinator()->Unregister(
+      pattern,
+      render_process_id_,
+      SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
 
   bool unregistration2_called = false;
-  job_coordinator_->Unregister(
-      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
+  job_coordinator()->Unregister(
+      pattern,
+      render_process_id_,
+      SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);
@@ -515,7 +559,7 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   // crashing.
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool find_called = false;
-  storage_->FindRegistrationForPattern(
+  storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
           false, SERVICE_WORKER_OK, &find_called, &registration));

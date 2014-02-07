@@ -18,20 +18,24 @@
 namespace content {
 
 class ServiceWorkerRegistration;
+class EmbeddedWorkerRegistry;
 
 // This class manages all in-flight jobs. Any asynchronous
 // operations are run through instances of ServiceWorkerRegisterJob.
 class CONTENT_EXPORT ServiceWorkerJobCoordinator {
  public:
-  explicit ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage);
+  explicit ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage,
+                                       EmbeddedWorkerRegistry* registry);
   ~ServiceWorkerJobCoordinator();
 
   void Register(const GURL& pattern,
                 const GURL& script_url,
+                int source_process_id,
                 const ServiceWorkerRegisterJob::RegistrationCallback& callback);
 
   void Unregister(
       const GURL& pattern,
+      int source_process_id,
       const ServiceWorkerRegisterJob::UnregistrationCallback& callback);
 
   // Jobs are removed whenever they are finished or canceled.
@@ -46,6 +50,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
     ~JobQueue();
 
     void Push(scoped_ptr<ServiceWorkerRegisterJob> job,
+              int source_process_id,
               const ServiceWorkerRegisterJob::RegistrationCallback& callback);
 
     void Pop(ServiceWorkerRegisterJob* job);
@@ -66,6 +71,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   // The ServiceWorkerStorage object should always outlive this
   ServiceWorkerStorage* storage_;
+  EmbeddedWorkerRegistry* worker_registry_;
   base::WeakPtrFactory<ServiceWorkerJobCoordinator> weak_factory_;
 
   RegistrationJobMap jobs_;

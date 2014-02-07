@@ -23,8 +23,10 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)),
-      job_coordinator_(new ServiceWorkerJobCoordinator(storage_.get())),
-      embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())) {}
+      embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
+      job_coordinator_(
+          new ServiceWorkerJobCoordinator(storage_.get(),
+                                          embedded_worker_registry_)) {}
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {}
 
@@ -68,12 +70,14 @@ bool ServiceWorkerContextCore::IsEnabled() {
 void ServiceWorkerContextCore::RegisterServiceWorker(
     const GURL& pattern,
     const GURL& script_url,
+    int source_process_id,
     const RegistrationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   job_coordinator_->Register(
       pattern,
       script_url,
+      source_process_id,
       base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
                  AsWeakPtr(),
                  callback));
@@ -81,10 +85,11 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
+    int source_process_id,
     const UnregistrationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  job_coordinator_->Unregister(pattern, callback);
+  job_coordinator_->Unregister(pattern, source_process_id, callback);
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(

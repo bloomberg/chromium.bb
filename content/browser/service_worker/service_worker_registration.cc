@@ -14,6 +14,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(const GURL& pattern,
     : pattern_(pattern),
       script_url_(script_url),
       registration_id_(registration_id),
+      next_version_id_(0L),
       is_shutdown_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
