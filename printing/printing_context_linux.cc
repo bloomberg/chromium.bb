@@ -71,6 +71,14 @@ void PrintingContextLinux::AskUserForSettings(
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
+  if (!print_dialog_) {
+    // Can only get here if the renderer is sending bad messages.
+    // http://crbug.com/341777
+    NOTREACHED();
+    callback.Run(FAILED);
+    return;
+  }
+
   print_dialog_->ShowDialog(parent_view, has_selection, callback);
 }
 
