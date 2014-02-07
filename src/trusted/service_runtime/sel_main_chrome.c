@@ -276,10 +276,8 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
 
   NACL_FI_FATAL("BeforeSecureCommandChannel");
   /*
-   * NB: Spawns a thread that uses the command channel.  We do this
-   * after NaClAppLoadFile so that the NaClApp object is more fully
-   * populated.  Hereafter any changes to nap should be done while
-   * holding locks.
+   * Spawns a thread that uses the command channel.
+   * Hereafter any changes to nap should be done while holding locks.
    */
   NaClSecureCommandChannel(nap);
 
