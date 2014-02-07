@@ -113,7 +113,7 @@ gfx::Size PlatformVerificationDialog::GetPreferredSize() {
 void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
                                                         int event_flags) {
   chrome::ShowSingletonTab(browser_, GURL(
-      chrome::kAttestationForContentProtectionLearnMoreURL));
+      chrome::kEnhancedPlaybackNotificationLearnMoreURL));
 }
 
 }  // namespace attestation

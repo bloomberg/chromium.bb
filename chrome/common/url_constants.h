@@ -384,9 +384,13 @@ extern const char kPrivacyLearnMoreURL[];
 extern const char kDoNotTrackLearnMoreURL[];
 
 #if defined(OS_CHROMEOS)
-// "Learn more" URL for the attestation of content protection dialog / setting.
-// This URL is currently ChromeOS only.
+// These URLs are currently ChromeOS only.
+
+// "Learn more" URL for the attestation of content protection setting.
 extern const char kAttestationForContentProtectionLearnMoreURL[];
+
+// "Learn more" URL for the enhanced playback notification dialog.
+extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 #endif
 
 // The URL for the Chromium project used in the About dialog.
