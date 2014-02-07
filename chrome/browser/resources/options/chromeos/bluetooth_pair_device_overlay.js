@@ -86,6 +86,7 @@ cr.define('options', function() {
       $('bluetooth-pair-device-reject-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
                     [self.device_.address, 'reject']);
+        dialog.device_.pairing = PAIRING.DISMISSED;
         OptionsPage.closeOverlay();
       };
       $('bluetooth-pair-device-connect-button').onclick = function() {
@@ -104,6 +105,7 @@ cr.define('options', function() {
       $('bluetooth-pair-device-accept-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
                     [self.device_.address, 'accept']);
+        dialog.device_.pairing = PAIRING.DISMISSED;
         OptionsPage.closeOverlay();
       };
       $('bluetooth-pair-device-dismiss-button').onclick = function() {
