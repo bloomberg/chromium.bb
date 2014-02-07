@@ -573,7 +573,10 @@ void RenderWidgetHostViewAndroid::RenderProcessGone(
 
 void RenderWidgetHostViewAndroid::Destroy() {
   RemoveLayers();
-  SetContentViewCore(NULL);
+
+  // No longer safe to call content_view_core_ at this point, so just set it to
+  // null (as oppose to calling SetContentViewCore).
+  content_view_core_ = NULL;
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
