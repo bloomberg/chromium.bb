@@ -95,11 +95,6 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
   CHECK(controller_);
   RegisterForNotifications();
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
-  OnProfileChanged();  // sets model_
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (service)
-    service->AddObserver(this);
 
   // Hotword listening is on by default in ChromeOS right now. Here shouldn't
   // use the current state in the webui because it will be changed to 'hotword
@@ -116,6 +111,12 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
       *ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
 #endif
+
+  OnProfileChanged();  // sets model_
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->AddObserver(this);
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
@@ -125,6 +126,8 @@ AppListViewDelegate::~AppListViewDelegate() {
     service->RemoveObserver(this);
   g_browser_process->
       profile_manager()->GetProfileInfoCache().RemoveObserver(this);
+  // Ensure search controller is released prior to speech_ui_.
+  search_controller_.reset();
 }
 
 void AppListViewDelegate::RegisterForNotifications() {
@@ -144,7 +147,8 @@ void AppListViewDelegate::OnProfileChanged() {
       profile_)->model();
 
   search_controller_.reset(new app_list::SearchController(
-      profile_, model_->search_box(), model_->results(), controller_));
+      profile_, model_->search_box(), model_->results(),
+      speech_ui_.get(), controller_));
 
   signin_delegate_.SetProfile(profile_);
 

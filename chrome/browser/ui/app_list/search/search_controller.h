@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -21,17 +22,19 @@ class History;
 class SearchBoxModel;
 class SearchProvider;
 class SearchResult;
+class SpeechUIModel;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
 // results to the given SearchResults UI model.
-class SearchController {
+class SearchController : public SpeechUIModelObserver {
  public:
   SearchController(Profile* profile,
                    SearchBoxModel* search_box,
                    AppListModel::SearchResults* results,
+                   SpeechUIModel* speech_ui,
                    AppListControllerDelegate* list_controller);
-  ~SearchController();
+  virtual ~SearchController();
 
   void Init();
 
@@ -53,8 +56,13 @@ class SearchController {
   // Invoked when the search results are changed.
   void OnResultsChanged();
 
+  // SpeechUIModelObserver overrides:
+  virtual void OnSpeechRecognitionStateChanged(
+      SpeechRecognitionState new_state) OVERRIDE;
+
   Profile* profile_;
   SearchBoxModel* search_box_;
+  SpeechUIModel* speech_ui_;
   AppListControllerDelegate* list_controller_;
 
   bool dispatching_query_;

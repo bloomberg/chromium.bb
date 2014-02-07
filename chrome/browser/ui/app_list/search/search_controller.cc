@@ -28,6 +28,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/speech_ui_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -41,22 +42,25 @@ namespace app_list {
 SearchController::SearchController(Profile* profile,
                                    SearchBoxModel* search_box,
                                    AppListModel::SearchResults* results,
+                                   SpeechUIModel* speech_ui,
                                    AppListControllerDelegate* list_controller)
   : profile_(profile),
     search_box_(search_box),
+    speech_ui_(speech_ui),
     list_controller_(list_controller),
     dispatching_query_(false),
     mixer_(new Mixer(results)),
     history_(HistoryFactory::GetForBrowserContext(profile)) {
+  speech_ui_->AddObserver(this);
   Init();
 }
 
-SearchController::~SearchController() {}
+SearchController::~SearchController() {
+  speech_ui_->RemoveObserver(this);
+}
 
 void SearchController::Init() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  search_box_->SetHintText(
-      l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
   StartPageService* service = StartPageService::Get(profile_);
   if (service && service->GetSpeechRecognitionContents()) {
@@ -70,6 +74,7 @@ void SearchController::Init() {
                 l10n_util::GetStringUTF16(
                     IDS_APP_LIST_START_SPEECH_RECOGNITION))));
   }
+  OnSpeechRecognitionStateChanged(speech_ui_->state());
 
   mixer_->Init();
 
@@ -165,6 +170,13 @@ void SearchController::OnResultsChanged() {
   }
 
   mixer_->MixAndPublish(known_results);
+}
+
+void SearchController::OnSpeechRecognitionStateChanged(
+    SpeechRecognitionState new_state) {
+  search_box_->SetHintText(l10n_util::GetStringUTF16(
+      (new_state == SPEECH_RECOGNITION_HOTWORD_LISTENING) ?
+      IDS_SEARCH_BOX_HOTWORD_HINT : IDS_SEARCH_BOX_HINT));
 }
 
 }  // namespace app_list
