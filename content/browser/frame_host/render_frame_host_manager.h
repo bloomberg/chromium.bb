@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/referrer.h"
@@ -269,6 +270,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // to a new process after this completes or times out.
   void SwapOutOldPage();
 
+  // Deletes a RenderFrameHost that was pending shutdown.
+  void ClearPendingShutdownRFHForSiteInstance(int32 site_instance_id,
+                                              RenderFrameHostImpl* rfh);
+
  private:
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
@@ -437,6 +442,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   typedef base::hash_map<int32, RenderFrameHostImpl*> RenderFrameHostMap;
   RenderFrameHostMap swapped_out_hosts_;
 
+  // A map of RenderFrameHosts pending shutdown.
+  typedef base::hash_map<int32, linked_ptr<RenderFrameHostImpl> >
+      RFHPendingDeleteMap;
+  RFHPendingDeleteMap pending_delete_hosts_;
+
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).
   InterstitialPageImpl* interstitial_page_;
@@ -449,6 +459,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // when |render_frame_host_| is the frame tree root or is in the same
   // process as its parent.
   CrossProcessFrameConnector* cross_process_frame_connector_;
+
+  base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };

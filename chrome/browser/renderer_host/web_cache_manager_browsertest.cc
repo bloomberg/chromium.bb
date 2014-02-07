@@ -57,10 +57,13 @@ IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, CrashOnceOnly) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_EQ(
-      WebCacheManager::GetInstance()->active_renderers_.size(), 1U);
+  // Depending on the speed of execution of the unload event, we may have one or
+  // two active renderers at that point (one executing the unload event in
+  // background).
+  EXPECT_GE(WebCacheManager::GetInstance()->active_renderers_.size(), 1U);
+  EXPECT_LE(WebCacheManager::GetInstance()->active_renderers_.size(), 2U);
   EXPECT_EQ(
       WebCacheManager::GetInstance()->inactive_renderers_.size(), 0U);
-  EXPECT_EQ(
-      WebCacheManager::GetInstance()->stats_.size(), 1U);
+  EXPECT_GE(WebCacheManager::GetInstance()->stats_.size(), 1U);
+  EXPECT_LE(WebCacheManager::GetInstance()->stats_.size(), 2U);
 }

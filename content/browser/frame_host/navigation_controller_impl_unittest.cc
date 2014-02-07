@@ -1097,6 +1097,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   contents()->GetPendingRenderViewHost()->AllowBindings(1);
   static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
+  orig_rvh->OnSwappedOut(false);
 
   // The second load should be committed, and bindings should be remembered.
   EXPECT_EQ(controller.GetEntryCount(), 2);
