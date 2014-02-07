@@ -31,6 +31,8 @@
 #include <wayland-egl.h>
 #include <GLES2/gl2.h>
 
+#define fail(msg) { fprintf(stderr, "%s failed\n", msg); return -1; }
+
 struct test_data {
 	struct client *client;
 
@@ -40,7 +42,7 @@ struct test_data {
 	EGLSurface egl_surface;
 };
 
-static void
+static int
 init_egl(struct test_data *test_data)
 {
 	struct wl_egl_window *native_window;
@@ -67,21 +69,24 @@ init_egl(struct test_data *test_data)
 
 	test_data->egl_dpy = eglGetDisplay((EGLNativeDisplayType)
 					   test_data->client->wl_display);
-	assert(test_data->egl_dpy);
+	if (!test_data->egl_dpy)
+		fail("eglGetDisplay");
 
-	ret = eglInitialize(test_data->egl_dpy, &major, &minor);
-	assert(ret == EGL_TRUE);
-	ret = eglBindAPI(EGL_OPENGL_ES_API);
-	assert(ret == EGL_TRUE);
+	if (eglInitialize(test_data->egl_dpy, &major, &minor) != EGL_TRUE)
+		fail("eglInitialize");
+	if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
+		fail("eglBindAPI");
 
 	ret = eglChooseConfig(test_data->egl_dpy, config_attribs,
 			      &test_data->egl_conf, 1, &n);
-	assert(ret && n == 1);
+	if (!(ret && n == 1))
+		fail("eglChooseConfig");
 
 	test_data->egl_ctx = eglCreateContext(test_data->egl_dpy,
 					      test_data->egl_conf,
 					      EGL_NO_CONTEXT, context_attribs);
-	assert(test_data->egl_ctx);
+	if (!test_data->egl_ctx)
+		fail("eglCreateContext");
 
 	native_window =
 		wl_egl_window_create(surface->wl_surface,
@@ -95,7 +100,8 @@ init_egl(struct test_data *test_data)
 
 	ret = eglMakeCurrent(test_data->egl_dpy, test_data->egl_surface,
 			     test_data->egl_surface, test_data->egl_ctx);
-	assert(ret == EGL_TRUE);
+	if (ret != EGL_TRUE)
+		fail("eglMakeCurrent");
 
 	/* This test is specific to mesa 10.1 and later, which is the
 	 * first release that doesn't accidentally triple-buffer. */
@@ -108,6 +114,7 @@ init_egl(struct test_data *test_data)
 	if (major < 10 || (major == 10 && minor < 1))
 		skip("mesa version too old (%s)\n", str);
 
+	return 0;
 }
 
 TEST(test_buffer_count)
@@ -117,7 +124,9 @@ TEST(test_buffer_count)
 	int i;
 
 	test_data.client = client_create(10, 10, 10, 10);
-	init_egl(&test_data);
+	if (init_egl(&test_data) < 0)
+		skip("could not initialize egl, "
+		     "possibly using the headless backend\n");
 
 	/* This is meant to represent a typical game loop which is
 	 * expecting eglSwapBuffers to block and throttle the
