@@ -170,6 +170,7 @@ struct PasswordForm {
   enum Type {
     TYPE_MANUAL,
     TYPE_GENERATED,
+    TYPE_LAST = TYPE_GENERATED
   };
 
   // The form type. Not used yet. Please see http://crbug.com/152422

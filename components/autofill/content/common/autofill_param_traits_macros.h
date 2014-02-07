@@ -11,7 +11,8 @@
 #include "components/autofill/core/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 
-IPC_ENUM_TRAITS(autofill::PasswordForm::Type)
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::PasswordForm::Type,
+                          autofill::PasswordForm::TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::FormData)
   IPC_STRUCT_TRAITS_MEMBER(name)
