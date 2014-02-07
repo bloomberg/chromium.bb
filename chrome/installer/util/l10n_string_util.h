@@ -36,6 +36,11 @@ void SetTranslationDelegate(TranslationDelegate* delegate);
 // been set.  Otherwise, the string is read from the binary's string table.
 std::wstring GetLocalizedString(int base_message_id);
 
+// Returns the localized version of a string (obtained from GetLocalizedString)
+// with $1 replaced with |a|. Additionally, $$ is replaced by $.
+base::string16 GetLocalizedStringF(int base_message_id,
+                                   const base::string16& a);
+
 // Given the system language, return a url that points to the localized eula.
 // The empty string is returned on failure.
 std::wstring GetLocalizedEulaResource();

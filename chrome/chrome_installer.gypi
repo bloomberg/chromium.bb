@@ -151,34 +151,38 @@
         {
           'target_name': 'installer_util_strings',
           'type': 'none',
-          'rules': [
+          'actions': [
             {
-              'rule_name': 'installer_util_strings',
-              'extension': 'grd',
+              'action_name': 'installer_util_strings',
               'variables': {
-                'create_string_rc_py' : 'installer/util/prebuild/create_string_rc.py',
+                'create_string_rc_py': 'installer/util/prebuild/create_string_rc.py',
               },
+              'conditions': [
+                ['branding=="Chrome"', {
+                  'variables': {
+                    'brand_strings': 'google_chrome_strings',
+                  },
+                }, {
+                  'variables': {
+                    'brand_strings': 'chromium_strings',
+                  },
+                }],
+              ],
               'inputs': [
                 '<(create_string_rc_py)',
-                '<(RULE_INPUT_PATH)',
+                'app/<(brand_strings).grd',
               ],
               'outputs': [
-                # Don't use <(RULE_INPUT_ROOT) to create the output file
-                # name, because the base name of the input
-                # (generated_resources.grd) doesn't match the generated file
-                # (installer_util_strings.h).
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
               ],
               'action': ['python',
                          '<(create_string_rc_py)',
-                         '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
-                         '<(branding)',],
-              'message': 'Generating resources from <(RULE_INPUT_PATH)',
+                         '-i', 'app/<(brand_strings).grd:resources',
+                         '-n', 'installer_util_strings',
+                         '-o', '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',],
+              'message': 'Generating installer_util_strings',
             },
-          ],
-          'sources': [
-            'app/chromium_strings.grd',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

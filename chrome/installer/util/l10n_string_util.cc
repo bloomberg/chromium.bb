@@ -55,6 +55,13 @@ std::wstring GetLocalizedString(int base_message_id) {
   return localized_string;
 }
 
+base::string16 GetLocalizedStringF(int base_message_id,
+                                   const base::string16& a) {
+  return ReplaceStringPlaceholders(GetLocalizedString(base_message_id),
+                                   std::vector<base::string16>(1, a),
+                                   NULL);
+}
+
 // Here we generate the url spec with the Microsoft res:// scheme which is
 // explained here : http://support.microsoft.com/kb/220830
 std::wstring GetLocalizedEulaResource() {
