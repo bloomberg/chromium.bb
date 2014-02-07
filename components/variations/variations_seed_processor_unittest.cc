@@ -108,9 +108,6 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
   study.mutable_experiment(1)->set_google_web_experiment_id(kExperimentId);
-  study.mutable_filter()->add_channel(Study_Channel_DEV);
-  study.mutable_filter()->add_channel(Study_Channel_CANARY);
-  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_ANDROID);
 
   EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name,
@@ -119,25 +116,6 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
   VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
                                         kFlagGroup1Name);
   EXPECT_EQ(kExperimentId, id);
-}
-
-TEST_F(VariationsSeedProcessorTest, AllowVariationIdWithForcingFlag) {
-  VariationsSeedProcessor seed_processor;
-  Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
-
-  study.mutable_filter()->add_channel(Study_Channel_DEV);
-  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
-
-  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_ANDROID);
-  EXPECT_TRUE(seed_processor.AllowVariationIdWithForcingFlag(study));
-
-  study.mutable_filter()->add_channel(Study_Channel_CANARY);
-  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_IOS);
-  EXPECT_TRUE(seed_processor.AllowVariationIdWithForcingFlag(study));
-
-  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_WINDOWS);
-  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
 }
 
 TEST_F(VariationsSeedProcessorTest, CheckStudyChannel) {
@@ -474,24 +452,6 @@ TEST_F(VariationsSeedProcessorTest, FilterAndValidateStudies) {
   EXPECT_EQ(kTrial3Name, processed_studies[1].study()->name());
 }
 
-TEST_F(VariationsSeedProcessorTest, ForbidForceGroupWithVariationId) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
-
-  base::FieldTrialList field_trial_list(NULL);
-
-  Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  study.mutable_experiment(1)->set_google_web_experiment_id(kExperimentId);
-  // Adding windows platform makes forcing_flag and variation Id incompatible.
-  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_WINDOWS);
-
-  EXPECT_TRUE(CreateTrialFromStudy(&study));
-  EXPECT_EQ(kFlagGroup1Name,
-            base::FieldTrialList::FindFullName(kFlagStudyName));
-  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
-                                        kFlagGroup1Name);
-  EXPECT_EQ(EMPTY_ID, id);
-}
-
 // Test that the group for kForcingFlag1 is forced.
 TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
@@ -740,6 +700,21 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   EXPECT_TRUE(IsFieldTrialActive("A"));
   EXPECT_TRUE(IsFieldTrialActive("B"));
   EXPECT_TRUE(IsFieldTrialActive("C"));
+}
+
+TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+
+  base::FieldTrialList field_trial_list(NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  study.set_activation_type(Study_ActivationType_ACTIVATION_AUTO);
+
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
+  EXPECT_TRUE(IsFieldTrialActive(kFlagStudyName));
+
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
 }  // namespace chrome_variations

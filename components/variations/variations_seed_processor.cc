@@ -86,28 +86,6 @@ VariationsSeedProcessor::VariationsSeedProcessor() {
 VariationsSeedProcessor::~VariationsSeedProcessor() {
 }
 
-bool VariationsSeedProcessor::AllowVariationIdWithForcingFlag(
-    const Study& study) {
-  if (!study.has_filter())
-    return false;
-  const Study_Filter& filter = study.filter();
-  if (filter.platform_size() == 0 || filter.channel_size() == 0)
-    return false;
-  for (int i = 0; i < filter.platform_size(); ++i) {
-    if (filter.platform(i) != Study_Platform_PLATFORM_ANDROID &&
-        filter.platform(i) != Study_Platform_PLATFORM_IOS) {
-      return false;
-    }
-  }
-  for (int i = 0; i < filter.channel_size(); ++i) {
-    if (filter.channel(i) != Study_Channel_CANARY &&
-        filter.channel(i) != Study_Channel_DEV) {
-      return false;
-    }
-  }
-  return true;
-}
-
 void VariationsSeedProcessor::CreateTrialsFromSeed(
     const VariationsSeed& seed,
     const std::string& locale,
@@ -256,12 +234,16 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     const Study_Experiment& experiment = study.experiment(i);
     if (experiment.has_forcing_flag() &&
         command_line->HasSwitch(experiment.forcing_flag())) {
-      base::FieldTrialList::CreateFieldTrial(study.name(), experiment.name());
+      scoped_refptr<base::FieldTrial> trial(
+          base::FieldTrialList::CreateFieldTrial(study.name(),
+                                                 experiment.name()));
       RegisterExperimentParams(study, experiment);
+      RegisterVariationIds(experiment, study.name());
+      if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO)
+        trial->group();
+
       DVLOG(1) << "Trial " << study.name() << " forced by flag: "
                << experiment.forcing_flag();
-      if (AllowVariationIdWithForcingFlag(study))
-        RegisterVariationIds(experiment, study.name());
       return;
     }
   }
