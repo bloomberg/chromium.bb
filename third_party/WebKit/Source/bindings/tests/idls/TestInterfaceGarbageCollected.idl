@@ -30,7 +30,7 @@
 
 [
     Constructor(DOMString str),
-    GarbageCollected,
+    WillBeGarbageCollected,
 ] interface TestInterfaceGarbageCollected {
     attribute TestInterfaceGarbageCollected attr1;
     void func(TestInterfaceGarbageCollected arg);

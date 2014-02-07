@@ -1068,7 +1068,7 @@ sub GetInternalFields
     my @customInternalFields = ();
     # If we have persistentHandleIndex, it should be at the first index of the custom
     # internal fileds.
-    if (IsGarbageCollectedType($interface->name)) {
+    if (IsWillBeGarbageCollectedType($interface->name)) {
         push(@customInternalFields, "persistentHandleIndex");
     }
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
@@ -2930,7 +2930,7 @@ END
     }
 
     my $argumentString = join(", ", @beforeArgumentList, @argumentList, @afterArgumentList);
-    my $refPtrType = IsGarbageCollectedType($interfaceName) ? "RefPtrWillBeRawPtr<$implClassName>" : "RefPtr<$implClassName>";
+    my $refPtrType = IsWillBeGarbageCollectedType($interfaceName) ? "RefPtrWillBeRawPtr<$implClassName>" : "RefPtr<$implClassName>";
     $code .= "    $refPtrType impl = ${implClassName}::create(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
@@ -4369,7 +4369,7 @@ END
 
     my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::domTemplate, $derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$visitDOMWrapper, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype, ";
-    $code .= IsGarbageCollectedType($interfaceName) ? "true" : "false";
+    $code .= IsWillBeGarbageCollectedType($interfaceName) ? "true" : "false";
     $code .=  " };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
@@ -5481,7 +5481,7 @@ sub GetNativeType
         my $implClassName = GetImplName($interface);
         if ($isParameter) {
             return "$implClassName*";
-        } elsif (IsGarbageCollectedType($interface->name)) {
+        } elsif (IsWillBeGarbageCollectedType($interface->name)) {
             return "RefPtrWillBeRawPtr<$implClassName>";
         } else {
             return "RefPtr<$implClassName>";
@@ -5924,7 +5924,7 @@ sub GetPassRefPtrType
     my $interface = shift;
     my $nativeType = GetNativeTypeForConversions($interface);
 
-    my $willBe = IsGarbageCollectedType($interface->name) ? "WillBeRawPtr" : "";
+    my $willBe = IsWillBeGarbageCollectedType($interface->name) ? "WillBeRawPtr" : "";
     my $extraSpace = $nativeType =~ />$/ ? " " : "";
     return "PassRefPtr${willBe}<${nativeType}${extraSpace}>";
 }
@@ -6032,12 +6032,12 @@ sub IsTypedArrayType
     return 0;
 }
 
-sub IsGarbageCollectedType
+sub IsWillBeGarbageCollectedType
 {
     my $interfaceName = shift;
     return 0 unless IsWrapperType($interfaceName);
     my $interface = ParseInterface($interfaceName);
-    return $interface->extendedAttributes->{"GarbageCollected"};
+    return $interface->extendedAttributes->{"WillBeGarbageCollected"};
 }
 
 sub IsRefPtrType

@@ -56,7 +56,7 @@ DoNotCheckSignature
 EnforceRange
 EventConstructor
 ExposeJSAccessors
-GarbageCollected
+WillBeGarbageCollected
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
