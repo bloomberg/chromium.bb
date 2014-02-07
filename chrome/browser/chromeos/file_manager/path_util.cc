@@ -27,6 +27,8 @@ const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
 const base::FilePath::CharType kOldDriveFolderPath[] =
     FILE_PATH_LITERAL("/special/drive");
+const base::FilePath::CharType kNoHashDriveFolderPath[] =
+    FILE_PATH_LITERAL("/special/drive-");
 
 }  // namespace
 
@@ -64,6 +66,10 @@ bool MigratePathFromOldFormat(Profile* profile,
     {base::FilePath(kOldDownloadsFolderPath),      downloads},
     {DownloadPrefs::GetDefaultDownloadDirectory(), downloads},
     {base::FilePath(kOldDriveFolderPath),          drive},
+    // TODO(kinaba): http://crbug.com/341284 Remove after M34 branching.
+    // For a short period we incorrectly set "/special/drive-" as the Drive path
+    // that needs to be fixed.
+    {base::FilePath(kNoHashDriveFolderPath),       drive},
   };
 
   for (size_t i = 0; i < arraysize(bases); ++i) {

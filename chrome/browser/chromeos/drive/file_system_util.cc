@@ -128,10 +128,21 @@ const base::FilePath& GetDriveMyDriveRootPath() {
 }
 
 base::FilePath GetDriveMountPointPath(Profile* profile) {
-  const std::string id = "-" +
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
+  std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
+  if (id.empty()) {
+    // ProfileHelper::GetUserIdHashFromProfile works only when multi-profile is
+    // enabled. In that case, we fall back to use UserManager (it basically just
+    // returns currently active users's hash in such a case.) I still try
+    // ProfileHelper first because it works better in tests.
+    chromeos::User* const user =
+        chromeos::UserManager::IsInitialized() ?
+            chromeos::UserManager::Get()->GetUserByProfile(
+                profile->GetOriginalProfile()) : NULL;
+    if (user)
+      id = user->username_hash();
+  }
   return base::FilePath(kSpecialMountPointRoot).AppendASCII(
-      net::EscapePath(kDriveMountPointNameBase + id));
+      net::EscapePath(kDriveMountPointNameBase + (id.empty() ? "" : "-" + id)));
 }
 
 FileSystemInterface* GetFileSystemByProfile(Profile* profile) {
