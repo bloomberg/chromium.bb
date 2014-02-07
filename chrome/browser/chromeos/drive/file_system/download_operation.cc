@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -25,6 +26,21 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 namespace {
+
+// Generates an unused file path with |extension| to |out_path|, as a descendant
+// of |dir|, with its parent directory created.
+bool GeneratesUniquePathWithExtension(
+    const base::FilePath& dir,
+    const base::FilePath::StringType& extension,
+    base::FilePath* out_path) {
+  base::FilePath subdir;
+  if (!base::CreateTemporaryDirInDir(dir, base::FilePath::StringType(),
+                                     &subdir)) {
+    return false;
+  }
+  *out_path = subdir.Append(FILE_PATH_LITERAL("tmp") + extension);
+  return true;
+}
 
 // If the resource is a hosted document, creates a JSON file representing the
 // resource locally, and returns FILE_ERROR_OK with |cache_file_path| storing
@@ -58,11 +74,17 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
   if (entry->file_specific_info().is_hosted_document()) {
+    base::FilePath::StringType extension = base::FilePath::FromUTF8Unsafe(
+        entry->file_specific_info().document_extension()).value();
     base::FilePath gdoc_file_path;
     // TODO(rvargas): Convert this code to use base::File::Info.
     base::File::Info file_info;
-    if (!base::CreateTemporaryFileInDir(temporary_file_directory,
-                                        &gdoc_file_path) ||
+    // We add the gdoc file extension in the temporary file, so that in cross
+    // profile drag-and-drop between Drive folders, the destination profiles's
+    // CopyOperation can detect the special JSON file only by the path.
+    if (!GeneratesUniquePathWithExtension(temporary_file_directory,
+                                          extension,
+                                          &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
                               entry->resource_id()) ||

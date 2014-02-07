@@ -259,6 +259,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_HostedDocument) {
   EXPECT_EQ(GURL(entry->file_specific_info().alternate_url()),
             util::ReadUrlFromGDocFile(file_path));
   EXPECT_EQ(entry->resource_id(), util::ReadResourceIdFromGDocFile(file_path));
+  EXPECT_EQ(FILE_PATH_LITERAL(".gdoc"), file_path.Extension());
 }
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId) {
