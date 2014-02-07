@@ -25698,6 +25698,44 @@ other types of suffix sets.
   <int value="216" label="ElementSetAttributeNodeNS"/>
   <int value="217" label="ElementPrefixedMatchesSelector"/>
   <int value="218" label="DOMImplementationCreateCSSStyleSheet"/>
+  <int value="219" label="CSSStyleSheetRules"/>
+  <int value="220" label="CSSStyleSheetAddRule"/>
+  <int value="221" label="CSSStyleSheetRemoveRule"/>
+  <int value="222" label="InitMessageEvent"/>
+  <int value="223" label="PrefixedInitMessageEvent"/>
+  <int value="224" label="ElementSetPrefix"/>
+  <int value="225" label="CSSStyleDeclarationGetPropertyCSSValue"/>
+  <int value="226" label="SVGElementGetPresentationAttribute"/>
+  <int value="227" label="REMOVEDAttrUsedAsNodeParameter"/>
+  <int value="228" label="REMOVEDAttrUsedAsNodeReceiver"/>
+  <int value="229" label="PrefixedMediaCancelKeyRequest"/>
+  <int value="230" label="DOMImplementationHasFeature"/>
+  <int value="231" label="DOMImplementationHasFeatureReturnFalse"/>
+  <int value="232" label="CanPlayTypeKeySystem"/>
+  <int value="233" label="PrefixedDevicePixelRatioMediaFeature"/>
+  <int value="234" label="PrefixedMaxDevicePixelRatioMediaFeature"/>
+  <int value="235" label="PrefixedMinDevicePixelRatioMediaFeature"/>
+  <int value="236" label="PrefixedTransform2dMediaFeature"/>
+  <int value="237" label="PrefixedTransform3dMediaFeature"/>
+  <int value="238" label="PrefixedAnimationMediaFeature"/>
+  <int value="239" label="PrefixedViewModeMediaFeature"/>
+  <int value="240" label="PrefixedStorageQuota"/>
+  <int value="241" label="ContentSecurityPolicyReportOnlyInMeta"/>
+  <int value="242" label="PrefixedMediaSourceOpen"/>
+  <int value="243" label="ResetReferrerPolicy"/>
+  <int value="244" label="CaseInsensitiveAttrSelectorMatch"/>
+  <int value="245" label="CaptureAttributeAsBoolean"/>
+  <int value="246" label="FormNameAccessForImageElement"/>
+  <int value="247" label="FormNameAccessForPastNamesMap"/>
+  <int value="248" label="FormAssociationByParser"/>
+  <int value="249" label="HTMLSourceElementMedia"/>
+  <int value="250" label="SVGSVGElementInDocument"/>
+  <int value="251" label="SVGDocumentRootElement"/>
+  <int value="252" label="DocumentCreateEventOptionalArgument"/>
+  <int value="253" label="MediaErrorEncrypted"/>
+  <int value="254" label="EventSourceURL"/>
+  <int value="255" label="WebSocketURL"/>
+  <int value="256" label="UnsafeEvalBlocksCSSOM"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
