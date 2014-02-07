@@ -1,12 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/site_chip_view.h"
+#include "chrome/browser/ui/views/toolbar/origin_chip_view.h"
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -14,22 +13,19 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/elide_url.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/toolbar/origin_chip.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
@@ -37,10 +33,8 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
-#include "grit/component_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -52,14 +46,14 @@
 #include "ui/views/painter.h"
 
 
-// SiteChipExtensionIcon ------------------------------------------------------
+// OriginChipExtensionIcon ----------------------------------------------------
 
-class SiteChipExtensionIcon : public extensions::IconImage::Observer {
+class OriginChipExtensionIcon : public extensions::IconImage::Observer {
  public:
-  SiteChipExtensionIcon(LocationIconView* icon_view,
-                        Profile* profile,
-                        const extensions::Extension* extension);
-  virtual ~SiteChipExtensionIcon();
+  OriginChipExtensionIcon(LocationIconView* icon_view,
+                          Profile* profile,
+                          const extensions::Extension* extension);
+  virtual ~OriginChipExtensionIcon();
 
   // IconImage::Observer:
   virtual void OnExtensionIconImageChanged(
@@ -69,10 +63,10 @@ class SiteChipExtensionIcon : public extensions::IconImage::Observer {
   LocationIconView* icon_view_;
   scoped_ptr<extensions::IconImage> icon_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(SiteChipExtensionIcon);
+  DISALLOW_COPY_AND_ASSIGN(OriginChipExtensionIcon);
 };
 
-SiteChipExtensionIcon::SiteChipExtensionIcon(
+OriginChipExtensionIcon::OriginChipExtensionIcon(
     LocationIconView* icon_view,
     Profile* profile,
     const extensions::Extension* extension)
@@ -91,17 +85,17 @@ SiteChipExtensionIcon::SiteChipExtensionIcon(
     OnExtensionIconImageChanged(icon_image_.get());
 }
 
-SiteChipExtensionIcon::~SiteChipExtensionIcon() {
+OriginChipExtensionIcon::~OriginChipExtensionIcon() {
 }
 
-void SiteChipExtensionIcon::OnExtensionIconImageChanged(
+void OriginChipExtensionIcon::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   if (icon_view_)
     icon_view_->SetImage(&icon_image_->image_skia());
 }
 
 
-// SiteChipView ---------------------------------------------------------------
+// OriginChipView -------------------------------------------------------------
 
 namespace {
 
@@ -115,154 +109,9 @@ const SkColor kEVBackgroundColor = SkColorSetRGB(163, 226, 120);
 const SkColor kMalwareBackgroundColor = SkColorSetRGB(145, 0, 0);
 const SkColor kBrokenSSLBackgroundColor = SkColorSetRGB(253, 196, 36);
 
-// Detect client-side or SB malware/phishing hits.
-bool IsMalware(const GURL& url, content::WebContents* tab) {
-  if (tab->GetURL() != url)
-    return false;
-
-  safe_browsing::SafeBrowsingTabObserver* sb_observer =
-      safe_browsing::SafeBrowsingTabObserver::FromWebContents(tab);
-  return sb_observer && sb_observer->detection_host() &&
-      sb_observer->detection_host()->DidPageReceiveSafeBrowsingMatch();
-}
-
-// For selected kChromeUIScheme and kAboutScheme, return the string resource
-// number for the title of the page. If we don't have a specialized title,
-// returns -1.
-int StringForChromeHost(const GURL& url) {
-  DCHECK(url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme));
-
-  if (url.is_empty())
-    return IDS_NEW_TAB_TITLE;
-
-  // TODO(gbillock): Just get the page title and special case exceptions?
-  std::string host = url.host();
-  if (host == chrome::kChromeUIAppLauncherPageHost)
-    return IDS_APP_DEFAULT_PAGE_NAME;
-  if (host == chrome::kChromeUIBookmarksHost)
-    return IDS_BOOKMARK_MANAGER_TITLE;
-  if (host == chrome::kChromeUIComponentsHost)
-    return IDS_COMPONENTS_TITLE;
-  if (host == chrome::kChromeUICrashesHost)
-    return IDS_CRASHES_TITLE;
-  if (host == chrome::kChromeUIDevicesHost)
-    return IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE;
-  if (host == chrome::kChromeUIDownloadsHost)
-    return IDS_DOWNLOAD_TITLE;
-  if (host == chrome::kChromeUIExtensionsHost)
-    return IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE;
-  if (host == chrome::kChromeUIHelpHost)
-    return IDS_ABOUT_TAB_TITLE;
-  if (host == chrome::kChromeUIHistoryHost)
-    return IDS_HISTORY_TITLE;
-  if (host == chrome::kChromeUINewTabHost)
-    return IDS_NEW_TAB_TITLE;
-  if (host == chrome::kChromeUIPluginsHost)
-    return IDS_PLUGINS_TITLE;
-  if (host == chrome::kChromeUIPolicyHost)
-    return IDS_POLICY_TITLE;
-  if (host == chrome::kChromeUIPrintHost)
-    return IDS_PRINT_PREVIEW_TITLE;
-  if (host == chrome::kChromeUISettingsHost)
-    return IDS_SETTINGS_TITLE;
-  if (host == chrome::kChromeUIVersionHost)
-    return IDS_ABOUT_VERSION_TITLE;
-
-  return -1;
-}
-
 }  // namespace
 
-base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
-  // First, strip view-source: if it appears.  Note that GetContent removes
-  // "view-source:" but leaves the original scheme (http, https, ftp, etc).
-  GURL url(provided_url);
-  if (url.SchemeIs(content::kViewSourceScheme))
-    url = GURL(url.GetContent());
-
-  // About scheme pages. Currently all about: URLs other than about:blank
-  // redirect to chrome: URLs, so this only affects about:blank.
-  if (url.SchemeIs(chrome::kAboutScheme))
-    return base::UTF8ToUTF16(url.spec());
-
-  // Chrome built-in pages.
-  if (url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme)) {
-    int string_ref = StringForChromeHost(url);
-    if (string_ref == -1)
-      return base::UTF8ToUTF16("Chrome");
-    return l10n_util::GetStringUTF16(string_ref);
-  }
-
-  Profile* profile = toolbar_view_->browser()->profile();
-
-  // For chrome-extension URLs, return the extension name.
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    const extensions::Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(url);
-    return extension ?
-        base::UTF8ToUTF16(extension->name()) : base::UTF8ToUTF16(url.host());
-  }
-
-  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(content::kFtpScheme)) {
-    // See ToolbarModelImpl::GetText(). Does not pay attention to any user
-    // edits, and uses GetURL/net::FormatUrl -- We don't really care about
-    // length or the autocomplete parser.
-    // TODO(gbillock): This uses an algorithm very similar to GetText, which
-    // is probably too conservative. Try out just using a simpler mechanism of
-    // StripWWW() and IDNToUnicode().
-    std::string languages;
-    if (profile)
-      languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-
-    base::string16 formatted = net::FormatUrl(url.GetOrigin(), languages,
-        net::kFormatUrlOmitAll, net::UnescapeRule::NORMAL, NULL, NULL, NULL);
-    // Remove scheme, "www.", and trailing "/".
-    if (StartsWith(formatted, base::ASCIIToUTF16("http://"), false))
-      formatted = formatted.substr(7);
-    else if (StartsWith(formatted, base::ASCIIToUTF16("https://"), false))
-      formatted = formatted.substr(8);
-    else if (StartsWith(formatted, base::ASCIIToUTF16("ftp://"), false))
-      formatted = formatted.substr(6);
-    if (StartsWith(formatted, base::ASCIIToUTF16("www."), false))
-      formatted = formatted.substr(4);
-    if (EndsWith(formatted, base::ASCIIToUTF16("/"), false))
-      formatted = formatted.substr(0, formatted.size()-1);
-    return formatted;
-  }
-
-  // These internal-ish debugging-style schemes we don't expect users
-  // to see. In these cases, the site chip will display the first
-  // part of the full URL.
-  if (url.SchemeIs(chrome::kBlobScheme) ||
-      url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      url.SchemeIs(chrome::kChromeNativeScheme) ||
-      url.SchemeIs(content::kDataScheme) ||
-      url.SchemeIs(content::kFileScheme) ||
-      url.SchemeIs(content::kFileSystemScheme) ||
-      url.SchemeIs(content::kGuestScheme) ||
-      url.SchemeIs(content::kJavaScriptScheme) ||
-      url.SchemeIs(content::kMailToScheme) ||
-      url.SchemeIs(content::kMetadataScheme) ||
-      url.SchemeIs(content::kSwappedOutScheme)) {
-    std::string truncated_url;
-    base::TruncateUTF8ToByteSize(url.spec(), 1000, &truncated_url);
-    return base::UTF8ToUTF16(truncated_url);
-  }
-
-#if defined(OS_CHROMEOS)
-  if (url.SchemeIs(chrome::kCrosScheme) ||
-      url.SchemeIs(chrome::kDriveScheme)) {
-    return base::UTF8ToUTF16(url.spec());
-  }
-#endif
-
-  // If all else fails, return hostname.
-  return base::UTF8ToUTF16(url.host());
-}
-
-SiteChipView::SiteChipView(ToolbarView* toolbar_view)
+OriginChipView::OriginChipView(ToolbarView* toolbar_view)
     : ToolbarButton(this, NULL),
       toolbar_view_(toolbar_view),
       painter_(NULL),
@@ -276,20 +125,20 @@ SiteChipView::SiteChipView(ToolbarView* toolbar_view)
   set_drag_controller(this);
 }
 
-SiteChipView::~SiteChipView() {
+OriginChipView::~OriginChipView() {
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
   if (sb_service.get() && sb_service->ui_manager())
     sb_service->ui_manager()->RemoveObserver(this);
 }
 
-void SiteChipView::Init() {
+void OriginChipView::Init() {
   ToolbarButton::Init();
   image()->EnableCanvasFlippingForRTLUI(false);
 
   // TODO(gbillock): Would be nice to just use stock LabelButton stuff here.
   location_icon_view_ = new LocationIconView(toolbar_view_->location_bar());
-  // Make location icon hover events count as hovering the site chip.
+  // Make location icon hover events count as hovering the origin chip.
   location_icon_view_->set_interactive(false);
 
   host_label_ = new views::Label();
@@ -314,13 +163,13 @@ void SiteChipView::Init() {
       views::Painter::CreateImageGridPainter(kMalwareBackgroundImages));
 }
 
-bool SiteChipView::ShouldShow() {
+bool OriginChipView::ShouldShow() {
   return chrome::ShouldDisplayOriginChip() ||
       (toolbar_view_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
        toolbar_view_->GetToolbarModel()->origin_chip_enabled());
 }
 
-void SiteChipView::Update(content::WebContents* web_contents) {
+void OriginChipView::Update(content::WebContents* web_contents) {
   if (!web_contents)
     return;
 
@@ -329,7 +178,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   const ToolbarModel::SecurityLevel security_level =
       toolbar_view_->GetToolbarModel()->GetSecurityLevel(true);
 
-  bool url_malware = IsMalware(url, web_contents);
+  bool url_malware = OriginChip::IsMalware(url, web_contents);
 
   // TODO(gbillock): We persist a malware setting while a new WebContents
   // content is loaded, meaning that we end up transiently marking a safe
@@ -359,7 +208,9 @@ void SiteChipView::Update(content::WebContents* web_contents) {
     painter_ = NULL;
   }
 
-  base::string16 host = SiteLabelFromURL(url_displayed_);
+  base::string16 host =
+      OriginChip::LabelFromURLForProfile(url_displayed_,
+                                         toolbar_view_->browser()->profile());
   if (security_level_ == ToolbarModel::EV_SECURE) {
     host = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
         toolbar_view_->GetToolbarModel()->GetEVCertName(),
@@ -394,9 +245,9 @@ void SiteChipView::Update(content::WebContents* web_contents) {
     const extensions::Extension* extension =
         service->extensions()->GetExtensionOrAppByURL(url_displayed_);
     extension_icon_.reset(
-        new SiteChipExtensionIcon(location_icon_view_,
-                                  toolbar_view_->browser()->profile(),
-                                  extension));
+        new OriginChipExtensionIcon(location_icon_view_,
+                                    toolbar_view_->browser()->profile(),
+                                    extension));
   } else {
     extension_icon_.reset();
   }
@@ -405,7 +256,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   SchedulePaint();
 }
 
-void SiteChipView::OnChanged() {
+void OriginChipView::OnChanged() {
   Update(toolbar_view_->GetWebContents());
   toolbar_view_->Layout();
   toolbar_view_->SchedulePaint();
@@ -413,7 +264,7 @@ void SiteChipView::OnChanged() {
   // arrows are pointing to the right spot. Only needed for some edge cases.
 }
 
-gfx::Size SiteChipView::GetPreferredSize() {
+gfx::Size OriginChipView::GetPreferredSize() {
   gfx::Size label_size = host_label_->GetPreferredSize();
   gfx::Size icon_size = location_icon_view_->GetPreferredSize();
   int icon_spacing = showing_16x16_icon_ ?
@@ -424,7 +275,7 @@ gfx::Size SiteChipView::GetPreferredSize() {
                    icon_size.height());
 }
 
-void SiteChipView::Layout() {
+void OriginChipView::Layout() {
   // TODO(gbillock): Eventually we almost certainly want to use
   // LocationBarLayout for leading and trailing decorations.
 
@@ -445,7 +296,7 @@ void SiteChipView::Layout() {
                          height() - 2 * LocationBarView::kNormalEdgeThickness);
 }
 
-void SiteChipView::OnPaint(gfx::Canvas* canvas) {
+void OriginChipView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect rect(GetLocalBounds());
   if (painter_)
     views::Painter::PaintPainterAt(canvas, painter_, rect);
@@ -453,8 +304,10 @@ void SiteChipView::OnPaint(gfx::Canvas* canvas) {
   ToolbarButton::OnPaint(canvas);
 }
 
-int SiteChipView::ElideDomainTarget(int target_max_width) {
-  base::string16 host = SiteLabelFromURL(url_displayed_);
+int OriginChipView::ElideDomainTarget(int target_max_width) {
+  base::string16 host =
+      OriginChip::LabelFromURLForProfile(url_displayed_,
+                                         toolbar_view_->browser()->profile());
   host_label_->SetText(host);
   int width = GetPreferredSize().width();
   if (width <= target_max_width)
@@ -471,7 +324,7 @@ int SiteChipView::ElideDomainTarget(int target_max_width) {
 
 // TODO(gbillock): Make the LocationBarView or OmniboxView the listener for
 // this button.
-void SiteChipView::ButtonPressed(views::Button* sender,
+void OriginChipView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   // See if the event needs to be passed to the LocationIconView.
   if (event.IsMouseEvent() || (event.type() == ui::ET_GESTURE_TAP)) {
@@ -487,8 +340,8 @@ void SiteChipView::ButtonPressed(views::Button* sender,
     location_icon_view_->set_interactive(false);
   }
 
-  UMA_HISTOGRAM_COUNTS("SiteChip.Pressed", 1);
-  content::RecordAction(base::UserMetricsAction("SiteChipPress"));
+  UMA_HISTOGRAM_COUNTS("OriginChip.Pressed", 1);
+  content::RecordAction(base::UserMetricsAction("OriginChipPress"));
 
   toolbar_view_->location_bar()->GetOmniboxView()->SetFocus();
   toolbar_view_->location_bar()->GetOmniboxView()->model()->
@@ -496,7 +349,7 @@ void SiteChipView::ButtonPressed(views::Button* sender,
   toolbar_view_->location_bar()->GetOmniboxView()->ShowURL();
 }
 
-void SiteChipView::WriteDragDataForView(View* sender,
+void OriginChipView::WriteDragDataForView(View* sender,
                                         const gfx::Point& press_pt,
                                         OSExchangeData* data) {
   // TODO(gbillock): Consolidate this with the identical logic in
@@ -512,12 +365,12 @@ void SiteChipView::WriteDragDataForView(View* sender,
                                         sender->GetWidget());
 }
 
-int SiteChipView::GetDragOperationsForView(View* sender,
+int OriginChipView::GetDragOperationsForView(View* sender,
                                            const gfx::Point& p) {
   return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
 }
 
-bool SiteChipView::CanStartDragForView(View* sender,
+bool OriginChipView::CanStartDragForView(View* sender,
                                        const gfx::Point& press_pt,
                                        const gfx::Point& p) {
   return true;
@@ -525,10 +378,10 @@ bool SiteChipView::CanStartDragForView(View* sender,
 
 // Note: When OnSafeBrowsingHit would be called, OnSafeBrowsingMatch will
 // have already been called.
-void SiteChipView::OnSafeBrowsingHit(
+void OriginChipView::OnSafeBrowsingHit(
     const SafeBrowsingUIManager::UnsafeResource& resource) {}
 
-void SiteChipView::OnSafeBrowsingMatch(
+void OriginChipView::OnSafeBrowsingMatch(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   OnChanged();
 }

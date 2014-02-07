@@ -41,11 +41,11 @@ class KeywordHintView;
 class LocationIconView;
 class OpenPDFInReaderView;
 class ManagePasswordsIconView;
+class OriginChipView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
-class SiteChipView;
 class StarView;
 class TemplateURLService;
 class TranslateIconView;
@@ -197,8 +197,8 @@ class LocationBarView : public LocationBar,
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 
-  void set_site_chip_view(SiteChipView* site_chip_view) {
-    site_chip_view_ = site_chip_view;
+  void set_origin_chip_view(OriginChipView* origin_chip_view) {
+    origin_chip_view_ = origin_chip_view;
   }
 
   // Shows the bookmark prompt.
@@ -474,8 +474,8 @@ class LocationBarView : public LocationBar,
   // The page action icon views.
   PageActionViews page_action_views_;
 
-  // The Site Chip.
-  SiteChipView* site_chip_view_;
+  // The Origin Chip.
+  OriginChipView* origin_chip_view_;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;

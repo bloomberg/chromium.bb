@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_SITE_CHIP_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_SITE_CHIP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
 
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -12,7 +12,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 
-class SiteChipExtensionIcon;
+class OriginChipExtensionIcon;
 class ToolbarView;
 
 namespace content {
@@ -28,13 +28,13 @@ class Button;
 class Label;
 }
 
-class SiteChipView : public ToolbarButton,
-                     public views::ButtonListener,
-                     public views::DragController,
-                     public SafeBrowsingUIManager::Observer {
+class OriginChipView : public ToolbarButton,
+                       public views::ButtonListener,
+                       public views::DragController,
+                       public SafeBrowsingUIManager::Observer {
  public:
-  explicit SiteChipView(ToolbarView* toolbar_view);
-  virtual ~SiteChipView();
+  explicit OriginChipView(ToolbarView* toolbar_view);
+  virtual ~OriginChipView();
 
   void Init();
 
@@ -44,11 +44,11 @@ class SiteChipView : public ToolbarButton,
   // clicking on it or interacting with the Omnibox.
   bool ShouldShow();
 
-  // Recalculates the contents of the Site Chip based on the displayed tab.
+  // Recalculates the contents of the Origin Chip based on the displayed tab.
   void Update(content::WebContents* tab);
 
   // Called to signal that the contents of the tab being shown has changed, so
-  // the site chip needs to update itself to the new state.
+  // the origin chip needs to update itself to the new state.
   void OnChanged();
 
   views::ImageView* location_icon_view() {
@@ -59,8 +59,8 @@ class SiteChipView : public ToolbarButton,
   }
 
   // Elides the hostname shown to the indicated width, if needed. Returns the
-  // final width of the site chip. Note: this may be more than the target width,
-  // since the hostname will not be elided past the TLD+1.
+  // final width of the origin chip. Note: this may be more than the target
+  // width, since the hostname will not be elided past the TLD+1.
   int ElideDomainTarget(int target_max_width);
 
   // ToolbarButton:
@@ -89,8 +89,6 @@ class SiteChipView : public ToolbarButton,
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
  private:
-  base::string16 SiteLabelFromURL(const GURL& url);
-
   ToolbarView* toolbar_view_;
   views::Label* host_label_;
   LocationIconView* location_icon_view_;
@@ -101,12 +99,12 @@ class SiteChipView : public ToolbarButton,
   // chip has no background.
   views::Painter* painter_;
   bool showing_16x16_icon_;
-  scoped_ptr<SiteChipExtensionIcon> extension_icon_;
+  scoped_ptr<OriginChipExtensionIcon> extension_icon_;
   GURL url_displayed_;
   ToolbarModel::SecurityLevel security_level_;
   bool url_malware_;
 
-  DISALLOW_COPY_AND_ASSIGN(SiteChipView);
+  DISALLOW_COPY_AND_ASSIGN(OriginChipView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_SITE_CHIP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
