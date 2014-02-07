@@ -32,8 +32,7 @@ bool JSONStringValueSerializer::SerializeInternal(const Value& root,
   if (pretty_print_)
     options |= base::JSONWriter::OPTIONS_PRETTY_PRINT;
 
-  base::JSONWriter::WriteWithOptions(&root, options, json_string_);
-  return true;
+  return base::JSONWriter::WriteWithOptions(&root, options, json_string_);
 }
 
 Value* JSONStringValueSerializer::Deserialize(int* error_code,

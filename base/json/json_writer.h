@@ -17,8 +17,10 @@ class Value;
 class BASE_EXPORT JSONWriter {
  public:
   enum Options {
-    // For values of binary type, the value (and key if within a dictionary)
-    // will be omitted from the output.
+    // This option instructs the writer that if a Binary value is encountered,
+    // the value (and key if within a dictionary) will be omitted from the
+    // output, and success will be returned. Otherwise, if a binary value is
+    // encountered, failure will be returned.
     OPTIONS_OMIT_BINARY_VALUES = 1 << 0,
 
     // This option instructs the writer to write doubles that have no fractional
@@ -35,20 +37,20 @@ class BASE_EXPORT JSONWriter {
   // Given a root node, generates a JSON string and puts it into |json|.
   // TODO(tc): Should we generate json if it would be invalid json (e.g.,
   // |node| is not a DictionaryValue/ListValue or if there are inf/-inf float
-  // values)?
-  static void Write(const Value* const node, std::string* json);
+  // values)? Return true on success and false on failure.
+  static bool Write(const Value* const node, std::string* json);
 
   // Same as above but with |options| which is a bunch of JSONWriter::Options
-  // bitwise ORed together.
-  static void WriteWithOptions(const Value* const node, int options,
+  // bitwise ORed together. Return true on success and false on failure.
+  static bool WriteWithOptions(const Value* const node, int options,
                                std::string* json);
 
  private:
   JSONWriter(int options, std::string* json);
 
-  // Called recursively to build the JSON string.  Whe completed, value is
-  // json_string_ will contain the JSON.
-  void BuildJSONString(const Value* const node, size_t depth);
+  // Called recursively to build the JSON string. When completed,
+  // |json_string_| will contain the JSON.
+  bool BuildJSONString(const Value* const node, size_t depth);
 
   // Adds space to json_string_ for the indent level.
   void IndentLine(size_t depth);
