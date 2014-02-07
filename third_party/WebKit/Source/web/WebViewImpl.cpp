@@ -120,6 +120,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
+#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/notifications/NotificationController.h"
@@ -402,6 +403,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideNavigatorContentUtilsTo(m_page.get(), m_navigatorContentUtilsClient.get());
 
     provideContextFeaturesTo(m_page.get(), m_featureSwitchClient.get());
+    if (RuntimeEnabledFeatures::deviceOrientationEnabled())
+        DeviceOrientationInspectorAgent::provideTo(m_page.get());
     provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 
