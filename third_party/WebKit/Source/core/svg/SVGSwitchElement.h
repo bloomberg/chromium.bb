@@ -35,8 +35,6 @@ private:
 
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
-
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSwitchElement)

@@ -55,8 +55,6 @@ private:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
-
     RefPtr<SVGAnimatedString> m_svgTarget;
     RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
