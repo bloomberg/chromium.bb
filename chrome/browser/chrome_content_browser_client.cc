@@ -1482,7 +1482,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
 #if defined(ENABLE_WEBRTC)
-    if (VersionInfo::GetChannel() <= VersionInfo::CHANNEL_DEV) {
+#if defined(OS_ANDROID)
+  const VersionInfo::Channel kMaxDisableEncryptionChannel =
+      VersionInfo::CHANNEL_BETA;
+#else
+  const VersionInfo::Channel kMaxDisableEncryptionChannel =
+      VersionInfo::CHANNEL_DEV;
+#endif
+    if (VersionInfo::GetChannel() <= kMaxDisableEncryptionChannel) {
       static const char* const kWebRtcDevSwitchNames[] = {
         switches::kDisableWebRtcEncryption,
       };
