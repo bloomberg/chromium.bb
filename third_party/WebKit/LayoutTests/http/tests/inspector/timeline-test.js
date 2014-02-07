@@ -31,7 +31,7 @@ InspectorTest.timelinePropertyFormatters = {
 
 InspectorTest.timelinePresentationModel = function()
 {
-    return WebInspector.panels.timeline._currentView._presentationModel;
+    return WebInspector.panels.timeline._currentViews[0]._presentationModel;
 }
 
 InspectorTest.startTimeline = function(callback)
@@ -199,7 +199,7 @@ InspectorTest.findPresentationRecord = function(type)
         result = record;
         return true;
     }
-    var records = WebInspector.panel("timeline")._currentView._rootRecord().children;
+    var records = WebInspector.panel("timeline")._currentViews[0]._rootRecord().children;
     WebInspector.TimelinePresentationModel.forAllRecords(records, findByType);
     return result;
 }

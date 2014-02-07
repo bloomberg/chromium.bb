@@ -37,7 +37,7 @@ function test()
         ]}
     ];
 
-    var view = WebInspector.showPanel("timeline")._currentView;
+    var view = WebInspector.showPanel("timeline")._currentViews[0];
     var model = view._presentationModel;
 
     function printRecord(record)
