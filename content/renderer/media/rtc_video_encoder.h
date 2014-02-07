@@ -23,9 +23,13 @@ class MessageLoopProxy;
 
 }  // namespace base
 
-namespace content {
+namespace media {
 
-class RendererGpuVideoAcceleratorFactories;
+class GpuVideoAcceleratorFactories;
+
+}  // namespace media
+
+namespace content {
 
 // RTCVideoEncoder uses a media::VideoEncodeAccelerator to implement a
 // webrtc::VideoEncoder class for WebRTC.  Internally, VEA methods are
@@ -41,7 +45,7 @@ class CONTENT_EXPORT RTCVideoEncoder
   RTCVideoEncoder(
       webrtc::VideoCodecType type,
       media::VideoCodecProfile profile,
-      const scoped_refptr<RendererGpuVideoAcceleratorFactories>& gpu_factories);
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
   virtual ~RTCVideoEncoder();
 
   // webrtc::VideoEncoder implementation.  Tasks are posted to |impl_| using the
@@ -80,7 +84,7 @@ class CONTENT_EXPORT RTCVideoEncoder
   const media::VideoCodecProfile video_codec_profile_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
-  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories_;
+  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;
