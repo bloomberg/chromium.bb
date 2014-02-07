@@ -10,6 +10,8 @@
 # include <io.h>
 #endif
 
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/public/nacl_app.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -21,7 +23,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
 
 
 int OpenFileReadOnly(const char *filename) {
@@ -102,16 +103,17 @@ struct NaClDesc *MakeExampleDesc() {
 }
 
 int main(int argc, char **argv) {
+  // Note that we deliberately do not call NaClAllModulesInit() here,
+  // in order to mimic what we expect the Chromium side to do.
+  NaClChromeMainInit();
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
+  struct NaClApp *nap = NaClAppCreate();
   struct ThreadArgs thread_args;
 
   NaClHandleBootstrapArgs(&argc, &argv);
 #if NACL_LINUX
   args->prereserved_sandbox_size = g_prereserved_sandbox_size;
 #endif
-
-  // Note that we deliberately do not call NaClAllModulesInit() here,
-  // in order to mimic what we expect the Chromium side to do.
 
   CHECK(argc == 3);
 
@@ -127,15 +129,14 @@ int main(int argc, char **argv) {
   args->imc_bootstrap_handle = socketpair[0];
   thread_args.channel = socketpair[1];
 
-  // Check that NaClDescMakeCustomDesc() works when called before
-  // NaClChromeMainStart().
-  args->initial_ipc_desc = MakeExampleDesc();
+  // Check that NaClDescMakeCustomDesc() works when called in this context.
+  NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, MakeExampleDesc());
 
   NaClThread thread;
   CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,
                        NACL_KERN_STACK_SIZE));
 
-  NaClChromeMainStart(args);
-  NaClLog(LOG_FATAL, "NaClChromeMainStart() should never return\n");
+  NaClChromeMainStartApp(nap, args);
+  NaClLog(LOG_FATAL, "NaClChromeMainStartApp() should never return\n");
   return 1;
 }

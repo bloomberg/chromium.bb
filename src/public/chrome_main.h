@@ -23,15 +23,7 @@ struct NaClValidationCache;
 
 
 /*
- * The old, deprecated interface usage is as follows:
- *
- *   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
- *   // Now NaCl is partially initialized, so the following is allowed:
- *   args->initial_ipc_fd = NaClDescMakeCustomDesc(...);
- *   // Fill out more of args...
- *   NaClChromeMainStart(args);
- *
- * The new, preferred interface usage is as follows:
+ * This interface may be used as follows:
  *
  *   #if OS_POSIX
  *   NaClChromeMainSetUrandomFd(urandom_fd);
@@ -52,16 +44,9 @@ struct NaClValidationCache;
  *
  * This number is chosen so as not to conflict with
  * NACL_SERVICE_PORT_DESCRIPTOR, NACL_SERVICE_ADDRESS_DESCRIPTOR and
- * export_addr_to inside NaClChromeMainStart().
+ * export_addr_to inside NaClChromeMainStartApp().
  */
 #define NACL_CHROME_DESC_BASE 6
-
-/*
- * Descriptor number for initial_ipc_desc.
- *
- * Deprecated: use NaClAppSetDesc() and NACL_CHROME_DESC_BASE instead.
- */
-#define NACL_CHROME_INITIAL_IPC_DESC NACL_CHROME_DESC_BASE
 
 
 struct NaClChromeMainArgs {
@@ -79,15 +64,6 @@ struct NaClChromeMainArgs {
    * NaCl's stable ABI, such as the PNaCl translator.
    */
   int irt_fd;
-
-  /*
-   * Descriptor to provide to untrusted code as descriptor number
-   * NACL_CHROME_INITIAL_IPC_DESC.  For use by the Chrome-IPC-based
-   * PPAPI proxy.  Optional; may be NULL.
-   *
-   * Deprecated: use NaClAppSetDesc() instead.
-   */
-  struct NaClDesc *initial_ipc_desc;
 
   /* Whether to enable untrusted hardware exception handling.  Boolean. */
   int enable_exception_handling;
@@ -148,16 +124,6 @@ struct NaClChromeMainArgs {
 
 #if NACL_LINUX || NACL_OSX
   /*
-   * File descriptor for /dev/urandom for reading random data.  This
-   * takes ownership of the file descriptor.  In principle this is
-   * optional and may be -1, although startup may fail if this is not
-   * provided.
-   *
-   * Deprecated: use NaClChromeMainSetUrandomFd() instead.
-   */
-  int urandom_fd;
-
-  /*
    * The result of sysconf(_SC_NPROCESSORS_ONLN).  The Chrome
    * outer-sandbox prevents the glibc implementation of sysconf from
    * working -- which just reads /proc/cpuinfo or similar file -- so
@@ -210,13 +176,6 @@ void NaClChromeMainInit(void);
 
 /* Create a new args struct containing default values. */
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
-
-/*
- * Launch NaCl.  This does not return.
- *
- * Deprecated: use NaClAppCreate() and NaClChromeMainStartApp() instead.
- */
-void NaClChromeMainStart(struct NaClChromeMainArgs *args);
 
 /* Launch NaCl.  This does not return. */
 void NaClChromeMainStartApp(struct NaClApp *nap,

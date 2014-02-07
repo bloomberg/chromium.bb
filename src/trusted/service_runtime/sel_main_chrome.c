@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
+#include "native_client/src/public/chrome_main.h"
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
@@ -48,6 +48,7 @@ static int g_initialized = 0;
 
 #if NACL_LINUX || NACL_OSX
 void NaClChromeMainSetUrandomFd(int urandom_fd) {
+  CHECK(!g_initialized);
   NaClSecureRngModuleSetUrandomFd(urandom_fd);
 }
 #endif
@@ -59,12 +60,14 @@ void NaClChromeMainInit(void) {
 }
 
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
-  struct NaClChromeMainArgs *args = malloc(sizeof(*args));
+  struct NaClChromeMainArgs *args;
+
+  CHECK(g_initialized);
+  args = malloc(sizeof(*args));
   if (args == NULL)
     return NULL;
   args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
-  args->initial_ipc_desc = NULL;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->enable_dyncode_syscalls = 1;
@@ -79,23 +82,11 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->attach_debug_exception_handler_func = NULL;
 #endif
 #if NACL_LINUX || NACL_OSX
-  args->urandom_fd = -1;
   args->number_of_cores = -1;  /* unknown */
 #endif
 #if NACL_LINUX
   args->prereserved_sandbox_size = 0;
 #endif
-
-  /*
-   * Initialize NaClLog so that Chromium can call
-   * NaClDescMakeCustomDesc(), before NaClAllModulesInit() gets
-   * called.
-   *
-   * TODO(mseaborn): Remove this once Chromium calls
-   * NaClChromeMainInit() before NaClChromeMainArgsCreate().
-   */
-  NaClLogModuleInit();
-
   return args;
 }
 
@@ -162,16 +153,7 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
   envp = (const char **) environ;
 #endif
 
-#if NACL_LINUX || NACL_OSX
-  /* This needs to happen before NaClAllModulesInit(). */
-  if (args->urandom_fd != -1)
-    NaClSecureRngModuleSetUrandomFd(args->urandom_fd);
-#endif
-  /* TODO(mseaborn): Remove this when NaClChromeMainStart() is removed. */
-  if (nap == NULL) {
-    NaClChromeMainInit();
-    nap = NaClAppCreate();
-  }
+  CHECK(g_initialized);
 
   NaClBootstrapChannelErrorReporterInit();
   NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
@@ -218,10 +200,6 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
    * are 3 and 4.
    */
 
-  if (args->initial_ipc_desc != NULL) {
-    NaClAppSetDesc(nap, NACL_CHROME_INITIAL_IPC_DESC, args->initial_ipc_desc);
-  }
-
   /*
    * in order to report load error to the browser plugin through the
    * secure command channel, we do not immediate jump to cleanup code
@@ -265,7 +243,7 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
     /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
-      NaClLog(LOG_FATAL, "NaClChromeMainStart: "
+      NaClLog(LOG_FATAL, "NaClChromeMainStartApp: "
               "Failed to set up Mach exception handler\n");
     }
 #elif NACL_WINDOWS
@@ -416,8 +394,4 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
   NaClAllModulesFini();
 
   NaClExit(ret_code);
-}
-
-void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
-  NaClChromeMainStartApp(NULL, args);
 }
