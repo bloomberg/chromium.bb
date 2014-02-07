@@ -85,9 +85,12 @@ Shell::~Shell() {
     }
   }
 
-  if (windows_.empty() && quit_message_loop_)
+  if (windows_.empty() && quit_message_loop_) {
+    if (headless_)
+      PlatformExit();
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());
+  }
 }
 
 Shell* Shell::CreateShell(WebContents* web_contents,
