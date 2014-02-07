@@ -215,16 +215,11 @@ class PDFBrowserTest : public InProcessBrowserTest,
   net::test_server::EmbeddedTestServer pdf_test_server_;
 };
 
-#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
-    (defined(OS_LINUX) || defined(OS_WIN))
+
 // TODO(thestig): http://crbug.com/79837
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_Basic) {
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
   // OS X uses CoreText, and FreeType renders slightly different on Linux and
