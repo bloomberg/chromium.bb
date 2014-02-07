@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_APPS_CONTAINER_VIEW_H_
 
 #include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -15,25 +16,14 @@ class WebContents;
 namespace app_list {
 
 class AppsGridView;
+class ApplicationDragAndDropHost;
 class AppListFolderItem;
 class AppListFolderView;
 class AppListMainView;
 class AppListModel;
 class ContentsView;
+class FolderBackgroundView;
 class PaginationModel;
-
-class TopIconAnimationObserver {
- public:
-  // Called when top icon animation completes.
-  virtual void OnTopIconAnimationsComplete(views::View* icon_view) {}
-
- protected:
-  TopIconAnimationObserver() {}
-  virtual ~TopIconAnimationObserver() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TopIconAnimationObserver);
-};
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -54,20 +44,34 @@ class AppsContainerView : public views::View,
   // a folder view with |folder_item|. If |folder_item| is NULL skips animation.
   void ShowApps(AppListFolderItem* folder_item);
 
-  // Overridden from views::View:
+  // Sets |drag_and_drop_host_| for the current app list in both
+  // app_list_folder_view_ and root level apps_grid_view_.
+  void SetDragAndDropHostOfCurrentAppList(
+      ApplicationDragAndDropHost* drag_and_drop_host);
+
+  // Transits the UI from folder view to root lelve apps grid view when
+  // re-parenting a child item of |folder_item|.
+  void ReparentFolderItemTransit(AppListFolderItem* folder_item);
+
+  // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
-  // Overridden from TopIconAnimationObserver.
-  virtual void OnTopIconAnimationsComplete(views::View* icon_view) OVERRIDE;
+  // TopIconAnimationObserver overrides:
+  virtual void OnTopIconAnimationsComplete() OVERRIDE;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
+  FolderBackgroundView* folder_background_view() {
+     return folder_background_view_;
+  }
+  AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
 
  private:
   enum ShowState {
     SHOW_APPS,
     SHOW_ACTIVE_FOLDER,
+    SHOW_ITEM_REPARENT,
   };
 
   void SetShowState(ShowState show_state);
@@ -83,14 +87,19 @@ class AppsContainerView : public views::View,
   void CreateViewsForFolderTopItemsAnimation(
       AppListFolderItem* active_folder, bool open_folder);
 
+  void PrepareToShowApps(AppListFolderItem* folder_item);
+
   AppListModel* model_;
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   AppListFolderView* app_list_folder_view_;  // Owned by views hierarchy.
+  FolderBackgroundView* folder_background_view_;  // Owned by views hierarchy.
   ShowState show_state_;
 
   // The transitional views for animating the top items in folder
   // when opening or closing a folder.
   std::vector<views::View*> top_icon_views_;
+
+  size_t top_icon_animation_pending_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };

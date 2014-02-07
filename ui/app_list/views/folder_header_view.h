@@ -32,6 +32,8 @@ class FolderHeaderView : public views::View,
   virtual ~FolderHeaderView();
 
   void SetFolderItem(AppListFolderItem* folder_item);
+  void UpdateFolderNameVisibility(bool visible);
+  void OnFolderItemRemoved();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -42,19 +44,19 @@ class FolderHeaderView : public views::View,
   // Updates UI.
   void Update();
 
-  // Overriden from views::View:
+  // views::View overrides:
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from views::TextfieldController:
+  // views::TextfieldController overrides:
   virtual void ContentsChanged(views::Textfield* sender,
                                const base::string16& new_contents) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from AppListItemObserver:
+  // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
@@ -67,6 +69,8 @@ class FolderHeaderView : public views::View,
   FolderNameView* folder_name_view_;  // Owned by views hierarchy.
 
   FolderHeaderViewDelegate* delegate_;
+
+  bool folder_name_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderView);
 };

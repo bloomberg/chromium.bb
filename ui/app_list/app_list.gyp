@@ -107,6 +107,8 @@
         'views/cached_label.h',
         'views/contents_view.cc',
         'views/contents_view.h',
+        'views/folder_background_view.cc',
+        'views/folder_background_view.h',
         'views/folder_header_view.cc',
         'views/folder_header_view.h',
         'views/folder_header_view_delegate.h',
@@ -131,6 +133,8 @@
         'views/signin_view.h',
         'views/speech_view.cc',
         'views/speech_view.h',
+        'views/top_icon_animation_view.cc',
+        'views/top_icon_animation_view.h',
       ],
       'conditions': [
         ['use_aura==1', {

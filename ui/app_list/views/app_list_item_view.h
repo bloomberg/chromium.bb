@@ -64,6 +64,13 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Returns the icon bounds relative to AppListItemView.
   const gfx::Rect& GetIconBounds() const;
 
+  // Sets UI state to dragging state.
+  void SetDragUIState();
+
+  // Returns the icon bounds for the given |target_bounds| as
+  // the assuming bounds of this view.
+  gfx::Rect GetIconBoundsForTargetViewBounds(const gfx::Rect& target_bounds);
+
  private:
   enum UIState {
     UI_STATE_NORMAL,    // Normal UI (icon + label)

@@ -266,9 +266,7 @@ void AppListItemView::Layout() {
   rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
   const int y = rect.y();
 
-  gfx::Rect icon_bounds(rect.x(), y, rect.width(), icon_size_.height());
-  icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
-  icon_->SetBoundsRect(icon_bounds);
+  icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
   const gfx::Size title_size = title_->GetPreferredSize();
   gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
                          y + icon_size_.height() + kIconTitleSpacing,
@@ -464,6 +462,23 @@ void AppListItemView::OnSyncDragEnd() {
 
 const gfx::Rect& AppListItemView::GetIconBounds() const {
   return icon_->bounds();
+}
+
+void AppListItemView::SetDragUIState() {
+  SetUIState(UI_STATE_DRAGGING);
+}
+
+gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
+    const gfx::Rect& target_bounds) {
+  gfx::Rect rect(target_bounds);
+
+  const int left_right_padding =
+      title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
+  rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
+
+  gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), icon_size_.height());
+  icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
+  return icon_bounds;
 }
 
 }  // namespace app_list

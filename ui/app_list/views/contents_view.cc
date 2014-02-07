@@ -83,8 +83,7 @@ void ContentsView::CancelDrag() {
 
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
-  apps_container_view_->apps_grid_view()->
-      SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+  apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
 void ContentsView::SetShowState(ShowState show_state) {

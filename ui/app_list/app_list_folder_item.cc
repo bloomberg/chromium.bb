@@ -106,6 +106,22 @@ const gfx::ImageSkia& AppListFolderItem::GetTopIcon(size_t item_index) {
   return top_items_[item_index]->icon();
 }
 
+gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
+    AppListItem* item,
+    const gfx::Rect& folder_icon_bounds) {
+  for (size_t i = 0; i < top_items_.size(); ++i) {
+    if (item->id() == top_items_[i]->id()) {
+      Rects rects = AppListFolderItem::GetTopIconsBounds(folder_icon_bounds);
+      return rects[i];
+    }
+  }
+
+  gfx::Rect target_rect(folder_icon_bounds);
+  target_rect.ClampToCenteredSize(
+      gfx::Size(kItemIconDimension, kItemIconDimension));
+  return target_rect;
+}
+
 void AppListFolderItem::Activate(int event_flags) {
   // Folder handling is implemented by the View, so do nothing.
 }

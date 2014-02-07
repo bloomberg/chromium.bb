@@ -60,7 +60,8 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     : folder_item_(NULL),
       back_button_(new views::ImageButton(this)),
       folder_name_view_(new FolderNameView),
-      delegate_(delegate) {
+      delegate_(delegate),
+      folder_name_visible_(true) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   back_button_->SetImage(views::ImageButton::STATE_NORMAL,
       rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
@@ -96,11 +97,23 @@ void FolderHeaderView::SetFolderItem(AppListFolderItem* folder_item) {
   Update();
 }
 
+void FolderHeaderView::UpdateFolderNameVisibility(bool visible) {
+  folder_name_visible_ = visible;
+  Update();
+  SchedulePaint();
+}
+
+void FolderHeaderView::OnFolderItemRemoved() {
+  folder_item_ = NULL;
+}
+
 void FolderHeaderView::Update() {
   if (!folder_item_)
     return;
 
-  folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->title()));
+  folder_name_view_->SetVisible(folder_name_visible_);
+  if (folder_name_visible_)
+    folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->title()));
 }
 
 gfx::Size FolderHeaderView::GetPreferredSize() {
@@ -129,7 +142,7 @@ void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty())
+  if (rect.IsEmpty() || !folder_name_visible_)
     return;
 
   // Draw bottom separator line.

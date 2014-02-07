@@ -16,8 +16,10 @@
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
@@ -149,6 +151,39 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
 
+  // Called to initiate drag for reparenting a folder item in root level grid
+  // view.
+  // Both |drag_view_rect| and |drag_pint| is in the coordinates of root level
+  // grid view.
+  void InitiateDragFromReparentItemInRootLevelGridView(
+      AppListItemView* original_drag_view,
+      const gfx::Rect& drag_view_rect,
+      const gfx::Point& drag_point);
+
+  // Updates drag in the root level grid view when receiving the drag event
+  // dispatched from the hidden grid view for reparenting a folder item.
+  void UpdateDragFromReparentItem(Pointer pointer,
+      const ui::LocatedEvent& event);
+
+  // Dispatches the drag event from hidden grid view to the top level grid view.
+  void DispatchDragEventForReparent(Pointer pointer,
+      const ui::LocatedEvent& event);
+
+  // Handles EndDrag event dispatched from the hidden folder grid view in the
+  // root level grid view to end reparenting a folder item.
+  // |events_forwarded_to_drag_drop_host|: True if the dragged item is dropped
+  // to the drag_drop_host, eg. dropped on shelf.
+  void EndDragFromReparentItemInRootLevel(
+      bool events_forwarded_to_drag_drop_host);
+
+  // Handles EndDrag event in the hidden folder grid view to end reparenting
+  // a folder item.
+  void EndDragForReparentInHiddenFolderGridView();
+
+  // Called when the folder item associated with the grid view is removed.
+  // The grid view must be inside a folder view.
+  void OnFolderItemRemoved();
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const { return &view_model_; }
 
@@ -276,10 +311,27 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // the related view changes.
   void MoveItemToFolder(views::View* item_view, const Index& target);
 
+  // Updates both data model and view_model_ for re-parenting a folder item to a
+  // new position in top level item list.
+  void ReparentItemForReorder(views::View* item_view, const Index& target);
+
+  // Updates both data model and view_model_ for re-parenting a folder item
+  // to anther folder target.
+  void ReparentItemToAnotherFolder(views::View* item_view, const Index& target);
+
+  // Updates both data model and view_model_ for removing last item from
+  // |source_folder| which is the parent folder of the re-parenting item.
+  void RemoveLastItemFromReparentItemFolder(AppListFolderItem* source_folder);
+
+  // If user does not drop the re-parenting folder item to any valid target,
+  // cancel the re-parenting action, let the item go back to its original
+  // parent folder with UI animation.
+  void CancelFolderItemReparent(AppListItemView* drag_item_view);
+
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
 
-  // Returnes true if |point| lies within the bounds of this grid view plus a
+  // Returns true if |point| lies within the bounds of this grid view plus a
   // buffer area surrounding it.
   bool IsPointWithinDragBuffer(const gfx::Point& point) const;
 
@@ -352,9 +404,29 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Invoked when |reorder_timer_| fires to show re-order preview UI.
   void OnReorderTimer();
 
+  // Invoked when |folder_item_reparent_timer_| fires.
+  void OnFolderItemReparentTimer();
+
   // Invoked when |folder_dropping_timer_| fires to show folder dropping
   // preview UI.
   void OnFolderDroppingTimer();
+
+  // Updates drag state for dragging inside a folder's grid view.
+  void UpdateDragStateInsideFolder(Pointer pointer,
+      const ui::LocatedEvent& event);
+
+  // Returns true if drag event is happening in the root level AppsGridView
+  // for reparenting a folder item.
+  bool IsDraggingForReparentInRootLevelGridView() const;
+
+  // Returns true if drag event is happening in the hidden AppsGridView of the
+  // folder during reparenting a folder item.
+  bool IsDraggingForReprentInHiddenGridView() const;
+
+  // Returns the target icon bounds for |drag_item_view| to fly back
+  // to its parent |folder_item_view| in animation.
+  gfx::Rect GetTargetIconRectInFolder(AppListItemView* drag_item_view,
+      AppListItemView* folder_item_view);
 
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.
@@ -406,6 +478,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // the |drop_target_|.
   base::OneShotTimer<AppsGridView> folder_dropping_timer_;
 
+  // Timer for dragging a folder item out of folder container ink bubble.
+  base::OneShotTimer<AppsGridView> folder_item_reparent_timer_;
+
   // An application target drag and drop host which accepts dnd operations.
   ApplicationDragAndDropHost* drag_and_drop_host_;
 
@@ -433,6 +508,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // The most recent activated item view.
   AppListItemView* activated_item_view_;
+
+  // Tracks if drag_view_ is dragged out of the folder container bubble
+  // when dragging a item inside a folder.
+  bool drag_out_of_folder_container_;
+
+  // True if the drag_view_ item is a folder item being dragged for reparenting.
+  bool dragging_for_reparent_item_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

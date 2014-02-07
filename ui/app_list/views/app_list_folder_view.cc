@@ -15,9 +15,11 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/folder_background_view.h"
 #include "ui/app_list/views/folder_header_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 
@@ -28,6 +30,11 @@ namespace {
 // Indexes of interesting views in ViewModel of AppListFolderView.
 const int kIndexFolderHeader = 0;
 const int kIndexChildItems = 1;
+
+// Threshold for the distance from the center of the item to the circle of the
+// folder container ink bubble, beyond which, the item is considered dragged
+// out of the folder boundary.
+const int kOutOfFolderContainerBubbleDelta = 30;
 
 }  // namespace
 
@@ -40,7 +47,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
       view_model_(new views::ViewModel),
       model_(model),
       folder_item_(NULL),
-      pagination_model_(new PaginationModel) {
+      pagination_model_(new PaginationModel),
+      hide_for_reparent_(false) {
   AddChildView(folder_header_view_);
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
@@ -74,7 +82,10 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
   folder_header_view_->SetFolderItem(folder_item_);
 }
 
-void AppListFolderView::ScheduleShowHideAnimation(bool show) {
+void AppListFolderView::ScheduleShowHideAnimation(bool show,
+                                                  bool hide_for_reparent) {
+  hide_for_reparent_ = hide_for_reparent;
+
   // Stop any previous animation.
   layer()->GetAnimator()->StopAnimating();
 
@@ -83,8 +94,9 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show) {
     items_grid_view_->SetTopItemViewsVisible(false);
 
   // Set initial state.
-  SetVisible(true);
   layer()->SetOpacity(show ? 0.0f : 1.0f);
+  SetVisible(true);
+  UpdateFolderNameVisibility(true);
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
   animation.SetTweenType(gfx::Tween::EASE_IN_2);
@@ -113,13 +125,18 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void AppListFolderView::OnListItemRemoved(size_t index, AppListItem* item) {
-  // If the folder item associated with this view is removed from the model,
-  // (e.g. the last item in the folder was deleted), reset the view and signal
-  // the container view to show the app list instead.
   if (item == folder_item_) {
-    items_grid_view_->SetItemList(NULL);
-    folder_header_view_->SetFolderItem(NULL);
+    items_grid_view_->OnFolderItemRemoved();
+    folder_header_view_->OnFolderItemRemoved();
     folder_item_ = NULL;
+
+    // Do not change state if it is hidden.
+    if (layer()->opacity() == 0.0f)
+      return;
+
+    // If the folder item associated with this view is removed from the model,
+    // (e.g. the last item in the folder was deleted), reset the view and signal
+    // the container view to show the app list instead.
     // Pass NULL to ShowApps() to avoid triggering animation from the deleted
     // folder.
     container_view_->ShowApps(NULL);
@@ -131,8 +148,15 @@ void AppListFolderView::OnImplicitAnimationsCompleted() {
   if (layer()->opacity() == 1.0f)
     items_grid_view_->SetTopItemViewsVisible(true);
 
-  if (layer()->opacity() == 0.0f)
+  // If the view is hidden for reparenting a folder item, it has to be visible,
+  // so that drag_view_ can keep receiving mouse events.
+  if (layer()->opacity() == 0.0f && !hide_for_reparent_)
     SetVisible(false);
+
+  // Set the view bounds to a small rect, so that it won't overlap the root
+  // level apps grid view during folder item reprenting transitional period.
+  if (hide_for_reparent_)
+    SetBoundsRect(gfx::Rect(bounds().x(), bounds().y(), 1, 1));
 }
 
 void AppListFolderView::CalculateIdealBounds() {
@@ -146,8 +170,24 @@ void AppListFolderView::CalculateIdealBounds() {
   view_model_->set_ideal_bounds(kIndexFolderHeader, header_frame);
 
   gfx::Rect grid_frame(rect);
-  grid_frame.set_y(header_frame.height());
+  grid_frame.Subtract(header_frame);
   view_model_->set_ideal_bounds(kIndexChildItems, grid_frame);
+}
+
+void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
+    AppListItemView* original_drag_view,
+    const gfx::Point& drag_point_in_root_grid) {
+  // Converts the original_drag_view's bounds to the coordinate system of
+  // root level grid view.
+  gfx::RectF rect_f(original_drag_view->bounds());
+  views::View::ConvertRectToTarget(items_grid_view_,
+                                   container_view_->apps_grid_view(),
+                                   &rect_f);
+  gfx::Rect rect_in_root_grid_view = gfx::ToEnclosingRect(rect_f);
+
+  container_view_->apps_grid_view()->
+      InitiateDragFromReparentItemInRootLevelGridView(
+          original_drag_view, rect_in_root_grid_view, drag_point_in_root_grid);
 }
 
 gfx::Rect AppListFolderView::GetItemIconBoundsAt(int index) {
@@ -163,6 +203,69 @@ gfx::Rect AppListFolderView::GetItemIconBoundsAt(int index) {
       gfx::Size(kPreferredIconDimension, kPreferredIconDimension));
 
   return to_folder;
+}
+
+void AppListFolderView::UpdateFolderViewBackground(bool show_bubble) {
+  if (hide_for_reparent_)
+    return;
+
+  // Before showing the folder container inking bubble, hide the folder name.
+  if (show_bubble)
+    UpdateFolderNameVisibility(false);
+
+  container_view_->folder_background_view()->UpdateFolderContainerBubble(
+      show_bubble ? FolderBackgroundView::SHOW_BUBBLE :
+                    FolderBackgroundView::HIDE_BUBBLE);
+}
+
+void AppListFolderView::UpdateFolderNameVisibility(bool visible) {
+  folder_header_view_->UpdateFolderNameVisibility(visible);
+}
+
+bool AppListFolderView::IsPointOutsideOfFolderBoundray(
+    const gfx::Point& point) {
+  if (!GetLocalBounds().Contains(point))
+    return true;
+
+  gfx::Point center = GetLocalBounds().CenterPoint();
+  float delta = (point - center).Length();
+  return delta > container_view_->folder_background_view()->
+      GetFolderContainerBubbleRadius() + kOutOfFolderContainerBubbleDelta;
+}
+
+// When user drags a folder item out of the folder boundary ink bubble, the
+// folder view UI will be hidden, and switch back to top level AppsGridView.
+// The dragged item will seamlessly move on the top level AppsGridView.
+// In order to achieve the above, we keep the folder view and its child grid
+// view visible with opacity 0, so that the drag_view_ on the hidden grid view
+// will keep receiving mouse event. At the same time, we initiated a new
+// drag_view_ in the top level grid view, and keep it moving with the hidden
+// grid view's drag_view_, so that the dragged item can be engaged in drag and
+// drop flow in the top level grid view. During the reparenting process, the
+// drag_view_ in hidden grid view will dispatch the drag and drop event to
+// the top level grid view, until the drag ends.
+void AppListFolderView::ReparentItem(
+    AppListItemView* original_drag_view,
+    const gfx::Point& drag_point_in_folder_grid) {
+  // Convert the drag point relative to the root level AppsGridView.
+  gfx::Point to_root_level_grid = drag_point_in_folder_grid;
+  ConvertPointToTarget(items_grid_view_,
+                       container_view_->apps_grid_view(),
+                       &to_root_level_grid);
+  StartSetupDragInRootLevelAppsGridView(original_drag_view, to_root_level_grid);
+  container_view_->ReparentFolderItemTransit(folder_item_);
+}
+
+void AppListFolderView::DispatchDragEventForReparent(
+    AppsGridView::Pointer pointer,
+    const ui::LocatedEvent& event) {
+  container_view_->apps_grid_view()->UpdateDragFromReparentItem(pointer, event);
+}
+
+void AppListFolderView::DispatchEndDragEventForReparent(
+    bool events_forwarded_to_drag_drop_host) {
+  container_view_->apps_grid_view()->
+      EndDragFromReparentItemInRootLevel(events_forwarded_to_drag_drop_host);
 }
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,

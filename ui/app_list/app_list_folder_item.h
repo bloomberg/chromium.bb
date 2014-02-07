@@ -36,6 +36,15 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   // Returns the icon of one of the top items with |item_index|.
   const gfx::ImageSkia& GetTopIcon(size_t item_index);
 
+  // Returns the target icon bounds for |item| to fly back to its parent folder
+  // icon in animation UI. If |item| is one of the top item icon, this will
+  // match its corresponding top item icon in the folder icon. Otherwise,
+  // the target icon bounds is centered at the |folder_icon_bounds| with
+  // the same size of the top item icon.
+  // The Rect returned is in the same coordinates of |folder_icon_bounds|.
+  gfx::Rect GetTargetIconRectInFolderForItem(
+      AppListItem* item, const gfx::Rect& folder_icon_bounds);
+
   AppListItemList* item_list() { return item_list_.get(); }
   const AppListItemList* item_list() const { return item_list_.get(); }
 
