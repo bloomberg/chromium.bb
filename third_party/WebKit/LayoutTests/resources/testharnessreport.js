@@ -12,62 +12,69 @@
  * parameters they are called with see testharness.js
  */
 
-// Setup for WebKit JavaScript tests.
-if (window.testRunner) {
+// Setup for WebKit JavaScript tests
+if (self.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
-function convertResultStatusToString(resultStatus)
-{
-    switch (resultStatus) {
-    case 0:
-        return "PASS";
-    case 1:
-        return "FAIL";
-    case 2:
-        return "TIMEOUT";
-    default:
-        return "NOTRUN";
-    }
+// Function used to convert the test status code into
+// the corresponding string
+function convertResult(resultStatus){
+    if(resultStatus == 0)
+        return("PASS");
+    else if(resultStatus == 1)
+        return("FAIL");
+    else if(resultStatus == 2)
+        return("TIMEOUT");
+    else
+        return("NOTRUN");
 }
 
-// Disable the default output of testharness.js.  The default output formats
-// test results into an HTML table.  When that table is dumped as text, no
-// spacing between cells is preserved, and it is therefore not readable. By
-// setting output to false, the HTML table will not be created.
-setup({output: false});
+/* Disable the default output of testharness.js.  The default output formats
+*  test results into an HTML table.  When that table is dumped as text, no
+*  spacing between cells is preserved, and it is therefore not readable. By
+*  setting output to false, the HTML table will not be created
+*/
+setup({"output":false});
 
-// Using a callback function, test results will be added to the page in a
-// manner that allows dumpAsText to produce readable test results.
-add_completion_callback(function (tests, harnessStatus)
-{
-    // An array to hold string pieces, which will be joined later to produce the final result.
-    var resultsArray = ["This is a testharness.js-based test.\n"];
+/*  Using a callback function, test results will be added to the page in a
+*   manner that allows dumpAsText to produce readable test results
+*/
+add_completion_callback(function (tests, harness_status){
 
-    if (harnessStatus.status !== 0) {
-        resultsArray.push("Harness Error. harnessStatus.status = ",
-                          harnessStatus.status,
-                          " , harnessStatus.message = ",
-                          harnessStatus.message);
-    } else if (tests.length == 0) {
-        results.Array.push("FAIL: No tests actually ran.\n");
-    } else {
-        for (var i = 0; i < tests.length; i++) {
-            resultsArray.push(convertResultStatusToString(tests[i].status),
-                              " ",
-                              tests[i].name !== null ? tests[i].name : "",
-                              " ",
-                              tests[i].message !== null ? tests[i].message : "",
-                              "\n");
+    // Create element to hold results
+    var results = document.createElement("pre");
+
+    // Declare result string
+    var resultStr = "This is a testharness.js-based test.\n";
+
+    // Check harness_status.  If it is not 0, tests did not
+    // execute correctly, output the error code and message
+    if(harness_status.status != 0){
+        resultStr += "Harness Error. harness_status.status = " +
+                     harness_status.status +
+                     " , harness_status.message = " +
+                     harness_status.message;
+    }
+    else {
+        // Iterate through tests array and build string that contains
+        // results for all tests
+        for(var i=0; i<tests.length; i++){
+            resultStr += convertResult(tests[i].status) + " " +
+                        ( (tests[i].name!=null) ? tests[i].name : "" ) + " " +
+                        ( (tests[i].message!=null) ? tests[i].message : "" ) +
+                        "\n";
         }
     }
-    resultsArray.push("Harness: the test ran to completion.\n")
+    resultStr += "Harness: the test ran to completion.\n";
 
-    var resultElement = document.createElement("pre");
-    resultElement.textContent = resultsArray.join("");
-    document.body.appendChild(resultElement);
+    // Set results element's textContent to the results string
+    results.textContent = resultStr;
 
-    if (window.testRunner)
+    // Add results element to document
+    document.body.appendChild(results);
+
+    if (self.testRunner)
         testRunner.notifyDone();
 });

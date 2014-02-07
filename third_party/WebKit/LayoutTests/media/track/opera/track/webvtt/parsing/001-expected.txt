@@ -15,7 +15,7 @@ PASS WebVTT parser tests, signature-two-boms.vtt
 PASS WebVTT parser tests, signature-lowercase.vtt 
 PASS WebVTT parser tests, signature-too-short.vtt 
 PASS WebVTT parser tests, signature-websrt.vtt 
-FAIL WebVTT parser tests, signature-formfeed.vtt assert_equals: number of cues expected "error" but got 0
+FAIL WebVTT parser tests, signature-formfeed.vtt assert_equals: number of cues expected (string) "error" but got (number) 0
 PASS WebVTT parser tests, signature-null.vtt 
 PASS WebVTT parser tests, signature-no-newline.vtt 
 PASS WebVTT parser tests, no-signature.vtt 
