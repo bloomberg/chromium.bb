@@ -110,8 +110,6 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
         if (!toSVGElement(m_node)->isValid())
             return false;
     }
-    if (m_renderingParent->isSVGElement() && !toSVGElement(m_renderingParent)->childShouldCreateRenderer(*m_node))
-        return false;
     RenderObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)
         return false;

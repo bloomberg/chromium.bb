@@ -33,7 +33,6 @@ private:
     explicit SVGTSpanElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 };
 

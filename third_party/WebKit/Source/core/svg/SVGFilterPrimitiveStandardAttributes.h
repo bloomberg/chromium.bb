@@ -70,7 +70,6 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE FINAL;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE FINAL;
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE FINAL { return true; }
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;

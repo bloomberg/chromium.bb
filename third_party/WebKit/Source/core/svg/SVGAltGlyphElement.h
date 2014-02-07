@@ -50,7 +50,6 @@ private:
     explicit SVGAltGlyphElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
     RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAltGlyphElement)
