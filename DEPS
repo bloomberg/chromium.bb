@@ -82,7 +82,7 @@ deps = {
 
   "src/third_party/angle":
     Var("chromium_git") +
-    "/angle/angle.git@17918f9a0ba4deca8818b4e11d03e244c631a8e4",
+    "/angle/angle.git@ef26f3bb09eaadb3b99ddd8c89a972dc1e497930",
 
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@1120",
