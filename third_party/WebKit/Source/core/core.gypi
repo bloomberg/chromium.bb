@@ -3258,6 +3258,7 @@
             'css/CSSValueTestHelper.h',
             'css/CSSParserValuesTest.cpp',
             'css/CSSValueTestHelper.h',
+            'css/DragUpdateTest.cpp',
             'css/HoverUpdateTest.cpp',
             'css/RuleSetTest.cpp',
             'dom/DOMImplementationTest.cpp',
