@@ -35,7 +35,7 @@ import posixpath
 import re
 import string
 
-module_path, _ = os.path.split(__file__)
+module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
 
 INHERITED_EXTENDED_ATTRIBUTES = set([

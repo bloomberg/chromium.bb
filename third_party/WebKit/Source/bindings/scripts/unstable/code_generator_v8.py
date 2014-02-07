@@ -44,8 +44,8 @@ import re
 import sys
 
 # jinja2 is in chromium's third_party directory.
-module_path, module_name = os.path.split(__file__)
-third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
+module_path = os.path.dirname(__file__)
+third_party = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir))
 # Insert at front to override system libraries, and after path[0] == script dir
 sys.path.insert(1, third_party)
 import jinja2
@@ -59,7 +59,7 @@ import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
-def write_header_and_cpp(definitions, interface_name, interfaces_info, output_directory, idl_directories, verbose=False):
+def write_header_and_cpp(definitions, interface_name, interfaces_info, output_directory):
     try:
         interface = definitions.interfaces[interface_name]
     except KeyError:

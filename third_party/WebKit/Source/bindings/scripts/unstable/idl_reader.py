@@ -37,7 +37,7 @@ import interface_dependency_resolver
 
 
 class IdlReader:
-    def __init__(self, interfaces_info=None, idl_attributes_filename=None, outputdir='', verbose=False):
+    def __init__(self, interfaces_info=None, idl_attributes_filename=None, outputdir=''):
         if idl_attributes_filename:
             self.extended_attribute_validator = idl_validator.IDLExtendedAttributeValidator(idl_attributes_filename)
         else:
@@ -48,7 +48,7 @@ class IdlReader:
         else:
             self.interface_dependency_resolver = None
 
-        self.parser = blink_idl_parser.BlinkIDLParser(outputdir=outputdir, verbose=verbose)
+        self.parser = blink_idl_parser.BlinkIDLParser(outputdir=outputdir)
 
     def read_idl_definitions(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, including all dependencies."""

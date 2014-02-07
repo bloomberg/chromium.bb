@@ -51,10 +51,8 @@ def parse_options():
     # the Python flow.
     parser.add_option('--dump-json-and-pickle', action='store_true', default=False)
     parser.add_option('--idl-attributes-file')
-    parser.add_option('--include', dest='idl_directories', action='append')
     parser.add_option('--output-directory')
     parser.add_option('--interfaces-info-file')
-    parser.add_option('--verbose', action='store_true', default=False)
     parser.add_option('--write-file-only-if-changed', type='int')
     # ensure output comes last, so command line easy to parse via regexes
     parser.disable_interspersed_args()
@@ -86,9 +84,6 @@ def main():
     basename = os.path.basename(idl_filename)
     interface_name, _ = os.path.splitext(basename)
     output_directory = options.output_directory
-    verbose = options.verbose
-    if verbose:
-        print idl_filename
 
     interfaces_info_filename = options.interfaces_info_file
     if interfaces_info_filename:
@@ -97,12 +92,12 @@ def main():
     else:
         interfaces_info = None
 
-    reader = idl_reader.IdlReader(interfaces_info, options.idl_attributes_file, output_directory, verbose)
+    reader = idl_reader.IdlReader(interfaces_info, options.idl_attributes_file, output_directory)
     definitions = reader.read_idl_definitions(idl_filename)
     if options.dump_json_and_pickle:
         write_json_and_pickle(definitions, interface_name, output_directory)
         return
-    code_generator_v8.write_header_and_cpp(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
+    code_generator_v8.write_header_and_cpp(definitions, interface_name, interfaces_info, options.output_directory)
 
 
 if __name__ == '__main__':

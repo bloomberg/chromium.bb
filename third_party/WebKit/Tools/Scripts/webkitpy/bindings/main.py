@@ -132,7 +132,6 @@ class BindingsTests(object):
                'bindings/scripts/unstable/idl_compiler.py',
                '--output-dir', self.output_directory_py,
                '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
-               '--include', '.',
                '--interfaces-info-file', self.interfaces_info_filename,
                idl_file]
         try:
