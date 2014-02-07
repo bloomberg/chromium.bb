@@ -27,6 +27,7 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
+#include "core/dom/Document.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
@@ -162,7 +163,8 @@ public:
 
     static bool shouldBypassMainWorld(ExecutionContext*);
 
-    ExecutionContextClient* client() { return m_client; }
+    ExecutionContextClient* client() const { return m_client; }
+    Document* document() const { return client()->isDocument() ? toDocument(client()) : 0; }
 
 private:
     explicit ContentSecurityPolicy(ExecutionContextClient*);

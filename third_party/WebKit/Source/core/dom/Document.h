@@ -1371,6 +1371,7 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
     return origin >= m_legacyViewportDescription.type;
 }
 
+DEFINE_TYPE_CASTS(Document, ExecutionContextClient, client, client->isDocument(), client.isDocument());
 DEFINE_TYPE_CASTS(Document, ExecutionContext, context, context->isDocument(), context.isDocument());
 DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 

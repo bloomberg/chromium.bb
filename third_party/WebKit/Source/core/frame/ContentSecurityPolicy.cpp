@@ -1692,9 +1692,8 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, HeaderType type, HeaderSource source)
 {
-    Document* document = 0;
-    if (m_client->isDocument()) {
-        document = static_cast<Document*>(m_client);
+    Document* document = this->document();
+    if (document) {
         UseCounter::count(*document, getUseCounterType(type));
 
         // CSP 1.1 defines report-only in a <meta> element as invalid. Measure for now, disable in experimental mode.
@@ -1859,10 +1858,8 @@ bool ContentSecurityPolicy::allowScriptEval(ScriptState* state, ContentSecurityP
 bool ContentSecurityPolicy::allowStyleEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     if (!experimentalFeaturesEnabled()) {
-        if (m_client->isDocument()) {
-            Document* document = static_cast<Document*>(m_client);
+        if (Document* document = this->document())
             UseCounter::count(*document, UseCounter::UnsafeEvalBlocksCSSOM);
-        }
         return true;
     }
     return isAllowedByAllWithState<&CSPDirectiveList::allowStyleEval>(m_policies, state, reportingStatus);
@@ -2079,8 +2076,8 @@ KURL ContentSecurityPolicy::completeURL(const String& url) const
 
 void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask) const
 {
-    if (m_client->isDocument())
-        static_cast<Document*>(m_client)->enforceSandboxFlags(mask);
+    if (Document* document = this->document())
+        document->enforceSandboxFlags(mask);
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)
@@ -2128,7 +2125,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!m_client->isDocument())
         return;
 
-    Document* document = static_cast<Document*>(m_client);
+    Document* document = this->document();
     Frame* frame = document->frame();
     if (!frame)
         return;
