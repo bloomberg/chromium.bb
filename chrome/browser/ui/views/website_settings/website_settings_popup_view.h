@@ -115,7 +115,8 @@ class WebsiteSettingsPopupView
                               const gfx::Image& icon,
                               const base::string16& headline,
                               const base::string16& text,
-                              views::Link* link);
+                              views::Link* link,
+                              views::Link* secondary_link);
   // Handles LinkClicked asynchronously.
   void HandleLinkClickedAsync(views::Link* source);
 
@@ -152,6 +153,10 @@ class WebsiteSettingsPopupView
   // provided by the website. If the site does not provide a certificate then
   // |certificate_dialog_link_| is NULL.
   views::Link* certificate_dialog_link_;
+  // The link to open the signed certificate timestamps viewer for displaying
+  // Certificate Transparency info. If no such SCTs accompany the certificate
+  // then |signed_certificate_timestamps_link_| is NULL.
+  views::Link* signed_certificate_timestamps_link_;
 
   // The id of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.

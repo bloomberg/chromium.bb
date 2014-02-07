@@ -6,16 +6,19 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -287,6 +290,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       connection_tab_(NULL),
       identity_info_content_(NULL),
       certificate_dialog_link_(NULL),
+      signed_certificate_timestamps_link_(NULL),
       cert_id_(0),
       help_center_link_(NULL),
       connection_info_content_(NULL),
@@ -528,7 +532,14 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
         l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
     certificate_dialog_link_->set_listener(this);
 
-    // XXX(eranm): Wire the SCT Viewer here.
+    if (!signed_certificate_timestamp_ids_.empty() &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSignedCertificateTimestampsViewer)) {
+      signed_certificate_timestamps_link_ =
+          new views::Link(l10n_util::GetStringUTF16(
+              IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON));
+      signed_certificate_timestamps_link_->set_listener(this);
+    }
 
     headline = base::UTF8ToUTF16(identity_info.site_identity);
   }
@@ -537,13 +548,15 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
       base::string16(),  // The identity section has no headline.
       base::UTF8ToUTF16(identity_info.identity_status_description),
-      certificate_dialog_link_);
+      certificate_dialog_link_,
+      signed_certificate_timestamps_link_);
 
   ResetConnectionSection(
       connection_info_content_,
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
       base::string16(),  // The connection section has no headline.
       base::UTF8ToUTF16(identity_info.connection_status_description),
+      NULL,
       NULL);
 
   connection_tab_->InvalidateLayout();
@@ -558,6 +571,7 @@ void WebsiteSettingsPopupView::SetFirstVisit(
       WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
       first_visit,
+      NULL,
       NULL);
   connection_tab_->InvalidateLayout();
   Layout();
@@ -675,7 +689,8 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
     const gfx::Image& icon,
     const base::string16& headline,
     const base::string16& text,
-    views::Link* link) {
+    views::Link* link,
+    views::Link* secondary_link) {
   section_container->RemoveAllChildViews(true);
 
   views::GridLayout* layout = new views::GridLayout(section_container);
@@ -743,6 +758,11 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
     content_layout->AddView(link);
   }
 
+  if (secondary_link) {
+    content_layout->StartRow(1, 0);
+    content_layout->AddView(secondary_link);
+  }
+
   layout->AddView(content_pane, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
   layout->AddPaddingRow(0, kConnectionSectionPaddingBottom);
@@ -762,6 +782,9 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
         GetAnchorView() ? GetAnchorView()->GetWidget()->GetNativeWindow() :
             NULL;
     ShowCertificateViewerByID(web_contents_, parent, cert_id_);
+  } else if (source == signed_certificate_timestamps_link_) {
+    chrome::ShowSignedCertificateTimestampsViewer(
+        web_contents_, signed_certificate_timestamp_ids_);
   } else if (source == help_center_link_) {
     browser_->OpenURL(content::OpenURLParams(
         GURL(chrome::kPageInfoHelpCenterURL),

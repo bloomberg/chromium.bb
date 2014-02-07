@@ -3308,6 +3308,95 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
 
+      <!-- Signed Certificate Timestamps (SCTs) viewer -->
+      <message name="IDS_SCT_VIEWER_TITLE" desc="Title of Signed Certificate Timestamps viewer window">
+        Signed Certificate Timestamps viewer
+      </message>
+      <message name="IDS_SCT_LOG_DESCRIPTION" desc="Name of the Certificate Transparency Log that issued this signed certificate timestamp">
+        Log name
+      </message>
+      <message name="IDS_SCT_VALIDATION_INFO" desc="Signed Certificate Timestamp validation status">
+        Validation status
+      </message>
+      <message name="IDS_SCT_STATUS_NONE" desc="SCT validation status: No SCT present">
+        Not present
+      </message>
+      <message name="IDS_SCT_STATUS_LOG_UNKNOWN" desc="SCT validation status: SCT from unknown log">
+        From an unknown log
+      </message>
+      <message name="IDS_SCT_STATUS_INVALID" desc="SCT validation status: Invalid">
+        Validation failed
+      </message>
+      <message name="IDS_SCT_STATUS_OK" desc="SCT validation status: Verified OK">
+        Verified
+      </message>
+      <message name="IDS_SCT_ORIGIN" desc="SCT Origin label">
+        Origin
+      </message>
+      <message name="IDS_SCT_ORIGIN_EMBEDDED" desc="SCT is embedded in the certificate">
+        Embedded
+      </message>
+      <message name="IDS_SCT_ORIGIN_TLS_EXTENSION" desc="SCT was provided during the TLS handshake">
+        TLS Extension
+      </message>
+      <message name="IDS_SCT_ORIGIN_OCSP" desc="SCT was extracted from the OCSP response">
+        OCSP response
+      </message>
+      <message name="IDS_SCT_ORIGIN_UNKNOWN" desc="SCT came from an unknown origin">
+        Unknown
+      </message>
+      <message name="IDS_SCT_VERSION" desc="Version of SCT (numeric)">
+        Version
+      </message>
+      <message name="IDS_SCT_TIMESTAMP" desc="Time when the SCT was issued by the log">
+        Issued at
+      </message>
+      <message name="IDS_SCT_LOGID" desc="The ID of the Certificate Transparency log issuing this SCT (hex)">
+        Log ID
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM" desc="Hash algorithm used to hash the Precertificate that was signed">
+        Hash algorithm
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_NONE" desc="None / invalid hash algorithm">
+        None
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_MD5" desc="MD5 hash alrogithm">
+        MD5
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_SHA1" desc="SHA1 hash algorithm">
+        SHA1
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_SHA224" desc="SHA224 hash algorithm">
+        SHA224
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_SHA256" desc="SHA256 hash algorithm">
+        SHA256
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_SHA384" desc="SHA384 hash algorithm">
+        SHA384
+      </message>
+      <message name="IDS_SCT_HASH_ALGORITHM_SHA512" desc="SHA512 hash algorithm">
+        SHA512
+      </message>
+      <message name="IDS_SCT_SIGNATURE_ALGORITHM" desc="Signature algorithm used to sign over the Precertificate's hash">
+        Signature algorithm
+      </message>
+      <message name="IDS_SCT_SIGNATURE_ALGORITHM_ANONYMOUS" desc="Unknown signature algorithm">
+        Anonymous
+      </message>
+      <message name="IDS_SCT_SIGNATURE_ALGORITHM_RSA" desc="RSA signature algorithm">
+        RSA
+      </message>
+      <message name="IDS_SCT_SIGNATURE_ALGORITHM_DSA" desc="DSA signature algorithm">
+        DSA
+      </message>
+      <message name="IDS_SCT_SIGNATURE_ALGORITHM_ECDSA" desc="ECDSA signature algorithm">
+        ECDSA
+      </message>
+      <message name="IDS_SCT_SIGNATURE_DATA" desc="The signature bytes (hex)">
+        Signature data
+      </message>
+
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...
@@ -9453,10 +9542,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">
           Certificate information
         </message>
+        <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
+          Certificate transparency
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="In Title Case: Text of button in the page info that shows the SSL certificate.">
           Certificate Information
+        </message>
+        <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
+          Certificate Transparency
         </message>
       </if>
       <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
