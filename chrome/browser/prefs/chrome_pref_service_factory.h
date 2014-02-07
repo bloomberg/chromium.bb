@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 class SequencedTaskRunner;
 }
@@ -73,6 +74,12 @@ void InitializePrefHashStoreIfRequired(
 // Resets the contents of the preference hash store for the profile at
 // |profile_path|.
 void ResetPrefHashStore(const base::FilePath& profile_path);
+
+// Initializes the preferences for the profile at |profile_path| with the
+// preference values in |master_prefs|. Returns true on success.
+bool InitializePrefsFromMasterPrefs(
+    const base::FilePath& profile_path,
+    const base::DictionaryValue& master_prefs);
 
 }  // namespace chrome_prefs
 

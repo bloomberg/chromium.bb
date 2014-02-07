@@ -160,16 +160,16 @@ uint16 auto_import_state();
 // Set a master preferences file path that overrides platform defaults.
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
 
-// The master preferences is a JSON file with the same entries as the
+// The master_preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function locates this file from a standard
-// location and processes it so it becomes the default preferences in the
-// profile pointed to by |user_data_dir|. After processing the file, the
-// function returns a value from the ProcessMasterPreferencesResult enum,
+// location, processes it, and uses its content to initialize the preferences
+// for the profile pointed to by |user_data_dir|. After processing the file,
+// this function returns a value from the ProcessMasterPreferencesResult enum,
 // indicating whether the first run flow should be shown, skipped, or whether
 // the browser should exit.
 //
-// This function destroys any existing prefs file and it is meant to be
-// invoked only on first run.
+// This function overwrites any existing Preferences file and is only meant to
+// be invoked on first run.
 //
 // See chrome/installer/util/master_preferences.h for a description of
 // 'master_preferences' file.

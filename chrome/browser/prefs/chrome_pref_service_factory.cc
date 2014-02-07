@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/metrics/field_trial.h"
@@ -21,6 +22,7 @@
 #include "base/prefs/pref_value_store.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
@@ -311,6 +313,31 @@ void PrepareBuilder(
           pref_filter.Pass()));
 }
 
+// An in-memory PrefStore backed by an immutable DictionaryValue.
+class DictionaryPrefStore : public PrefStore {
+ public:
+  explicit DictionaryPrefStore(const base::DictionaryValue* dictionary)
+      : dictionary_(dictionary) {}
+
+  virtual bool GetValue(const std::string& key,
+                        const base::Value** result) const OVERRIDE {
+    const base::Value* tmp = NULL;
+    if (!dictionary_->Get(key, &tmp))
+      return false;
+
+    if (result)
+      *result = tmp;
+    return true;
+  }
+
+ private:
+  virtual ~DictionaryPrefStore() {}
+
+  const base::DictionaryValue* dictionary_;
+
+  DISALLOW_COPY_AND_ASSIGN(DictionaryPrefStore);
+};
+
 // Waits for a PrefStore to be initialized and then initializes the
 // corresponding PrefHashStore.
 // The observer deletes itself when its work is completed.
@@ -342,8 +369,12 @@ void InitializeHashStoreObserver::OnPrefValueChanged(const std::string& key) {}
 void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
   // If we successfully loaded the preferences _and_ the PrefHashStore hasn't
   // been initialized by someone else in the meantime initialize it now.
-  if (succeeded & !pref_hash_store_->IsInitialized())
-    CreatePrefHashFilter(pref_hash_store_.Pass())->Initialize(pref_store_);
+  if (succeeded & !pref_hash_store_->IsInitialized()) {
+    CreatePrefHashFilter(
+        pref_hash_store_.Pass())->Initialize(*pref_store_);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Settings.TrackedPreferencesInitializedForUnloadedProfile", true);
+  }
   pref_store_->RemoveObserver(this);
   delete this;
 }
@@ -424,6 +455,36 @@ void InitializePrefHashStoreIfRequired(
 
 void ResetPrefHashStore(const base::FilePath& profile_path) {
   GetPrefHashStoreImpl(profile_path)->Reset();
+}
+
+bool InitializePrefsFromMasterPrefs(
+    const base::FilePath& profile_path,
+    const base::DictionaryValue& master_prefs) {
+  // Create the profile directory if it doesn't exist yet (very possible on
+  // first run).
+  if (!base::CreateDirectory(profile_path))
+    return false;
+
+  JSONFileValueSerializer serializer(
+      GetPrefFilePathFromProfilePath(profile_path));
+
+  // Call Serialize (which does IO) on the main thread, which would _normally_
+  // be verboten. In this case however, we require this IO to synchronously
+  // complete before Chrome can start (as master preferences seed the Local
+  // State and Preferences files). This won't trip ThreadIORestrictions as they
+  // won't have kicked in yet on the main thread.
+  bool success = serializer.Serialize(master_prefs);
+
+  if (success) {
+    scoped_refptr<const PrefStore> pref_store(
+        new DictionaryPrefStore(&master_prefs));
+    CreatePrefHashFilter(
+        GetPrefHashStoreImpl(profile_path).PassAs<PrefHashStore>())->
+            Initialize(*pref_store);
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
+  return success;
 }
 
 }  // namespace chrome_prefs

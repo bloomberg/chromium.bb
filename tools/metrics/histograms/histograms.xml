@@ -17643,6 +17643,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.InitializedFromMasterPrefs" enum="BooleanSuccess">
+  <summary>
+    Logged on first run when generating the Preferences file from
+    master_preferences. True if serializing the generated Preferences file to
+    disk was successful, false otherwise. Note: this event does not occur if
+    there is no master_preferences file on first run.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PinnedTabEngineTypes" enum="OmniboxSearchEngineType">
   <summary>
     Tries to pretend pinned tab URLs are search URLs, and records the search

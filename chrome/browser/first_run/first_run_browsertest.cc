@@ -20,7 +20,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -228,5 +230,50 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
   EXPECT_EQ(1, tab->GetMaxPageID());
 }
+
+// Test first run with some tracked preferences.
+extern const char kWithTrackedPrefs[] =
+    "{\n"
+    "  \"homepage\": \"example.com\",\n"
+    "  \"homepage_is_newtabpage\": false\n"
+    "}\n";
+// A test fixture that will run in a first run scenario with master_preferences
+// set to kWithTrackedPrefs. Parameterizable on the SettingsEnforcement
+// experiment to be forced.
+class FirstRunMasterPrefsWithTrackedPreferences
+    : public FirstRunMasterPrefsBrowserTestT<kWithTrackedPrefs>,
+      public testing::WithParamInterface<std::string> {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    FirstRunMasterPrefsBrowserTestT::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kForceFieldTrials, "SettingsEnforcement/" + GetParam() + "/");
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(FirstRunMasterPrefsWithTrackedPreferences,
+                       TrackedPreferencesSurviveFirstRun) {
+  const PrefService* user_prefs = browser()->profile()->GetPrefs();
+  EXPECT_EQ("example.com", user_prefs->GetString(prefs::kHomePage));
+  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
+
+  // The test for kHomePageIsNewTabPage above relies on the fact that true is
+  // the default (hence false must be the user's pref); ensure this fact remains
+  // true.
+  const base::Value* default_homepage_is_ntp_value =
+      user_prefs->GetDefaultPrefValue(prefs::kHomePageIsNewTabPage);
+  ASSERT_TRUE(default_homepage_is_ntp_value != NULL);
+  bool default_homepage_is_ntp = false;
+  EXPECT_TRUE(
+      default_homepage_is_ntp_value->GetAsBoolean(&default_homepage_is_ntp));
+  EXPECT_TRUE(default_homepage_is_ntp);
+}
+
+INSTANTIATE_TEST_CASE_P(FirstRunMasterPrefsWithTrackedPreferencesInstance,
+                        FirstRunMasterPrefsWithTrackedPreferences,
+                        testing::Values("no_enforcement",
+                                        "enforce",
+                                        "enforce_no_seeding",
+                                        "enforce_no_seeding_no_migration"));
 
 #endif  // !defined(OS_CHROMEOS)

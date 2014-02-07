@@ -31,11 +31,6 @@ enum FirstRunState {
 // This variable should only be accessed through IsChromeFirstRun().
 extern FirstRunState first_run_;
 
-// Generates an initial user preference file in |user_data_dir| using the data
-// in |master_prefs|.
-bool GeneratePrefFile(const base::FilePath& user_data_dir,
-                      const installer::MasterPreferences& master_prefs);
-
 // Sets up master preferences by preferences passed by installer.
 void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,

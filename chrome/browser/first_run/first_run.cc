@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_uma.h"
 #include "chrome/browser/importer/profile_writer.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -167,19 +167,6 @@ void DoDelayedInstallExtensionsIfNeeded(
     VLOG(1) << "Extensions block found in master preferences";
     DoDelayedInstallExtensions();
   }
-}
-
-base::FilePath GetDefaultPrefFilePath(bool create_profile_dir,
-                                      const base::FilePath& user_data_dir) {
-  base::FilePath default_pref_dir =
-      profiles::GetDefaultProfileDir(user_data_dir);
-  if (create_profile_dir) {
-    if (!base::PathExists(default_pref_dir)) {
-      if (!base::CreateDirectory(default_pref_dir))
-        return base::FilePath();
-    }
-  }
-  return profiles::GetProfilePrefsPath(default_pref_dir);
 }
 
 // Sets the |items| bitfield according to whether the import data specified by
@@ -466,25 +453,6 @@ namespace internal {
 
 FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
-bool GeneratePrefFile(const base::FilePath& user_data_dir,
-                      const installer::MasterPreferences& master_prefs) {
-  base::FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
-  if (user_prefs.empty())
-    return false;
-
-  const base::DictionaryValue& master_prefs_dict =
-      master_prefs.master_dictionary();
-
-  JSONFileValueSerializer serializer(user_prefs);
-
-  // Call Serialize (which does IO) on the main thread, which would _normally_
-  // be verboten. In this case however, we require this IO to synchronously
-  // complete before Chrome can start (as master preferences seed the Local
-  // State and Preferences files). This won't trip ThreadIORestrictions as they
-  // won't have kicked in yet on the main thread.
-  return serializer.Serialize(master_prefs_dict);
-}
-
 void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs) {
@@ -712,8 +680,11 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
       return EULA_EXIT_NOW;
 
-    if (!internal::GeneratePrefFile(user_data_dir, *install_prefs.get()))
-      DLOG(ERROR) << "Failed to generate master_preferences in user data dir.";
+    if (!chrome_prefs::InitializePrefsFromMasterPrefs(
+            profiles::GetDefaultProfileDir(user_data_dir),
+            install_prefs->master_dictionary())) {
+      DLOG(ERROR) << "Failed to initialize from master_preferences.";
+    }
 
     DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 

@@ -65,16 +65,13 @@ PrefHashFilter::~PrefHashFilter() {
   DCHECK(changed_paths_.empty());
 }
 
-void PrefHashFilter::Initialize(PrefStore* pref_store) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Settings.TrackedPreferencesInitializedForUnloadedProfile", true);
-
+void PrefHashFilter::Initialize(const PrefStore& pref_store) {
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end(); ++it) {
     const std::string& initialized_path = it->first;
     const TrackedPreference* initialized_preference = it->second;
     const base::Value* value = NULL;
-    pref_store->GetValue(initialized_path, &value);
+    pref_store.GetValue(initialized_path, &value);
     initialized_preference->OnNewValue(value);
   }
 }

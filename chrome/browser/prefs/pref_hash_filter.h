@@ -74,9 +74,9 @@ class PrefHashFilter : public PrefFilter {
 
   virtual ~PrefHashFilter();
 
-  // Initializes the PrefHashStore with hashes of the tracked preferences
-  // in |pref_store|.
-  void Initialize(PrefStore* pref_store);
+  // Initializes the PrefHashStore with hashes of the tracked preferences in
+  // |pref_store|.
+  void Initialize(const PrefStore& pref_store);
 
   // PrefFilter implementation.
   virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents)
