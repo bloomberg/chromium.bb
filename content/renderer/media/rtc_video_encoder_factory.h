@@ -12,13 +12,9 @@
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoencoderfactory.h"
 
-namespace media {
-
-class GpuVideoAcceleratorFactories;
-
-}  // namespace media
-
 namespace content {
+
+class RendererGpuVideoAcceleratorFactories;
 
 // This class creates RTCVideoEncoder instances (each wrapping a
 // media::VideoEncodeAccelerator) on behalf of the WebRTC stack.
@@ -26,7 +22,7 @@ class CONTENT_EXPORT RTCVideoEncoderFactory
     : NON_EXPORTED_BASE(public cricket::WebRtcVideoEncoderFactory) {
  public:
   explicit RTCVideoEncoderFactory(
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+      const scoped_refptr<RendererGpuVideoAcceleratorFactories>& gpu_factories);
   virtual ~RTCVideoEncoderFactory();
 
   // cricket::WebRtcVideoEncoderFactory implementation.
@@ -38,7 +34,7 @@ class CONTENT_EXPORT RTCVideoEncoderFactory
   virtual void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) OVERRIDE;
 
  private:
-  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  const scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories_;
 
   // Codec support list of cricket::WebRtcVideoEncoderFactory::VideoCodec
   // instances.

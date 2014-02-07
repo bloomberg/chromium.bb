@@ -43,6 +43,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     EXPECT_CALL(*mock_gpu_factories_,
                 DoCreateVideoDecodeAccelerator(media::VP8PROFILE_MAIN, _))
         .WillRepeatedly(Return(mock_vda_));
+    EXPECT_CALL(*mock_gpu_factories_, Abort()).WillRepeatedly(Return());
     EXPECT_CALL(*mock_gpu_factories_, CreateSharedMemory(_))
         .WillRepeatedly(Return(static_cast<base::SharedMemory*>(NULL)));
     EXPECT_CALL(*mock_vda_, Destroy());
@@ -52,12 +53,15 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   virtual void TearDown() OVERRIDE {
     VLOG(2) << "TearDown";
-    EXPECT_TRUE(vda_thread_.IsRunning());
-    RunUntilIdle();  // Wait until all callbascks complete.
-    vda_task_runner_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
-    // Make sure the decoder is released before stopping the thread.
-    RunUntilIdle();
-    vda_thread_.Stop();
+    if (vda_thread_.IsRunning()) {
+      RunUntilIdle();  // Wait until all callbascks complete.
+      vda_task_runner_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
+      // Make sure the decoder is released before stopping the thread.
+      RunUntilIdle();
+      vda_thread_.Stop();
+    } else {
+      rtc_decoder_.reset();
+    }
   }
 
   virtual int32_t Decoded(webrtc::I420VideoFrame& decoded_image) OVERRIDE {
@@ -161,6 +165,8 @@ TEST_F(RTCVideoDecoderTest, InitDecodeAfterRelease) {
   Initialize();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Release());
 }
+
+TEST_F(RTCVideoDecoderTest, VdaThreadStops) { vda_thread_.Stop(); }
 
 TEST_F(RTCVideoDecoderTest, IsBufferAfterReset) {
   EXPECT_TRUE(rtc_decoder_->IsBufferAfterReset(0, RTCVideoDecoder::ID_INVALID));
