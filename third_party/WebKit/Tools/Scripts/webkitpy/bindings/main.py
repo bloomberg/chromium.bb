@@ -52,11 +52,7 @@ DEPENDENCY_IDL_FILES = set([
     'TestPartialInterfacePython2.idl',
 ])
 
-# Python compiler is incomplete; skip IDLs with unimplemented features
-SKIP_PYTHON = set([
-    'TestObject.idl',
-    'TestSVG.idl',
-])
+SKIP_PYTHON = 'TestSVG.idl'  # Not implementing SVG-specific hacks in Python
 
 all_input_directory = '.'  # Relative to Source/
 test_input_directory = os.path.join('bindings', 'tests', 'idls')
@@ -282,7 +278,7 @@ class BindingsTests(object):
                 print 'Reset results: %s' % input_filename
             if not self.test_python:
                 continue
-            if input_filename in SKIP_PYTHON:
+            if input_filename == SKIP_PYTHON:
                 if self.verbose:
                     print 'SKIP: %s' % input_filename
                 continue

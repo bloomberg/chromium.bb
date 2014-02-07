@@ -611,33 +611,6 @@ static void XMLObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void createAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueBool(info, imp->isCreate());
-}
-
-static void createAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::createAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void createAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(bool, cppValue, jsValue->BooleanValue());
-    imp->setCreate(cppValue);
-}
-
-static void createAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::createAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void reflectedStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -1586,44 +1559,6 @@ static void customAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void withScriptStateAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return v8Undefined();
-    ScriptState& state = *currentState;
-    v8SetReturnValueInt(info, imp->withScriptStateAttribute(&state));
-}
-
-static void withScriptStateAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::withScriptStateAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withScriptStateAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "withScriptStateAttribute", "TestObject", info.Holder(), info.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return;
-    ScriptState& state = *currentState;
-    imp->setWithScriptStateAttribute(&state, cppValue);
-    if (state.hadException())
-        throwError(state.exception(), info.GetIsolate());
-}
-
-static void withScriptStateAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::withScriptStateAttributeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void withExecutionContextAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -1684,17 +1619,9 @@ static void withScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCall
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "withScriptStateAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return v8Undefined();
-    ScriptState& state = *currentState;
-    RefPtr<TestObj> jsValue = imp->withScriptStateAttributeRaises(&state, exceptionState);
+    RefPtr<TestObj> jsValue = imp->withScriptStateAttributeRaises(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    if (state.hadException()) {
-        throwError(state.exception(), info.GetIsolate());
-        return;
-    }
     v8SetReturnValueFast(info, jsValue.release(), imp);
 }
 
@@ -1709,177 +1636,13 @@ static void withScriptStateAttributeRaisesAttributeSetter(v8::Local<v8::Value> j
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return;
-    ScriptState& state = *currentState;
-    imp->setWithScriptStateAttributeRaises(&state, WTF::getPtr(cppValue));
-    if (state.hadException())
-        throwError(state.exception(), info.GetIsolate());
+    imp->setWithScriptStateAttributeRaises(WTF::getPtr(cppValue));
 }
 
 static void withScriptStateAttributeRaisesAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::withScriptStateAttributeRaisesAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "withExecutionContextAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestObj> jsValue = imp->withExecutionContextAttributeRaises(scriptContext, exceptionState);
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    v8SetReturnValueFast(info, jsValue.release(), imp);
-}
-
-static void withExecutionContextAttributeRaisesAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::withExecutionContextAttributeRaisesAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAttributeRaisesAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    imp->setWithExecutionContextAttributeRaises(scriptContext, WTF::getPtr(cppValue));
-}
-
-static void withExecutionContextAttributeRaisesAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::withExecutionContextAttributeRaisesAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return v8Undefined();
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateAttribute(&state, scriptContext), imp);
-}
-
-static void withExecutionContextAndScriptStateAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return;
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    imp->setWithExecutionContextAndScriptStateAttribute(&state, scriptContext, WTF::getPtr(cppValue));
-    if (state.hadException())
-        throwError(state.exception(), info.GetIsolate());
-}
-
-static void withExecutionContextAndScriptStateAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateAttributeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "withExecutionContextAndScriptStateAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return v8Undefined();
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestObj> jsValue = imp->withExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, exceptionState);
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    if (state.hadException()) {
-        throwError(state.exception(), info.GetIsolate());
-        return;
-    }
-    v8SetReturnValueFast(info, jsValue.release(), imp);
-}
-
-static void withExecutionContextAndScriptStateAttributeRaisesAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateAttributeRaisesAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateAttributeRaisesAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return;
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    imp->setWithExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, WTF::getPtr(cppValue));
-    if (state.hadException())
-        throwError(state.exception(), info.GetIsolate());
-}
-
-static void withExecutionContextAndScriptStateAttributeRaisesAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateAttributeRaisesAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return v8Undefined();
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext), imp);
-}
-
-static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return;
-    ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    imp->setWithExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext, WTF::getPtr(cppValue));
-    if (state.hadException())
-        throwError(state.exception(), info.GetIsolate());
-}
-
-static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -2675,43 +2438,6 @@ static void nullableLongSettableAttributeAttributeSetterCallback(v8::Local<v8::S
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::nullableLongSettableAttributeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void nullableStringValueAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "nullableStringValue", "TestObject", info.Holder(), info.GetIsolate());
-    bool isNull = false;
-    int jsValue = imp->nullableStringValue(isNull, exceptionState);
-    if (isNull) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    v8SetReturnValueInt(info, jsValue);
-}
-
-static void nullableStringValueAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::nullableStringValueAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void nullableStringValueAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "nullableStringValue", "TestObject", info.Holder(), info.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    imp->setNullableStringValue(cppValue);
-}
-
-static void nullableStringValueAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::nullableStringValueAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -5084,37 +4810,6 @@ static void variadicNodeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void methodWithNullableArgumentsMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodWithNullableArguments", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 3)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(3, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    bool strIsNull = info[0]->IsNull();
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strStringResource, info[0]);
-    String str = strStringResource;
-    bool lIsNull = info[1]->IsNull();
-    V8TRYCATCH_EXCEPTION_VOID(int, l, toInt32(info[1], exceptionState), exceptionState);
-    V8TRYCATCH_VOID(TestObj*, obj, V8TestObject::hasInstance(info[2], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
-    if (UNLIKELY(info.Length() <= 3)) {
-        imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj);
-        return;
-    }
-    bool dIsNull = info[3]->IsNull();
-    V8TRYCATCH_VOID(double, d, static_cast<double>(info[3]->NumberValue()));
-    imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj, dIsNull ? 0 : &d);
-}
-
-static void methodWithNullableArgumentsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::methodWithNullableArgumentsMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void perWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5617,7 +5312,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"eventHandlerAttr", TestObjV8Internal::eventHandlerAttrAttributeGetterCallback, TestObjV8Internal::eventHandlerAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testObjAttr", TestObjV8Internal::testObjAttrAttributeGetterCallback, TestObjV8Internal::testObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"XMLObjAttr", TestObjV8Internal::XMLObjAttrAttributeGetterCallback, TestObjV8Internal::XMLObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"create", TestObjV8Internal::createAttributeGetterCallback, TestObjV8Internal::createAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedStringAttr", TestObjV8Internal::reflectedStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedTreatNullAsNullStringStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5649,14 +5343,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"stringAttrWithGetterException", TestObjV8Internal::stringAttrWithGetterExceptionAttributeGetterCallback, TestObjV8Internal::stringAttrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"stringAttrWithSetterException", TestObjV8Internal::stringAttrWithSetterExceptionAttributeGetterCallback, TestObjV8Internal::stringAttrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customAttr", TestObjV8Internal::customAttrAttributeGetterCallback, TestObjV8Internal::customAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"withScriptStateAttribute", TestObjV8Internal::withScriptStateAttributeAttributeGetterCallback, TestObjV8Internal::withScriptStateAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"withExecutionContextAttribute", TestObjV8Internal::withExecutionContextAttributeAttributeGetterCallback, TestObjV8Internal::withExecutionContextAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"withActiveWindowAndFirstWindowAttribute", TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttributeGetterCallback, TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"withScriptStateAttributeRaises", TestObjV8Internal::withScriptStateAttributeRaisesAttributeGetterCallback, TestObjV8Internal::withScriptStateAttributeRaisesAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"withExecutionContextAttributeRaises", TestObjV8Internal::withExecutionContextAttributeRaisesAttributeGetterCallback, TestObjV8Internal::withExecutionContextAttributeRaisesAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"withExecutionContextAndScriptStateAttribute", TestObjV8Internal::withExecutionContextAndScriptStateAttributeAttributeGetterCallback, TestObjV8Internal::withExecutionContextAndScriptStateAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"withExecutionContextAndScriptStateAttributeRaises", TestObjV8Internal::withExecutionContextAndScriptStateAttributeRaisesAttributeGetterCallback, TestObjV8Internal::withExecutionContextAndScriptStateAttributeRaisesAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"withExecutionContextAndScriptStateWithSpacesAttribute", TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetterCallback, TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeByteAttr", TestObjV8Internal::enforcedRangeByteAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeByteAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeOctetAttr", TestObjV8Internal::enforcedRangeOctetAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeOctetAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeShortAttr", TestObjV8Internal::enforcedRangeShortAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeShortAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5701,7 +5390,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"nullableBooleanAttribute", TestObjV8Internal::nullableBooleanAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableStringAttribute", TestObjV8Internal::nullableStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableLongSettableAttribute", TestObjV8Internal::nullableLongSettableAttributeAttributeGetterCallback, TestObjV8Internal::nullableLongSettableAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"nullableStringValue", TestObjV8Internal::nullableStringValueAttributeGetterCallback, TestObjV8Internal::nullableStringValueAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"perWorldReadOnlyAttribute", TestObjV8Internal::perWorldReadOnlyAttributeAttributeGetterCallback, 0, TestObjV8Internal::perWorldReadOnlyAttributeAttributeGetterCallbackForMainWorld, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"perWorldAttribute", TestObjV8Internal::perWorldAttributeAttributeGetterCallback, TestObjV8Internal::perWorldAttributeAttributeSetterCallback, TestObjV8Internal::perWorldAttributeAttributeGetterCallbackForMainWorld, TestObjV8Internal::perWorldAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"activityLoggedAttr1", TestObjV8Internal::activityLoggedAttr1AttributeGetterCallback, TestObjV8Internal::activityLoggedAttr1AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5796,7 +5484,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0, 2},
     {"variadicDoubleMethod", TestObjV8Internal::variadicDoubleMethodMethodCallback, 0, 2},
     {"variadicNodeMethod", TestObjV8Internal::variadicNodeMethodMethodCallback, 0, 2},
-    {"methodWithNullableArguments", TestObjV8Internal::methodWithNullableArgumentsMethodCallback, 0, 3},
     {"perWorldMethod", TestObjV8Internal::perWorldMethodMethodCallback, TestObjV8Internal::perWorldMethodMethodCallbackForMainWorld, 0},
     {"overloadedPerWorldMethod", TestObjV8Internal::overloadedPerWorldMethodMethodCallback, TestObjV8Internal::overloadedPerWorldMethodMethodCallbackForMainWorld, 1},
     {"activityLoggedMethod1", TestObjV8Internal::activityLoggedMethod1MethodCallback, 0, 1},

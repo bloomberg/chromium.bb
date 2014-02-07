@@ -60,9 +60,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [MeasureAs=TestFeature] attribute TestObject testObjAttr;
     [ExposeJSAccessors] attribute DOMString attrWithJSGetterAndSetter;
 
-    // WK_ucfirst, WK_lcfirst exceptional cases.
+    // Name starting with an acronym
     attribute TestObject                  XMLObjAttr;
-    attribute boolean                  create;
 
     // Reflected DOM attributes
     [Reflect] attribute DOMString reflectedStringAttr;
@@ -147,14 +146,9 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [CallWith=  ExecutionContext  &  ScriptState  ] TestObject withExecutionContextAndScriptStateWithSpaces();
     [CallWith=ActiveWindow&FirstWindow] void withActiveWindowAndFirstWindow();
 
-    [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ExecutionContext] attribute TestObject withExecutionContextAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
-    [CallWith=ScriptState, RaisesException=Getter] attribute TestObject withScriptStateAttributeRaises;
-    [CallWith=ExecutionContext, RaisesException=Getter] attribute TestObject withExecutionContextAttributeRaises;
-    [CallWith=ExecutionContext&ScriptState] attribute TestObject withExecutionContextAndScriptStateAttribute;
-    [CallWith=ExecutionContext&ScriptState, RaisesException=Getter] attribute TestObject withExecutionContextAndScriptStateAttributeRaises;
-    [CallWith=  ExecutionContext  &  ScriptState  ] attribute TestObject withExecutionContextAndScriptStateWithSpacesAttribute;
+    [RaisesException=Getter] attribute TestObject withScriptStateAttributeRaises;
 
     // optional parameters
     void    methodWithOptionalArg(optional long opt);
@@ -275,10 +269,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     readonly attribute boolean? nullableBooleanAttribute;
     readonly attribute DOMString? nullableStringAttribute;
     attribute long? nullableLongSettableAttribute;
-    [RaisesException=Getter] attribute long? nullableStringValue;
-
-    // Nullable arguments.
-    void methodWithNullableArguments(DOMString? str, long? l, TestObject? obj, optional double? d);
 
     [PerWorldBindings] readonly attribute TestObject perWorldReadOnlyAttribute;
     [PerWorldBindings] attribute TestObject perWorldAttribute;

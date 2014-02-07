@@ -11,8 +11,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_reflect and not attribute.is_url and
           attribute.idl_type == 'DOMString' and is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
-    {# FIXME: Perl skips most of function, but this seems unnecessary #}
     {% endif %}
+    {# imp #}
+    {# FIXME: use a local variable for holder more often and simplify below #}
     {% if attribute.is_unforgeable or
           interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
     {% if interface_name == 'Window' %}
@@ -36,56 +37,60 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
-    {% endif %}{# imp #}
-    {% if attribute.reflect_only %}
-    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
-    {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
-                         attribute.reflect_invalid, attribute.reflect_empty)
-      | indent}}
     {% endif %}
+    {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
+    if (!imp->document())
+        return;
+    {% endif %}
+    {# Local variables #}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
-    {# Special cases #}
     {% if attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if attribute.is_nullable %}
+    bool isNull = false;
+    {% endif %}
+    {# FIXME: consider always using a local variable for value #}
+    {% if attribute.cached_attribute_validation_method or
+          attribute.is_getter_raises_exception or
+          attribute.is_nullable or
+          attribute.reflect_only or
+          attribute.idl_type == 'EventHandler' %}
+    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
+    {% endif %}
+    {# Checks #}
+    {% if attribute.is_getter_raises_exception %}
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
+        return;
+    {% endif %}
     {% if attribute.is_check_security_for_node %}
-    {# FIXME: consider using a local variable to not call getter twice #}
+    {# FIXME: use a local variable to not call getter twice #}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), {{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
-    {% if attribute.is_getter_raises_exception %}
-    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    {% endif %}
-    {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
-    if (!imp->document())
-        return;
+    {% if attribute.reflect_only %}
+    {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
+                         attribute.reflect_invalid, attribute.reflect_empty)
+      | indent}}
     {% endif %}
     {% if attribute.is_nullable %}
-    bool isNull = false;
-    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    {% elif attribute.idl_type == 'EventHandler' or
-            (attribute.cached_attribute_validation_method and
-             not attribute.is_getter_raises_exception) %}{# Already assigned #}
-    {# FIXME: consider merging all these assign to local variable statements #}
-    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, {{attribute.cpp_value}}.v8Value());
     {% endif %}
-    {# End special cases #}
+    {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
+    {# FIXME: merge local variable assignment with above #}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};
     if (result && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
         return;
@@ -94,12 +99,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         setHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}", wrapper);
         {{attribute.v8_set_return_value}};
     }
-    {% else %}
-    {% if world_suffix %}
+    {% elif world_suffix %}
     {{attribute.v8_set_return_value_for_main_world}};
     {% else %}
     {{attribute.v8_set_return_value}};
-    {% endif %}
     {% endif %}
 }
 {% endfilter %}
@@ -111,6 +114,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
+{# FIXME: rename resultValue to jsValue #}
 {% if reflect_empty %}
 if (resultValue.isNull()) {
 {% if reflect_missing %}
