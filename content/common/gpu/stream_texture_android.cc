@@ -100,10 +100,10 @@ void StreamTexture::Destroy() {
 }
 
 void StreamTexture::WillUseTexImage() {
-  if (!owner_stub_)
+  if (!owner_stub_ || !surface_texture_.get())
     return;
 
-  if (surface_texture_.get() && has_pending_frame_) {
+  if (has_pending_frame_) {
     scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
     bool needs_make_current =
         !owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL);
