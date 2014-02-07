@@ -2253,6 +2253,14 @@ class MockPatch(mock.MagicMock):
     'currentPatchSet': current_patch_set,
   }
 
+  def HasApproval(self, field, value):
+    """Pretends the patch is good.
+
+    Pretend the patch has all of the values listed in
+    constants.DEFAULT_CQ_READY_FIELDS, but not any other fields.
+    """
+    return constants.DEFAULT_CQ_READY_FIELDS.get(field, 0) == value
+
 
 class BaseCQTest(StageTest):
   """Helper class for testing the CommitQueueSync stage"""

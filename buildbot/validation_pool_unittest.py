@@ -80,11 +80,11 @@ class Base(cros_test_lib.MockTestCase):
     self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
     self.PatchObject(timeout_util, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
-    self.PatchObject(cros_patch.GerritPatch, 'HasApproval', return_value=True)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
-                tracking_branch='refs/heads/master', is_draft=False):
+                tracking_branch='refs/heads/master', is_draft=False,
+                approvals=()):
     """Helper function to create mock GerritPatch objects."""
     if change_id is None:
       change_id = self._patch_counter()
@@ -94,10 +94,16 @@ class Base(cros_test_lib.MockTestCase):
     sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
     patch_number = (patch_number if patch_number is not None else _GetNumber())
     fake_url = 'http://foo/bar'
+    if not approvals:
+      approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
+                   {'type': 'CRVW', 'value': '2', 'grantedOn': 1391733002},
+                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
+
     current_patch_set = {
       'number': patch_number,
       'revision': sha1,
       'draft': is_draft,
+      'approvals': approvals,
     }
     patch_dict = {
       'currentPatchSet': current_patch_set,

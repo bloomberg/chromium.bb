@@ -1381,14 +1381,16 @@ class ValidationPool(object):
   def FilterNonMatchingChanges(cls, changes):
     """Filter out changes that don't actually match our query.
 
-    Generally, Gerrit should only return patches that match our query. However,
-    there are race conditions (bugs in Gerrit) where the final patch won't
-    match our query.
+    Generally, Gerrit should only return patches that match our
+    query. However, Gerrit keeps a query cache and the cached data may
+    be stale.
 
-    Here's an example problem that this code fixes: If the Pre-CQ launcher
-    picks up a CL while the CQ is committing the CL, it may catch a race
-    condition where a new patchset has been created and committed by the CQ,
-    but the CL is still treated as if it matches the query (which it doesn't,
+    There are also race conditions (bugs in Gerrit) where the final
+    patch won't match our query. Here's an example problem that this
+    code fixes: If the Pre-CQ launcher picks up a CL while the CQ is
+    committing the CL, it may catch a race condition where a new
+    patchset has been created and committed by the CQ, but the CL is
+    still treated as if it matches the query (which it doesn't,
     anymore).
 
     Args:
@@ -1401,6 +1403,16 @@ class ValidationPool(object):
       # Because the gerrit cache sometimes gets stale, double-check that the
       # change hasn't already been merged.
       if change.status != 'NEW':
+        continue
+      # Check whether the change should be rejected (e.g. verified:
+      # -1, code-review: -2).
+      should_reject = False
+      for field, value in constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems():
+        if change.HasApproval(field, value):
+          should_reject = True
+          break
+
+      if should_reject:
         continue
       # Check that the user (or chrome-bot) uploaded a new change under our
       # feet while Gerrit was in the middle of answering our query.

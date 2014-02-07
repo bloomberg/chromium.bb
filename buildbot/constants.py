@@ -321,10 +321,14 @@ THROTTLED_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 2
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
 DEFAULT_CQ_READY_FIELDS = {
-    'SUBM': '0',
     'CRVW': '2',
     'VRIF': '1',
     'COMR': ('1', '2'),
+}
+
+DEFAULT_CQ_SHOULD_REJECT_FIELDS = {
+    'CRVW': '-2',
+    'VRIF': '-1',
 }
 
 GERRIT_ON_BORG_LABELS = {

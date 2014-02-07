@@ -1299,7 +1299,6 @@ class GerritPatch(GitRepoPatch):
 
     Args:
       field: Which field to check.
-        'SUBM': Whether patch was submitted.
         'VRIF': Whether patch was verified.
         'CRVW': Whether patch was approved.
         'COMR': Whether patch was marked ready.
