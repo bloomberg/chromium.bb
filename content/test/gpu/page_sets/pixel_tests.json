@@ -13,7 +13,7 @@
             "timeout": 30
         }
       ],
-      "revision": 1,
+      "revision": 2,
       "test_rect": [0, 0, 400, 300]
     },
     {
@@ -27,7 +27,7 @@
             "timeout": 30
         }
       ],
-      "revision": 1,
+      "revision": 2,
       "test_rect": [0, 0, 400, 300]
     },
     {
@@ -41,7 +41,7 @@
             "timeout": 30
         }
       ],
-      "revision": 1,
+      "revision": 2,
       "test_rect": [0, 0, 400, 300]
     }
   ]
