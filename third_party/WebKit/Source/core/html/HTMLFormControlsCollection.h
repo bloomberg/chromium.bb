@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -43,12 +44,13 @@ public:
     virtual ~HTMLFormControlsCollection();
 
     virtual Element* namedItem(const AtomicString& name) const OVERRIDE;
-    void namedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
+    void namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>&, bool& elementEnabled, RefPtr<Element>&);
 
 private:
     explicit HTMLFormControlsCollection(ContainerNode*);
 
     virtual void updateNameCache() const OVERRIDE;
+    virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 
     const Vector<FormAssociatedElement*>& formControlElements() const;
     const Vector<HTMLImageElement*>& formImageElements() const;

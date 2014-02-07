@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -28,6 +29,7 @@
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 
@@ -190,22 +192,49 @@ void HTMLFormControlsCollection::updateNameCache() const
     setHasNameCache();
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
 {
     Vector<RefPtr<Element> > namedItems;
     this->namedItems(name, namedItems);
 
-    if (!namedItems.size())
+    if (namedItems.isEmpty())
         return;
 
     if (namedItems.size() == 1) {
-        returnValue1Enabled = true;
-        returnValue1 = namedItems.at(0);
+        elementEnabled = true;
+        element = namedItems.first();
         return;
     }
 
-    returnValue0Enabled = true;
-    returnValue0 = this->ownerNode()->radioNodeList(name);
+    radioNodeListEnabled = true;
+    radioNodeList = ownerNode()->radioNodeList(name);
+}
+
+void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
+{
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlformcontrolscollection-0:
+    // The supported property names consist of the non-empty values of all the id and name attributes
+    // of all the elements represented by the collection, in tree order, ignoring later duplicates,
+    // with the id of an element preceding its name if it contributes both, they differ from each
+    // other, and neither is the duplicate of an earlier entry.
+    HashSet<AtomicString> existingNames;
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
+        Element* element = item(i);
+        ASSERT(element);
+        const AtomicString& idAttribute = element->getIdAttribute();
+        if (!idAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
+            if (addResult.isNewEntry)
+                names.append(idAttribute);
+        }
+        const AtomicString& nameAttribute = element->getNameAttribute();
+        if (!nameAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
+            if (addResult.isNewEntry)
+                names.append(nameAttribute);
+        }
+    }
 }
 
 }

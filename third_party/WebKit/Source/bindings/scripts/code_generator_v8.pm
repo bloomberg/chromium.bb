@@ -8,7 +8,7 @@
 # Copyright (C) Research In Motion Limited 2010. All rights reserved.
 # Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
 # Copyright (C) 2012 Ericsson AB. All rights reserved.
-# Copyright (C) 2013 Samsung Electronics. All rights reserved.
+# Copyright (C) 2013, 2014 Samsung Electronics. All rights reserved.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -3583,10 +3583,8 @@ sub GenerateIsNullExpression
         my $types = $type->unionMemberTypes;
         my @expression = ();
         for my $i (0 .. scalar(@$types)-1) {
-            my $unionMemberType = $types->[$i];
-            my $unionMemberVariable = $variableName . $i;
-            my $isNull = GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
-            push @expression, $isNull;
+            my $unionMemberEnabledVariable = $variableName . $i . "Enabled";
+            push @expression, "!${unionMemberEnabledVariable}";
         }
         return join " && ", @expression;
     }
@@ -4099,14 +4097,9 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
-    if (IsUnionType($returnType)) {
-        $code .= "${returnJSValueCode}\n";
-        $code .= "    return;\n";
-    } else {
-        $code .= "    if (${isNull})\n";
-        $code .= "        return;\n";
-        $code .= $returnJSValueCode . "\n";
-    }
+    $code .= "    if (${isNull})\n";
+    $code .= "        return;\n";
+    $code .= $returnJSValueCode . "\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -5281,11 +5274,8 @@ sub GenerateFunctionCallString
     my $implClassName = GetImplName($interface);
     my $name = GetImplName($function);
     my $returnType = $function->type;
-    my $nativeReturnType = GetNativeType($returnType, {}, "");
     my $code = "";
-
     my $isSVGTearOffType = (IsSVGTypeNeedingTearOff($returnType) and not $interfaceName =~ /List$/);
-    $nativeReturnType = GetSVGWrappedTypeNeedingTearOff($returnType) if $isSVGTearOffType;
 
     my $index = 0;
     my $humanFriendlyIndex = $index + 1;
@@ -5353,6 +5343,22 @@ END
         $humanFriendlyIndex = $index + 1;
     }
 
+    # Support for returning a union type.
+    if (IsUnionType($returnType)) {
+        my $types = $returnType->unionMemberTypes;
+        for my $i (0 .. scalar(@$types)-1) {
+            my $unionMemberType = $types->[$i];
+            my $unionMemberNativeType = GetNativeType($unionMemberType);
+            my $unionMemberNumber = $i + 1;
+            my $unionMemberVariable = "result" . $i;
+            my $unionMemberEnabledVariable = "result" . $i . "Enabled";
+            $code .= "    bool ${unionMemberEnabledVariable} = false;\n";
+            $code .= "    ${unionMemberNativeType} ${unionMemberVariable};\n";
+            push @arguments, $unionMemberEnabledVariable;
+            push @arguments, $unionMemberVariable;
+        }
+    }
+
     if ($function->extendedAttributes->{"RaisesException"}) {
         push @arguments, "exceptionState";
     }
@@ -5362,9 +5368,12 @@ END
     my $return = "result";
     my $returnIsRef = IsRefPtrType($returnType);
 
-    if ($returnType eq "void") {
+    if ($returnType eq "void" || IsUnionType($returnType)) {
         $code .= $indent . "$functionString;\n";
     } elsif (ExtendedAttributeContains($callWith, "ScriptState") or $function->extendedAttributes->{"RaisesException"}) {
+        my $nativeReturnType = GetNativeType($returnType, {}, "");
+        $nativeReturnType = GetSVGWrappedTypeNeedingTearOff($returnType) if $isSVGTearOffType;
+
         $code .= $indent . $nativeReturnType . " result = $functionString;\n";
     } else {
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
@@ -5729,6 +5738,10 @@ sub NativeToJSValue
               $code .= "${returnJSValueCode}";
             }
             push @codes, $code;
+        }
+        if ($isReturnValue) {
+            # Fall back to returning null if none of the union members results are returned.
+            push @codes, "${indent}v8SetReturnValueNull(${getCallbackInfo});";
         }
         return join "\n", @codes;
     }

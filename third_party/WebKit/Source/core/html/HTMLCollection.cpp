@@ -526,7 +526,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names)
 
 void HTMLCollection::namedPropertyEnumerator(Vector<String>& names, ExceptionState&)
 {
-    return supportedPropertyNames(names);
+    supportedPropertyNames(names);
 }
 
 void HTMLCollection::updateNameCache() const

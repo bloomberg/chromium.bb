@@ -438,6 +438,39 @@ static void Node13AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::V
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
+static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("namedItem", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    bool result0Enabled = false;
+    RefPtr<Node> result0;
+    bool result1Enabled = false;
+    RefPtr<NodeList> result1;
+    imp->getItem(name, result0Enabled, result0, result1Enabled, result1);
+    if (result0Enabled) {
+        v8SetReturnValue(info, result0.release());
+        return;
+    }
+
+    if (result1Enabled) {
+        v8SetReturnValue(info, result1.release());
+        return;
+    }
+
+    v8SetReturnValueNull(info);
+}
+
+static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfaceV8Internal::namedItemMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
@@ -602,6 +635,8 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     bool element1Enabled = false;
     RefPtr<NodeList> element1;
     collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
+    if (!element0Enabled && !element1Enabled)
+        return;
     if (element0Enabled) {
         v8SetReturnValueFast(info, element0.release(), collection);
         return;
@@ -612,7 +647,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
         return;
     }
 
-    return;
+    v8SetReturnValueNull(info);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -703,6 +738,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
+    {"namedItem", TestInterfaceV8Internal::namedItemMethodCallback, 0, 1},
     {"implementsVoidMethod", TestInterfaceV8Internal::implementsVoidMethodMethodCallback, 0, 0},
     {"implementsComplexMethod", TestInterfaceV8Internal::implementsComplexMethodMethodCallback, 0, 2},
     {"implementsCustomVoidMethod", TestInterfaceV8Internal::implementsCustomVoidMethodMethodCallback, 0, 0},

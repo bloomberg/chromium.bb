@@ -67,6 +67,7 @@ protected:
     bool overridesItemAfter() const { return m_overridesItemAfter; }
     virtual Element* virtualItemAfter(Element*) const;
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
+    virtual void supportedPropertyNames(Vector<String>& names);
 
     virtual void updateNameCache() const;
     bool hasNameCache() const { return m_isNameCacheValid; }
@@ -80,7 +81,6 @@ protected:
 
 private:
     Element* traverseNextElement(Element& previous, const ContainerNode& root) const;
-    virtual void supportedPropertyNames(Vector<String>& names);
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
     void invalidateIdNameCacheMaps() const
