@@ -70,11 +70,11 @@
 }
 
 .signin-divider {
-  background: -webkit-gradient(
-                   linear, left top, left bottom,
-                   color-stop(0, #e3e3e3),
-                   color-stop(0.5, #cacaca),
-                   color-stop(1, #e3e3e3));
+  background: linear-gradient(
+                   to bottom,
+                   #e3e3e3,
+                   #cacaca 50%,
+                   #e3e3e3);
   border: none;
   width: 1px;
 }

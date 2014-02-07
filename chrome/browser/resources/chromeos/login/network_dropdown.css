@@ -12,10 +12,10 @@
   -webkit-padding-start: 1px;
   -webkit-user-select: none;
   background-image: url('../../../../../ui/webui/resources/images/select.png'),
-      -webkit-gradient(linear, left top, left bottom,
-                       color-stop(0, rgb(237, 237, 237)),
-                       color-stop(0.38, rgb(237, 237, 237)),
-                       color-stop(1, rgb(222, 222, 222)));
+      linear-gradient(to bottom,
+                       rgb(237, 237, 237),
+                       rgb(237, 237, 237) 38%,
+                       rgb(222, 222, 222));
   background-position: center right;
   background-repeat: no-repeat;
   border: 1px solid rgba(0, 0, 0, 0.25);
@@ -44,10 +44,10 @@ html[dir=rtl] .dropdown-title {
 
 .dropdown-title:enabled:hover {
   background-image: url('../../../../../ui/webui/resources/images/select.png'),
-      -webkit-gradient(linear, left top, left bottom,
-                       color-stop(0, rgb(237, 237, 237)),
-                       color-stop(0.38, rgb(237, 237, 237)),
-                       color-stop(1, rgb(222, 222, 222)));
+      linear-gradient(to bottom,
+                       rgb(237, 237, 237),
+                       rgb(237, 237, 237) 38%,
+                       rgb(222, 222, 222));
   border-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
       inset 0 1px 2px rgba(255, 255, 255, 0.95);
@@ -56,10 +56,10 @@ html[dir=rtl] .dropdown-title {
 
 .dropdown-title:enabled:active {
   background-image: url('../../../../../ui/webui/resources/images/select.png'),
-      -webkit-gradient(linear, left top, left bottom,
-                       color-stop(0, rgb(231, 231, 231)),
-                       color-stop(0.38, rgb(231, 231, 231)),
-                       color-stop(1, rgb(215, 215, 215)));
+      linear-gradient(to bottom,
+                       rgb(231, 231, 231),
+                       rgb(231, 231, 231) 38%,
+                       rgb(215, 215, 215));
   box-shadow: none;
   text-shadow: none;
 }
