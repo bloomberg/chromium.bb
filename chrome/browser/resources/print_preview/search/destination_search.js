@@ -121,9 +121,15 @@ cr.define('print_preview', function() {
 
     /** @param {boolean} isVisible Whether the component is visible. */
     setIsVisible: function(isVisible) {
+      if (this.getIsVisible() == isVisible) {
+        return;
+      }
       if (isVisible) {
+        setIsVisible(this.getElement(), true);
+        setTimeout(function(element) {
+          element.classList.remove('transparent');
+        }.bind(this, this.getElement()), 0);
         this.searchBox_.focus();
-        this.getElement().classList.remove('transparent');
         var promoEl = this.getChildElement('.cloudprint-promo');
         if (getIsVisible(promoEl)) {
           this.metrics_.incrementDestinationSearchBucket(
@@ -166,6 +172,15 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
+
+      this.getElement().addEventListener('webkitTransitionEnd', function f(e) {
+        if (e.target != e.currentTarget || e.propertyName != 'opacity')
+          return;
+        if (e.target.classList.contains('transparent')) {
+          setIsVisible(e.target, false);
+        }
+      });
+
       this.tracker.add(
           this.getChildElement('.page > .close-button'),
           'click',
