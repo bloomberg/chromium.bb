@@ -10,6 +10,13 @@ import re
 import socket
 import subprocess
 import sys
+import unittest
+
+
+if sys.platform == 'win32':
+  RETURNCODE_KILL = -9
+else:
+  RETURNCODE_KILL = -9 & 0xff
 
 
 def AssertEquals(x, y):
@@ -198,12 +205,12 @@ class Gdb(object):
     self._gdb = subprocess.Popen(args,
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE)
+    self._expected_success = True
 
-  def __enter__(self):
-    return self
-
-  def __exit__(self, type, value, traceback):
-    KillProcess(self._gdb)
+  def Wait(self):
+    # Require a graceful exit from gdb.
+    self._gdb.communicate()
+    AssertEquals(self._gdb.returncode == 0, self._expected_success)
 
   def _SendRequest(self, request):
     self._log.write('To GDB: %s\n' % request)
@@ -262,6 +269,22 @@ class Gdb(object):
     status, items = self._GetResultRecord(self._SendRequest('-gdb-exit'))
     AssertEquals(status, '^exit')
 
+  def Disconnect(self):
+    status, items = self._GetResultRecord(self._SendRequest('disconnect'))
+    AssertEquals(status, '^done')
+
+  def Detach(self):
+    status, items = self._GetResultRecord(self._SendRequest('detach'))
+    AssertEquals(status, '^done')
+
+  def Kill(self):
+    status, items = self._GetResultRecord(self._SendRequest('kill'))
+    AssertEquals(status, '^done')
+
+  def KillProcess(self):
+    self._expected_success = False
+    KillProcess(self._gdb)
+
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']
 
@@ -275,6 +298,9 @@ class Gdb(object):
 
   def Connect(self):
     self._GetResponse()
+    self.Reconnect()
+
+  def Reconnect(self):
     if self._options.irt is not None:
       self.Command('nacl-irt ' + FilenameToUnix(self._options.irt))
     if self._options.ld_so is not None:
@@ -289,7 +315,7 @@ class Gdb(object):
     self.Command('target remote :4014')
 
 
-def RunTest(test_func, test_name):
+def DecodeOptions():
   parser = optparse.OptionParser()
   parser.add_option('--output_dir', help='Output directory for log files')
   parser.add_option('--gdb', help='Filename of GDB')
@@ -300,12 +326,51 @@ def RunTest(test_func, test_name):
                     'if using dynamic linking (optional)')
   parser.add_option('--nexe', help='Filename of main NaCl executable')
   parser.add_option('--nexe_args', help='Comma-separated list of arguments')
-  options, sel_ldr_command = parser.parse_args()
+  return parser.parse_args()
 
-  sel_ldr = LaunchSelLdr(sel_ldr_command, options, test_name)
-  try:
-    with Gdb(options, test_name) as gdb:
-      gdb.Connect()
-      test_func(gdb)
-  finally:
-    KillProcess(sel_ldr)
+
+def Main():
+  global g_options
+  global g_sel_ldr_command
+  g_options, g_sel_ldr_command = DecodeOptions()
+  sys.argv = [sys.argv[0]]
+  unittest.main()
+
+
+class GdbTest(unittest.TestCase):
+  """Base class for tests of gdb, assumes a single sel_ldr + gdb."""
+
+  def GetTestName(self):
+    parts = self.id().split('.')
+    return parts[-1][len('test_'):]
+
+  def AssertSelLdrExits(self, expected_returncode=RETURNCODE_KILL):
+    self.sel_ldr.wait()
+    self.assertEqual(expected_returncode, self.sel_ldr.returncode)
+
+  def LaunchSelLdr(self):
+    self.sel_ldr = LaunchSelLdr(
+        g_sel_ldr_command, g_options, self.GetTestName())
+
+  def LaunchGdb(self):
+    try:
+      self.gdb = Gdb(g_options, self.GetTestName())
+      self.gdb.Connect()
+    except:
+      KillProcess(self.sel_ldr)
+      raise
+
+  def setUp(self):
+    self.LaunchSelLdr()
+    self.LaunchGdb()
+
+  def tearDown(self):
+    try:
+      if self.gdb:
+        self.gdb.Quit()
+        self.gdb.Wait()
+      self.AssertSelLdrExits()
+    finally:
+      if self.gdb:
+        self.gdb.KillProcess()
+      KillProcess(self.sel_ldr)

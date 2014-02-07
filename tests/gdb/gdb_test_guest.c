@@ -62,6 +62,34 @@ void test_step_from_function_start(int arg) {
   global_ptr = alloca(arg);
 }
 
+/*
+ * Three layers of nested functions to break and continue from while confirming
+ * that gdb can connect and disconnect in various ways.
+ */
+void test_disconnect_layer3(void) {
+  global_var = 100003;
+}
+
+void test_disconnect_layer2(void) {
+  global_var = 100002;
+  test_disconnect_layer3();
+}
+
+void test_disconnect(void) {
+  global_var = 100001;
+  test_disconnect_layer2();
+}
+
+void test_kill(void) {
+  /* Something to break on before killing program. */
+  global_var = 0;
+}
+
+void test_detach(void) {
+  /* Something to break on before detaching. */
+  global_var = 0;
+}
+
 int test_call_from_gdb(int arg) {
   global_var = 2 * arg;
   return 3 * arg;
@@ -237,6 +265,22 @@ int main(int argc, char **argv) {
     test_step_from_function_start(2);
     return 0;
   }
+  if (strcmp(test_command, "detach") == 0) {
+    test_detach();
+    return 0;
+  }
+  if (strcmp(test_command, "disconnect") == 0) {
+    global_var = 0;
+    test_disconnect();
+    return 0;
+  }
+  if (strcmp(test_command, "kill") == 0) {
+    test_kill();
+    return 0;
+  }
+  if (strcmp(test_command, "complete") == 0) {
+    return 123;
+  }
   if (strcmp(test_command, "call_from_gdb") == 0) {
     /* Call function so that it doesn't get optimized away. */
     return test_call_from_gdb(0);
@@ -246,7 +290,7 @@ int main(int argc, char **argv) {
     test_change_variable(1);
     return 0;
   }
-  if (strcmp(test_command, "dummy") == 0) {
+  if (strcmp(test_command, "invalid_memory") == 0) {
     return 0;
   }
   if (strcmp(test_command, "mmap") == 0) {

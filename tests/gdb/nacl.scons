@@ -100,8 +100,15 @@ def AddGdbTest(name, is_broken=False, is_thread_test=False):
                          is_broken=is_broken)
 
 
-AddGdbTest('stepi_after_break')
+AddGdbTest('complete')
+AddGdbTest('detach')
+AddGdbTest('disconnect')
 AddGdbTest('invalid_memory')
+AddGdbTest('kill')
+
+# Single-stepping does work reliably with ARM and MIPS in qemu due to the code
+# cache not being flushable.
+AddGdbTest('stepi_after_break', is_broken=env.UsingEmulator())
 
 # This fails on ARM+PNaCl. The set_global_var function appears to be
 # getting the wrong argument value (68K vs 1), so the value of
