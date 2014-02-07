@@ -1047,7 +1047,7 @@ function testLoadAbortIllegalChromeURL() {
   };
   webview.addEventListener('loadstop', onFirstLoadStop);
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'about:blank');
@@ -1057,7 +1057,7 @@ function testLoadAbortIllegalChromeURL() {
 function testLoadAbortIllegalFileURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'file://foo');
@@ -1067,7 +1067,7 @@ function testLoadAbortIllegalFileURL() {
 function testLoadAbortIllegalJavaScriptURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'javascript:void(document.bgColor="#0000FF")');
@@ -1144,7 +1144,8 @@ function testNavigationToExternalProtocol() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadstop', function(e) {
     webview.addEventListener('loadabort', function(e) {
-      embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
+      // TODO(fsamuel): Change to ERR_UNKNOWN_URL_SCHEME.
+      embedder.test.assertEq('ERR_ABORTED', e.reason);
       embedder.test.succeed();
     });
     webview.executeScript({
@@ -1289,7 +1290,7 @@ function testNavigateToWebStore() {
   webview.addEventListener('loadabort', function(e) {
     e.preventDefault();
     window.console.log('Navigation to \'' + e.url + '\' has been aborted.');
-    embedder.test.assertEq('ERR_ACCESS_DENIED', e.reason);
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.assertEq(CHROME_WEB_STORE, e.url);
     // Ask the guest process if it's still alive. If the guest process has
     // crashed then this message will never be received.

@@ -352,8 +352,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // BrowserPluginGuest.
   void DestroyUnattachedWindows();
 
-  void ReportLoadAbort(const GURL& url, bool is_top_level, int reason);
-
   void LoadURLWithParams(const GURL& url,
                          const Referrer& referrer,
                          PageTransition transition_type,

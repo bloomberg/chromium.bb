@@ -311,21 +311,6 @@ static std::string RetrieveDownloadURLFromRequestId(
   return "";
 }
 
-bool SupportsScheme(const GURL& url) {
-  // javascript: URLs are not supported.
-  if (url.SchemeIs(kJavaScriptScheme))
-    return false;
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsWebSafeScheme(url.scheme()) ||
-      policy->IsPseudoScheme(url.scheme())) {
-    return true;
-  }
-
-  return false;
-}
-
 }  // namespace
 
 class BrowserPluginGuest::EmbedderWebContentsObserver
@@ -417,40 +402,30 @@ void BrowserPluginGuest::DestroyUnattachedWindows() {
   DCHECK(pending_new_windows_.empty());
 }
 
-void BrowserPluginGuest::ReportLoadAbort(const GURL& url,
-                                         bool is_top_level,
-                                         int reason) {
-  if (!delegate_)
-    return;
-
-  std::string error_type;
-  base::RemoveChars(net::ErrorToString(reason), "net::",
-                    &error_type);
-  delegate_->LoadAbort(is_top_level, url, error_type);
-}
-
 void BrowserPluginGuest::LoadURLWithParams(const GURL& url,
                                            const Referrer& referrer,
                                            PageTransition transition_type,
                                            WebContents* web_contents) {
-  // If the URL is invalid, then there's nothing to do here except abort.
-  if (!url.is_valid()) {
-    ReportLoadAbort(url, true /* is_top_level */, net::ERR_INVALID_URL);
-    return;
-  }
-
   // Do not allow navigating a guest to schemes other than known safe schemes.
   // This will block the embedder trying to load unwanted schemes, e.g.
   // chrome://settings.
-  if (!SupportsScheme(url)) {
-    ReportLoadAbort(url, true /* is_top_level */,
-                    net::ERR_DISALLOWED_URL_SCHEME);
-    return;
-  }
-
-  if (!GetContentClient()->browser()->CanCommitURL(
-      GetWebContents()->GetRenderProcessHost(), url)) {
-    ReportLoadAbort(url, true /* is_top_level */, net::ERR_ACCESS_DENIED);
+  bool scheme_is_blocked =
+      (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
+          url.scheme()) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
+          url.scheme())) ||
+      url.SchemeIs(kJavaScriptScheme);
+  bool can_commit =
+      GetContentClient()->browser()->CanCommitURL(
+          GetWebContents()->GetRenderProcessHost(), url);
+  if (scheme_is_blocked || !url.is_valid() || !can_commit) {
+    if (delegate_) {
+      // TODO(fsamuel): Need better error reporting here.
+      std::string error_type;
+      base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",
+                        &error_type);
+      delegate_->LoadAbort(true /* is_top_level */, url, error_type);
+    }
     return;
   }
 
