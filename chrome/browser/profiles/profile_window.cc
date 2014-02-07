@@ -27,27 +27,36 @@ using content::BrowserThread;
 
 namespace {
 
-// Handles running a callback when a new Browser has been completely created.
-class BrowserAddedObserver : public chrome::BrowserListObserver {
+// Handles running a callback when a new Browser for the given profile
+// has been completely created.
+class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
  public:
-  explicit BrowserAddedObserver(
-      profiles::ProfileSwitchingDoneCallback callback) : callback_(callback) {
+  BrowserAddedForProfileObserver(
+      Profile* profile,
+      profiles::ProfileSwitchingDoneCallback callback)
+      : profile_(profile),
+        callback_(callback) {
+    DCHECK(!callback_.is_null());
     BrowserList::AddObserver(this);
   }
-  virtual ~BrowserAddedObserver() {
-    BrowserList::RemoveObserver(this);
+  virtual ~BrowserAddedForProfileObserver() {
   }
 
  private:
   // Overridden from BrowserListObserver:
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
-    DCHECK(!callback_.is_null());
-    callback_.Run();
+    if (browser->profile() == profile_) {
+      BrowserList::RemoveObserver(this);
+      callback_.Run();
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    }
   }
 
+  // Profile for which the browser should be opened.
+  Profile* profile_;
   profiles::ProfileSwitchingDoneCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
+  DISALLOW_COPY_AND_ASSIGN(BrowserAddedForProfileObserver);
 };
 
 void OpenBrowserWindowForProfile(
@@ -88,10 +97,14 @@ void OpenBrowserWindowForProfile(
   }
 
   // If there is a callback, create an observer to make sure it is only
-  // run when the browser has been completely created.
-  scoped_ptr<BrowserAddedObserver> browser_added_observer;
+  // run when the browser has been completely created. This observer will
+  // delete itself once that happens. This should not leak, because we are
+  // passing |always_create| = true to FindOrCreateNewWindow below, which ends
+  // up calling LaunchBrowser and opens a new window. If for whatever reason
+  // that fails, either something has crashed, or the observer will be cleaned
+  // up when a different browser for this profile is opened.
   if (!callback.is_null())
-    browser_added_observer.reset(new BrowserAddedObserver(callback));
+    new BrowserAddedForProfileObserver(profile, callback);
 
   // We already dealt with the case when |always_create| was false and a browser
   // existed, which means that here a browser definitely needs to be created.

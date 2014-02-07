@@ -80,6 +80,18 @@ void OpenNewWindowForProfile(
     false);
 }
 
+// This callback is run after switching to a new profile has finished. This
+// means either a new browser window has been opened, or an existing one
+// has been found, which means we can safely close the User Manager without
+// accidentally terminating the browser process. The task needs to be posted,
+// as HideUserManager will end up destroying its WebContents, which will
+// destruct the UserManagerScreenHandler as well.
+void OnSwitchToProfileComplete() {
+  base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&chrome::HideUserManager));
+}
+
 std::string GetAvatarImageAtIndex(
     size_t index, const ProfileInfoCache& info_cache) {
   bool is_gaia_picture =
@@ -185,7 +197,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
   profiles::CreateAndSwitchToNewProfile(desktop_type_,
-                                        base::Bind(&chrome::HideUserManager),
+                                        base::Bind(&OnSwitchToProfileComplete),
                                         ProfileMetrics::ADD_NEW_USER_MANAGER);
 }
 
@@ -263,7 +275,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   profiles::SwitchToGuestProfile(desktop_type_,
-                                 base::Bind(&chrome::HideUserManager));
+                                 base::Bind(&OnSwitchToProfileComplete));
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
 }
 
@@ -300,7 +312,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   profiles::SwitchToProfile(path,
                             desktop_type_,
                             false,  /* reuse any existing windows */
-                            base::Bind(&chrome::HideUserManager),
+                            base::Bind(&OnSwitchToProfileComplete),
                             ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
 
@@ -472,7 +484,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
     base::FilePath path = info_cache.GetPathOfProfileAtIndex(
         authenticating_profile_index_);
     profiles::SwitchToProfile(path, desktop_type_, true,
-                              base::Bind(&chrome::HideUserManager),
+                              base::Bind(&OnSwitchToProfileComplete),
                               ProfileMetrics::SWITCH_PROFILE_UNLOCK);
   } else {
     web_ui()->CallJavascriptFunction(
