@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/page_action_controller.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -22,6 +23,10 @@
 #include "extensions/common/extension_set.h"
 
 namespace extensions {
+
+// Keeps track of the profiles for which we've sent UMA statistics.
+base::LazyInstance<std::set<Profile*> > g_reported_for_profiles =
+    LAZY_INSTANCE_INITIALIZER;
 
 PageActionController::PageActionController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -45,6 +50,12 @@ std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
         extension_action_manager->GetPageAction(*i->get());
     if (action)
       current_actions.push_back(action);
+  }
+
+  if (!g_reported_for_profiles.Get().count(profile())) {
+    UMA_HISTOGRAM_COUNTS_100("PageActionController.ExtensionsWithPageActions",
+                             current_actions.size());
+    g_reported_for_profiles.Get().insert(profile());
   }
 
   return current_actions;

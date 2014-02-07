@@ -12715,6 +12715,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PageActionController.ExtensionsWithPageActions">
+  <summary>
+    The number of Extensions that have Page Actions. Measured once per startup
+    per profile.
+  </summary>
+</histogram>
+
 <histogram name="PasswordGeneration.Event" enum="PasswordGenerationEvent">
   <summary>
     Measures the frequency of various password generation events.
