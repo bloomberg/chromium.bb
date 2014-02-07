@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/webm/webm_parser.h"
 #include "media/formats/webm/webm_tracks_parser.h"
@@ -20,6 +21,9 @@
 namespace media {
 
 class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
+ public:
+  typedef StreamParser::TrackId TrackId;
+
  private:
   // Helper class that manages per-track state.
   class Track {
@@ -53,7 +57,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
-  typedef std::map<int, const BufferQueue> TextBufferQueueMap;
+  typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
 
   WebMClusterParser(int64 timecode_scale,
                     int audio_track_num,

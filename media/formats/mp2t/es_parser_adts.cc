@@ -197,11 +197,15 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
 
     // Emit an audio frame.
     bool is_key_frame = true;
+
+    // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+    // type and allow multiple audio tracks. See https://crbug.com/341581.
     scoped_refptr<StreamParserBuffer> stream_parser_buffer =
         StreamParserBuffer::CopyFrom(
             &raw_es[es_position],
             frame_size,
-            is_key_frame);
+            is_key_frame,
+            DemuxerStream::AUDIO, 0);
     stream_parser_buffer->SetDecodeTimestamp(current_pts);
     stream_parser_buffer->set_timestamp(current_pts);
     stream_parser_buffer->set_duration(frame_duration);

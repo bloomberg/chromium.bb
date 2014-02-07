@@ -248,11 +248,16 @@ bool EsParserH264::EmitFrameIfNeeded(int next_aud_pos) {
   const uint8* raw_es;
   es_byte_queue_.Peek(&raw_es, &raw_es_size);
   int access_unit_size = next_aud_pos - current_access_unit_pos_;
+
+  // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+  // type and allow multiple video tracks. See https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> stream_parser_buffer =
       StreamParserBuffer::CopyFrom(
           &raw_es[current_access_unit_pos_],
           access_unit_size,
-          is_key_frame_);
+          is_key_frame_,
+          DemuxerStream::VIDEO,
+          0);
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
   emit_buffer_cb_.Run(stream_parser_buffer);

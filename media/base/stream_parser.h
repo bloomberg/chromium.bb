@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -28,11 +29,22 @@ class MEDIA_EXPORT StreamParser {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
 
-  // Map of text track number to the track configuration.
-  typedef std::map<int, TextTrackConfig> TextTrackConfigMap;
+  // Range of |TrackId| is dependent upon stream parsers. It is currently
+  // the key for the buffer's text track config in the applicable
+  // TextTrackConfigMap (which is passed in StreamParser::NewConfigCB), or
+  // 0 for other media types that currently allow at most one track.
+  // WebMTracksParser uses -1 as an invalid text track number.
+  // TODO(wolenetz/acolwell): Change to size_type while fixing stream parsers to
+  // emit validated track configuration and buffer vectors rather than max 1
+  // audio, max 1 video, and N text tracks in a map keyed by
+  // bytestream-specific-ranged track numbers. See http://crbug.com/341581.
+  typedef int TrackId;
 
-  // Map of text track number to decode-timestamp-ordered buffers for the track.
-  typedef std::map<int, const BufferQueue> TextBufferQueueMap;
+  // Map of text track ID to the track configuration.
+  typedef std::map<TrackId, TextTrackConfig> TextTrackConfigMap;
+
+  // Map of text track ID to decode-timestamp-ordered buffers for the track.
+  typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
 
   StreamParser();
   virtual ~StreamParser();
@@ -110,6 +122,23 @@ class MEDIA_EXPORT StreamParser {
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamParser);
 };
+
+// Appends to |merged_buffers| the provided buffers in decode-timestamp order.
+// Any previous contents of |merged_buffers| is assumed to have lower
+// decode timestamps versus the provided buffers. All provided buffer queues
+// are assumed to already be in decode-timestamp order.
+// Returns false if any of the provided audio/video/text buffers are found
+// to not be in decode timestamp order, or have a decode timestamp less than
+// the last buffer, if any, in |merged_buffers|. Partial results may exist
+// in |merged_buffers| in this case. Returns true on success.
+// No validation of media type within the various buffer queues is done here.
+// TODO(wolenetz/acolwell): Merge incrementally in parsers to eliminate
+// subtle issues with tie-breaking. See http://crbug.com/338484.
+MEDIA_EXPORT bool MergeBufferQueues(
+    const StreamParser::BufferQueue& audio_buffers,
+    const StreamParser::BufferQueue& video_buffers,
+    const StreamParser::TextBufferQueueMap& text_buffers,
+    StreamParser::BufferQueue* merged_buffers);
 
 }  // namespace media
 

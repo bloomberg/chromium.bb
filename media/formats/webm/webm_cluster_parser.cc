@@ -292,7 +292,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   }
 
   Track* track = NULL;
-  bool is_text = false;
+  StreamParserBuffer::Type buffer_type = DemuxerStream::AUDIO;
   std::string encryption_key_id;
   if (track_num == audio_.track_num()) {
     track = &audio_;
@@ -300,6 +300,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   } else if (track_num == video_.track_num()) {
     track = &video_;
     encryption_key_id = video_encryption_key_id_;
+    buffer_type = DemuxerStream::VIDEO;
   } else if (ignored_tracks_.find(track_num) != ignored_tracks_.end()) {
     return true;
   } else if (Track* const text_track = FindTextTrack(track_num)) {
@@ -308,7 +309,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
     if (block_duration < 0)  // not specified
       return false;
     track = text_track;
-    is_text = true;
+    buffer_type = DemuxerStream::TEXT;
   } else {
     MEDIA_LOG(log_cb_) << "Unexpected track number " << track_num;
     return false;
@@ -320,7 +321,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
       (cluster_timecode_ + timecode) * timecode_multiplier_);
 
   scoped_refptr<StreamParserBuffer> buffer;
-  if (!is_text) {
+  if (buffer_type != DemuxerStream::TEXT) {
     // The first bit of the flags is set when a SimpleBlock contains only
     // keyframes. If this is a Block, then inspection of the payload is
     // necessary to determine whether it contains a keyframe or not.
@@ -342,10 +343,13 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
       return false;
     }
 
+    // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+    // type with remapped bytestream track numbers and allow multiple tracks as
+    // applicable. See https://crbug.com/341581.
     buffer = StreamParserBuffer::CopyFrom(
         data + data_offset, size - data_offset,
         additional, additional_size,
-        is_keyframe);
+        is_keyframe, buffer_type, track_num);
 
     if (decrypt_config)
       buffer->set_decrypt_config(decrypt_config.Pass());
@@ -358,12 +362,15 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
                  settings.begin(), settings.end(),
                  &side_data);
 
+    // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+    // type with remapped bytestream track numbers and allow multiple tracks as
+    // applicable. See https://crbug.com/341581.
     buffer = StreamParserBuffer::CopyFrom(
         reinterpret_cast<const uint8*>(content.data()),
         content.length(),
         &side_data[0],
         side_data.size(),
-        true);
+        true, buffer_type, track_num);
   }
 
   buffer->set_timestamp(timestamp);

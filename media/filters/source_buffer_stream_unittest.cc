@@ -303,8 +303,10 @@ class SourceBufferStreamTest : public testing::Test {
     for (int i = 0; i < number_of_buffers; i++) {
       int position = starting_position + i;
       bool is_keyframe = position % keyframe_interval == 0;
+      // Buffer type and track ID are meaningless to these tests.
       scoped_refptr<StreamParserBuffer> buffer =
-          StreamParserBuffer::CopyFrom(data, size, is_keyframe);
+          StreamParserBuffer::CopyFrom(data, size, is_keyframe,
+                                       DemuxerStream::AUDIO, 0);
       base::TimeDelta timestamp = frame_duration_ * position;
 
       if (i == 0)
@@ -391,9 +393,10 @@ class SourceBufferStreamTest : public testing::Test {
       int time_in_ms;
       CHECK(base::StringToInt(timestamps[i], &time_in_ms));
 
-      // Create buffer.
+      // Create buffer. Buffer type and track ID are meaningless to these tests.
       scoped_refptr<StreamParserBuffer> buffer =
-          StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe);
+          StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe,
+                                       DemuxerStream::AUDIO, 0);
       base::TimeDelta timestamp =
           base::TimeDelta::FromMilliseconds(time_in_ms);
       buffer->set_timestamp(timestamp);

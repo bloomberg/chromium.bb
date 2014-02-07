@@ -497,9 +497,15 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
         new DecryptConfig("1", "", std::vector<SubsampleEntry>()));
   }
 
+  StreamParserBuffer::Type buffer_type = audio ? DemuxerStream::AUDIO :
+      DemuxerStream::VIDEO;
+
+  // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+  // type and allow multiple tracks for same media type, if applicable. See
+  // https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> stream_buf =
-    StreamParserBuffer::CopyFrom(&frame_buf[0], frame_buf.size(),
-                                 runs_->is_keyframe());
+      StreamParserBuffer::CopyFrom(&frame_buf[0], frame_buf.size(),
+                                   runs_->is_keyframe(), buffer_type, 0);
 
   if (decrypt_config)
     stream_buf->set_decrypt_config(decrypt_config.Pass());

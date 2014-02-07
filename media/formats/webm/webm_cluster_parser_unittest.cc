@@ -96,16 +96,20 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
   for (int i = 0; i < block_count; i++) {
     const WebMClusterParser::BufferQueue* buffers = NULL;
     size_t* offset;
+    StreamParserBuffer::Type expected_type = DemuxerStream::UNKNOWN;
 
     if (block_info[i].track_num == kAudioTrackNum) {
       buffers = &audio_buffers;
       offset = &audio_offset;
+      expected_type = DemuxerStream::AUDIO;
     } else if (block_info[i].track_num == kVideoTrackNum) {
       buffers = &video_buffers;
       offset = &video_offset;
+      expected_type = DemuxerStream::VIDEO;
     } else if (block_info[i].track_num == kTextTrackNum) {
       buffers = &text_buffers;
       offset = &text_offset;
+      expected_type = DemuxerStream::TEXT;
     } else {
       LOG(ERROR) << "Unexpected track number " << block_info[i].track_num;
       return false;
@@ -116,14 +120,16 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
 
     scoped_refptr<StreamParserBuffer> buffer = (*buffers)[(*offset)++];
 
-
-    EXPECT_EQ(buffer->timestamp().InMilliseconds(), block_info[i].timestamp);
+    EXPECT_EQ(block_info[i].timestamp, buffer->timestamp().InMilliseconds());
 
     if (!block_info[i].use_simple_block)
-      EXPECT_NE(buffer->duration(), kNoTimestamp());
+      EXPECT_NE(kNoTimestamp(), buffer->duration());
 
     if (buffer->duration() != kNoTimestamp())
-      EXPECT_EQ(buffer->duration().InMilliseconds(), block_info[i].duration);
+      EXPECT_EQ(block_info[i].duration, buffer->duration().InMilliseconds());
+
+    EXPECT_EQ(expected_type, buffer->type());
+    EXPECT_EQ(block_info[i].track_num, buffer->track_id());
   }
 
   return true;
@@ -170,8 +176,10 @@ static bool VerifyTextBuffers(
     EXPECT_FALSE(buffer_iter == buffer_end);
 
     const scoped_refptr<StreamParserBuffer> buffer = *buffer_iter++;
-    EXPECT_EQ(buffer->timestamp().InMilliseconds(), block_info.timestamp);
-    EXPECT_EQ(buffer->duration().InMilliseconds(), block_info.duration);
+    EXPECT_EQ(block_info.timestamp, buffer->timestamp().InMilliseconds());
+    EXPECT_EQ(block_info.duration, buffer->duration().InMilliseconds());
+    EXPECT_EQ(DemuxerStream::TEXT, buffer->type());
+    EXPECT_EQ(text_track_num, buffer->track_id());
   }
 
   EXPECT_TRUE(buffer_iter == buffer_end);
@@ -226,7 +234,7 @@ TEST_F(WebMClusterParserTest, Reset) {
 
   // Now parse a whole cluster to verify that all the blocks will get parsed.
   result = parser_->Parse(cluster->data(), cluster->size());
-  EXPECT_EQ(result, cluster->size());
+  EXPECT_EQ(cluster->size(), result);
   ASSERT_TRUE(VerifyBuffers(parser_, kDefaultBlockInfo, block_count));
 }
 
@@ -304,7 +312,7 @@ TEST_F(WebMClusterParserTest, ParseBlockGroup) {
   const int kClusterSize = sizeof(kClusterData);
 
   int result = parser_->Parse(kClusterData, kClusterSize);
-  EXPECT_EQ(result, kClusterSize);
+  EXPECT_EQ(kClusterSize, result);
   ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
 }
 
@@ -524,7 +532,7 @@ TEST_F(WebMClusterParserTest, ParseInvalidZeroSizedCluster) {
     0x1F, 0x43, 0xB6, 0x75, 0x80,  // CLUSTER (size = 0)
   };
 
-  EXPECT_EQ(parser_->Parse(kBuffer, sizeof(kBuffer)), -1);
+  EXPECT_EQ(-1, parser_->Parse(kBuffer, sizeof(kBuffer)));
 }
 
 TEST_F(WebMClusterParserTest, ParseInvalidUnknownButActuallyZeroSizedCluster) {
@@ -533,7 +541,7 @@ TEST_F(WebMClusterParserTest, ParseInvalidUnknownButActuallyZeroSizedCluster) {
     0x1F, 0x43, 0xB6, 0x75, 0x85,  // CLUSTER (size = 5)
   };
 
-  EXPECT_EQ(parser_->Parse(kBuffer, sizeof(kBuffer)), -1);
+  EXPECT_EQ(-1, parser_->Parse(kBuffer, sizeof(kBuffer)));
 }
 
 }  // namespace media

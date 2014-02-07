@@ -1695,7 +1695,7 @@ SourceBufferRange::BufferQueue::iterator SourceBufferRange::GetBufferItrAt(
   // Need to make a dummy buffer with timestamp |timestamp| in order to search
   // the |buffers_| container.
   scoped_refptr<StreamParserBuffer> dummy_buffer =
-      StreamParserBuffer::CopyFrom(NULL, 0, false);
+      StreamParserBuffer::CopyFrom(NULL, 0, false, DemuxerStream::UNKNOWN, 0);
   dummy_buffer->SetDecodeTimestamp(timestamp);
 
   if (skip_given_timestamp) {

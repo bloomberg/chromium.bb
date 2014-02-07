@@ -190,10 +190,10 @@ class SourceState {
   // Helper function for OnNewBuffers() when new text buffers have been parsed.
   // It applies |timestamp_offset_| to all buffers in |buffers| and then appends
   // the (modified) buffers to the demuxer stream associated with
-  // the track having |text_track_number|.
+  // the track having |text_track_id|.
   // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
-  bool OnTextBuffers(int text_track_number,
+  bool OnTextBuffers(StreamParser::TrackId text_track_id,
                      const StreamParser::BufferQueue& buffers);
 
   // Helper function that appends |buffers| to |stream| and calls
@@ -255,7 +255,7 @@ class SourceState {
   ChunkDemuxerStream* video_;
   bool video_needs_keyframe_;
 
-  typedef std::map<int, ChunkDemuxerStream*> TextStreamMap;
+  typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
   TextStreamMap text_stream_map_;
 
   LogCB log_cb_;
@@ -773,6 +773,10 @@ bool SourceState::OnNewBuffers(
   DCHECK(!audio_buffers.empty() || !video_buffers.empty() ||
          !text_map.empty());
 
+  // TODO(wolenetz): DCHECK + return false if any of these buffers have UNKNOWN
+  // type() in upcoming coded frame processing compliant implementation. See
+  // http://crbug.com/249422.
+
   AdjustBufferTimestamps(audio_buffers);
   AdjustBufferTimestamps(video_buffers);
 
@@ -845,11 +849,11 @@ bool SourceState::OnNewBuffers(
 }
 
 bool SourceState::OnTextBuffers(
-    int text_track_number,
+    StreamParser::TrackId text_track_id,
     const StreamParser::BufferQueue& buffers) {
   DCHECK(!buffers.empty());
 
-  TextStreamMap::iterator itr = text_stream_map_.find(text_track_number);
+  TextStreamMap::iterator itr = text_stream_map_.find(text_track_id);
   if (itr == text_stream_map_.end())
     return false;
 

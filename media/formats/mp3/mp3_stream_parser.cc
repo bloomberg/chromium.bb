@@ -418,8 +418,12 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data,
       return -1;
   }
 
+  // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
+  // type and allow multiple audio tracks, if applicable. See
+  // https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> buffer =
-      StreamParserBuffer::CopyFrom(data, frame_size, true);
+      StreamParserBuffer::CopyFrom(data, frame_size, true,
+                                   DemuxerStream::AUDIO, 0);
   buffer->set_timestamp(timestamp_helper_->GetTimestamp());
   buffer->set_duration(timestamp_helper_->GetFrameDuration(sample_count));
   buffers->push_back(buffer);
