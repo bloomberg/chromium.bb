@@ -223,7 +223,6 @@ void FrameView::reset()
     m_contentIsOpaque = false;
     m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
-    m_delayedLayout = false;
     m_doFullRepaint = true;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
@@ -910,7 +909,6 @@ void FrameView::layout(bool allowSubtree)
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
     m_hasPendingLayout = false;
-    m_delayedLayout = false;
 
     // we shouldn't enter layout() while painting
     ASSERT(!isPainting());
@@ -1808,13 +1806,8 @@ void FrameView::scheduleRelayout()
         return;
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 
-    int delay = m_frame->document()->minimumLayoutDelay();
-    if (m_hasPendingLayout && m_delayedLayout && !delay)
-        unscheduleRelayout();
     if (m_hasPendingLayout)
         return;
-
-    m_delayedLayout = delay != 0;
     m_hasPendingLayout = true;
     scheduleAnimation();
 }
@@ -1861,11 +1854,9 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
             }
         }
     } else if (m_layoutSchedulingEnabled) {
-        int delay = m_frame->document()->minimumLayoutDelay();
         m_layoutSubtreeRoot = relayoutRoot;
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
-        m_delayedLayout = delay != 0;
         m_hasPendingLayout = true;
         scheduleAnimation();
     }
@@ -1892,15 +1883,6 @@ void FrameView::setNeedsLayout()
 {
     if (RenderView* renderView = this->renderView())
         renderView->setNeedsLayout();
-}
-
-void FrameView::unscheduleRelayout()
-{
-    if (!m_hasPendingLayout)
-        return;
-
-    m_hasPendingLayout = false;
-    m_delayedLayout = false;
 }
 
 void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)

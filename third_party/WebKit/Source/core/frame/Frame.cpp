@@ -199,9 +199,6 @@ void Frame::setView(PassRefPtr<FrameView> view)
         document()->prepareForDestruction();
     }
 
-    if (m_view)
-        m_view->unscheduleRelayout();
-
     eventHandler().clear();
 
     m_view = view;

@@ -2432,7 +2432,6 @@ void Document::implicitClose()
         // Just bail out. Before or during the onload we were shifted to another page.
         // The old i-Bench suite does this. When this happens don't bother painting or laying out.
         m_loadEventProgress = LoadEventCompleted;
-        view()->unscheduleRelayout();
         return;
     }
 
@@ -2585,19 +2584,7 @@ bool Document::shouldScheduleLayout()
 
 bool Document::shouldParserYieldAgressivelyBeforeScriptExecution()
 {
-    return view() && view()->layoutPending() && !minimumLayoutDelay();
-}
-
-int Document::minimumLayoutDelay()
-{
-    if (m_overMinimumLayoutThreshold)
-        return 0;
-
-    int elapsed = elapsedTime();
-    m_overMinimumLayoutThreshold = elapsed > cLayoutScheduleThreshold;
-
-    // We'll want to schedule the timer to fire at the minimum layout threshold.
-    return max(0, cLayoutScheduleThreshold - elapsed);
+    return view() && view()->layoutPending();
 }
 
 int Document::elapsedTime() const

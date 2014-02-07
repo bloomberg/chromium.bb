@@ -606,7 +606,6 @@ public:
 
     void setParsing(bool);
     bool parsing() const { return m_bParsing; }
-    int minimumLayoutDelay();
 
     bool shouldScheduleLayout();
     bool shouldParserYieldAgressivelyBeforeScriptExecution();

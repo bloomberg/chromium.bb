@@ -87,7 +87,6 @@ public:
     bool didFirstLayout() const;
     void scheduleRelayout();
     void scheduleRelayoutOfSubtree(RenderObject*);
-    void unscheduleRelayout();
     bool layoutPending() const;
     bool isInPerformLayout() const { return m_inPerformLayout; }
 
@@ -438,7 +437,6 @@ private:
     unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
-    bool m_delayedLayout;
     RenderObject* m_layoutSubtreeRoot;
 
     bool m_layoutSchedulingEnabled;
