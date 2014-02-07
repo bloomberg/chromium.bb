@@ -62,10 +62,7 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
-  if (headless_)
-    delete this;
-  else
-    web_contents_.reset();
+  delete this;
 }
 
 void Shell::PlatformSetTitle(const base::string16& title) {
