@@ -65,7 +65,7 @@ private:
     TreeScopeEventContext(TreeScope&);
 
 #ifndef NDEBUG
-    bool isUnreachableNode(EventTarget*);
+    bool isUnreachableNode(EventTarget&);
 #endif
 
     TreeScope& m_treeScope;
@@ -76,22 +76,24 @@ private:
 };
 
 #ifndef NDEBUG
-inline bool TreeScopeEventContext::isUnreachableNode(EventTarget* target)
+inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
 {
     // FIXME: Checks also for SVG elements.
-    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(m_treeScope);
+    return target.toNode() && !target.toNode()->isSVGElement() && !target.toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(m_treeScope);
 }
 #endif
 
 inline void TreeScopeEventContext::setTarget(PassRefPtr<EventTarget> target)
 {
-    ASSERT(!isUnreachableNode(target.get()));
+    ASSERT(target);
+    ASSERT(!isUnreachableNode(*target));
     m_target = target;
 }
 
 inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
 {
-    ASSERT(!isUnreachableNode(relatedTarget.get()));
+    ASSERT(relatedTarget);
+    ASSERT(!isUnreachableNode(*relatedTarget));
     m_relatedTarget = relatedTarget;
 }
 

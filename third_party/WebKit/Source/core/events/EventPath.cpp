@@ -245,13 +245,10 @@ void EventPath::calculateAdjustedTargets()
 
 void EventPath::buildRelatedNodeMap(const Node* relatedNode, RelatedTargetMap& relatedTargetMap)
 {
-    TreeScope* lastTreeScope = 0;
-    EventPath eventPath(const_cast<Node*>(relatedNode));
-    for (size_t i = 0; i < eventPath.size(); ++i) {
-        TreeScope* treeScope = &eventPath[i].node()->treeScope();
-        if (treeScope != lastTreeScope)
-            relatedTargetMap.add(treeScope, eventPath[i].target());
-        lastTreeScope = treeScope;
+    EventPath relatedTargetEventPath(const_cast<Node*>(relatedNode));
+    for (size_t i = 0; i < relatedTargetEventPath.m_treeScopeEventContexts.size(); ++i) {
+        TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath.m_treeScopeEventContexts[i].get();
+        relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());
     }
 }
 
@@ -261,13 +258,14 @@ EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& rela
     EventTarget* relatedNode = 0;
     while (scope) {
         parentTreeScopes.append(scope);
-        RelatedTargetMap::const_iterator found = relatedTargetMap.find(scope);
-        if (found != relatedTargetMap.end()) {
-            relatedNode = found->value;
+        RelatedTargetMap::const_iterator iter = relatedTargetMap.find(scope);
+        if (iter != relatedTargetMap.end() && iter->value) {
+            relatedNode = iter->value;
             break;
         }
         scope = scope->olderShadowRootOrParentTreeScope();
     }
+    ASSERT(relatedNode);
     for (Vector<TreeScope*, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
         relatedTargetMap.add(*iter, relatedNode);
     return relatedNode;
@@ -282,12 +280,19 @@ void EventPath::adjustForRelatedTarget(Node* target, EventTarget* relatedTarget)
     Node* relatedNode = relatedTarget->toNode();
     if (!relatedNode)
         return;
+    if (target->document() != relatedNode->document())
+        return;
+    if (!target->inDocument() || !relatedNode->inDocument())
+        return;
+
     RelatedTargetMap relatedNodeMap;
     buildRelatedNodeMap(relatedNode, relatedNodeMap);
 
     for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
         TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
-        treeScopeEventContext->setRelatedTarget(findRelatedNode(&treeScopeEventContext->treeScope(), relatedNodeMap));
+        EventTarget* adjustedRelatedTarget = findRelatedNode(&treeScopeEventContext->treeScope(), relatedNodeMap);
+        ASSERT(adjustedRelatedTarget);
+        treeScopeEventContext->setRelatedTarget(adjustedRelatedTarget);
     }
 
     shrinkIfNeeded(target, relatedTarget);
