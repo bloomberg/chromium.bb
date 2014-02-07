@@ -58,5 +58,6 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 
 kb-key.search [part=key]{
   margin-left: 0px;
+  padding-left: 0px;
   width: 2em;
 }
