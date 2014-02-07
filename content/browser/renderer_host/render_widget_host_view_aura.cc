@@ -205,7 +205,10 @@ BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
       cutout_rects.push_back(offset_cutout);
     }
     gfx::SubtractRectanglesFromRegion(hrgn, cutout_rects);
-    SetWindowRgn(window, hrgn, TRUE);
+    // If we don't have any cutout rects then no point in messing with the
+    // window region.
+    if (cutout_rects.size())
+      SetWindowRgn(window, hrgn, TRUE);
   }
   return TRUE;
 }
