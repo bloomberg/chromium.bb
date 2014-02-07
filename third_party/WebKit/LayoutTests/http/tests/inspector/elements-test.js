@@ -133,10 +133,8 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
         if (!anchor)
             return "";
         var anchorText = anchor.getAttribute("data-uncopyable");
-        var name = anchor.uiSourceCode ? anchor.uiSourceCode.name() : (new WebInspector.ParsedURL(anchor.href)).lastPathComponent;
-        var anchorTarget = name +  ":" + (anchor.lineNumber + 1);
-        if (typeof anchor.columnNumber === "number")
-            anchorTarget += ":" + (anchor.columnNumber + 1);
+        var uiLocation = anchor.__uiLocation;
+        var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
         return anchorText + " -> " + anchorTarget;
     }
 

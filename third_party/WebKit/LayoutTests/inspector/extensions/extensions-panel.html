@@ -54,17 +54,30 @@ function initialize_extensionsPanelTest()
 
     InspectorTest.installShowResourceLocationHooks = function()
     {
-        function showAnchorLocationHook(anchor, shown)
+        function showURL(panelName, url, lineNumber)
         {
-            if (!shown)
-                return;
-            var url = anchor.href.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
-            InspectorTest.addResult("Showing resource " + url + " in panel " + this.name + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + anchor.lineNumber);
+            var url = url.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
+            InspectorTest.addResult("Showing resource " + url + " in panel " + panelName + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + lineNumber);
         }
         InspectorTest.recordNetwork();
-        var panels = ["sources", "resources", "network"];
-        for (var i = 0; i < panels.length; ++i)
-            InspectorTest.addSniffer(WebInspector.panel(panels[i]), "showAnchorLocation", showAnchorLocationHook, true);
+        InspectorTest.addSniffer(WebInspector.panel("sources"), "showUILocation", showUILocationHook, true);
+        InspectorTest.addSniffer(WebInspector.panel("resources"), "showResource", showResourceHook, true);
+        InspectorTest.addSniffer(WebInspector.panel("network"), "revealAndHighlightRequest", showRequestHook, true);
+
+        function showUILocationHook(uiLocation)
+        {
+            showURL("sources", uiLocation.url(), uiLocation.lineNumber);
+        }
+
+        function showResourceHook(resource, lineNumber)
+        {
+            showURL("resources", resource.url, lineNumber);
+        }
+
+        function showRequestHook(request)
+        {
+            showURL("network", request.url);
+        }
     }
 
     InspectorTest.switchToLastPanel = function()

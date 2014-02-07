@@ -34,7 +34,7 @@ Showing resource .../inspector/extensions/extensions-panel.html in panel sources
 Showing .../abe.png
 Showing resource .../extensions/resources/abe.png in panel resources (resources), line: 1002
 Showing .../missing.txt
-Showing resource .../extensions/resources/missing.txt in panel network (network), line: 1003
+Showing resource .../extensions/resources/missing.txt in panel network (network), line: undefined
 Showing not-found.html
 log: Extension server error: Object not found: not-found.html
 Showing javascript:console.error('oh no!')

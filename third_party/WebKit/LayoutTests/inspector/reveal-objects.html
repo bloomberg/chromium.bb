@@ -1,0 +1,132 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/elements-test.js"></script>
+<script>
+function loadResource(url)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    xhr.send();
+}
+
+function test() {
+    var node;
+    var resource;
+    var uiLocation;
+    var requestWithResource;
+    var requestWithoutResource;
+
+    InspectorTest.runTestSuite([
+        function init(next)
+        {
+            WebInspector.showPanel("elements");
+            installHooks();
+
+            WebInspector.resourceTreeModel.forAllResources(function(r) {
+                if (r.url.indexOf("inspector-test.js") !== -1) {
+                    resource = r;
+                    return true;
+                }
+            });
+            uiLocation = new WebInspector.UILocation(WebInspector.workspace.uiSourceCodeForOriginURL(resource.url), 2, 1);
+
+            InspectorTest.nodeWithId("div", nodeCallback);
+
+            function nodeCallback(foundNode)
+            {
+                node = foundNode;
+                InspectorTest.recordNetwork();
+                InspectorTest.evaluateInPage("loadResource('../http/tests/inspector/inspector-test.js')", firstXhrCallback);
+            }
+
+            function firstXhrCallback()
+            {
+                requestWithResource = WebInspector.networkLog.requestForURL(resource.url);
+                InspectorTest.evaluateInPage("loadResource('missing.js')", secondXhrCallback);
+            }
+
+            function secondXhrCallback()
+            {
+                var requests = WebInspector.networkLog.requests;
+                for (var i = 0; i < requests.length; ++i) {
+                    if (requests[i].url.indexOf("missing.js") !== -1) {
+                        requestWithoutResource = requests[i];
+                        break;
+                    }
+                }
+                next();
+            }
+        },
+
+        function revealNode(next)
+        {
+            WebInspector.Revealer.reveal(node);
+            next();
+        },
+
+        function revealUILocation(next)
+        {
+            WebInspector.Revealer.reveal(uiLocation);
+            next();
+        },
+
+        function revealResource(next)
+        {
+            WebInspector.Revealer.reveal(resource);
+            next();
+        },
+
+        function revealRequestWithResource(next)
+        {
+            WebInspector.Revealer.reveal(requestWithResource);
+            next();
+        },
+
+        function revealRequestWithoutResource(next)
+        {
+            WebInspector.Revealer.reveal(requestWithoutResource);
+            next();
+        }
+    ]);
+
+    function installHooks()
+    {
+        WebInspector.panel("elements");
+        InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
+        WebInspector.panel("sources");
+        InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
+        WebInspector.panel("resources");
+        InspectorTest.addSniffer(WebInspector.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
+        WebInspector.panel("network");
+        InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", requestRevealed, true);
+    }
+
+    function nodeRevealed(node)
+    {
+        InspectorTest.addResult("Node revealed in the Elements panel");
+    }
+
+    function uiLocationRevealed(uiLocation)
+    {
+        InspectorTest.addResult("UILocation " + uiLocation.uiSourceCode.name() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber + " revealed in the Sources panel");
+    }
+
+    function resourceRevealed(resource, lineNumber)
+    {
+        InspectorTest.addResult("Resource " + resource.displayName + " revealed in the Resources panel");
+    }
+
+    function requestRevealed(request)
+    {
+        InspectorTest.addResult("Request " + new WebInspector.ParsedURL(request.url).lastPathComponent + " revealed in the Network panel");
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests object revelation in the UI.</p>
+<div id="div" />
+</body>
+</html>

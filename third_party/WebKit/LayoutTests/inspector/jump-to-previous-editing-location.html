@@ -218,10 +218,10 @@ function test()
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new WebInspector.Linkifier();
-                var anchorURI = uiSourceCode.uri();
-                var jumpAnchor = linkifier.linkifyLocation(anchorURI, 10, 1);
                 WebInspector.showPanel("timeline");
-                WebInspector.showAnchorLocation(jumpAnchor);
+                var anchorURI = uiSourceCode.url;
+                var anchor = linkifier.linkifyLocation(anchorURI, 10, 1);
+                WebInspector.Revealer.reveal(anchor.__uiLocation);
                 InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
                 dumpSelection(panel.visibleView.textEditor, "Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
                 rollback();
