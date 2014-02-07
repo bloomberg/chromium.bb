@@ -242,7 +242,7 @@ def _MaybeRelease(platform):
       [])
   assert result == 0 and output, 'No release candidates found'
   candidate_pattern = re.compile(
-      r'chromedriver_%s_%s\.(\d+)\.zip' % (platform, version))
+      r'.*/chromedriver_%s_%s\.(\d+)\.zip$' % (platform, version))
   candidates = []
   for line in output.strip().split('\n'):
     result = candidate_pattern.match(line)
