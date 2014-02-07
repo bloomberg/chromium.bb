@@ -56,13 +56,13 @@ CastSender* CastSender::CreateCastSender(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_callback,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender) {
   return new CastSenderImpl(cast_environment,
                             audio_config,
                             video_config,
                             gpu_factories,
-                            initialization_callback,
+                            initialization_status,
                             transport_sender);
 }
 
@@ -71,13 +71,13 @@ CastSenderImpl::CastSenderImpl(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_callback,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
     : audio_sender_(cast_environment, audio_config, transport_sender),
       video_sender_(cast_environment,
                     video_config,
                     gpu_factories,
-                    initialization_callback,
+                    initialization_status,
                     transport_sender),
       frame_input_(new LocalFrameInput(cast_environment,
                                        audio_sender_.AsWeakPtr(),
@@ -94,7 +94,7 @@ CastSenderImpl::CastSenderImpl(
   if (status != STATUS_INITIALIZED) {
     cast_environment->PostTask(CastEnvironment::MAIN,
                                FROM_HERE,
-                               base::Bind(initialization_callback, status));
+                               base::Bind(initialization_status, status));
     return;
   }
   // Handing over responsibility to call NotifyInitialization to the

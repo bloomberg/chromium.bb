@@ -31,7 +31,7 @@ class Vp8Encoder {
 
   // Initialize the encoder before Encode() can be called. This method
   // must be called on the thread that Encode() is called.
-  bool Initialize();
+  void Initialize();
 
   // Encode a raw image (as a part of a video stream).
   bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -53,7 +53,7 @@ class Vp8Encoder {
     kNoBuffer = 3  // Note: must be last.
   };
 
-  bool InitEncode(int number_of_cores);
+  void InitEncode(int number_of_cores);
 
   // Calculate the max target in % for a keyframe.
   uint32 MaxIntraTarget(uint32 optimal_buffer_size) const;

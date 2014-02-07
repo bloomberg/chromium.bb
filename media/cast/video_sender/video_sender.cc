@@ -80,7 +80,7 @@ VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_callback,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
           video_config.rtp_config.max_delay_ms)),
@@ -110,25 +110,32 @@ VideoSender::VideoSender(
       new LocalRtpVideoSenderStatistics(transport_sender));
 
   if (video_config.use_external_encoder) {
-    video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
-        video_config, gpu_factories, initialization_callback));
+    video_encoder_.reset(new ExternalVideoEncoder(
+        cast_environment, video_config, gpu_factories));
   } else {
-    video_encoder_.reset(new VideoEncoderImpl(cast_environment, video_config,
-        initialization_callback, max_unacked_frames_));
+    video_encoder_.reset(new VideoEncoderImpl(
+        cast_environment, video_config, max_unacked_frames_));
   }
 
-  rtcp_.reset(new Rtcp(
-      cast_environment_,
-      rtcp_feedback_.get(),
-      transport_sender_,
-      NULL,  // paced sender.
-      rtp_video_sender_statistics_.get(),
-      NULL,
-      video_config.rtcp_mode,
-      base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-      video_config.sender_ssrc,
-      video_config.incoming_feedback_ssrc,
-      video_config.rtcp_c_name));
+  rtcp_.reset(
+      new Rtcp(cast_environment_,
+               rtcp_feedback_.get(),
+               transport_sender_,
+               NULL,  // paced sender.
+               rtp_video_sender_statistics_.get(),
+               NULL,
+               video_config.rtcp_mode,
+               base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
+               video_config.sender_ssrc,
+               video_config.incoming_feedback_ssrc,
+               video_config.rtcp_c_name));
+
+  // TODO(pwestin): pass cast_initialization to |video_encoder_|
+  // and remove this call.
+  cast_environment->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(initialization_status, STATUS_INITIALIZED));
 }
 
 VideoSender::~VideoSender() {}

@@ -32,31 +32,20 @@ void LogFrameEncodedEvent(const base::TimeTicks& now,
 }
 
 void InitializeVp8EncoderOnEncoderThread(
-    const scoped_refptr<CastEnvironment>& cast_environment,
-    const CastInitializationCallback& initialization_callback,
+    const scoped_refptr<CastEnvironment>& environment,
     Vp8Encoder* vp8_encoder) {
-  DCHECK(cast_environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
-  if (vp8_encoder->Initialize()) {
-    cast_environment->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(initialization_callback, STATUS_INITIALIZED));
-  } else {
-    cast_environment->PostTask(CastEnvironment::MAIN,
-                               FROM_HERE,
-                               base::Bind(initialization_callback,
-                                          STATUS_INVALID_VIDEO_CONFIGURATION));
-  }
+  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
+  vp8_encoder->Initialize();
 }
 
 void EncodeVideoFrameOnEncoderThread(
-    const scoped_refptr<CastEnvironment>& cast_environment,
+    scoped_refptr<CastEnvironment> environment,
     Vp8Encoder* vp8_encoder,
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
     const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
-  DCHECK(cast_environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
+  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
   if (dynamic_config.key_frame_requested) {
     vp8_encoder->GenerateKeyFrame();
   }
@@ -68,11 +57,11 @@ void EncodeVideoFrameOnEncoderThread(
       new transport::EncodedVideoFrame());
   bool retval = vp8_encoder->Encode(video_frame, encoded_frame.get());
 
-  base::TimeTicks now = cast_environment->Clock()->NowTicks();
-  cast_environment->PostTask(
+  base::TimeTicks now = environment->Clock()->NowTicks();
+  environment->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(LogFrameEncodedEvent, now, cast_environment, capture_time));
+      base::Bind(LogFrameEncodedEvent, now, environment, capture_time));
 
   if (!retval) {
     VLOG(1) << "Encoding failed";
@@ -82,7 +71,7 @@ void EncodeVideoFrameOnEncoderThread(
     VLOG(1) << "Encoding resulted in an empty frame";
     return;
   }
-  cast_environment->PostTask(
+  environment->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,
       base::Bind(
@@ -93,11 +82,9 @@ void EncodeVideoFrameOnEncoderThread(
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
-    const CastInitializationCallback& initialization_callback,
     uint8 max_unacked_frames)
     : video_config_(video_config),
       cast_environment_(cast_environment),
-      initialization_callback_(initialization_callback),
       skip_next_frame_(false),
       skip_count_(0) {
   if (video_config.codec == transport::kVp8) {
@@ -106,16 +93,11 @@ VideoEncoderImpl::VideoEncoderImpl(
                                 FROM_HERE,
                                 base::Bind(&InitializeVp8EncoderOnEncoderThread,
                                            cast_environment,
-                                           initialization_callback,
                                            vp8_encoder_.get()));
   } else {
-    NOTREACHED() << "Invalid config";  // Codec not supported.
-    cast_environment_->PostTask(CastEnvironment::MAIN,
-                                FROM_HERE,
-                                base::Bind(initialization_callback_,
-                                           STATUS_INVALID_VIDEO_CONFIGURATION));
-    return;
+    DCHECK(false) << "Invalid config";  // Codec not supported.
   }
+
   dynamic_config_.key_frame_requested = false;
   dynamic_config_.latest_frame_id_to_reference = kStartFrameId;
   dynamic_config_.bit_rate = video_config.start_bitrate;

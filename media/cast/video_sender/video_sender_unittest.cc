@@ -64,12 +64,12 @@ class PeerVideoSender : public VideoSender {
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      const CastInitializationCallback& initialization_callback,
+      const CastInitializationCallback& initialization_status,
       transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment,
                     video_config,
                     gpu_factories,
-                    initialization_callback,
+                    initialization_status,
                     transport_sender) {}
   using VideoSender::OnReceivedCastFeedback;
 };

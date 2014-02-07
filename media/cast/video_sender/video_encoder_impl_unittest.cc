@@ -108,15 +108,7 @@ class VideoEncoderImplTest : public ::testing::Test {
 
   void Configure(uint8 max_unacked_frames) {
     video_encoder_.reset(new VideoEncoderImpl(
-        cast_environment_,
-        video_config_,
-        base::Bind(&VideoEncoderImplTest::CheckInitializationResult,
-                   base::Unretained(this)),
-        max_unacked_frames));
-  }
-
-  void CheckInitializationResult(CastInitializationStatus result) {
-    EXPECT_EQ(result, STATUS_INITIALIZED);
+        cast_environment_, video_config_, max_unacked_frames));
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
