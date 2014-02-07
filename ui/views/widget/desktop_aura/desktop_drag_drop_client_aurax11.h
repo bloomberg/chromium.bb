@@ -185,7 +185,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   ui::OSExchangeDataProviderAuraX11 const* source_provider_;
   ::Window source_current_window_;
 
-  bool drag_drop_in_progress_;
+  // The current drag-drop client that has an active operation. Since we have
+  // multiple root windows and multiple DesktopDragDropClientAuraX11 instances
+  // it is important to maintain only one drag and drop operation at any time.
+  static DesktopDragDropClientAuraX11* g_current_drag_drop_client;
 
   // The operation bitfield as requested by StartDragAndDrop.
   int drag_operation_;
