@@ -2822,16 +2822,6 @@ class HWTestStage(ArchivingStage):
     with open(filename) as f:
       print f.read()
 
-  def _SendPerfResults(self):
-    """Sends the perf results from the test to the perf dashboard."""
-    result_file_name = '%s.%s' % (self.suite_config.suite,
-                                  HWTestStage.PERF_RESULTS_EXTENSION)
-    gs_results_file = '/'.join([self.upload_url, result_file_name])
-    gs_context = gs.GSContext()
-    gs_context.Copy(gs_results_file, self._run.options.log_dir)
-    # Prints out the actual result from gs_context.Copy.
-    logging.info('Copy of %s completed. Printing below:', result_file_name)
-    self._PrintFile(os.path.join(self._run.options.log_dir, result_file_name))
 
   def _CheckAborted(self):
     """Checks with GS to see if HWTest for this build's release_tag was aborted.
@@ -2899,9 +2889,6 @@ class HWTestStage(ArchivingStage):
                               self.suite_config.priority,
                               self.suite_config.timeout_mins,
                               debug)
-
-      if self.suite_config.copy_perf_results:
-        self._SendPerfResults()
 
 
 class SignerResultsException(Exception):

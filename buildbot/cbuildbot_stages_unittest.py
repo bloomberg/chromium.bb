@@ -979,9 +979,6 @@ class HWTestStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
-    results_file = 'perf_v2.results'
-    stages.HWTestStage._PrintFile(os.path.join(self.run.options.log_dir,
-                                               results_file))
     with gs_unittest.GSContextMock() as gs_mock:
       gs_mock.SetDefaultCmdResult()
       self._RunHWTestSuite()

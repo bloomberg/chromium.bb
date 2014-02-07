@@ -537,8 +537,6 @@ class HWTestConfig(object):
   """Config object for hardware tests suites.
 
   Members:
-    copy_perf_results: If set to True, copy test results back from GS and send
-                       them to the perf dashboard.
     timeout: Number of seconds to wait before timing out waiting for results.
              Defaults to 2 hours and ten minutes. This must be less than
              lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
@@ -616,15 +614,13 @@ class HWTestConfig(object):
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
-               pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
-               timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
-               fatal_timeouts=True, file_bugs=False,
-               priority=constants.HWTEST_BUILD_PRIORITY):
+               pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
+               async=False, critical=False, fatal_timeouts=True,
+               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
     self.pool = pool
-    self.copy_perf_results = copy_perf_results
     self.timeout = timeout
     self.async = async
     self.critical = critical
@@ -1089,8 +1085,7 @@ chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
-                         timeout=90 * 60, critical=True, num=1,
-                         copy_perf_results=True)],
+                         timeout=90 * 60, critical=True, num=1)],
   use_chrome_lkgm=True,
   use_lkgm=False,
   useflags=official['useflags'] + ['-cros-debug'],
