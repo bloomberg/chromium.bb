@@ -66,61 +66,75 @@ namespace {
 // tracked preference must be given a unique reporting ID.
 const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   {
-    0, prefs::kShowHomeButton, true,
+    0, prefs::kShowHomeButton,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    1, prefs::kHomePageIsNewTabPage, true,
+    1, prefs::kHomePageIsNewTabPage,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    2, prefs::kHomePage, true,
+    2, prefs::kHomePage,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    3, prefs::kRestoreOnStartup, true,
+    3, prefs::kRestoreOnStartup,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    4, prefs::kURLsToRestoreOnStartup, true,
+    4, prefs::kURLsToRestoreOnStartup,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    5, extensions::pref_names::kExtensions, false,
+    5, extensions::pref_names::kExtensions,
+    PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_SPLIT
   },
   {
-    6, prefs::kGoogleServicesLastUsername, true,
+    6, prefs::kGoogleServicesLastUsername,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    7, prefs::kSearchProviderOverrides, true,
+    7, prefs::kSearchProviderOverrides,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    8, prefs::kDefaultSearchProviderSearchURL, true,
+    8, prefs::kDefaultSearchProviderSearchURL,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    9, prefs::kDefaultSearchProviderKeyword, true,
+    9, prefs::kDefaultSearchProviderKeyword,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    10, prefs::kDefaultSearchProviderName, true,
+    10, prefs::kDefaultSearchProviderName,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #if !defined(OS_ANDROID)
   {
-    11, prefs::kPinnedTabs, true,
+    11, prefs::kPinnedTabs,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #endif
   {
-    12, extensions::pref_names::kKnownDisabled, false,
+    12, extensions::pref_names::kKnownDisabled,
+    PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    13, prefs::kProfileResetPromptMemento, true,
+    13, prefs::kProfileResetPromptMemento,
+    PrefHashFilter::ENFORCE_ALL,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 };

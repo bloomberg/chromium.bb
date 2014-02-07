@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
-#include "chrome/browser/prefs/tracked/tracked_preference.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,12 +28,30 @@ const char kReportOnlySplitPref[] = "report_only_split_pref";
 const char kSplitPref[] = "split_pref";
 
 const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
-  { 0, kAtomicPref, true, PrefHashFilter::TRACKING_STRATEGY_ATOMIC },
-  { 1, kReportOnlyPref, false, PrefHashFilter::TRACKING_STRATEGY_ATOMIC },
-  { 2, kSplitPref, true, PrefHashFilter::TRACKING_STRATEGY_SPLIT },
-  { 3, kReportOnlySplitPref, false, PrefHashFilter::TRACKING_STRATEGY_SPLIT },
-  { 4, kAtomicPref2, true, PrefHashFilter::TRACKING_STRATEGY_ATOMIC },
-  { 5, kAtomicPref3, true, PrefHashFilter::TRACKING_STRATEGY_ATOMIC },
+  {
+    0, kAtomicPref, PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    1, kReportOnlyPref, PrefHashFilter::NO_ENFORCEMENT,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    2, kSplitPref, PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+  },
+  {
+    3, kReportOnlySplitPref, PrefHashFilter::NO_ENFORCEMENT,
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+  },
+  {
+    4, kAtomicPref2, PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    5, kAtomicPref3, PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 };
 
 }  // namespace

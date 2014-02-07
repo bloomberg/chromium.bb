@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/pref_hash_filter.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_store.h"
@@ -25,7 +27,7 @@ PrefHashFilter::PrefHashFilter(
     const TrackedPreferenceMetadata& metadata = tracked_preferences[i];
 
     EnforcementLevel enforcement_level_for_pref =
-        metadata.allow_enforcement ? enforcement_level : NO_ENFORCEMENT;
+        std::min(enforcement_level, metadata.max_enforcement_level);
 
     scoped_ptr<TrackedPreference> tracked_preference;
     switch (metadata.strategy) {

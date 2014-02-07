@@ -54,9 +54,9 @@ class PrefHashFilter : public PrefFilter {
   struct TrackedPreferenceMetadata {
     size_t reporting_id;
     const char* name;
-    // Whether to actually reset this specific preference when everything else
-    // indicates that it should be.
-    bool allow_enforcement;
+    // This preference will not be enforced above this level no matter what the
+    // |enforcement_level| is set to.
+    EnforcementLevel max_enforcement_level;
     PrefTrackingStrategy strategy;
   };
 
