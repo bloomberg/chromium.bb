@@ -7,5 +7,5 @@ found in the LICENSE file.
 -->
 
 <resources>
-    <string name="test_string">Hello, World!</string>
+    <string name="default_encoding">Latin-1</string>
 </resources>

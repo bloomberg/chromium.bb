@@ -59,8 +59,7 @@ public class AwSettings {
     private String mSerifFontFamily = "serif";
     private String mCursiveFontFamily = "cursive";
     private String mFantasyFontFamily = "fantasy";
-    // TODO(mnaganov): Should be obtained from Android. Problem: it is hidden.
-    private String mDefaultTextEncoding = "Latin-1";
+    private String mDefaultTextEncoding;
     private String mUserAgent;
     private int mMinimumFontSize = 8;
     private int mMinimumLogicalFontSize = 8;
@@ -214,6 +213,7 @@ public class AwSettings {
                 mAllowFileAccessFromFileURLs = true;
             }
 
+            mDefaultTextEncoding = AwResource.getDefaultTextEncoding();
             mUserAgent = LazyDefaultUserAgent.sInstance;
 
             // Best-guess a sensible initial value based on the features supported on the device.
