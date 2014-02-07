@@ -64,6 +64,7 @@ public:
     virtual void didFinish() OVERRIDE;
     virtual void importChildWasDestroyed(HTMLImportChild*) OVERRIDE;
     virtual bool isCreatedByParser() const OVERRIDE;
+    virtual HTMLLinkElement* link() OVERRIDE;
 
     Document* importedDocument() const;
     bool ownsLoader() const;

@@ -34,6 +34,7 @@
 namespace WebCore {
 
 class HTMLImportChild;
+class HTMLLinkElement;
 
 class HTMLImportChildClient {
 public:
@@ -41,6 +42,7 @@ public:
     virtual void didFinish() = 0;
     virtual void importChildWasDestroyed(HTMLImportChild*) = 0;
     virtual bool isCreatedByParser() const = 0;
+    virtual HTMLLinkElement* link() = 0;
 };
 
 } // namespace WebCore

@@ -225,6 +225,12 @@ void HTMLImportChild::clearClient()
     m_client = 0;
 }
 
+HTMLLinkElement* HTMLImportChild::link() const
+{
+    if (!m_client)
+        return 0;
+    return m_client->link();
+}
 
 #if !defined(NDEBUG)
 void HTMLImportChild::showThis()

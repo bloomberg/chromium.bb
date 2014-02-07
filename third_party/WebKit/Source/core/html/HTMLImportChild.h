@@ -43,6 +43,7 @@ namespace WebCore {
 class CustomElementMicrotaskImportStep;
 class HTMLImportLoader;
 class HTMLImportChildClient;
+class HTMLLinkElement;
 
 //
 // An import tree node subclas to encapsulate imported document
@@ -58,6 +59,7 @@ public:
     HTMLImportChild(const KURL&, bool createdByParser);
     virtual ~HTMLImportChild();
 
+    HTMLLinkElement* link() const;
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 

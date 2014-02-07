@@ -127,6 +127,11 @@ bool LinkImport::isCreatedByParser() const
     return m_owner && m_owner->isCreatedByParser();
 }
 
+HTMLLinkElement* LinkImport::link()
+{
+    return m_owner;
+}
+
 bool LinkImport::hasLoaded() const
 {
     return m_child && m_child->isDone() && !m_child->loaderHasError();
