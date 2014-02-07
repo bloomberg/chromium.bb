@@ -78,7 +78,8 @@ struct WrapperTypeInfo;
         ASSERT(type->isGarbageCollected);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(type));
-        wrapper->SetAlignedPointerInInternalField(v8PersistentHandleIndex, handle);
+        // Persistent handle is stored in the last internal field.
+        wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, handle);
     }
 
     inline void V8DOMWrapper::clearNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* type)

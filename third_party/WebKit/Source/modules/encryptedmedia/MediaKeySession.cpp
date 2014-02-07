@@ -38,9 +38,11 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
+DEFINE_GC_INFO(MediaKeySession);
+
+PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
 {
-    return adoptRef(new MediaKeySession(context, cdm, keys));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys));
 }
 
 MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)

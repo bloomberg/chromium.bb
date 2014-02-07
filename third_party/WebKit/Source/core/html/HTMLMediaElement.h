@@ -573,7 +573,7 @@ private:
 
     EmeMode m_emeMode;
 
-    RefPtr<MediaKeys> m_mediaKeys;
+    RefPtrWillBePersistent<MediaKeys> m_mediaKeys;
 
     static URLRegistry* s_mediaStreamRegistry;
 };

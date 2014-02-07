@@ -45,11 +45,6 @@ namespace WebCore {
     static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
     static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
     static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNumberOfInternalFields);
-    // If we have v8PersistentHandleIndex, it should be the first index of the custom internal fields.
-    // This contract is needed to keep the index consistent with generated code.
-    // FIXME: oilpan: Don't add an extra internal field for storing a persistent handle.
-    // Instead we should reuse the internal field of v8DOMWrapperObjectIndex.
-    static const int v8PersistentHandleIndex = v8DefaultWrapperInternalFieldCount;
     static const int v8PrototypeTypeIndex = 0;
     static const int v8PrototypeInternalFieldcount = 1;
 
@@ -190,7 +185,8 @@ namespace WebCore {
 
     inline const PersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wrapper)
     {
-        return getInternalField<PersistentNode, v8PersistentHandleIndex>(wrapper);
+        // Persistent handle is stored in the last internal field.
+        return static_cast<PersistentNode*>(wrapper->GetAlignedPointerFromInternalField(wrapper->InternalFieldCount() - 1));
     }
 
     inline void releaseObject(v8::Handle<v8::Object> wrapper)

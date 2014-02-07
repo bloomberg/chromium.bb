@@ -1066,15 +1066,17 @@ sub GetInternalFields
     my $interface = shift;
 
     my @customInternalFields = ();
-    # If we have persistentHandleIndex, it should be at the first index of the custom
-    # internal fileds.
-    if (IsWillBeGarbageCollectedType($interface->name)) {
-        push(@customInternalFields, "persistentHandleIndex");
-    }
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
     if (!InheritsInterface($interface, "Node") &&
         InheritsInterface($interface, "EventTarget")) {
         push(@customInternalFields, "eventListenerCacheIndex");
+    }
+    # Persistent handle is stored in the last internal field.
+    # FIXME: Remove this internal field. Since we need either of a persistent handle
+    # (if the object is in oilpan) or a C++ pointer to the DOM object (if the object is not in oilpan),
+    # we can share the internal field between the two cases.
+    if (IsWillBeGarbageCollectedType($interface->name)) {
+        push(@customInternalFields, "persistentHandleIndex");
     }
     return @customInternalFields;
 }

@@ -37,7 +37,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState& exceptionState)
+DEFINE_GC_INFO(MediaKeys);
+
+PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
     // The MediaKeys(keySystem) constructor must run the following steps:
@@ -65,7 +67,7 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState&
     // 5. Create a new MediaKeys object.
     // 5.1 Let the keySystem attribute be keySystem.
     // 6. Return the new object to the caller.
-    return adoptRef(new MediaKeys(keySystem, cdm.release()));
+    return adoptRefWillBeNoop(new MediaKeys(keySystem, cdm.release()));
 }
 
 MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule> cdm)
@@ -83,7 +85,7 @@ MediaKeys::~MediaKeys()
     // FIXME: Make sure MediaKeySessions are torn down correctly.
 }
 
-PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaKeys::createSession");
 
@@ -109,7 +111,7 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     }
 
     // 2. Create a new MediaKeySession object.
-    RefPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), this);
+    RefPtrWillBeRawPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), this);
     // 2.1 Let the keySystem attribute be keySystem.
     ASSERT(!session->keySystem().isEmpty());
     // FIXME: 2.2 Let the state of the session be CREATED.

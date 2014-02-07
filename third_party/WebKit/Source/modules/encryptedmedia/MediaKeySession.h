@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "platform/drm/ContentDecryptionModuleSession.h"
 #include "wtf/Deque.h"
@@ -51,11 +52,12 @@ class MediaKeys;
 // it may outlive any references to it as long as the MediaKeys object is alive.
 // The ContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession FINAL
-    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
+    : public RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
-    REFCOUNTED_EVENT_TARGET(MediaKeySession);
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>);
 public:
-    static PassRefPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
+    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -72,6 +74,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     MediaKeySession(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
