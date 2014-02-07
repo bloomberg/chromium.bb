@@ -115,7 +115,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int64 transaction_id,
       blink::WebIDBDatabaseCallbacks* database_callbacks_ptr,
       blink::WebVector<long long> object_store_ids,
-      unsigned short mode);
+      blink::WebIDBDatabase::TransactionMode mode);
 
   void RequestIDBDatabaseGet(int32 ipc_database_id,
                              int64 transaction_id,
@@ -142,7 +142,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                     int64 object_store_id,
                                     int64 index_id,
                                     const IndexedDBKeyRange& key_range,
-                                    unsigned short direction,
+                                    blink::WebIDBCursor::Direction direction,
                                     bool key_only,
                                     blink::WebIDBDatabase::TaskType task_type,
                                     blink::WebIDBCallbacks* callbacks);

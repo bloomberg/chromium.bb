@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/public/platform/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace blink {
@@ -36,7 +37,7 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   virtual void createTransaction(long long transaction_id,
                                  blink::WebIDBDatabaseCallbacks* callbacks,
                                  const blink::WebVector<long long>& scope,
-                                 unsigned short mode);
+                                 blink::WebIDBDatabase::TransactionMode mode);
   virtual void close();
   virtual void get(long long transactionId,
                    long long objectStoreId,
@@ -64,7 +65,7 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                           long long objectStoreId,
                           long long indexId,
                           const blink::WebIDBKeyRange&,
-                          unsigned short direction,
+                          blink::WebIDBCursor::Direction direction,
                           bool keyOnly,
                           TaskType,
                           blink::WebIDBCallbacks*);

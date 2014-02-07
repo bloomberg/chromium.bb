@@ -17,6 +17,8 @@
 #include "webkit/child/worker_task_runner.h"
 
 using blink::WebIDBCallbacks;
+using blink::WebIDBCursor;
+using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBMetadata;
 using blink::WebIDBKey;
@@ -74,7 +76,7 @@ void WebIDBDatabaseImpl::createTransaction(
     long long transaction_id,
     WebIDBDatabaseCallbacks* callbacks,
     const WebVector<long long>& object_store_ids,
-    unsigned short mode) {
+    WebIDBDatabase::TransactionMode mode) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseCreateTransaction(
@@ -166,7 +168,7 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
                                     long long object_store_id,
                                     long long index_id,
                                     const WebIDBKeyRange& key_range,
-                                    unsigned short direction,
+                                    WebIDBCursor::Direction direction,
                                     bool key_only,
                                     TaskType task_type,
                                     WebIDBCallbacks* callbacks) {

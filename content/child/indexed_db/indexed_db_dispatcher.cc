@@ -23,6 +23,7 @@
 
 using blink::WebData;
 using blink::WebIDBCallbacks;
+using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBDatabaseError;
@@ -280,7 +281,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
     int64 transaction_id,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     WebVector<long long> object_store_ids,
-    unsigned short mode) {
+    WebIDBDatabase::TransactionMode mode) {
   scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
   IndexedDBHostMsg_DatabaseCreateTransaction_Params params;
@@ -370,7 +371,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseOpenCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& key_range,
-    unsigned short direction,
+    WebIDBCursor::Direction direction,
     bool key_only,
     WebIDBDatabase::TaskType task_type,
     WebIDBCallbacks* callbacks) {

@@ -116,7 +116,7 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
   const int64 transaction_id = 1234;
   const int64 object_store_id = 2;
   const int32 index_id = 3;
-  const unsigned short direction = 0;
+  const WebIDBCursor::Direction direction = WebIDBCursor::Next;
   const bool key_only = false;
 
   MockDispatcher dispatcher(thread_safe_sender_.get());

@@ -25,6 +25,7 @@
 IPC_ENUM_TRAITS(blink::WebIDBCursor::Direction)
 IPC_ENUM_TRAITS(blink::WebIDBDatabase::PutMode)
 IPC_ENUM_TRAITS(blink::WebIDBDatabase::TaskType)
+IPC_ENUM_TRAITS(blink::WebIDBDatabase::TransactionMode)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)
 
@@ -80,7 +81,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateTransaction_Params)
   // The scope of the transaction.
   IPC_STRUCT_MEMBER(std::vector<int64>, object_store_ids)
   // The transaction mode.
-  IPC_STRUCT_MEMBER(int32, mode)
+  IPC_STRUCT_MEMBER(blink::WebIDBDatabase::TransactionMode, mode)
 IPC_STRUCT_END()
 
 // Used to create an object store.
@@ -156,7 +157,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseOpenCursor_Params)
   // The serialized key range.
   IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
   // The direction of this cursor.
-  IPC_STRUCT_MEMBER(int32, direction)
+  IPC_STRUCT_MEMBER(blink::WebIDBCursor::Direction, direction)
   // If this is just retrieving the key
   IPC_STRUCT_MEMBER(bool, key_only)
   // The priority of this cursor.
