@@ -29,6 +29,7 @@
  */
 
 [
+    LegacyImplementedInBaseClass, // Actually no implementation, as just constructors; use to prevent a header from being included
     RuntimeEnabled=WebKitMediaSource,
 ] partial interface Window {
     attribute WebKitMediaSourceConstructor WebKitMediaSource;
