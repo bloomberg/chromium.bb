@@ -265,7 +265,11 @@
     },
     {
       "url": "http://mobile-news.sandbox.google.com/news/pt1",
-      "why": "Google News: accelerated scrolling version"
+      "why": "Google News: accelerated scrolling version",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "typeof NEWS_telemetryReady !== 'undefined' && NEWS_telemetryReady == true" }
+      ]
     },
     {
       "url": "http://mobile-news.sandbox.google.com/news/pt0",
