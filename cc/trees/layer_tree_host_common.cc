@@ -433,10 +433,10 @@ static inline bool TransformToScreenIsKnown(Layer* layer) {
 }
 
 template <typename LayerType>
-static bool LayerShouldBeSkipped(LayerType* layer,
-                                 bool layer_is_visible) {
+static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
   // Layers can be skipped if any of these conditions are met.
-  //   - is not visible due to it or one of its ancestors being hidden.
+  //   - is not drawn due to it or one of its ancestors being hidden (or having
+  //     no copy requests).
   //   - has empty bounds
   //   - the layer is not double-sided, but its back face is visible.
   //   - is transparent
@@ -451,7 +451,7 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   // transparent, we would have skipped the entire subtree and never made it
   // into this function, so it is safe to omit this check here.
 
-  if (!layer_is_visible)
+  if (!layer_is_drawn)
     return true;
 
   if (layer->bounds().IsEmpty())
@@ -482,14 +482,14 @@ static bool LayerShouldBeSkipped(LayerType* layer,
 }
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
-                                          bool layer_is_visible) {
+                                          bool layer_is_drawn) {
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
     return false;
 
-  // If the layer is not visible, then skip it and its subtree.
-  if (!layer_is_visible)
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!layer_is_drawn)
     return true;
 
   // If layer is on the pending tree and opacity is being animated then
@@ -505,15 +505,14 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   return !layer->opacity();
 }
 
-static inline bool SubtreeShouldBeSkipped(Layer* layer,
-                                          bool layer_is_visible) {
+static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
     return false;
 
-  // If the layer is not visible, then skip it and its subtree.
-  if (!layer_is_visible)
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!layer_is_drawn)
     return true;
 
   // If the opacity is being animated then the opacity on the main thread is
@@ -1435,17 +1434,17 @@ static void CalculateDrawPropertiesInternal(
   data_for_children.subtree_can_use_lcd_text =
       data_from_ancestor.subtree_can_use_lcd_text;
 
-  // Layers with a copy request are always visible, as well as un-hiding their
-  // subtree. Otherise, layers that are marked as hidden will hide themselves
-  // and their subtree.
-  bool layer_is_visible =
+  // Layers that are marked as hidden will hide themselves and their subtree.
+  // Exception: Layers with copy requests, whether hidden or not, must be drawn
+  // anyway.  In this case, we will inform their subtree they are visible to get
+  // the right results.
+  const bool layer_is_visible =
       data_from_ancestor.subtree_is_visible_from_ancestor &&
       !layer->hide_layer_and_subtree();
-  if (layer->HasCopyRequest())
-    layer_is_visible = true;
+  const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
 
   // The root layer cannot skip CalcDrawProperties.
-  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_visible)) {
+  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
     if (layer->render_surface())
       layer->ClearRenderSurface();
     return;
@@ -1667,8 +1666,9 @@ static void CalculateDrawPropertiesInternal(
       data_for_children.parent_matrix.Scale(render_surface_sublayer_scale.x(),
                             render_surface_sublayer_scale.y());
 
+      // Even if the |layer_is_drawn|, it only contributes to a drawn surface
+      // when the |layer_is_visible|.
       layer->render_surface()->set_contributes_to_drawn_surface(
-          data_from_ancestor.subtree_is_visible_from_ancestor &&
           layer_is_visible);
     }
 
@@ -1865,7 +1865,7 @@ static void CalculateDrawPropertiesInternal(
   // and should be included in the sorting process.
   size_t sorting_start_index = descendants.size();
 
-  if (!LayerShouldBeSkipped(layer, layer_is_visible))
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn))
     descendants.push_back(layer);
 
   // Any layers that are appended after this point may need to be sorted if we
@@ -1915,7 +1915,7 @@ static void CalculateDrawPropertiesInternal(
         layer_or_ancestor_clips_descendants;
     data_for_children.nearest_occlusion_immune_ancestor_surface =
         nearest_occlusion_immune_ancestor_surface;
-    data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
+    data_for_children.subtree_is_visible_from_ancestor = layer_is_drawn;
   }
 
   std::vector<LayerType*> sorted_children;

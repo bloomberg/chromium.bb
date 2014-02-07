@@ -8240,7 +8240,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EXPECT_EQ(copy_parent->id(),
             root->render_surface()->layer_list().at(1)->id());
 
-  // Nothing actually drawns into the copy parent, so only the copy_layer will
+  // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
   ASSERT_EQ(1u, copy_parent->render_surface()->layer_list().size());
   EXPECT_EQ(copy_layer->id(),

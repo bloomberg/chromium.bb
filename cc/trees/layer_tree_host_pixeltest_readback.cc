@@ -96,6 +96,8 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
   int insert_copy_request_after_frame_count_;
 };
 
+void IgnoreReadbackResult(scoped_ptr<CopyOutputResult> result) {}
+
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayer_Software) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
@@ -505,6 +507,129 @@ TEST_F(LayerTreeHostReadbackPixelTest,
                                  target.get(),
                                  base::FilePath(FILE_PATH_LITERAL(
                                      "green_small_with_blue_corner.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_Software) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  RunPixelTestWithReadbackTarget(
+      SOFTWARE_WITH_DEFAULT,
+      background,
+      hidden_target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_GL_Bitmap) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  RunPixelTestWithReadbackTarget(
+      GL_WITH_BITMAP,
+      background,
+      hidden_target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_GL) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  RunPixelTestWithReadbackTarget(
+      GL_WITH_DEFAULT,
+      background,
+      hidden_target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest,
+       HiddenSubtreeNotVisibleWhenDrawnForReadback_Software) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::Bind(&IgnoreReadbackResult)));
+  RunPixelTest(SOFTWARE_WITH_DEFAULT,
+               background,
+               base::FilePath(FILE_PATH_LITERAL("black.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest,
+       HiddenSubtreeNotVisibleWhenDrawnForReadback_GL_Bitmap) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::Bind(&IgnoreReadbackResult)));
+  RunPixelTest(GL_WITH_BITMAP,
+               background,
+               base::FilePath(FILE_PATH_LITERAL("black.png")));
+}
+
+TEST_F(LayerTreeHostReadbackPixelTest,
+       HiddenSubtreeNotVisibleWhenDrawnForReadback_GL) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
+
+  scoped_refptr<SolidColorLayer> hidden_target =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+  hidden_target->SetHideLayerAndSubtree(true);
+  background->AddChild(hidden_target);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  hidden_target->AddChild(blue);
+
+  hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::Bind(&IgnoreReadbackResult)));
+  RunPixelTest(GL_WITH_DEFAULT,
+               background,
+               base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSubrect_Software) {
