@@ -5,6 +5,7 @@
 #include "ash/wm/video_detector.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -122,13 +123,31 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 
-  aura::Window* toplevel_window = views::corewm::GetToplevelWindow(window);
-  bool is_fullscreen = toplevel_window ?
-      wm::GetWindowState(toplevel_window)->IsFullscreen() : false;
+  // As a relatively-cheap way to avoid flipping back and forth between
+  // fullscreen and non-fullscreen notifications when one video is playing in a
+  // fullscreen window and a second video is playing in a non-fullscreen window,
+  // report fullscreen video whenever a fullscreen window exists on any desktop
+  // regardless of whether the video is actually playing in that window:
+  // http://crbug.com/340666
+  bool fullscreen_window_exists = false;
+  std::vector<aura::Window*> containers =
+      Shell::GetContainersFromAllRootWindows(
+          internal::kShellWindowId_DefaultContainer, NULL);
+  for (std::vector<aura::Window*>::const_iterator container =
+       containers.begin(); container != containers.end(); ++container) {
+    const aura::Window::Windows& windows = (*container)->children();
+    for (aura::Window::Windows::const_iterator window = windows.begin();
+         window != windows.end(); ++window) {
+      if (wm::GetWindowState(*window)->IsFullscreen()) {
+        fullscreen_window_exists = true;
+        break;
+      }
+    }
+  }
 
   FOR_EACH_OBSERVER(VideoDetectorObserver,
                     observers_,
-                    OnVideoDetected(is_fullscreen));
+                    OnVideoDetected(fullscreen_window_exists));
   last_observer_notification_time_ = now;
 }
 
