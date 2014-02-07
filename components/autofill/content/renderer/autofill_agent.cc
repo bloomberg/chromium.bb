@@ -34,12 +34,12 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,7 +52,7 @@ using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebKeyboardEvent;
 using blink::WebNode;
-using blink::WebNodeCollection;
+using blink::WebElementCollection;
 using blink::WebOptionElement;
 using blink::WebString;
 
@@ -66,7 +66,7 @@ void GetDataListSuggestions(const blink::WebInputElement& element,
                             bool ignore_current_value,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
-  WebNodeCollection options = element.dataListOptions();
+  WebElementCollection options = element.dataListOptions();
   if (options.isNull())
     return;
 

@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebExceptionCode.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -28,7 +29,6 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLabelElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
@@ -36,6 +36,7 @@
 
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebElementCollection;
 using blink::WebExceptionCode;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
@@ -43,7 +44,6 @@ using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebLabelElement;
 using blink::WebNode;
-using blink::WebNodeCollection;
 using blink::WebNodeList;
 using blink::WebOptionElement;
 using blink::WebSelectElement;
@@ -907,9 +907,9 @@ bool WebFormElementToFormData(
   // element's name as a key into the <name, FormFieldData> map to find the
   // previously created FormFieldData and set the FormFieldData's label to the
   // label.firstChild().nodeValue() of the label element.
-  WebNodeCollection labels = form_element.getElementsByTagName(kLabel);
+  WebElementCollection labels = form_element.getElementsByTagName(kLabel);
   DCHECK(!labels.isNull());
-  for (WebNode item = labels.firstItem(); !item.isNull();
+  for (WebElement item = labels.firstItem(); !item.isNull();
        item = labels.nextItem()) {
     WebLabelElement label = item.to<WebLabelElement>();
     WebFormControlElement field_element =
