@@ -47,6 +47,24 @@ enum ScrollOffsetClamping {
     ScrollOffsetClamped
 };
 
+struct RenderBoxRareData {
+    WTF_MAKE_NONCOPYABLE(RenderBoxRareData); WTF_MAKE_FAST_ALLOCATED;
+public:
+    RenderBoxRareData()
+        : m_inlineBoxWrapper(0)
+        , m_overrideLogicalContentHeight(-1)
+        , m_overrideLogicalContentWidth(-1)
+    {
+    }
+
+    // For inline replaced elements, the inline box that owns us.
+    InlineBox* m_inlineBoxWrapper;
+
+    LayoutUnit m_overrideLogicalContentHeight;
+    LayoutUnit m_overrideLogicalContentWidth;
+};
+
+
 class RenderBox : public RenderBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
@@ -393,7 +411,7 @@ public:
     // For inline replaced elements, this function returns the inline box that owns us.  Enables
     // the replaced RenderObject to quickly determine what line it is contained on and to easily
     // iterate over structures on the line.
-    InlineBox* inlineBoxWrapper() const { return m_inlineBoxWrapper; }
+    InlineBox* inlineBoxWrapper() const { return m_rareData ? m_rareData->m_inlineBoxWrapper : 0; }
     void setInlineBoxWrapper(InlineBox*);
     void deleteLineBoxWrapper();
 
@@ -694,9 +712,21 @@ private:
 
     virtual LayoutRect frameRectForStickyPositioning() const OVERRIDE FINAL { return frameRect(); }
 
+    RenderBoxRareData& ensureRareData()
+    {
+        if (!m_rareData)
+            m_rareData = adoptPtr(new RenderBoxRareData());
+        return *m_rareData.get();
+    }
+
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;
+
+    // Our intrinsic height, used for min-height: min-content etc. Maintained by
+    // updateLogicalHeight. This is logicalHeight() before it is clamped to
+    // min/max.
+    LayoutUnit m_intrinsicContentLogicalHeight;
 
 protected:
     LayoutBoxExtent m_marginBox;
@@ -707,16 +737,11 @@ protected:
     // The preferred logical width of the element if it never breaks any lines at all.
     LayoutUnit m_maxPreferredLogicalWidth;
 
-    // Our intrinsic height, used for min-height: min-content etc. Maintained by
-    // updateLogicalHeight. This is logicalHeight() before it is clamped to
-    // min/max.
-    LayoutUnit m_intrinsicContentLogicalHeight;
-
-    // For inline replaced elements, the inline box that owns us.
-    InlineBox* m_inlineBoxWrapper;
-
     // Our overflow information.
     OwnPtr<RenderOverflow> m_overflow;
+
+private:
+    OwnPtr<RenderBoxRareData> m_rareData;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBox, isBox());
@@ -749,16 +774,16 @@ inline RenderBox* RenderBox::lastChildBox() const
 inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)
 {
     if (boxWrapper) {
-        ASSERT(!m_inlineBoxWrapper);
+        ASSERT(!inlineBoxWrapper());
         // m_inlineBoxWrapper should already be 0. Deleting it is a safeguard against security issues.
         // Otherwise, there will two line box wrappers keeping the reference to this renderer, and
         // only one will be notified when the renderer is getting destroyed. The second line box wrapper
         // will keep a stale reference.
-        if (UNLIKELY(m_inlineBoxWrapper != 0))
+        if (UNLIKELY(inlineBoxWrapper() != 0))
             deleteLineBoxWrapper();
     }
 
-    m_inlineBoxWrapper = boxWrapper;
+    ensureRareData().m_inlineBoxWrapper = boxWrapper;
 }
 
 } // namespace WebCore

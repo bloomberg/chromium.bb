@@ -1116,8 +1116,8 @@ LayoutRect RenderListMarker::localSelectionRect()
     InlineBox* box = inlineBoxWrapper();
     if (!box)
         return LayoutRect(LayoutPoint(), size());
-    RootInlineBox* root = m_inlineBoxWrapper->root();
-    LayoutUnit newLogicalTop = root->block()->style()->isFlippedBlocksWritingMode() ? m_inlineBoxWrapper->logicalBottom() - root->selectionBottom() : root->selectionTop() - m_inlineBoxWrapper->logicalTop();
+    RootInlineBox* root = inlineBoxWrapper()->root();
+    LayoutUnit newLogicalTop = root->block()->style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root->selectionBottom() : root->selectionTop() - inlineBoxWrapper()->logicalTop();
     if (root->block()->style()->isHorizontalWritingMode())
         return LayoutRect(0, newLogicalTop, width(), root->selectionHeight());
     return LayoutRect(newLogicalTop, 0, root->selectionHeight(), height());
@@ -1824,8 +1824,8 @@ void RenderListMarker::setSelectionState(SelectionState state)
     // The selection state for our containing block hierarchy is updated by the base class call.
     RenderBox::setSelectionState(state);
 
-    if (m_inlineBoxWrapper && canUpdateSelectionOnRootLineBoxes())
-        if (RootInlineBox* root = m_inlineBoxWrapper->root())
+    if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
+        if (RootInlineBox* root = inlineBoxWrapper()->root())
             root->setHasSelectedChildren(state != SelectionNone);
 }
 

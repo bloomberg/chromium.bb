@@ -68,10 +68,9 @@ using namespace HTMLNames;
 
 // Used by flexible boxes when flexing this element and by table cells.
 typedef WTF::HashMap<const RenderBox*, LayoutUnit> OverrideSizeMap;
-static OverrideSizeMap* gOverrideHeightMap = 0;
-static OverrideSizeMap* gOverrideWidthMap = 0;
 
 // Used by grid elements to properly size their grid items.
+// FIXME: Move these into RenderBoxRareData.
 static OverrideSizeMap* gOverrideContainingBlockLogicalHeightMap = 0;
 static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = 0;
 
@@ -94,10 +93,9 @@ static bool skipBodyBackground(const RenderBox* bodyElementRenderer)
 
 RenderBox::RenderBox(ContainerNode* node)
     : RenderBoxModelObject(node)
+    , m_intrinsicContentLogicalHeight(-1)
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
-    , m_intrinsicContentLogicalHeight(-1)
-    , m_inlineBoxWrapper(0)
 {
     setIsBox();
 }
@@ -1043,40 +1041,36 @@ LayoutUnit RenderBox::maxPreferredLogicalWidth() const
 
 bool RenderBox::hasOverrideHeight() const
 {
-    return gOverrideHeightMap && gOverrideHeightMap->contains(this);
+    return m_rareData && m_rareData->m_overrideLogicalContentHeight != -1;
 }
 
 bool RenderBox::hasOverrideWidth() const
 {
-    return gOverrideWidthMap && gOverrideWidthMap->contains(this);
+    return m_rareData && m_rareData->m_overrideLogicalContentWidth != -1;
 }
 
 void RenderBox::setOverrideLogicalContentHeight(LayoutUnit height)
 {
     ASSERT(height >= 0);
-    if (!gOverrideHeightMap)
-        gOverrideHeightMap = new OverrideSizeMap();
-    gOverrideHeightMap->set(this, height);
+    ensureRareData().m_overrideLogicalContentHeight = height;
 }
 
 void RenderBox::setOverrideLogicalContentWidth(LayoutUnit width)
 {
     ASSERT(width >= 0);
-    if (!gOverrideWidthMap)
-        gOverrideWidthMap = new OverrideSizeMap();
-    gOverrideWidthMap->set(this, width);
+    ensureRareData().m_overrideLogicalContentWidth = width;
 }
 
 void RenderBox::clearOverrideLogicalContentHeight()
 {
-    if (gOverrideHeightMap)
-        gOverrideHeightMap->remove(this);
+    if (m_rareData)
+        m_rareData->m_overrideLogicalContentHeight = -1;
 }
 
 void RenderBox::clearOverrideLogicalContentWidth()
 {
-    if (gOverrideWidthMap)
-        gOverrideWidthMap->remove(this);
+    if (m_rareData)
+        m_rareData->m_overrideLogicalContentWidth = -1;
 }
 
 void RenderBox::clearOverrideSize()
@@ -1088,13 +1082,13 @@ void RenderBox::clearOverrideSize()
 LayoutUnit RenderBox::overrideLogicalContentWidth() const
 {
     ASSERT(hasOverrideWidth());
-    return gOverrideWidthMap->get(this);
+    return m_rareData->m_overrideLogicalContentWidth;
 }
 
 LayoutUnit RenderBox::overrideLogicalContentHeight() const
 {
     ASSERT(hasOverrideHeight());
-    return gOverrideHeightMap->get(this);
+    return m_rareData->m_overrideLogicalContentHeight;
 }
 
 LayoutUnit RenderBox::overrideContainingBlockContentLogicalWidth() const
@@ -2030,12 +2024,14 @@ InlineBox* RenderBox::createInlineBox()
 
 void RenderBox::dirtyLineBoxes(bool fullLayout)
 {
-    if (m_inlineBoxWrapper) {
+    if (inlineBoxWrapper()) {
         if (fullLayout) {
-            m_inlineBoxWrapper->destroy();
-            m_inlineBoxWrapper = 0;
-        } else
-            m_inlineBoxWrapper->dirtyLineBoxes();
+            inlineBoxWrapper()->destroy();
+            ASSERT(m_rareData);
+            m_rareData->m_inlineBoxWrapper = 0;
+        } else {
+            inlineBoxWrapper()->dirtyLineBoxes();
+        }
     }
 }
 
@@ -2073,11 +2069,12 @@ void RenderBox::positionLineBox(InlineBox* box)
 
 void RenderBox::deleteLineBoxWrapper()
 {
-    if (m_inlineBoxWrapper) {
+    if (inlineBoxWrapper()) {
         if (!documentBeingDestroyed())
-            m_inlineBoxWrapper->remove();
-        m_inlineBoxWrapper->destroy();
-        m_inlineBoxWrapper = 0;
+            inlineBoxWrapper()->remove();
+        inlineBoxWrapper()->destroy();
+        ASSERT(m_rareData);
+        m_rareData->m_inlineBoxWrapper = 0;
     }
 }
 
