@@ -496,7 +496,11 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
 void NativeThemeBase::PaintScrollbarCorner(SkCanvas* canvas,
                                            State state,
                                            const gfx::Rect& rect) const {
-  canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
+  SkPaint paint;
+  paint.setColor(SK_ColorWHITE);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas->drawIRect(RectToSkIRect(rect), paint);
 }
 
 void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
