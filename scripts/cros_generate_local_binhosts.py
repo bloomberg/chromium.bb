@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Generate a file that sets the specified board's binhosts to include all of the
+"""Script for calculating compatible binhosts.
+
+Generates a file that sets the specified board's binhosts to include all of the
 other compatible boards in this buildroot.
 """
 
@@ -16,20 +17,12 @@ import sys
 from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_build_lib
 
-def FindCandidateBoards(board):
+def FindCandidateBoards():
   """Find candidate local boards to grab prebuilts from."""
-  board_no_variant = board.partition("_")[0]
   portageq_prefix = "/usr/local/bin/portageq-"
   for path in sorted(glob.glob("%s*" % portageq_prefix)):
     # Strip off the portageq prefix, leaving only the board.
-    other_board = path.replace(portageq_prefix, "")
-
-    # It is only safe to inherit prebuilts from generic boards, or from the
-    # same board without the variant. This rule helps keep inheritance trees
-    # sane.
-    if (other_board in cbuildbot_config.generic_boards or
-        other_board == board_no_variant or other_board == board):
-      yield other_board
+    yield path.replace(portageq_prefix, "")
 
 
 def SummarizeCompatibility(board):
@@ -65,7 +58,7 @@ def main(argv):
 
   by_compatibility = collections.defaultdict(set)
   compatible_boards = None
-  for other_board in FindCandidateBoards(flags.board):
+  for other_board in FindCandidateBoards():
     compat_id = SummarizeCompatibility(other_board)
     if other_board == flags.board:
       compatible_boards = by_compatibility[compat_id]
