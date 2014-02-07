@@ -674,6 +674,11 @@
                 '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
               ],
             }],
+            ['chromeos==0', {
+              'dependencies': [
+                '../v8/src/d8.gyp:d8',
+              ],
+            }],
             ['internal_filter_fuzzer==1', {
               'dependencies': [
                 '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
