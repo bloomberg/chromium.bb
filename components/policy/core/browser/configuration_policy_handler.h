@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/policy/core/common/schema.h"
 #include "components/policy/policy_export.h"
 
 class PrefValueMap;
@@ -227,6 +228,37 @@ class POLICY_EXPORT IntPercentageToDoublePolicyHandler
   const char* pref_path_;
 
   DISALLOW_COPY_AND_ASSIGN(IntPercentageToDoublePolicyHandler);
+};
+
+// Like TypeCheckingPolicyHandler, but validates against a schema instead of a
+// single type. |schema| is the schema used for this policy, and |strategy| is
+// the strategy used for schema validation errors.
+class POLICY_EXPORT SchemaValidatingPolicyHandler
+    : public ConfigurationPolicyHandler {
+ public:
+  SchemaValidatingPolicyHandler(const char* policy_name,
+                                Schema schema,
+                                SchemaOnErrorStrategy strategy);
+  virtual ~SchemaValidatingPolicyHandler();
+
+  // ConfigurationPolicyHandler:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+
+  const char* policy_name() const;
+
+ protected:
+  // Runs policy checks and returns the policy value if successful.
+  bool CheckAndGetValue(const PolicyMap& policies,
+                        PolicyErrorMap* errors,
+                        scoped_ptr<base::Value>* output);
+
+ private:
+  const char* policy_name_;
+  Schema schema_;
+  SchemaOnErrorStrategy strategy_;
+
+  DISALLOW_COPY_AND_ASSIGN(SchemaValidatingPolicyHandler);
 };
 
 }  // namespace policy

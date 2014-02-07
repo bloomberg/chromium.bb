@@ -295,4 +295,65 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetValue(pref_path_, value->DeepCopy());
 }
 
+
+// SchemaValidatingPolicyHandler implementation --------------------------------
+
+SchemaValidatingPolicyHandler::SchemaValidatingPolicyHandler(
+    const char* policy_name,
+    Schema schema,
+    SchemaOnErrorStrategy strategy)
+    : policy_name_(policy_name), schema_(schema), strategy_(strategy) {
+  DCHECK(schema_.valid());
+}
+
+SchemaValidatingPolicyHandler::~SchemaValidatingPolicyHandler() {
+}
+
+const char* SchemaValidatingPolicyHandler::policy_name() const {
+  return policy_name_;
+}
+
+bool SchemaValidatingPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const base::Value* value = policies.GetValue(policy_name());
+  if (!value)
+    return true;
+
+  std::string error_path;
+  std::string error;
+  bool result = schema_.Validate(*value, strategy_, &error_path, &error);
+
+  if (errors && !error.empty()) {
+    if (error_path.empty())
+      error_path = "(ROOT)";
+    errors->AddError(policy_name_, error_path, error);
+  }
+
+  return result;
+}
+
+bool SchemaValidatingPolicyHandler::CheckAndGetValue(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors,
+    scoped_ptr<base::Value>* output) {
+  const base::Value* value = policies.GetValue(policy_name());
+  if (!value)
+    return true;
+
+  output->reset(value->DeepCopy());
+  std::string error_path;
+  std::string error;
+  bool result =
+      schema_.Normalize(output->get(), strategy_, &error_path, &error);
+
+  if (errors && !error.empty()) {
+    if (error_path.empty())
+      error_path = "(ROOT)";
+    errors->AddError(policy_name_, error_path, error);
+  }
+
+  return result;
+}
+
 }  // namespace policy
