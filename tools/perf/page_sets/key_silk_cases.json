@@ -105,6 +105,7 @@
           "action": "swipe",
           "element_function": "function(callback) { callback(document.getElementsByClassName('message')[2]); }",
           "distance": 200,
+          "speed": 5000,
           "direction": "left",
           "left_start_percentage": 0.8,
           "top_start_percentage": 0.2,
