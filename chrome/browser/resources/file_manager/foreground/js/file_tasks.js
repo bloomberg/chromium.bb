@@ -531,14 +531,23 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
     }
     // TODO(mtomasz): Pass entries instead.
     var urls = util.entriesToURLs(entries);
-    fm.backgroundPage.launchAudioPlayer({items: urls, position: position});
+    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                   currentId,
+                                                   displayedId) {
+      fm.backgroundPage.launchAudioPlayer({items: urls, position: position},
+                                          displayedId);
+    });
     return;
   }
 
   if (id === 'watch') {
     console.assert(entries.length === 1, 'Cannot open multiple videos');
     // TODO(mtomasz): Pass an entry instead.
-    fm.backgroundPage.launchVideoPlayer(entries[0].toURL());
+    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                   currentId,
+                                                   displayedId) {
+      fm.backgroundPage.launchVideoPlayer(entries[0].toURL(), displayedId);
+    });
     return;
   }
 

@@ -241,6 +241,15 @@ function AppWindowWrapper(url, id, options) {
   Object.seal(this);
 }
 
+AppWindowWrapper.prototype = {
+  /**
+   * @return {AppWindow} Wrapped application window.
+   */
+  get rawAppWindow() {
+    return this.window_;
+  }
+};
+
 /**
  * Focuses the window on the specified desktop.
  * @param {AppWindow} appWindow Application window.
@@ -471,7 +480,6 @@ SingletonAppWindowWrapper.prototype.launch = function(appState, opt_callback) {
   this.queue.run(function(nextStep) {
     this.window_.contentWindow.appState = appState;
     this.window_.contentWindow.reload();
-    AppWindowWrapper.focusOnDesktop(this.window_, appState.displayedId);
     if (opt_callback)
       opt_callback();
     nextStep();
@@ -746,12 +754,17 @@ audioPlayerInitializationQueue.run(function(callback) {
 });
 
 /**
- * Launch the audio player.
+ * Launches the audio player.
  * @param {Object} playlist Playlist.
+ * @param {string=} opt_displayedId ProfileID of the desktop where the audio
+ *     player should show.
  */
-function launchAudioPlayer(playlist) {
+function launchAudioPlayer(playlist, opt_displayedId) {
   audioPlayerInitializationQueue.run(function(callback) {
-    audioPlayer.launch(playlist);
+    audioPlayer.launch(playlist, function(appWindow) {
+      AppWindowWrapper.focusOnDesktop(audioPlayer.rawAppWindow,
+                                      opt_displayedId);
+    });
     callback();
   });
 }
@@ -760,11 +773,15 @@ var videoPlayer = new SingletonAppWindowWrapper('video_player.html',
                                                 {hidden: true});
 
 /**
- * Launch the video player.
+ * Launches the video player.
  * @param {string} url Video url.
+ * @param {string=} opt_displayedId ProfileID of the desktop where the video
+ *     player should show.
  */
-function launchVideoPlayer(url) {
-  videoPlayer.launch({url: url});
+function launchVideoPlayer(url, opt_displayedId) {
+  videoPlayer.launch({url: url}, function(appWindow) {
+    AppWindowWrapper.focusOnDesktop(videoPlayer.rawAppWindow, opt_displayedId);
+  });
 }
 
 /**
