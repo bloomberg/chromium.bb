@@ -4,7 +4,9 @@
       'target_name': 'mojo_gles2_bindings',
       'type': 'static_library',
       'sources': [
-        'services/gles2/gles2.mojom',
+        'services/gles2/command_buffer.mojom',
+        'services/gles2/command_buffer_type_conversions.cc',
+        'services/gles2/command_buffer_type_conversions.h',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -18,7 +20,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../gpu/gpu.gyp:command_buffer_service',
-        '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
@@ -28,8 +29,8 @@
         'mojo_gles2_bindings',
       ],
       'sources': [
-        'services/gles2/gles2_impl.cc',
-        'services/gles2/gles2_impl.h',
+        'services/gles2/command_buffer_impl.cc',
+        'services/gles2/command_buffer_impl.h',
       ],
     },
     {

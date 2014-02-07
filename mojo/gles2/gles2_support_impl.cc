@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "mojo/gles2/gles2_client_impl.h"
+#include "mojo/gles2/gles2_context.h"
 #include "mojo/public/gles2/gles2_interface.h"
 #include "mojo/public/gles2/gles2_private.h"
 
@@ -65,24 +65,24 @@ MojoGLES2Context GLES2SupportImpl::CreateContext(
     void* closure) {
   mojo::ScopedMessagePipeHandle scoped_handle =
       mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(handle));
-  scoped_ptr<GLES2ClientImpl> client(new GLES2ClientImpl(async_waiter_,
-                                                         scoped_handle.Pass(),
-                                                         lost_callback,
-                                                         animation_callback,
-                                                         closure));
+  scoped_ptr<GLES2Context> client(new GLES2Context(async_waiter_,
+                                                   scoped_handle.Pass(),
+                                                   lost_callback,
+                                                   animation_callback,
+                                                   closure));
   if (!client->Initialize())
     client.reset();
   return client.release();
 }
 
 void GLES2SupportImpl::DestroyContext(MojoGLES2Context context) {
-  delete static_cast<GLES2ClientImpl*>(context);
+  delete static_cast<GLES2Context*>(context);
 }
 
 void GLES2SupportImpl::MakeCurrent(MojoGLES2Context context) {
   gpu::gles2::GLES2Interface* interface = NULL;
   if (context) {
-    GLES2ClientImpl* client = static_cast<GLES2ClientImpl*>(context);
+    GLES2Context* client = static_cast<GLES2Context*>(context);
     interface = client->interface();
     DCHECK(interface);
   }
@@ -94,19 +94,19 @@ void GLES2SupportImpl::SwapBuffers() {
 }
 
 void GLES2SupportImpl::RequestAnimationFrames(MojoGLES2Context context) {
-  static_cast<GLES2ClientImpl*>(context)->RequestAnimationFrames();
+  static_cast<GLES2Context*>(context)->RequestAnimationFrames();
 }
 
 void GLES2SupportImpl::CancelAnimationFrames(MojoGLES2Context context) {
-  static_cast<GLES2ClientImpl*>(context)->CancelAnimationFrames();
+  static_cast<GLES2Context*>(context)->CancelAnimationFrames();
 }
 
 void* GLES2SupportImpl::GetGLES2Interface(MojoGLES2Context context) {
-  return static_cast<GLES2ClientImpl*>(context)->interface();
+  return static_cast<GLES2Context*>(context)->interface();
 }
 
 void* GLES2SupportImpl::GetContextSupport(MojoGLES2Context context) {
-  return static_cast<GLES2ClientImpl*>(context)->context_support();
+  return static_cast<GLES2Context*>(context)->context_support();
 }
 
 GLES2Interface* GLES2SupportImpl::GetGLES2InterfaceForCurrentContext() {

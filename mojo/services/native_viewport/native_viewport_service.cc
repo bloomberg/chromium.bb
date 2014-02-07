@@ -6,7 +6,7 @@
 #include "base/time/time.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/shell/service.h"
-#include "mojo/services/gles2/gles2_impl.h"
+#include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/native_viewport/native_viewport_export.h"
@@ -32,9 +32,7 @@ class NativeViewportImpl
   NativeViewportImpl()
       : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false),
-        pending_event_timestamp_(0),
-        created_context_(false) {
-  }
+        pending_event_timestamp_(0) {}
   virtual ~NativeViewportImpl() {}
 
   virtual void Create(const Rect& bounds) MOJO_OVERRIDE {
@@ -53,7 +51,7 @@ class NativeViewportImpl
   }
 
   virtual void Close() MOJO_OVERRIDE {
-    gles2_.reset();
+    command_buffer_.reset();
     DCHECK(native_viewport_);
     native_viewport_->Close();
   }
@@ -66,8 +64,13 @@ class NativeViewportImpl
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
       MOJO_OVERRIDE {
-    gles2_.reset(new GLES2Impl(client_handle.Pass()));
-    CreateGLES2ContextIfNeeded();
+    if (command_buffer_ || command_buffer_handle_.is_valid()) {
+      LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
+      return;
+    }
+
+    command_buffer_handle_ = client_handle.Pass();
+    CreateCommandBufferIfNeeded();
   }
 
   virtual void AckEvent(const Event& event) MOJO_OVERRIDE {
@@ -75,16 +78,17 @@ class NativeViewportImpl
     waiting_for_event_ack_ = false;
   }
 
-  void CreateGLES2ContextIfNeeded() {
-    if (created_context_)
+  void CreateCommandBufferIfNeeded() {
+    if (!command_buffer_handle_.is_valid())
       return;
-    if (widget_ == gfx::kNullAcceleratedWidget || !gles2_)
+    DCHECK(!command_buffer_.get());
+    if (widget_ == gfx::kNullAcceleratedWidget)
       return;
     gfx::Size size = native_viewport_->GetSize();
     if (size.IsEmpty())
       return;
-    gles2_->CreateContext(widget_, size);
-    created_context_ = true;
+    command_buffer_.reset(new CommandBufferImpl(
+        command_buffer_handle_.Pass(), widget_, native_viewport_->GetSize()));
   }
 
   virtual bool OnEvent(ui::Event* ui_event) MOJO_OVERRIDE {
@@ -143,25 +147,17 @@ class NativeViewportImpl
   virtual void OnAcceleratedWidgetAvailable(
       gfx::AcceleratedWidget widget) MOJO_OVERRIDE {
     widget_ = widget;
-    CreateGLES2ContextIfNeeded();
+    CreateCommandBufferIfNeeded();
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& bounds) MOJO_OVERRIDE {
-    CreateGLES2ContextIfNeeded();
+    CreateCommandBufferIfNeeded();
     AllocationScope scope;
     client()->OnBoundsChanged(bounds);
   }
 
   virtual void OnDestroyed() MOJO_OVERRIDE {
-    // TODO(beng):
-    // Destroying |gles2_| on the shell thread here hits thread checker
-    // asserts. All code must stop touching the AcceleratedWidget at this
-    // point as it is dead after this call stack. jamesr said we probably
-    // should make our own GLSurface and simply tell it to stop touching the
-    // AcceleratedWidget via Destroy() but we have no good way of doing that
-    // right now given our current threading model so james' recommendation
-    // was just to wait until after we move the gl service out of process.
-    // gles2_.reset();
+    command_buffer_.reset();
     client()->OnDestroyed();
     base::MessageLoop::current()->Quit();
   }
@@ -169,10 +165,10 @@ class NativeViewportImpl
  private:
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
-  scoped_ptr<GLES2Impl> gles2_;
+  ScopedMessagePipeHandle command_buffer_handle_;
+  scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
   int64 pending_event_timestamp_;
-  bool created_context_;
 };
 
 }  // namespace services

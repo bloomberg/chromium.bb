@@ -189,6 +189,10 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../gpu/gpu.gyp:command_buffer_client',
+        '../gpu/gpu.gyp:command_buffer_common',
+        '../gpu/gpu.gyp:gles2_cmd_helper',
+        '../gpu/gpu.gyp:gles2_implementation',
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_environment_chromium',
@@ -197,11 +201,13 @@
         'MOJO_GLES2_IMPL_IMPLEMENTATION',
       ],
       'sources': [
+        'gles2/command_buffer_client_impl.cc',
+        'gles2/command_buffer_client_impl.h',
         'gles2/gles2_impl_export.h',
         'gles2/gles2_support_impl.cc',
         'gles2/gles2_support_impl.h',
-        'gles2/gles2_client_impl.cc',
-        'gles2/gles2_client_impl.h',
+        'gles2/gles2_context.cc',
+        'gles2/gles2_context.h',
       ],
     },
     {
