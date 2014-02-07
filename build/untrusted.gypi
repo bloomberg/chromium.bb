@@ -1457,50 +1457,53 @@
     # pnacl actions for building ABI-biased native libraries
     'conditions': [
       # ARM
-      ['target_arch=="arm" and disable_pnacl==0 and pnacl_native_biased==1 and '
-       'nlib_target!="" and build_pnacl_newlib!=0', {
-         'variables': {
-           'tool_name': 'pnacl_newlib_arm',
-           'out_pnacl_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
-           'objdir_pnacl_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-         },
-         'actions': [
-           {
-             'action_name': 'build newlib arm nlib (via pnacl)',
-             'variables': {
-               'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+      ['target_arch=="arm"', {
+        'target_conditions': [
+          ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
+            'variables': {
+               'tool_name': 'pnacl_newlib_arm',
+               'out_pnacl_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+               'objdir_pnacl_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
              },
-             'msvs_cygwin_shell': 0,
-             'description': 'building >(out_pnacl_newlib_arm)',
-             'inputs': [
-               '<(DEPTH)/native_client/build/build_nexe.py',
-               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-               '>@(extra_deps)',
-               '>@(extra_deps_pnacl_newlib)',
-               '^(source_list_pnacl_newlib_arm)',
-               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
-             ],
-             'outputs': ['>(out_pnacl_newlib_arm)'],
-             'action': [
-               'python',
-               '<(DEPTH)/native_client/build/build_nexe.py',
-               '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-               '>@(extra_args)',
-               '--arch', 'arm',
-               '--build', 'newlib_nlib_pnacl',
-               '--root', '<(DEPTH)',
-               '--name', '>(out_pnacl_newlib_arm)',
-               '--objdir', '>(objdir_pnacl_newlib_arm)',
-               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-               '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard --pnacl-allow-translate -arch arm ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-               '--gomadir', '<(gomadir)',
-               '--defines=^(defines) >(_defines)',
-               '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-               '--source-list=^(source_list_pnacl_newlib_arm)',
-             ],
-           },
-         ],
-       }], # end ARM
+            'actions': [
+              {
+                'action_name': 'build newlib arm nlib (via pnacl)',
+                'variables': {
+                  'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_pnacl_newlib_arm)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_pnacl_newlib)',
+                  '^(source_list_pnacl_newlib_arm)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                ],
+                'outputs': ['>(out_pnacl_newlib_arm)'],
+                'action': [
+                  'python',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib_pnacl',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_pnacl_newlib_arm)',
+                  '--objdir', '>(objdir_pnacl_newlib_arm)',
+                  '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard --pnacl-allow-translate -arch arm ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_pnacl_newlib_arm)',
+                ],
+              },
+            ],
+          }],
+        ],
+      }], # end ARM
       # ia32 or x64 (want to build both for Windows)
       ['target_arch=="ia32" or target_arch=="x64"', {
         'target_conditions': [
