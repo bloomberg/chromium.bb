@@ -553,6 +553,7 @@ TitleWatcher::~TitleWatcher() {
 }
 
 const base::string16& TitleWatcher::WaitAndGetTitle() {
+  TestTitle();
   message_loop_runner_->Run();
   return observed_title_;
 }
