@@ -303,11 +303,6 @@ ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
 }
 
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
-  // TODO(sievers): crbug.com/329737
-  //                Creating the context here hurts startup performance.
-  //                Remove this once all tests are happy.
-  SharedMainThreadContextProvider();
-
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
   handle.parent_client_id =
