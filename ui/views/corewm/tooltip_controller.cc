@@ -187,13 +187,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_DRAGGED: {
       curr_mouse_loc_ = event->location();
       aura::Window* target = GetTooltipTarget(*event, &curr_mouse_loc_);
-      if (tooltip_window_ != target) {
-        if (tooltip_window_)
-          tooltip_window_->RemoveObserver(this);
-        tooltip_window_ = target;
-        if (tooltip_window_)
-          tooltip_window_->AddObserver(this);
-      }
+      SetTooltipWindow(target);
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
 
@@ -226,13 +220,12 @@ void TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   // touch events.
   // Hide the tooltip for touch events.
   tooltip_->Hide();
-  if (tooltip_window_)
-    tooltip_window_->RemoveObserver(this);
-  tooltip_window_ = NULL;
+  SetTooltipWindow(NULL);
 }
 
 void TooltipController::OnCancelMode(ui::CancelModeEvent* event) {
   tooltip_->Hide();
+  SetTooltipWindow(NULL);
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
@@ -343,6 +336,16 @@ int TooltipController::GetTooltipShownTimeout() {
   if (it == tooltip_shown_timeout_map_.end())
     return kDefaultTooltipShownTimeoutMs;
   return it->second;
+}
+
+void TooltipController::SetTooltipWindow(aura::Window* target) {
+  if (tooltip_window_ == target)
+    return;
+  if (tooltip_window_)
+    tooltip_window_->RemoveObserver(this);
+  tooltip_window_ = target;
+  if (tooltip_window_)
+    tooltip_window_->AddObserver(this);
 }
 
 }  // namespace corewm

@@ -740,6 +740,28 @@ TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
   EXPECT_EQ(ASCIIToUTF16("x"), test_tooltip_->tooltip_text());
 }
 
+// Verifies that tooltip is hidden and tooltip window closed upon cancel mode.
+TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(
+      CreateNormalWindow(100, root_window(), &test_delegate));
+  window->SetBounds(gfx::Rect(0, 0, 300, 300));
+  base::string16 tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  aura::client::SetTooltipText(window.get(), &tooltip_text);
+  generator_->MoveMouseToCenterOf(window.get());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+
+  // Send OnCancelMode event and verify that tooltip becomes invisible and
+  // the tooltip window is closed.
+  ui::CancelModeEvent event;
+  helper_->controller()->OnCancelMode(&event);
+  EXPECT_FALSE(helper_->IsTooltipVisible());
+  EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
+}
+
 }  // namespace test
 }  // namespace corewm
 }  // namespace views

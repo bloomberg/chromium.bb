@@ -74,6 +74,11 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
 
   int GetTooltipShownTimeout();
 
+  // Sets tooltip window to |target| if it is different from existing window.
+  // Calls RemoveObserver on the existing window if it is not NULL.
+  // Calls AddObserver on the new window if it is not NULL.
+  void SetTooltipWindow(aura::Window* target);
+
   aura::Window* tooltip_window_;
   base::string16 tooltip_text_;
 
