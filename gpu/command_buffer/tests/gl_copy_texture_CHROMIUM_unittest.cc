@@ -100,8 +100,12 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipY) {
   uint8 copied_pixels[2][2][4] = {{{0}}};
   glReadPixels(0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, copied_pixels);
   for (int x = 0; x < 2; ++x) {
-    for (int y = 0; y < 2; ++y)
+    for (int y = 0; y < 2; ++y) {
       EXPECT_EQ(pixels[1-y][x][0], copied_pixels[y][x][0]);
+      EXPECT_EQ(pixels[1-y][x][1], copied_pixels[y][x][1]);
+      EXPECT_EQ(pixels[1-y][x][2], copied_pixels[y][x][2]);
+      EXPECT_EQ(pixels[1-y][x][3], copied_pixels[y][x][3]);
+    }
   }
 
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
@@ -486,6 +490,31 @@ TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   gl2.MakeCurrent();
   gl2.Destroy();
   gl_.MakeCurrent();
+}
+
+// Test that glCopyTextureCHROMIUM doesn't leak uninitialized textures.
+TEST_F(GLCopyTextureCHROMIUMTest, UninitializedSource) {
+  const GLsizei kWidth = 64, kHeight = 64;
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight,
+               0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  uint8 pixels[kHeight][kWidth][4] = {{{1}}};
+  glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  for (int x = 0; x < kWidth; ++x) {
+    for (int y = 0; y < kHeight; ++y) {
+      EXPECT_EQ(0, pixels[y][x][0]);
+      EXPECT_EQ(0, pixels[y][x][1]);
+      EXPECT_EQ(0, pixels[y][x][2]);
+      EXPECT_EQ(0, pixels[y][x][3]);
+    }
+  }
+
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
 }  // namespace gpu

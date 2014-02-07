@@ -9775,6 +9775,14 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     }
   }
 
+  // Clear the source texture if necessary.
+  if (!texture_manager()->ClearTextureLevel(
+          this, source_texture_ref, source_texture->target(), 0)) {
+    LOCAL_SET_GL_ERROR(
+        GL_OUT_OF_MEMORY, "glCopyTextureCHROMIUM", "dimensions too big");
+    return;
+  }
+
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
   // needed because it takes 10s of milliseconds to initialize.
   if (!copy_texture_CHROMIUM_.get()) {
