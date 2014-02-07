@@ -91,13 +91,19 @@
 
 #if defined(OS_WIN)
 #include <commctrl.h>
+#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif  // defined(TOOLKIT_GTK)
+
+using remoting::protocol::PairingRegistry;
+
+namespace {
 
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
@@ -115,6 +121,8 @@ const char kSignalParentSwitchName[] = "signal-parent";
 // Value used for --host-config option to indicate that the path must be read
 // from stdin.
 const char kStdinConfigPath[] = "-";
+
+}  // namespace
 
 namespace remoting {
 
@@ -142,6 +150,11 @@ class HostProcess
 
   // HostChangeNotificationListener::Listener overrides.
   virtual void OnHostDeleted() OVERRIDE;
+
+  // Initializes the pairing registry on Windows.
+  void OnInitializePairingRegistry(
+      IPC::PlatformFileForTransit privileged_key,
+      IPC::PlatformFileForTransit unprivileged_key);
 
  private:
   enum HostState {
@@ -293,6 +306,8 @@ class HostProcess
 
   int* exit_code_out_;
   bool signal_parent_;
+
+  scoped_ptr<PairingRegistry::Delegate> pairing_registry_delegate_;
 };
 
 HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
@@ -508,9 +523,15 @@ void HostProcess::CreateAuthenticatorFactory() {
     return;
   }
 
-  scoped_refptr<protocol::PairingRegistry> pairing_registry = NULL;
+  scoped_refptr<PairingRegistry> pairing_registry = NULL;
   if (allow_pairing_) {
-    pairing_registry = CreatePairingRegistry(context_->file_task_runner());
+    if (!pairing_registry_delegate_)
+      pairing_registry_delegate_ = CreatePairingRegistryDelegate();
+
+    if (pairing_registry_delegate_) {
+      pairing_registry = new PairingRegistry(context_->file_task_runner(),
+                                             pairing_registry_delegate_.Pass());
+    }
   }
 
   scoped_ptr<protocol::AuthenticatorFactory> factory;
@@ -560,6 +581,8 @@ bool HostProcess::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromotingDaemonMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Configuration,
                         OnConfigUpdated)
+    IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_InitializePairingRegistry,
+                        OnInitializePairingRegistry)
     IPC_MESSAGE_FORWARD(
         ChromotingDaemonNetworkMsg_DesktopAttached,
         desktop_session_connector_,
@@ -674,6 +697,29 @@ void HostProcess::OnHeartbeatSuccessful() {
 void HostProcess::OnHostDeleted() {
   LOG(ERROR) << "Host was deleted from the directory.";
   ShutdownHost(kInvalidHostIdExitCode);
+}
+
+void HostProcess::OnInitializePairingRegistry(
+    IPC::PlatformFileForTransit privileged_key,
+    IPC::PlatformFileForTransit unprivileged_key) {
+  DCHECK(!pairing_registry_delegate_);
+
+#if defined(OS_WIN)
+  // Initialize the pairing registry delegate.
+  scoped_ptr<PairingRegistryDelegateWin> delegate(
+      new PairingRegistryDelegateWin());
+  bool result = delegate->SetRootKeys(
+      reinterpret_cast<HKEY>(
+          IPC::PlatformFileForTransitToPlatformFile(privileged_key)),
+      reinterpret_cast<HKEY>(
+          IPC::PlatformFileForTransitToPlatformFile(unprivileged_key)));
+  if (!result)
+    return;
+
+  pairing_registry_delegate_ = delegate.PassAs<PairingRegistry::Delegate>();
+#else  // !defined(OS_WIN)
+  NOTREACHED();
+#endif  // !defined(OS_WIN)
 }
 
 // Applies the host config, returning true if successful.
