@@ -31,5 +31,12 @@
         'memconsumer/memconsumer.gyp:memconsumer',
       ],
     },
+    {
+      'target_name': 'ps_ext',
+      'type': 'none',
+      'dependencies': [
+        'ps_ext/ps_ext.gyp:ps_ext',
+      ],
+    },
   ],
 }
