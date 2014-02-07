@@ -382,6 +382,12 @@ def includes_for_type(idl_type):
         return set.union(*[
             includes_for_type(union_member_type)
             for union_member_type in idl_type.union_member_types])
+    if idl_type.endswith('ConstructorConstructor'):
+        # FIXME: rename to NamedConstructor
+        # Ending with 'ConstructorConstructor' indicates a named constructor,
+        # and these do not have header files, as they are part of the generated
+        # bindings for the interface
+        return set()
     if idl_type.endswith('Constructor'):
         idl_type = constructor_type(idl_type)
     return set(['V8%s.h' % idl_type])

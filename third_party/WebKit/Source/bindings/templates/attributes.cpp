@@ -13,13 +13,18 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {# FIXME: Perl skips most of function, but this seems unnecessary #}
     {% endif %}
-    {% if attribute.is_unforgeable %}
+    {% if attribute.is_unforgeable or
+          interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
+    {% if interface_name == 'Window' %}
+    v8::Handle<v8::Object> holder = info.Holder();
+    {% else %}{# perform lookup first #}
+    {# FIXME: can we remove this lookup? #}
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
+    {% endif %}{# Window #}
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
-    {% endif %}
-    {% if attribute.cached_attribute_validation_method %}
+    {% elif attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
@@ -31,7 +36,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
-    {% endif %}
+    {% endif %}{# imp #}
     {% if attribute.reflect_only %}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
@@ -59,6 +64,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
     {% endif %}
+    {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
+    if (!imp->document())
+        return;
+    {% endif %}
     {% if attribute.is_nullable %}
     bool isNull = false;
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
@@ -78,7 +87,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {# End special cases #}
     {% if attribute.is_keep_alive_for_gc %}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};
-    if (result && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -198,7 +207,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
         return;
     {% elif not attribute.is_static %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
-    {% endif %}
+    {% endif %}{# imp #}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
     if (!imp->document())
         return;

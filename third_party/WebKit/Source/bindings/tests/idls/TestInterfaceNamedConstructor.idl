@@ -36,4 +36,8 @@
         [Default=NullString] optional DOMString defaultNullStringOptionalstringArg),
     RaisesException=Constructor,
 ] interface TestInterfaceNamedConstructor {
+    // An attribute of type {interface_name}ConstructorConstructor is generated
+    // in *Constructors.idl file, which is a partial interface for the global
+    // object, e.g. Window. We put this here to avoid another test file.
+    attribute TestNamedConstructorConstructor testNamedConstructorConstructorAttribute;
 };

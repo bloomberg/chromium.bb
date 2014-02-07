@@ -35,7 +35,10 @@
     [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
     [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
+    [DoNotCheckSecurity, Replaceable] readonly attribute long doNotCheckSecurityReplaceableReadonlyLongAttribute;
+
     [DoNotCheckSecurity] void doNotCheckSecurityVoidMethod();
+    [DoNotCheckSecurity, DoNotCheckSignature] void doNotCheckSecurityDoNotCheckSignatureVoidMethod();
     [DoNotCheckSecurity, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
     [DoNotCheckSecurity, ReadOnly] void doNotCheckSecurityReadOnlyVoidMethod();
     [DoNotCheckSecurity, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();

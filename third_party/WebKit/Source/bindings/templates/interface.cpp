@@ -7,7 +7,7 @@
        '%sV8Internal::%sAttributeGetterCallback' %
             (cpp_class, attribute.name)
        if not attribute.constructor_type else
-       '{0}V8Internal::{0}ConstructorGetter'.format(interface_name) %}
+       '{0}V8Internal::{0}ConstructorGetter'.format(cpp_class) %}
 {% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
             (cpp_class, attribute.name)
@@ -26,9 +26,24 @@
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set on_prototype = ', 0 /* on instance */'
-       if not attribute.is_expose_js_accessors else '' %}
-{"{{attribute.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}{{on_prototype}}}
+{% set on_prototype = '1 /* on prototype */'
+       if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
+       else '0 /* on instance */' %}
+{% set attribute_configuration_list = [
+       '"%s"' % attribute.name,
+       getter_callback,
+       setter_callback,
+       getter_callback_for_main_world,
+       setter_callback_for_main_world,
+       wrapper_type_info,
+       access_control,
+       property_attribute,
+   ] %}
+{% if not attribute.is_expose_js_accessors %}
+{% set attribute_configuration_list = attribute_configuration_list
+                                    + [on_prototype] %}
+{% endif %}
+{{'{'}}{{attribute_configuration_list|join(', ')}}{{'}'}}
 {%- endmacro %}
 
 
@@ -46,7 +61,7 @@
 {##############################################################################}
 {% block constructor_getter %}
 {% if has_constructor_attributes %}
-static void {{interface_name}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
@@ -64,15 +79,24 @@ static void {{interface_name}}ConstructorGetter(v8::Local<v8::String>, const v8:
 {% block replaceable_attribute_setter_and_callback %}
 {% if has_replaceable_attributes or has_constructor_attributes %}
 {# FIXME: rename to ForceSetAttributeOnThis, since also used for Constructors #}
-static void {{interface_name}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    {% if is_check_security %}
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    v8::String::Utf8Value attributeName(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
     info.This()->ForceSet(name, jsValue);
 }
 
 {# FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors #}
-static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    {{interface_name}}V8Internal::{{interface_name}}ReplaceableAttributeSetter(name, jsValue, info);
+    {{cpp_class}}V8Internal::{{cpp_class}}ReplaceableAttributeSetter(name, jsValue, info);
 }
 
 {% endif %}
@@ -382,6 +406,8 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 {% block named_property_query %}
 {% if named_property_getter and named_property_getter.is_enumerable and
       not named_property_getter.is_custom_property_query %}
+{# If there is an enumerator, there MUST be a query method to properly
+   communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -699,6 +725,19 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
 
 
 {##############################################################################}
+{% block shadow_attributes %}
+{% if interface_name == 'Window' %}
+static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
+    {% for attribute in attributes if attribute.is_unforgeable %}
+    {{attribute_configuration(attribute)}},
+    {% endfor %}
+};
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if has_attribute_configuration %}
@@ -707,7 +746,8 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
        if not (attribute.is_expose_js_accessors or
                attribute.is_static or
                attribute.runtime_enabled_function or
-               attribute.per_context_enabled_function) %}
+               attribute.per_context_enabled_function or
+               (interface_name == 'Window' and attribute.is_unforgeable)) %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
@@ -813,6 +853,22 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
 
 {##############################################################################}
+{% block configure_shadow_object_template %}
+{% if interface_name == 'Window' %}
+static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{
+    V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
+
+    // Install a security handler with V8.
+    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
+    templ->SetInternalFieldCount(V8Window::internalFieldCount);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block configure_class_template %}
 {# FIXME: rename to install_dom_template and Install{{v8_class}}DOMTemplate #}
 static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -860,7 +916,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
     {% for attribute in attributes
-       if attribute.runtime_enabled_function and not attribute.is_static %}
+       if attribute.runtime_enabled_function and
+          not attribute.per_context_enabled_function and
+          not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
@@ -872,6 +930,14 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
+    {# Special operations #}
+    {# V8 has access-check callback API and it's used on Window instead of
+       deleters or enumerators; see ObjectTemplate::SetAccessCheckCallbacks.
+       In addition, the getter should be set on the prototype template, to get
+       the implementation straight out of the Window prototype, regardless of
+       what prototype is actually set on the object. #}
+    {% set set_on_template = 'PrototypeTemplate' if interface_name == 'Window'
+                        else 'InstanceTemplate' %}
     {% if indexed_property_getter %}
     {# if have indexed properties, MUST have an indexed property getter #}
     {% set indexed_property_getter_callback =
@@ -886,7 +952,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% set indexed_property_enumerator_callback =
            'indexedPropertyEnumerator<%s>' % cpp_class
            if indexed_property_getter.is_enumerable else '0' %}
-    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
+    functionTemplate->{{set_on_template}}()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
     {% endif %}
     {% if named_property_getter %}
     {# if have named properties, MUST have a named property getter #}
@@ -904,8 +970,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
            if named_property_getter.is_enumerable else '0' %}
-    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
+    functionTemplate->{{set_on_template}}()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
     {% endif %}
+    {# End special operations #}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
@@ -1124,6 +1191,38 @@ ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
 {
     return toNative(object);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block get_shadow_object_template %}
+{% if interface_name == 'Window' %}
+v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{
+    if (currentWorldType == MainWorld) {
+        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
+        if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+            configureShadowObjectTemplate(templ, isolate, currentWorldType);
+            V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
+            return templ;
+        }
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForMainWorld);
+    } else {
+        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
+        if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+            configureShadowObjectTemplate(templ, isolate, currentWorldType);
+            V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
+            return templ;
+        }
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForNonMainWorld);
+    }
 }
 
 {% endif %}

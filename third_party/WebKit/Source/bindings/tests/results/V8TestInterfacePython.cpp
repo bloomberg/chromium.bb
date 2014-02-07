@@ -37,6 +37,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
 #include "V8ReferencedType.h"
+#include "V8TestImplementedAs.h"
 #include "V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestImplements2Implementation.h"
@@ -663,6 +664,26 @@ static void partial2StaticLongAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void TestInterfacePythonImplementationConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Value> data = info.Data();
+    ASSERT(data->IsExternal());
+    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
+    if (!perContextData)
+        return;
+    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+}
+
+static void TestInterfacePythonImplementationReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    info.This()->ForceSet(name, jsValue);
+}
+
+static void TestInterfacePythonImplementationReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestInterfacePythonImplementationV8Internal::TestInterfacePythonImplementationReplaceableAttributeSetter(name, jsValue, info);
+}
+
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -932,6 +953,7 @@ void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfacePythonAttributes[] = {
     {"testInterfacePythonAttribute", TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"testImplementedAsConstructorAttribute", TestInterfacePythonImplementationV8Internal::TestInterfacePythonImplementationConstructorGetter, TestInterfacePythonImplementationV8Internal::TestInterfacePythonImplementationReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestImplementedAs::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"perWorldBindingsStringAttribute", TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementsReadonlyStringAttribute", TestInterfacePythonImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementsStringAttribute", TestInterfacePythonImplementationV8Internal::implementsStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::implementsStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

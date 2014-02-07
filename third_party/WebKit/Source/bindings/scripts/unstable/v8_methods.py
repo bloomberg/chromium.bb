@@ -106,6 +106,7 @@ def generate_method(interface, method):
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
+        'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
         'is_read_only': 'ReadOnly' in extended_attributes,

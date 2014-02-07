@@ -161,6 +161,7 @@ interface TestObjectPython {
     [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;
     [PerWorldBindings] attribute long perWorldBindingsLongAttribute;
     [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
+    [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [ActivityLogging=ForAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
     [ActivityLogging=GetterForAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
@@ -199,7 +200,9 @@ interface TestObjectPython {
     [Reflect, ReflectOnly="empty"|"missing"|"invalid"|"a-normal", ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
+    [Replaceable, PutForwards=href] readonly attribute TestNode locationReplaceable;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
+    [PerContextEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long perContextEnabledRuntimeEnabledLongAttribute;
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;

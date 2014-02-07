@@ -71,7 +71,31 @@ namespace TestInterfaceNamedConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void TestInterfaceNamedConstructorConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Value> data = info.Data();
+    ASSERT(data->IsExternal());
+    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
+    if (!perContextData)
+        return;
+    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+}
+
+static void TestInterfaceNamedConstructorReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    info.This()->ForceSet(name, jsValue);
+}
+
+static void TestInterfaceNamedConstructorReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorReplaceableAttributeSetter(name, jsValue, info);
+}
+
 } // namespace TestInterfaceNamedConstructorV8Internal
+
+static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorAttributes[] = {
+    {"testNamedConstructorConstructorAttribute", TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorConstructorGetter, TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+};
 
 const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructorConstructor::domTemplate, V8TestInterfaceNamedConstructor::derefObject, V8TestInterfaceNamedConstructor::toActiveDOMObject, 0, 0, V8TestInterfaceNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
 
@@ -142,7 +166,7 @@ static void configureV8TestInterfaceNamedConstructorTemplate(v8::Handle<v8::Func
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceNamedConstructor", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceNamedConstructor::internalFieldCount,
-        0, 0,
+        V8TestInterfaceNamedConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNamedConstructorAttributes),
         0, 0,
         0, 0,
         isolate, currentWorldType);

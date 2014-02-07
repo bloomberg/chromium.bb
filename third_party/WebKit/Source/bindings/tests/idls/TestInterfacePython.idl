@@ -41,6 +41,7 @@
     // configuration and method configuration, and [StrictTypeChecking]
     const unsigned long UNSIGNED_LONG = 0;
     attribute TestInterfacePython testInterfacePythonAttribute; // Self-referential interface type with [ImplementedAs]
+    attribute TestImplementedAsConstructor testImplementedAsConstructorAttribute;
     static attribute DOMString staticStringAttribute;
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;

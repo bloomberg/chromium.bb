@@ -148,12 +148,14 @@ template <typename T> void V8_USE(T) { }
 } // namespace {{cpp_class}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
+{% block shadow_attributes %}{% endblock %}
 {% block class_attributes %}{% endblock %}
 {% block class_accessors %}{% endblock %}
 {% block class_methods %}{% endblock %}
 {% block named_constructor %}{% endblock %}
 {% block initialize_event %}{% endblock %}
 {% block constructor_callback %}{% endblock %}
+{% block configure_shadow_object_template %}{% endblock %}
 {% block configure_class_template %}{% endblock %}
 {% block get_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
@@ -161,6 +163,7 @@ template <typename T> void V8_USE(T) { }
 {% block install_per_context_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
 {% block to_event_target %}{% endblock %}
+{% block get_shadow_object_template %}{% endblock %}
 {% block wrap %}{% endblock %}
 {% block create_wrapper %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}

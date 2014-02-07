@@ -278,13 +278,16 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {% macro origin_safe_method_getter(method, world_suffix) %}
 static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    {% set signature = 'v8::Local<v8::Signature>()'
+                       if method.is_do_not_check_signature else
+                       'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate(), currentWorldType))' % v8_class %}
     {# FIXME: don't call GetIsolate() so often #}
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), {{v8_class}}::domTemplate(info.GetIsolate(), currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.number_of_required_or_variadic_arguments}});
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
@@ -296,7 +299,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), {{v8_class}}::domTemplate(info.GetIsolate(), currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }

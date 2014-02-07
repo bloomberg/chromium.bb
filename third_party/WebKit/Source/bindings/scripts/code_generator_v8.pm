@@ -4604,6 +4604,7 @@ static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
     templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
     templ->SetInternalFieldCount(V8Window::internalFieldCount);
 }
+
 END
     }
 

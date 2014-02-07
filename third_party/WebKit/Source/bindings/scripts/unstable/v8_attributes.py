@@ -355,7 +355,8 @@ def scoped_content_attribute_name(attribute):
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
     extended_attributes = attribute.extended_attributes
-    if ('Replaceable' in extended_attributes or
+    if (('Replaceable' in extended_attributes and
+         'PutForwards' not in extended_attributes) or
         is_constructor_attribute(attribute)):
         # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
@@ -374,7 +375,8 @@ def access_control_list(attribute):
             access_control.append('v8::ALL_CAN_WRITE')
         else:
             access_control.append('v8::ALL_CAN_READ')
-            if not attribute.is_read_only:
+            if (not attribute.is_read_only or
+                'Replaceable' in extended_attributes):
                 access_control.append('v8::ALL_CAN_WRITE')
     if 'Unforgeable' in extended_attributes:
         access_control.append('v8::PROHIBITS_OVERWRITING')
