@@ -32,7 +32,6 @@
 #include "SVGNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/FontFaceCache.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
@@ -520,35 +519,26 @@ StyleResolverChange StyleEngine::resolverChanged(RecalcStyleTime time, StyleReso
     return change;
 }
 
-void StyleEngine::clearFontCache()
-{
-    // We should not recreate FontSelector. Instead, clear fontFaceCache.
-    if (m_fontSelector)
-        m_fontSelector->fontFaceCache()->clear();
-    if (m_resolver)
-        m_resolver->invalidateMatchedPropertiesCache();
-}
-
-void StyleEngine::updateGenericFontFamilySettings()
+void StyleEngine::resetFontSelector()
 {
     if (!m_fontSelector)
         return;
 
-    m_fontSelector->updateGenericFontFamilySettings(m_document);
-    if (m_resolver)
+    m_fontSelector->clearDocument();
+    if (m_resolver) {
+        m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
         m_resolver->invalidateMatchedPropertiesCache();
-}
+    }
 
-void StyleEngine::removeFontFaceRules(const Vector<const StyleRuleFontFace*>& fontFaceRules)
-{
-    if (!m_fontSelector)
-        return;
-
-    FontFaceCache* cache = m_fontSelector->fontFaceCache();
-    for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-        cache->remove(fontFaceRules[i]);
-    if (m_resolver)
-        m_resolver->invalidateMatchedPropertiesCache();
+    // If the document has been already detached, we don't need to recreate
+    // CSSFontSelector.
+    if (m_document.isActive()) {
+        m_fontSelector = CSSFontSelector::create(&m_document);
+        if (m_resolver)
+            m_fontSelector->registerForInvalidationCallbacks(m_resolver.get());
+    } else {
+        m_fontSelector = 0;
+    }
 }
 
 void StyleEngine::markTreeScopeDirty(TreeScope& scope)

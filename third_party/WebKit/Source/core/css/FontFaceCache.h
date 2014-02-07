@@ -48,7 +48,6 @@ public:
     // a result of egregious spaghettification in FontFace/FontFaceSet.
     void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<FontFace>);
     void remove(const StyleRuleFontFace*);
-    void clear();
     void addFontFace(CSSFontSelector*, PassRefPtr<FontFace>, bool cssConnected);
     void removeFontFace(FontFace*, bool cssConnected);
 

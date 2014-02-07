@@ -48,7 +48,6 @@ class StyleEngine;
 class Node;
 class StyleSheetContents;
 class StyleSheetList;
-class StyleRuleFontFace;
 
 class TreeScopeStyleSheetCollection : public StyleSheetCollection {
 public:
@@ -73,13 +72,13 @@ protected:
     enum StyleResolverUpdateType {
         Reconstruct,
         Reset,
-        Additive
+        Additive,
+        ResetStyleResolverAndFontSelector
     };
 
     struct StyleSheetChange {
         StyleResolverUpdateType styleResolverUpdateType;
         bool requiresFullStyleRecalc;
-        Vector<const StyleRuleFontFace*> fontFaceRulesToRemove;
 
         StyleSheetChange()
             : styleResolverUpdateType(Reconstruct)

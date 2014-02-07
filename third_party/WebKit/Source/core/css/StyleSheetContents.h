@@ -41,7 +41,6 @@ class Document;
 class Node;
 class SecurityOrigin;
 class StyleRuleBase;
-class StyleRuleFontFace;
 class StyleRuleImport;
 
 class StyleSheetContents : public RefCounted<StyleSheetContents> {
@@ -94,7 +93,6 @@ public:
 
     void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
     bool hasFontFaceRule() const { return m_hasFontFaceRule; }
-    void findFontFaceRules(Vector<const StyleRuleFontFace*>& fontFaceRules);
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtr<StyleRuleBase>);
@@ -155,7 +153,6 @@ public:
 private:
     StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext&);
     StyleSheetContents(const StyleSheetContents&);
-    void notifyRemoveFontFaceRule(const StyleRuleFontFace*);
 
     void clearCharsetRule();
 

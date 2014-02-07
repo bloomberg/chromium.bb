@@ -500,11 +500,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
     case SettingsDelegate::ScriptEnableChange:
         m_inspectorController->scriptsEnabled(settings().scriptEnabled());
         break;
-    case SettingsDelegate::FontFamilyChange:
-        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->styleEngine()->updateGenericFontFamilySettings();
-        setNeedsRecalcStyleInAllFrames();
-        break;
     }
 }
 
