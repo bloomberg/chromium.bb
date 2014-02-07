@@ -55,7 +55,7 @@ void HotwordServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
                              false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
                              0,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
