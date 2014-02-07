@@ -629,6 +629,12 @@ TEST_F(WebCryptoImplTest, StatusToString) {
   EXPECT_EQ("", Status::Error().ToString());
   EXPECT_EQ("The requested operation is unsupported",
             Status::ErrorUnsupported().ToString());
+  EXPECT_EQ("The required JWK property \"kty\" was missing",
+            Status::ErrorJwkPropertyMissing("kty").ToString());
+  EXPECT_EQ("The JWK property \"kty\" must be a string",
+            Status::ErrorJwkPropertyWrongType("kty", "string").ToString());
+  EXPECT_EQ("The JWK property \"n\" could not be base64 decoded",
+            Status::ErrorJwkBase64Decode("n").ToString());
 }
 
 TEST_F(WebCryptoImplTest, DigestSampleSets) {
@@ -1042,14 +1048,36 @@ TEST_F(WebCryptoImplTest, ImportJwkFailures) {
 
   // Fail on missing kty.
   dict.Remove("kty", NULL);
-  EXPECT_STATUS(Status::ErrorJwkMissingKty(), ImportKeyJwk(
-      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  EXPECT_STATUS(
+      Status::ErrorJwkPropertyMissing("kty"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on kty wrong type.
+  dict.SetDouble("kty", 0.1);
+  EXPECT_STATUS(
+      Status::ErrorJwkPropertyWrongType("kty", "string"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid use.
   dict.SetString("use", "foo");
   EXPECT_STATUS(Status::ErrorJwkUnrecognizedUsage(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on invalid use (wrong type).
+  dict.SetBoolean("use", true);
+  EXPECT_STATUS(
+      Status::ErrorJwkPropertyWrongType("use", "string"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on invalid extractable (wrong type).
+  dict.SetInteger("extractable", 0);
+  EXPECT_STATUS(
+      Status::ErrorJwkPropertyWrongType("extractable", "boolean"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 }
 
@@ -1074,14 +1102,16 @@ TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
 
   // Fail on missing k.
   dict.Remove("k", NULL);
-  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
-      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  EXPECT_STATUS(
+      Status::ErrorJwkPropertyMissing("k"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on bad b64 encoding for k.
   dict.SetString("k", "Qk3f0DsytU8lfza2au #$% Htaw2xpop9GYyTuH0p5GghxTI=");
-  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
-      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  EXPECT_STATUS(
+      Status::ErrorJwkBase64Decode("k"),
+      ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on empty k.

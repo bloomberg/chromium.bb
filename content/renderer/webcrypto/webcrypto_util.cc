@@ -14,32 +14,46 @@ namespace content {
 namespace webcrypto {
 
 bool Status::IsError() const {
-  return error_details_ != NULL;
+  return type_ == TYPE_ERROR;
 }
 
 bool Status::IsSuccess() const {
-  return !IsError();
+  return type_ == TYPE_SUCCESS;
+}
+
+bool Status::HasErrorDetails() const {
+  return !error_details_.empty();
 }
 
 std::string Status::ToString() const {
-  return IsSuccess() ? "Success" : std::string(error_details_);
+  return IsSuccess() ? "Success" : error_details_;
 }
 
 Status Status::Success() {
-  return Status(NULL);
+  return Status(TYPE_SUCCESS);
 }
 
 Status Status::Error() {
-  return Status("");
+  return Status(TYPE_ERROR);
 }
 
 Status Status::ErrorJwkNotDictionary() {
   return Status("JWK input could not be parsed to a JSON dictionary");
 }
 
-Status Status::ErrorJwkMissingKty() {
-  return Status("JWK dictionary is missing \"kty\" property or it is not a "
-                "string");
+Status Status::ErrorJwkPropertyMissing(const std::string& property) {
+  return Status("The required JWK property \"" + property + "\" was missing");
+}
+
+Status Status::ErrorJwkPropertyWrongType(const std::string& property,
+                                         const std::string& expected_type) {
+  return Status("The JWK property \"" + property + "\" must be a " +
+                expected_type);
+}
+
+Status Status::ErrorJwkBase64Decode(const std::string& property) {
+  return Status("The JWK property \"" + property +
+                "\" could not be base64 decoded");
 }
 
 Status Status::ErrorJwkExtractableInconsistent() {
@@ -69,18 +83,6 @@ Status Status::ErrorJwkUsageInconsistent() {
   return Status("The JWK \"use\" property was inconsistent with that specified "
                 "by the Web Crypto call. The JWK usage must be a superset of "
                 "those requested");
-}
-
-Status Status::ErrorJwkDecodeK() {
-  return Status("Could not extract required base64 encoded property \"k\"");
-}
-
-Status Status::ErrorJwkDecodeN() {
-  return Status("Could not extract required base64 encoded property \"n\"");
-}
-
-Status Status::ErrorJwkDecodeE() {
-  return Status("Could not extract required base64 encoded property \"e\"");
 }
 
 Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
@@ -156,9 +158,10 @@ Status Status::ErrorGenerateKeyLength() {
                 "bits");
 }
 
-Status::Status(const char* error_details_utf8)
-    : error_details_(error_details_utf8) {
-}
+Status::Status(const std::string& error_details_utf8)
+    : type_(TYPE_ERROR), error_details_(error_details_utf8) {}
+
+Status::Status(Type type) : type_(type) {}
 
 const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
   if (data.empty())
