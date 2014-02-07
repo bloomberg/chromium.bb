@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -35,31 +34,6 @@
 
 using base::win::ScopedHandle;
 using base::TimeDelta;
-
-namespace {
-
-#if defined(OFFICIAL_BUILD)
-const wchar_t kPairingRegistryKeyName[] =
-    L"SOFTWARE\\Google\\Chrome Remote Desktop\\paired-clients";
-#else
-const wchar_t kPairingRegistryKeyName[] =
-    L"SOFTWARE\\Chromoting\\paired-clients";
-#endif
-
-const wchar_t kPrivilegedKeyName[] = L"secrets";
-const wchar_t kUnprivilegedKeyName[] = L"clients";
-
-// Duplicates |key| into |target_process| and returns the value that can be sent
-// over IPC.
-IPC::PlatformFileForTransit GetRegistryKeyForTransit(
-    base::ProcessHandle target_process,
-    const base::win::RegKey& key) {
-  base::PlatformFile handle =
-      reinterpret_cast<base::PlatformFile>(key.Handle());
-  return IPC::GetFileHandleForProcess(handle, target_process, false);
-}
-
-}  // namespace
 
 namespace remoting {
 
@@ -101,21 +75,11 @@ class DaemonProcessWin : public DaemonProcess {
   // Changes the service start type to 'manual'.
   void DisableAutoStart();
 
-  // Initializes the pairing registry on the host side by sending
-  // ChromotingDaemonNetworkMsg_InitializePairingRegistry message.
-  bool InitializePairingRegistry();
-
-  // Opens the pairing registry keys.
-  bool OpenPairingRegistry();
-
  private:
   scoped_ptr<WorkerProcessLauncher> network_launcher_;
 
   // Handle of the network process.
   ScopedHandle network_process_;
-
-  base::win::RegKey pairing_registry_privileged_key_;
-  base::win::RegKey pairing_registry_unprivileged_key_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonProcessWin);
 };
@@ -134,11 +98,6 @@ void DaemonProcessWin::OnChannelConnected(int32 peer_pid) {
   // Obtain the handle of the network process.
   network_process_.Set(OpenProcess(PROCESS_DUP_HANDLE, false, peer_pid));
   if (!network_process_.IsValid()) {
-    CrashNetworkProcess(FROM_HERE);
-    return;
-  }
-
-  if (!InitializePairingRegistry()) {
     CrashNetworkProcess(FROM_HERE);
     return;
   }
@@ -279,67 +238,6 @@ void DaemonProcessWin::DisableAutoStart() {
         << "Failed to change the '" << kWindowsServiceName
         << "'service start type to 'manual'";
   }
-}
-
-bool DaemonProcessWin::InitializePairingRegistry() {
-  if (!pairing_registry_privileged_key_.Valid()) {
-    if (!OpenPairingRegistry())
-      return false;
-  }
-
-  // Duplicate handles to the network process.
-  IPC::PlatformFileForTransit privileged_key = GetRegistryKeyForTransit(
-      network_process_, pairing_registry_privileged_key_);
-  IPC::PlatformFileForTransit unprivileged_key = GetRegistryKeyForTransit(
-      network_process_, pairing_registry_unprivileged_key_);
-  if (!(privileged_key && unprivileged_key))
-    return false;
-
-  // Initialize the pairing registry in the network process. This has to be done
-  // before the host configuration is sent, otherwise the host will not use
-  // the passed handles.
-  SendToNetwork(new ChromotingDaemonNetworkMsg_InitializePairingRegistry(
-      privileged_key, unprivileged_key));
-  return true;
-}
-
-bool DaemonProcessWin::OpenPairingRegistry() {
-  DCHECK(!pairing_registry_privileged_key_.Valid());
-  DCHECK(!pairing_registry_unprivileged_key_.Valid());
-
-  // Open the root of the pairing registry.
-  base::win::RegKey root;
-  LONG result = root.Open(HKEY_LOCAL_MACHINE, kPairingRegistryKeyName,
-                          KEY_READ);
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName;
-    return false;
-  }
-
-  base::win::RegKey privileged;
-  result = privileged.Open(root.Handle(), kPrivilegedKeyName,
-                           KEY_READ | KEY_WRITE);
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName << "\\"
-                << kPrivilegedKeyName;
-    return false;
-  }
-
-  base::win::RegKey unprivileged;
-  result = unprivileged.Open(root.Handle(), kUnprivilegedKeyName,
-                             KEY_READ | KEY_WRITE);
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kUnprivilegedKeyName << "\\"
-                << kUnprivilegedKeyName;
-    return false;
-  }
-
-  pairing_registry_privileged_key_.Set(privileged.Take());
-  pairing_registry_unprivileged_key_.Set(unprivileged.Take());
-  return true;
 }
 
 }  // namespace remoting
