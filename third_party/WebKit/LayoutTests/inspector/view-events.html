@@ -55,6 +55,8 @@ function test()
                 this.showOnWasShown.show(this.showRoot || this.element);
             if (this.detachOnWasShown)
                 this.detachOnWasShown.detach();
+            if (this.resizeOnWasShown)
+                this.resizeOnWasShown.doResize();
         },
 
         willHide: function()
@@ -69,6 +71,18 @@ function test()
         onResize: function()
         {
             InspectorTest.addResult("  " + this._viewName + ".onResize()");
+        },
+
+        _applyCacheSize: function()
+        {
+            InspectorTest.addResult("  " + this._viewName + ".cacheSize()");
+            WebInspector.View.prototype._applyCacheSize.call(this);
+        },
+
+        _processDiscardCachedSize: function()
+        {
+            InspectorTest.addResult("  " + this._viewName + ".discardCachedSize()");
+            WebInspector.View.prototype._processDiscardCachedSize.call(this);
         }
     };
 
@@ -327,6 +341,17 @@ function test()
             parentView2.show(WebInspector.inspectorView.element);
             childView.show(parentView1.element);
             childView.show(parentView2.element);
+            next();
+        },
+
+        function testResizeOnWasShown(next)
+        {
+            var parentView = new TestView("Parent");
+            var childView = new TestView("Child");
+            childView.show(parentView.element);
+            parentView.resizeOnWasShown = childView;
+            parentView.show(WebInspector.inspectorView.element);
+            parentView.detach();
             next();
         }
     ]);
