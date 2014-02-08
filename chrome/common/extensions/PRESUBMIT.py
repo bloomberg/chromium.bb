@@ -153,7 +153,10 @@ def _CheckChange(input_api, output_api):
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
-  return _CheckChange(input_api, output_api)
+  results = []
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  results += _CheckChange(input_api, output_api)
+  return results
 
 def CheckChangeOnCommit(input_api, output_api):
   return _CheckChange(input_api, output_api)

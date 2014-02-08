@@ -297,7 +297,8 @@ class HistogramValueChecker(object):
     return self.results
 
 def CheckChangeOnUpload(input_api, output_api):
-    results = []
-    results += HistogramValueChecker(input_api, output_api).Run()
-    return results
+  results = []
+  results += HistogramValueChecker(input_api, output_api).Run()
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  return results
 
