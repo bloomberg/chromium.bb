@@ -38,14 +38,18 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     explicit AudioSink(PepperMediaStreamAudioTrackHost* host);
     virtual ~AudioSink();
 
-    // Enqueues a free frame index into |frames_| which will be used for
+    // Enqueues a free buffer index into |buffers_| which will be used for
     // sending audio samples to plugin.
-    // This function is called on the renderer main thread.
-    void EnqueueFrame(int32_t index);
+    // This function is called on the main thread.
+    void EnqueueBuffer(int32_t index);
 
    private:
-    void InitFramesOnMainThread(int32_t number_of_frames, int32_t frame_size);
-    void SendEnqueueFrameMessageOnMainThread(int32_t index);
+    // Initializes buffers on the main thread.
+    void InitBuffersOnMainThread(int32_t number_of_buffers,
+                                 int32_t buffer_size);
+
+    // Send enqueue buffer message on the main thread.
+    void SendEnqueueBufferMessageOnMainThread(int32_t index);
 
     // MediaStreamAudioSink overrides:
     // These two functions should be called on the audio thread.
@@ -57,18 +61,18 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     // Unowned host which is available during the AudioSink's lifespan.
     // It is mainly used in the main thread. But the audio thread will use
-    // host_->frame_buffer() to read some buffer properties. It is safe
-    // because the frame_buffer()'s properties will not be changed after
+    // host_->buffer_manager() to read some buffer properties. It is safe
+    // because the buffer_manager()'s properties will not be changed after
     // initialization.
     PepperMediaStreamAudioTrackHost* host_;
 
-    // Timestamp of the next received audio frame.
+    // Timestamp of the next received audio buffer.
     // Access only on the audio thread.
     base::TimeDelta timestamp_;
 
-    // Duration of one audio frame.
+    // Duration of one audio buffer.
     // Access only on the audio thread.
-    base::TimeDelta frame_duration_;
+    base::TimeDelta buffer_duration_;
 
     // The current audio parameters.
     // Access only on the audio thread.
@@ -79,15 +83,15 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Access only on the audio thread.
     media::AudioParameters original_audio_params_;
 
-    // The size of a frame in bytes.
+    // The audio data size of one audio buffer in bytes.
     // Access only on the audio thread.
-    uint32_t frame_data_size_;
+    uint32_t buffer_data_size_;
 
-    // A lock to protect the index queue |frames_|.
+    // A lock to protect the index queue |buffers_|.
     base::Lock lock_;
 
-    // A queue for free frame indices.
-    std::deque<int32_t> frames_;
+    // A queue for free buffer indices.
+    std::deque<int32_t> buffers_;
 
     scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
 
@@ -103,8 +107,8 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
   // PepperMediaStreamTrackHostBase overrides:
   virtual void OnClose() OVERRIDE;
 
-  // MediaStreamFrameBuffer::Delegate overrides:
-  virtual void OnNewFrameEnqueued() OVERRIDE;
+  // MediaStreamBufferManager::Delegate overrides:
+  virtual void OnNewBufferEnqueued() OVERRIDE;
 
   // ResourceHost overrides:
   virtual void DidConnectPendingHostToResource() OVERRIDE;

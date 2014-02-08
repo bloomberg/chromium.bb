@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_frame.h"
-#include "ppapi/shared_impl/media_stream_frame.h"
+#include "ppapi/shared_impl/media_stream_buffer.h"
 
 using media::VideoFrame;
 
@@ -77,33 +77,33 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     // than once.
     DCHECK(!frame_data_size_);
     frame_data_size_ = VideoFrame::AllocationSize(frame_format_, frame_size_);
-    int32_t size = sizeof(ppapi::MediaStreamFrame::Video) + frame_data_size_;
-    bool result = InitFrames(kNumberOfFrames, size);
+    int32_t size = sizeof(ppapi::MediaStreamBuffer::Video) + frame_data_size_;
+    bool result = InitBuffers(kNumberOfFrames, size);
     // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
     CHECK(result);
   }
 
-  int32_t index = frame_buffer()->DequeueFrame();
+  int32_t index = buffer_manager()->DequeueBuffer();
   // Drop frames if the underlying buffer is full.
   if (index < 0)
     return;
 
   // TODO(penghuang): support format conversion and size scaling.
-  ppapi::MediaStreamFrame::Video* ppframe =
-      &(frame_buffer()->GetFramePointer(index)->video);
-  ppframe->header.size = frame_buffer()->frame_size();
-  ppframe->header.type = ppapi::MediaStreamFrame::TYPE_VIDEO;
-  ppframe->timestamp = frame->GetTimestamp().InSecondsF();
-  ppframe->format = ppformat;
-  ppframe->size.width = frame->coded_size().width();
-  ppframe->size.height = frame->coded_size().height();
-  ppframe->data_size = frame_data_size_;
+  ppapi::MediaStreamBuffer::Video* buffer =
+      &(buffer_manager()->GetBufferPointer(index)->video);
+  buffer->header.size = buffer_manager()->buffer_size();
+  buffer->header.type = ppapi::MediaStreamBuffer::TYPE_VIDEO;
+  buffer->timestamp = frame->GetTimestamp().InSecondsF();
+  buffer->format = ppformat;
+  buffer->size.width = frame->coded_size().width();
+  buffer->size.height = frame->coded_size().height();
+  buffer->data_size = frame_data_size_;
 
   COMPILE_ASSERT(VideoFrame::kYPlane == 0, y_plane_should_be_0);
   COMPILE_ASSERT(VideoFrame::kUPlane == 1, u_plane_should_be_1);
   COMPILE_ASSERT(VideoFrame::kVPlane == 2, v_plane_should_be_2);
 
-  uint8_t* dst = ppframe->data;
+  uint8_t* dst = buffer->data;
   size_t num_planes = VideoFrame::NumPlanes(frame->format());
   for (size_t i = 0; i < num_planes; ++i) {
     const uint8_t* src = frame->data(i);
@@ -117,7 +117,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     }
   }
 
-  SendEnqueueFrameMessageToPlugin(index);
+  SendEnqueueBufferMessageToPlugin(index);
 }
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {

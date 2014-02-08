@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_MEDIA_STREAM_FRAME_H_
-#define PPAPI_SHARED_IMPL_MEDIA_STREAM_FRAME_H_
+#ifndef PPAPI_SHARED_IMPL_MEDIA_STREAM_BUFFER_H_
+#define PPAPI_SHARED_IMPL_MEDIA_STREAM_BUFFER_H_
 
 #include "ppapi/c/ppb_audio_frame.h"
 #include "ppapi/c/ppb_video_frame.h"
 
 namespace ppapi {
 
-union MediaStreamFrame {
+union MediaStreamBuffer {
   enum Type {
     TYPE_UNKNOWN = 0,
     TYPE_AUDIO = 1,
@@ -59,4 +59,4 @@ union MediaStreamFrame {
 
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_MEDIA_STREAM_FRAME_H_
+#endif  // PPAPI_SHARED_IMPL_MEDIA_STREAM_BUFFER_H_

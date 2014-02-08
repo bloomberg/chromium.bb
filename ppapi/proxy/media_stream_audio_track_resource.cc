@@ -5,7 +5,7 @@
 #include "ppapi/proxy/media_stream_audio_track_resource.h"
 
 #include "ppapi/proxy/audio_frame_resource.h"
-#include "ppapi/shared_impl/media_stream_frame.h"
+#include "ppapi/shared_impl/media_stream_buffer.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -84,9 +84,9 @@ int32_t MediaStreamAudioTrackResource::RecycleFrame(PP_Resource frame) {
   if (has_ended())
     return PP_OK;
 
-  DCHECK_GE(frame_resource->GetFrameBufferIndex(), 0);
+  DCHECK_GE(frame_resource->GetBufferIndex(), 0);
 
-  SendEnqueueFrameMessageToHost(frame_resource->GetFrameBufferIndex());
+  SendEnqueueBufferMessageToHost(frame_resource->GetBufferIndex());
   frame_resource->Invalidate();
   return PP_OK;
 }
@@ -106,7 +106,7 @@ void MediaStreamAudioTrackResource::Close() {
   MediaStreamTrackResourceBase::CloseInternal();
 }
 
-void MediaStreamAudioTrackResource::OnNewFrameEnqueued() {
+void MediaStreamAudioTrackResource::OnNewBufferEnqueued() {
   if (!TrackedCallback::IsPending(get_frame_callback_))
     return;
 
@@ -119,14 +119,14 @@ void MediaStreamAudioTrackResource::OnNewFrameEnqueued() {
 }
 
 PP_Resource MediaStreamAudioTrackResource::GetAudioFrame() {
-  int32_t index = frame_buffer()->DequeueFrame();
+  int32_t index = buffer_manager()->DequeueBuffer();
   if (index < 0)
       return 0;
 
-  MediaStreamFrame* frame = frame_buffer()->GetFramePointer(index);
-  DCHECK(frame);
+  MediaStreamBuffer* buffer = buffer_manager()->GetBufferPointer(index);
+  DCHECK(buffer);
   scoped_refptr<AudioFrameResource> resource =
-      new AudioFrameResource(pp_instance(), index, frame);
+      new AudioFrameResource(pp_instance(), index, buffer);
   // Add |pp_resource()| and |resource| into |frames_|.
   // |frames_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
   // resource alive.

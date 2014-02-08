@@ -8,11 +8,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
-#include "ppapi/shared_impl/media_stream_frame.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_frame_api.h"
 
 namespace ppapi {
+
+union MediaStreamBuffer;
+
 namespace proxy {
 
 class PPAPI_PROXY_EXPORT AudioFrameResource : public Resource,
@@ -20,7 +22,7 @@ class PPAPI_PROXY_EXPORT AudioFrameResource : public Resource,
  public:
   AudioFrameResource(PP_Instance instance,
                      int32_t index,
-                     MediaStreamFrame* frame);
+                     MediaStreamBuffer* buffer);
 
   virtual ~AudioFrameResource();
 
@@ -36,14 +38,14 @@ class PPAPI_PROXY_EXPORT AudioFrameResource : public Resource,
   virtual uint32_t GetNumberOfSamples() OVERRIDE;
   virtual void* GetDataBuffer() OVERRIDE;
   virtual uint32_t GetDataBufferSize() OVERRIDE;
-  virtual MediaStreamFrame* GetFrameBuffer();
-  virtual int32_t GetFrameBufferIndex();
-  virtual void Invalidate();
+  virtual MediaStreamBuffer* GetBuffer() OVERRIDE;
+  virtual int32_t GetBufferIndex() OVERRIDE;
+  virtual void Invalidate() OVERRIDE;
 
   // Frame index
   int32_t index_;
 
-  MediaStreamFrame* frame_;
+  MediaStreamBuffer* buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFrameResource);
 };

@@ -44,8 +44,8 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
   virtual int32_t RecycleFrame(PP_Resource frame) OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  // MediaStreamFrameBuffer::Delegate overrides:
-  virtual void OnNewFrameEnqueued() OVERRIDE;
+  // MediaStreamBufferManager::Delegate overrides:
+  virtual void OnNewBufferEnqueued() OVERRIDE;
 
  private:
   PP_Resource GetVideoFrame();

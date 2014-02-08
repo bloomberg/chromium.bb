@@ -342,7 +342,7 @@ void MediaStreamVideoDemoInstance::OnGetFrame(
     return;
   const char* data = static_cast<const char*>(frame.GetDataBuffer());
   pp::Size size;
-  PP_DCHECK(frame.GetSize(&size));
+  frame.GetSize(&size);
 
   if (size != frame_size_) {
     frame_size_ = size;

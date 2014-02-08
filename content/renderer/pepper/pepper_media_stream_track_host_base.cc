@@ -12,7 +12,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/media_stream_frame.h"
+#include "ppapi/shared_impl/media_stream_buffer.h"
 
 using ppapi::host::HostMessageContext;
 using ppapi::proxy::SerializedHandle;
@@ -25,23 +25,23 @@ PepperMediaStreamTrackHostBase::PepperMediaStreamTrackHostBase(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      frame_buffer_(this) {
+      buffer_manager_(this) {
 }
 
 PepperMediaStreamTrackHostBase::~PepperMediaStreamTrackHostBase() {
 }
 
-bool PepperMediaStreamTrackHostBase::InitFrames(int32_t number_of_frames,
-                                                int32_t frame_size) {
-  DCHECK_GT(number_of_frames, 0);
-  DCHECK_GT(frame_size,
-            static_cast<int32_t>(sizeof(ppapi::MediaStreamFrame::Header)));
-  // Make each frame 4 byte aligned.
-  frame_size = (frame_size + 3) & ~0x3;
+bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
+                                                 int32_t buffer_size) {
+  DCHECK_GT(number_of_buffers, 0);
+  DCHECK_GT(buffer_size,
+            static_cast<int32_t>(sizeof(ppapi::MediaStreamBuffer::Header)));
+  // Make each buffer 4 byte aligned.
+  buffer_size = (buffer_size + 3) & ~0x3;
 
   // TODO(penghuang): |HostAllocateSharedMemoryBuffer| uses sync IPC. We should
   // avoid it.
-  int32_t size = number_of_frames * frame_size;
+  int32_t size = number_of_buffers * buffer_size;
   content::RenderThread* render_thread = content::RenderThread::Get();
   scoped_ptr<base::SharedMemory> shm(
       render_thread->HostAllocateSharedMemoryBuffer(size).Pass());
@@ -49,8 +49,10 @@ bool PepperMediaStreamTrackHostBase::InitFrames(int32_t number_of_frames,
     return false;
 
   base::SharedMemoryHandle shm_handle = shm->handle();
-  if (!frame_buffer_.SetFrames(number_of_frames, frame_size, shm.Pass(), true))
+  if (!buffer_manager_.SetBuffers(
+        number_of_buffers, buffer_size, shm.Pass(), true)) {
     return false;
+  }
 
   base::PlatformFile platform_file =
 #if defined(OS_WIN)
@@ -63,17 +65,18 @@ bool PepperMediaStreamTrackHostBase::InitFrames(int32_t number_of_frames,
   SerializedHandle handle(
       host_->ShareHandleWithRemote(platform_file, false), size);
   host()->SendUnsolicitedReplyWithHandles(pp_resource(),
-      PpapiPluginMsg_MediaStreamTrack_InitFrames(number_of_frames, frame_size),
+      PpapiPluginMsg_MediaStreamTrack_InitBuffers(number_of_buffers,
+                                                  buffer_size),
       std::vector<SerializedHandle>(1, handle));
   return true;
 }
 
-void PepperMediaStreamTrackHostBase::SendEnqueueFrameMessageToPlugin(
+void PepperMediaStreamTrackHostBase::SendEnqueueBufferMessageToPlugin(
     int32_t index) {
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, frame_buffer_.number_of_frames());
+  DCHECK_LT(index, buffer_manager_.number_of_buffers());
   host()->SendUnsolicitedReply(pp_resource(),
-      PpapiPluginMsg_MediaStreamTrack_EnqueueFrame(index));
+      PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer(index));
 }
 
 int32_t PepperMediaStreamTrackHostBase::OnResourceMessageReceived(
@@ -81,17 +84,17 @@ int32_t PepperMediaStreamTrackHostBase::OnResourceMessageReceived(
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamTrackHostBase, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_MediaStreamTrack_EnqueueFrame, OnHostMsgEnqueueFrame)
+        PpapiHostMsg_MediaStreamTrack_EnqueueBuffer, OnHostMsgEnqueueBuffer)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_MediaStreamTrack_Close, OnHostMsgClose)
   IPC_END_MESSAGE_MAP()
   return ppapi::host::ResourceHost::OnResourceMessageReceived(msg, context);
 }
 
-int32_t PepperMediaStreamTrackHostBase::OnHostMsgEnqueueFrame(
+int32_t PepperMediaStreamTrackHostBase::OnHostMsgEnqueueBuffer(
     HostMessageContext* context,
     int32_t index) {
-  frame_buffer_.EnqueueFrame(index);
+  buffer_manager_.EnqueueBuffer(index);
   return PP_OK;
 }
 

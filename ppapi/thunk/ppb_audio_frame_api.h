@@ -10,7 +10,7 @@
 
 namespace ppapi {
 
-union MediaStreamFrame;
+union MediaStreamBuffer;
 
 namespace thunk {
 
@@ -27,8 +27,8 @@ class PPAPI_THUNK_EXPORT PPB_AudioFrame_API {
   virtual uint32_t GetDataBufferSize() = 0;
 
   // Methods used by Pepper internal implementation only.
-  virtual MediaStreamFrame* GetFrameBuffer() = 0;
-  virtual int32_t GetFrameBufferIndex() = 0;
+  virtual MediaStreamBuffer* GetBuffer() = 0;
+  virtual int32_t GetBufferIndex() = 0;
   virtual void Invalidate() = 0;
 };
 

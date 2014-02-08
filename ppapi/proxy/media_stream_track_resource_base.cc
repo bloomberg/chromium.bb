@@ -16,7 +16,7 @@ MediaStreamTrackResourceBase::MediaStreamTrackResourceBase(
     int pending_renderer_id,
     const std::string& id)
     : PluginResource(connection, instance),
-      frame_buffer_(this),
+      buffer_manager_(this),
       id_(id),
       has_ended_(false) {
   AttachToPendingHost(RENDERER, pending_renderer_id);
@@ -25,11 +25,11 @@ MediaStreamTrackResourceBase::MediaStreamTrackResourceBase(
 MediaStreamTrackResourceBase::~MediaStreamTrackResourceBase() {
 }
 
-void MediaStreamTrackResourceBase::SendEnqueueFrameMessageToHost(
+void MediaStreamTrackResourceBase::SendEnqueueBufferMessageToHost(
     int32_t index) {
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, frame_buffer()->number_of_frames());
-  Post(RENDERER, PpapiHostMsg_MediaStreamTrack_EnqueueFrame(index));
+  DCHECK_LT(index, buffer_manager()->number_of_buffers());
+  Post(RENDERER, PpapiHostMsg_MediaStreamTrack_EnqueueBuffer(index));
 }
 
 void MediaStreamTrackResourceBase::OnReplyReceived(
@@ -37,9 +37,9 @@ void MediaStreamTrackResourceBase::OnReplyReceived(
     const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(MediaStreamTrackResourceBase, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
-        PpapiPluginMsg_MediaStreamTrack_InitFrames, OnPluginMsgInitFrames)
+        PpapiPluginMsg_MediaStreamTrack_InitBuffers, OnPluginMsgInitBuffers)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
-        PpapiPluginMsg_MediaStreamTrack_EnqueueFrame, OnPluginMsgEnqueueFrame)
+        PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer, OnPluginMsgEnqueueBuffer)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
         PluginResource::OnReplyReceived(params, msg))
   IPC_END_MESSAGE_MAP()
@@ -52,21 +52,21 @@ void MediaStreamTrackResourceBase::CloseInternal() {
   }
 }
 
-void MediaStreamTrackResourceBase::OnPluginMsgInitFrames(
+void MediaStreamTrackResourceBase::OnPluginMsgInitBuffers(
     const ResourceMessageReplyParams& params,
-    int32_t number_of_frames,
-    int32_t frame_size) {
+    int32_t number_of_buffers,
+    int32_t buffer_size) {
   base::SharedMemoryHandle shm_handle = base::SharedMemory::NULLHandle();
   params.TakeSharedMemoryHandleAtIndex(0, &shm_handle);
-  frame_buffer_.SetFrames(number_of_frames, frame_size,
+  buffer_manager_.SetBuffers(number_of_buffers, buffer_size,
       scoped_ptr<base::SharedMemory>(new base::SharedMemory(shm_handle, true)),
       false);
 }
 
-void MediaStreamTrackResourceBase::OnPluginMsgEnqueueFrame(
+void MediaStreamTrackResourceBase::OnPluginMsgEnqueueBuffer(
     const ResourceMessageReplyParams& params,
     int32_t index) {
-  frame_buffer_.EnqueueFrame(index);
+  buffer_manager_.EnqueueBuffer(index);
 }
 
 }  // namespace proxy
