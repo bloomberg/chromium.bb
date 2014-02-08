@@ -39,6 +39,8 @@
         'bluetooth_device_mac.mm',
         'bluetooth_device_win.cc',
         'bluetooth_device_win.h',
+        'bluetooth_gatt_service.cc',
+        'bluetooth_gatt_service.h',
         'bluetooth_init_win.cc',
         'bluetooth_init_win.h',
         'bluetooth_out_of_band_pairing_data.h',
