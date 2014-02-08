@@ -205,7 +205,11 @@ def UserActMine(opts):
 
 def UserActInspect(opts, idx):
   """Inspect CL number <n>"""
-  PrintCl(opts, FilteredQuery(opts, idx)[0], None)
+  cl = FilteredQuery(opts, idx)
+  if cl:
+    PrintCl(opts, cl[0], None)
+  else:
+    print('no results found for CL %s' % idx)
 
 
 def UserActReview(opts, idx, num):
