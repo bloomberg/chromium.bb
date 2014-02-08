@@ -257,6 +257,23 @@ void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
   }
 }
 
+// Maps a thread name by replacing trailing sequence of digits with "*".
+// Examples:
+// 1. "BrowserBlockingWorker1/23857" => "BrowserBlockingWorker1/*"
+// 2. "Chrome_IOThread" => "Chrome_IOThread"
+std::string MapThreadName(const std::string& thread_name) {
+  size_t i = thread_name.length();
+
+  while (i > 0 && isdigit(thread_name[i - 1])) {
+    --i;
+  }
+
+  if (i == thread_name.length())
+    return thread_name;
+
+  return thread_name.substr(0, i) + '*';
+}
+
 void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
                        int process_type,
                        ProfilerEventProto* performance_profile) {
@@ -267,9 +284,9 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        MetricsLogBase::Hash(it->birth.thread_name));
+        MetricsLogBase::Hash(MapThreadName(it->birth.thread_name)));
     tracked_object->set_exec_thread_name_hash(
-        MetricsLogBase::Hash(it->death_thread_name));
+        MetricsLogBase::Hash(MapThreadName(it->death_thread_name)));
     tracked_object->set_source_file_name_hash(
         MetricsLogBase::Hash(it->birth.location.file_name));
     tracked_object->set_source_function_name_hash(

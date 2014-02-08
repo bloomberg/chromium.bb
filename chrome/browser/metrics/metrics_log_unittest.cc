@@ -489,7 +489,7 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     EXPECT_EQ(GG_UINT64_C(55232426147951219),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(1773, tracked_object->source_line_number());
-    EXPECT_EQ(GG_UINT64_C(15727396632046120663),
+    EXPECT_EQ(GG_UINT64_C(1518842999910132863),
               tracked_object->birth_thread_name_hash());
     EXPECT_EQ(19, tracked_object->exec_count());
     EXPECT_EQ(23, tracked_object->exec_time_total());
@@ -535,14 +535,14 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     EXPECT_EQ(GG_UINT64_C(5081672290546182009),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(7331, tracked_object->source_line_number());
-    EXPECT_EQ(GG_UINT64_C(8768512930949373716),
+    EXPECT_EQ(GG_UINT64_C(1518842999910132863),
               tracked_object->birth_thread_name_hash());
     EXPECT_EQ(137, tracked_object->exec_count());
     EXPECT_EQ(131, tracked_object->exec_time_total());
     EXPECT_EQ(113, tracked_object->exec_time_sampled());
     EXPECT_EQ(108, tracked_object->queue_time_total());
     EXPECT_EQ(103, tracked_object->queue_time_sampled());
-    EXPECT_EQ(GG_UINT64_C(7246674144371406371),
+    EXPECT_EQ(GG_UINT64_C(2203893603452504755),
               tracked_object->exec_thread_name_hash());
     EXPECT_EQ(1177U, tracked_object->process_id());
     EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
