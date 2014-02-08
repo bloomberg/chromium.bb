@@ -155,7 +155,7 @@ class AutocompleteSyncableService
 
   // Lifetime of AutocompleteSyncableService object is shorter than
   // |autofill_webdata_backend_| passed to it.
-  autofill::AutofillWebDataBackend* webdata_backend_;
+  autofill::AutofillWebDataBackend* const webdata_backend_;
 
   ScopedObserver<autofill::AutofillWebDataBackend, AutocompleteSyncableService>
       scoped_observer_;
