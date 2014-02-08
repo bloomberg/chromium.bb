@@ -1566,13 +1566,7 @@ void MediaStreamManager::AddLogMessageOnIOThread(const std::string& message) {
 void MediaStreamManager::AddLogMessageOnUIThread(
     const std::set<int>& requesting_process_ids,
     const std::string& message) {
-#if defined(OS_ANDROID)
-  // It appears android_aosp is being built with ENABLE_WEBRTC=0, since it does
-  // not find RenderProcessHostImpl::WebRtcLogMessage. Logging is not enabled on
-  // Android anyway, so make this function a no-op.
-  // TODO(vrk): Figure out what's going on here and fix.
-  return;
-#else
+#if defined(ENABLE_WEBRTC)
   // Must be on the UI thread to access RenderProcessHost from process ID.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
