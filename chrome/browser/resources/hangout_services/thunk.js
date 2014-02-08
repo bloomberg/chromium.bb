@@ -28,6 +28,8 @@ chrome.runtime.onMessageExternal.addListener(
         var method = message['method'];
         var origin = getHost(sender.url);
         if (method == 'chooseDesktopMedia') {
+          // TODO(bemasc): Remove this method once the caller has transitioned
+          // to using the port.
           var cancelId;
           function sendResponseWithCancelId(streamId) {
             var value = {'cancelId': cancelId, 'streamId': streamId};
@@ -37,6 +39,7 @@ chrome.runtime.onMessageExternal.addListener(
               ['screen', 'window'], sender.tab, sendResponseWithCancelId);
           return true;
         } else if (method == 'cancelChooseDesktopMedia') {
+          // TODO(bemasc): Remove this method (see above).
           var cancelId = message['cancelId'];
           chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
           doSendResponse();
@@ -123,16 +126,56 @@ chrome.runtime.onMessageExternal.addListener(
 // If Hangouts connects with a port named 'onSinksChangedListener', we
 // will register a listener and send it a message {'eventName':
 // 'onSinksChanged'} whenever the event fires.
+function onSinksChangedPort(port) {
+  function clientListener() {
+    port.postMessage({'eventName': 'onSinksChanged'});
+  }
+  chrome.webrtcAudioPrivate.onSinksChanged.addListener(clientListener);
+
+  port.onDisconnect.addListener(function() {
+    chrome.webrtcAudioPrivate.onSinksChanged.removeListener(
+        clientListener);
+  });
+}
+
+// This is a one-time-use port for calling chooseDesktopMedia.  The page
+// sends one message, identifying the requested source types, and the
+// extension sends a single reply, with the user's selected streamId.  A port
+// is used so that if the page is closed before that message is sent, the
+// window picker dialog will be closed.
+function onChooseDesktopMediaPort(port) {
+  function sendResponse(streamId) {
+    port.postMessage({'value': {'streamId': streamId}});
+    port.disconnect();
+  }
+
+  port.onMessage.addListener(function(message) {
+    var method = message['method'];
+    if (method == 'chooseDesktopMedia') {
+      var sources = message['sources'];
+      var cancelId = chrome.desktopCapture.chooseDesktopMedia(
+          sources, port.sender.tab, sendResponse);
+      port.onDisconnect.addListener(function() {
+        // This method has no effect if called after the user has selected a
+        // desktop media source, so it does not need to be conditional.
+        chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
+      });
+    } else if (method == 'getNaclArchitecture') {
+      chrome.runtime.getPlatformInfo(function(obj) {
+        doSendResponse(obj.nacl_arch);
+      });
+      return true;
+    }
+  });
+}
+
 chrome.runtime.onConnectExternal.addListener(function(port) {
   if (port.name == 'onSinksChangedListener') {
-    function clientListener() {
-      port.postMessage({'eventName': 'onSinksChanged'});
-    }
-    chrome.webrtcAudioPrivate.onSinksChanged.addListener(clientListener);
-
-    port.onDisconnect(function() {
-      chrome.webrtcAudioPrivate.onSinksChanged.removeListener(
-          clientListener);
-    });
+    onSinksChangedPort(port);
+  } else if (port.name == 'chooseDesktopMedia') {
+    onChooseDesktopMediaPort(port);
+  } else {
+    // Unknown port type.
+    port.disconnect();
   }
 });
