@@ -132,6 +132,9 @@ void ComponentLoader::LoadAll() {
 
 base::DictionaryValue* ComponentLoader::ParseManifest(
     const std::string& manifest_contents) const {
+  if (manifest_contents.empty())
+    return NULL;
+
   JSONStringValueSerializer serializer(manifest_contents);
   scoped_ptr<base::Value> manifest(serializer.Deserialize(NULL, NULL));
 
