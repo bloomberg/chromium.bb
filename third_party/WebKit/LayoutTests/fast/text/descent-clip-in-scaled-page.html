@@ -10,12 +10,15 @@
        enabled. */
     body {
         font-family: SubpixelPositioning;
-        overflow: hidden;
     }
     div {
         font-family: SubpixelPositioningAhem;
         overflow: hidden; /* the only difference between the test the the ref html */
         border: solid thin blue;
+    }
+    ::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
     }
 </style>
 <script>
