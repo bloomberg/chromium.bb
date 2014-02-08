@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -384,7 +385,7 @@ void BrowserTabStripController::CreateNewTabWithLocation(
   // a search query if necessary.
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile())->Classify(
-      location, false, false, &match, NULL);
+      location, false, false, AutocompleteInput::BLANK, &match, NULL);
   if (match.destination_url.is_valid())
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }

@@ -33,16 +33,18 @@ AutocompleteClassifier::~AutocompleteClassifier() {
   DCHECK(!controller_.get());
 }
 
-void AutocompleteClassifier::Classify(const base::string16& text,
-                                      bool prefer_keyword,
-                                      bool allow_exact_keyword_match,
-                                      AutocompleteMatch* match,
-                                      GURL* alternate_nav_url) {
+void AutocompleteClassifier::Classify(
+    const base::string16& text,
+    bool prefer_keyword,
+    bool allow_exact_keyword_match,
+    AutocompleteInput::PageClassification page_classification,
+    AutocompleteMatch* match,
+    GURL* alternate_nav_url) {
   DCHECK(!inside_classify_);
   base::AutoReset<bool> reset(&inside_classify_, true);
   controller_->Start(AutocompleteInput(
       text, base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true, prefer_keyword,
+      page_classification, true, prefer_keyword,
       allow_exact_keyword_match, AutocompleteInput::BEST_MATCH));
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
