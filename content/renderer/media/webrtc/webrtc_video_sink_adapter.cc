@@ -42,7 +42,6 @@ WebRtcVideoSinkAdapter::~WebRtcVideoSinkAdapter() {
 }
 
 void WebRtcVideoSinkAdapter::SetSize(int width, int height) {
-  NOTIMPLEMENTED();
 }
 
 void WebRtcVideoSinkAdapter::RenderFrame(const cricket::VideoFrame* frame) {
