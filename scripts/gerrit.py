@@ -1,10 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A command line interface to the ChromeOS gerrit instances
+"""A command line interface to Gerrit-on-borg instances.
 
 Internal Note:
 To expose a function directly to the command line interface, name your function
@@ -295,10 +294,12 @@ Actions:"""
                                globals()[a].__doc__)
 
   parser = commandline.ArgumentParser(usage=usage)
-  parser.add_argument('-i', '--internal', default=None, action='store_true',
-                      help='Query gerrit-int')
-  parser.add_argument('-e', '--external', dest='internal', action='store_false',
-                      help='Query gerrit (default)')
+  parser.add_argument('-i', '--internal', dest='gob', action='store_const',
+                      const=constants.INTERNAL_REMOTE,
+                      help='Query internal Chromium Gerrit instance')
+  parser.add_argument('-g', '--gob',
+                      help='Gerrit (on borg) instance to query (default: %s)' %
+                           (constants.EXTERNAL_REMOTE))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project)')
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
@@ -318,13 +319,13 @@ Actions:"""
   args = opts.args
   if len(args) > 1:
     if args[1][0] == '*':
-      if opts.internal is None:
-        opts.internal = True
+      opts.gob = constants.INTERNAL_REMOTE
       args[1] = args[1][1:]
 
-  opts.gerrit = gerrit.GetGerritHelper(
-      constants.INTERNAL_REMOTE if opts.internal else constants.EXTERNAL_REMOTE,
-      print_cmd=opts.debug)
+  if opts.gob is None:
+    opts.gob = constants.EXTERNAL_REMOTE
+
+  opts.gerrit = gerrit.GetGerritHelper(opts.gob, print_cmd=opts.debug)
   opts.Freeze()
 
   # Now look up the requested user action and run it.
