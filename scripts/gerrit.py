@@ -11,6 +11,8 @@ To expose a function directly to the command line interface, name your function
 with the prefix "UserAct".
 """
 
+from __future__ import print_function
+
 import inspect
 import os
 import re
@@ -106,8 +108,8 @@ def PrintCl(opts, cls, lims, show_approvals=True):
         functor = green
       status += functor('%s:%2s ' % (cat, approvs[cat]))
 
-  print '%s %s%-*s %s' % (blue('%-*s' % (lims['url'], cls['url'])), status,
-                          lims['project'], cls['project'], cls['subject'])
+  print('%s %s%-*s %s' % (blue('%-*s' % (lims['url'], cls['url'])), status,
+                          lims['project'], cls['project'], cls['subject']))
 
   if show_approvals and opts.verbose:
     for approver in cls['currentPatchSet'].get('approvals', []):
@@ -115,7 +117,7 @@ def PrintCl(opts, cls, lims, show_approvals=True):
       n = functor('%2s' % approver['value'])
       t = GERRIT_APPROVAL_MAP.get(approver['type'], [approver['type'],
                                                      approver['type']])[1]
-      print '      %s %s %s' % (n, t, approver['by']['email'])
+      print('      %s %s %s' % (n, t, approver['by']['email']))
 
 
 def _MyUserInfo():
