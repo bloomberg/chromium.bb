@@ -195,6 +195,7 @@ void LibjingleStreamTransport::DoStart() {
   // TODO(sergeyu): Specify correct component ID for the channel.
   channel_.reset(new cricket::P2PTransportChannel(
       std::string(), 0, NULL, port_allocator_));
+  channel_->SetIceProtocolType(cricket::ICEPROTO_GOOGLE);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
   channel_->SignalRequestSignaling.connect(
       this, &LibjingleStreamTransport::OnRequestSignaling);
