@@ -82,11 +82,6 @@
             '../content/content.gyp:content_app_browser',
           ],
           'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
-              ],
-            }],
             ['use_aura==1', {
               'dependencies': [
                 '../ui/compositor/compositor.gyp:compositor',
@@ -362,13 +357,6 @@
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
-              ],
-            }],
           ],
         },  # target chrome_child_dll
       ],
