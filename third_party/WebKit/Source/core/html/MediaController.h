@@ -53,8 +53,6 @@ public:
     void removeMediaElement(HTMLMediaElement*);
     bool containsMediaElement(HTMLMediaElement*) const;
 
-    const String& mediaGroup() const { return m_mediaGroup; }
-
     virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
     virtual PassRefPtr<TimeRanges> seekable() const OVERRIDE;
     virtual PassRefPtr<TimeRanges> played() OVERRIDE;
@@ -137,7 +135,6 @@ private:
     Vector<RefPtr<Event> > m_pendingEvents;
     Timer<MediaController> m_asyncEventTimer;
     mutable Timer<MediaController> m_clearPositionTimer;
-    String m_mediaGroup;
     bool m_closedCaptionsVisible;
     OwnPtr<Clock> m_clock;
     ExecutionContext* m_executionContext;
