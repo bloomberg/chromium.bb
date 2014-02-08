@@ -272,7 +272,7 @@ def main(argv):
   act_pfx = 'UserAct'
   actions = [x for x in globals() if x.startswith(act_pfx)]
 
-  usage = """%prog [options] <action> [action args]
+  usage = """%(prog)s [options] <action> [action args]
 
 There is no support for doing line-by-line code review via the command line.
 This helps you manage various bits and CL status.
@@ -290,18 +290,17 @@ Actions:"""
     usage += '\n  %-*s: %s' % (indent, a[len(act_pfx):].lower(),
                                globals()[a].__doc__)
 
-  parser = commandline.OptionParser(usage=usage)
-  parser.add_option('-i', '--internal', default=None, action='store_true',
-                    help='Query gerrit-int')
-  parser.add_option('-e', '--external', dest='internal', action='store_false',
-                    help='Query gerrit (default)')
-  parser.add_option('--sort', default='number', help='Key to sort on '
-                                                     '(number, project)')
-  parser.add_option('-v', '--verbose', default=False, action='store_true',
-                    help='Be more verbose in output')
-  opts, args = parser.parse_args(argv)
-  if not args:
-    parser.error('missing action')
+  parser = commandline.ArgumentParser(usage=usage)
+  parser.add_argument('-i', '--internal', default=None, action='store_true',
+                      help='Query gerrit-int')
+  parser.add_argument('-e', '--external', dest='internal', action='store_false',
+                      help='Query gerrit (default)')
+  parser.add_argument('--sort', default='number',
+                      help='Key to sort on (number, project)')
+  parser.add_argument('-v', '--verbose', default=False, action='store_true',
+                      help='Be more verbose in output')
+  parser.add_argument('args', nargs='+')
+  opts = parser.parse_args(argv)
 
   # pylint: disable=W0603
   global COLOR
@@ -312,6 +311,7 @@ Actions:"""
   # We do this to automatically select internal vs external gerrit as this
   # convention is encoded in much of our system.  However, the rest of this
   # script doesn't expect (or want) the leading *.
+  args = opts.args
   if len(args) > 1:
     if args[1][0] == '*':
       if opts.internal is None:
@@ -321,6 +321,7 @@ Actions:"""
   opts.gerrit = gerrit.GetGerritHelper(
       constants.INTERNAL_REMOTE if opts.internal else constants.EXTERNAL_REMOTE,
       print_cmd=opts.debug)
+  opts.Freeze()
 
   # Now look up the requested user action and run it.
   cmd = args[0].lower()
