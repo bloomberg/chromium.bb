@@ -113,7 +113,7 @@ SurpriseWallpaper.prototype.updateSurpriseWallpaper = function(opt_rss) {
  */
 SurpriseWallpaper.prototype.updateRandomWallpaper_ = function() {
   var self = this;
-  Constants.WallpaperLocalStorage.get(
+  Constants.WallpaperSyncStorage.get(
       Constants.AccessLastSurpriseWallpaperChangedDate, function(items) {
     var dateString = new Date().toDateString();
     // At most one random wallpaper per day.
@@ -149,7 +149,7 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
         WallpaperUtil.saveToStorage(
             Constants.AccessLastSurpriseWallpaperChangedDate,
             dateString,
-            false);
+            true);
       }
       WallpaperUtil.setOnlineWallpaper(wallpaperURL, wallpaper.default_layout,
           onSuccess, self.retryLater_.bind(self));
@@ -190,7 +190,7 @@ SurpriseWallpaper.prototype.disable = function() {
   chrome.alarms.clearAll();
   // Makes last changed date invalid.
   WallpaperUtil.saveToStorage(Constants.AccessLastSurpriseWallpaperChangedDate,
-                              '', false);
+                              '', true);
 };
 
 /**

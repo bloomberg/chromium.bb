@@ -199,7 +199,7 @@ function WallpaperManager(dialogDom) {
     var checkbox = $('surprise-me').querySelector('#checkbox');
     var shouldEnable = !checkbox.classList.contains('checked');
     WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
-                                shouldEnable, false, function() {
+                                shouldEnable, true, function() {
       if (chrome.runtime.lastError == null) {
           if (shouldEnable) {
             checkbox.classList.add('checked');
@@ -258,9 +258,26 @@ function WallpaperManager(dialogDom) {
       $('surprise-me').hidden = false;
       $('surprise-me').addEventListener('click',
                                         this.toggleSurpriseMe_.bind(this));
-      Constants.WallpaperLocalStorage.get(Constants.AccessSurpriseMeEnabledKey,
+      Constants.WallpaperSyncStorage.get(Constants.AccessSurpriseMeEnabledKey,
                                           function(items) {
-        if (items[Constants.AccessSurpriseMeEnabledKey]) {
+        // Surprise me has been moved from local to sync storage, prefer
+        // values from sync, but if unset check local and update synced pref
+        // if applicable.
+        if (!items.hasOwnProperty(Constants.AccessSurpriseMeEnabledKey)) {
+          Constants.WallpaperLocalStorage.get(
+              Constants.AccessSurpriseMeEnabledKey, function(values) {
+            if (values.hasOwnProperty(Constants.AccessSurpriseMeEnabledKey)) {
+              WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
+                  values[Constants.AccessSurpriseMeEnabledKey], true);
+            }
+            if (values[Constants.AccessSurpriseMeEnabledKey]) {
+                $('surprise-me').querySelector('#checkbox').classList.add(
+                    'checked');
+                $('categories-list').disabled = true;
+                $('wallpaper-grid').disabled = true;
+            }
+          });
+        } else if (items[Constants.AccessSurpriseMeEnabledKey]) {
           $('surprise-me').querySelector('#checkbox').classList.add('checked');
           $('categories-list').disabled = true;
           $('wallpaper-grid').disabled = true;
