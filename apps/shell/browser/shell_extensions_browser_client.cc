@@ -115,6 +115,10 @@ void ShellExtensionsBrowserClient::OnExtensionHostCreated(
     content::WebContents* web_contents) {
 }
 
+void ShellExtensionsBrowserClient::OnRenderViewCreatedForBackgroundPage(
+    ExtensionHost* host) {
+}
+
 bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   // TODO(jamescook): We might want to tell extensions when app_shell updates.
   return false;

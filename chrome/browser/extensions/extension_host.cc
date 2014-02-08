@@ -197,14 +197,8 @@ void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
   if (!IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
-    ExtensionService* service = GetExtensionService();
-    if (service)
-      service->DidCreateRenderViewForBackgroundPage(this);
+    ExtensionsBrowserClient::Get()->OnRenderViewCreatedForBackgroundPage(this);
   }
-}
-
-ExtensionService* ExtensionHost::GetExtensionService() {
-  return ExtensionSystem::Get(browser_context_)->extension_service();
 }
 
 const GURL& ExtensionHost::GetURL() const {

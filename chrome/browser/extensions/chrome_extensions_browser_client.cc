@@ -10,6 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -134,6 +136,14 @@ bool ChromeExtensionsBrowserClient::IsBackgroundPageAllowed(
 void ChromeExtensionsBrowserClient::OnExtensionHostCreated(
     content::WebContents* web_contents) {
   PrefsTabHelper::CreateForWebContents(web_contents);
+}
+
+void ChromeExtensionsBrowserClient::OnRenderViewCreatedForBackgroundPage(
+    ExtensionHost* host) {
+  ExtensionService* service =
+      ExtensionSystem::Get(host->browser_context())->extension_service();
+  if (service)
+    service->DidCreateRenderViewForBackgroundPage(host);
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(

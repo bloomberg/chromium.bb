@@ -25,6 +25,7 @@ namespace extensions {
 class ApiActivityMonitor;
 class AppSorting;
 class Extension;
+class ExtensionHost;
 class ExtensionSystem;
 
 // Interface to allow the extensions module to make browser-process-specific
@@ -93,6 +94,9 @@ class ExtensionsBrowserClient {
   // Called after the hosting |web_contents| for an extension is created. The
   // implementation may wish to add preference observers to |web_contents|.
   virtual void OnExtensionHostCreated(content::WebContents* web_contents) = 0;
+
+  // Called after |host| creates a RenderView for an extension.
+  virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host) = 0;
 
   // Returns true if the client version has updated since the last run. Called
   // once each time the extensions system is loaded per browser_context. The
