@@ -2979,11 +2979,8 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
 }
 
 class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
- public:
-  virtual void SetUp() OVERRIDE {
-    i18ninput::EnableForTesting();
-    AutofillDialogControllerTest::SetUp();
-  }
+ private:
+  i18ninput::ScopedEnableForTesting enabled_;
 };
 
 TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {

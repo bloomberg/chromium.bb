@@ -1378,11 +1378,6 @@ class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
   AutofillDialogControllerI18nTest() {}
   virtual ~AutofillDialogControllerI18nTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    i18ninput::EnableForTesting();
-    AutofillDialogControllerTest::SetUp();
-  }
-
  protected:
   bool SectionHasField(DialogSection section, ServerFieldType type) {
     const DetailInputs& fields =
@@ -1393,6 +1388,9 @@ class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
     }
     return false;
   }
+
+ private:
+  i18ninput::ScopedEnableForTesting enabled_;
 };
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
