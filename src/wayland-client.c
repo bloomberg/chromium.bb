@@ -83,7 +83,7 @@ struct wl_display {
 	int fd;
 	pthread_t display_thread;
 	struct wl_map objects;
-	struct wl_event_queue queue;
+	struct wl_event_queue default_queue;
 	struct wl_list event_queue_list;
 	pthread_mutex_t mutex;
 
@@ -712,7 +712,7 @@ wl_display_connect_to_fd(int fd)
 
 	display->fd = fd;
 	wl_map_init(&display->objects, WL_MAP_CLIENT_SIDE);
-	wl_event_queue_init(&display->queue, display);
+	wl_event_queue_init(&display->default_queue, display);
 	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 	pthread_cond_init(&display->reader_cond, NULL);
@@ -726,7 +726,7 @@ wl_display_connect_to_fd(int fd)
 	display->proxy.display = display;
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;
-	display->proxy.queue = &display->queue;
+	display->proxy.queue = &display->default_queue;
 	display->proxy.flags = 0;
 	display->proxy.refcount = 1;
 
@@ -796,7 +796,7 @@ wl_display_disconnect(struct wl_display *display)
 {
 	wl_connection_destroy(display->connection);
 	wl_map_release(&display->objects);
-	wl_event_queue_release(&display->queue);
+	wl_event_queue_release(&display->default_queue);
 	pthread_mutex_destroy(&display->mutex);
 	pthread_cond_destroy(&display->reader_cond);
 	close(display->fd);
@@ -1241,7 +1241,7 @@ wl_display_prepare_read_queue(struct wl_display *display,
 WL_EXPORT int
 wl_display_prepare_read(struct wl_display *display)
 {
-	return wl_display_prepare_read_queue(display, &display->queue);
+	return wl_display_prepare_read_queue(display, &display->default_queue);
 }
 
 /** Release exclusive access to display file descriptor
@@ -1394,7 +1394,7 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
 WL_EXPORT int
 wl_display_dispatch(struct wl_display *display)
 {
-	return wl_display_dispatch_queue(display, &display->queue);
+	return wl_display_dispatch_queue(display, &display->default_queue);
 }
 
 /** Dispatch main queue events without reading from the display fd
@@ -1438,7 +1438,8 @@ wl_display_dispatch(struct wl_display *display)
 WL_EXPORT int
 wl_display_dispatch_pending(struct wl_display *display)
 {
-	return wl_display_dispatch_queue_pending(display, &display->queue);
+	return wl_display_dispatch_queue_pending(display,
+						 &display->default_queue);
 }
 
 /** Retrieve the last error that occurred on a display
@@ -1579,7 +1580,7 @@ wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 	if (queue)
 		proxy->queue = queue;
 	else
-		proxy->queue = &proxy->display->queue;
+		proxy->queue = &proxy->display->default_queue;
 }
 
 WL_EXPORT void
