@@ -1934,7 +1934,7 @@ shell_surface_lose_keyboard_focus(struct shell_surface *shsurf)
 {
 	if (--shsurf->focus_count == 0)
 		if (shell_surface_is_xdg_surface(shsurf))
-			xdg_surface_send_focused_unset(shsurf->resource);
+			xdg_surface_send_deactivated(shsurf->resource);
 }
 
 static void
@@ -1942,7 +1942,7 @@ shell_surface_gain_keyboard_focus(struct shell_surface *shsurf)
 {
 	if (shsurf->focus_count++ == 0)
 		if (shell_surface_is_xdg_surface(shsurf))
-			xdg_surface_send_focused_set(shsurf->resource);
+			xdg_surface_send_activated(shsurf->resource);
 }
 
 static void

@@ -301,12 +301,12 @@ handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surf
 }
 
 static void
-handle_surface_focused_set(void *data, struct xdg_surface *xdg_surface)
+handle_surface_activated(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
 static void
-handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
+handle_surface_deactivated(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
@@ -322,8 +322,8 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_request_unset_maximized,
 	handle_surface_request_set_fullscreen,
 	handle_surface_request_unset_fullscreen,
-	handle_surface_focused_set,
-	handle_surface_focused_unset,
+	handle_surface_activated,
+	handle_surface_deactivated,
 	handle_surface_delete,
 };
 

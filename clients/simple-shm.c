@@ -140,12 +140,12 @@ handle_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
 }
 
 static void
-handle_focused_set(void *data, struct xdg_surface *xdg_surface)
+handle_activated(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
 static void
-handle_focused_unset(void *data, struct xdg_surface *xdg_surface)
+handle_deactivated(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
@@ -161,8 +161,8 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_request_unset_maximized,
 	handle_request_set_fullscreen,
 	handle_request_unset_fullscreen,
-	handle_focused_set,
-	handle_focused_unset,
+	handle_activated,
+	handle_deactivated,
 	handle_delete,
 };
 
