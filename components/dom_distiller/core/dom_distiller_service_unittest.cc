@@ -204,6 +204,24 @@ TEST_F(DomDistillerServiceTest, TestViewUrlCancelled) {
   EXPECT_TRUE(distiller_destroyed);
 }
 
+TEST_F(DomDistillerServiceTest, TestViewUrlDoesNotAddEntry) {
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  FakeViewRequestDelegate viewer_delegate;
+  GURL url("http://www.example.com/p1");
+  scoped_ptr<ViewerHandle> handle = service_->ViewUrl(&viewer_delegate, url);
+
+  scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
+  EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
+
+  RunDistillerCallback(distiller, proto.Pass());
+  base::RunLoop().RunUntilIdle();
+  // The entry should not be added to the store.
+  EXPECT_EQ(0u, store_->GetEntries().size());
+}
+
 TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
   FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
@@ -216,17 +234,15 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
 
   std::string entry_id = service_->AddToList(url, ArticleCallback(&article_cb));
 
-  ArticleEntry entry;
-  EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
-  EXPECT_EQ(entry.entry_id(), entry_id);
-
   ASSERT_FALSE(distiller->GetCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
   scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
   RunDistillerCallback(distiller, proto.Pass());
 
+  ArticleEntry entry;
   EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
+  EXPECT_EQ(entry.entry_id(), entry_id);
   EXPECT_EQ(1u, store_->GetEntries().size());
   service_->RemoveEntry(entry_id);
   base::RunLoop().RunUntilIdle();
@@ -240,7 +256,6 @@ TEST_F(DomDistillerServiceTest, TestCancellation) {
 
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
-  EXPECT_CALL(observer, ArticleEntriesUpdated(_));
 
   MockArticleAvailableCallback article_cb;
   EXPECT_CALL(article_cb, DistillationCompleted(false));
@@ -248,18 +263,7 @@ TEST_F(DomDistillerServiceTest, TestCancellation) {
   GURL url("http://www.example.com/p1");
   std::string entry_id = service_->AddToList(url, ArticleCallback(&article_cb));
 
-  // Just remove the entry, there should only be a REMOVE update and no UPDATE
-  // update.
-  std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
-  DomDistillerObserver::ArticleUpdate update;
-  update.entry_id = entry_id;
-  update.update_type = DomDistillerObserver::ArticleUpdate::REMOVE;
-  expected_updates.push_back(update);
-  EXPECT_CALL(
-      observer,
-      ArticleEntriesUpdated(util::HasExpectedUpdates(expected_updates)));
-
-  // Remove entry will post a cancellation task.
+  // Remove entry will cause the |article_cb| to be called with false value.
   service_->RemoveEntry(entry_id);
   base::RunLoop().RunUntilIdle();
 }
@@ -273,18 +277,17 @@ TEST_F(DomDistillerServiceTest, TestMultipleObservers) {
   MockDistillerObserver observers[kObserverCount];
   for (int i = 0; i < kObserverCount; ++i) {
     service_->AddObserver(&observers[i]);
-    EXPECT_CALL(observers[i], ArticleEntriesUpdated(_));
   }
 
   DomDistillerService::ArticleAvailableCallback article_cb;
   GURL url("http://www.example.com/p1");
   std::string entry_id = service_->AddToList(url, article_cb);
 
-  // Distillation should notify all observers that article is updated.
+  // Distillation should notify all observers that article is added.
   std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
   DomDistillerObserver::ArticleUpdate update;
   update.entry_id = entry_id;
-  update.update_type = DomDistillerObserver::ArticleUpdate::UPDATE;
+  update.update_type = DomDistillerObserver::ArticleUpdate::ADD;
   expected_updates.push_back(update);
 
   for (int i = 0; i < kObserverCount; ++i) {

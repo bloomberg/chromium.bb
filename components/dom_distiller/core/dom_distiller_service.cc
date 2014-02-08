@@ -91,13 +91,14 @@ std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
 scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
     const std::string& entry_id) {
   scoped_ptr<ArticleEntry> entry(new ArticleEntry);
-  if (!store_->GetEntryById(entry_id, entry.get())) {
-    return scoped_ptr<ArticleEntry>();
-  }
-
+  entry->set_entry_id(entry_id);
   TaskTracker* task_tracker = GetTaskTrackerForEntry(*entry);
   if (task_tracker != NULL) {
     task_tracker->CancelSaveCallbacks();
+  }
+
+  if (!store_->GetEntryById(entry_id, entry.get())) {
+    return scoped_ptr<ArticleEntry>();
   }
 
   if (store_->RemoveEntry(*entry)) {
@@ -150,7 +151,6 @@ TaskTracker* DomDistillerService::GetOrCreateTaskTrackerForUrl(
 
   ArticleEntry skeleton_entry = CreateSkeletonEntryForUrl(url);
   TaskTracker* task_tracker = CreateTaskTracker(skeleton_entry);
-  store_->AddEntry(skeleton_entry);
   return task_tracker;
 }
 
@@ -198,7 +198,7 @@ void DomDistillerService::AddDistilledPageToList(
   if (distillation_succeeded) {
     DCHECK(article_proto);
     DCHECK_GT(article_proto->pages_size(), 0);
-    store_->UpdateEntry(entry);
+    store_->AddEntry(entry);
     DCHECK_EQ(article_proto->pages_size(), entry.pages_size());
   }
 }
