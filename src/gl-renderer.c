@@ -1766,8 +1766,10 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	wl_array_release(&gr->vertices);
 	wl_array_release(&gr->vtxcnt);
 
-	weston_binding_destroy(gr->fragment_binding);
-	weston_binding_destroy(gr->fan_binding);
+	if (gr->fragment_binding)
+		weston_binding_destroy(gr->fragment_binding);
+	if (gr->fan_binding)
+		weston_binding_destroy(gr->fan_binding);
 
 	free(gr);
 }
