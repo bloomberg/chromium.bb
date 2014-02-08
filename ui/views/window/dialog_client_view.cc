@@ -22,10 +22,28 @@ namespace {
 // conflict with other groups that could be in the dialog content.
 const int kButtonGroup = 6666;
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const bool kIsOkButtonOnLeftSide = true;
+#else
+const bool kIsOkButtonOnLeftSide = false;
+#endif
+
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).
 bool ShouldShow(View* view) {
   return view && view->visible();
+}
+
+// Do the layout for a button.
+void LayoutButton(LabelButton* button, gfx::Rect* row_bounds) {
+  if (!button)
+    return;
+
+  const gfx::Size size = button->GetPreferredSize();
+  row_bounds->set_width(row_bounds->width() - size.width());
+  button->SetBounds(row_bounds->right(), row_bounds->y(),
+                    size.width(), row_bounds->height());
+  row_bounds->set_width(row_bounds->width() - kRelatedButtonHSpacing);
 }
 
 }  // namespace
@@ -213,19 +231,12 @@ void DialogClientView::Layout() {
     const int height = GetButtonsAndExtraViewRowHeight();
     gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,
                          bounds.width(), height);
-    if (cancel_button_) {
-      const gfx::Size size = cancel_button_->GetPreferredSize();
-      row_bounds.set_width(row_bounds.width() - size.width());
-      cancel_button_->SetBounds(row_bounds.right(), row_bounds.y(),
-                                size.width(), height);
-      row_bounds.set_width(row_bounds.width() - kRelatedButtonHSpacing);
-    }
-    if (ok_button_) {
-      const gfx::Size size = ok_button_->GetPreferredSize();
-      row_bounds.set_width(row_bounds.width() - size.width());
-      ok_button_->SetBounds(row_bounds.right(), row_bounds.y(),
-                            size.width(), height);
-      row_bounds.set_width(row_bounds.width() - kRelatedButtonHSpacing);
+    if (kIsOkButtonOnLeftSide) {
+      LayoutButton(cancel_button_, &row_bounds);
+      LayoutButton(ok_button_, &row_bounds);
+    } else {
+      LayoutButton(ok_button_, &row_bounds);
+      LayoutButton(cancel_button_, &row_bounds);
     }
     if (extra_view_) {
       row_bounds.set_width(std::min(row_bounds.width(),
