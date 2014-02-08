@@ -14,3 +14,4 @@ Android Platform engineering tools, specifically stack symbolization scripts.
 Local Modifications:
 Only picked the few scripts needed by chrome.
 Updated output directories to use environment variable.
+When calling addr2line, check the symbol is a file (and not a directory).

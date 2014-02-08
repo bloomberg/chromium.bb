@@ -242,7 +242,7 @@ def CallAddr2LineForSet(lib, unique_addrs):
 
 
   symbols = SYMBOLS_DIR + lib
-  if not os.path.exists(symbols):
+  if not os.path.isfile(symbols):
     return None
 
   (label, platform, target) = FindToolchain()
