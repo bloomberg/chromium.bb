@@ -192,14 +192,18 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
                            CreateSyncData(*(i->second.second))));
   }
 
+  merge_result.set_error(
+      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+
   if (cull_expired_entries_) {
     // This will schedule a deletion operation on the DB thread, which will
     // trigger a notification to propagate the deletion to Sync.
+    // NOTE: This must be called *after* the ProcessSyncChanges call above.
+    // Otherwise, an item that Sync is not yet aware of might expire, causing a
+    // Sync error when that item's deletion is propagated to Sync.
     webdata_backend_->RemoveExpiredFormElements();
   }
 
-  merge_result.set_error(
-      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   return merge_result;
 }
 
