@@ -6,7 +6,6 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -195,8 +194,8 @@ bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
 
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(
-      browser_view_->browser()->profile())->Classify(
-          text, false, false, AutocompleteInput::INVALID_SPEC, &match, NULL);
+      browser_view_->browser()->profile())->Classify(text, false, false, &match,
+                                                     NULL);
   if (!match.destination_url.is_valid())
     return false;
 
