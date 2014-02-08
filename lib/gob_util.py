@@ -113,23 +113,42 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
                             body=body)
       response = conn.getresponse()
     except socket.error as ex:
-      LOGGER.warn('%s%s' % (err_prefix, str(ex)))
+      LOGGER.warn('%s%s', err_prefix, str(ex))
       raise
 
+    # Normal/good responses.
     if response.status == 404 and ignore_404:
       return StringIO()
-    elif response.status >= 500:
-      # A status >=500 is assumed to be a possible transient error; retry.
-      http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-      msg = ('%s %s %s\n'
-             '%s %d %s' % (reqtype, conn.req_params['url'], http_version,
-                           http_version, response.status, response.reason))
-      LOGGER.warn('%s%s' % (err_prefix, msg))
-      raise InternalGOBError(response.status, response.reason)
-    elif response.status != 200:
-      raise GOBError(response.status, response.reason)
-    else:
+    elif response.status == 200:
       return StringIO(response.read())
+
+    # Bad responses.
+    LOGGER.debug('response msg:\n%s', response.msg)
+    http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
+    msg = ('%s %s %s\n%s %d %s' %
+           (reqtype, conn.req_params['url'], http_version,
+            http_version, response.status, response.reason))
+
+    # Ones we can retry.
+    if response.status >= 500:
+      # A status >=500 is assumed to be a possible transient error; retry.
+      LOGGER.warn('%s%s', err_prefix, msg)
+      raise InternalGOBError(response.status, response.reason)
+
+    # Ones we cannot retry.
+    home = os.environ.get('HOME', '~')
+    url = 'https://%s/new-password' % host
+    if response.status in (302, 303, 307):
+      err_prefix = ('Redirect found; missing/bad %s/.netrc credentials?\n'
+                    ' See %s' % (home, url))
+    elif response.status in (400,):
+      err_prefix = 'Permission error; talk to the admins of the GoB instance'
+    elif response.status in (401,):
+      err_prefix = ('Authorization error; missing/bad %s/.netrc credentials?\n'
+                    ' See %s' % (home, url))
+
+    LOGGER.warn('%s\n%s', err_prefix, msg)
+    raise GOBError(response.status, response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
                                    _FetchUrlHelper, sleep=SLEEP)
