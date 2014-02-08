@@ -33,6 +33,16 @@ bool CpuInfoProvider::QueryInfo() {
   info_.arch_name = base::SysInfo::OperatingSystemArchitecture();
   info_.model_name = base::SysInfo::CPUModelName();
   info_.features = GetFeatures();
+
+  info_.processors.clear();
+  // Fill in the correct number of uninitialized ProcessorInfos.
+  for (int i = 0; i < info_.num_of_processors; ++i) {
+    info_.processors.push_back(linked_ptr<api::system_cpu::ProcessorInfo>(
+        new api::system_cpu::ProcessorInfo()));
+  }
+  // Initialize the ProcessorInfos, or return an empty array if that fails.
+  if (!QueryCpuTimePerProcessor(&info_.processors))
+    info_.processors.clear();
   return true;
 }
 

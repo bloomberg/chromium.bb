@@ -21,6 +21,14 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
     info_.features.clear();
     info_.features.push_back("mmx");
     info_.features.push_back("avx");
+
+    info_.processors.clear();
+    info_.processors.push_back(linked_ptr<api::system_cpu::ProcessorInfo>(
+        new api::system_cpu::ProcessorInfo()));
+    info_.processors[0]->usage.kernel = 1;
+    info_.processors[0]->usage.user = 2;
+    info_.processors[0]->usage.idle = 3;
+    info_.processors[0]->usage.total = 6;
     return true;
   }
 
