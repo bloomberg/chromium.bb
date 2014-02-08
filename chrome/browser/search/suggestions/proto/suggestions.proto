@@ -1,0 +1,28 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package suggestions;
+
+// The SuggestionsProfile is a protobuf response from the server that contains
+// the list of suggestions to be presented to the user.
+//
+// Next tag: 2
+message SuggestionsProfile {
+  repeated ChromeSuggestion suggestions = 1;
+}
+
+// The suggestions for this user, ordered from best to worst.
+//
+// Next tag: 3
+message ChromeSuggestion {
+  // The URL of the suggestion.
+  optional string url = 1;
+
+  // Title of the suggestion.
+  optional string title = 2;
+}

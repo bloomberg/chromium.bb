@@ -26,6 +26,7 @@
         'probe_message_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
+        'suggestions_proto',
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:encryptor',
@@ -1948,6 +1949,10 @@
         'browser/search/search.h',
         'browser/search/search_terms_tracker.cc',
         'browser/search/search_terms_tracker.h',
+        'browser/search/suggestions/suggestions_service.cc',
+        'browser/search/suggestions/suggestions_service.h',
+        'browser/search/suggestions/suggestions_service_factory.cc',
+        'browser/search/suggestions/suggestions_service_factory.h',
         'browser/search_engines/default_search_policy_handler.cc',
         'browser/search_engines/default_search_policy_handler.h',
         'browser/search_engines/search_engine_type.h',
@@ -3546,6 +3551,17 @@
       'variables': {
         'proto_in_dir': 'browser/net',
         'proto_out_dir': 'chrome/browser/net',
+      },
+      'includes': [ '../build/protoc.gypi', ],
+    },
+    {
+      # Protobuf compiler / generator for the suggestions service proto.
+      'target_name': 'suggestions_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/search/suggestions/proto/suggestions.proto', ],
+      'variables': {
+        'proto_in_dir': 'browser/search/suggestions/proto',
+        'proto_out_dir': 'chrome/browser/search/suggestions/proto',
       },
       'includes': [ '../build/protoc.gypi', ],
     },

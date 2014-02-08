@@ -20632,6 +20632,34 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Suggestions.FailedRequestErrorCode" enum="NetErrorCodes">
+  <summary>
+    The counts of network error codes encountered by SuggestionsService when an
+    attempt to fetch suggestions from the server fails.
+  </summary>
+</histogram>
+
+<histogram name="Suggestions.FetchResponseCode">
+  <summary>
+    The counts of HTTP response codes encountered by SuggestionsService when
+    attempting to fetch suggestions from the server.
+  </summary>
+</histogram>
+
+<histogram name="Suggestions.FetchSuccessLatency" units="milliseconds">
+  <summary>
+    The latency of a SuggestionsService fetch that results in a success
+    response.
+  </summary>
+</histogram>
+
+<histogram name="Suggestions.ResponseState" enum="SuggestionsResponseState">
+  <summary>
+    The counts of response states (such as empty or invalid) encountered by
+    SuggestionsService when attempting to fetch suggestions from the server.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AuthInvalidationRejectedTokenAgeLong" units="days">
   <summary>
     Age of all auth tokens rejected by the invalidation server. Measured from
@@ -31786,6 +31814,12 @@ other types of suffix sets.
   <int value="0" label="Load succeeded"/>
   <int value="1" label="Load cancelled"/>
   <int value="2" label="Load failed"/>
+</enum>
+
+<enum name="SuggestionsResponseState" type="int">
+  <int value="0" label="Empty response received from the server."/>
+  <int value="1" label="Invalid response received from the server."/>
+  <int value="2" label="Valid response received from the server."/>
 </enum>
 
 <enum name="SuspendAttempt" type="int">
