@@ -339,6 +339,11 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   if (commit_state_ != COMMIT_STATE_IDLE)
     return false;
 
+  // Make sure the BeginImplFrame from any previous OutputSurfaces
+  // are complete before creating the new OutputSurface.
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_IDLE)
+    return false;
+
   // We want to clear the pipline of any pending draws and activations
   // before starting output surface initialization. This allows us to avoid
   // weird corner cases where we abort draws or force activation while we
@@ -930,6 +935,11 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
+  // If we've lost the output surface, end the current BeginImplFrame ASAP
+  // so we can start creating the next output surface.
+  if (output_surface_state_ == OUTPUT_SURFACE_LOST)
+    return true;
+
   if (active_tree_needs_first_draw_)
     return true;
 
@@ -1113,7 +1123,6 @@ void SchedulerStateMachine::DidLoseOutputSurface() {
     return;
   output_surface_state_ = OUTPUT_SURFACE_LOST;
   needs_redraw_ = false;
-  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 }
 
 void SchedulerStateMachine::NotifyReadyToActivate() {

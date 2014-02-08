@@ -1138,8 +1138,7 @@ void TestContextLostWhileCommitInProgress(bool deadline_scheduling_enabled) {
             state.CommitState());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
 
-  // Expect to be told to begin context recreation, independent of
-  // BeginImplFrame state.
+  // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE,
             state.begin_impl_frame_state());
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
@@ -1148,20 +1147,17 @@ void TestContextLostWhileCommitInProgress(bool deadline_scheduling_enabled) {
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.OnBeginImplFrameDeadline();
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
@@ -1223,8 +1219,7 @@ void TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
   // Because the output surface is missing, we expect the draw to abort.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
 
-  // Expect to be told to begin context recreation, independent of
-  // BeginImplFrame state
+  // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE,
             state.begin_impl_frame_state());
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
@@ -1233,26 +1228,24 @@ void TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.OnBeginImplFrameDeadline();
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE,
             state.begin_impl_frame_state());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  // After we get a new output surface, the commit flow should start.
+  state.OnBeginImplFrameIdle();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+
+  // After we get a new output surface, the commit flow should start.
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
-  state.OnBeginImplFrameIdle();
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -1310,15 +1303,15 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
   // We don't yet have an output surface, so we the draw and swap should abort.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
 
-  // Expect to be told to begin context recreation, independent of
-  // BeginImplFrame state
-  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.OnBeginImplFrameDeadline();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
 
   // Ask a readback and verify it occurs.
   state.SetCommitState(
