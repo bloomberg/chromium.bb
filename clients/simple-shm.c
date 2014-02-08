@@ -34,12 +34,13 @@
 
 #include <wayland-client.h>
 #include "../shared/os-compatibility.h"
+#include "xdg-shell-client-protocol.h"
 
 struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
-	struct wl_shell *shell;
+	struct xdg_shell *shell;
 	struct wl_shm *shm;
 	uint32_t formats;
 };
@@ -54,7 +55,7 @@ struct window {
 	struct display *display;
 	int width, height;
 	struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
+	struct xdg_surface *xdg_surface;
 	struct buffer buffers[2];
 	struct buffer *prev_buffer;
 	struct wl_callback *callback;
@@ -111,27 +112,56 @@ create_shm_buffer(struct display *display, struct buffer *buffer,
 }
 
 static void
-handle_ping(void *data, struct wl_shell_surface *shell_surface,
-							uint32_t serial)
+handle_ping(void *data, struct xdg_surface *surface, uint32_t serial)
 {
-	wl_shell_surface_pong(shell_surface, serial);
+	xdg_surface_pong(surface, serial);
 }
 
 static void
-handle_configure(void *data, struct wl_shell_surface *shell_surface,
-		 uint32_t edges, int32_t width, int32_t height)
+handle_configure(void *data, struct xdg_surface *surface,
+		 int32_t width, int32_t height)
 {
 }
 
 static void
-handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+handle_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
-static const struct wl_shell_surface_listener shell_surface_listener = {
+static void
+handle_request_unset_maximized(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_request_set_fullscreen(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_focused_set(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_focused_unset(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_ping,
 	handle_configure,
-	handle_popup_done
+	handle_request_set_maximized,
+	handle_request_unset_maximized,
+	handle_request_set_fullscreen,
+	handle_request_unset_fullscreen,
+	handle_focused_set,
+	handle_focused_unset,
 };
 
 static struct window *
@@ -148,16 +178,14 @@ create_window(struct display *display, int width, int height)
 	window->width = width;
 	window->height = height;
 	window->surface = wl_compositor_create_surface(display->compositor);
-	window->shell_surface = wl_shell_get_shell_surface(display->shell,
-							   window->surface);
+	window->xdg_surface = xdg_shell_get_xdg_surface(display->shell,
+							window->surface);
 
-	if (window->shell_surface)
-		wl_shell_surface_add_listener(window->shell_surface,
-					      &shell_surface_listener, window);
+	if (window->xdg_surface)
+		xdg_surface_add_listener(window->xdg_surface,
+					 &xdg_surface_listener, window);
 
-	wl_shell_surface_set_title(window->shell_surface, "simple-shm");
-
-	wl_shell_surface_set_toplevel(window->shell_surface);
+	xdg_surface_set_title(window->xdg_surface, "simple-shm");
 
 	return window;
 }
@@ -173,7 +201,7 @@ destroy_window(struct window *window)
 	if (window->buffers[1].buffer)
 		wl_buffer_destroy(window->buffers[1].buffer);
 
-	wl_shell_surface_destroy(window->shell_surface);
+	xdg_surface_destroy(window->xdg_surface);
 	wl_surface_destroy(window->surface);
 	free(window);
 }
@@ -310,9 +338,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->compositor =
 			wl_registry_bind(registry,
 					 id, &wl_compositor_interface, 1);
-	} else if (strcmp(interface, "wl_shell") == 0) {
+	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry,
-					    id, &wl_shell_interface, 1);
+					    id, &xdg_shell_interface, 1);
+		xdg_shell_use_unstable_version(d->shell, 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,
 					  id, &wl_shm_interface, 1);
@@ -373,7 +402,7 @@ destroy_display(struct display *display)
 		wl_shm_destroy(display->shm);
 
 	if (display->shell)
-		wl_shell_destroy(display->shell);
+		xdg_shell_destroy(display->shell);
 
 	if (display->compositor)
 		wl_compositor_destroy(display->compositor);

@@ -382,6 +382,8 @@ demo_clients +=					\
 
 weston_simple_shm_SOURCES =			\
 	clients/simple-shm.c			\
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h	\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -404,7 +406,10 @@ endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
-weston_simple_egl_SOURCES = clients/simple-egl.c
+weston_simple_egl_SOURCES =			\
+	clients/simple-egl.c			\
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h
 weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
 weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif

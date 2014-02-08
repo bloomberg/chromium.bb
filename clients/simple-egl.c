@@ -38,6 +38,8 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include "xdg-shell-client-protocol.h"
+
 #ifndef EGL_EXT_swap_buffers_with_damage
 #define EGL_EXT_swap_buffers_with_damage 1
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
@@ -55,7 +57,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
-	struct wl_shell *shell;
+	struct xdg_shell *shell;
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
 	struct wl_touch *touch;
@@ -90,7 +92,7 @@ struct window {
 	uint32_t benchmark_time, frames;
 	struct wl_egl_window *native;
 	struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
+	struct xdg_surface *xdg_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
 	int fullscreen, configured, opaque, buffer_size, frame_sync;
@@ -263,15 +265,15 @@ init_gl(struct window *window)
 }
 
 static void
-handle_ping(void *data, struct wl_shell_surface *shell_surface,
-	    uint32_t serial)
+handle_surface_ping(void *data,
+		    struct xdg_surface *xdg_surface, uint32_t serial)
 {
-	wl_shell_surface_pong(shell_surface, serial);
+	xdg_surface_pong(xdg_surface, serial);
 }
 
 static void
-handle_configure(void *data, struct wl_shell_surface *shell_surface,
-		 uint32_t edges, int32_t width, int32_t height)
+handle_surface_configure(void *data, struct xdg_surface *surface,
+			 int32_t width, int32_t height)
 {
 	struct window *window = data;
 
@@ -286,14 +288,44 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 }
 
 static void
-handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+handle_surface_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
-static const struct wl_shell_surface_listener shell_surface_listener = {
-	handle_ping,
-	handle_configure,
-	handle_popup_done
+static void
+handle_surface_request_unset_maximized(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_surface_request_set_fullscreen(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_surface_focused_set(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static void
+handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
+{
+}
+
+static const struct xdg_surface_listener xdg_surface_listener = {
+	handle_surface_ping,
+	handle_surface_configure,
+	handle_surface_request_set_maximized,
+	handle_surface_request_unset_maximized,
+	handle_surface_request_set_fullscreen,
+	handle_surface_request_unset_fullscreen,
+	handle_surface_focused_set,
+	handle_surface_focused_unset,
 };
 
 static void
@@ -319,19 +351,17 @@ set_fullscreen(struct window *window, int fullscreen)
 	window->configured = 0;
 
 	if (fullscreen) {
-		wl_shell_surface_set_fullscreen(window->shell_surface,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-						0, NULL);
+		xdg_surface_set_fullscreen(window->xdg_surface);
 		callback = wl_display_sync(window->display->display);
 		wl_callback_add_listener(callback,
 					 &configure_callback_listener,
 					 window);
 
 	} else {
-		wl_shell_surface_set_toplevel(window->shell_surface);
-		handle_configure(window, window->shell_surface, 0,
-				 window->window_size.width,
-				 window->window_size.height);
+		xdg_surface_unset_fullscreen(window->xdg_surface);
+		handle_surface_configure(window, window->xdg_surface,
+					 window->window_size.width,
+					 window->window_size.height);
 		window->configured = 1;
 	}
 }
@@ -343,11 +373,11 @@ create_surface(struct window *window)
 	EGLBoolean ret;
 	
 	window->surface = wl_compositor_create_surface(display->compositor);
-	window->shell_surface = wl_shell_get_shell_surface(display->shell,
-							   window->surface);
+	window->xdg_surface = xdg_shell_get_xdg_surface(display->shell,
+							window->surface);
 
-	wl_shell_surface_add_listener(window->shell_surface,
-				      &shell_surface_listener, window);
+	xdg_surface_add_listener(window->xdg_surface,
+				 &xdg_surface_listener, window);
 
 	window->native =
 		wl_egl_window_create(window->surface,
@@ -358,7 +388,7 @@ create_surface(struct window *window)
 				       display->egl.conf,
 				       window->native, NULL);
 
-	wl_shell_surface_set_title(window->shell_surface, "simple-egl");
+	xdg_surface_set_title(window->xdg_surface, "simple-egl");
 
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);
@@ -381,7 +411,7 @@ destroy_surface(struct window *window)
 	eglDestroySurface(window->display->egl.dpy, window->egl_surface);
 	wl_egl_window_destroy(window->native);
 
-	wl_shell_surface_destroy(window->shell_surface);
+	xdg_surface_destroy(window->xdg_surface);
 	wl_surface_destroy(window->surface);
 
 	if (window->callback)
@@ -543,8 +573,8 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 	struct display *display = data;
 
 	if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED)
-		wl_shell_surface_move(display->window->shell_surface,
-				      display->seat, serial);
+		xdg_surface_move(display->window->xdg_surface,
+				 display->seat, serial);
 }
 
 static void
@@ -568,7 +598,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 {
 	struct display *d = (struct display *)data;
 
-	wl_shell_surface_move(d->window->shell_surface, d->seat, serial);
+	xdg_surface_move(d->window->xdg_surface, d->seat, serial);
 }
 
 static void
@@ -695,9 +725,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->compositor =
 			wl_registry_bind(registry, name,
 					 &wl_compositor_interface, 1);
-	} else if (strcmp(interface, "wl_shell") == 0) {
+	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry, name,
-					    &wl_shell_interface, 1);
+					    &xdg_shell_interface, 1);
+		xdg_shell_use_unstable_version(d->shell, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		d->seat = wl_registry_bind(registry, name,
 					   &wl_seat_interface, 1);
@@ -813,7 +844,7 @@ main(int argc, char **argv)
 		wl_cursor_theme_destroy(display.cursor_theme);
 
 	if (display.shell)
-		wl_shell_destroy(display.shell);
+		xdg_shell_destroy(display.shell);
 
 	if (display.compositor)
 		wl_compositor_destroy(display.compositor);
