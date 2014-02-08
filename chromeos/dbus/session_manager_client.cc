@@ -247,34 +247,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
     // method calls instead.
     session_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
-        chromium::kOwnerKeySetSignal,
-        base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kPropertyChangeCompleteSignal,
-        base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
         chromium::kLockScreenSignal,
         base::Bind(&SessionManagerClientImpl::ScreenLockReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SessionManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Signals emitted on the session manager's interface.
     session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kLivenessRequestedSignal,
-        base::Bind(&SessionManagerClientImpl::LivenessRequestedReceived,
+        login_manager::kSessionManagerInterface,
+        login_manager::kOwnerKeySetSignal,
+        base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SessionManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-
-    // Signals emitted on the session manager's interface.
+    session_manager_proxy_->ConnectToSignal(
+        login_manager::kSessionManagerInterface,
+        login_manager::kPropertyChangeCompleteSignal,
+        base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kScreenIsLockedSignal,
@@ -477,11 +470,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void ScreenLockReceived(dbus::Signal* signal) {
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
-  }
-
-  void LivenessRequestedReceived(dbus::Signal* signal) {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerHandleLivenessConfirmed);
   }
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
