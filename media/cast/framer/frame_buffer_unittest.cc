@@ -30,12 +30,23 @@ class FrameBufferTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FrameBufferTest);
 };
 
+TEST_F(FrameBufferTest, OnePacketInsertSanity) {
+  rtp_header_.webrtc.header.timestamp = 3000u;
+  rtp_header_.is_key_frame = true;
+  rtp_header_.frame_id = 5;
+  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  transport::EncodedVideoFrame frame;
+  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
+  EXPECT_EQ(5u, frame.frame_id);
+  EXPECT_TRUE(frame.key_frame);
+  EXPECT_EQ(3000u, frame.rtp_timestamp);
+}
+
 TEST_F(FrameBufferTest, EmptyBuffer) {
   EXPECT_FALSE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
   transport::EncodedVideoFrame frame;
-  uint32 rtp_timestamp;
-  EXPECT_FALSE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
+  EXPECT_FALSE(buffer_.GetEncodedVideoFrame(&frame));
 }
 
 TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
@@ -43,8 +54,7 @@ TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
   transport::EncodedVideoFrame frame;
-  uint32 rtp_timestamp;
-  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
+  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
   EXPECT_EQ(payload_.size(), frame.data.size());
 }
 
@@ -60,12 +70,11 @@ TEST_F(FrameBufferTest, MultiplePacketFrame) {
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_TRUE(buffer_.is_key_frame());
   transport::EncodedVideoFrame frame;
-  uint32 rtp_timestamp;
-  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
+  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
   EXPECT_EQ(3 * payload_.size(), frame.data.size());
 }
 
-TEST_F(FrameBufferTest, InCompleteFrame) {
+TEST_F(FrameBufferTest, IncompleteFrame) {
   rtp_header_.max_packet_id = 4;
   buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;

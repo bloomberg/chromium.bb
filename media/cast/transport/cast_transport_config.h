@@ -74,6 +74,7 @@ struct EncodedVideoFrame {
   bool key_frame;
   uint32 frame_id;
   uint32 last_referenced_frame_id;
+  uint32 rtp_timestamp;
   std::string data;
 };
 

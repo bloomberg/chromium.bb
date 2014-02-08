@@ -181,6 +181,12 @@ void VideoSender::SendEncodedVideoFrameMainThread(
             << static_cast<int>(encoded_frame->frame_id);
   }
 
+  cast_environment_->Logging()->InsertFrameEvent(
+      last_send_time_,
+      kVideoFrameEncoded,
+      encoded_frame->rtp_timestamp,
+      encoded_frame->frame_id);
+
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
   cast_environment_->PostTask(
       CastEnvironment::TRANSPORT,

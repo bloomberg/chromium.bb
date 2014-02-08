@@ -30,7 +30,12 @@ CastTransportConfig::CastTransportConfig()
 
 CastTransportConfig::~CastTransportConfig() {}
 
-EncodedVideoFrame::EncodedVideoFrame() {}
+EncodedVideoFrame::EncodedVideoFrame()
+    : codec(kVp8),
+      key_frame(false),
+      frame_id(0),
+      last_referenced_frame_id(0),
+      rtp_timestamp(0) {}
 EncodedVideoFrame::~EncodedVideoFrame() {}
 
 EncodedAudioFrame::EncodedAudioFrame()

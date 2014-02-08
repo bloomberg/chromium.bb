@@ -73,7 +73,6 @@ class VideoReceiver : public base::NonThreadSafe,
   bool DecryptVideoFrame(scoped_ptr<transport::EncodedVideoFrame>* video_frame);
 
   bool PullEncodedVideoFrame(
-      uint32 rtp_timestamp,
       bool next_frame,
       scoped_ptr<transport::EncodedVideoFrame>* encoded_frame,
       base::TimeTicks* render_time);

@@ -52,14 +52,11 @@ void RtpPacketizer::IncomingEncodedVideoFrame(
   DCHECK(!config_.audio) << "Invalid state";
   if (config_.audio) return;
 
-  // Timestamp is in 90 KHz for video.
-  rtp_timestamp_ = GetVideoRtpTimestamp(capture_time);
   time_last_sent_rtp_timestamp_ = capture_time;
-
   Cast(video_frame->key_frame,
        video_frame->frame_id,
        video_frame->last_referenced_frame_id,
-       rtp_timestamp_,
+       video_frame->rtp_timestamp,
        video_frame->data);
 }
 
@@ -100,6 +97,7 @@ void RtpPacketizer::Cast(bool is_key,
                          const std::string& data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
+  rtp_timestamp_ = timestamp;
 
   // Split the payload evenly (round number up).
   size_t num_packets = (data.size() + max_length) / max_length;

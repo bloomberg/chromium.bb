@@ -21,11 +21,10 @@ namespace {
 static const int kInputBufferExtraCount = 1;
 static const int kOutputBufferCount = 3;
 
-void LogFrameEncodedEvent(const base::TimeTicks& now,
-                          media::cast::CastEnvironment* const cast_environment,
+void LogFrameEncodedEvent(media::cast::CastEnvironment* const cast_environment,
                           const base::TimeTicks& capture_time) {
   cast_environment->Logging()->InsertFrameEvent(
-      now,
+      cast_environment->Clock()->NowTicks(),
       media::cast::kVideoFrameEncoded,
       media::cast::GetVideoRtpTimestamp(capture_time),
       media::cast::kFrameIdUnknown);
@@ -274,6 +273,8 @@ class LocalVideoEncodeAcceleratorClient
     encoded_frame->last_referenced_frame_id = last_encoded_frame_id_;
     last_encoded_frame_id_++;
     encoded_frame->frame_id = last_encoded_frame_id_;
+    encoded_frame->rtp_timestamp =
+        GetVideoRtpTimestamp(encoded_frame_data_storage_.front().capture_time);
     if (key_frame) {
       // Self referenced.
       encoded_frame->last_referenced_frame_id = encoded_frame->frame_id;
@@ -285,17 +286,15 @@ class LocalVideoEncodeAcceleratorClient
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(encoded_frame_data_storage_.front().frame_encoded_callback,
-                   base::Passed(&encoded_frame),
+        base::Bind(LogFrameEncodedEvent,
+                   cast_environment_,
                    encoded_frame_data_storage_.front().capture_time));
 
-    base::TimeTicks now = cast_environment_->Clock()->NowTicks();
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(LogFrameEncodedEvent,
-                   now,
-                   cast_environment_,
+        base::Bind(encoded_frame_data_storage_.front().frame_encoded_callback,
+                   base::Passed(&encoded_frame),
                    encoded_frame_data_storage_.front().capture_time));
 
     encoded_frame_data_storage_.pop_front();

@@ -93,7 +93,6 @@ bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
 
 // This does not release the frame.
 bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
-                                  uint32* rtp_timestamp,
                                   bool* next_frame) {
   uint32 frame_id;
   // Find frame id.
@@ -116,7 +115,7 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
   if (it == frames_.end())
     return false;
 
-  return it->second->GetEncodedVideoFrame(video_frame, rtp_timestamp);
+  return it->second->GetEncodedVideoFrame(video_frame);
 }
 
 void Framer::Reset() {

@@ -20,17 +20,6 @@ namespace {
 
 typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
 
-void LogFrameEncodedEvent(const base::TimeTicks& now,
-                          scoped_refptr<CastEnvironment> cast_environment,
-                          const base::TimeTicks& capture_time) {
-  DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
-  cast_environment->Logging()->InsertFrameEvent(
-      now,
-      kVideoFrameEncoded,
-      GetVideoRtpTimestamp(capture_time),
-      kFrameIdUnknown);
-}
-
 void InitializeVp8EncoderOnEncoderThread(
     const scoped_refptr<CastEnvironment>& environment,
     Vp8Encoder* vp8_encoder) {
@@ -57,11 +46,7 @@ void EncodeVideoFrameOnEncoderThread(
       new transport::EncodedVideoFrame());
   bool retval = vp8_encoder->Encode(video_frame, encoded_frame.get());
 
-  base::TimeTicks now = environment->Clock()->NowTicks();
-  environment->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(LogFrameEncodedEvent, now, environment, capture_time));
+  encoded_frame->rtp_timestamp = transport::GetVideoRtpTimestamp(capture_time);
 
   if (!retval) {
     VLOG(1) << "Encoding failed";

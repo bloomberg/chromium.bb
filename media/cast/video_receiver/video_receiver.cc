@@ -152,9 +152,13 @@ void VideoReceiver::DecodeVideoFrame(
     const base::TimeTicks& render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // Hand the ownership of the encoded frame to the decode thread.
-  cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
-      base::Bind(&VideoReceiver::DecodeVideoFrameThread, base::Unretained(this),
-                 base::Passed(&encoded_frame), render_time, callback));
+  cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER,
+                              FROM_HERE,
+                              base::Bind(&VideoReceiver::DecodeVideoFrameThread,
+                                         base::Unretained(this),
+                                         base::Passed(&encoded_frame),
+                                         render_time,
+                                         callback));
 }
 
 // Utility function to run the decoder on a designated decoding thread.
@@ -202,8 +206,7 @@ void VideoReceiver::GetEncodedVideoFrame(
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
 
-  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
-                                     &next_frame)) {
+  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &next_frame)) {
     // We have no video frames. Wait for new packet(s).
     queued_encoded_callbacks_.push_back(callback);
     return;
@@ -216,10 +219,12 @@ void VideoReceiver::GetEncodedVideoFrame(
   }
 
   base::TimeTicks render_time;
-  if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,
-                            &render_time)) {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(callback, base::Passed(&encoded_frame), render_time));
+  if (PullEncodedVideoFrame(next_frame, &encoded_frame, &render_time)) {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(callback,
+                                           base::Passed(&encoded_frame),
+                                           render_time));
   } else {
     // We have a video frame; however we are missing packets and we have time
     // to wait for new packet(s).
@@ -232,16 +237,20 @@ void VideoReceiver::GetEncodedVideoFrame(
 // frame.
 // If the frame is too old to be rendered we set the don't show flag in the
 // video bitstream where possible.
-bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
-    bool next_frame, scoped_ptr<transport::EncodedVideoFrame>* encoded_frame,
+bool VideoReceiver::PullEncodedVideoFrame(
+    bool next_frame,
+    scoped_ptr<transport::EncodedVideoFrame>* encoded_frame,
     base::TimeTicks* render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  *render_time = GetRenderTime(now, rtp_timestamp);
+  *render_time = GetRenderTime(now, (*encoded_frame)->rtp_timestamp);
 
   // TODO(mikhal): Store actual render time and not diff.
-  cast_environment_->Logging()->InsertFrameEventWithDelay(now,
-      kVideoRenderDelay, rtp_timestamp, (*encoded_frame)->frame_id,
+  cast_environment_->Logging()->InsertFrameEventWithDelay(
+      now,
+      kVideoRenderDelay,
+      (*encoded_frame)->rtp_timestamp,
+      (*encoded_frame)->frame_id,
       now - *render_time);
 
   // Minimum time before a frame is due to be rendered before we pull it for
@@ -287,13 +296,11 @@ void VideoReceiver::PlayoutTimeout() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (queued_encoded_callbacks_.empty()) return;
 
-  uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
       new transport::EncodedVideoFrame());
 
-  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
-                                     &next_frame)) {
+  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &next_frame)) {
     // We have no video frames. Wait for new packet(s).
     // Since the application can post multiple VideoFrameEncodedCallback and
     // we only check the next frame to play out we might have multiple timeout
@@ -310,18 +317,16 @@ void VideoReceiver::PlayoutTimeout() {
   }
 
   base::TimeTicks render_time;
-  if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,
-                            &render_time)) {
+  if (PullEncodedVideoFrame(next_frame, &encoded_frame, &render_time)) {
     if (!queued_encoded_callbacks_.empty()) {
       VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
       queued_encoded_callbacks_.pop_front();
       cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
           base::Bind(callback, base::Passed(&encoded_frame), render_time));
     }
-  } else {
-    // We have a video frame; however we are missing packets and we have time
-    // to wait for new packet(s).
   }
+  // Else we have a video frame; however we are missing packets and we have time
+  // to wait for new packet(s).
 }
 
 base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,

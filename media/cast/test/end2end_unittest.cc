@@ -1052,9 +1052,9 @@ TEST_F(End2EndTest, VideoLogging) {
   EXPECT_TRUE(event_it != event_log.end());
   event_log.erase(event_it);
 
-  // TODO(mikhal): Plumb this one through.
   event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameDecoded);
-  EXPECT_TRUE(event_it == event_log.end());
+  EXPECT_TRUE(event_it != event_log.end());
+  event_log.erase(event_it);
 
   // Verify that there were no other events logged with respect to this frame.
   EXPECT_EQ(0u, event_log.size());

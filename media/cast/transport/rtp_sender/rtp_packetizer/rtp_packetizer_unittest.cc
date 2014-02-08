@@ -35,7 +35,8 @@ class TestRtpPacketTransport : public PacketSender {
          packets_sent_(0),
          expected_number_of_packets_(0),
          expected_packet_id_(0),
-         expected_frame_id_(0) {}
+         expected_frame_id_(0),
+         expectd_rtp_timestamp_(0) {}
 
   void VerifyRtpHeader(const RtpCastTestHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
@@ -45,7 +46,7 @@ class TestRtpPacketTransport : public PacketSender {
   void VerifyCommonRtpHeader(const RtpCastTestHeader& rtp_header) {
     EXPECT_EQ(kPayload, rtp_header.payload_type);
     EXPECT_EQ(sequence_number_, rtp_header.sequence_number);
-    EXPECT_EQ(kTimestampMs * 90, rtp_header.rtp_timestamp);
+    EXPECT_EQ(expectd_rtp_timestamp_, rtp_header.rtp_timestamp);
     EXPECT_EQ(config_.ssrc, rtp_header.ssrc);
     EXPECT_EQ(0, rtp_header.num_csrcs);
   }
@@ -78,6 +79,10 @@ class TestRtpPacketTransport : public PacketSender {
     expected_number_of_packets_ = expected_number_of_packets;
   }
 
+  void set_rtp_timestamp(uint32 rtp_timestamp) {
+    expectd_rtp_timestamp_ = rtp_timestamp;
+  }
+
   RtpPacketizerConfig config_;
   uint32 sequence_number_;
   int packets_sent_;
@@ -86,6 +91,7 @@ class TestRtpPacketTransport : public PacketSender {
   // Assuming packets arrive in sequence.
   int expected_packet_id_;
   uint32 expected_frame_id_;
+  uint32 expectd_rtp_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRtpPacketTransport);
 };
@@ -110,6 +116,8 @@ class RtpPacketizerTest : public ::testing::Test {
     video_frame_.frame_id = 0;
     video_frame_.last_referenced_frame_id = kStartFrameId;
     video_frame_.data.assign(kFrameSize, 123);
+    video_frame_.rtp_timestamp =
+        GetVideoRtpTimestamp(testing_clock_.NowTicks());
   }
 
   virtual ~RtpPacketizerTest() {}
@@ -137,6 +145,7 @@ class RtpPacketizerTest : public ::testing::Test {
 TEST_F(RtpPacketizerTest, SendStandardPackets) {
   int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->set_expected_number_of_packets(expected_num_of_packets);
+  transport_->set_rtp_timestamp(video_frame_.rtp_timestamp);
 
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(kTimestampMs);
@@ -151,6 +160,7 @@ TEST_F(RtpPacketizerTest, Stats) {
   // Insert packets at varying lengths.
   int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->set_expected_number_of_packets(expected_num_of_packets);
+  transport_->set_rtp_timestamp(video_frame_.rtp_timestamp);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));
   rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,
