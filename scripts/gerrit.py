@@ -20,6 +20,7 @@ from chromite.buildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import gob_util
 from chromite.lib import terminal
 
 
@@ -343,7 +344,8 @@ Actions:"""
                    (cmd, len(argspec.args) - 1))
     try:
       functor(opts, *args)
-    except (cros_build_lib.RunCommandError, gerrit.GerritException) as e:
+    except (cros_build_lib.RunCommandError, gerrit.GerritException,
+            gob_util.GOBError) as e:
       cros_build_lib.Die(e.message)
   else:
     parser.error('unknown action: %s' % (cmd,))
