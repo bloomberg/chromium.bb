@@ -67,6 +67,12 @@ class GerritHelper(object):
       raise ValueError('Remote %s not supported.' % remote)
     return cls(host, remote, **kwargs)
 
+  @classmethod
+  def FromGob(cls, gob, **kwargs):
+    """Return a helper for a GoB instance."""
+    host = constants.GOB_HOST % ('%s-review' % gob)
+    return cls(host, gob, **kwargs)
+
   def SetReviewers(self, change, add=(), remove=()):
     """Modify the list of reviewers on a gerrit change.
 
@@ -383,9 +389,12 @@ def GetGerritPatchInfo(patches):
   return results
 
 
-def GetGerritHelper(remote, **kwargs):
+def GetGerritHelper(remote=None, gob=None, **kwargs):
   """Return a GerritHelper instance for interacting with the given remote."""
-  return GerritHelper.FromRemote(remote, **kwargs)
+  if gob:
+    return GerritHelper.FromGob(gob, **kwargs)
+  else:
+    return GerritHelper.FromRemote(remote, **kwargs)
 
 
 def GetGerritHelperForChange(change):

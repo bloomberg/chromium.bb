@@ -296,11 +296,11 @@ Actions:"""
 
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
-                      const=constants.INTERNAL_REMOTE,
+                      const=constants.INTERNAL_GOB_INSTANCE,
                       help='Query internal Chromium Gerrit instance')
   parser.add_argument('-g', '--gob',
                       help='Gerrit (on borg) instance to query (default: %s)' %
-                           (constants.EXTERNAL_REMOTE))
+                           (constants.EXTERNAL_GOB_INSTANCE))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project)')
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
@@ -320,13 +320,13 @@ Actions:"""
   args = opts.args
   if len(args) > 1:
     if args[1][0] == '*':
-      opts.gob = constants.INTERNAL_REMOTE
+      opts.gob = constants.INTERNAL_GOB_INSTANCE
       args[1] = args[1][1:]
 
   if opts.gob is None:
-    opts.gob = constants.EXTERNAL_REMOTE
+    opts.gob = constants.EXTERNAL_GOB_INSTANCE
 
-  opts.gerrit = gerrit.GetGerritHelper(opts.gob, print_cmd=opts.debug)
+  opts.gerrit = gerrit.GetGerritHelper(gob=opts.gob, print_cmd=opts.debug)
   opts.Freeze()
 
   # Now look up the requested user action and run it.
