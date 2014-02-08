@@ -127,6 +127,12 @@ std::string BluetoothAdapterMac::GetName() const {
   return name_;
 }
 
+void BluetoothAdapterMac::SetName(const std::string& name,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 bool BluetoothAdapterMac::IsInitialized() const {
   return true;
 }
@@ -142,6 +148,19 @@ bool BluetoothAdapterMac::IsPowered() const {
 void BluetoothAdapterMac::SetPowered(bool powered,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+bool BluetoothAdapterMac::IsDiscoverable() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void BluetoothAdapterMac::SetDiscoverable(
+    bool discoverable,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
 }
 
 bool BluetoothAdapterMac::IsDiscovering() const {

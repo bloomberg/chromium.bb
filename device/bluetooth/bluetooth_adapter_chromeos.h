@@ -40,11 +40,19 @@ class BluetoothAdapterChromeOS
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
+  virtual void SetName(const std::string& name,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;
   virtual void SetPowered(
       bool powered,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual bool IsDiscoverable() const OVERRIDE;
+  virtual void SetDiscoverable(
+      bool discoverable,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
@@ -95,10 +103,8 @@ class BluetoothAdapterChromeOS
   // subsequently operate on that adapter until it is removed.
   void SetAdapter(const dbus::ObjectPath& object_path);
 
-  // Set the adapter name to one chosen from the system information, and method
-  // called by dbus:: on completion of the alias property change.
-  void SetAdapterName();
-  void OnSetAlias(bool success);
+  // Set the adapter name to one chosen from the system information.
+  void SetDefaultAdapterName();
 
   // Remove the currently tracked adapter. IsPresent() will return false after
   // this is called.
@@ -106,6 +112,7 @@ class BluetoothAdapterChromeOS
 
   // Announce to observers a change in the adapter state.
   void PoweredChanged(bool powered);
+  void DiscoverableChanged(bool discoverable);
   void DiscoveringChanged(bool discovering);
   void PresentChanged(bool present);
 
@@ -113,10 +120,15 @@ class BluetoothAdapterChromeOS
   // its D-Bus properties.
   void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
-  // Called by dbus:: on completion of the powered property change.
-  void OnSetPowered(const base::Closure& callback,
-                    const ErrorCallback& error_callback,
-                    bool success);
+  // Called by dbus:: on completion of the discoverable property change.
+  void OnSetDiscoverable(const base::Closure& callback,
+                         const ErrorCallback& error_callback,
+                         bool success);
+
+  // Called by dbus:: on completion of an adapter property change.
+  void OnPropertyChangeCompleted(const base::Closure& callback,
+                                 const ErrorCallback& error_callback,
+                                 bool success);
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback);

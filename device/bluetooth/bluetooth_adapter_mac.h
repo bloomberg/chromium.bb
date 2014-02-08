@@ -47,11 +47,19 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
+  virtual void SetName(const std::string& name,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;
   virtual void SetPowered(
       bool powered,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual bool IsDiscoverable() const OVERRIDE;
+  virtual void SetDiscoverable(
+      bool discoverable,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;

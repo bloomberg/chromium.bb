@@ -55,7 +55,10 @@ void FakeBluetoothAdapterClient::Properties::Set(
     dbus::PropertyBase *property,
     dbus::PropertySet::SetCallback callback) {
   VLOG(1) << "Set " << property->name();
-  if (property->name() == powered.name() || property->name() == alias.name()) {
+  if (property->name() == powered.name() ||
+      property->name() == alias.name() ||
+      property->name() == discoverable.name() ||
+      property->name() == discoverable_timeout.name()) {
     callback.Run(true);
     property->ReplaceValueWithSetValue();
   } else {

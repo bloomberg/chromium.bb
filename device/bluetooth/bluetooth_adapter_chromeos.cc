@@ -79,6 +79,18 @@ std::string BluetoothAdapterChromeOS::GetName() const {
   return properties->alias.value();
 }
 
+void BluetoothAdapterChromeOS::SetName(const std::string& name,
+                                       const base::Closure& callback,
+                                       const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_)->alias.Set(
+          name,
+          base::Bind(&BluetoothAdapterChromeOS::OnPropertyChangeCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     error_callback));
+}
+
 bool BluetoothAdapterChromeOS::IsInitialized() const {
   return true;
 }
@@ -105,7 +117,31 @@ void BluetoothAdapterChromeOS::SetPowered(
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_)->powered.Set(
           powered,
-          base::Bind(&BluetoothAdapterChromeOS::OnSetPowered,
+          base::Bind(&BluetoothAdapterChromeOS::OnPropertyChangeCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     error_callback));
+}
+
+bool BluetoothAdapterChromeOS::IsDiscoverable() const {
+  if (!IsPresent())
+    return false;
+
+  BluetoothAdapterClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+          GetProperties(object_path_);
+
+  return properties->discoverable.value();
+}
+
+void BluetoothAdapterChromeOS::SetDiscoverable(
+    bool discoverable,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_)->discoverable.Set(
+          discoverable,
+          base::Bind(&BluetoothAdapterChromeOS::OnSetDiscoverable,
                      weak_ptr_factory_.GetWeakPtr(),
                      callback,
                      error_callback));
@@ -185,6 +221,8 @@ void BluetoothAdapterChromeOS::AdapterPropertyChanged(
 
   if (property_name == properties->powered.name())
     PoweredChanged(properties->powered.value());
+  else if (property_name == properties->discoverable.name())
+    DiscoverableChanged(properties->discoverable.value());
   else if (property_name == properties->discovering.name())
     DiscoveringChanged(properties->discovering.value());
 }
@@ -297,7 +335,7 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
 
   VLOG(1) << object_path_.value() << ": using adapter.";
 
-  SetAdapterName();
+  SetDefaultAdapterName();
 
   BluetoothAdapterClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothAdapterClient()->
@@ -307,6 +345,8 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
 
   if (properties->powered.value())
     PoweredChanged(true);
+  if (properties->discoverable.value())
+    DiscoverableChanged(true);
   if (properties->discovering.value())
     DiscoveringChanged(true);
 
@@ -326,7 +366,7 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
   }
 }
 
-void BluetoothAdapterChromeOS::SetAdapterName() {
+void BluetoothAdapterChromeOS::SetDefaultAdapterName() {
   std::string board = base::SysInfo::GetLsbReleaseBoard();
   std::string alias;
   if (board.substr(0, 6) == "stumpy") {
@@ -337,16 +377,7 @@ void BluetoothAdapterChromeOS::SetAdapterName() {
     alias = "Chromebook";
   }
 
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      GetProperties(object_path_)->alias.Set(
-          alias,
-          base::Bind(&BluetoothAdapterChromeOS::OnSetAlias,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothAdapterChromeOS::OnSetAlias(bool success) {
-  LOG_IF(WARNING, !success) << object_path_.value()
-                            << ": Failed to set adapter alias";
+  SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }
 
 void BluetoothAdapterChromeOS::RemoveAdapter() {
@@ -361,6 +392,8 @@ void BluetoothAdapterChromeOS::RemoveAdapter() {
 
   if (properties->powered.value())
     PoweredChanged(false);
+  if (properties->discoverable.value())
+    DiscoverableChanged(false);
   if (properties->discovering.value())
     DiscoveringChanged(false);
 
@@ -384,6 +417,11 @@ void BluetoothAdapterChromeOS::PoweredChanged(bool powered) {
                     AdapterPoweredChanged(this, powered));
 }
 
+void BluetoothAdapterChromeOS::DiscoverableChanged(bool discoverable) {
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterDiscoverableChanged(this, discoverable));
+}
+
 void BluetoothAdapterChromeOS::DiscoveringChanged(
     bool discovering) {
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -403,9 +441,25 @@ void BluetoothAdapterChromeOS::NotifyDeviceChanged(
                     DeviceChanged(this, device));
 }
 
-void BluetoothAdapterChromeOS::OnSetPowered(const base::Closure& callback,
-                                            const ErrorCallback& error_callback,
-                                            bool success) {
+void BluetoothAdapterChromeOS::OnSetDiscoverable(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback,
+    bool success) {
+  // Set the discoverable_timeout property to zero so the adapter remains
+  // discoverable forever.
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_)->discoverable_timeout.Set(
+          0,
+          base::Bind(&BluetoothAdapterChromeOS::OnPropertyChangeCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     error_callback));
+}
+
+void BluetoothAdapterChromeOS::OnPropertyChangeCompleted(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback,
+    bool success) {
   if (success)
     callback.Run();
   else

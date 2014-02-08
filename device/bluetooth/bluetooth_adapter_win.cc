@@ -53,6 +53,12 @@ std::string BluetoothAdapterWin::GetName() const {
   return name_;
 }
 
+void BluetoothAdapterWin::SetName(const std::string& name,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 // TODO(youngki): Return true when |task_manager_| initializes the adapter
 // state.
 bool BluetoothAdapterWin::IsInitialized() const {
@@ -72,6 +78,18 @@ void BluetoothAdapterWin::SetPowered(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   task_manager_->PostSetPoweredBluetoothTask(powered, callback, error_callback);
+}
+
+bool BluetoothAdapterWin::IsDiscoverable() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void BluetoothAdapterWin::SetDiscoverable(
+    bool discoverable,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
 }
 
 bool BluetoothAdapterWin::IsDiscovering() const {

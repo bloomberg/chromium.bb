@@ -43,6 +43,12 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
     virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
                                        bool powered) {}
 
+    // Called when the discoverability state of the  adapter |adapter| changes,
+    // when |discoverable| is true the adapter is discoverable by other devices,
+    // false means the adapter is not discoverable.
+    virtual void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
+                                           bool discoverable) {}
+
     // Called when the discovering state of the adapter |adapter| changes,
     // when |discovering| is true the adapter is seeking new devices, false
     // means it is not.
@@ -91,6 +97,12 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // The name of the adapter.
   virtual std::string GetName() const = 0;
 
+  // Set the human-readable name of the adapter to |name|. On success,
+  // |callback| will be called. On failure, |error_callback| will be called.
+  virtual void SetName(const std::string& name,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) = 0;
+
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
 
@@ -108,6 +120,17 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
+
+  // Indicates whether the adapter radio is discoverable.
+  virtual bool IsDiscoverable() const = 0;
+
+  // Requests that the adapter change its discoverability state. If
+  // |discoverable| is true, then it will be discoverable by other Bluetooth
+  // devices. On successly changing the adapter's discoverability, |callback|
+  // will be called. On failure, |error_callback| will be called.
+  virtual void SetDiscoverable(bool discoverable,
+                               const base::Closure& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;

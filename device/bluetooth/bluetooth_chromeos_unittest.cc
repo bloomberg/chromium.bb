@@ -28,6 +28,7 @@ class TestObserver : public BluetoothAdapter::Observer {
   TestObserver(scoped_refptr<BluetoothAdapter> adapter)
       : present_changed_count_(0),
         powered_changed_count_(0),
+        discoverable_changed_count_(0),
         discovering_changed_count_(0),
         last_present_(false),
         last_powered_(false),
@@ -54,6 +55,13 @@ class TestObserver : public BluetoothAdapter::Observer {
 
     ++powered_changed_count_;
     last_powered_ = powered;
+  }
+
+  virtual void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
+                                          bool discoverable) OVERRIDE {
+    EXPECT_EQ(adapter_, adapter);
+
+    ++discoverable_changed_count_;
   }
 
   virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
@@ -99,6 +107,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   int present_changed_count_;
   int powered_changed_count_;
+  int discoverable_changed_count_;
   int discovering_changed_count_;
   bool last_present_;
   bool last_powered_;
@@ -505,6 +514,79 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPowered) {
   EXPECT_FALSE(observer.last_powered_);
 
   EXPECT_FALSE(adapter_->IsPowered());
+}
+
+TEST_F(BluetoothChromeOSTest, ChangeAdapterName) {
+  GetAdapter();
+
+  static const std::string new_name(".__.");
+
+  adapter_->SetName(
+      new_name,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(new_name, adapter_->GetName());
+}
+
+TEST_F(BluetoothChromeOSTest, BecomeDiscoverable) {
+  GetAdapter();
+  ASSERT_FALSE(adapter_->IsDiscoverable());
+
+  // Install an observer; expect the AdapterDiscoverableChanged to be called
+  // with true, and IsDiscoverable() to return true.
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  adapter_->SetDiscoverable(
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(1, observer.discoverable_changed_count_);
+
+  EXPECT_TRUE(adapter_->IsDiscoverable());
+}
+
+TEST_F(BluetoothChromeOSTest, BecomeNotDiscoverable) {
+  GetAdapter();
+  adapter_->SetDiscoverable(
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  callback_count_ = 0;
+
+  ASSERT_TRUE(adapter_->IsDiscoverable());
+
+  // Install an observer; expect the AdapterDiscoverableChanged to be called
+  // with false, and IsDiscoverable() to return false.
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  adapter_->SetDiscoverable(
+      false,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(1, observer.discoverable_changed_count_);
+
+  EXPECT_FALSE(adapter_->IsDiscoverable());
 }
 
 TEST_F(BluetoothChromeOSTest, StopDiscovery) {
