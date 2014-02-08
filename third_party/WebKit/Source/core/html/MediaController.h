@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaControllerInterface.h"
 #include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
@@ -78,7 +79,8 @@ public:
     virtual bool muted() const OVERRIDE { return m_muted; }
     virtual void setMuted(bool) OVERRIDE;
 
-    virtual ReadyState readyState() const OVERRIDE { return m_readyState; }
+    typedef HTMLMediaElement::ReadyState ReadyState;
+    ReadyState readyState() const { return m_readyState; }
 
     enum PlaybackState { WAITING, PLAYING, ENDED };
     const AtomicString& playbackState() const;

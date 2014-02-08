@@ -62,9 +62,6 @@ public:
     virtual bool muted() const = 0;
     virtual void setMuted(bool) = 0;
 
-    enum ReadyState { HAVE_NOTHING, HAVE_METADATA, HAVE_CURRENT_DATA, HAVE_FUTURE_DATA, HAVE_ENOUGH_DATA };
-    virtual ReadyState readyState() const = 0;
-
     // MediaControlElements:
     virtual bool isFullscreen() const = 0;
     virtual void enterFullscreen() = 0;

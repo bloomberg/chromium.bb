@@ -118,7 +118,8 @@ public:
     String canPlayType(const String& mimeType, const String& keySystem = String()) const;
 
     // ready state
-    virtual ReadyState readyState() const OVERRIDE FINAL;
+    enum ReadyState { HAVE_NOTHING, HAVE_METADATA, HAVE_CURRENT_DATA, HAVE_FUTURE_DATA, HAVE_ENOUGH_DATA };
+    ReadyState readyState() const;
     bool seeking() const;
 
     // playback state

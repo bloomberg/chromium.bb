@@ -51,7 +51,7 @@ MediaController::MediaController(ExecutionContext* context)
     , m_volume(1)
     , m_position(MediaPlayer::invalidTime())
     , m_muted(false)
-    , m_readyState(HAVE_NOTHING)
+    , m_readyState(HTMLMediaElement::HAVE_NOTHING)
     , m_playbackState(WAITING)
     , m_asyncEventTimer(this, &MediaController::asyncEventTimerFired)
     , m_clearPositionTimer(this, &MediaController::clearPositionTimerFired)
@@ -331,18 +331,18 @@ void MediaController::reportControllerState()
     updatePlaybackState();
 }
 
-static AtomicString eventNameForReadyState(MediaControllerInterface::ReadyState state)
+static const AtomicString& eventNameForReadyState(HTMLMediaElement::ReadyState state)
 {
     switch (state) {
-    case MediaControllerInterface::HAVE_NOTHING:
+    case HTMLMediaElement::HAVE_NOTHING:
         return EventTypeNames::emptied;
-    case MediaControllerInterface::HAVE_METADATA:
+    case HTMLMediaElement::HAVE_METADATA:
         return EventTypeNames::loadedmetadata;
-    case MediaControllerInterface::HAVE_CURRENT_DATA:
+    case HTMLMediaElement::HAVE_CURRENT_DATA:
         return EventTypeNames::loadeddata;
-    case MediaControllerInterface::HAVE_FUTURE_DATA:
+    case HTMLMediaElement::HAVE_FUTURE_DATA:
         return EventTypeNames::canplay;
-    case MediaControllerInterface::HAVE_ENOUGH_DATA:
+    case HTMLMediaElement::HAVE_ENOUGH_DATA:
         return EventTypeNames::canplaythrough;
     default:
         ASSERT_NOT_REACHED();
@@ -357,7 +357,7 @@ void MediaController::updateReadyState()
 
     if (m_mediaElements.isEmpty()) {
         // If the MediaController has no slaved media elements, let new readiness state be 0.
-        newReadyState = HAVE_NOTHING;
+        newReadyState = HTMLMediaElement::HAVE_NOTHING;
     } else {
         // Otherwise, let it have the lowest value of the readyState IDL attributes of all of its
         // slaved media elements.
