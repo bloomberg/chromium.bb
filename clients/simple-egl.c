@@ -95,7 +95,7 @@ struct window {
 	struct xdg_surface *xdg_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, configured, opaque, buffer_size, frame_sync;
+	int fullscreen, opaque, buffer_size, frame_sync;
 };
 
 static const char *vert_shader_text =
@@ -281,23 +281,25 @@ handle_surface_configure(void *data, struct xdg_surface *surface,
 }
 
 static void
-handle_surface_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
+handle_surface_change_state(void *data, struct xdg_surface *xdg_surface,
+			    uint32_t state,
+			    uint32_t value,
+			    uint32_t serial)
 {
-}
+	struct window *window = data;
 
-static void
-handle_surface_request_unset_maximized(void *data, struct xdg_surface *xdg_surface)
-{
-}
+	switch (state) {
+	case XDG_SURFACE_STATE_FULLSCREEN:
+		window->fullscreen = value;
 
-static void
-handle_surface_request_set_fullscreen(void *data, struct xdg_surface *xdg_surface)
-{
-}
+		if (!value)
+			handle_surface_configure(window, window->xdg_surface,
+						 window->window_size.width,
+						 window->window_size.height);
+		break;
+	}
 
-static void
-handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
-{
+	xdg_surface_ack_change_state(xdg_surface, state, value, serial);
 }
 
 static void
@@ -318,52 +320,11 @@ handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure,
-	handle_surface_request_set_maximized,
-	handle_surface_request_unset_maximized,
-	handle_surface_request_set_fullscreen,
-	handle_surface_request_unset_fullscreen,
+	handle_surface_change_state,
 	handle_surface_activated,
 	handle_surface_deactivated,
 	handle_surface_delete,
 };
-
-static void
-configure_callback(void *data, struct wl_callback *callback, uint32_t  time)
-{
-	struct window *window = data;
-
-	wl_callback_destroy(callback);
-
-	window->configured = 1;
-}
-
-static struct wl_callback_listener configure_callback_listener = {
-	configure_callback,
-};
-
-static void
-set_fullscreen(struct window *window, int fullscreen)
-{
-	struct wl_callback *callback;
-
-	window->fullscreen = fullscreen;
-	window->configured = 0;
-
-	if (fullscreen) {
-		xdg_surface_set_fullscreen(window->xdg_surface);
-		callback = wl_display_sync(window->display->display);
-		wl_callback_add_listener(callback,
-					 &configure_callback_listener,
-					 window);
-
-	} else {
-		xdg_surface_unset_fullscreen(window->xdg_surface);
-		handle_surface_configure(window, window->xdg_surface,
-					 window->window_size.width,
-					 window->window_size.height);
-		window->configured = 1;
-	}
-}
 
 static void
 create_surface(struct window *window)
@@ -396,7 +357,9 @@ create_surface(struct window *window)
 	if (!window->frame_sync)
 		eglSwapInterval(display->egl.dpy, 0);
 
-	set_fullscreen(window, window->fullscreen);
+	xdg_surface_request_change_state(window->xdg_surface,
+					 XDG_SURFACE_STATE_FULLSCREEN,
+					 window->fullscreen, 0);
 }
 
 static void
@@ -452,9 +415,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 
 	if (callback)
 		wl_callback_destroy(callback);
-
-	if (!window->configured)
-		return;
 
 	gettimeofday(&tv, NULL);
 	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
@@ -657,7 +617,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	struct display *d = data;
 
 	if (key == KEY_F11 && state)
-		set_fullscreen(d->window, d->window->fullscreen ^ 1);
+		xdg_surface_request_change_state(d->window->xdg_surface,
+						 XDG_SURFACE_STATE_FULLSCREEN,
+						 !d->window->fullscreen, 0);
 	else if (key == KEY_ESC && state)
 		running = 0;
 }
@@ -845,8 +807,6 @@ main(int argc, char **argv)
 	 * queued up as a side effect. */
 	while (running && ret != -1) {
 		wl_display_dispatch_pending(display.display);
-		while (!window.configured)
-			wl_display_dispatch(display.display);
 		redraw(&window, NULL, 0);
 	}
 

@@ -120,22 +120,10 @@ handle_configure(void *data, struct xdg_surface *surface,
 }
 
 static void
-handle_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
-{
-}
-
-static void
-handle_request_unset_maximized(void *data, struct xdg_surface *xdg_surface)
-{
-}
-
-static void
-handle_request_set_fullscreen(void *data, struct xdg_surface *xdg_surface)
-{
-}
-
-static void
-handle_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
+handle_change_state(void *data, struct xdg_surface *xdg_surface,
+		    uint32_t state,
+		    uint32_t value,
+		    uint32_t serial)
 {
 }
 
@@ -157,10 +145,7 @@ handle_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_configure,
-	handle_request_set_maximized,
-	handle_request_unset_maximized,
-	handle_request_set_fullscreen,
-	handle_request_unset_fullscreen,
+	handle_change_state,
 	handle_activated,
 	handle_deactivated,
 	handle_delete,

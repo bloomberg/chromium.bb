@@ -3750,6 +3750,9 @@ window_do_resize(struct window *window)
 		surface_set_synchronized(surface);
 		surface_resize(surface);
 	}
+
+	if (!window->fullscreen && !window->maximized)
+		window->saved_allocation = window->pending_allocation;
 }
 
 static void
@@ -3839,31 +3842,29 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 }
 
 static void
-handle_surface_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
+handle_surface_change_state(void *data, struct xdg_surface *xdg_surface,
+			    uint32_t state,
+			    uint32_t value,
+			    uint32_t serial)
 {
 	struct window *window = data;
-	window_set_maximized(window, 1);
-}
 
-static void
-handle_surface_request_unset_maximized(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window_set_maximized(window, 0);
-}
+	switch (state) {
+	case XDG_SURFACE_STATE_MAXIMIZED:
+		window->maximized = value;
+		break;
+	case XDG_SURFACE_STATE_FULLSCREEN:
+		window->fullscreen = value;
+		break;
+	}
 
-static void
-handle_surface_request_set_fullscreen(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window_set_fullscreen(window, 1);
-}
+	if (!window->fullscreen && !window->maximized)
+		window_schedule_resize(window,
+				       window->saved_allocation.width,
+				       window->saved_allocation.height);
 
-static void
-handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window_set_fullscreen(window, 0);
+	xdg_surface_ack_change_state(xdg_surface, state, value, serial);
+	window_schedule_redraw(window);
 }
 
 static void
@@ -3889,10 +3890,7 @@ handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure,
-	handle_surface_request_set_maximized,
-	handle_surface_request_unset_maximized,
-	handle_surface_request_set_fullscreen,
-	handle_surface_request_unset_fullscreen,
+	handle_surface_change_state,
 	handle_surface_activated,
 	handle_surface_deactivated,
 	handle_surface_delete,
@@ -4125,39 +4123,6 @@ window_schedule_redraw(struct window *window)
 	window_schedule_redraw_task(window);
 }
 
-static void
-configure_sync_callback(void *data,
-			struct wl_callback *callback, uint32_t time)
-{
-	struct window *window = data;
-
-	DBG("scheduling redraw from maximize sync callback\n");
-
-	wl_callback_destroy(callback);
-
-	window->redraw_task_scheduled = 0;
-	window_schedule_redraw_task(window);
-}
-
-static struct wl_callback_listener configure_sync_callback_listener = {
-	configure_sync_callback,
-};
-
-static void
-window_delay_redraw(struct window *window)
-{
-	struct wl_callback *callback;
-
-	DBG("delay scheduled redraw for maximize configure\n");
-	if (window->redraw_task_scheduled)
-		wl_list_remove(&window->redraw_task.link);
-
-	window->redraw_task_scheduled = 1;
-	callback = wl_display_sync(window->display->display);
-	wl_callback_add_listener(callback,
-				 &configure_sync_callback_listener, window);
-}
-
 int
 window_is_fullscreen(struct window *window)
 {
@@ -4173,13 +4138,10 @@ window_set_fullscreen(struct window *window, int fullscreen)
 	if (window->fullscreen == fullscreen)
 		return;
 
-	window->fullscreen = fullscreen;
-	if (window->fullscreen)
-		xdg_surface_set_fullscreen(window->xdg_surface);
-	else
-		xdg_surface_unset_fullscreen(window->xdg_surface);
-
-	window_delay_redraw(window);
+	xdg_surface_request_change_state(window->xdg_surface,
+					 XDG_SURFACE_STATE_FULLSCREEN,
+					 fullscreen ? 1 : 0,
+					 0);
 }
 
 int
@@ -4197,13 +4159,10 @@ window_set_maximized(struct window *window, int maximized)
 	if (window->maximized == maximized)
 		return;
 
-	window->maximized = maximized;
-	if (window->maximized)
-		xdg_surface_set_maximized(window->xdg_surface);
-	else
-		xdg_surface_unset_maximized(window->xdg_surface);
-
-	window_delay_redraw(window);
+	xdg_surface_request_change_state(window->xdg_surface,
+					 XDG_SURFACE_STATE_MAXIMIZED,
+					 maximized ? 1 : 0,
+					 0);
 }
 
 void
