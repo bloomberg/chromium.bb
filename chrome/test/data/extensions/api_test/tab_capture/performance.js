@@ -109,7 +109,7 @@ function tabCapturePerformanceTest() {
         }
       }
     },
-    TestStream);
+    f);
 }
 
 chrome.test.runTests([ tabCapturePerformanceTest ]);
