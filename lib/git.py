@@ -342,7 +342,6 @@ class Manifest(object):
     """
 
     self.default = {}
-    self.projects = {}
     self.checkouts_by_path = {}
     self.checkouts_by_name = {}
     self.remotes = {}
@@ -370,7 +369,6 @@ class Manifest(object):
       attrs.setdefault('alias', attrs['name'])
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
-      self.projects[attrs['name']] = attrs
       self.checkouts_by_path[attrs['path']] = attrs
       self.checkouts_by_name.setdefault(attrs['name'], []).append(attrs)
     elif name == 'manifest':
@@ -534,11 +532,6 @@ class ManifestCheckout(Manifest):
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
 
-  def AssertProjectIsPushable(self, project):
-    """Verify that the |project| has push_* attributes populated."""
-    for checkout in self.FindCheckouts(project):
-      checkout.AssertPushable()
-
   def ProjectIsContentMerging(self, project):
     """Returns whether the given project has content merging enabled in git.
 
@@ -550,16 +543,21 @@ class ManifestCheckout(Manifest):
       True if content merging is enabled.
 
     Raises:
+      AssertionError: If no patchable checkout was found or if the patchable
+        checkout does not have a pushable project remote.
       RunCommandError: If the branch can't be fetched due to network
         conditions or if this was invoked against a <gerrit-2.2 server,
         or a mirror that has refs/meta/config stripped from it.
     """
     result = self._content_merging.get(project)
     if result is None:
-      self.AssertProjectIsPushable(project)
-      data = self.projects[project]
-      self._content_merging[project] = result = _GitRepoIsContentMerging(
-          data['local_path'], data['push_remote'])
+      checkouts = self.FindCheckouts(project, only_patchable=True)
+      if len(checkouts) < 1:
+        raise AssertionError('No patchable checkout of %s was found' % project)
+      for checkout in checkouts:
+        checkout.AssertPushable()
+        self._content_merging[project] = result = _GitRepoIsContentMerging(
+            checkout['local_path'], checkout['push_remote'])
     return result
 
   def FindCheckouts(self, project, branch=None, only_patchable=False):
@@ -653,9 +651,8 @@ class ManifestCheckout(Manifest):
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
     Manifest._FinalizeAllProjectData(self)
-    for d in (self.projects, self.checkouts_by_path):
-      for key, value in d.iteritems():
-        d[key] = ProjectCheckout(value)
+    for key, value in self.checkouts_by_path.iteritems():
+      self.checkouts_by_path[key] = ProjectCheckout(value)
     for key, value in self.checkouts_by_name.iteritems():
       self.checkouts_by_name[key] = \
           [ProjectCheckout(x) for x in value]

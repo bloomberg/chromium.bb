@@ -59,7 +59,7 @@ class WorkonProjectsMonitor(object):
     """
     manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     self._tasks = []
-    for project in set(projects).intersection(manifest.projects):
+    for project in set(projects).intersection(manifest.checkouts_by_name):
       for checkout in manifest.FindCheckouts(project):
         self._tasks.append((project, checkout.GetPath(absolute=True)))
     self._result_queue = multiprocessing.Queue(len(self._tasks))

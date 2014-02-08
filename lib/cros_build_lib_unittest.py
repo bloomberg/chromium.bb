@@ -882,7 +882,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
           <remote name="foon" fetch="http://localhost" />
         </manifest>""")
     manifest = git.ManifestCheckout(self.tempdir)
-    self.assertEqual(list(manifest.projects), ['monkeys'])
+    self.assertEqual(list(manifest.checkouts_by_name), ['monkeys'])
     self.assertEqual(list(manifest.remotes), ['foon'])
 
   # pylint: disable=E1101
