@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <limits>
 
@@ -15,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,9 +27,22 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
 namespace {
+
+struct FDCloser {
+  inline void operator()(int* fd) const {
+    DCHECK(fd);
+    PCHECK(0 == IGNORE_EINTR(close(*fd)));
+    *fd = -1;
+  }
+};
+
+// Don't use base::ScopedFD since it doesn't CHECK that the file descriptor was
+// closed.
+typedef scoped_ptr<int, FDCloser> SafeScopedFD;
 
 void LogSandboxStarted(const std::string& sandbox_name) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -62,6 +77,21 @@ bool IsRunningTSAN() {
 #else
   return false;
 #endif
+}
+
+// Try to open /proc/self/task/ with the help of |proc_fd|. |proc_fd| can be
+// -1. Will return -1 on error and set errno like open(2).
+int OpenProcTaskFd(int proc_fd) {
+  int proc_self_task = -1;
+  if (proc_fd >= 0) {
+    // If a handle to /proc is available, use it. This allows to bypass file
+    // system restrictions.
+    proc_self_task = openat(proc_fd, "self/task/", O_RDONLY | O_DIRECTORY);
+  } else {
+    // Otherwise, make an attempt to access the file system directly.
+    proc_self_task = open("/proc/self/task/", O_RDONLY | O_DIRECTORY);
+  }
+  return proc_self_task;
 }
 
 }  // namespace
@@ -125,6 +155,11 @@ bool LinuxSandbox::InitializeSandbox() {
   return linux_sandbox->InitializeSandboxImpl();
 }
 
+void LinuxSandbox::StopThread(base::Thread* thread) {
+  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
+  linux_sandbox->StopThreadImpl(thread);
+}
+
 int LinuxSandbox::GetStatus() {
   CHECK(pre_initialized_);
   if (kSandboxLinuxInvalid == sandbox_status_flags_) {
@@ -153,35 +188,29 @@ int LinuxSandbox::GetStatus() {
 // PID namespaces and existing sandboxes, so "self" must really be used instead
 // of using the pid.
 bool LinuxSandbox::IsSingleThreaded() const {
-  struct stat task_stat;
-  int fstat_ret;
-  if (proc_fd_ >= 0) {
-    // If a handle to /proc is available, use it. This allows to bypass file
-    // system restrictions.
-    fstat_ret = fstatat(proc_fd_, "self/task/", &task_stat, 0);
-  } else {
-    // Otherwise, make an attempt to access the file system directly.
-    fstat_ret = fstatat(AT_FDCWD, "/proc/self/task/", &task_stat, 0);
-  }
-  // In Debug mode, it's mandatory to be able to count threads to catch bugs.
+  bool is_single_threaded = false;
+  int proc_self_task = OpenProcTaskFd(proc_fd_);
+
+// In Debug mode, it's mandatory to be able to count threads to catch bugs.
 #if !defined(NDEBUG)
-  // Using DCHECK here would be incorrect. DCHECK can be enabled in non
-  // official release mode.
-  CHECK_EQ(0, fstat_ret) << "Could not count threads, the sandbox was not "
-                         << "pre-initialized properly.";
+  // Using CHECK here since we want to check all the cases where
+  // !defined(NDEBUG)
+  // gets built.
+  CHECK_LE(0, proc_self_task) << "Could not count threads, the sandbox was not "
+                              << "pre-initialized properly.";
 #endif  // !defined(NDEBUG)
-  if (fstat_ret) {
+
+  if (proc_self_task < 0) {
     // Pretend to be monothreaded if it can't be determined (for instance the
     // setuid sandbox is already engaged but no proc_fd_ is available).
-    return true;
+    is_single_threaded = true;
+  } else {
+    SafeScopedFD task_closer(&proc_self_task);
+    is_single_threaded =
+        sandbox::ThreadHelpers::IsSingleThreaded(proc_self_task);
   }
 
-  // At least "..", "." and the current thread should be present.
-  CHECK_LE(3UL, task_stat.st_nlink);
-  // Counting threads via /proc/self/task could be racy. For the purpose of
-  // determining if the current proces is monothreaded it works: if at any
-  // time it becomes monothreaded, it'll stay so.
-  return task_stat.st_nlink == 3;
+  return is_single_threaded;
 }
 
 bool LinuxSandbox::seccomp_bpf_started() const {
@@ -257,6 +286,10 @@ bool LinuxSandbox::InitializeSandboxImpl() {
   return seccomp_bpf_started;
 }
 
+void LinuxSandbox::StopThreadImpl(base::Thread* thread) {
+  DCHECK(thread);
+  StopThreadAndEnsureNotCounted(thread);
+}
 
 bool LinuxSandbox::seccomp_bpf_supported() const {
   CHECK(pre_initialized_);
@@ -303,7 +336,7 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 #endif  // !defined(ADDRESS_SANITIZER)
 }
 
-bool LinuxSandbox::HasOpenDirectories() {
+bool LinuxSandbox::HasOpenDirectories() const {
   return sandbox::Credentials().HasOpenDirectory(proc_fd_);
 }
 
@@ -328,6 +361,15 @@ void LinuxSandbox::CheckForBrokenPromises(const std::string& process_type) {
   if (promised_seccomp_bpf_would_start) {
     CHECK(seccomp_bpf_started_);
   }
+}
+
+void LinuxSandbox::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
+  DCHECK(thread);
+  int proc_self_task = OpenProcTaskFd(proc_fd_);
+  PCHECK(proc_self_task >= 0);
+  SafeScopedFD task_closer(&proc_self_task);
+  CHECK(
+      sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_self_task, thread));
 }
 
 }  // namespace content

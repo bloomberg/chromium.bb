@@ -181,6 +181,8 @@
         'services/broker_process.h',
         'services/init_process_reaper.cc',
         'services/init_process_reaper.h',
+        'services/thread_helpers.cc',
+        'services/thread_helpers.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',

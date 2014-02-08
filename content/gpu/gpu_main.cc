@@ -409,13 +409,17 @@ bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
 
   WarmUpSandboxNvidia(gpu_info, should_initialize_gl_context);
 
-  if (watchdog_thread)
-    watchdog_thread->Stop();
+  if (watchdog_thread) {
+    // LinuxSandbox needs to be able to ensure that the thread
+    // has really been stopped.
+    LinuxSandbox::StopThread(watchdog_thread);
+  }
   // LinuxSandbox::InitializeSandbox() must always be called
   // with only one thread.
   res = LinuxSandbox::InitializeSandbox();
-  if (watchdog_thread)
+  if (watchdog_thread) {
     watchdog_thread->Start();
+  }
 
   return res;
 }

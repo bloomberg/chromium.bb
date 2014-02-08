@@ -12,6 +12,9 @@
 #include "content/public/common/sandbox_linux.h"
 
 template <typename T> struct DefaultSingletonTraits;
+namespace base {
+class Thread;
+}
 namespace sandbox { class SetuidSandboxClient; }
 
 namespace content {
@@ -45,7 +48,11 @@ class LinuxSandbox {
   // seccomp-bpf and address space limitations (the setuid sandbox works
   // differently and is set-up in the Zygote). This will instantiate the
   // LinuxSandbox singleton if it doesn't already exist.
+  // This function should only be called without any thread running.
   static bool InitializeSandbox();
+
+  // Stop |thread| in a way that can be trusted by the sandbox.
+  static void StopThread(base::Thread* thread);
 
   // Returns the status of the renderer, worker and ppapi sandbox. Can only
   // be queried after going through PreinitializeSandbox(). This is a bitmask
@@ -78,21 +85,25 @@ class LinuxSandbox {
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 
-  // InitializeSandbox() is static and gets an instance of the Singleton. This
-  // is the non-static implementation.
+  // Some methods are static and get an instance of the Singleton. These
+  // are the non-static implementations.
   bool InitializeSandboxImpl();
+  void StopThreadImpl(base::Thread* thread);
   // We must have been pre_initialized_ before using this.
   bool seccomp_bpf_supported() const;
   // Returns true if it can be determined that the current process has open
   // directories that are not managed by the LinuxSandbox class. This would
   // be a vulnerability as it would allow to bypass the setuid sandbox.
-  bool HasOpenDirectories();
+  bool HasOpenDirectories() const;
   // The last part of the initialization is to make sure any temporary "hole"
   // in the sandbox is closed. For now, this consists of closing proc_fd_.
   void SealSandbox();
   // GetStatus() makes promises as to how the sandbox will behave. This
   // checks that no promises have been broken.
   void CheckForBrokenPromises(const std::string& process_type);
+  // Stop |thread| and make sure it does not appear in /proc/self/tasks/
+  // anymore.
+  void StopThreadAndEnsureNotCounted(base::Thread* thread) const;
 
   // A file descriptor to /proc. It's dangerous to have it around as it could
   // allow for sandbox bypasses. It needs to be closed before we consider
