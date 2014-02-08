@@ -1099,7 +1099,8 @@ class AudioFrames_2 {
   virtual void SetFrameBuffer(Buffer* buffer) = 0;
   virtual Buffer* FrameBuffer() = 0;
 
-  // Layout of the audio data.  Defaults to kAudioFormatS16.
+  // The CDM must call this method, providing a valid format, when providing
+  // frame buffers.
   virtual void SetFormat(AudioFormat format) = 0;
   virtual AudioFormat Format() const = 0;
 
