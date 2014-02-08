@@ -27,6 +27,7 @@
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -221,10 +222,16 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
   ScopedJavaLocalRef<jstring> jreferer =
       ConvertUTF8ToJavaString(env, info.referer);
 
+  // Try parsing the content disposition header to get a
+  // explicitly specified filename if available.
+  net::HttpContentDisposition header(info.content_disposition, "");
+  ScopedJavaLocalRef<jstring> jfilename =
+      ConvertUTF8ToJavaString(env, header.filename());
+
   Java_DownloadController_newHttpGetDownload(
       env, GetJavaObject()->Controller(env).obj(), view.obj(), jurl.obj(),
       juser_agent.obj(), jcontent_disposition.obj(), jmime_type.obj(),
-      jcookie.obj(), jreferer.obj(), info.total_bytes);
+      jcookie.obj(), jreferer.obj(), jfilename.obj(), info.total_bytes);
 }
 
 void DownloadControllerAndroidImpl::OnDownloadStarted(

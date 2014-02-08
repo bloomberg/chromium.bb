@@ -67,7 +67,7 @@ public class DownloadController {
     @CalledByNative
     public void newHttpGetDownload(ContentViewCore view, String url,
             String userAgent, String contentDisposition, String mimeType,
-            String cookie, String referer, long contentLength) {
+            String cookie, String referer, String filename, long contentLength) {
         ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
 
         if (downloadDelegate != null) {
@@ -78,6 +78,7 @@ public class DownloadController {
                     .setMimeType(mimeType)
                     .setCookie(cookie)
                     .setReferer(referer)
+                    .setFileName(filename)
                     .setContentLength(contentLength)
                     .setIsGETRequest(true)
                     .build();
