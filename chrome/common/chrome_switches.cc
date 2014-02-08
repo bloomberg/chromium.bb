@@ -1550,14 +1550,17 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
 
+// Enables support for playing videos on Chromecast devices.
+const char kEnableCast[]                    = "enable-cast";
+
+// Enables Contextual Search
+const char kEnableContextualSearch[]        = "contextual-search";
+
 // Enables the new NTP.
 const char kEnableNewNTP[]                  = "enable-new-ntp";
 
 // Pops the translate infobar if possible.
 const char kEnableTranslate[]               = "enable-translate";
-
-// Enables support for playing videos on Chromecast devices.
-const char kEnableCast[]                    = "enable-cast";
 
 // Enables zero suggest functionality on Dev channel, showing contextual
 // suggestions (EtherSuggest) for http pages and google.com search queries.

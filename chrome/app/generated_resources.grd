@@ -5872,6 +5872,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION" desc="Description for the flag to enable the new NTP.">
         Whether or not the new style New Tab Page is enabled.
       </message>
+      <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
+        Enable Contextual Search.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
+        Whether or not Contextual Search is enabled.
+      </message>
       <message name="IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_NAME" desc="Name of the flag that enables not sending touch events to renderer while scrolling.">
         Enable not sending touch events to renderer while scrolling
       </message>

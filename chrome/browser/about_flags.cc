@@ -727,6 +727,13 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewNTP,
                               switches::kDisableNewNTP)
   },
+  {
+    "contextual-search",
+    IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH,
+    IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableContextualSearch)
+  },
 #endif
   {
     "show-autofill-type-predictions",
