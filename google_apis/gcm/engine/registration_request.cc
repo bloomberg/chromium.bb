@@ -38,7 +38,12 @@ const char kUserSerialNumberKey[] = "device_user_id";
 const size_t kMaxSenders = 100;
 
 // Response constants.
+const char kErrorPrefix[] = "Error=";
 const char kTokenPrefix[] = "token=";
+const char kDeviceRegistrationError[] = "PHONE_REGISTRATION_ERROR";
+const char kAuthenticationFailed[] = "AUTHENTICATION_FAILED";
+const char kInvalidSender[] = "INVALID_SENDER";
+const char kInvalidParameters[] = "INVALID_PARAMETERS";
 
 void BuildFormEncoding(const std::string& key,
                        const std::string& value,
@@ -46,6 +51,27 @@ void BuildFormEncoding(const std::string& key,
   if (!out->empty())
     out->append("&");
   out->append(key + "=" + net::EscapeUrlEncodedData(value, true));
+}
+
+// Gets correct status from the error message.
+RegistrationRequest::Status GetStatusFromError(const std::string& error) {
+  if (error == kDeviceRegistrationError)
+    return RegistrationRequest::DEVICE_REGISTRATION_ERROR;
+  if (error == kAuthenticationFailed)
+    return RegistrationRequest::AUTHENTICATION_FAILED;
+  if (error == kInvalidSender)
+    return RegistrationRequest::INVALID_SENDER;
+  if (error == kInvalidParameters)
+    return RegistrationRequest::INVALID_PARAMETERS;
+  return RegistrationRequest::UNKNOWN_ERROR;
+}
+
+// Indicates whether a retry attempt should be made based on the status of the
+// last request.
+bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
+  return status == RegistrationRequest::UNKNOWN_ERROR ||
+         status == RegistrationRequest::AUTHENTICATION_FAILED ||
+         status == RegistrationRequest::DEVICE_REGISTRATION_ERROR;
 }
 
 }  // namespace
@@ -64,17 +90,22 @@ RegistrationRequest::RequestInfo::RequestInfo(
       user_serial_number(user_serial_number),
       app_id(app_id),
       cert(cert),
-      sender_ids(sender_ids) {}
+      sender_ids(sender_ids) {
+}
 
 RegistrationRequest::RequestInfo::~RequestInfo() {}
 
 RegistrationRequest::RegistrationRequest(
     const RequestInfo& request_info,
+    const net::BackoffEntry::Policy& backoff_policy,
     const RegistrationCallback& callback,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : callback_(callback),
       request_info_(request_info),
-      request_context_getter_(request_context_getter) {}
+      backoff_entry_(&backoff_policy),
+      request_context_getter_(request_context_getter),
+      weak_ptr_factory_(this) {
+}
 
 RegistrationRequest::~RegistrationRequest() {}
 
@@ -125,11 +156,33 @@ void RegistrationRequest::Start() {
                       &body);
   }
 
+  DVLOG(1) << "Performing registration for: " << request_info_.app_id;
   DVLOG(1) << "Registration request: " << body;
   url_fetcher_->SetUploadData(kRegistrationRequestContentType, body);
-
-  DVLOG(1) << "Performing registration for: " << request_info_.app_id;
   url_fetcher_->Start();
+}
+
+void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
+  if (update_backoff) {
+    url_fetcher_.reset();
+    backoff_entry_.InformOfRequest(false);
+  }
+
+  if (backoff_entry_.ShouldRejectRequest()) {
+    DVLOG(1) << "Delaying GCM registration of app: "
+             << request_info_.app_id << ", for "
+             << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+             << " milliseconds.";
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RegistrationRequest::RetryWithBackoff,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   false),
+        backoff_entry_.GetTimeUntilRelease());
+    return;
+  }
+
+  Start();
 }
 
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -137,23 +190,36 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!source->GetStatus().is_success() ||
       source->GetResponseCode() != net::HTTP_OK ||
       !source->GetResponseAsString(&response)) {
-    // TODO(fgoski): Introduce retry logic.
-    // TODO(jianli): Handle "Error=INVALID_SENDER".
     LOG(ERROR) << "Failed to get registration response: "
                << source->GetStatus().is_success() << " "
                << source->GetResponseCode();
-    callback_.Run("");
+    RetryWithBackoff(true);
     return;
   }
 
   DVLOG(1) << "Parsing registration response: " << response;
   size_t token_pos = response.find(kTokenPrefix);
-  std::string token;
-  if (token_pos != std::string::npos)
-    token = response.substr(token_pos + strlen(kTokenPrefix));
-  else
-    LOG(ERROR) << "Failed to extract token.";
-  callback_.Run(token);
+  if (token_pos != std::string::npos) {
+    std::string token =
+        response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+    callback_.Run(SUCCESS, token);
+    return;
+  }
+
+  size_t error_pos = response.find(kErrorPrefix);
+  Status status = UNKNOWN_ERROR;
+  if (error_pos != std::string::npos) {
+    std::string error =
+        response.substr(error_pos + arraysize(kErrorPrefix) - 1);
+    status = GetStatusFromError(error);
+  }
+
+  if (ShouldRetryWithStatus(status)) {
+    RetryWithBackoff(true);
+    return;
+  }
+
+  callback_.Run(status, std::string());
 }
 
 }  // namespace gcm

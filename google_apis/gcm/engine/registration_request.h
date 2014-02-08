@@ -12,7 +12,9 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -27,8 +29,18 @@ namespace gcm {
 // be authorized to address the application using it's assigned registration ID.
 class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
  public:
+  enum Status {
+    SUCCESS,                    // Registration completed successfully.
+    INVALID_PARAMETERS,         // One of request paramteres was invalid.
+    INVALID_SENDER,             // One of the provided senders was invalid.
+    AUTHENTICATION_FAILED,      // Authentication failed.
+    DEVICE_REGISTRATION_ERROR,  // Chrome is not properly registered.
+    UNKNOWN_ERROR,              // Unknown error.
+  };
+
   // Callback completing the registration request.
-  typedef base::Callback<void(const std::string& registration_id)>
+  typedef base::Callback<void(Status status,
+                              const std::string& registration_id)>
       RegistrationCallback;
 
   // Details of the of the Registration Request. Only user's android ID and
@@ -62,6 +74,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
 
   RegistrationRequest(
       const RequestInfo& request_info,
+      const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   virtual ~RegistrationRequest();
@@ -72,11 +85,18 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
+  // Schedules a retry attempt, informs the backoff of a previous request's
+  // failure, when |update_backoff| is true.
+  void RetryWithBackoff(bool update_backoff);
+
   RegistrationCallback callback_;
   RequestInfo request_info_;
 
+  net::BackoffEntry backoff_entry_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
+
+  base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationRequest);
 };

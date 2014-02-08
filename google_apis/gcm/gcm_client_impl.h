@@ -16,6 +16,7 @@
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/mcs_client.h"
+#include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/net_log.h"
@@ -34,7 +35,6 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
-class RegistrationRequest;
 class UserList;
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
@@ -151,6 +151,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Completes the registration request.
   void OnRegisterCompleted(const PendingRegistrationKey& registration_key,
+                           RegistrationRequest::Status status,
                            const std::string& registration_id);
 
   // Callback for setting a delegate on a |user_list_|. Informs that the

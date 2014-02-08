@@ -376,6 +376,7 @@ void GCMClientImpl::Register(const std::string& username,
 
   RegistrationRequest* registration_request =
       new RegistrationRequest(request_info,
+                              kDefaultBackoffPolicy,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
                                          weak_ptr_factory_.GetWeakPtr(),
                                          registration_key),
@@ -386,6 +387,7 @@ void GCMClientImpl::Register(const std::string& username,
 
 void GCMClientImpl::OnRegisterCompleted(
     const PendingRegistrationKey& registration_key,
+    RegistrationRequest::Status status,
     const std::string& registration_id) {
   Delegate* delegate = user_list_->GetDelegateByUsername(
       registration_key.username);
@@ -397,6 +399,12 @@ void GCMClientImpl::OnRegisterCompleted(
   }
 
   std::string app_id = registration_key.app_id;
+
+  if (status == RegistrationRequest::INVALID_SENDER) {
+    delegate->OnRegisterFinished(
+        app_id, std::string(), GCMClientImpl::INVALID_PARAMETER);
+    return;
+  }
 
   if (registration_id.empty()) {
     delegate->OnRegisterFinished(
