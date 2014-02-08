@@ -548,8 +548,12 @@ void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
     ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
     if (text_iter != objects.end()) {
       aurax11_details_->CreateNewClipboardData();
-      const ObjectMapParam& char_vector = text_iter->second[0];
-      WriteText(&char_vector.front(), char_vector.size());
+      const ObjectMapParams& params_vector = text_iter->second;
+      if (params_vector.size()) {
+        const ObjectMapParam& char_vector = params_vector[0];
+        if (char_vector.size())
+          WriteText(&char_vector.front(), char_vector.size());
+      }
       aurax11_details_->TakeOwnershipOfSelection(CLIPBOARD_TYPE_SELECTION);
     }
   }
