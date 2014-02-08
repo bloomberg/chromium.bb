@@ -2395,19 +2395,6 @@ void HTMLMediaElement::setMuted(bool muted)
     }
 }
 
-void HTMLMediaElement::togglePlayState()
-{
-    WTF_LOG(Media, "HTMLMediaElement::togglePlayState - canPlay() is %s", boolString(canPlay()));
-
-    // We can safely call the internal play/pause methods, which don't check restrictions, because
-    // this method is only called from the built-in media controller
-    if (canPlay()) {
-        updatePlaybackRate();
-        playInternal();
-    } else
-        pauseInternal();
-}
-
 void HTMLMediaElement::beginScrubbing()
 {
     WTF_LOG(Media, "HTMLMediaElement::beginScrubbing - paused() is %s", boolString(paused()));
