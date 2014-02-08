@@ -1549,15 +1549,31 @@ bool Document::shouldCallRecalcStyleForDocument()
     return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
 }
 
+bool Document::shouldScheduleStyleRecalc()
+{
+    if (!isActive())
+        return false;
+    if (hasPendingStyleRecalc())
+        return false;
+    if (inStyleRecalc())
+        return false;
+    // InPreLayout will recalc style itself. There's no reason to schedule another recalc.
+    if (m_lifecycle.state() == DocumentLifecycle::InPreLayout)
+        return false;
+    if (!shouldScheduleLayout())
+        return false;
+    return true;
+}
+
 void Document::scheduleStyleRecalc()
 {
-    if (hasPendingStyleRecalc() || !isActive() || inStyleRecalc() || !shouldScheduleLayout())
+    if (!shouldScheduleStyleRecalc())
         return;
 
     ASSERT(shouldCallRecalcStyleForDocument());
 
     view()->scheduleAnimation();
-    m_lifecycle.rewindTo(DocumentLifecycle::StyleRecalcPending);
+    m_lifecycle.advanceTo(DocumentLifecycle::StyleRecalcPending);
 
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
@@ -1769,7 +1785,7 @@ void Document::recalcStyle(StyleRecalcChange change)
         ASSERT(!needsStyleRecalc());
         ASSERT(!childNeedsStyleRecalc());
         ASSERT(inStyleRecalc());
-        m_lifecycle.advanceTo(DocumentLifecycle::Clean);
+        m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
     }
 
     InspectorInstrumentation::didRecalculateStyle(cookie);
@@ -2049,7 +2065,7 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    m_lifecycle.advanceTo(DocumentLifecycle::Clean);
+    m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
 }
 
 void Document::detach(const AttachContext& context)

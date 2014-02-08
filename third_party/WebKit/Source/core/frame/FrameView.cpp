@@ -777,6 +777,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 void FrameView::performPreLayoutTasks()
 {
     TRACE_EVENT0("webkit", "FrameView::performPreLayoutTasks");
+    lifecycle().advanceTo(DocumentLifecycle::InPreLayout);
 
     // Don't schedule more layouts, we're in one.
     TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
@@ -811,13 +812,15 @@ void FrameView::performPreLayoutTasks()
     // the layout beats any sort of style recalc update that needs to occur.
     TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
     document->updateStyleIfNeeded();
+    lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
-    ASSERT(!m_inPerformLayout);
-
     TRACE_EVENT0("webkit", "FrameView::performLayout");
+
+    ASSERT(!isInPerformLayout());
+    lifecycle().advanceTo(DocumentLifecycle::InPerformLayout);
 
     TemporaryChange<bool> changeInPerformLayout(m_inPerformLayout, true);
 
@@ -856,6 +859,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 
     if (inSubtreeLayout)
         rootForThisLayout->view()->popLayoutState(rootForThisLayout);
+
+    lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
@@ -891,10 +896,7 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(m_frame->view() == this);
     ASSERT(m_frame->page());
 
-    if (m_inPerformLayout)
-        return;
-
-    if (!m_frame->document()->isActive())
+    if (isInPerformLayout() || !m_frame->document()->isActive())
         return;
 
     ASSERT(!partialLayout().isStopping());
@@ -909,11 +911,9 @@ void FrameView::layout(bool allowSubtree)
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
     m_hasPendingLayout = false;
+    DocumentLifecycle::Scope lifecycleScope(lifecycle(), DocumentLifecycle::LayoutClean);
 
-    // we shouldn't enter layout() while painting
-    ASSERT(!isPainting());
-    if (isPainting())
-        return;
+    RELEASE_ASSERT(!isPainting());
 
     // Store the current maximal outline size to use when computing the old/new
     // outline rects for repainting.
@@ -943,6 +943,9 @@ void FrameView::layout(bool allowSubtree)
     }
 
     bool isPartialLayout = partialLayout().isPartialLayout();
+
+    if (isPartialLayout)
+        lifecycleScope.setFinalState(DocumentLifecycle::StyleClean);
 
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
@@ -1156,6 +1159,11 @@ void FrameView::repaintTree(RenderObject* root)
     if (hasHorizontalBarDamage())
         invalidateRect(horizontalBarDamage());
     resetScrollbarDamage();
+}
+
+DocumentLifecycle& FrameView::lifecycle() const
+{
+    return m_frame->document()->lifecycle();
 }
 
 void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
@@ -1867,6 +1875,12 @@ bool FrameView::layoutPending() const
     return m_hasPendingLayout;
 }
 
+bool FrameView::isInPerformLayout() const
+{
+    ASSERT(m_inPerformLayout == (lifecycle().state() == DocumentLifecycle::InPerformLayout));
+    return m_inPerformLayout;
+}
+
 bool FrameView::needsLayout() const
 {
     // This can return true in cases where the document does not have a body yet.
@@ -2313,7 +2327,7 @@ void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rec
     IntRect dirtyRect = rect;
     dirtyRect.moveBy(scrollbar->location());
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && m_inPerformLayout) {
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && isInPerformLayout()) {
         if (scrollbar == verticalScrollbar()) {
             m_verticalBarDamage = dirtyRect;
             m_hasVerticalBarDamage = true;

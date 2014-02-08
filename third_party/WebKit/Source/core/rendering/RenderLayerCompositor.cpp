@@ -2418,6 +2418,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         case RootLayerAttachedViaEnclosingFrame: {
             // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
             // for the frame's renderer in the parent document.
+            DocumentLifecycle::DeprecatedTransition marker(DocumentLifecycle::AfterPerformLayout, DocumentLifecycle::StyleRecalcPending);
             m_renderView->document().ownerElement()->scheduleLayerUpdate();
             break;
         }
@@ -2478,6 +2479,8 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
     if (!m_renderView->frameView())
         return;
     Frame& frame = m_renderView->frameView()->frame();
+
+    DocumentLifecycle::DeprecatedTransition marker(DocumentLifecycle::AfterPerformLayout, DocumentLifecycle::StyleRecalcPending);
 
     for (Frame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
         if (child->document() && child->document()->ownerElement())

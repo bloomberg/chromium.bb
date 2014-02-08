@@ -1025,6 +1025,7 @@ public:
     Frame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
+    DocumentLifecycle& lifecycle() { return m_lifecycle; }
     bool isActive() const { return m_lifecycle.isActive(); }
     bool isStopped() const { return m_lifecycle.state() == DocumentLifecycle::Stopped; }
 
@@ -1138,6 +1139,7 @@ private:
 
     // Returns true if Document::recalcStyle() needs to be run.
     bool shouldCallRecalcStyleForDocument();
+    bool shouldScheduleStyleRecalc();
 
     DocumentLifecycle m_lifecycle;
 

@@ -1063,6 +1063,8 @@
             'frame/DOMWindowProperty.h',
             'frame/DOMWindowTimers.cpp',
             'frame/DOMWindowTimers.h',
+            'frame/DeprecatedScheduleStyleRecalcDuringLayout.cpp',
+            'frame/DeprecatedScheduleStyleRecalcDuringLayout.h',
             'frame/Frame.cpp',
             'frame/Frame.h',
             'frame/FrameDestructionObserver.cpp',

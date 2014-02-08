@@ -88,7 +88,7 @@ public:
     void scheduleRelayout();
     void scheduleRelayoutOfSubtree(RenderObject*);
     bool layoutPending() const;
-    bool isInPerformLayout() const { return m_inPerformLayout; }
+    bool isInPerformLayout() const;
 
     void setCanRepaintDuringPerformLayout(bool b) { m_canRepaintDuringPerformLayout = b; }
     bool canRepaintDuringPerformLayout() const { return m_canRepaintDuringPerformLayout; }
@@ -355,6 +355,8 @@ private:
 
     void gatherDebugLayoutRects(RenderObject* layoutRoot);
 
+    DocumentLifecycle& lifecycle() const;
+
     virtual void repaintContentRectangle(const IntRect&) OVERRIDE;
     virtual void contentsResized() OVERRIDE;
     virtual void scrollbarExistenceDidChange() OVERRIDE;
@@ -412,7 +414,7 @@ private:
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             return true;
 
-        return !m_inPerformLayout || canRepaintDuringPerformLayout();
+        return !isInPerformLayout() || canRepaintDuringPerformLayout();
     }
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache

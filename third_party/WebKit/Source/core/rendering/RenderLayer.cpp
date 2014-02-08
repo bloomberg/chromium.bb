@@ -52,12 +52,13 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/html/HTMLFrameElement.h"
+#include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/frame/animation/AnimationController.h"
+#include "core/html/HTMLFrameElement.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/CompositedLayerMapping.h"
@@ -3947,7 +3948,15 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
 
 void RenderLayer::filterNeedsRepaint()
 {
-    toElement(renderer()->node())->scheduleLayerUpdate();
+    {
+        DeprecatedScheduleStyleRecalcDuringLayout marker(renderer()->document().lifecycle());
+        // It's possible for scheduleLayerUpdate to schedule a style recalc, which
+        // is a problem because this function can be called while performing layout.
+        // Presumably this represents an illegal data flow of layout or compositing
+        // information into the style system.
+        toElement(renderer()->node())->scheduleLayerUpdate();
+    }
+
     if (renderer()->view()) {
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInPerformLayout())
             renderer()->setShouldDoFullRepaintAfterLayout(true);
