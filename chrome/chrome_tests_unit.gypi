@@ -2373,9 +2373,6 @@
             '../dbus/dbus.gyp:dbus_test_support',
             '../sandbox/sandbox.gyp:*',
           ],
-          'sources!': [
-            'browser/printing/print_job_unittest.cc',
-          ],
         }, { # else: toolkit_uses_gtk != 1
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',

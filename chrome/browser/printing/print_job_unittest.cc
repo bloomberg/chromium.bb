@@ -106,15 +106,14 @@ TEST_F(PrintJobTest, SimplePrint) {
   TestSource source;
   job->Initialize(owner.get(), &source, 1);
   job->Stop();
-  EXPECT_FALSE(job->is_stopped());
-  EXPECT_TRUE(job->is_stopping());
-  while (!job->is_stopped())
-  {
+  while (job->document()) {
     current.RunUntilIdle();
   }
-  EXPECT_TRUE(job->is_stopped());
-  EXPECT_FALSE(job->is_stopping());
+  EXPECT_FALSE(job->document());
   job = NULL;
+  while (!check) {
+    current.RunUntilIdle();
+  }
   EXPECT_TRUE(check);
 }
 
