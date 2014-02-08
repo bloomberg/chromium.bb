@@ -310,6 +310,12 @@ handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
 {
 }
 
+static void
+handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
+{
+	running = 0;
+}
+
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure,
 	handle_surface_request_set_maximized,
@@ -318,6 +324,7 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_request_unset_fullscreen,
 	handle_surface_focused_set,
 	handle_surface_focused_unset,
+	handle_surface_delete,
 };
 
 static void
