@@ -12,7 +12,7 @@
 namespace base {
 namespace subtle {
 
-inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32 *ptr,
+inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
                                          Atomic32 old_value,
                                          Atomic32 new_value) {
   Atomic32 prev_value;
@@ -26,7 +26,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32 *ptr,
   return prev_value;
 }
 
-inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32 *ptr,
+inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr,
                                          Atomic32 new_value) {
   Atomic32 old_value;
   do {
@@ -36,13 +36,13 @@ inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32 *ptr,
   return old_value;
 }
 
-inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32 *ptr,
+inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
                                           Atomic32 increment) {
   return OSAtomicAdd32(increment, const_cast<Atomic32*>(ptr));
 }
 
-inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32 *ptr,
-                                          Atomic32 increment) {
+inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
+                                        Atomic32 increment) {
   return OSAtomicAdd32Barrier(increment, const_cast<Atomic32*>(ptr));
 }
 
@@ -50,7 +50,7 @@ inline void MemoryBarrier() {
   OSMemoryBarrier();
 }
 
-inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32 *ptr,
+inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
   Atomic32 prev_value;
@@ -64,7 +64,7 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32 *ptr,
   return prev_value;
 }
 
-inline Atomic32 Release_CompareAndSwap(volatile Atomic32 *ptr,
+inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
   return Acquire_CompareAndSwap(ptr, old_value, new_value);
@@ -74,12 +74,12 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
 }
 
-inline void Acquire_Store(volatile Atomic32 *ptr, Atomic32 value) {
+inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
   MemoryBarrier();
 }
 
-inline void Release_Store(volatile Atomic32 *ptr, Atomic32 value) {
+inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
   MemoryBarrier();
   *ptr = value;
 }
@@ -88,13 +88,13 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
   return *ptr;
 }
 
-inline Atomic32 Acquire_Load(volatile const Atomic32 *ptr) {
+inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   Atomic32 value = *ptr;
   MemoryBarrier();
   return value;
 }
 
-inline Atomic32 Release_Load(volatile const Atomic32 *ptr) {
+inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
   MemoryBarrier();
   return *ptr;
 }
@@ -103,7 +103,7 @@ inline Atomic32 Release_Load(volatile const Atomic32 *ptr) {
 
 // 64-bit implementation on 64-bit platform
 
-inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64 *ptr,
+inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
                                          Atomic64 old_value,
                                          Atomic64 new_value) {
   Atomic64 prev_value;
@@ -117,7 +117,7 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64 *ptr,
   return prev_value;
 }
 
-inline Atomic64 NoBarrier_AtomicExchange(volatile Atomic64 *ptr,
+inline Atomic64 NoBarrier_AtomicExchange(volatile Atomic64* ptr,
                                          Atomic64 new_value) {
   Atomic64 old_value;
   do {
@@ -127,18 +127,18 @@ inline Atomic64 NoBarrier_AtomicExchange(volatile Atomic64 *ptr,
   return old_value;
 }
 
-inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64 *ptr,
+inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
                                           Atomic64 increment) {
   return OSAtomicAdd64(increment, reinterpret_cast<volatile int64_t*>(ptr));
 }
 
-inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64 *ptr,
+inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
                                         Atomic64 increment) {
   return OSAtomicAdd64Barrier(increment,
                               reinterpret_cast<volatile int64_t*>(ptr));
 }
 
-inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
+inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
   Atomic64 prev_value;
@@ -152,7 +152,7 @@ inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
   return prev_value;
 }
 
-inline Atomic64 Release_CompareAndSwap(volatile Atomic64 *ptr,
+inline Atomic64 Release_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
   // The lib kern interface does not distinguish between
@@ -164,12 +164,12 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
 }
 
-inline void Acquire_Store(volatile Atomic64 *ptr, Atomic64 value) {
+inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
   MemoryBarrier();
 }
 
-inline void Release_Store(volatile Atomic64 *ptr, Atomic64 value) {
+inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
   MemoryBarrier();
   *ptr = value;
 }
@@ -178,13 +178,13 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
   return *ptr;
 }
 
-inline Atomic64 Acquire_Load(volatile const Atomic64 *ptr) {
+inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
   Atomic64 value = *ptr;
   MemoryBarrier();
   return value;
 }
 
-inline Atomic64 Release_Load(volatile const Atomic64 *ptr) {
+inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
   MemoryBarrier();
   return *ptr;
 }

@@ -5,10 +5,10 @@
 // This module gets enough CPU information to optimize the
 // atomicops module on x86.
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/atomicops.h"
-#include "base/basictypes.h"
 
 // This file only makes sense with atomicops_internals_x86_gcc.h -- it
 // depends on structs that are defined in that file.  If atomicops.h
@@ -21,16 +21,16 @@
 // must preserve that register's value across cpuid instructions.
 #if defined(__i386__)
 #define cpuid(a, b, c, d, inp) \
-  asm ("mov %%ebx, %%edi\n"    \
-       "cpuid\n"               \
-       "xchg %%edi, %%ebx\n"   \
-       : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
-#elif defined (__x86_64__)
+  asm("mov %%ebx, %%edi\n"     \
+      "cpuid\n"                \
+      "xchg %%edi, %%ebx\n"    \
+      : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
+#elif defined(__x86_64__)
 #define cpuid(a, b, c, d, inp) \
-  asm ("mov %%rbx, %%rdi\n"    \
-       "cpuid\n"               \
-       "xchg %%rdi, %%rbx\n"   \
-       : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
+  asm("mov %%rbx, %%rdi\n"     \
+      "cpuid\n"                \
+      "xchg %%rdi, %%rbx\n"    \
+      : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
 #endif
 
 #if defined(cpuid)        // initialize the struct only on x86
@@ -43,12 +43,14 @@ struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures = {
   false,          // no SSE2
 };
 
+namespace {
+
 // Initialize the AtomicOps_Internalx86CPUFeatures struct.
-static void AtomicOps_Internalx86CPUFeaturesInit() {
-  uint32 eax;
-  uint32 ebx;
-  uint32 ecx;
-  uint32 edx;
+void AtomicOps_Internalx86CPUFeaturesInit() {
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
 
   // Get vendor string (issue CPUID with eax = 0)
   cpuid(eax, ebx, ecx, edx, 0);
@@ -84,8 +86,6 @@ static void AtomicOps_Internalx86CPUFeaturesInit() {
   // edx bit 26 is SSE2 which we use to tell use whether we can use mfence
   AtomicOps_Internalx86CPUFeatures.has_sse2 = ((edx >> 26) & 1);
 }
-
-namespace {
 
 class AtomicOpsx86Initializer {
  public:

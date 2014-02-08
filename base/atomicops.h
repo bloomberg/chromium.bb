@@ -28,7 +28,8 @@
 #ifndef BASE_ATOMICOPS_H_
 #define BASE_ATOMICOPS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
@@ -43,7 +44,7 @@
 namespace base {
 namespace subtle {
 
-typedef int32 Atomic32;
+typedef int32_t Atomic32;
 #ifdef ARCH_CPU_64_BITS
 // We need to be able to go between Atomic64 and AtomicWord implicitly.  This
 // means Atomic64 and AtomicWord should be the same type on 64-bit.

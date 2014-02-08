@@ -9,6 +9,8 @@
 
 #include <windows.h>
 
+#include "base/macros.h"
+
 #if defined(ARCH_CPU_64_BITS)
 // windows.h #defines this (only on x64). This causes problems because the
 // public API also uses MemoryBarrier at the public name for this fence. So, on
