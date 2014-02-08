@@ -41,13 +41,10 @@ class MediaPlayer;
 class RenderBox;
 class RenderMedia;
 
-// An abstract class with the media control elements that all ports support.
 class MediaControls : public HTMLDivElement {
-  public:
+public:
     virtual ~MediaControls() {}
 
-    // This function is to be implemented in your port-specific media
-    // controls implementation since it will return a child instance.
     static PassRefPtr<MediaControls> create(Document&);
 
     virtual void setMediaController(MediaControllerInterface*);
@@ -66,7 +63,7 @@ class MediaControls : public HTMLDivElement {
     virtual void playbackStopped();
 
     virtual void updateStatusDisplay() { };
-    virtual void updateCurrentTimeDisplay() = 0;
+    virtual void updateCurrentTimeDisplay();
     virtual void showVolumeSlider();
 
     virtual void changedMute();
@@ -89,9 +86,12 @@ class MediaControls : public HTMLDivElement {
     virtual void showTextTrackDisplay();
     virtual void hideTextTrackDisplay();
     virtual void updateTextTrackDisplay();
+    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
 
 protected:
     explicit MediaControls(Document&);
+
+    bool initializeControls(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
@@ -122,6 +122,9 @@ private:
     virtual bool isMediaControls() const OVERRIDE FINAL { return true; }
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+
+    MediaControlTimeRemainingDisplayElement* m_durationDisplay;
+    MediaControlPanelEnclosureElement* m_enclosure;
 };
 
 DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());

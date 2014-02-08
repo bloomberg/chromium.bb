@@ -27,14 +27,11 @@
 #define MediaControlsChromiumAndroid_h
 
 #include "core/html/shadow/MediaControls.h"
-#include "core/html/shadow/MediaControlsChromium.h"
 
 namespace WebCore {
 
-class MediaControlsChromiumAndroid FINAL : public MediaControlsChromium {
+class MediaControlsChromiumAndroid FINAL : public MediaControls {
 public:
-    static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document&);
-
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
     virtual void playbackStarted() OVERRIDE;
     virtual void playbackStopped() OVERRIDE;

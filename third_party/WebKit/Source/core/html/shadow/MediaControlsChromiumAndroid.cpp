@@ -32,18 +32,13 @@
 namespace WebCore {
 
 MediaControlsChromiumAndroid::MediaControlsChromiumAndroid(Document& document)
-    : MediaControlsChromium(document)
+    : MediaControls(document)
     , m_overlayPlayButton(0)
     , m_overlayEnclosure(0)
 {
 }
 
 PassRefPtr<MediaControls> MediaControls::create(Document& document)
-{
-    return MediaControlsChromiumAndroid::createControls(document);
-}
-
-PassRefPtr<MediaControlsChromiumAndroid> MediaControlsChromiumAndroid::createControls(Document& document)
 {
     if (!document.page())
         return 0;
@@ -76,19 +71,19 @@ void MediaControlsChromiumAndroid::setMediaController(MediaControllerInterface* 
         m_overlayPlayButton->setMediaController(controller);
     if (m_overlayEnclosure)
         m_overlayEnclosure->setMediaController(controller);
-    MediaControlsChromium::setMediaController(controller);
+    MediaControls::setMediaController(controller);
 }
 
 void MediaControlsChromiumAndroid::playbackStarted()
 {
     m_overlayPlayButton->updateDisplayType();
-    MediaControlsChromium::playbackStarted();
+    MediaControls::playbackStarted();
 }
 
 void MediaControlsChromiumAndroid::playbackStopped()
 {
     m_overlayPlayButton->updateDisplayType();
-    MediaControlsChromium::playbackStopped();
+    MediaControls::playbackStopped();
 }
 
 void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
