@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2011, 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,30 +24,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaControlsChromiumAndroid_h
-#define MediaControlsChromiumAndroid_h
+#ifndef MediaControlsChromium_h
+#define MediaControlsChromium_h
 
 #include "core/html/shadow/MediaControls.h"
-#include "core/html/shadow/MediaControlsChromium.h"
 
 namespace WebCore {
 
-class MediaControlsChromiumAndroid FINAL : public MediaControlsChromium {
+class MediaControlsChromium : public MediaControls {
 public:
-    static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document&);
+    // Called from port-specific parent create function to create custom controls.
+    static PassRefPtr<MediaControlsChromium> createControls(Document&);
 
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
-    virtual void playbackStarted() OVERRIDE;
-    virtual void playbackStopped() OVERRIDE;
-    virtual bool shouldHideControls() OVERRIDE { return true; }
 
-    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
+    virtual void reset() OVERRIDE;
+
+    virtual void playbackStarted() OVERRIDE;
+
+    virtual void changedMute() OVERRIDE;
+
+    virtual void updateCurrentTimeDisplay() OVERRIDE;
+
+    virtual void createTextTrackDisplay() OVERRIDE;
+
+    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
+
+protected:
+    explicit MediaControlsChromium(Document&);
+
+    bool initializeControls(Document&);
 
 private:
-    explicit MediaControlsChromiumAndroid(Document&);
-
-    MediaControlOverlayPlayButtonElement* m_overlayPlayButton;
-    MediaControlOverlayEnclosureElement* m_overlayEnclosure;
+    MediaControlTimeRemainingDisplayElement* m_durationDisplay;
+    MediaControlPanelEnclosureElement* m_enclosure;
 };
 
 }
