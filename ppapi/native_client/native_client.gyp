@@ -255,6 +255,28 @@
                   ],
                   'action': ['<@(_inputs)', '<@(_outputs)'],
                 },
+
+                # The non-stripped nacl_irt debug file must also go through
+                # tls_edit, however gyp does not know anything about the
+                # debug file since it is built as a side effect. We
+                # must depend on the nacl_irt_raw.nexe and use the
+                # nacl_irt_raw.nexe.debug file as the input to tls_edit.
+                {
+                  'action_name': 'tls_edit_nacl_irt_debug_arm',
+                  'message': 'Patching TLS for nacl_irt.debug (arm)',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_arm_raw.nexe',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/nacl_irt_arm.nexe.debug',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_arm_raw.nexe.debug',
+                    '<@(_outputs)',
+                  ],
+                },
               ],
             }],
             ['target_arch=="x64" or OS=="win"', {
@@ -271,6 +293,28 @@
                   ],
                   'action': ['<@(_inputs)', '<@(_outputs)'],
                 },
+
+                # The non-stripped nacl_irt debug file must also go through
+                # tls_edit, however gyp does not know anything about the
+                # debug file since it is built as a side effect. We
+                # must depend on the nacl_irt_raw.nexe and use the
+                # nacl_irt_raw.nexe.debug file as the input to tls_edit.
+                {
+                  'action_name': 'tls_edit_nacl_irt_debug_x86_64',
+                  'message': 'Patching TLS for nacl_irt.debug (x86-64)',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_64_raw.nexe',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe.debug',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_64_raw.nexe.debug',
+                    '<@(_outputs)',
+                  ],
+                },
               ],
             }],
             ['target_arch=="ia32"', {
@@ -286,6 +330,28 @@
                     '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
                   ],
                   'action': ['<@(_inputs)', '<@(_outputs)'],
+                },
+
+                # The non-stripped nacl_irt debug file must also go through
+                # tls_edit, however gyp does not know anything about the
+                # debug file since it is built as a side effect. We
+                # must depend on the nacl_irt_raw.nexe and use the
+                # nacl_irt_raw.nexe.debug file as the input to tls_edit.
+                {
+                  'action_name': 'tls_edit_nacl_irt_debug_x86_32',
+                  'message': 'Patching TLS for nacl_irt.debug (x86-32)',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_32_raw.nexe',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe.debug',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_32_raw.nexe.debug',
+                    '<@(_outputs)',
+                  ],
                 },
               ],
             }],
