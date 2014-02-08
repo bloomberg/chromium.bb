@@ -14,6 +14,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -366,6 +367,9 @@ BrowserPluginGuest::BrowserPluginGuest(
       has_render_view_(has_render_view),
       last_seen_auto_size_enabled_(false),
       is_in_destruction_(false),
+      last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      last_can_compose_inline_(true),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
@@ -1522,12 +1526,18 @@ void BrowserPluginGuest::OnResizeGuest(
 }
 
 void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
-  if (focused_ == focused)
-      return;
   focused_ = focused;
   Send(new InputMsg_SetFocus(routing_id(), focused));
   if (!focused && mouse_locked_)
     OnUnlockMouse();
+
+  // Restore the last seen state of text input to the view.
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      web_contents()->GetRenderWidgetHostView());
+  if (rwhv) {
+    rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
+                               last_can_compose_inline_);
+  }
 }
 
 void BrowserPluginGuest::OnSetName(int instance_id, const std::string& name) {
@@ -1850,6 +1860,11 @@ void BrowserPluginGuest::OnUpdateRect(
 void BrowserPluginGuest::OnTextInputTypeChanged(ui::TextInputType type,
                                                 ui::TextInputMode input_mode,
                                                 bool can_compose_inline) {
+  // Save the state of text input so we can restore it on focus.
+  last_text_input_type_ = type;
+  last_input_mode_ = input_mode;
+  last_can_compose_inline_ = can_compose_inline;
+
   RenderWidgetHostViewPort::FromRWHV(
       web_contents()->GetRenderWidgetHostView())->TextInputTypeChanged(
           type, input_mode, can_compose_inline);

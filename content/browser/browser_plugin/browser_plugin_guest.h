@@ -592,6 +592,11 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   bool is_in_destruction_;
 
+  // Text input type states.
+  ui::TextInputType last_text_input_type_;
+  ui::TextInputMode last_input_mode_;
+  bool last_can_compose_inline_;
+
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.
   std::queue<IPC::Message*> pending_messages_;

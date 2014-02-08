@@ -72,6 +72,10 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
     guest_hang_timeout_ = timeout;
   }
 
+  ui::TextInputType last_text_input_type() {
+    return last_text_input_type_;
+  }
+
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
   virtual void SendMessageToEmbedder(IPC::Message* msg) OVERRIDE;

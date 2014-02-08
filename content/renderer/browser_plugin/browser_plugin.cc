@@ -1203,14 +1203,8 @@ base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
 #endif
 
 void BrowserPlugin::updateFocus(bool focused) {
-  if (plugin_focused_ == focused)
-    return;
-
-  bool old_guest_focus_state = ShouldGuestBeFocused();
   plugin_focused_ = focused;
-
-  if (ShouldGuestBeFocused() != old_guest_focus_state)
-    UpdateGuestFocusState();
+  UpdateGuestFocusState();
 }
 
 void BrowserPlugin::updateVisibility(bool visible) {

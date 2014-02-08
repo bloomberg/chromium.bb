@@ -16,6 +16,7 @@
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -927,6 +928,56 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorPixelTest,
                    &result));
     loop.Run();
   }
+}
+
+// This test exercises the following scenario:
+// 1. An <input> in guest has focus.
+// 2. User takes focus to embedder by clicking e.g. an <input> in embedder.
+// 3. User brings back the focus directly to the <input> in #1.
+//
+// Now we need to make sure TextInputTypeChange fires properly for the guest's
+// view (RenderWidgetHostViewGuest) upon step #3. This test ensures that,
+// otherwise IME doesn't work after step #3.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusRestored) {
+  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
+  const char kGuestHTML[] = "data:text/html,"
+      "<html><body><input id=\"input1\"></body>"
+      "<script>"
+      "var i = document.getElementById(\"input1\");"
+      "document.body.addEventListener(\"click\", function(e) {"
+      "  i.focus();"
+      "});"
+      "i.addEventListener(\"focus\", function(e) {"
+      "  document.title = \"FOCUS\";"
+      "});"
+      "i.addEventListener(\"blur\", function(e) {"
+      "  document.title = \"BLUR\";"
+      "});"
+      "</script>"
+      "</html>";
+  StartBrowserPluginTest(kEmbedderURL, kGuestHTML, true,
+                         "document.getElementById(\"plugin\").focus();");
+
+  ASSERT_TRUE(test_embedder());
+  const char *kTitles[3] = {"FOCUS", "BLUR", "FOCUS"};
+  gfx::Point kClickPoints[3] = {
+    gfx::Point(20, 20), gfx::Point(700, 20), gfx::Point(20, 20)
+  };
+
+  for (int i = 0; i < 3; ++i) {
+    base::string16 expected_title = base::UTF8ToUTF16(kTitles[i]);
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_title);
+    SimulateMouseClickAt(test_embedder()->web_contents(), 0,
+        blink::WebMouseEvent::ButtonLeft,
+        kClickPoints[i]);
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  TestBrowserPluginGuest* guest = test_guest();
+  ASSERT_TRUE(guest);
+  ui::TextInputType text_input_type = guest->last_text_input_type();
+  ASSERT_TRUE(text_input_type != ui::TEXT_INPUT_TYPE_NONE);
 }
 
 // Tests input method.
