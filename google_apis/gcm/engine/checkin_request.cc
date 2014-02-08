@@ -22,6 +22,7 @@ const int kRequestVersionValue = 2;
 
 CheckinRequest::CheckinRequest(
     const CheckinRequestCallback& callback,
+    const net::BackoffEntry::Policy& backoff_policy,
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
     int64 user_serial_number,
     uint64 android_id,
@@ -29,10 +30,13 @@ CheckinRequest::CheckinRequest(
     net::URLRequestContextGetter* request_context_getter)
     : request_context_getter_(request_context_getter),
       callback_(callback),
+      backoff_entry_(&backoff_policy),
       chrome_build_proto_(chrome_build_proto),
       android_id_(android_id),
       security_token_(security_token),
-      user_serial_number_(user_serial_number) {}
+      user_serial_number_(user_serial_number),
+      weak_ptr_factory_(this) {
+}
 
 CheckinRequest::~CheckinRequest() {}
 
@@ -53,7 +57,6 @@ void CheckinRequest::Start() {
   checkin->set_type(checkin_proto::DEVICE_CHROME_BROWSER);
 #endif
 
-
   std::string upload_data;
   CHECK(request.SerializeToString(&upload_data));
 
@@ -64,18 +67,55 @@ void CheckinRequest::Start() {
   url_fetcher_->Start();
 }
 
+void CheckinRequest::RetryWithBackoff(bool update_backoff) {
+  if (update_backoff) {
+    backoff_entry_.InformOfRequest(false);
+    url_fetcher_.reset();
+  }
+
+  if (backoff_entry_.ShouldRejectRequest()) {
+    DVLOG(1) << "Delay GCM checkin for: "
+             << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+             << " milliseconds.";
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CheckinRequest::RetryWithBackoff,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   false),
+        backoff_entry_.GetTimeUntilRelease());
+    return;
+  }
+
+  Start();
+}
+
 void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string response_string;
   checkin_proto::AndroidCheckinResponse response_proto;
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK ||
+  if (!source->GetStatus().is_success()) {
+    LOG(ERROR) << "Failed to get checkin response. Fetcher failed. Retrying.";
+    RetryWithBackoff(true);
+    return;
+  }
+
+  net::HttpStatusCode response_status = static_cast<net::HttpStatusCode>(
+      source->GetResponseCode());
+  if (response_status == net::HTTP_BAD_REQUEST ||
+      response_status == net::HTTP_UNAUTHORIZED) {
+    // BAD_REQUEST indicates that the request was malformed.
+    // UNAUTHORIZED indicates that security token didn't match the android id.
+    LOG(ERROR) << "No point retrying the checkin with status: "
+               << response_status << ". Checkin failed.";
+    callback_.Run(0,0);
+    return;
+  }
+
+  if (response_status != net::HTTP_OK ||
       !source->GetResponseAsString(&response_string) ||
       !response_proto.ParseFromString(response_string)) {
-    LOG(ERROR) << "Failed to get checkin response: "
-               << source->GetStatus().is_success() << " "
-               << source->GetResponseCode();
-    // TODO(fgorski): Handle retry logic for certain responses.
-    callback_.Run(0, 0);
+    LOG(ERROR) << "Failed to get checkin response. HTTP Status: "
+               << response_status << ". Retrying.";
+    RetryWithBackoff(true);
     return;
   }
 
@@ -83,8 +123,8 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       !response_proto.has_security_token() ||
       response_proto.android_id() == 0 ||
       response_proto.security_token() == 0) {
-    LOG(ERROR) << "Badly formatted checkin response.";
-    callback_.Run(0, 0);
+    LOG(ERROR) << "Android ID or security token is 0. Retrying.";
+    RetryWithBackoff(true);
     return;
   }
 

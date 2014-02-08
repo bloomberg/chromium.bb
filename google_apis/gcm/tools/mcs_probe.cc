@@ -428,6 +428,7 @@ void MCSProbe::CheckIn() {
   chrome_build_proto.set_chrome_version(kChromeVersion);
   checkin_request_.reset(new CheckinRequest(
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
+      kDefaultBackoffPolicy,
       chrome_build_proto,
       kUserSerialNumber,
       0,

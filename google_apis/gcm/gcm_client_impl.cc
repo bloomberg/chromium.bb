@@ -256,6 +256,7 @@ void GCMClientImpl::StartCheckin(int64 user_serial_number,
           base::Bind(&GCMClientImpl::OnCheckinCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
                      user_serial_number),
+          kDefaultBackoffPolicy,
           chrome_build_proto_,
           user_serial_number,
           checkin_info.android_id,
@@ -300,7 +301,8 @@ void GCMClientImpl::OnCheckinCompleted(int64 user_serial_number,
 
 void GCMClientImpl::OnDeviceCheckinCompleted(const CheckinInfo& checkin_info) {
   if (!checkin_info.IsValid()) {
-    // TODO(fgorski): Trigger a retry logic here. (no need to start over).
+    // TODO(fgorski): I don't think a retry here will help, we should probalby
+    // start over. By checking in with (0, 0).
     return;
   }
 

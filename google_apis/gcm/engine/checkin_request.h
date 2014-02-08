@@ -7,8 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -29,6 +31,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
       CheckinRequestCallback;
 
   CheckinRequest(const CheckinRequestCallback& callback,
+                 const net::BackoffEntry::Policy& backoff_policy,
                  const checkin_proto::ChromeBuildProto& chrome_build_proto,
                  int64 user_serial_number,
                  uint64 android_id,
@@ -42,14 +45,21 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
+  // Schedules a retry attempt, informs the backoff of a previous request's
+  // failure when |update_backoff| is true.
+  void RetryWithBackoff(bool update_backoff);
+
   net::URLRequestContextGetter* request_context_getter_;
   CheckinRequestCallback callback_;
 
+  net::BackoffEntry backoff_entry_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   checkin_proto::ChromeBuildProto chrome_build_proto_;
   uint64 android_id_;
   uint64 security_token_;
   int64 user_serial_number_;
+
+  base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckinRequest);
 };
