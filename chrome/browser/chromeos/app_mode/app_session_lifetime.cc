@@ -14,7 +14,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -130,15 +129,12 @@ void InitAppSession(Profile* profile, const std::string& app_id) {
   if (update_service)
     update_service->set_app_id(app_id);
 
-  // If the device is not enterprise managed, set prefs to reboot after update
-  // and create a user security message which shows the user the application
-  // name and author after some idle timeout.
+  // If the device is not enterprise managed, set prefs to reboot after update.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector->IsEnterpriseManaged()) {
     PrefService* local_state = g_browser_process->local_state();
     local_state->SetBoolean(prefs::kRebootAfterUpdate, true);
-    KioskModeIdleAppNameNotification::Initialize();
   }
 }
 

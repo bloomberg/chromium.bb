@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
@@ -733,9 +732,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   g_browser_process->platform_part()->oom_priority_manager()->Stop();
-
-  // Destroy the application name notifier for Kiosk mode.
-  KioskModeIdleAppNameNotification::Shutdown();
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();
