@@ -10,20 +10,24 @@
 #include <pk11pub.h>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/nss_util.h"
+#include "crypto/nss_util_internal.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/cert_type.h"
-#include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace onc {
+
+namespace {
 
 #if defined(USE_NSS)
 // In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
@@ -55,23 +59,29 @@ net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
 }
 #endif  // USE_NSS
 
+}  // namespace
+
 class ONCCertificateImporterImplTest : public testing::Test {
  public:
+  ONCCertificateImporterImplTest() : user_("username_hash"),
+                                     private_user_("private_user_hash") {}
+
   virtual void SetUp() {
-    ASSERT_TRUE(test_nssdb_.is_open());
+    ASSERT_TRUE(user_.constructed_successfully());
+    ASSERT_TRUE(private_user_.constructed_successfully());
 
-    slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
-
-    // Don't run the test if the setup failed.
-    ASSERT_TRUE(slot_->os_module_handle());
+    // By default test user will have the same public and private slot.
+    // Unfortunatelly, ONC importer should care about which slot certificates
+    // get imported to. To work around this, we create another NSS user whose
+    // public slot will act as the private slot.
+    // TODO(tbarzic): See if there's a better way to achieve this.
+    test_nssdb_.reset(new net::NSSCertDatabaseChromeOS(
+        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()),
+        crypto::GetPublicSlotForChromeOSUser(private_user_.username_hash())));
 
     // Test db should be empty at start of test.
-    EXPECT_EQ(0ul, ListCertsInSlot().size());
-  }
-
-  virtual void TearDown() {
-    EXPECT_TRUE(CleanupSlotContents());
-    EXPECT_EQ(0ul, ListCertsInSlot().size());
+    EXPECT_TRUE(ListCertsInPublicSlot().empty());
+    EXPECT_TRUE(ListCertsInPrivateSlot().empty());
   }
 
   virtual ~ONCCertificateImporterImplTest() {}
@@ -89,7 +99,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
     web_trust_certificates_.clear();
     imported_server_and_ca_certs_.clear();
-    CertificateImporterImpl importer;
+    CertificateImporterImpl importer(test_nssdb_.get());
     EXPECT_EQ(
         expected_success,
         importer.ParseAndStoreCertificates(true,  // allow web trust
@@ -97,8 +107,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
                                            &web_trust_certificates_,
                                            &imported_server_and_ca_certs_));
 
-    result_list_.clear();
-    result_list_ = ListCertsInSlot();
+    public_list_ = ListCertsInPublicSlot();
+    private_list_ = ListCertsInPrivateSlot();
   }
 
   void AddCertificateFromFile(std::string filename,
@@ -109,8 +119,11 @@ class ONCCertificateImporterImplTest : public testing::Test {
       guid = &guid_temporary;
 
     AddCertificatesFromFile(filename, true);
-    ASSERT_EQ(1ul, result_list_.size());
-    EXPECT_EQ(expected_type, GetCertType(result_list_[0]->os_cert_handle()));
+    ASSERT_EQ(1ul, public_list_.size() + private_list_.size());
+    if (!public_list_.empty())
+      EXPECT_EQ(expected_type, GetCertType(public_list_[0]->os_cert_handle()));
+    if (!private_list_.empty())
+      EXPECT_EQ(expected_type, GetCertType(private_list_[0]->os_cert_handle()));
 
     base::DictionaryValue* certificate = NULL;
     onc_certificates_->GetDictionary(0, &certificate);
@@ -119,23 +132,33 @@ class ONCCertificateImporterImplTest : public testing::Test {
     if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
       EXPECT_EQ(1u, imported_server_and_ca_certs_.size());
       EXPECT_TRUE(imported_server_and_ca_certs_[*guid]->Equals(
-          result_list_[0]));
+          public_list_[0]));
     } else {  // net::USER_CERT
       EXPECT_TRUE(imported_server_and_ca_certs_.empty());
-      CertificateImporterImpl::ListCertsWithNickname(*guid, &result_list_);
     }
   }
 
+  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
   scoped_ptr<base::ListValue> onc_certificates_;
-  scoped_refptr<net::CryptoModule> slot_;
-  net::CertificateList result_list_;
+  // List of certs in the nssdb's public slot.
+  net::CertificateList public_list_;
+  // List of certs in the nssdb's "private" slot.
+  net::CertificateList private_list_;
   net::CertificateList web_trust_certificates_;
   CertificateImporterImpl::CertsByGUID imported_server_and_ca_certs_;
 
  private:
-  net::CertificateList ListCertsInSlot() {
+  net::CertificateList ListCertsInPublicSlot() {
+    return ListCertsInSlot(test_nssdb_->GetPublicSlot().get());
+  }
+
+  net::CertificateList ListCertsInPrivateSlot() {
+    return ListCertsInSlot(test_nssdb_->GetPrivateSlot().get());
+  }
+
+  net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
     net::CertificateList result;
-    CERTCertList* cert_list = PK11_ListCertsInSlot(slot_->os_module_handle());
+    CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {
@@ -149,30 +172,22 @@ class ONCCertificateImporterImplTest : public testing::Test {
     return result;
   }
 
-  bool CleanupSlotContents() {
-    bool ok = true;
-    net::CertificateList certs = ListCertsInSlot();
-    for (size_t i = 0; i < certs.size(); ++i) {
-      if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]
-                                                                     .get()))
-        ok = false;
-    }
-    return ok;
-  }
-
-  crypto::ScopedTestNSSDB test_nssdb_;
+  crypto::ScopedTestNSSChromeOSUser user_;
+  crypto::ScopedTestNSSChromeOSUser private_user_;
 };
 
 TEST_F(ONCCertificateImporterImplTest, MultipleCertificates) {
   AddCertificatesFromFile("managed_toplevel2.onc", true);
-  EXPECT_EQ(onc_certificates_->GetSize(), result_list_.size());
+  EXPECT_EQ(onc_certificates_->GetSize(), public_list_.size());
+  EXPECT_TRUE(private_list_.empty());
   EXPECT_EQ(2ul, imported_server_and_ca_certs_.size());
 }
 
 TEST_F(ONCCertificateImporterImplTest, MultipleCertificatesWithFailures) {
   AddCertificatesFromFile("toplevel_partially_invalid.onc", false);
   EXPECT_EQ(3ul, onc_certificates_->GetSize());
-  EXPECT_EQ(1ul, result_list_.size());
+  EXPECT_EQ(1ul, private_list_.size());
+  EXPECT_TRUE(public_list_.empty());
   EXPECT_TRUE(imported_server_and_ca_certs_.empty());
 }
 
@@ -180,9 +195,11 @@ TEST_F(ONCCertificateImporterImplTest, AddClientCertificate) {
   std::string guid;
   AddCertificateFromFile("certificate-client.onc", net::USER_CERT, &guid);
   EXPECT_TRUE(web_trust_certificates_.empty());
+  EXPECT_EQ(1ul, private_list_.size());
+  EXPECT_TRUE(public_list_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_TRUE(privkey_list);
   if (privkey_list) {
     SECKEYPrivateKeyListNode* node = PRIVKEY_LIST_HEAD(privkey_list);
@@ -199,7 +216,7 @@ TEST_F(ONCCertificateImporterImplTest, AddClientCertificate) {
   }
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_TRUE(pubkey_list);
   if (pubkey_list) {
     SECKEYPublicKeyListNode* node = PUBKEY_LIST_HEAD(pubkey_list);
@@ -217,16 +234,17 @@ TEST_F(ONCCertificateImporterImplTest, AddServerCertificateWithWebTrust) {
   AddCertificateFromFile("certificate-server.onc", net::SERVER_CERT, NULL);
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 
   ASSERT_EQ(1u, web_trust_certificates_.size());
-  ASSERT_EQ(1u, result_list_.size());
-  EXPECT_TRUE(CERT_CompareCerts(result_list_[0]->os_cert_handle(),
+  ASSERT_EQ(1u, public_list_.size());
+  EXPECT_TRUE(private_list_.empty());
+  EXPECT_TRUE(CERT_CompareCerts(public_list_[0]->os_cert_handle(),
                                 web_trust_certificates_[0]->os_cert_handle()));
 }
 
@@ -234,16 +252,17 @@ TEST_F(ONCCertificateImporterImplTest, AddWebAuthorityCertificateWithWebTrust) {
   AddCertificateFromFile("certificate-web-authority.onc", net::CA_CERT, NULL);
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 
   ASSERT_EQ(1u, web_trust_certificates_.size());
-  ASSERT_EQ(1u, result_list_.size());
-  EXPECT_TRUE(CERT_CompareCerts(result_list_[0]->os_cert_handle(),
+  ASSERT_EQ(1u, public_list_.size());
+  EXPECT_TRUE(private_list_.empty());
+  EXPECT_TRUE(CERT_CompareCerts(public_list_[0]->os_cert_handle(),
                                 web_trust_certificates_[0]->os_cert_handle()));
 }
 
@@ -252,11 +271,11 @@ TEST_F(ONCCertificateImporterImplTest, AddAuthorityCertificateWithoutWebTrust) {
   EXPECT_TRUE(web_trust_certificates_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 }
 

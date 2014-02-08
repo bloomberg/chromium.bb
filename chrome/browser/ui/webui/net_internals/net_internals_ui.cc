@@ -83,6 +83,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -389,6 +390,13 @@ class NetInternalsMessageHandler
   void OnSetNetworkDebugMode(const base::ListValue* list);
   void OnSetNetworkDebugModeCompleted(const std::string& subsystem,
                                       bool succeeded);
+
+  // Callback to |GetNSSCertDatabaseForProfile| used to retrieve the database
+  // to which user's ONC defined certificates should be imported.
+  // It parses and imports |onc_blob|.
+  void ImportONCFileToNSSDB(const std::string& onc_blob,
+                            const std::string& passcode,
+                            net::NSSCertDatabase* nssdb);
 #endif
 
  private:
@@ -1503,18 +1511,14 @@ void NetInternalsMessageHandler::OnGetSystemLog(
   syslogs_getter_->RequestSystemLog(list);
 }
 
-void NetInternalsMessageHandler::OnImportONCFile(
-    const base::ListValue* list) {
-  std::string onc_blob;
-  std::string passcode;
-  if (list->GetSize() != 2 ||
-      !list->GetString(0, &onc_blob) ||
-      !list->GetString(1, &passcode)) {
-    NOTREACHED();
-  }
-
+void NetInternalsMessageHandler::ImportONCFileToNSSDB(
+    const std::string& onc_blob,
+    const std::string& passcode,
+    net::NSSCertDatabase* nssdb) {
   std::string error;
-  const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
+  chromeos::User* user = chromeos::UserManager::Get()->GetUserByProfile(
+      Profile::FromWebUI(web_ui()));
+
   if (user) {
     onc::ONCSource onc_source = onc::ONC_SOURCE_USER_IMPORT;
 
@@ -1530,7 +1534,7 @@ void NetInternalsMessageHandler::OnImportONCFile(
       error = "Errors occurred during the ONC parsing. ";
     }
 
-    chromeos::onc::CertificateImporterImpl cert_importer;
+    chromeos::onc::CertificateImporterImpl cert_importer(nssdb);
     if (!cert_importer.ImportCertificates(certificates, onc_source, NULL))
       error += "Some certificates couldn't be imported. ";
 
@@ -1539,11 +1543,27 @@ void NetInternalsMessageHandler::OnImportONCFile(
     if (!network_error.empty())
       error += network_error;
   } else {
-    error = "No active user.";
+    error = "User not found.";
   }
 
   LOG_IF(ERROR, !error.empty()) << error;
   SendJavascriptCommand("receivedONCFileParse", new base::StringValue(error));
+}
+
+void NetInternalsMessageHandler::OnImportONCFile(
+    const base::ListValue* list) {
+  std::string onc_blob;
+  std::string passcode;
+  if (list->GetSize() != 2 ||
+      !list->GetString(0, &onc_blob) ||
+      !list->GetString(1, &passcode)) {
+    NOTREACHED();
+  }
+
+  GetNSSCertDatabaseForProfile(
+      Profile::FromWebUI(web_ui()),
+      base::Bind(&NetInternalsMessageHandler::ImportONCFileToNSSDB, AsWeakPtr(),
+                 onc_blob, passcode));
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {

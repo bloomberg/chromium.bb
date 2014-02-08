@@ -152,8 +152,6 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   network_configuration_updater_ =
       DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
-          scoped_ptr<chromeos::onc::CertificateImporter>(
-              new chromeos::onc::CertificateImporterImpl),
           GetPolicyService(),
           chromeos::NetworkHandler::Get()
               ->managed_network_configuration_handler(),

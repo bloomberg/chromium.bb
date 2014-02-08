@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "policy/policy_constants.h"
@@ -21,14 +20,12 @@ DeviceNetworkConfigurationUpdater::~DeviceNetworkConfigurationUpdater() {}
 // static
 scoped_ptr<DeviceNetworkConfigurationUpdater>
 DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     chromeos::NetworkDeviceHandler* network_device_handler,
     chromeos::CrosSettings* cros_settings) {
   scoped_ptr<DeviceNetworkConfigurationUpdater> updater(
-      new DeviceNetworkConfigurationUpdater(certificate_importer.Pass(),
-                                            policy_service,
+      new DeviceNetworkConfigurationUpdater(policy_service,
                                             network_config_handler,
                                             network_device_handler,
                                             cros_settings));
@@ -37,14 +34,12 @@ DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
 }
 
 DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     chromeos::NetworkDeviceHandler* network_device_handler,
     chromeos::CrosSettings* cros_settings)
     : NetworkConfigurationUpdater(onc::ONC_SOURCE_DEVICE_POLICY,
                                   key::kDeviceOpenNetworkConfiguration,
-                                  certificate_importer.Pass(),
                                   policy_service,
                                   network_config_handler),
       network_device_handler_(network_device_handler),
@@ -67,8 +62,9 @@ void DeviceNetworkConfigurationUpdater::Init() {
 
 void DeviceNetworkConfigurationUpdater::ImportCertificates(
     const base::ListValue& certificates_onc) {
-  certificate_importer_->ImportCertificates(
-      certificates_onc, onc_source_, NULL);
+  // Importing CA and server certs from device policy is not  allowed, while
+  // importing client is not yet supported (as a system-wide PKCS#11 token to
+  // which they should be imported does not exists at the time).
 }
 
 void DeviceNetworkConfigurationUpdater::ApplyNetworkPolicy(

@@ -27,7 +27,10 @@
 namespace chromeos {
 namespace onc {
 
-CertificateImporterImpl::CertificateImporterImpl() {
+CertificateImporterImpl::CertificateImporterImpl(
+    net::NSSCertDatabase* target_nssdb)
+    : target_nssdb_(target_nssdb) {
+  CHECK(target_nssdb);
 }
 
 bool CertificateImporterImpl::ImportCertificates(
@@ -38,8 +41,10 @@ bool CertificateImporterImpl::ImportCertificates(
 
   // Web trust is only granted to certificates imported by the user.
   bool allow_trust_imports = source == ::onc::ONC_SOURCE_USER_IMPORT;
-  if (!ParseAndStoreCertificates(
-          allow_trust_imports, certificates, onc_trusted_certificates, NULL)) {
+  if (!ParseAndStoreCertificates(allow_trust_imports,
+                                 certificates,
+                                 onc_trusted_certificates,
+                                 NULL)) {
     LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
                << onc::GetSourceAsString(source);
     return false;
@@ -75,11 +80,13 @@ bool CertificateImporterImpl::ParseAndStoreCertificates(
 }
 
 // static
-void CertificateImporterImpl::ListCertsWithNickname(const std::string& label,
-                                                net::CertificateList* result) {
+void CertificateImporterImpl::ListCertsWithNickname(
+    const std::string& label,
+    net::CertificateList* result,
+    net::NSSCertDatabase* target_nssdb) {
   net::CertificateList all_certs;
   // TODO(tbarzic): Use async |ListCerts|.
-  net::NSSCertDatabase::GetInstance()->ListCertsSync(&all_certs);
+  target_nssdb->ListCertsSync(&all_certs);
   result->clear();
   for (net::CertificateList::iterator iter = all_certs.begin();
        iter != all_certs.end(); ++iter) {
@@ -115,9 +122,10 @@ void CertificateImporterImpl::ListCertsWithNickname(const std::string& label,
 
 // static
 bool CertificateImporterImpl::DeleteCertAndKeyByNickname(
-    const std::string& label) {
+    const std::string& label,
+    net::NSSCertDatabase* target_nssdb) {
   net::CertificateList cert_list;
-  ListCertsWithNickname(label, &cert_list);
+  ListCertsWithNickname(label, &cert_list, target_nssdb);
   bool result = true;
   for (net::CertificateList::iterator iter = cert_list.begin();
        iter != cert_list.end(); ++iter) {
@@ -128,7 +136,7 @@ bool CertificateImporterImpl::DeleteCertAndKeyByNickname(
     // label, and the cert not being found is one of the few reasons the
     // delete could fail, but still...  The other choice is to return
     // failure immediately, but that doesn't seem to do what is intended.
-    if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(iter->get()))
+    if (!target_nssdb->DeleteCertAndKey(iter->get()))
       result = false;
   }
   return result;
@@ -147,7 +155,7 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
   bool remove = false;
   if (certificate.GetBooleanWithoutPathExpansion(::onc::kRemove, &remove) &&
       remove) {
-    if (!DeleteCertAndKeyByNickname(guid)) {
+    if (!DeleteCertAndKeyByNickname(guid, target_nssdb_)) {
       ONC_LOG_ERROR("Unable to delete certificate");
       return false;
     } else {
@@ -235,21 +243,20 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
                                            net::NSSCertDatabase::TRUSTED_SSL :
                                            net::NSSCertDatabase::TRUST_DEFAULT);
 
-  net::NSSCertDatabase* cert_database = net::NSSCertDatabase::GetInstance();
   if (x509_cert->os_cert_handle()->isperm) {
     net::CertType net_cert_type =
         cert_type == ::onc::certificate::kServer ? net::SERVER_CERT
                                                  : net::CA_CERT;
     VLOG(1) << "Certificate is already installed.";
     net::NSSCertDatabase::TrustBits missing_trust_bits =
-        trust & ~cert_database->GetCertTrust(x509_cert.get(), net_cert_type);
+        trust & ~target_nssdb_->GetCertTrust(x509_cert.get(), net_cert_type);
     if (missing_trust_bits) {
       std::string error_reason;
       bool success = false;
-      if (cert_database->IsReadOnly(x509_cert.get())) {
+      if (target_nssdb_->IsReadOnly(x509_cert.get())) {
         error_reason = " Certificate is stored read-only.";
       } else {
-        success = cert_database->SetCertTrust(x509_cert.get(),
+        success = target_nssdb_->SetCertTrust(x509_cert.get(),
                                               net_cert_type,
                                               trust);
       }
@@ -265,9 +272,9 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     net::NSSCertDatabase::ImportCertFailureList failures;
     bool success = false;
     if (cert_type == ::onc::certificate::kServer)
-      success = cert_database->ImportServerCert(cert_list, trust, &failures);
+      success = target_nssdb_->ImportServerCert(cert_list, trust, &failures);
     else  // Authority cert
-      success = cert_database->ImportCACerts(cert_list, trust, &failures);
+      success = target_nssdb_->ImportCACerts(cert_list, trust, &failures);
 
     if (!failures.empty()) {
       ONC_LOG_ERROR(
@@ -311,11 +318,11 @@ bool CertificateImporterImpl::ParseClientCertificate(
   }
 
   // Since this has a private key, always use the private module.
-  net::NSSCertDatabase* cert_database = net::NSSCertDatabase::GetInstance();
-  scoped_refptr<net::CryptoModule> module(cert_database->GetPrivateModule());
+  scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
+      target_nssdb_->GetPrivateSlot().get()));
   net::CertificateList imported_certs;
 
-  int import_result = cert_database->ImportFromPKCS12(
+  int import_result = target_nssdb_->ImportFromPKCS12(
       module.get(), decoded_pkcs12, base::string16(), false, &imported_certs);
   if (import_result != net::OK) {
     ONC_LOG_ERROR(

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/network/fake_network_device_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/onc/mock_certificate_importer.h"
@@ -148,7 +149,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
+        .WillRepeatedly(Return(false));
     provider_.Init();
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
@@ -183,6 +184,15 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void MarkPolicyProviderInitialized() {
+    Mock::VerifyAndClearExpectations(&provider_);
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    provider_.SetAutoRefresh();
+    provider_.RefreshPolicies();
+    base::RunLoop().RunUntilIdle();
+  }
+
   void UpdateProviderPolicy(const PolicyMap& policy) {
     provider_.UpdateChromePolicy(policy);
     base::RunLoop().RunUntilIdle();
@@ -190,14 +200,20 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   UserNetworkConfigurationUpdater*
   CreateNetworkConfigurationUpdaterForUserPolicy(
-      bool allow_trusted_certs_from_policy) {
+      bool allow_trusted_certs_from_policy,
+      bool set_cert_importer) {
     UserNetworkConfigurationUpdater* updater =
         UserNetworkConfigurationUpdater::CreateForUserPolicy(
+            &profile_,
             allow_trusted_certs_from_policy,
             fake_user_,
-            certificate_importer_owned_.Pass(),
             policy_service_.get(),
             &network_config_handler_).release();
+    if (set_cert_importer) {
+      EXPECT_TRUE(certificate_importer_owned_);
+      updater->SetCertificateImporterForTest(
+          certificate_importer_owned_.Pass());
+    }
     network_configuration_updater_.reset(updater);
     return updater;
   }
@@ -205,7 +221,6 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   void CreateNetworkConfigurationUpdaterForDevicePolicy() {
     network_configuration_updater_ =
         DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
-            certificate_importer_owned_.Pass(),
             policy_service_.get(),
             &network_config_handler_,
             &network_device_handler_,
@@ -234,15 +249,15 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   scoped_ptr<PolicyServiceImpl> policy_service_;
   FakeUser fake_user_;
 
+  TestingProfile profile_;
+
   scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
-  // Ignore networ config updates.
+  // Ignore network config updates.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
-  EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _, _))
-      .Times(AtLeast(1));
 
   // Setup the DataRoaming device setting.
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
@@ -259,6 +274,7 @@ TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
   EXPECT_FALSE(network_device_handler_.allow_roaming_);
 
   CreateNetworkConfigurationUpdaterForDevicePolicy();
+  MarkPolicyProviderInitialized();
   chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
                                      base::FundamentalValue(true));
   EXPECT_TRUE(network_device_handler_.allow_roaming_);
@@ -300,10 +316,12 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
                         IsEqualTo(network_configs_repaired),
                         IsEqualTo(global_config_repaired)));
   EXPECT_CALL(*certificate_importer_,
-              ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _));
+              ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY,  _));
 
   CreateNetworkConfigurationUpdaterForUserPolicy(
-      false /* do not allow trusted certs from policy */ );
+      false /* do not allow trusted certs from policy */,
+      true /* set certificate importer */);
+  MarkPolicyProviderInitialized();
 }
 
 TEST_F(NetworkConfigurationUpdaterTest,
@@ -322,7 +340,9 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          false /* do not allow trusted certs from policy */);
+          false /* do not allow trusted certs from policy */,
+          true /* set certificate importer */);
+  MarkPolicyProviderInitialized();
 
   // Certificates with the "Web" trust flag set should not be forwarded to
   // observers.
@@ -358,7 +378,9 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          true /* allow trusted certs from policy */);
+          true /* allow trusted certs from policy */,
+          true /* set certificate importer */);
+  MarkPolicyProviderInitialized();
 
   base::RunLoop().RunUntilIdle();
 
@@ -381,7 +403,9 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          true /* allow trusted certs from policy */);
+          true /* allow trusted certs from policy */,
+          true /* set certificate importer */);
+  MarkPolicyProviderInitialized();
 
   FakeWebTrustedCertsObserver observer;
   updater->AddTrustedCertsObserver(&observer);
@@ -432,6 +456,44 @@ TEST_F(NetworkConfigurationUpdaterTest,
   updater->RemoveTrustedCertsObserver(&observer);
 }
 
+TEST_F(NetworkConfigurationUpdaterTest,
+       DontImportCertificateBeforeCertificateImporterSet) {
+  PolicyMap policy;
+  policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, new base::StringValue(kFakeONC), NULL);
+  UpdateProviderPolicy(policy);
+
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY,
+                        kFakeUsernameHash,
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)));
+  EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _ , _)).Times(0);
+
+  UserNetworkConfigurationUpdater* updater =
+      CreateNetworkConfigurationUpdaterForUserPolicy(
+          true /* allow trusted certs from policy */,
+          false /* do not set certificate importer */);
+  MarkPolicyProviderInitialized();
+
+  Mock::VerifyAndClearExpectations(&network_config_handler_);
+  Mock::VerifyAndClearExpectations(certificate_importer_);
+
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY,
+                        kFakeUsernameHash,
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)))
+      .Times(0);
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 onc::ONC_SOURCE_USER_POLICY,
+                                  _));
+
+  ASSERT_TRUE(certificate_importer_owned_);
+  updater->SetCertificateImporterForTest(certificate_importer_owned_.Pass());
+}
+
 class NetworkConfigurationUpdaterTestWithParam
     : public NetworkConfigurationUpdaterTest,
       public testing::WithParamInterface<const char*> {
@@ -452,10 +514,17 @@ class NetworkConfigurationUpdaterTestWithParam
     return std::string();
   }
 
+  size_t ExpectedImportCertificatesCallCount() {
+    if (GetParam() == key::kOpenNetworkConfiguration)
+      return 1u;
+    return 0u;
+  }
+
   void CreateNetworkConfigurationUpdater() {
     if (GetParam() == key::kOpenNetworkConfiguration) {
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          false /* do not allow trusted certs from policy */);
+          false /* do not allow trusted certs from policy */,
+          true /* set certificate importer */);
     } else {
       CreateNetworkConfigurationUpdaterForDevicePolicy();
     }
@@ -474,19 +543,85 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
   EXPECT_CALL(*certificate_importer_,
-              ImportCertificates(
-                  IsEqualTo(&fake_certificates_), CurrentONCSource(), _));
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 CurrentONCSource(),
+                                  _))
+      .Times(ExpectedImportCertificatesCallCount());
+
+  CreateNetworkConfigurationUpdater();
+  MarkPolicyProviderInitialized();
+}
+
+TEST_P(NetworkConfigurationUpdaterTestWithParam,
+       PolicyNotSetBeforePolicyProviderInitialized) {
+  PolicyMap policy;
+  policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             new base::StringValue(kFakeONC), NULL);
+  UpdateProviderPolicy(policy);
+
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(CurrentONCSource(),
+                        ExpectedUsernameHash(),
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)))
+      .Times(0);
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 CurrentONCSource(),
+                                  _))
+      .Times(0);
+
+  CreateNetworkConfigurationUpdater();
+
+  Mock::VerifyAndClearExpectations(&network_config_handler_);
+  Mock::VerifyAndClearExpectations(certificate_importer_);
+
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(CurrentONCSource(),
+                        ExpectedUsernameHash(),
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)));
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 CurrentONCSource(),
+                                  _))
+      .Times(ExpectedImportCertificatesCallCount());
+
+  MarkPolicyProviderInitialized();
+}
+
+TEST_P(NetworkConfigurationUpdaterTestWithParam,
+       PolicyAppliedImmediatelyIfProvidersInitialized) {
+  MarkPolicyProviderInitialized();
+
+  PolicyMap policy;
+  policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             new base::StringValue(kFakeONC), NULL);
+  UpdateProviderPolicy(policy);
+
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(CurrentONCSource(),
+                        ExpectedUsernameHash(),
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)));
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 CurrentONCSource(),
+                                  _))
+      .Times(ExpectedImportCertificatesCallCount());
 
   CreateNetworkConfigurationUpdater();
 }
-
 
 TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   // Ignore the initial updates.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
   EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _, _))
-      .Times(AtLeast(1));
+      .Times(AtLeast(ExpectedImportCertificatesCallCount()));
+
   CreateNetworkConfigurationUpdater();
+  MarkPolicyProviderInitialized();
+
   Mock::VerifyAndClearExpectations(&network_config_handler_);
   Mock::VerifyAndClearExpectations(certificate_importer_);
 
@@ -497,8 +632,10 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
   EXPECT_CALL(*certificate_importer_,
-              ImportCertificates(
-                  IsEqualTo(&fake_certificates_), CurrentONCSource(), _));
+              ImportCertificates(IsEqualTo(&fake_certificates_),
+                                 CurrentONCSource(),
+                                  _))
+      .Times(ExpectedImportCertificatesCallCount());
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -511,7 +648,8 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   EXPECT_CALL(network_config_handler_,
               SetPolicy(CurrentONCSource(), _, IsEmpty(), IsEmpty()));
   EXPECT_CALL(*certificate_importer_,
-              ImportCertificates(IsEmpty(), CurrentONCSource(), _));
+              ImportCertificates(IsEmpty(), CurrentONCSource(), _))
+      .Times(ExpectedImportCertificatesCallCount());
 
   policy.Erase(GetParam());
   UpdateProviderPolicy(policy);

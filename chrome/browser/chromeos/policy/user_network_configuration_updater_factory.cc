@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
@@ -82,10 +81,9 @@ UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
       ProfilePolicyConnectorFactory::GetForProfile(profile);
 
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
+      profile,
       allow_trusted_certs_from_policy,
       *user,
-      scoped_ptr<chromeos::onc::CertificateImporter>(
-          new chromeos::onc::CertificateImporterImpl),
       profile_connector->policy_service(),
       chromeos::NetworkHandler::Get()->managed_network_configuration_handler())
       .release();

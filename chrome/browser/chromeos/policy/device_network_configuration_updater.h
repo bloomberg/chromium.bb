@@ -45,7 +45,6 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
   // once the policy service is completely initialized and on each policy
   // change. The argument objects must outlive the returned updater.
   static scoped_ptr<DeviceNetworkConfigurationUpdater> CreateForDevicePolicy(
-      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       chromeos::NetworkDeviceHandler* network_device_handler,
@@ -53,7 +52,6 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
 
  private:
   DeviceNetworkConfigurationUpdater(
-      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       chromeos::NetworkDeviceHandler* network_device_handler,

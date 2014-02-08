@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/policy_map.h"
 #include "policy/policy_constants.h"
@@ -40,12 +39,10 @@ void NetworkConfigurationUpdater::OnPolicyServiceInitialized(
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     onc::ONCSource onc_source,
     std::string policy_key,
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler)
     : onc_source_(onc_source),
       network_config_handler_(network_config_handler),
-      certificate_importer_(certificate_importer.Pass()),
       policy_key_(policy_key),
       policy_change_registrar_(policy_service,
                                PolicyNamespace(POLICY_DOMAIN_CHROME,

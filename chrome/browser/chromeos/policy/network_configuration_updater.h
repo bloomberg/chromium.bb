@@ -21,10 +21,6 @@ class Value;
 
 namespace chromeos {
 class ManagedNetworkConfigurationHandler;
-
-namespace onc {
-class CertificateImporter;
-}
 }
 
 namespace policy {
@@ -51,7 +47,6 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
   NetworkConfigurationUpdater(
       onc::ONCSource onc_source,
       std::string policy_key,
-      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
@@ -71,8 +66,6 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
 
   // Pointer to the global singleton or a test instance.
   chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
-
-  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 
  private:
   // Called if the ONC policy changed.

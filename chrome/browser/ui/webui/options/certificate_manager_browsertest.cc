@@ -22,7 +22,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chrome/browser/net/nss_context.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "crypto/nss_util.h"
 #endif
@@ -36,6 +39,22 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   virtual ~CertificateManagerBrowserTest() {}
 
  protected:
+  virtual void SetUp() OVERRIDE {
+#if defined(OS_CHROMEOS)
+    policy::UserNetworkConfigurationUpdater::
+        SetSkipCertificateImporterCreationForTest(true);
+#endif
+    options::OptionsUIBrowserTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+#if defined(OS_CHROMEOS)
+    policy::UserNetworkConfigurationUpdater::
+        SetSkipCertificateImporterCreationForTest(false);
+#endif
+    options::OptionsUIBrowserTest::TearDown();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
 #if defined(OS_CHROMEOS)
     device_policy_test_helper_.MarkAsEnterpriseOwned();
@@ -63,9 +82,34 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
         content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(&CertificateManagerBrowserTest::SetUpOnIOThread, this));
-    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
 
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
     content::RunAllPendingInMessageLoop();
+
+#if defined(OS_CHROMEOS)
+    // UserNetworkConfigurationUpdater's onc::CertificateImporter is usually
+    // passed the NSSCertDatabase fetched during testing profile
+    // constrution. Unfortunately, test database gets setup after that, so we
+    // would end up with |PK11_GetInternalKeySlot|. The cause of this is in
+    // |crypto::InitializeNSSForChromeOSUser|, which does not open new
+    // database slot for primary user, but it just uses the singleton one (which
+    // is not set in tests before |test_nssdb_| is created). To handle this,
+    // creating certificate importer during the UserNetworkConfiguirationUpdater
+    // service creation is set to be skipped (see |SetUp|), and cert importer
+    // is set up here.
+    // Note that creating |test_nssdb_| sooner (in SetUp) would break thread
+    // restrictions, which require it to be used on IO thread only.
+    // TODO(tbarzic): Update InitializeNSSForChromeOSUser not to special case
+    // the primary user.
+    GetNSSCertDatabaseForProfile(
+        browser()->profile(),
+        base::Bind(
+            &CertificateManagerBrowserTest::UpdateNetworkConfigurationUpdater,
+            base::Unretained(this)));
+
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    content::RunAllPendingInMessageLoop();
+#endif
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -77,6 +121,13 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
+  void UpdateNetworkConfigurationUpdater(net::NSSCertDatabase* database) {
+    policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(
+        browser()->profile())->SetCertificateImporterForTest(
+            scoped_ptr<chromeos::onc::CertificateImporter>(
+                new chromeos::onc::CertificateImporterImpl(database)));
+  }
+
   void LoadONCPolicy(const std::string& filename) {
     const std::string& user_policy_blob =
         chromeos::onc::test_utils::ReadTestData(filename);
