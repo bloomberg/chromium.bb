@@ -47,6 +47,12 @@ class Prerender;
 
 namespace blink {
 
+// WebPrerenderRelType is a bitfield since multiple rel attributes can be set on the same prerender.
+enum WebPrerenderRelType {
+    PrerenderRelTypePrerender = 0x1,
+    PrerenderRelTypeNext = 0x2,
+};
+
 class WebPrerender {
 public:
     class ExtraData {
@@ -75,6 +81,7 @@ public:
 
     BLINK_PLATFORM_EXPORT WebURL url() const;
     BLINK_PLATFORM_EXPORT WebString referrer() const;
+    BLINK_PLATFORM_EXPORT unsigned relTypes() const;
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
