@@ -6,7 +6,6 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -15,6 +14,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -302,7 +302,8 @@ bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
 
 content::BrowserContext* ShellWindowRegistry::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return extensions::ExtensionsBrowserClient::Get()->
+      GetOriginalContext(context);
 }
 
 }  // namespace extensions

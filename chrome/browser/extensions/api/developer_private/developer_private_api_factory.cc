@@ -6,9 +6,9 @@
 
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -41,7 +41,7 @@ BrowserContextKeyedService* DeveloperPrivateAPIFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* DeveloperPrivateAPIFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 bool DeveloperPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {

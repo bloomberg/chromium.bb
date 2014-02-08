@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/image_loader_factory.h"
 
 #include "chrome/browser/extensions/image_loader.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -41,9 +41,7 @@ bool ImageLoaderFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* ImageLoaderFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // TODO(jamescook): Find a more generic way to do this in the extensions
-  // system without being tied to Chrome code.
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 }  // namespace extensions

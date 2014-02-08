@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -319,7 +320,8 @@ bool ShellWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
 content::BrowserContext*
 ShellWindowGeometryCache::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return extensions::ExtensionsBrowserClient::Get()->
+      GetOriginalContext(context);
 }
 
 void ShellWindowGeometryCache::AddObserver(Observer* observer) {

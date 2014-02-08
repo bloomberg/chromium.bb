@@ -25,7 +25,6 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
@@ -332,7 +331,7 @@ BrowserContextKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 ActivityLogFactory::ActivityLogFactory()

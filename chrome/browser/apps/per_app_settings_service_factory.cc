@@ -6,8 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 // static
 PerAppSettingsServiceFactory* PerAppSettingsServiceFactory::GetInstance() {
@@ -42,5 +42,6 @@ bool PerAppSettingsServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* PerAppSettingsServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return extensions::ExtensionsBrowserClient::Get()->
+      GetOriginalContext(context);
 }
