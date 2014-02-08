@@ -521,6 +521,42 @@ void HarfBuzzShaper::setFontFeatures()
         break;
     }
 
+    static hb_feature_t noClig = { HB_TAG('c', 'l', 'i', 'g'), 0, 0, static_cast<unsigned>(-1) };
+    static hb_feature_t noLiga = { HB_TAG('l', 'i', 'g', 'a'), 0, 0, static_cast<unsigned>(-1) };
+    switch (description.commonLigaturesState()) {
+    case FontDescription::DisabledLigaturesState:
+        m_features.append(noLiga);
+        m_features.append(noClig);
+        break;
+    case FontDescription::EnabledLigaturesState:
+        // liga and clig are on by default
+        break;
+    case FontDescription::NormalLigaturesState:
+        break;
+    }
+    static hb_feature_t dlig = { HB_TAG('d', 'l', 'i', 'g'), 1, 0, static_cast<unsigned>(-1) };
+    switch (description.discretionaryLigaturesState()) {
+    case FontDescription::DisabledLigaturesState:
+        // dlig is off by default
+        break;
+    case FontDescription::EnabledLigaturesState:
+        m_features.append(dlig);
+        break;
+    case FontDescription::NormalLigaturesState:
+        break;
+    }
+    static hb_feature_t hlig = { HB_TAG('h', 'l', 'i', 'g'), 1, 0, static_cast<unsigned>(-1) };
+    switch (description.historicalLigaturesState()) {
+    case FontDescription::DisabledLigaturesState:
+        // hlig is off by default
+        break;
+    case FontDescription::EnabledLigaturesState:
+        m_features.append(hlig);
+        break;
+    case FontDescription::NormalLigaturesState:
+        break;
+    }
+
     FontFeatureSettings* settings = description.featureSettings();
     if (!settings)
         return;
