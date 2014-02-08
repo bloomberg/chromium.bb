@@ -6,6 +6,7 @@
   "name": "ChromeVox",
   "version": "1.0",
   "description": "ChromeVox - Giving Voice to Chrome.",
+  "incognito": "split",
   "background": {
     "page": "chromevox/background/background.html"
   },

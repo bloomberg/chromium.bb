@@ -333,6 +333,25 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
       base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
 }
 
+#if defined(OS_CHROMEOS)
+std::string ComponentLoader::AddChromeVoxExtension() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  int idr = command_line->HasSwitch(chromeos::switches::kGuestSession) ?
+      IDR_CHROMEVOX_GUEST_MANIFEST : IDR_CHROMEVOX_MANIFEST;
+  return Add(idr, base::FilePath(extension_misc::kChromeVoxExtensionPath));
+}
+
+std::string ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  int idr = command_line->HasSwitch(chromeos::switches::kGuestSession) ?
+      IDR_SPEECH_SYNTHESIS_GUEST_MANIFEST : IDR_SPEECH_SYNTHESIS_MANIFEST;
+  std::string id = Add(idr,
+      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath));
+  EnableFileSystemInGuestMode(id);
+  return id;
+}
+#endif
+
 void ComponentLoader::AddWithName(int manifest_resource_id,
                                   const base::FilePath& root_directory,
                                   const std::string& name) {
@@ -479,21 +498,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
             chromeos::switches::kDisableQuickofficeComponentApp)) {
       std::string id = Add(IDR_QUICKOFFICE_MANIFEST, base::FilePath(
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/quick_office")));
-      if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
-        // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
-        // Quickoffice. It doesn't work without temporary file system access.
-        // Make sure temporary file system is enabled in the off the record
-        // browser context (as that is the one used in guest session).
-        content::BrowserContext* off_the_record_context =
-            ExtensionsBrowserClient::Get()->GetOffTheRecordContext(
-                browser_context_);
-        GURL site = content::SiteInstance::GetSiteForURL(
-            off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
-        fileapi::FileSystemContext* file_system_context =
-            content::BrowserContext::GetStoragePartitionForSite(
-                off_the_record_context, site)->GetFileSystemContext();
-        file_system_context->EnableTemporaryFileSystemInIncognito();
-      }
+      EnableFileSystemInGuestMode(id);
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -527,9 +532,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   // Load ChromeVox extension now if spoken feedback is enabled.
   if (chromeos::AccessibilityManager::Get() &&
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
-    base::FilePath path =
-        base::FilePath(extension_misc::kChromeVoxExtensionPath);
-    Add(IDR_CHROMEVOX_MANIFEST, path);
+    AddChromeVoxExtension();
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -592,6 +595,27 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
     extension_service_->
         RemoveComponentExtension(component->extension_id);
   }
+}
+
+void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
+#if defined(OS_CHROMEOS)
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+    // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
+    // the extension. Some component extensions don't work without temporary
+    // file system access. Make sure temporary file system is enabled in the off
+    // the record browser context (as that is the one used in guest session).
+    content::BrowserContext* off_the_record_context =
+        ExtensionsBrowserClient::Get()->GetOffTheRecordContext(
+            browser_context_);
+    GURL site = content::SiteInstance::GetSiteForURL(
+        off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
+    fileapi::FileSystemContext* file_system_context =
+        content::BrowserContext::GetStoragePartitionForSite(
+            off_the_record_context, site)->GetFileSystemContext();
+    file_system_context->EnableTemporaryFileSystemInIncognito();
+  }
+#endif
 }
 
 }  // namespace extensions

@@ -96,6 +96,11 @@ class ComponentLoader {
   // Reloads a registered component extension.
   void Reload(const std::string& extension_id);
 
+#if defined(OS_CHROMEOS)
+  std::string AddChromeVoxExtension();
+  std::string AddChromeOsSpeechSynthesisExtension();
+#endif
+
  private:
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
@@ -136,6 +141,9 @@ class ComponentLoader {
 
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
+
+  // Enable HTML5 FileSystem for given component extension in Guest mode.
+  void EnableFileSystemInGuestMode(const std::string& id);
 
   PrefService* profile_prefs_;
   PrefService* local_state_;

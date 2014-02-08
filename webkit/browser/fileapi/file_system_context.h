@@ -242,7 +242,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
   // Used only on ChromeOS for now.
   void EnableTemporaryFileSystemInIncognito();
 #endif

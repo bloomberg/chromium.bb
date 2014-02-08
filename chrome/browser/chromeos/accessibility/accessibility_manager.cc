@@ -156,10 +156,8 @@ void LoadChromeVoxExtension(Profile* profile,
                             RenderViewHost* render_view_host) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  base::FilePath path = GetChromeVoxPath();
   std::string extension_id =
-      extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
-                                                 path);
+      extension_service->component_loader()->AddChromeVoxExtension();
   if (render_view_host) {
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();

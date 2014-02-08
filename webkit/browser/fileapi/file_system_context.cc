@@ -418,7 +418,7 @@ FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
   return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
 void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
   sandbox_backend_->set_enable_temporary_file_system_in_incognito(true);
 }
@@ -428,7 +428,7 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
   // We never support accessing files in isolated filesystems via an URL.
   if (url.mount_type() == kFileSystemTypeIsolated)
     return false;
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
   if (url.type() == kFileSystemTypeTemporary &&
       sandbox_backend_->enable_temporary_file_system_in_incognito()) {
     return true;

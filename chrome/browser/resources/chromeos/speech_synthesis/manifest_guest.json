@@ -5,6 +5,7 @@
   "version": "0.0.2",
   "description": "Text-to-speech (TTS) voice extension using Native Client technology.",
   "manifest_version": 2,
+  "incognito": "split",
   "background": {
     "scripts": [
       "voice_data_hmm_de-DE.js",
