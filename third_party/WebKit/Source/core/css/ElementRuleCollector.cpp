@@ -146,7 +146,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     const AtomicString& pseudoId = element.shadowPseudoId();
     if (!pseudoId.isEmpty()) {
         ASSERT(element.isStyledElement());
-        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId.impl()), behaviorAtBoundary, ignoreCascadeScope, cascadeOrder, matchRequest, ruleRange);
+        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId), behaviorAtBoundary, ignoreCascadeScope, cascadeOrder, matchRequest, ruleRange);
     }
 
     if (element.isVTTElement())
@@ -164,17 +164,17 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     // We need to collect the rules for id, class, tag, and everything else into a buffer and
     // then sort the buffer.
     if (element.hasID())
-        collectMatchingRulesForList(matchRequest.ruleSet->idRules(element.idForStyleResolution().impl()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+        collectMatchingRulesForList(matchRequest.ruleSet->idRules(element.idForStyleResolution()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     if (element.isStyledElement() && element.hasClass()) {
         for (size_t i = 0; i < element.classNames().size(); ++i)
-            collectMatchingRulesForList(matchRequest.ruleSet->classRules(element.classNames()[i].impl()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+            collectMatchingRulesForList(matchRequest.ruleSet->classRules(element.classNames()[i]), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     }
 
     if (element.isLink())
         collectMatchingRulesForList(matchRequest.ruleSet->linkPseudoClassRules(), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     if (SelectorChecker::matchesFocusPseudoClass(element))
         collectMatchingRulesForList(matchRequest.ruleSet->focusPseudoClassRules(), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
-    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localName().impl()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localName()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
 }
 

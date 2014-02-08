@@ -42,7 +42,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements)
     helper.addCSSRules("summary::-webkit-details-marker { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("-webkit-details-marker");
-    const RuleData* ruleData = ruleSet.shadowPseudoElementRules(str.impl());
+    const RuleData* ruleData = ruleSet.shadowPseudoElementRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
 }
@@ -54,7 +54,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_Id)
     helper.addCSSRules("#id { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str.impl());
+    const RuleData* ruleData = ruleSet.idRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
 }
@@ -66,7 +66,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild)
     helper.addCSSRules("div:nth-child(2) { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
-    const RuleData* ruleData = ruleSet.tagRules(str.impl());
+    const RuleData* ruleData = ruleSet.tagRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().tagQName().localName());
 }
@@ -79,7 +79,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId)
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     // id is prefered over class even if class preceeds it in the selector.
-    const RuleData* ruleData = ruleSet.idRules(str.impl());
+    const RuleData* ruleData = ruleSet.idRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     AtomicString classStr("class");
     ASSERT_EQ(classStr, CSSTestHelper::getRule(ruleData, 0).selector().value());
@@ -92,7 +92,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass)
     helper.addCSSRules("#id.class { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str.impl());
+    const RuleData* ruleData = ruleSet.idRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
 }
@@ -104,7 +104,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId)
     helper.addCSSRules("[attr]#id { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str.impl());
+    const RuleData* ruleData = ruleSet.idRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     AtomicString attrStr("attr");
     ASSERT_EQ(attrStr, CSSTestHelper::getRule(ruleData, 0).selector().attribute().localName());
@@ -117,7 +117,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
     helper.addCSSRules("div[attr]#id { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str.impl());
+    const RuleData* ruleData = ruleSet.idRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     AtomicString tagStr("div");
     ASSERT_EQ(tagStr, CSSTestHelper::getRule(ruleData, 0).selector().tagQName().localName());
@@ -130,7 +130,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
     helper.addCSSRules("div::content { position: absolute }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
-    const RuleData* ruleData = ruleSet.tagRules(str.impl());
+    const RuleData* ruleData = ruleSet.tagRules(str);
     ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
     AtomicString valueStr("content");
     ASSERT_EQ(valueStr, CSSTestHelper::getRule(ruleData, 0).selector().value());

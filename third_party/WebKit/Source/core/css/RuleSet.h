@@ -128,10 +128,10 @@ public:
 
     const RuleFeatureSet& features() const { return m_features; }
 
-    const RuleData* idRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
-    const RuleData* classRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
-    const RuleData* tagRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
-    const RuleData* shadowPseudoElementRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
+    const RuleData* idRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
+    const RuleData* classRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
+    const RuleData* tagRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
+    const RuleData* shadowPseudoElementRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
     const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
     const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
     const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
@@ -164,16 +164,15 @@ public:
     Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
 
 private:
-    // FIXME: change these to HashMap<AtomicString, ... >
-    typedef HashMap<StringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
-    typedef HashMap<StringImpl*, OwnPtr<RuleData> > CompactRuleMap;
+    typedef HashMap<AtomicString, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
+    typedef HashMap<AtomicString, OwnPtr<RuleData> > CompactRuleMap;
 
     RuleSet()
         : m_ruleCount(0)
     {
     }
 
-    void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
+    void addToRuleSet(const AtomicString& key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
     void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);

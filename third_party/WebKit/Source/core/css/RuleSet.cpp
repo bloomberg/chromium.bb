@@ -209,10 +209,8 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     SelectorFilter::collectIdentifierHashes(selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }
 
-void RuleSet::addToRuleSet(StringImpl* key, PendingRuleMap& map, const RuleData& ruleData)
+void RuleSet::addToRuleSet(const AtomicString& key, PendingRuleMap& map, const RuleData& ruleData)
 {
-    if (!key)
-        return;
     OwnPtr<LinkedStack<RuleData> >& rules = map.add(key, nullptr).iterator->value;
     if (!rules)
         rules = adoptPtr(new LinkedStack<RuleData>);
@@ -252,11 +250,11 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
 
     // Prefer rule sets in order of most likely to apply infrequently.
     if (!id.isEmpty()) {
-        addToRuleSet(id.impl(), ensurePendingRules()->idRules, ruleData);
+        addToRuleSet(id, ensurePendingRules()->idRules, ruleData);
         return true;
     }
     if (!className.isEmpty()) {
-        addToRuleSet(className.impl(), ensurePendingRules()->classRules, ruleData);
+        addToRuleSet(className, ensurePendingRules()->classRules, ruleData);
         return true;
     }
     if (!customPseudoElementName.isEmpty()) {
@@ -264,7 +262,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         // ShadowPseudo between them. Therefore we should never be a situation where extractValuesforSelector
         // finsd id and className in addition to custom pseudo.
         ASSERT(id.isEmpty() && className.isEmpty());
-        addToRuleSet(customPseudoElementName.impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
+        addToRuleSet(customPseudoElementName, ensurePendingRules()->shadowPseudoElementRules, ruleData);
         return true;
     }
 
@@ -290,7 +288,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
     }
 
     if (!tagName.isEmpty()) {
-        addToRuleSet(tagName.impl(), ensurePendingRules()->tagRules, ruleData);
+        addToRuleSet(tagName, ensurePendingRules()->tagRules, ruleData);
         return true;
     }
 
