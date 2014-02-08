@@ -279,8 +279,8 @@ void Rule::ParseJsonRule(const Json& json_rule) {
 
   if (json_rule.GetStringValueForKey("sub_names", &value)) {
     SplitString(value, kSeparator, &sub_names_);
+    assert(sub_names_.size() == sub_keys_.size());
   }
-  assert(sub_names_.size() == sub_keys_.size());
 
   if (json_rule.GetStringValueForKey("languages", &value)) {
     SplitString(value, kSeparator, &languages_);
