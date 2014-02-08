@@ -26,6 +26,7 @@
 #ifndef DeviceMotionData_h
 #define DeviceMotionData_h
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -36,11 +37,15 @@ class WebDeviceMotionData;
 
 namespace WebCore {
 
-class DeviceMotionData : public RefCounted<DeviceMotionData> {
+class DeviceMotionData : public RefCountedWillBeGarbageCollected<DeviceMotionData> {
+    DECLARE_GC_INFO;
 public:
-    class Acceleration : public RefCounted<DeviceMotionData::Acceleration> {
+
+    class Acceleration : public RefCountedWillBeGarbageCollected<DeviceMotionData::Acceleration> {
+        DECLARE_GC_INFO;
     public:
-        static PassRefPtr<Acceleration> create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
+        static PassRefPtrWillBeRawPtr<Acceleration> create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
+        void trace(Visitor*) { }
 
         bool canProvideX() const { return m_canProvideX; }
         bool canProvideY() const { return m_canProvideY; }
@@ -62,9 +67,11 @@ public:
         bool m_canProvideZ;
     };
 
-    class RotationRate : public RefCounted<DeviceMotionData::RotationRate> {
+    class RotationRate : public RefCountedWillBeGarbageCollected<DeviceMotionData::RotationRate> {
+        DECLARE_GC_INFO;
     public:
-        static PassRefPtr<RotationRate> create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
+        static PassRefPtrWillBeRawPtr<RotationRate> create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
+        void trace(Visitor*) { }
 
         bool canProvideAlpha() const { return m_canProvideAlpha; }
         bool canProvideBeta() const { return m_canProvideBeta; }
@@ -86,14 +93,19 @@ public:
         bool m_canProvideGamma;
     };
 
-    static PassRefPtr<DeviceMotionData> create();
-    static PassRefPtr<DeviceMotionData> create(PassRefPtr<Acceleration> acceleration, PassRefPtr<Acceleration> accelerationIncludingGravity,
-                                               PassRefPtr<RotationRate> rotationRate, bool canProvideInterval, double interval);
-    static PassRefPtr<DeviceMotionData> create(const blink::WebDeviceMotionData&);
+    static PassRefPtrWillBeRawPtr<DeviceMotionData> create();
+    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(
+        PassRefPtrWillBeRawPtr<Acceleration>,
+        PassRefPtrWillBeRawPtr<Acceleration> accelerationIncludingGravity,
+        PassRefPtrWillBeRawPtr<RotationRate>,
+        bool canProvideInterval,
+        double interval);
+    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(const blink::WebDeviceMotionData&);
+    void trace(Visitor*);
 
-    PassRefPtr<Acceleration> acceleration() const { return m_acceleration; }
-    PassRefPtr<Acceleration> accelerationIncludingGravity() const { return m_accelerationIncludingGravity; }
-    PassRefPtr<RotationRate> rotationRate() const { return m_rotationRate; }
+    Acceleration* acceleration() const { return m_acceleration.get(); }
+    Acceleration* accelerationIncludingGravity() const { return m_accelerationIncludingGravity.get(); }
+    RotationRate* rotationRate() const { return m_rotationRate.get(); }
 
     bool canProvideInterval() const { return m_canProvideInterval; }
     double interval() const { return m_interval; }
@@ -102,12 +114,11 @@ public:
 
 private:
     DeviceMotionData();
-    DeviceMotionData(PassRefPtr<Acceleration> acceleration, PassRefPtr<Acceleration> accelerationIncludingGravity,
-                     PassRefPtr<RotationRate> rotationRate, bool canProvideInterval, double interval);
+    DeviceMotionData(PassRefPtrWillBeRawPtr<Acceleration>, PassRefPtrWillBeRawPtr<Acceleration> accelerationIncludingGravity, PassRefPtrWillBeRawPtr<RotationRate>, bool canProvideInterval, double interval);
 
-    RefPtr<Acceleration> m_acceleration;
-    RefPtr<Acceleration> m_accelerationIncludingGravity;
-    RefPtr<RotationRate> m_rotationRate;
+    RefPtrWillBeMember<Acceleration> m_acceleration;
+    RefPtrWillBeMember<Acceleration> m_accelerationIncludingGravity;
+    RefPtrWillBeMember<RotationRate> m_rotationRate;
     bool m_canProvideInterval;
     double m_interval;
 };

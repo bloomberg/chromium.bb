@@ -27,6 +27,7 @@
 #define DeviceMotionEvent_h
 
 #include "core/events/Event.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -61,11 +62,11 @@ private:
     DeviceMotionEvent();
     DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
-    RefPtr<DeviceMotionData> m_deviceMotionData;
+    RefPtrWillBePersistent<DeviceMotionData> m_deviceMotionData;
 
-    RefPtr<DeviceAcceleration> m_acceleration;
-    RefPtr<DeviceAcceleration> m_accelerationIncludingGravity;
-    RefPtr<DeviceRotationRate> m_rotationRate;
+    RefPtrWillBePersistent<DeviceAcceleration> m_acceleration;
+    RefPtrWillBePersistent<DeviceAcceleration> m_accelerationIncludingGravity;
+    RefPtrWillBePersistent<DeviceRotationRate> m_rotationRate;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);

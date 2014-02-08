@@ -29,17 +29,19 @@
 
 namespace WebCore {
 
-PassRefPtr<DeviceOrientationData> DeviceOrientationData::create()
+DEFINE_GC_INFO(DeviceOrientationData);
+
+PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create()
 {
-    return adoptRef(new DeviceOrientationData);
+    return adoptRefWillBeNoop(new DeviceOrientationData);
 }
 
-PassRefPtr<DeviceOrientationData> DeviceOrientationData::create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute)
+PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute)
 {
-    return adoptRef(new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute));
+    return adoptRefWillBeNoop(new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute));
 }
 
-PassRefPtr<DeviceOrientationData> DeviceOrientationData::create(const blink::WebDeviceOrientationData& data)
+PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(const blink::WebDeviceOrientationData& data)
 {
     return DeviceOrientationData::create(data.hasAlpha, data.alpha, data.hasBeta, data.beta, data.hasGamma, data.gamma, data.hasAbsolute, data.absolute);
 }

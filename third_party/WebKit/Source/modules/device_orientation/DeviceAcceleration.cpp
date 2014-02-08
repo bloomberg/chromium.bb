@@ -28,10 +28,17 @@
 
 namespace WebCore {
 
-DeviceAcceleration::DeviceAcceleration(PassRefPtr<DeviceMotionData::Acceleration> acceleration)
+DEFINE_GC_INFO(DeviceAcceleration);
+
+DeviceAcceleration::DeviceAcceleration(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     : m_acceleration(acceleration)
 {
     ScriptWrappable::init(this);
+}
+
+void DeviceAcceleration::trace(Visitor* visitor)
+{
+    visitor->trace(m_acceleration);
 }
 
 double DeviceAcceleration::x(bool& isNull) const

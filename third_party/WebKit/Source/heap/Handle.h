@@ -199,6 +199,7 @@ public:
         m_raw = other;
         return *this;
     }
+    void clear() { m_raw = 0; }
 
     virtual ~Persistent()
     {

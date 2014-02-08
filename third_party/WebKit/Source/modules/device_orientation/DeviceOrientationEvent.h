@@ -27,6 +27,7 @@
 #define DeviceOrientationEvent_h
 
 #include "core/events/Event.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -59,7 +60,7 @@ private:
     DeviceOrientationEvent();
     DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
 
-    RefPtr<DeviceOrientationData> m_orientation;
+    RefPtrWillBePersistent<DeviceOrientationData> m_orientation;
 };
 
 DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);

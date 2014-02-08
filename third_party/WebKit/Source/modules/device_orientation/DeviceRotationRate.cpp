@@ -28,10 +28,17 @@
 
 namespace WebCore {
 
-DeviceRotationRate::DeviceRotationRate(PassRefPtr<DeviceMotionData::RotationRate> rotationRate)
+DEFINE_GC_INFO(DeviceRotationRate);
+
+DeviceRotationRate::DeviceRotationRate(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
     : m_rotationRate(rotationRate)
 {
     ScriptWrappable::init(this);
+}
+
+void DeviceRotationRate::trace(Visitor* visitor)
+{
+    visitor->trace(m_rotationRate);
 }
 
 double DeviceRotationRate::alpha(bool& isNull) const

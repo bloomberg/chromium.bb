@@ -27,26 +27,29 @@
 #define DeviceAcceleration_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DeviceAcceleration : public ScriptWrappable, public RefCounted<DeviceAcceleration> {
+class DeviceAcceleration : public RefCountedWillBeGarbageCollectedFinalized<DeviceAcceleration>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DeviceAcceleration> create(PassRefPtr<DeviceMotionData::Acceleration> acceleration)
+    static PassRefPtrWillBeRawPtr<DeviceAcceleration> create(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     {
-        return adoptRef(new DeviceAcceleration(acceleration));
+        return adoptRefWillBeNoop(new DeviceAcceleration(acceleration));
     }
+    void trace(Visitor*);
 
     double x(bool& isNull) const;
     double y(bool& isNull) const;
     double z(bool& isNull) const;
 
 private:
-    DeviceAcceleration(PassRefPtr<DeviceMotionData::Acceleration>);
+    DeviceAcceleration(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration>);
 
-    RefPtr<DeviceMotionData::Acceleration> m_acceleration;
+    RefPtrWillBeMember<DeviceMotionData::Acceleration> m_acceleration;
 };
 
 } // namespace WebCore

@@ -31,6 +31,7 @@
 #ifndef DeviceMotionDispatcher_h
 #define DeviceMotionDispatcher_h
 
+#include "heap/Handle.h"
 #include "modules/device_orientation/DeviceSensorEventDispatcher.h"
 #include "public/platform/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"
@@ -66,7 +67,7 @@ private:
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    RefPtr<DeviceMotionData> m_lastDeviceMotionData;
+    RefPtrWillBePersistent<DeviceMotionData> m_lastDeviceMotionData;
 };
 
 } // namespace WebCore

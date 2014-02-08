@@ -34,7 +34,7 @@ namespace WebCore {
 
 namespace {
 
-RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return 0;
@@ -66,7 +66,7 @@ RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Va
     return DeviceMotionData::Acceleration::create(canProvideX, x, canProvideY, y, canProvideZ, z);
 }
 
-RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return 0;
@@ -107,12 +107,12 @@ void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCa
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
-    RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3], isolate);
-    RefPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
-    RefPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5], isolate);
+    RefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3], isolate);
+    RefPtrWillBeRawPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
+    RefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5], isolate);
     bool intervalProvided = !isUndefinedOrNull(info[6]);
     double interval = info[6]->NumberValue();
-    RefPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);
+    RefPtrWillBeRawPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration.release(), accelerationIncludingGravity.release(), rotationRate.release(), intervalProvided, interval);
     imp->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData.get());
 }
 
