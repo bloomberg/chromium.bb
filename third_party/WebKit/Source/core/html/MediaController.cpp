@@ -619,15 +619,6 @@ bool MediaController::canPlay() const
     return true;
 }
 
-bool MediaController::hasCurrentSrc() const
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (!m_mediaElements[index]->hasCurrentSrc())
-            return false;
-    }
-    return true;
-}
-
 const AtomicString& MediaController::interfaceName() const
 {
     return EventTargetNames::MediaController;

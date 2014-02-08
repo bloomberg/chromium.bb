@@ -113,7 +113,7 @@ public:
     String preload() const;
     void setPreload(const AtomicString&);
 
-    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE FINAL;
+    PassRefPtr<TimeRanges> buffered() const;
     void load();
     String canPlayType(const String& mimeType, const String& keySystem = String()) const;
 
@@ -127,13 +127,13 @@ public:
     virtual void setCurrentTime(double, ExceptionState&) OVERRIDE FINAL;
     virtual double duration() const OVERRIDE FINAL;
     virtual bool paused() const OVERRIDE FINAL;
-    virtual double defaultPlaybackRate() const OVERRIDE FINAL;
-    virtual void setDefaultPlaybackRate(double) OVERRIDE FINAL;
-    virtual double playbackRate() const OVERRIDE FINAL;
-    virtual void setPlaybackRate(double) OVERRIDE FINAL;
+    double defaultPlaybackRate() const;
+    void setDefaultPlaybackRate(double);
+    double playbackRate() const;
+    void setPlaybackRate(double);
     void updatePlaybackRate();
-    virtual PassRefPtr<TimeRanges> played() OVERRIDE FINAL;
-    virtual PassRefPtr<TimeRanges> seekable() const OVERRIDE FINAL;
+    PassRefPtr<TimeRanges> played();
+    PassRefPtr<TimeRanges> seekable() const;
     bool ended() const;
     bool autoplay() const;
     bool loop() const;
@@ -246,7 +246,7 @@ public:
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 
-    virtual bool isFullscreen() const OVERRIDE FINAL;
+    bool isFullscreen() const;
     virtual void enterFullscreen() OVERRIDE FINAL;
     void exitFullscreen();
 
@@ -449,7 +449,6 @@ private:
     void updateMediaController();
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
-    virtual bool hasCurrentSrc() const OVERRIDE FINAL { return !m_currentSrc.isEmpty(); }
     bool isAutoplaying() const { return m_autoplaying; }
 
     // Currently we have both EME v0.1b and EME WD implemented in media element.

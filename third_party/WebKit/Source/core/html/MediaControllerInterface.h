@@ -26,22 +26,15 @@
 #ifndef MediaControllerInterface_h
 #define MediaControllerInterface_h
 
-#include "wtf/PassRefPtr.h"
-
 namespace WebCore {
 
 class ExceptionState;
-class TimeRanges;
 
 class MediaControllerInterface {
 public:
     virtual ~MediaControllerInterface() { };
 
-    // MediaController IDL:
-    virtual PassRefPtr<TimeRanges> buffered() const = 0;
-    virtual PassRefPtr<TimeRanges> seekable() const = 0;
-    virtual PassRefPtr<TimeRanges> played() = 0;
-
+    // MediaControlElements:
     virtual double duration() const = 0;
     virtual double currentTime() const = 0;
     virtual void setCurrentTime(double, ExceptionState&) = 0;
@@ -50,20 +43,12 @@ public:
     virtual void play() = 0;
     virtual void pause() = 0;
 
-    virtual double defaultPlaybackRate() const = 0;
-    virtual void setDefaultPlaybackRate(double) = 0;
-
-    virtual double playbackRate() const = 0;
-    virtual void setPlaybackRate(double) = 0;
-
     virtual double volume() const = 0;
     virtual void setVolume(double, ExceptionState&) = 0;
 
     virtual bool muted() const = 0;
     virtual void setMuted(bool) = 0;
 
-    // MediaControlElements:
-    virtual bool isFullscreen() const = 0;
     virtual void enterFullscreen() = 0;
 
     virtual bool hasAudio() const = 0;
@@ -76,8 +61,6 @@ public:
     virtual void endScrubbing() = 0;
 
     virtual bool canPlay() const = 0;
-
-    virtual bool hasCurrentSrc() const = 0;
 };
 
 }

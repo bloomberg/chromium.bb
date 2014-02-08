@@ -54,9 +54,9 @@ public:
     void removeMediaElement(HTMLMediaElement*);
     bool containsMediaElement(HTMLMediaElement*) const;
 
-    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
-    virtual PassRefPtr<TimeRanges> seekable() const OVERRIDE;
-    virtual PassRefPtr<TimeRanges> played() OVERRIDE;
+    PassRefPtr<TimeRanges> buffered() const;
+    PassRefPtr<TimeRanges> seekable() const;
+    PassRefPtr<TimeRanges> played();
 
     virtual double duration() const OVERRIDE;
     virtual double currentTime() const OVERRIDE;
@@ -67,11 +67,11 @@ public:
     virtual void pause() OVERRIDE;
     void unpause();
 
-    virtual double defaultPlaybackRate() const OVERRIDE { return m_defaultPlaybackRate; }
-    virtual void setDefaultPlaybackRate(double) OVERRIDE;
+    double defaultPlaybackRate() const { return m_defaultPlaybackRate; }
+    void setDefaultPlaybackRate(double);
 
-    virtual double playbackRate() const OVERRIDE;
-    virtual void setPlaybackRate(double) OVERRIDE;
+    double playbackRate() const;
+    void setPlaybackRate(double);
 
     virtual double volume() const OVERRIDE { return m_volume; }
     virtual void setVolume(double, ExceptionState&) OVERRIDE;
@@ -85,7 +85,6 @@ public:
     enum PlaybackState { WAITING, PLAYING, ENDED };
     const AtomicString& playbackState() const;
 
-    virtual bool isFullscreen() const OVERRIDE { return false; }
     virtual void enterFullscreen() OVERRIDE { }
 
     virtual bool hasAudio() const OVERRIDE;
@@ -98,8 +97,6 @@ public:
     virtual void endScrubbing() OVERRIDE;
 
     virtual bool canPlay() const OVERRIDE;
-
-    virtual bool hasCurrentSrc() const OVERRIDE;
 
     bool isBlocked() const;
 
