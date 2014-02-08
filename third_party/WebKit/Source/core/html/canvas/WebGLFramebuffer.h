@@ -54,8 +54,6 @@ public:
         virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
-        virtual bool initialized() const = 0;
-        virtual void setInitialized() = 0;
         virtual void onDetached(blink::WebGraphicsContext3D*) = 0;
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
@@ -83,9 +81,7 @@ public:
     // This should always be called before drawArray, drawElements, clear,
     // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is
     // currently bound.
-    // Return false if the framebuffer is incomplete; otherwise initialize
-    // the buffers if they haven't been initialized and
-    // needToInitializeAttachments is true.
+    // Return false if the framebuffer is incomplete.
     bool onAccess(blink::WebGraphicsContext3D*, const char** reason);
 
     // Software version of glCheckFramebufferStatus(), except that when

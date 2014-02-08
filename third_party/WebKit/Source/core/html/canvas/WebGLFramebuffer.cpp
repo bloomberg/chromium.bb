@@ -52,8 +52,6 @@ namespace {
         virtual WebGLSharedObject* object() const OVERRIDE;
         virtual bool isSharedObject(WebGLSharedObject*) const OVERRIDE;
         virtual bool valid() const OVERRIDE;
-        virtual bool initialized() const OVERRIDE;
-        virtual void setInitialized() OVERRIDE;
         virtual void onDetached(blink::WebGraphicsContext3D*) OVERRIDE;
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
@@ -109,17 +107,6 @@ namespace {
         return m_renderbuffer->object();
     }
 
-    bool WebGLRenderbufferAttachment::initialized() const
-    {
-        return m_renderbuffer->object() && m_renderbuffer->initialized();
-    }
-
-    void WebGLRenderbufferAttachment::setInitialized()
-    {
-        if (m_renderbuffer->object())
-            m_renderbuffer->setInitialized();
-    }
-
     void WebGLRenderbufferAttachment::onDetached(blink::WebGraphicsContext3D* context)
     {
         m_renderbuffer->onDetached(context);
@@ -165,8 +152,6 @@ namespace {
         virtual WebGLSharedObject* object() const OVERRIDE;
         virtual bool isSharedObject(WebGLSharedObject*) const OVERRIDE;
         virtual bool valid() const OVERRIDE;
-        virtual bool initialized() const OVERRIDE;
-        virtual void setInitialized() OVERRIDE;
         virtual void onDetached(blink::WebGraphicsContext3D*) OVERRIDE;
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
@@ -218,17 +203,6 @@ namespace {
     bool WebGLTextureAttachment::valid() const
     {
         return m_texture->object();
-    }
-
-    bool WebGLTextureAttachment::initialized() const
-    {
-        // Textures are assumed to be initialized.
-        return true;
-    }
-
-    void WebGLTextureAttachment::setInitialized()
-    {
-        // Textures are assumed to be initialized.
     }
 
     void WebGLTextureAttachment::onDetached(blink::WebGraphicsContext3D* context)

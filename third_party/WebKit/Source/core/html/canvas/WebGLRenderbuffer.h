@@ -41,7 +41,6 @@ public:
     void setInternalFormat(GLenum internalformat)
     {
         m_internalFormat = internalformat;
-        m_initialized = false;
     }
     GLenum internalFormat() const { return m_internalFormat; }
 
@@ -52,9 +51,6 @@ public:
     }
     GLsizei width() const { return m_width; }
     GLsizei height() const { return m_height; }
-
-    bool initialized() const { return m_initialized; }
-    void setInitialized() { m_initialized = true; }
 
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
 
@@ -73,7 +69,6 @@ private:
     virtual bool isRenderbuffer() const OVERRIDE { return true; }
 
     GLenum m_internalFormat;
-    bool m_initialized;
     GLsizei m_width, m_height;
 
     bool m_hasEverBeenBound;
