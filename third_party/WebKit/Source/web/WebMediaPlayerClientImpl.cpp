@@ -466,9 +466,7 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebGraphicsCont
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
-    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
-        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+    if (!GraphicsContext3D::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
 
     return m_webMediaPlayer->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);
@@ -564,9 +562,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
-    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context3D);
-    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
-        || !context3D->makeContextCurrent())
+    if (!context3D->makeContextCurrent())
         return;
 
     // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES

@@ -140,9 +140,7 @@ bool ImageBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Pl
     if (!context->makeContextCurrent())
         return false;
 
-    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
-    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
-        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!GraphicsContext3D::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.

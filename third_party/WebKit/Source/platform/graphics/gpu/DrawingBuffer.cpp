@@ -328,9 +328,7 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
     if (!context->makeContextCurrent())
         return false;
 
-    RefPtr<GraphicsContext3D> contextSupport = GraphicsContext3D::createContextSupport(context);
-    if (!contextSupport->supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport->supportsExtension("GL_CHROMIUM_flipy")
-        || !contextSupport->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!GraphicsContext3D::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     bool unpackPremultiplyAlphaNeeded = false;
