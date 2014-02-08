@@ -500,8 +500,8 @@ base::DictionaryValue* ExperimentsSpecificsToValue(
   SET_EXPERIMENT_ENABLED_FIELD(history_delete_directives);
   SET_EXPERIMENT_ENABLED_FIELD(autofill_culling);
   SET_EXPERIMENT_ENABLED_FIELD(pre_commit_update_avoidance);
-  if (proto.has_favicon_sync())
-    SET(favicon_sync, FaviconSyncFlagsToValue);
+  SET(favicon_sync, FaviconSyncFlagsToValue);
+  SET_EXPERIMENT_ENABLED_FIELD(gcm_channel);
   return value;
 }
 

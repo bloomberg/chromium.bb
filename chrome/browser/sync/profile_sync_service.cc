@@ -28,6 +28,7 @@
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -1074,6 +1075,14 @@ void ProfileSyncService::OnExperimentsChanged(
     const syncer::Experiments& experiments) {
   if (current_experiments_.Matches(experiments))
     return;
+
+  // Handle preference-backed experiments first.
+  if (experiments.gcm_channel_state != syncer::Experiments::UNSET) {
+    profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled,
+                                      experiments.gcm_channel_state ==
+                                          syncer::Experiments::ENABLED);
+    gcm::GCMProfileServiceFactory::GetForProfile(profile());
+  }
 
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync

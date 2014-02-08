@@ -516,16 +516,24 @@ bool GCMProfileService::IsGCMEnabled(Profile* profile) {
   if (enable_gcm_for_testing_)
     return true;
 
-  // GCM support is only enabled for Canary/Dev builds.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-         channel == chrome::VersionInfo::CHANNEL_CANARY ||
-         channel == chrome::VersionInfo::CHANNEL_DEV;
+  return profile->GetPrefs()->GetBoolean(prefs::kGCMChannelEnabled);
 }
 
 // static
 void GCMProfileService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // GCM support is only enabled by default for Canary/Dev/Custom builds.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  bool on_by_default = false;
+  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+      channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV) {
+    on_by_default = true;
+  }
+  registry->RegisterBooleanPref(
+      prefs::kGCMChannelEnabled,
+      on_by_default,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterUint64Pref(
       prefs::kGCMUserAccountID,
       0,

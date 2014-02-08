@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -90,6 +91,17 @@ BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                         : ProfileSyncService::MANUAL_START;
 
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+
+  // Automatically load the GCMProfileService if the enabled state has been
+  // explicitly set.
+  const base::Value* gcm_enabled_value =
+      profile->GetPrefs()->GetUserPrefValue(prefs::kGCMChannelEnabled);
+  bool gcm_enabled = false;
+  if (gcm_enabled_value &&
+      gcm_enabled_value->GetAsBoolean(&gcm_enabled) &&
+      gcm_enabled) {
+    gcm::GCMProfileServiceFactory::GetForProfile(profile);
+  }
 
   // TODO(atwilson): Change AboutSigninInternalsFactory to load on startup
   // once http://crbug.com/171406 has been fixed.

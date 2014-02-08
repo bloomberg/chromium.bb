@@ -403,6 +403,7 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 
 extern const char kProfileResetPromptMemento[];
 
+extern const char kGCMChannelEnabled[];
 extern const char kGCMUserAccountID[];
 extern const char kGCMUserToken[];
 
