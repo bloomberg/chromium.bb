@@ -187,7 +187,7 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
     // injection to work.
     // TODO(weitaosu): Find out whether there is a more appropriate notification
     // to wait for so we can get rid of this wait.
-    ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromMilliseconds(500)).Wait());
+    ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(5)).Wait());
   }
 
   EXPECT_EQ(Chromoting_Main_URL(), GetCurrentURL());
@@ -265,7 +265,7 @@ void RemoteDesktopBrowserTest::Approve() {
     // TODO(weitaosu): Revoke the permission at the beginning of the test so
     // that we can test first-time experience here.
     ConditionalTimeoutWaiter waiter(
-        base::TimeDelta::FromSeconds(3),
+        base::TimeDelta::FromSeconds(7),
         base::TimeDelta::FromSeconds(1),
         base::Bind(
             &RemoteDesktopBrowserTest::IsAuthenticatedInWindow,
@@ -453,6 +453,12 @@ void RemoteDesktopBrowserTest::Cleanup() {
     UninstallChromotingApp();
     VerifyChromotingLoaded(false);
   }
+
+  // TODO(chaitali): Remove this additional timeout after we figure out
+  // why this is needed for the v1 app to work.
+  // Without this timeout the test fail with a "CloseWebContents called for
+  // tab not in our strip" error for the v1 app.
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(2)).Wait());
 }
 
 void RemoteDesktopBrowserTest::Auth() {

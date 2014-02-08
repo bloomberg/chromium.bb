@@ -84,7 +84,7 @@ void Me2MeBrowserTest::TestKeyboardInput() {
   SimulateKeyPressWithCode(ui::VKEY_T, "KeyT", true, false, true, false);
 
   // Wait for the keyboard events to be sent to and processed by the host.
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromMilliseconds(300)).Wait());
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(7)).Wait());
 
   base::FilePath temp_file;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_file));
@@ -97,7 +97,7 @@ void Me2MeBrowserTest::TestKeyboardInput() {
   SimulateStringInput("exit\n");
 
   // Wait for the keyboard events to be sent to and processed by the host.
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(7)).Wait());
 
   // Read the content of the temp file.
   std::string content;
