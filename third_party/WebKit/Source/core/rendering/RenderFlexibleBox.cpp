@@ -641,17 +641,27 @@ LayoutUnit RenderFlexibleBox::mainAxisScrollbarExtentForChild(RenderBox* child) 
     return isHorizontalFlow() ? child->verticalScrollbarWidth() : child->horizontalScrollbarHeight();
 }
 
-LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox* child, bool hasInfiniteLineLength)
+static inline bool preferredMainAxisExtentDependsOnLayout(const Length& flexBasis, bool hasInfiniteLineLength)
+{
+    return flexBasis.isAuto() || (flexBasis.isFixed() && !flexBasis.value() && hasInfiniteLineLength);
+}
+
+bool RenderFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(RenderBox* child, bool hasInfiniteLineLength) const
+{
+    return preferredMainAxisExtentDependsOnLayout(flexBasisForChild(child), hasInfiniteLineLength) && hasOrthogonalFlow(child);
+}
+
+LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox* child, bool hasInfiniteLineLength, bool relayoutChildren)
 {
     child->clearOverrideSize();
 
     Length flexBasis = flexBasisForChild(child);
-    if (flexBasis.isAuto() || (flexBasis.isFixed() && !flexBasis.value() && hasInfiniteLineLength)) {
+    if (preferredMainAxisExtentDependsOnLayout(flexBasis, hasInfiniteLineLength)) {
         LayoutUnit mainAxisExtent;
         if (hasOrthogonalFlow(child)) {
-            if (child->needsLayout()) {
+            if (child->needsLayout() || relayoutChildren) {
                 m_intrinsicSizeAlongMainAxis.remove(child);
-                child->layout();
+                child->forceChildLayout();
                 m_intrinsicSizeAlongMainAxis.set(child, child->logicalHeight());
             }
             ASSERT(m_intrinsicSizeAlongMainAxis.contains(child));
@@ -678,7 +688,7 @@ void RenderFlexibleBox::layoutFlexItems(bool relayoutChildren, Vector<LineContex
     m_orderIterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
     bool hasInfiniteLineLength = false;
-    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, hasInfiniteLineLength)) {
+    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, hasInfiniteLineLength, relayoutChildren)) {
         LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumHypotheticalMainSize);
         LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
@@ -689,7 +699,7 @@ void RenderFlexibleBox::layoutFlexItems(bool relayoutChildren, Vector<LineContex
             ASSERT(inflexibleItems.size() > 0);
         }
 
-        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, lineContexts);
+        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, lineContexts, hasInfiniteLineLength);
     }
     if (hasLineIfEmpty()) {
         // Even if computeNextFlexLine returns true, the flexbox might not have
@@ -874,7 +884,7 @@ LayoutUnit RenderFlexibleBox::adjustChildSizeForMinAndMax(RenderBox* child, Layo
     return std::max(childSize, minExtent);
 }
 
-bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool& hasInfiniteLineLength)
+bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool& hasInfiniteLineLength, bool relayoutChildren)
 {
     orderedChildren.clear();
     sumFlexBaseSize = 0;
@@ -895,7 +905,7 @@ bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             continue;
         }
 
-        LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(child, hasInfiniteLineLength);
+        LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(child, hasInfiniteLineLength, relayoutChildren);
         LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(child)
             + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
         LayoutUnit childFlexBaseSize = childMainAxisExtent + childMainAxisMarginBorderPadding;
@@ -1075,7 +1085,7 @@ void RenderFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(RenderBox* chil
     }
 }
 
-void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts)
+void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts, bool hasInfiniteLineLength)
 {
     ASSERT(childSizes.size() == children.size());
 
@@ -1108,7 +1118,9 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.
             resetAutoMarginsAndLogicalTopInCrossAxis(child);
         }
-        updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, child);
+        // We may have already forced relayout for orthogonal flowing children in preferredMainAxisContentExtentForChild.
+        bool forceChildRelayout = relayoutChildren && !childPreferredMainAxisContentExtentRequiresLayout(child, hasInfiniteLineLength);
+        updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, child);
         child->layoutIfNeeded();
 
         updateAutoMarginsInMainAxis(child, autoMarginOffset);
