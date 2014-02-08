@@ -85,11 +85,12 @@ void AcceleratorDispatcher::OnWindowDestroying(aura::Window* window) {
     associated_window_ = NULL;
 }
 
-bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
+uint32_t AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
   if (!associated_window_)
-    return false;
+    return POST_DISPATCH_QUIT_LOOP;
+
   if (!ui::IsNoopEvent(event) && !associated_window_->CanReceiveEvents())
-    return aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
+    return POST_DISPATCH_PERFORM_DEFAULT;
 
   if (IsKeyEvent(event)) {
     // Modifiers can be changed by the user preference, so we need to rewrite
@@ -100,7 +101,7 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
     DCHECK(event_rewriter);
     event_rewriter->OnKeyEvent(&key_event);
     if (key_event.stopped_propagation())
-      return true;
+      return POST_DISPATCH_NONE;
 
     if (IsPossibleAcceleratorNotForMenu(key_event)) {
       if (views::MenuController* menu_controller =
@@ -111,7 +112,7 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
 #else
         NOTIMPLEMENTED() << " Repost NativeEvent here.";
 #endif
-        return false;
+        return POST_DISPATCH_QUIT_LOOP;
       }
     }
 
@@ -127,7 +128,7 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
       Shell::GetInstance()->accelerator_controller()->context()->
           UpdateContext(accelerator);
       if (accelerator_controller->Process(accelerator))
-        return true;
+        return POST_DISPATCH_NONE;
     }
 
     return nested_dispatcher_->Dispatch(key_event.native_event());

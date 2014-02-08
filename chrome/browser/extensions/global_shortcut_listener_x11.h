@@ -33,7 +33,7 @@ class GlobalShortcutListenerX11
 
 #if !defined(TOOLKIT_GTK)
   // base::MessagePumpDispatcher implementation.
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 #endif
 
  private:

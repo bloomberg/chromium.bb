@@ -43,11 +43,10 @@ void MessagePumpOzone::RemoveDispatcherForRootWindow(
   dispatcher_.pop_back();
 }
 
-bool MessagePumpOzone::Dispatch(const NativeEvent& dev) {
+uint32_t MessagePumpOzone::Dispatch(const NativeEvent& dev) {
   if (dispatcher_.size() > 0)
     return dispatcher_[0]->Dispatch(dev);
-  else
-    return true;
+  return POST_DISPATCH_NONE;
 }
 
 // This code assumes that the caller tracks the lifetime of the |dispatcher|.

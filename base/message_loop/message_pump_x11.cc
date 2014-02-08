@@ -32,7 +32,8 @@ gboolean XSourceDispatch(GSource* source,
                          GSourceFunc unused_func,
                          gpointer data) {
   MessagePumpX11* pump = static_cast<MessagePumpX11*>(data);
-  return pump->DispatchXEvents();
+  pump->DispatchXEvents();
+  return TRUE;
 }
 
 GSourceFuncs XSourceFuncs = {
@@ -190,21 +191,22 @@ void MessagePumpX11::RemoveObserver(MessagePumpObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool MessagePumpX11::DispatchXEvents() {
+void MessagePumpX11::DispatchXEvents() {
   Display* display = GetDefaultXDisplay();
   DCHECK(display);
-  MessagePumpDispatcher* dispatcher =
-      GetDispatcher() ? GetDispatcher() : this;
+  MessagePumpDispatcher* dispatcher = GetDispatcher();
+  if (!dispatcher)
+    dispatcher = this;
 
   // In the general case, we want to handle all pending events before running
   // the tasks. This is what happens in the message_pump_glib case.
   while (XPending(display)) {
     XEvent xev;
     XNextEvent(display, &xev);
-    if (dispatcher && ProcessXEvent(dispatcher, &xev))
-      return TRUE;
+    ProcessXEvent(dispatcher, &xev);
+    if (ShouldQuit())
+      break;
   }
-  return TRUE;
 }
 
 void MessagePumpX11::BlockUntilWindowMapped(unsigned long xid) {
@@ -213,8 +215,9 @@ void MessagePumpX11::BlockUntilWindowMapped(unsigned long xid) {
   Display* display = GetDefaultXDisplay();
   DCHECK(display);
 
-  MessagePumpDispatcher* dispatcher =
-      GetDispatcher() ? GetDispatcher() : this;
+  MessagePumpDispatcher* dispatcher = GetDispatcher();
+  if (!dispatcher)
+    dispatcher = this;
 
   do {
     // Block until there's a message of |event_mask| type on |w|. Then remove
@@ -241,10 +244,9 @@ void MessagePumpX11::InitXSource() {
   g_source_attach(x_source_, g_main_context_default());
 }
 
-bool MessagePumpX11::ProcessXEvent(MessagePumpDispatcher* dispatcher,
-                                       XEvent* xev) {
-  bool should_quit = false;
-
+void MessagePumpX11::ProcessXEvent(MessagePumpDispatcher* dispatcher,
+                                   XEvent* xev) {
+  CHECK(dispatcher);
   bool have_cookie = false;
   if (xev->type == GenericEvent &&
       XGetEventData(xev->xgeneric.display, &xev->xcookie)) {
@@ -252,18 +254,17 @@ bool MessagePumpX11::ProcessXEvent(MessagePumpDispatcher* dispatcher,
   }
 
   if (!WillProcessXEvent(xev)) {
-    if (!dispatcher->Dispatch(xev)) {
-      should_quit = true;
+    uint32_t action = dispatcher->Dispatch(xev);
+    bool should_quit = (action & POST_DISPATCH_QUIT_LOOP);
+    if (dispatcher != this && (action & POST_DISPATCH_PERFORM_DEFAULT))
+      action = Dispatch(xev);
+    if ((action & POST_DISPATCH_QUIT_LOOP) || should_quit)
       Quit();
-    }
     DidProcessXEvent(xev);
   }
 
-  if (have_cookie) {
+  if (have_cookie)
     XFreeEventData(xev->xgeneric.display, &xev->xcookie);
-  }
-
-  return should_quit;
 }
 
 bool MessagePumpX11::WillProcessXEvent(XEvent* xevent) {
@@ -289,7 +290,7 @@ MessagePumpDispatcher* MessagePumpX11::GetDispatcherForXEvent(
   return it != dispatchers_.end() ? it->second : NULL;
 }
 
-bool MessagePumpX11::Dispatch(const NativeEvent& xev) {
+uint32_t MessagePumpX11::Dispatch(const NativeEvent& xev) {
   // MappingNotify events (meaning that the keyboard or pointer buttons have
   // been remapped) aren't associated with a window; send them to all
   // dispatchers.
@@ -298,16 +299,16 @@ bool MessagePumpX11::Dispatch(const NativeEvent& xev) {
          it != dispatchers_.end(); ++it) {
       it->second->Dispatch(xev);
     }
-    return true;
+    return POST_DISPATCH_NONE;
   }
 
   if (FindEventTarget(xev) == x_root_window_) {
     FOR_EACH_OBSERVER(MessagePumpDispatcher, root_window_dispatchers_,
                       Dispatch(xev));
-    return true;
+    return POST_DISPATCH_NONE;
   }
   MessagePumpDispatcher* dispatcher = GetDispatcherForXEvent(xev);
-  return dispatcher ? dispatcher->Dispatch(xev) : true;
+  return dispatcher ? dispatcher->Dispatch(xev) : POST_DISPATCH_NONE;
 }
 
 }  // namespace base

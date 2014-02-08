@@ -393,11 +393,14 @@ WindowTreeHostX11::~WindowTreeHostX11() {
   XDestroyWindow(xdisplay_, xwindow_);
 }
 
-bool WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
+uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
-  if (FindEventTarget(event) == x_root_window_)
-    return DispatchEventForRootWindow(event);
+  if (FindEventTarget(event) == x_root_window_) {
+    if (event->type == GenericEvent)
+      DispatchXI2Event(event);
+    return POST_DISPATCH_NONE;
+  }
 
   switch (xev->type) {
     case EnterNotify: {
@@ -559,7 +562,7 @@ bool WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
   }
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 RootWindow* WindowTreeHostX11::GetRootWindow() {
@@ -826,17 +829,6 @@ void WindowTreeHostX11::OnRootWindowInitialized(RootWindow* root_window) {
 
 ui::EventProcessor* WindowTreeHostX11::GetEventProcessor() {
   return delegate_->GetEventProcessor();
-}
-
-bool WindowTreeHostX11::DispatchEventForRootWindow(
-    const base::NativeEvent& event) {
-  switch (event->type) {
-    case GenericEvent:
-      DispatchXI2Event(event);
-      break;
-  }
-
-  return true;
 }
 
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {

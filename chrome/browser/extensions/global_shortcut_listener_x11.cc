@@ -100,11 +100,11 @@ void GlobalShortcutListenerX11::StopListening() {
 }
 
 #if !defined(TOOLKIT_GTK)
-bool GlobalShortcutListenerX11::Dispatch(const base::NativeEvent& event) {
+uint32_t GlobalShortcutListenerX11::Dispatch(const base::NativeEvent& event) {
   if (event->type == KeyPress)
     OnXKeyPressEvent(event);
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 #endif
 

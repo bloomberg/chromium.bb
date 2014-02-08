@@ -253,7 +253,7 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
 
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Key processing. The return value of this is returned from Dispatch.
   // In other words, if this returns false (which happens if escape was

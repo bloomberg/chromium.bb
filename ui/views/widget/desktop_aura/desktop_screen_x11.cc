@@ -264,7 +264,7 @@ void DesktopScreenX11::RemoveObserver(gfx::DisplayObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
+uint32_t DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     // Pass the event through to xlib.
     XRRUpdateConfiguration(event);
@@ -283,7 +283,7 @@ bool DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

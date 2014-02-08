@@ -37,13 +37,12 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
     virtual ~Dispatcher() {};
 
     // MessagePumpDispatcher:
-    virtual bool Dispatch(const MSG& msg) OVERRIDE {
+    virtual uint32_t Dispatch(const MSG& msg) OVERRIDE {
       MSG msg2 = msg;
-      if (!dialog_->IsDialogMessage(&msg2)) {
-        ::TranslateMessage(&msg);
-        ::DispatchMessage(&msg);
-      }
-      return true;
+      uint32_t action = POST_DISPATCH_NONE;
+      if (!dialog_->IsDialogMessage(&msg2))
+        action = POST_DISPATCH_PERFORM_DEFAULT;
+      return action;
     }
 
    private:

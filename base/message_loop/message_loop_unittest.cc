@@ -450,7 +450,7 @@ class DispatcherImpl : public MessagePumpDispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 
-  virtual bool Dispatch(const NativeEvent& msg) OVERRIDE {
+  virtual uint32_t Dispatch(const NativeEvent& msg) OVERRIDE {
     ::TranslateMessage(&msg);
     ::DispatchMessage(&msg);
     // Do not count WM_TIMER since it is not what we post and it will cause
@@ -458,7 +458,8 @@ class DispatcherImpl : public MessagePumpDispatcher {
     if (msg.message != WM_TIMER)
       ++dispatch_count_;
     // We treat WM_LBUTTONUP as the last message.
-    return msg.message != WM_LBUTTONUP;
+    return msg.message == WM_LBUTTONUP ? POST_DISPATCH_QUIT_LOOP
+                                       : POST_DISPATCH_NONE;
   }
 
   int dispatch_count_;

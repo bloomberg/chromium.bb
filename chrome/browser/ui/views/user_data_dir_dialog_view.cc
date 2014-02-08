@@ -84,10 +84,10 @@ const views::Widget* UserDataDirDialogView::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-bool UserDataDirDialogView::Dispatch(const base::NativeEvent& msg) {
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
-  return is_blocking_;
+uint32_t UserDataDirDialogView::Dispatch(const base::NativeEvent& msg) {
+  return is_blocking_
+             ? POST_DISPATCH_PERFORM_DEFAULT
+             : (POST_DISPATCH_PERFORM_DEFAULT | POST_DISPATCH_QUIT_LOOP);
 }
 
 void UserDataDirDialogView::FileSelected(const base::FilePath& path,

@@ -25,7 +25,7 @@ class WindowTreeHostOzone : public WindowTreeHost,
 
  private:
   // Overridden from Dispatcher overrides:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // WindowTreeHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;

@@ -5,6 +5,8 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_DISPATCHER_H
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_DISPATCHER_H
 
+#include <stdint.h>
+
 #include "base/base_export.h"
 #include "base/event_types.h"
 
@@ -16,15 +18,24 @@ namespace base {
 // every message is passed to Dispatcher's Dispatch method for dispatch. It is
 // up to the Dispatcher whether or not to dispatch the event.
 //
-// The nested loop is exited by either posting a quit, or returning false
-// from Dispatch.
+// The nested loop is exited by either posting a quit, or setting the
+// POST_DISPATCH_QUIT_LOOP flag on the return value from Dispatch.
 class BASE_EXPORT MessagePumpDispatcher {
  public:
+  enum PostDispatchAction {
+    POST_DISPATCH_NONE = 0x0,
+    POST_DISPATCH_QUIT_LOOP = 0x1,
+    POST_DISPATCH_PERFORM_DEFAULT = 0x2,
+  };
+
   virtual ~MessagePumpDispatcher() {}
 
-  // Dispatches the event. If true is returned processing continues as
-  // normal. If false is returned, the nested loop exits immediately.
-  virtual bool Dispatch(const NativeEvent& event) = 0;
+  // Dispatches the event. The return value can have more than one
+  // PostDispatchAction flags OR'ed together. If POST_DISPATCH_PERFORM_DEFAULT
+  // is set in the returned value, then the message-pump performs the default
+  // action. If POST_DISPATCH_QUIT_LOOP is set, in the return value, then the
+  // nested loop exits immediately.
+  virtual uint32_t Dispatch(const NativeEvent& event) = 0;
 };
 
 }  // namespace base

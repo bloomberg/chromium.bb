@@ -149,7 +149,7 @@ void X11DesktopHandler::ProcessXEvent(const base::NativeEvent& event) {
   }
 }
 
-bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
+uint32_t X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
   // Check for a change to the active window.
   switch (event->type) {
     case PropertyNotify: {
@@ -167,7 +167,7 @@ bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 void X11DesktopHandler::OnWindowInitialized(aura::Window* window) {

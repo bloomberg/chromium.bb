@@ -373,10 +373,12 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   WillProcessMessage(msg);
 
   if (!message_filter_->ProcessMessage(msg)) {
-    if (state_->dispatcher) {
-      if (!state_->dispatcher->Dispatch(msg))
-        state_->should_quit = true;
-    } else {
+    uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
+    if (state_->dispatcher)
+      action = state_->dispatcher->Dispatch(msg);
+    if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
+      state_->should_quit = true;
+    if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     }

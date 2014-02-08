@@ -47,7 +47,7 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
   void ProcessXEvent(const base::NativeEvent& event);
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;

@@ -1001,16 +1001,11 @@ void MenuController::StartDrag(SubmenuView* source,
 }
 
 #if defined(OS_WIN)
-bool MenuController::Dispatch(const MSG& msg) {
+uint32_t MenuController::Dispatch(const MSG& msg) {
   DCHECK(blocking_run_);
 
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    // We must translate/dispatch the message here, otherwise we would drop
-    // the message on the floor.
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-    return false;
-  }
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
+    return (POST_DISPATCH_QUIT_LOOP | POST_DISPATCH_PERFORM_DEFAULT);
 
   // NOTE: we don't get WM_ACTIVATE or anything else interesting in here.
   switch (msg.message) {
@@ -1025,7 +1020,7 @@ bool MenuController::Dispatch(const MSG& msg) {
         item->GetDelegate()->ShowContextMenu(item, item->GetCommand(),
                                              screen_loc, source_type);
       }
-      return true;
+      return POST_DISPATCH_NONE;
     }
 
     // NOTE: focus wasn't changed when the menu was shown. As such, don't
@@ -1033,58 +1028,62 @@ bool MenuController::Dispatch(const MSG& msg) {
     case WM_KEYDOWN: {
       bool result = OnKeyDown(ui::KeyboardCodeFromNative(msg));
       TranslateMessage(&msg);
-      return result;
+      return result ? POST_DISPATCH_NONE : POST_DISPATCH_QUIT_LOOP;
     }
-    case WM_CHAR:
-      return !SelectByChar(static_cast<base::char16>(msg.wParam));
+    case WM_CHAR: {
+      bool should_exit = SelectByChar(static_cast<base::char16>(msg.wParam));
+      return should_exit ? POST_DISPATCH_QUIT_LOOP : POST_DISPATCH_NONE;
+    }
     case WM_KEYUP:
-      return true;
+      return POST_DISPATCH_NONE;
 
     case WM_SYSKEYUP:
       // We may have been shown on a system key, as such don't do anything
       // here. If another system key is pushed we'll get a WM_SYSKEYDOWN and
       // close the menu.
-      return true;
+      return POST_DISPATCH_NONE;
 
     case WM_CANCELMODE:
     case WM_SYSKEYDOWN:
       // Exit immediately on system keys.
       Cancel(EXIT_ALL);
-      return false;
+      return POST_DISPATCH_QUIT_LOOP;
 
     default:
       break;
   }
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
-  return exit_type_ == EXIT_NONE;
+  return POST_DISPATCH_PERFORM_DEFAULT |
+         (exit_type_ == EXIT_NONE ? POST_DISPATCH_NONE
+                                  : POST_DISPATCH_QUIT_LOOP);
 }
 #else
-bool MenuController::Dispatch(const base::NativeEvent& event) {
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
-    return false;
-  }
+uint32_t MenuController::Dispatch(const base::NativeEvent& event) {
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
+    return (POST_DISPATCH_QUIT_LOOP | POST_DISPATCH_PERFORM_DEFAULT);
+
   // Activates mnemonics only when it it pressed without modifiers except for
   // caps and shift.
   int flags = ui::EventFlagsFromNative(event) &
       ~ui::EF_CAPS_LOCK_DOWN & ~ui::EF_SHIFT_DOWN;
   if (flags == ui::EF_NONE) {
     switch (ui::EventTypeFromNative(event)) {
-      case ui::ET_KEY_PRESSED:
+      case ui::ET_KEY_PRESSED: {
         if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
-          return false;
+          return POST_DISPATCH_QUIT_LOOP;
 
-        return !SelectByChar(ui::KeyboardCodeFromNative(event));
+        bool should_exit = SelectByChar(ui::KeyboardCodeFromNative(event));
+        return should_exit ? POST_DISPATCH_QUIT_LOOP : POST_DISPATCH_NONE;
+      }
       case ui::ET_KEY_RELEASED:
-        return true;
+        return POST_DISPATCH_NONE;
       default:
         break;
     }
   }
 
-  aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
-  return exit_type_ == EXIT_NONE;
+  return POST_DISPATCH_PERFORM_DEFAULT |
+         (exit_type_ == EXIT_NONE ? POST_DISPATCH_NONE
+                                  : POST_DISPATCH_QUIT_LOOP);
 }
 #endif
 

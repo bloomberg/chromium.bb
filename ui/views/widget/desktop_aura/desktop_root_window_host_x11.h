@@ -206,7 +206,7 @@ private:
   void MapWindow(ui::WindowShowState show_state);
 
   // Overridden from Dispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 

@@ -80,7 +80,6 @@
         'client/window_tree_client.h',
         'device_list_updater_aurax11.cc',
         'device_list_updater_aurax11.h',
-        'dispatcher_win.cc',
         'env.cc',
         'env.h',
         'env_observer.h',

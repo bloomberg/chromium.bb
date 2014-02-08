@@ -323,4 +323,9 @@ MessagePumpDispatcher* MessagePumpGlib::GetDispatcher() {
   return state_ ? state_->dispatcher : NULL;
 }
 
+bool MessagePumpGlib::ShouldQuit() const {
+  CHECK(state_);
+  return state_->should_quit;
+}
+
 }  // namespace base

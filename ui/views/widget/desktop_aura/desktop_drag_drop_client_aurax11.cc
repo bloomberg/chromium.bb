@@ -178,7 +178,7 @@ class DesktopDragDropClientAuraX11::X11DragContext :
 
  private:
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // The atom cache owned by our parent.
   ui::X11AtomCache* atom_cache_;
@@ -360,13 +360,13 @@ int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
   return drag_operation;
 }
 
-bool DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
+uint32_t DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
     const base::NativeEvent& event) {
   if (event->type == PropertyNotify &&
       event->xproperty.atom == atom_cache_->GetAtom("XdndActionList")) {
     ReadActions();
   }
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

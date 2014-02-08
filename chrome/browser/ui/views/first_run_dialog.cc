@@ -139,7 +139,9 @@ void FirstRunDialog::LinkClicked(views::Link* source, int event_flags) {
   platform_util::OpenExternal(profile_, GURL(chrome::kLearnMoreReportingURL));
 }
 
-bool FirstRunDialog::Dispatch(const base::NativeEvent& event) {
-  aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
-  return should_show_dialog_;
+uint32_t FirstRunDialog::Dispatch(const base::NativeEvent& event) {
+  uint32_t action = POST_DISPATCH_PERFORM_DEFAULT;
+  if (!should_show_dialog_)
+    action |= POST_DISPATCH_QUIT_LOOP;
+  return action;
 }

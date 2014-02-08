@@ -64,7 +64,7 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
 
   // Internal function. Called by the glib source dispatch function. Processes
   // all available X events.
-  bool DispatchXEvents();
+  void DispatchXEvents();
 
   // Blocks on the X11 event queue until we receive notification from the
   // xserver that |w| has been mapped; StructureNotifyMask events on |w| are
@@ -83,9 +83,8 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
   // Initializes the glib event source for X.
   void InitXSource();
 
-  // Dispatches the XEvent and returns true if we should exit the current loop
-  // of message processing.
-  bool ProcessXEvent(MessagePumpDispatcher* dispatcher, XEvent* event);
+  // Dispatches the event to the specified dispatcher.
+  void ProcessXEvent(MessagePumpDispatcher* dispatcher, XEvent* event);
 
   // Sends the event to the observers. If an observer returns true, then it does
   // not send the event to any other observers and returns true. Returns false
@@ -99,7 +98,7 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
   ObserverList<MessagePumpObserver>& observers() { return observers_; }
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const NativeEvent& event) OVERRIDE;
 
   // The event source for X events.
   GSource* x_source_;

@@ -38,7 +38,7 @@ class FirstRunDialog : public views::DialogDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   Profile* profile_;
   views::Checkbox* make_default_;

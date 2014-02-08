@@ -537,28 +537,28 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   return success;
 }
 
-bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
+uint32_t OutputConfigurator::Dispatch(const base::NativeEvent& event) {
   if (!configure_display_)
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
 
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     VLOG(1) << "Received RRScreenChangeNotify event";
     delegate_->UpdateXRandRConfiguration(event);
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
   }
 
   // Bail out early for everything except RRNotify_OutputChange events
   // about an output getting connected or disconnected.
   if (event->type - xrandr_event_base_ != RRNotify)
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
   const XRRNotifyEvent* notify_event = reinterpret_cast<XRRNotifyEvent*>(event);
   if (notify_event->subtype != RRNotify_OutputChange)
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
   const XRROutputChangeNotifyEvent* output_change_event =
       reinterpret_cast<XRROutputChangeNotifyEvent*>(event);
   const int action = output_change_event->connection;
   if (action != RR_Connected && action != RR_Disconnected)
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
 
   const bool connected = (action == RR_Connected);
   VLOG(1) << "Received RRNotify_OutputChange event:"
@@ -574,7 +574,7 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
       if (connected && it->crtc == output_change_event->crtc &&
           it->current_mode == output_change_event->mode) {
         VLOG(1) << "Ignoring event describing already-cached state";
-        return true;
+        return POST_DISPATCH_PERFORM_DEFAULT;
       }
       found_changed_output = true;
       break;
@@ -583,14 +583,14 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
 
   if (!connected && !found_changed_output) {
     VLOG(1) << "Ignoring event describing already-disconnected output";
-    return true;
+    return POST_DISPATCH_PERFORM_DEFAULT;
   }
 
   // Connecting/disconnecting a display may generate multiple events. Defer
   // configuring outputs to avoid grabbing X and configuring displays
   // multiple times.
   ScheduleConfigureOutputs();
-  return true;
+  return POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 base::EventStatus OutputConfigurator::WillProcessEvent(

@@ -37,7 +37,7 @@ class BASE_EXPORT MessagePumpOzone : public MessagePumpLibevent,
   void RemoveObserver(MessagePumpObserver* observer);
 
   // Overridden from MessagePumpDispatcher.
-  virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const NativeEvent& event) OVERRIDE;
 
  private:
   std::vector<MessagePumpDispatcher*> dispatcher_;

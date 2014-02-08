@@ -1241,7 +1241,7 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, MessagePumpDispatcher implementation:
 
-bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
+uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
   TRACE_EVENT1("views", "DesktopWindowTreeHostX11::Dispatch",
@@ -1573,7 +1573,7 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
   }
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

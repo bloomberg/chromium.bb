@@ -63,7 +63,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   friend class base::RefCounted<SimpleMessageBoxViews>;
@@ -172,9 +172,11 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
-  aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
-  return should_show_dialog_;
+uint32_t SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
+  uint32_t action = POST_DISPATCH_PERFORM_DEFAULT;
+  if (!should_show_dialog_)
+    action |= POST_DISPATCH_QUIT_LOOP;
+  return action;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

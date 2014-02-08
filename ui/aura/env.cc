@@ -76,14 +76,6 @@ bool Env::IsMouseButtonDown() const {
       mouse_button_flags_ != 0;
 }
 
-base::MessagePumpDispatcher* Env::GetDispatcher() {
-#if defined(USE_X11)
-  return base::MessagePumpX11::Current();
-#else
-  return dispatcher_.get();
-#endif
-}
-
 void Env::RootWindowActivated(RootWindow* root_window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_,
                     OnRootWindowActivated(root_window));
@@ -93,9 +85,6 @@ void Env::RootWindowActivated(RootWindow* root_window) {
 // Env, private:
 
 void Env::Init() {
-#if defined(OS_WIN)
-  dispatcher_.reset(CreateDispatcher());
-#endif
 #if defined(USE_X11)
   // We can't do this with a root window listener because XI_HierarchyChanged
   // messages don't have a target window.

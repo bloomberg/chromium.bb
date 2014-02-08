@@ -283,7 +283,7 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
 
  private:
   // Overridden from base::MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Our X11 state.
   Display* x_display_;
@@ -485,7 +485,7 @@ void Clipboard::AuraX11Details::Clear(ClipboardType type) {
     return primary_owner_.Clear();
 }
 
-bool Clipboard::AuraX11Details::Dispatch(const base::NativeEvent& event) {
+uint32_t Clipboard::AuraX11Details::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
   switch (xev->type) {
@@ -514,7 +514,7 @@ bool Clipboard::AuraX11Details::Dispatch(const base::NativeEvent& event) {
       break;
   }
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

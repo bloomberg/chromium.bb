@@ -59,7 +59,7 @@ X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostLinux, MessagePumpDispatcher implementation:
 
-bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
+uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
   // Note: the escape key is handled in the tab drag controller, which has
@@ -85,7 +85,7 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

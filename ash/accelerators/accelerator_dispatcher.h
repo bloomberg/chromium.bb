@@ -27,7 +27,7 @@ class ASH_EXPORT AcceleratorDispatcher : public base::MessagePumpDispatcher,
   virtual ~AcceleratorDispatcher();
 
   // MessagePumpDispatcher overrides:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;

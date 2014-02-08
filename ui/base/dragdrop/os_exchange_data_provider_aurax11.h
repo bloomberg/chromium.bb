@@ -90,7 +90,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
 
   // Overridden from base::MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   friend class OSExchangeDataProviderAuraX11Test;

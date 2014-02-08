@@ -36,10 +36,10 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
   DestroyCompositor();
 }
 
-bool WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
+uint32_t WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
   ui::Event* event = static_cast<ui::Event*>(ne);
   ui::EventDispatchDetails details ALLOW_UNUSED = SendEventToProcessor(event);
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 RootWindow* WindowTreeHostOzone::GetRootWindow() {

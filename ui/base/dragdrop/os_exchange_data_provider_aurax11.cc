@@ -426,7 +426,8 @@ const gfx::Vector2d& OSExchangeDataProviderAuraX11::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 
-bool OSExchangeDataProviderAuraX11::Dispatch(const base::NativeEvent& event) {
+uint32_t OSExchangeDataProviderAuraX11::Dispatch(
+    const base::NativeEvent& event) {
   XEvent* xev = event;
   switch (xev->type) {
     case SelectionRequest:
@@ -436,7 +437,7 @@ bool OSExchangeDataProviderAuraX11::Dispatch(const base::NativeEvent& event) {
       NOTIMPLEMENTED();
   }
 
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {

@@ -42,7 +42,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   virtual ~WindowTreeHostX11();
 
   // Overridden from Dispatcher overrides:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // WindowTreeHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
@@ -76,8 +76,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
  private:
   class MouseMoveFilter;
-
-  bool DispatchEventForRootWindow(const base::NativeEvent& event);
 
   // Dispatches XI2 events. Note that some events targetted for the X root
   // window are dispatched to the aura root window (e.g. touch events after

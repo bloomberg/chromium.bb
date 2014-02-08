@@ -31,7 +31,7 @@ class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
   virtual ~X11WholeScreenMoveLoop();
 
   // Overridden from base::MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Runs the nested message loop. While the mouse is grabbed, use |cursor| as
   // the mouse cursor. Returns true if there we were able to grab the pointer

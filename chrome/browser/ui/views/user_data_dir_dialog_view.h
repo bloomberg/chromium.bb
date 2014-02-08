@@ -41,7 +41,7 @@ class UserDataDirDialogView : public views::DialogDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& msg) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& msg) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const base::FilePath& path,

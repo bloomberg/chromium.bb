@@ -61,6 +61,8 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   // Returns the dispatcher for the current run state (|state_->dispatcher|).
   MessagePumpDispatcher* GetDispatcher();
 
+  bool ShouldQuit() const;
+
  private:
   // We may make recursive calls to Run, so we save state that needs to be
   // separate between them in this structure type.

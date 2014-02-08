@@ -92,7 +92,7 @@ class NativeViewportX11 : public NativeViewport,
   }
 
   // Overridden from base::MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
     switch (event->type) {
       case ClientMessage: {
         if (event->xclient.message_type == atom_wm_protocols_) {
@@ -103,7 +103,7 @@ class NativeViewportX11 : public NativeViewport,
         break;
       }
     }
-    return true;
+    return POST_DISPATCH_NONE;
   }
 
   NativeViewportDelegate* delegate_;

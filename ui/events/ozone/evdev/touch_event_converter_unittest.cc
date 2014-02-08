@@ -53,7 +53,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   int read_pipe_;
@@ -89,10 +89,11 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
   write_pipe_ = fds[1];
 }
 
-bool MockTouchEventConverterEvdev::Dispatch(const base::NativeEvent& event) {
+uint32_t MockTouchEventConverterEvdev::Dispatch(
+    const base::NativeEvent& event) {
   ui::TouchEvent* ev = new ui::TouchEvent(event);
   dispatched_events_.push_back(ev);
-  return true;
+  return POST_DISPATCH_NONE;
 }
 
 void MockTouchEventConverterEvdev::ConfigureReadMock(struct input_event* queue,

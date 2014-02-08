@@ -53,7 +53,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   friend class DesktopScreenX11Test;

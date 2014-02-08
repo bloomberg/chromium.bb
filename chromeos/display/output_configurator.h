@@ -388,7 +388,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // add/remove events.  Note that Output add/remove events are sent in response
   // to our own reconfiguration operations so spurious events are common.
   // Spurious events will have no effect.
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Overridden from base::MessagePumpObserver:
   virtual base::EventStatus WillProcessEvent(
