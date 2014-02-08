@@ -8,22 +8,24 @@
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script>
-        var pauseTest = new async_test("Verifies pause actually pauses.");
-        var v = document.getElementById("testVideo");
-        v.src = getVideoURI("test");
-        waitForEventAndRunStep("timeupdate", v);
-        waitForEventAndRunStep("playing", v, function ()
+        async_test(function(test)
         {
-            v.pause();
-        });
-        // function to be run when "pause" fires.
-        var pauseCheck = function()
-        {
-            assert_true(v.paused, "Video is paused.");
-            pauseTest.done();
-        }
-        waitForEventAndRunStep("pause", v, pauseCheck, pauseTest);
-        v.play();
+            var video = document.getElementById("testVideo");
+            video.src = getVideoURI("test");
+            waitForEventAndRunStep("timeupdate", video);
+            waitForEventAndRunStep("playing", video, function ()
+            {
+                video.pause();
+            });
+            // function to be run when "pause" fires.
+            var pauseCheck = function()
+            {
+                assert_true(video.paused, "Video is paused.");
+                test.done();
+            }
+            waitForEventAndRunStep("pause", video, pauseCheck, test);
+            video.play();
+        }, "Verifies pause actually pauses.");
      </script>
   </body>
 </html>
