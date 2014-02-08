@@ -900,7 +900,17 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
     prompt = ('\n%s\n%s' % (prolog, prompt))
 
   while True:
-    response = GetInput(prompt).lower()
+    try:
+      response = GetInput(prompt).lower()
+    except EOFError:
+      # If the user hits CTRL+D, or stdin is disabled, use the default.
+      print
+      response = None
+    except KeyboardInterrupt:
+      # If the user hits CTRL+C, just exit the process.
+      print
+      Die('CTRL+C detected; exiting')
+
     if not response:
       return default
     if true_value.startswith(response):
