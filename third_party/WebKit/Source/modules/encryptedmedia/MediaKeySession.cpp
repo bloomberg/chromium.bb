@@ -42,11 +42,13 @@ DEFINE_GC_INFO(MediaKeySession);
 
 PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys));
+    RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
+    session->suspendIfNeeded();
+    return session.release();
 }
 
 MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_session(cdm->createSession(this))
@@ -195,7 +197,22 @@ const AtomicString& MediaKeySession::interfaceName() const
 
 ExecutionContext* MediaKeySession::executionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ActiveDOMObject::executionContext();
+}
+
+bool MediaKeySession::hasPendingActivity() const
+{
+    return ActiveDOMObject::hasPendingActivity()
+        || !m_pendingUpdates.isEmpty()
+        || m_asyncEventQueue->hasPendingEvents();
+}
+
+void MediaKeySession::stop()
+{
+    if (m_updateTimer.isActive())
+        m_updateTimer.stop();
+    m_pendingUpdates.clear();
+    m_asyncEventQueue->close();
 }
 
 }
