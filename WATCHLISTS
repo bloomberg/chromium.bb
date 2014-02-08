@@ -824,7 +824,6 @@
                    'rouslan+spellwatch@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'sync': ['haitaol+watch@chromium.org',
-             'rsimha+watch@chromium.org',
              'tim+watch@chromium.org',
              'maniscalco+watch@chromium.org'],
     'syncfs': ['kinuko+watch@chromium.org',
