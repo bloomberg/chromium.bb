@@ -286,52 +286,40 @@ void Plugin::HistogramHTTPStatusCode(const std::string& name,
   HistogramEnumerate(name, sample, 7, 6);
 }
 
-bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
-                                  NaClSubprocess* subprocess,
-                                  const Manifest* manifest,
-                                  bool should_report_uma,
-                                  const SelLdrStartParams& params,
-                                  const pp::CompletionCallback& init_done_cb,
-                                  const pp::CompletionCallback& crash_cb) {
-  ErrorInfo error_info;
-  ServiceRuntime* new_service_runtime =
-      new ServiceRuntime(this, manifest, should_report_uma, init_done_cb,
-                         crash_cb);
-  subprocess->set_service_runtime(new_service_runtime);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
-                 static_cast<void*>(new_service_runtime)));
-  if (should_report_uma && NULL == new_service_runtime) {
-    error_info.SetReport(
-        ERROR_SEL_LDR_INIT,
-        "sel_ldr init failure " + subprocess->description());
-    ReportLoadError(error_info);
-    return false;
-  }
+bool Plugin::LoadNaClModuleFromBackgroundThread(
+    nacl::DescWrapper* wrapper,
+    NaClSubprocess* subprocess,
+    const Manifest* manifest,
+    const SelLdrStartParams& params) {
+  CHECK(!pp::Module::Get()->core()->IsMainThread());
+  ServiceRuntime* service_runtime =
+      new ServiceRuntime(this, manifest, false,
+                         pp::BlockUntilComplete(), pp::BlockUntilComplete());
+  subprocess->set_service_runtime(service_runtime);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
+                 "(service_runtime=%p)\n",
+                 static_cast<void*>(service_runtime)));
 
   // Now start the SelLdr instance.  This must be created on the main thread.
-  pp::Core* core = pp::Module::Get()->core();
   bool service_runtime_started;
-  if (core->IsMainThread()) {
-    StartSelLdrOnMainThread(PP_OK, new_service_runtime, params,
-                            &service_runtime_started);
-  } else {
-    pp::CompletionCallback callback =
-        callback_factory_.NewCallback(&Plugin::StartSelLdrOnMainThread,
-                                      new_service_runtime, params,
-                                      &service_runtime_started);
-    core->CallOnMainThread(0, callback, 0);
-    new_service_runtime->WaitForSelLdrStart();
-  }
-  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&Plugin::StartSelLdrOnMainThread,
+                                    service_runtime, params,
+                                    &service_runtime_started);
+  pp::Module::Get()->core()->CallOnMainThread(0, callback, 0);
+  service_runtime->WaitForSelLdrStart();
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
+                 "(service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
     return false;
   }
 
   // Now actually load the nexe, which can happen on a background thread.
-  bool nexe_loaded = new_service_runtime->LoadNexeAndStart(wrapper,
-                                                           crash_cb);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (nexe_loaded=%d)\n",
+  bool nexe_loaded = service_runtime->LoadNexeAndStart(
+      wrapper, pp::BlockUntilComplete());
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
+                 "(nexe_loaded=%d)\n",
                  nexe_loaded));
   return nexe_loaded;
 }
@@ -358,6 +346,7 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
+  CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
@@ -370,9 +359,35 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                            enable_dyncode_syscalls,
                            enable_exception_handling,
                            enable_crash_throttling);
-  if (LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
-                           true /* should_report_uma */,
-                           params, init_done_cb, crash_cb)) {
+  ErrorInfo error_info;
+  ServiceRuntime* service_runtime =
+      new ServiceRuntime(this, manifest_.get(), true, init_done_cb, crash_cb);
+  main_subprocess_.set_service_runtime(service_runtime);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
+                 static_cast<void*>(service_runtime)));
+  if (NULL == service_runtime) {
+    error_info.SetReport(
+        ERROR_SEL_LDR_INIT,
+        "sel_ldr init failure " + main_subprocess_.description());
+    ReportLoadError(error_info);
+    return;
+  }
+
+  // Now start the SelLdr instance.  This must be created on the main thread.
+  bool service_runtime_started;
+  StartSelLdrOnMainThread(PP_OK, service_runtime, params,
+                          &service_runtime_started);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
+                 service_runtime_started));
+  if (!service_runtime_started) {
+    return;
+  }
+
+  // Now actually load the nexe, which can happen on a background thread.
+  bool nexe_loaded = service_runtime->LoadNexeAndStart(wrapper, crash_cb);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (nexe_loaded=%d)\n",
+                 nexe_loaded));
+  if (nexe_loaded) {
     PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
                    main_subprocess_.detailed_description().c_str()));
   }
@@ -440,11 +455,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
                            false /* enable_dyncode_syscalls */,
                            false /* enable_exception_handling */,
                            true /* enable_crash_throttling */);
-  if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
-                            false /* should_report_uma */,
-                            params,
-                            pp::BlockUntilComplete(),
-                            pp::BlockUntilComplete())) {
+  if (!LoadNaClModuleFromBackgroundThread(wrapper, nacl_subprocess.get(),
+                                          manifest, params)) {
     return NULL;
   }
   // We need not wait for the init_done callback.  We can block

@@ -298,15 +298,13 @@ class Plugin : public pp::InstancePrivate {
   void HistogramEnumerateManifestIsDataURI(bool is_data_uri);
   void HistogramHTTPStatusCode(const std::string& name, int status);
 
-  // Help load a nacl module, from the file specified in wrapper.
+  // Load a nacl module from the file specified in wrapper.
+  // Only to be used from a background (non-main) thread.
   // This will fully initialize the |subprocess| if the load was successful.
-  bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
-                            NaClSubprocess* subprocess,
-                            const Manifest* manifest,
-                            bool should_report_uma,
-                            const SelLdrStartParams& params,
-                            const pp::CompletionCallback& init_done_cb,
-                            const pp::CompletionCallback& crash_cb);
+  bool LoadNaClModuleFromBackgroundThread(nacl::DescWrapper* wrapper,
+                                          NaClSubprocess* subprocess,
+                                          const Manifest* manifest,
+                                          const SelLdrStartParams& params);
 
   // Start sel_ldr from the main thread, given the start params.
   // Sets |success| to true on success.
