@@ -100,6 +100,8 @@
         'browser/accessibility/accessibility_events.h',
         'browser/accessibility/invert_bubble_prefs.cc',
         'browser/accessibility/invert_bubble_prefs.h',
+        'browser/android/banners/app_banner_settings_helper.cc',
+        'browser/android/banners/app_banner_settings_helper.h',
         'browser/android/bookmarks/managed_bookmarks_shim.cc',
         'browser/android/bookmarks/managed_bookmarks_shim.h',
         'browser/android/bookmarks/bookmarks_bridge.cc',

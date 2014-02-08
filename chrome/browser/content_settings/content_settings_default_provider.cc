@@ -56,6 +56,9 @@ const ContentSetting kDefaultSettings[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER
 #endif
+#if defined(OS_ANDROID)
+  CONTENT_SETTING_DEFAULT,  // CONTENT_SETTINGS_TYPE_APP_BANNER
+#endif
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
                default_settings_incorrect_size);

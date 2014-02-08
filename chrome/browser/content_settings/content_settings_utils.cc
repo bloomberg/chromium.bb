@@ -46,6 +46,9 @@ const char* kTypeNames[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   "protected-media-identifier",
 #endif
+#if defined(OS_ANDROID)
+  "app-banner",
+#endif
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);

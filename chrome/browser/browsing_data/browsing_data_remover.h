@@ -85,6 +85,9 @@ class BrowsingDataRemover
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_SERVER_BOUND_CERTS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
+#if defined(OS_ANDROID)
+    REMOVE_APP_BANNER_DATA = 1 << 14,
+#endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
@@ -92,19 +95,28 @@ class BrowsingDataRemover
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, and plugin data.
-    REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
-                       REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
-                       REMOVE_PLUGIN_DATA | REMOVE_WEBSQL |
+    REMOVE_SITE_DATA = REMOVE_APPCACHE |
+                       REMOVE_COOKIES |
+                       REMOVE_FILE_SYSTEMS |
+                       REMOVE_INDEXEDDB |
+                       REMOVE_LOCAL_STORAGE |
+                       REMOVE_PLUGIN_DATA |
+                       REMOVE_WEBSQL |
+#if defined(OS_ANDROID)
+                       REMOVE_APP_BANNER_DATA |
+#endif
                        REMOVE_SERVER_BOUND_CERTS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
-    REMOVE_ALL = REMOVE_APPCACHE | REMOVE_CACHE | REMOVE_COOKIES |
-                 REMOVE_DOWNLOADS | REMOVE_FILE_SYSTEMS | REMOVE_FORM_DATA |
-                 REMOVE_HISTORY | REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
-                 REMOVE_PLUGIN_DATA | REMOVE_PASSWORDS | REMOVE_WEBSQL |
-                 REMOVE_SERVER_BOUND_CERTS | REMOVE_CONTENT_LICENSES,
+    REMOVE_ALL = REMOVE_SITE_DATA |
+                 REMOVE_CACHE |
+                 REMOVE_DOWNLOADS |
+                 REMOVE_FORM_DATA |
+                 REMOVE_HISTORY |
+                 REMOVE_PASSWORDS |
+                 REMOVE_CONTENT_LICENSES,
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type

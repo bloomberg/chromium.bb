@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -482,6 +483,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         base::Bind(&BrowsingDataRemover::OnWaitableEventSignaled,
                    base::Unretained(this));
     watcher_.StartWatching(event, watcher_callback);
+  }
+#endif
+
+#if defined(OS_ANDROID)
+  if (remove_mask & REMOVE_APP_BANNER_DATA) {
+    profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
+        CONTENT_SETTINGS_TYPE_APP_BANNER);
   }
 #endif
 

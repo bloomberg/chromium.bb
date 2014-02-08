@@ -49,6 +49,9 @@ const char* kPrefToManageType[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   NULL,  // No policy for default value of protected media identifier
 #endif
+#if defined(OS_ANDROID)
+  NULL,  // No policy for default value of app banners
+#endif
 };
 COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
                managed_content_settings_pref_names_array_size_incorrect);
