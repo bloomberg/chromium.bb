@@ -79,13 +79,7 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   }
 }
 
-#if defined(ARCH_CPU_64_BITS)
-#define MAYBE_ChromeExeSanityCheck DISABLED_ChromeExeSanityCheck
-#else
-#define MAYBE_ChromeExeSanityCheck ChromeExeSanityCheck
-#endif
-// Fails on 64-bit Windows, see http://crbug.com/335173.
-TEST_F(ELFImportsTest, MAYBE_ChromeExeSanityCheck) {
+TEST_F(ELFImportsTest, ChromeExeSanityCheck) {
   std::vector<std::string> exe_imports;
 
   base::FilePath exe;

@@ -19,16 +19,19 @@ def reorder_imports(input_dir, output_dir, architecture):
   input_image = os.path.join(input_dir, 'chrome.exe')
   output_image = os.path.join(output_dir, 'chrome.exe')
 
-  # TODO(caitkp): Remove this once swapimport works on x64 builds.
+  swap_exe = os.path.join(
+    __file__,
+    '..\\..\\..\\third_party\\syzygy\\binaries\\exe\\swapimport.exe')
+
+  args = [swap_exe, '--input-image=%s' % input_image,
+      '--output-image=%s' % output_image, '--overwrite']
+
   if architecture == 'x64':
-    shutil.copy(input_image, output_image)
-  else:
-    swap_exe = os.path.join(
-        __file__,
-        '..\\..\\..\\third_party\\syzygy\\binaries\\exe\\swapimport.exe')
-    subprocess.call(
-        [swap_exe, '--input-image=%s' % input_image,
-         '--output-image=%s' % output_image, '--overwrite', 'chrome_elf.dll'])
+    args.append('--x64');
+
+  args.append('chrome_elf.dll');
+
+  subprocess.call(args)
 
   for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
     shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
