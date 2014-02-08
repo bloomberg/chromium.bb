@@ -87,7 +87,8 @@ class PrintSystemCUPS : public PrintSystem {
   virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
   virtual bool ValidatePrintTicket(
       const std::string& printer_name,
-      const std::string& print_ticket_data) OVERRIDE;
+      const std::string& print_ticket_data,
+      const std::string& print_ticket_mime_type) OVERRIDE;
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
                              PrintJobDetails *job_details) OVERRIDE;
@@ -374,6 +375,7 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
 
   // PrintSystem::JobSpooler implementation.
   virtual bool Spool(const std::string& print_ticket,
+                     const std::string& print_ticket_mime_type,
                      const base::FilePath& print_data_file_path,
                      const std::string& print_data_mime_type,
                      const std::string& printer_name,
@@ -544,7 +546,8 @@ bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
 
 bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& printer_name,
-    const std::string& print_ticket_data) {
+    const std::string& print_ticket_data,
+    const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
   scoped_ptr<base::Value> ticket_value(
       base::JSONReader::Read(print_ticket_data));

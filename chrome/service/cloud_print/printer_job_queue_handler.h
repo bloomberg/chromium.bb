@@ -36,6 +36,7 @@ struct JobDetails {
   std::string print_data_url_;
 
   std::string print_ticket_;
+  std::string print_ticket_mime_type_;
   base::FilePath print_data_file_path_;
   std::string print_data_mime_type_;
 

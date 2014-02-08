@@ -190,6 +190,9 @@ const char kExamplePrintData[] = "__EXAMPLE_PRINT_DATA";
 const char kExampleJobDownloadResponseHeaders[] =
     "Content-Type: Application/PDF\n";
 
+const char kExampleTicketDownloadResponseHeaders[] =
+    "Content-Type: application/json\n";
+
 const char kExamplePrinterName[] = "Example Printer";
 
 const char kExamplePrinterDescription[] = "Example Description";
@@ -348,8 +351,9 @@ class MockPrinterWatcher : public PrintSystem::PrinterWatcher {
 
 class MockJobSpooler : public PrintSystem::JobSpooler {
  public:
-  MOCK_METHOD7(Spool, bool(
+  MOCK_METHOD8(Spool, bool(
       const std::string& print_ticket,
+      const std::string& print_ticket_mime_type,
       const base::FilePath& print_data_file_path,
       const std::string& print_data_mime_type,
       const std::string& printer_name,
@@ -403,8 +407,10 @@ class MockPrintSystem : public PrintSystem {
 
   MOCK_METHOD1(IsValidPrinter, bool(const std::string& printer_name));
 
-  MOCK_METHOD2(ValidatePrintTicket, bool(const std::string& printer_name,
-                                         const std::string& print_ticket_data));
+  MOCK_METHOD3(ValidatePrintTicket,
+               bool(const std::string& printer_name,
+                    const std::string& print_ticket_data,
+                    const std::string& print_ticket_mime_type));
 
   MOCK_METHOD3(GetJobDetails, bool(const std::string& printer_name,
                                     PlatformJobId job_id,
@@ -442,6 +448,7 @@ class PrinterJobHandlerTest : public ::testing::Test {
       const std::string& printer_name,
       const PrintSystem::PrinterCapsAndDefaultsCallback& callback);
   void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher);
+  void AddTicketMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher);
   bool PostSpoolSuccess();
   void SetUpJobSuccessTest(int job_num);
   void BeginTest(int timeout_seconds);
@@ -542,6 +549,13 @@ void PrinterJobHandlerTest::AddMimeHeader(const GURL& url,
   fetcher->set_response_headers(download_headers);
 }
 
+void PrinterJobHandlerTest::AddTicketMimeHeader(const GURL& url,
+                                                net::FakeURLFetcher* fetcher) {
+  scoped_refptr<net::HttpResponseHeaders> download_headers =
+      new net::HttpResponseHeaders(kExampleTicketDownloadResponseHeaders);
+  fetcher->set_response_headers(download_headers);
+}
+
 
 void PrinterJobHandlerTest::SetUpJobSuccessTest(int job_num) {
   factory_.SetFakeResponse(TicketURI(job_num),
@@ -563,7 +577,8 @@ void PrinterJobHandlerTest::SetUpJobSuccessTest(int job_num) {
   // The times requirement is relaxed for the ticket URI
   // in order to accommodate TicketDownloadFailureTest
   EXPECT_CALL(url_callback_, OnRequestCreate(TicketURI(job_num), _))
-      .Times(AtLeast(1));
+      .Times(AtLeast(1))
+      .WillOnce(Invoke(this, &PrinterJobHandlerTest::AddTicketMimeHeader));
 
   EXPECT_CALL(url_callback_, OnRequestCreate(DownloadURI(job_num), _))
       .Times(Exactly(1))
@@ -576,7 +591,7 @@ void PrinterJobHandlerTest::SetUpJobSuccessTest(int job_num) {
       .Times(Exactly(1));
 
   EXPECT_CALL(print_system_->JobSpooler(),
-              Spool(kExamplePrintTicket, _, _, _, _, _, _))
+              Spool(kExamplePrintTicket, _, _, _, _, _, _, _))
       .Times(Exactly(1))
       .WillOnce(InvokeWithoutArgs(this,
                                   &PrinterJobHandlerTest::PostSpoolSuccess));
@@ -634,8 +649,8 @@ MockPrinterWatcher::MockPrinterWatcher() : delegate_(NULL) {
 }
 
 MockJobSpooler::MockJobSpooler() : delegate_(NULL) {
-  ON_CALL(*this, Spool(_, _, _, _, _, _, _))
-      .WillByDefault(DoAll(SaveArg<6>(&delegate_), Return(true)));
+  ON_CALL(*this, Spool(_, _, _, _, _, _, _, _))
+      .WillByDefault(DoAll(SaveArg<7>(&delegate_), Return(true)));
 }
 
 MockPrintSystem::MockPrintSystem()
@@ -653,7 +668,7 @@ MockPrintSystem::MockPrintSystem()
   ON_CALL(*this, IsValidPrinter(_)).
       WillByDefault(Return(true));
 
-  ON_CALL(*this, ValidatePrintTicket(_, _)).
+  ON_CALL(*this, ValidatePrintTicket(_, _, _)).
       WillByDefault(Return(true));
 };
 
@@ -694,7 +709,8 @@ TEST_F(PrinterJobHandlerTest, TicketDownloadFailureTest) {
                            net::URLRequestStatus::FAILED);
 
   EXPECT_CALL(url_callback_, OnRequestCreate(TicketURI(1), _))
-      .Times(AtLeast(1));
+      .Times(AtLeast(1))
+      .WillOnce(Invoke(this, &PrinterJobHandlerTest::AddTicketMimeHeader));
 
   EXPECT_CALL(url_callback_,
               OnRequestCreate(JobListURI(kJobFetchReasonStartup), _))

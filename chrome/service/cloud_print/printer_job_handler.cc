@@ -345,10 +345,14 @@ PrinterJobHandler::HandlePrintTicketResponse(const net::URLFetcher* source,
                                              const std::string& data) {
   VLOG(1) << "CP_CONNECTOR: Handling print ticket response"
           << ", printer id: " << printer_info_cloud_.printer_id;
-  if (print_system_->ValidatePrintTicket(printer_info_.printer_name, data)) {
+  std::string mime_type;
+  source->GetResponseHeaders()->GetMimeType(&mime_type);
+  if (print_system_->ValidatePrintTicket(printer_info_.printer_name, data,
+                                         mime_type)) {
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent",
                               JOB_HANDLER_VALID_TICKET, JOB_HANDLER_MAX);
     job_details_.print_ticket_ = data;
+    job_details_.print_ticket_mime_type_ = mime_type;
     SetNextDataHandler(&PrinterJobHandler::HandlePrintDataResponse);
     request_ = CloudPrintURLFetcher::Create();
     std::string accept_headers = "Accept: ";
@@ -783,6 +787,7 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                             JOB_HANDLER_START_SPOOLING, JOB_HANDLER_MAX);
   spooling_start_time_ = base::Time::Now();
   if (!job_spooler_->Spool(job_details.print_ticket_,
+                           job_details.print_ticket_mime_type_,
                            job_details.print_data_file_path_,
                            job_details.print_data_mime_type_,
                            printer_name,

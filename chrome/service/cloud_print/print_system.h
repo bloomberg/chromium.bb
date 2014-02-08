@@ -130,6 +130,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
     // time. Subsequent calls to Spool (before the Delegate::OnJobSpoolSucceeded
     // or Delegate::OnJobSpoolFailed methods are called) can fail.
     virtual bool Spool(const std::string& print_ticket,
+                       const std::string& print_ticket_mime_type,
                        const base::FilePath& print_data_file_path,
                        const std::string& print_data_mime_type,
                        const std::string& printer_name,
@@ -177,8 +178,10 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;
 
   // Returns true if ticket is valid.
-  virtual bool ValidatePrintTicket(const std::string& printer_name,
-                                   const std::string& print_ticket_data) = 0;
+  virtual bool ValidatePrintTicket(
+      const std::string& printer_name,
+      const std::string& print_ticket_data,
+      const std::string& print_ticket_mime_type) = 0;
 
   // Get details for already spooled job.
   virtual bool GetJobDetails(const std::string& printer_name,
