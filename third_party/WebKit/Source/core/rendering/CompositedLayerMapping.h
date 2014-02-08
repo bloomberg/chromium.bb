@@ -170,6 +170,7 @@ public:
     bool hasUnpositionedOverflowControlsLayers() const;
 
     void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
+    void removeRenderLayerFromSquashingGraphicsLayer(const RenderLayer*);
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
     void updateRenderingContext();
     void updateShouldFlattenTransform();

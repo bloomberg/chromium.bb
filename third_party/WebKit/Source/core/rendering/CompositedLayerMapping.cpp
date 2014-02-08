@@ -2185,6 +2185,26 @@ void CompositedLayerMapping::addRenderLayerToSquashingGraphicsLayer(RenderLayer*
     layer->setGroupedMapping(this);
 }
 
+void CompositedLayerMapping::removeRenderLayerFromSquashingGraphicsLayer(const RenderLayer* layer)
+{
+    size_t layerIndex = kNotFound;
+
+    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
+        if (m_squashedLayers[i].renderLayer == layer) {
+            layerIndex = i;
+            break;
+        }
+    }
+
+    if (layerIndex == kNotFound)
+        return;
+
+    m_squashedLayers.remove(layerIndex);
+
+    if (m_squashingLayer)
+        m_squashingLayer->setNeedsDisplay();
+}
+
 void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex)
 {
     ASSERT(compositor()->layerSquashingEnabled());

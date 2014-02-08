@@ -164,6 +164,11 @@ RenderLayer::~RenderLayer()
 
     removeFilterInfoIfNeeded();
 
+    if (groupedMapping()) {
+        groupedMapping()->removeRenderLayerFromSquashingGraphicsLayer(this);
+        setGroupedMapping(0);
+    }
+
     // Child layers will be deleted by their corresponding render objects, so
     // we don't need to delete them ourselves.
 
