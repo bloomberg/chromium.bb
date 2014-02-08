@@ -73,21 +73,19 @@ MediaControlElementType mediaControlElementType(Node*);
 
 class MediaControlElement {
 public:
-    virtual void hide();
-    virtual void show();
-    virtual bool isShowing() const;
+    void hide();
+    void show();
 
-    virtual MediaControlElementType displayType() { return m_displayType; }
-    virtual const AtomicString& shadowPseudoId() const = 0;
+    MediaControlElementType displayType() { return m_displayType; }
 
-    virtual void setMediaController(MediaControllerInterface* controller) { m_mediaController = controller; }
+    void setMediaController(MediaControllerInterface* controller) { m_mediaController = controller; }
     MediaControllerInterface* mediaController() const { return m_mediaController; }
 
 protected:
     explicit MediaControlElement(MediaControlElementType, HTMLElement*);
     ~MediaControlElement() { }
 
-    virtual void setDisplayType(MediaControlElementType);
+    void setDisplayType(MediaControlElementType);
 
 private:
     MediaControllerInterface* m_mediaController;

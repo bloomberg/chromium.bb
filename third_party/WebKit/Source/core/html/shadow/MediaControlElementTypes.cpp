@@ -82,14 +82,6 @@ void MediaControlElement::show()
     m_element->removeInlineStyleProperty(CSSPropertyDisplay);
 }
 
-bool MediaControlElement::isShowing() const
-{
-    const StylePropertySet* propertySet = m_element->inlineStyle();
-    // Following the code from show() and hide() above, we only have
-    // to check for the presense of inline display.
-    return (!propertySet || !propertySet->getPropertyCSSValue(CSSPropertyDisplay));
-}
-
 void MediaControlElement::setDisplayType(MediaControlElementType displayType)
 {
     if (displayType == m_displayType)
