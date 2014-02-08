@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "content/common/gpu/devtools_gpu_agent.h"
@@ -24,7 +23,7 @@
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
-#include "crypto/hmac.h"
+#include "crypto/random.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -75,8 +74,7 @@ const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
 class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   // Takes ownership of gpu_channel (see below).
-  GpuChannelMessageFilter(const std::string& private_key,
-                          base::WeakPtr<GpuChannel>* gpu_channel,
+  GpuChannelMessageFilter(base::WeakPtr<GpuChannel>* gpu_channel,
                           scoped_refptr<SyncPointManager> sync_point_manager,
                           scoped_refptr<base::MessageLoopProxy> message_loop)
       : preemption_state_(IDLE),
@@ -85,10 +83,7 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
         sync_point_manager_(sync_point_manager),
         message_loop_(message_loop),
         messages_forwarded_to_channel_(0),
-        a_stub_is_descheduled_(false),
-        hmac_(crypto::HMAC::SHA256) {
-    bool success = hmac_.Init(base::StringPiece(private_key));
-    DCHECK(success);
+        a_stub_is_descheduled_(false) {
   }
 
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
@@ -179,18 +174,8 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
     result->resize(num);
 
-    for (unsigned i = 0; i < num; ++i) {
-      char name[GL_MAILBOX_SIZE_CHROMIUM];
-      base::RandBytes(name, sizeof(name) / 2);
-
-      bool success = hmac_.Sign(
-          base::StringPiece(name, sizeof(name) / 2),
-          reinterpret_cast<unsigned char*>(name) + sizeof(name) / 2,
-          sizeof(name) / 2);
-      DCHECK(success);
-
-      (*result)[i].SetName(reinterpret_cast<int8*>(name));
-    }
+    for (unsigned i = 0; i < num; ++i)
+      crypto::RandBytes((*result)[i].name, sizeof((*result)[i].name));
   }
 
   void OnGenerateMailboxNamesAsync(unsigned num) {
@@ -423,8 +408,6 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
   base::OneShotTimer<GpuChannelMessageFilter> timer_;
 
   bool a_stub_is_descheduled_;
-
-  crypto::HMAC hmac_;
 };
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -474,7 +457,6 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       weak_factory_.GetWeakPtr()));
 
   filter_ = new GpuChannelMessageFilter(
-      mailbox_manager_->private_key(),
       weak_ptr,
       gpu_channel_manager_->sync_point_manager(),
       base::MessageLoopProxy::current());

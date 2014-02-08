@@ -7067,11 +7067,10 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
 }
 
 TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
-  GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-  group().mailbox_manager()->GenerateMailboxName(
-      reinterpret_cast<MailboxName*>(mailbox));
+  Mailbox mailbox;
+  group().mailbox_manager()->GenerateMailbox(&mailbox);
 
-  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
+  memcpy(shared_memory_address_, mailbox.name, sizeof(mailbox.name));
 
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -7126,7 +7125,7 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
       .Times(1)
       .RetiresOnSaturation();
 
-  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
+  memcpy(shared_memory_address_, mailbox.name, sizeof(mailbox.name));
   ConsumeTextureCHROMIUM consume_cmd;
   consume_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(consume_cmd));

@@ -34,9 +34,9 @@ class MailboxManagerTest : public testing::Test {
 TEST_F(MailboxManagerTest, Basic) {
   Texture* texture = CreateTexture();
 
-  MailboxName name;
-  manager_->GenerateMailboxName(&name);
-  EXPECT_TRUE(manager_->ProduceTexture(0, name, texture));
+  Mailbox name;
+  manager_->GenerateMailbox(&name);
+  manager_->ProduceTexture(0, name, texture);
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name));
 
   // We can consume multiple times.
@@ -50,34 +50,24 @@ TEST_F(MailboxManagerTest, Basic) {
   EXPECT_EQ(NULL, manager_->ConsumeTexture(0, name));
 }
 
-// Should fail to produce or consume with an invalid mailbox.
-TEST_F(MailboxManagerTest, InvalidName) {
-  Texture* texture = CreateTexture();
-  MailboxName name;
-  memset(&name, 0, sizeof(name));
-  EXPECT_FALSE(manager_->ProduceTexture(0, name, texture));
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(0, name));
-  DestroyTexture(texture);
-}
-
 // Tests behavior with multiple produce on the same texture.
 TEST_F(MailboxManagerTest, ProduceMultipleMailbox) {
   Texture* texture = CreateTexture();
 
-  MailboxName name1;
-  manager_->GenerateMailboxName(&name1);
+  Mailbox name1;
+  manager_->GenerateMailbox(&name1);
 
-  EXPECT_TRUE(manager_->ProduceTexture(0, name1, texture));
+  manager_->ProduceTexture(0, name1, texture);
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name1));
 
   // Can produce a second time with the same mailbox.
-  EXPECT_TRUE(manager_->ProduceTexture(0, name1, texture));
+  manager_->ProduceTexture(0, name1, texture);
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name1));
 
   // Can produce again, with a different mailbox.
-  MailboxName name2;
-  manager_->GenerateMailboxName(&name2);
-  EXPECT_TRUE(manager_->ProduceTexture(0, name2, texture));
+  Mailbox name2;
+  manager_->GenerateMailbox(&name2);
+  manager_->ProduceTexture(0, name2, texture);
 
   // Still available under all mailboxes.
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name1));
@@ -95,14 +85,14 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
   Texture* texture1 = CreateTexture();
   Texture* texture2 = CreateTexture();
 
-  MailboxName name;
-  manager_->GenerateMailboxName(&name);
+  Mailbox name;
+  manager_->GenerateMailbox(&name);
 
-  EXPECT_TRUE(manager_->ProduceTexture(0, name, texture1));
+  manager_->ProduceTexture(0, name, texture1);
   EXPECT_EQ(texture1, manager_->ConsumeTexture(0, name));
 
   // Can produce a second time with the same mailbox, but different texture.
-  EXPECT_TRUE(manager_->ProduceTexture(0, name, texture2));
+  manager_->ProduceTexture(0, name, texture2);
   EXPECT_EQ(texture2, manager_->ConsumeTexture(0, name));
 
   // Destroying the texture that's under no mailbox shouldn't have an effect.
@@ -117,19 +107,19 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
 TEST_F(MailboxManagerTest, ProduceMultipleTextureMailbox) {
   Texture* texture1 = CreateTexture();
   Texture* texture2 = CreateTexture();
-  MailboxName name1;
-  manager_->GenerateMailboxName(&name1);
-  MailboxName name2;
-  manager_->GenerateMailboxName(&name2);
+  Mailbox name1;
+  manager_->GenerateMailbox(&name1);
+  Mailbox name2;
+  manager_->GenerateMailbox(&name2);
 
   // Put texture1 on name1 and name2.
-  EXPECT_TRUE(manager_->ProduceTexture(0, name1, texture1));
-  EXPECT_TRUE(manager_->ProduceTexture(0, name2, texture1));
+  manager_->ProduceTexture(0, name1, texture1);
+  manager_->ProduceTexture(0, name2, texture1);
   EXPECT_EQ(texture1, manager_->ConsumeTexture(0, name1));
   EXPECT_EQ(texture1, manager_->ConsumeTexture(0, name2));
 
   // Put texture2 on name2.
-  EXPECT_TRUE(manager_->ProduceTexture(0, name2, texture2));
+  manager_->ProduceTexture(0, name2, texture2);
   EXPECT_EQ(texture1, manager_->ConsumeTexture(0, name1));
   EXPECT_EQ(texture2, manager_->ConsumeTexture(0, name2));
 

@@ -127,11 +127,8 @@ bool GpuControlService::GenerateMailboxNames(
     unsigned num, std::vector<gpu::Mailbox>* names) {
   DCHECK(names->empty());
   names->resize(num);
-  for (unsigned i = 0; i < num; ++i) {
-    gles2::MailboxName name;
-    mailbox_manager_->GenerateMailboxName(&name);
-    (*names)[i].SetName(name.key);
-  }
+  for (unsigned i = 0; i < num; ++i)
+    mailbox_manager_->GenerateMailbox(&(*names)[i]);
   return true;
 }
 

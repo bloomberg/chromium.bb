@@ -15,15 +15,16 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/scoped_binders.h"
 
 using gpu::gles2::ContextGroup;
 using gpu::gles2::GLES2Decoder;
 using gpu::gles2::MailboxManager;
-using gpu::gles2::MailboxName;
 using gpu::gles2::Texture;
 using gpu::gles2::TextureManager;
 using gpu::gles2::TextureRef;
+using gpu::Mailbox;
 
 namespace content {
 namespace {
@@ -218,8 +219,8 @@ bool TextureImageTransportSurface::SwapBuffers() {
   params.size = backbuffer_size();
   params.scale_factor = scale_factor_;
   params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&back_mailbox_name_),
-      sizeof(back_mailbox_name_));
+      reinterpret_cast<const char*>(&back_mailbox_),
+      sizeof(back_mailbox_));
 
   glFlush();
 
@@ -258,8 +259,8 @@ bool TextureImageTransportSurface::PostSubBuffer(
   params.width = width;
   params.height = height;
   params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&back_mailbox_name_),
-      sizeof(back_mailbox_name_));
+      reinterpret_cast<const char*>(&back_mailbox_),
+      sizeof(back_mailbox_));
 
   glFlush();
 
@@ -323,7 +324,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   if (!mailbox_name.empty()) {
     DCHECK(mailbox_name.length() == GL_MAILBOX_SIZE_CHROMIUM);
     if (!memcmp(mailbox_name.data(),
-                &back_mailbox_name_,
+                &back_mailbox_,
                 mailbox_name.length())) {
       // The browser has skipped the frame to unblock the GPU process, waiting
       // for one of the right size, and returned the back buffer, so don't swap.
@@ -332,7 +333,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   }
   if (swap) {
     std::swap(backbuffer_, frontbuffer_);
-    std::swap(back_mailbox_name_, front_mailbox_name_);
+    std::swap(back_mailbox_, front_mailbox_);
   }
 
   // We're relying on the fact that the parent context is
@@ -362,7 +363,7 @@ void TextureImageTransportSurface::OnResizeViewACK() {
 void TextureImageTransportSurface::ReleaseBackTexture() {
   DCHECK(IsContextValid(helper_.get()));
   backbuffer_ = NULL;
-  back_mailbox_name_ = MailboxName();
+  back_mailbox_ = Mailbox();
   glFlush();
   CHECK_GL_ERROR();
 }
@@ -370,7 +371,7 @@ void TextureImageTransportSurface::ReleaseBackTexture() {
 void TextureImageTransportSurface::ReleaseFrontTexture() {
   DCHECK(IsContextValid(helper_.get()));
   frontbuffer_ = NULL;
-  front_mailbox_name_ = MailboxName();
+  front_mailbox_ = Mailbox();
   glFlush();
   CHECK_GL_ERROR();
   helper_->SendAcceleratedSurfaceRelease();
@@ -391,15 +392,13 @@ void TextureImageTransportSurface::CreateBackTexture() {
   TextureManager* texture_manager =
       decoder->GetContextGroup()->texture_manager();
   if (!backbuffer_.get()) {
-    mailbox_manager_->GenerateMailboxName(&back_mailbox_name_);
+    mailbox_manager_->GenerateMailbox(&back_mailbox_);
     GLuint service_id;
     glGenTextures(1, &service_id);
     backbuffer_ = TextureRef::Create(texture_manager, 0, service_id);
     texture_manager->SetTarget(backbuffer_.get(), GL_TEXTURE_2D);
     Texture* texture = texture_manager->Produce(backbuffer_.get());
-    bool success = mailbox_manager_->ProduceTexture(
-        GL_TEXTURE_2D, back_mailbox_name_, texture);
-    DCHECK(success);
+    mailbox_manager_->ProduceTexture(GL_TEXTURE_2D, back_mailbox_, texture);
   }
 
   {

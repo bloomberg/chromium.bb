@@ -113,35 +113,6 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTexture) {
   EXPECT_EQ(source_pixel, ReadTexel(tex1, 0, 0));
 }
 
-TEST_F(GLTextureMailboxTest, ProduceTextureValidatesKey) {
-  GLuint tex;
-  glGenTextures(1, &tex);
-
-  glBindTexture(GL_TEXTURE_2D, tex);
-  uint32 source_pixel = 0xFF0000FF;
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               1, 1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               &source_pixel);
-
-  GLbyte invalid_mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-  glGenMailboxCHROMIUM(invalid_mailbox);
-  ++invalid_mailbox[GL_MAILBOX_SIZE_CHROMIUM - 1];
-
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  glProduceTextureCHROMIUM(GL_TEXTURE_2D, invalid_mailbox);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
-
-  // Ensure level 0 is still intact after glProduceTextureCHROMIUM fails.
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  EXPECT_EQ(source_pixel, ReadTexel(tex, 0, 0));
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-}
-
 TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
   GLuint tex;
   glGenTextures(1, &tex);

@@ -29,7 +29,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "crypto/hmac.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
@@ -385,18 +384,6 @@ bool WarmUpSandbox(const CommandLine& command_line) {
     // platforms.
     (void) base::RandUint64();
   }
-  {
-    TRACE_EVENT0("gpu", "Warm up HMAC");
-    // Warm up the crypto subsystem, which needs to done pre-sandbox on all
-    // platforms.
-    crypto::HMAC hmac(crypto::HMAC::SHA256);
-    unsigned char key = '\0';
-    if (!hmac.Init(&key, sizeof(key))) {
-      LOG(ERROR) << "WarmUpSandbox() failed with crypto::HMAC::Init()";
-      return false;
-    }
-  }
-
   return true;
 }
 

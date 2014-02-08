@@ -6,26 +6,14 @@
 
 #include <algorithm>
 
-#include "base/rand_util.h"
-#include "crypto/hmac.h"
+#include "crypto/random.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
 namespace gpu {
 namespace gles2 {
 
-MailboxName::MailboxName() {
-  std::fill(key, key + sizeof(key), 0);
-  std::fill(signature, signature + sizeof(signature), 0);
-}
-
 MailboxManager::MailboxManager()
-    : hmac_(crypto::HMAC::SHA256),
-      mailbox_to_textures_(std::ptr_fun(&MailboxManager::TargetNameLess)) {
-  base::RandBytes(private_key_, sizeof(private_key_));
-  bool success = hmac_.Init(
-      base::StringPiece(private_key_, sizeof(private_key_)));
-  DCHECK(success);
-  DCHECK(!IsMailboxNameValid(MailboxName()));
+    : mailbox_to_textures_(std::ptr_fun(&MailboxManager::TargetNameLess)) {
 }
 
 MailboxManager::~MailboxManager() {
@@ -33,30 +21,25 @@ MailboxManager::~MailboxManager() {
   DCHECK(textures_to_mailboxes_.empty());
 }
 
-void MailboxManager::GenerateMailboxName(MailboxName* name) {
-  base::RandBytes(name->key, sizeof(name->key));
-  SignMailboxName(name);
+void MailboxManager::GenerateMailbox(Mailbox* mailbox) {
+  crypto::RandBytes(mailbox->name, sizeof(mailbox->name));
 }
 
 Texture* MailboxManager::ConsumeTexture(unsigned target,
-                                        const MailboxName& name) {
+                                        const Mailbox& mailbox) {
   MailboxToTextureMap::iterator it =
-      mailbox_to_textures_.find(TargetName(target, name));
+      mailbox_to_textures_.find(TargetName(target, mailbox));
   if (it == mailbox_to_textures_.end())
     return NULL;
 
-  DCHECK(IsMailboxNameValid(name));
   return it->second->first;
 }
 
-bool MailboxManager::ProduceTexture(unsigned target,
-                                    const MailboxName& name,
+void MailboxManager::ProduceTexture(unsigned target,
+                                    const Mailbox& mailbox,
                                     Texture* texture) {
-  if (!IsMailboxNameValid(name))
-    return false;
-
   texture->SetMailboxManager(this);
-  TargetName target_name(target, name);
+  TargetName target_name(target, mailbox);
   MailboxToTextureMap::iterator it = mailbox_to_textures_.find(target_name);
   if (it != mailbox_to_textures_.end()) {
     TextureToMailboxMap::iterator texture_it = it->second;
@@ -67,8 +50,6 @@ bool MailboxManager::ProduceTexture(unsigned target,
       textures_to_mailboxes_.insert(std::make_pair(texture, target_name));
   mailbox_to_textures_.insert(std::make_pair(target_name, texture_it));
   DCHECK_EQ(mailbox_to_textures_.size(), textures_to_mailboxes_.size());
-
-  return true;
 }
 
 void MailboxManager::TextureDeleted(Texture* texture) {
@@ -84,25 +65,9 @@ void MailboxManager::TextureDeleted(Texture* texture) {
   DCHECK_EQ(mailbox_to_textures_.size(), textures_to_mailboxes_.size());
 }
 
-void MailboxManager::SignMailboxName(MailboxName* name) {
-  bool success = hmac_.Sign(
-      base::StringPiece(reinterpret_cast<char*>(name->key), sizeof(name->key)),
-      reinterpret_cast<unsigned char*>(name->signature),
-      sizeof(name->signature));
-  DCHECK(success);
-}
-
-bool MailboxManager::IsMailboxNameValid(const MailboxName& name) {
-  return hmac_.Verify(
-      base::StringPiece(reinterpret_cast<const char*>(name.key),
-          sizeof(name.key)),
-      base::StringPiece(reinterpret_cast<const char*>(name.signature),
-          sizeof(name.signature)));
-}
-
-MailboxManager::TargetName::TargetName(unsigned target, const MailboxName& name)
+MailboxManager::TargetName::TargetName(unsigned target, const Mailbox& mailbox)
     : target(target),
-      name(name) {
+      mailbox(mailbox) {
 }
 
 bool MailboxManager::TargetNameLess(const MailboxManager::TargetName& lhs,

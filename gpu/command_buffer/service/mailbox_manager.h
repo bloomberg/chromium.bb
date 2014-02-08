@@ -10,8 +10,8 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "crypto/hmac.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
 // From gl2/gl2ext.h.
@@ -27,50 +27,34 @@ namespace gles2 {
 class Texture;
 class TextureManager;
 
-// Identifies a mailbox where a texture definition can be stored for
-// transferring textures between contexts that are not in the same context
-// group. It is a random key signed with a hash of a private key.
-struct GPU_EXPORT MailboxName {
-  MailboxName();
-  GLbyte key[GL_MAILBOX_SIZE_CHROMIUM / 2];
-  GLbyte signature[GL_MAILBOX_SIZE_CHROMIUM / 2];
-};
-
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
  public:
   MailboxManager();
 
-  // Generate a unique mailbox name signed with the manager's private key.
-  void GenerateMailboxName(MailboxName* name);
+  // Generate a unique unguessable mailbox name.
+  void GenerateMailbox(Mailbox* mailbox);
 
   // Look up the texture definition from the named mailbox.
-  Texture* ConsumeTexture(unsigned target, const MailboxName& name);
+  Texture* ConsumeTexture(unsigned target, const Mailbox& mailbox);
 
   // Put the texture into the named mailbox.
-  bool ProduceTexture(unsigned target,
-                      const MailboxName& name,
+  void ProduceTexture(unsigned target,
+                      const Mailbox& mailbox,
                       Texture* texture);
 
   // Destroy any mailbox that reference the given texture.
   void TextureDeleted(Texture* texture);
-
-  std::string private_key() {
-    return std::string(private_key_, sizeof(private_key_));
-  }
 
  private:
   friend class base::RefCounted<MailboxManager>;
 
   ~MailboxManager();
 
-  void SignMailboxName(MailboxName* name);
-  bool IsMailboxNameValid(const MailboxName& name);
-
   struct TargetName {
-    TargetName(unsigned target, const MailboxName& name);
+    TargetName(unsigned target, const Mailbox& mailbox);
     unsigned target;
-    MailboxName name;
+    Mailbox mailbox;
   };
 
   static bool TargetNameLess(const TargetName& lhs, const TargetName& rhs);
@@ -86,8 +70,6 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
       std::pointer_to_binary_function<
           const TargetName&, const TargetName&, bool> > MailboxToTextureMap;
 
-  char private_key_[GL_MAILBOX_SIZE_CHROMIUM / 2];
-  crypto::HMAC hmac_;
   MailboxToTextureMap mailbox_to_textures_;
   TextureToMailboxMap textures_to_mailboxes_;
 

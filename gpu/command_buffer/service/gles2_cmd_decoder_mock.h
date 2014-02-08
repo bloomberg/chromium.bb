@@ -42,7 +42,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                     const std::vector<int32>& attribs));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
-  MOCK_METHOD1(ProduceFrontBuffer, bool(const Mailbox& mailbox));
+  MOCK_METHOD1(ProduceFrontBuffer, void(const Mailbox& mailbox));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, bool(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));

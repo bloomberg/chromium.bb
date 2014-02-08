@@ -117,7 +117,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) = 0;
 
-  virtual bool ProduceFrontBuffer(const Mailbox& mailbox) = 0;
+  virtual void ProduceFrontBuffer(const Mailbox& mailbox) = 0;
 
   // Resize an offscreen frame buffer.
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;

@@ -608,11 +608,12 @@ void GpuCommandBufferStub::OnSetGetBuffer(int32 shm_id,
 
 void GpuCommandBufferStub::OnProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnProduceFrontBuffer");
-  if (!decoder_)
+  if (!decoder_) {
     LOG(ERROR) << "Can't produce front buffer before initialization.";
+    return;
+  }
 
-  if (!decoder_->ProduceFrontBuffer(mailbox))
-    LOG(ERROR) << "Failed to produce front buffer.";
+  decoder_->ProduceFrontBuffer(mailbox);
 }
 
 void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {

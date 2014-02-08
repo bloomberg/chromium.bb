@@ -531,7 +531,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual void Destroy(bool have_context) OVERRIDE;
   virtual void SetSurface(
       const scoped_refptr<gfx::GLSurface>& surface) OVERRIDE;
-  virtual bool ProduceFrontBuffer(const Mailbox& mailbox) OVERRIDE;
+  virtual void ProduceFrontBuffer(const Mailbox& mailbox) OVERRIDE;
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) OVERRIDE;
   void UpdateParentTextureInfo();
   virtual bool MakeCurrent() OVERRIDE;
@@ -3335,9 +3335,11 @@ void GLES2DecoderImpl::SetSurface(
   RestoreCurrentFramebufferBindings();
 }
 
-bool GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
-  if (!offscreen_saved_color_texture_.get())
-    return false;
+void GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
+  if (!offscreen_saved_color_texture_.get()) {
+    LOG(ERROR) << "Called ProduceFrontBuffer on a non-offscreen context";
+    return;
+  }
   if (!offscreen_saved_color_texture_info_.get()) {
     GLuint service_id = offscreen_saved_color_texture_->id();
     offscreen_saved_color_texture_info_ = TextureRef::Create(
@@ -3346,10 +3348,8 @@ bool GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
                                  GL_TEXTURE_2D);
     UpdateParentTextureInfo();
   }
-  gpu::gles2::MailboxName name;
-  memcpy(name.key, mailbox.name, sizeof(mailbox.name));
-  return mailbox_manager()->ProduceTexture(
-      GL_TEXTURE_2D, name, offscreen_saved_color_texture_info_->texture());
+  mailbox_manager()->ProduceTexture(
+      GL_TEXTURE_2D, mailbox, offscreen_saved_color_texture_info_->texture());
 }
 
 bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
@@ -10016,15 +10016,10 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
     return;
   }
 
-  if (!group_->mailbox_manager()->ProduceTexture(
+  group_->mailbox_manager()->ProduceTexture(
       target,
-      *reinterpret_cast<const MailboxName*>(mailbox),
-      produced)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glProduceTextureCHROMIUM", "invalid mailbox name");
-    return;
-  }
+      *reinterpret_cast<const Mailbox*>(mailbox),
+      produced);
 }
 
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
@@ -10051,7 +10046,7 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
   Texture* texture =
       group_->mailbox_manager()->ConsumeTexture(
       target,
-      *reinterpret_cast<const MailboxName*>(mailbox));
+      *reinterpret_cast<const Mailbox*>(mailbox));
   if (!texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
