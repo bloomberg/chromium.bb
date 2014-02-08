@@ -1862,7 +1862,8 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
   }
 
   DCHECK(result->HasBitmap());
-  PrepareBitmapCopyOutputResult(dst_size_in_pixel, callback, result.Pass());
+  PrepareBitmapCopyOutputResult(dst_size_in_pixel, config, callback,
+                                result.Pass());
 }
 
 static void CopyFromCompositingSurfaceFinished(
@@ -1895,7 +1896,7 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
       base::Bind(callback, false, SkBitmap()));
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+  bitmap->setConfig(config,
                     dst_size_in_pixel.width(), dst_size_in_pixel.height(),
                     0, kOpaque_SkAlphaType);
   if (!bitmap->allocPixels())
@@ -1937,8 +1938,14 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
 // static
 void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
+    const SkBitmap::Config config,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
+  if (config != SkBitmap::kARGB_8888_Config) {
+    NOTIMPLEMENTED();
+    callback.Run(false, SkBitmap());
+    return;
+  }
   DCHECK(result->HasBitmap());
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));

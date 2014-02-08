@@ -667,16 +667,19 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       ConvertRectToPixel(device_scale_factor, src_subrect);
 
   if (using_synchronous_compositor_) {
-    SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback);
+    SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,
+                            bitmap_config);
     UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
                         base::TimeTicks::Now() - start_time);
     return;
   }
   scoped_ptr<cc::CopyOutputRequest> request;
-  if (src_subrect_in_pixel.size() == dst_size_in_pixel) {
+  if ((src_subrect_in_pixel.size() == dst_size_in_pixel) &&
+      (bitmap_config == SkBitmap::kARGB_8888_Config)) {
       request = cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
           &RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult,
           dst_size_in_pixel,
+          bitmap_config,
           start_time,
           callback));
   } else {
@@ -919,7 +922,8 @@ void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,
-    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    const SkBitmap::Config config) {
   SynchronousCompositor* compositor =
       SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
                                         host_->GetRoutingID());
@@ -929,7 +933,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   }
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+  bitmap.setConfig(config,
                    dst_size_in_pixel.width(),
                    dst_size_in_pixel.height());
   bitmap.allocPixels();
@@ -1452,9 +1456,15 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
 // static
 void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
+    const SkBitmap::Config config,
     const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
+  if (config != SkBitmap::kARGB_8888_Config) {
+    NOTIMPLEMENTED();
+    callback.Run(false, SkBitmap());
+    return;
+  }
   DCHECK(result->HasBitmap());
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
