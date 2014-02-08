@@ -83,6 +83,7 @@ struct wl_display {
 	int fd;
 	pthread_t display_thread;
 	struct wl_map objects;
+	struct wl_event_queue display_queue;
 	struct wl_event_queue default_queue;
 	struct wl_list event_queue_list;
 	pthread_mutex_t mutex;
@@ -713,6 +714,7 @@ wl_display_connect_to_fd(int fd)
 	display->fd = fd;
 	wl_map_init(&display->objects, WL_MAP_CLIENT_SIDE);
 	wl_event_queue_init(&display->default_queue, display);
+	wl_event_queue_init(&display->display_queue, display);
 	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 	pthread_cond_init(&display->reader_cond, NULL);
@@ -931,6 +933,7 @@ queue_event(struct wl_display *display, int len)
 	struct wl_proxy *proxy;
 	struct wl_closure *closure;
 	const struct wl_message *message;
+	struct wl_event_queue *queue;
 
 	wl_connection_copy(display->connection, p, sizeof p);
 	id = p[0];
@@ -968,9 +971,14 @@ queue_event(struct wl_display *display, int len)
 	proxy->refcount++;
 	closure->proxy = proxy;
 
-	if (wl_list_empty(&proxy->queue->event_list))
-		pthread_cond_signal(&proxy->queue->cond);
-	wl_list_insert(proxy->queue->event_list.prev, &closure->link);
+	if (proxy == &display->proxy)
+		queue = &display->display_queue;
+	else
+		queue = proxy->queue;
+
+	if (wl_list_empty(&queue->event_list))
+		pthread_cond_signal(&queue->cond);
+	wl_list_insert(queue->event_list.prev, &closure->link);
 
 	return size;
 }
@@ -1143,10 +1151,19 @@ dispatch_queue(struct wl_display *display, struct wl_event_queue *queue)
 	if (display->last_error)
 		goto err;
 
-	for (count = 0; !wl_list_empty(&queue->event_list); count++) {
+	count = 0;
+	while (!wl_list_empty(&display->display_queue.event_list)) {
+		dispatch_event(display, &display->display_queue);
+		if (display->last_error)
+			goto err;
+		count++;
+	}
+
+	while (!wl_list_empty(&queue->event_list)) {
 		dispatch_event(display, queue);
 		if (display->last_error)
 			goto err;
+		count++;
 	}
 
 	return count;
