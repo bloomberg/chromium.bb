@@ -49,16 +49,15 @@ PolicyCertVerifier::~PolicyCertVerifier() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 }
 
-void PolicyCertVerifier::InitializeOnIOThread() {
+void PolicyCertVerifier::InitializeOnIOThread(
+    const scoped_refptr<net::CertVerifyProc>& verify_proc) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  scoped_refptr<net::CertVerifyProc> verify_proc =
-      net::CertVerifyProc::CreateDefault();
   if (!verify_proc->SupportsAdditionalTrustAnchors()) {
     LOG(WARNING)
         << "Additional trust anchors not supported on the current platform!";
   }
   net::MultiThreadedCertVerifier* verifier =
-      new net::MultiThreadedCertVerifier(verify_proc.get());
+      new net::MultiThreadedCertVerifier(verify_proc);
   verifier->SetCertTrustAnchorProvider(this);
   delegate_.reset(verifier);
 }

@@ -731,6 +731,7 @@
         'browser/chromeos/memory/oom_priority_manager_unittest.cc',
         'browser/chromeos/mobile/mobile_activator_unittest.cc',
         'browser/chromeos/mobile_config_unittest.cc',
+        'browser/chromeos/net/cert_verify_proc_chromeos_unittest.cc',
         'browser/chromeos/net/network_portal_detector_impl_unittest.cc',
         'browser/chromeos/net/onc_utils_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',

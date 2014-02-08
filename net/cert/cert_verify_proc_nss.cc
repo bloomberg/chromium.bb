@@ -108,6 +108,8 @@ int MapSecurityError(int err) {
     case SEC_ERROR_UNKNOWN_ISSUER:
     case SEC_ERROR_UNTRUSTED_ISSUER:
     case SEC_ERROR_CA_CERT_INVALID:
+    case SEC_ERROR_APPLICATION_CALLBACK_ERROR:  // Rejected by
+                                                // chain_verify_callback.
       return ERR_CERT_AUTHORITY_INVALID;
     // TODO(port): map ERR_CERT_NO_REVOCATION_MECHANISM.
     case SEC_ERROR_OCSP_BAD_HTTP_RESPONSE:
@@ -349,6 +351,7 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
                          const SECOidTag* policy_oids,
                          int num_policy_oids,
                          CERTCertList* additional_trust_anchors,
+                         CERTChainVerifyCallback* chain_verify_callback,
                          CERTValOutParam* cvout) {
   bool use_crl = check_revocation;
   bool use_ocsp = check_revocation;
@@ -436,6 +439,11 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
     cvin.push_back(in_param);
     in_param.type = cert_pi_useOnlyTrustAnchors;
     in_param.value.scalar.b = PR_FALSE;
+    cvin.push_back(in_param);
+  }
+  if (chain_verify_callback) {
+    in_param.type = cert_pi_chainVerifyCallback;
+    in_param.value.pointer.chainVerifyCallback = chain_verify_callback;
     cvin.push_back(in_param);
   }
   in_param.type = cert_pi_end;
@@ -658,7 +666,8 @@ bool VerifyEV(CERTCertificate* cert_handle,
               bool rev_checking_enabled,
               EVRootCAMetadata* metadata,
               SECOidTag ev_policy_oid,
-              CERTCertList* additional_trust_anchors) {
+              CERTCertList* additional_trust_anchors,
+              CERTChainVerifyCallback* chain_verify_callback) {
   CERTValOutParam cvout[3];
   int cvout_index = 0;
   cvout[cvout_index].type = cert_po_certList;
@@ -680,6 +689,7 @@ bool VerifyEV(CERTCertificate* cert_handle,
       &ev_policy_oid,
       1,
       additional_trust_anchors,
+      chain_verify_callback,
       cvout);
   if (status != SECSuccess)
     return false;
@@ -736,12 +746,13 @@ bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
   return true;
 }
 
-int CertVerifyProcNSS::VerifyInternal(
+int CertVerifyProcNSS::VerifyInternalImpl(
     X509Certificate* cert,
     const std::string& hostname,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
+    CERTChainVerifyCallback* chain_verify_callback,
     CertVerifyResult* verify_result) {
 #if defined(OS_IOS)
   // For iOS, the entire chain must be loaded into NSS's in-memory certificate
@@ -794,9 +805,15 @@ int CertVerifyProcNSS::VerifyInternal(
         CertificateListToCERTCertList(additional_trust_anchors));
   }
 
-  SECStatus status = PKIXVerifyCert(cert_handle, check_revocation, false,
-                                    cert_io_enabled, NULL, 0,
-                                    trust_anchors.get(), cvout);
+  SECStatus status = PKIXVerifyCert(cert_handle,
+                                    check_revocation,
+                                    false,
+                                    cert_io_enabled,
+                                    NULL,
+                                    0,
+                                    trust_anchors.get(),
+                                    chain_verify_callback,
+                                    cvout);
 
   if (status == SECSuccess &&
       (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
@@ -806,8 +823,14 @@ int CertVerifyProcNSS::VerifyInternal(
     // NSS tests for that feature.
     scoped_cvout.Clear();
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
-    status = PKIXVerifyCert(cert_handle, true, true,
-                            cert_io_enabled, NULL, 0, trust_anchors.get(),
+    status = PKIXVerifyCert(cert_handle,
+                            true,
+                            true,
+                            cert_io_enabled,
+                            NULL,
+                            0,
+                            trust_anchors.get(),
+                            chain_verify_callback,
                             cvout);
   }
 
@@ -869,13 +892,35 @@ int CertVerifyProcNSS::VerifyInternal(
     if (check_revocation)
       verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
-    if (VerifyEV(cert_handle, flags, crl_set, check_revocation, metadata,
-                 ev_policy_oid, trust_anchors.get())) {
+    if (VerifyEV(cert_handle,
+                 flags,
+                 crl_set,
+                 check_revocation,
+                 metadata,
+                 ev_policy_oid,
+                 trust_anchors.get(),
+                 chain_verify_callback)) {
       verify_result->cert_status |= CERT_STATUS_IS_EV;
     }
   }
 
   return OK;
+}
+
+int CertVerifyProcNSS::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
+  return VerifyInternalImpl(cert,
+                            hostname,
+                            flags,
+                            crl_set,
+                            additional_trust_anchors,
+                            NULL,  // chain_verify_callback
+                            verify_result);
 }
 
 }  // namespace net

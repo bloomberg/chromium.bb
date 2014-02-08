@@ -23,6 +23,12 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
+#if defined(USE_NSS)
+typedef struct CERTCertificateStr CERTCertificate;
+#elif defined(USE_OPENSSL) && !defined(OS_ANDROID)
+typedef struct x509_st X509;
+#endif
+
 namespace base {
 class FilePath;
 }
@@ -34,7 +40,7 @@ class X509Certificate;
 // TestRootCerts is a helper class for unit tests that is used to
 // artificially mark a certificate as trusted, independent of the local
 // machine configuration.
-class NET_EXPORT_PRIVATE TestRootCerts {
+class NET_EXPORT TestRootCerts {
  public:
   // Obtains the Singleton instance to the trusted certificates.
   static TestRootCerts* GetInstance();
@@ -58,7 +64,9 @@ class NET_EXPORT_PRIVATE TestRootCerts {
   // Returns true if there are no certificates that have been marked trusted.
   bool IsEmpty() const;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(USE_NSS)
+  bool Contains(CERTCertificate* cert) const;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   CFArrayRef temporary_roots() const { return temporary_roots_; }
 
   // Modifies the root certificates of |trust_ref| to include the
@@ -73,6 +81,7 @@ class NET_EXPORT_PRIVATE TestRootCerts {
 #elif defined(USE_OPENSSL) && !defined(OS_ANDROID)
   const std::vector<scoped_refptr<X509Certificate> >&
       temporary_roots() const { return temporary_roots_; }
+  bool Contains(X509* cert) const;
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots() const { return temporary_roots_; }
 

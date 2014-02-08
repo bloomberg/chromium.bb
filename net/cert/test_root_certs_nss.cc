@@ -114,6 +114,17 @@ bool TestRootCerts::IsEmpty() const {
   return trust_cache_.empty();
 }
 
+#if defined(USE_NSS)
+bool TestRootCerts::Contains(CERTCertificate* cert) const {
+  for (std::list<TrustEntry*>::const_iterator it = trust_cache_.begin();
+       it != trust_cache_.end(); ++it) {
+    if (X509Certificate::IsSameOSCert(cert, (*it)->certificate()))
+      return true;
+  }
+  return false;
+}
+#endif
+
 TestRootCerts::~TestRootCerts() {
   Clear();
 }

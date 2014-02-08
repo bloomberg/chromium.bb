@@ -42,6 +42,16 @@ bool TestRootCerts::IsEmpty() const {
   return temporary_roots_.empty();
 }
 
+bool TestRootCerts::Contains(X509* cert) const {
+  for (std::vector<scoped_refptr<X509Certificate> >::const_iterator it =
+           temporary_roots_.begin();
+       it != temporary_roots_.end(); ++it) {
+    if (X509Certificate::IsSameOSCert(cert, (*it)->os_cert_handle()))
+      return true;
+  }
+  return false;
+}
+
 TestRootCerts::~TestRootCerts() {}
 
 void TestRootCerts::Init() {}

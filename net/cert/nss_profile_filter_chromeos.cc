@@ -4,6 +4,7 @@
 
 #include "net/cert/nss_profile_filter_chromeos.h"
 
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "net/cert/x509_certificate.h"
 
@@ -11,10 +12,10 @@ namespace net {
 
 namespace {
 
-std::string CertSlotsString(const scoped_refptr<X509Certificate>& cert) {
+std::string CertSlotsString(CERTCertificate* cert) {
   std::string result;
   crypto::ScopedPK11SlotList slots_for_cert(
-      PK11_GetAllSlotsForCert(cert->os_cert_handle(), NULL));
+      PK11_GetAllSlotsForCert(cert, NULL));
   for (PK11SlotListElement* slot_element =
            PK11_GetFirstSafe(slots_for_cert.get());
        slot_element;
@@ -86,13 +87,12 @@ bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
   return false;
 }
 
-bool NSSProfileFilterChromeOS::IsCertAllowed(
-    const scoped_refptr<X509Certificate>& cert) const {
+bool NSSProfileFilterChromeOS::IsCertAllowed(CERTCertificate* cert) const {
   crypto::ScopedPK11SlotList slots_for_cert(
-      PK11_GetAllSlotsForCert(cert->os_cert_handle(), NULL));
+      PK11_GetAllSlotsForCert(cert, NULL));
   if (!slots_for_cert) {
-    DVLOG(2) << "cert no slots: " << cert->subject().GetDisplayName();
-    return true;
+    DVLOG(2) << "cert no slots: " << base::StringPiece(cert->nickname);
+    return false;
   }
 
   for (PK11SlotListElement* slot_element =
@@ -102,13 +102,13 @@ bool NSSProfileFilterChromeOS::IsCertAllowed(
            PK11_GetNextSafe(slots_for_cert.get(), slot_element, PR_FALSE)) {
     if (IsModuleAllowed(slot_element->slot)) {
       DVLOG(3) << "cert from " << CertSlotsString(cert)
-               << " allowed: " << cert->subject().GetDisplayName();
+               << " allowed: " << base::StringPiece(cert->nickname);
       PK11_FreeSlotListElement(slots_for_cert.get(), slot_element);
       return true;
     }
   }
   DVLOG(2) << "cert from " << CertSlotsString(cert)
-           << " filtered: " << cert->subject().GetDisplayName();
+           << " filtered: " << base::StringPiece(cert->nickname);
   return false;
 }
 
@@ -118,7 +118,7 @@ NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate::
 
 bool NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate::operator()(
     const scoped_refptr<X509Certificate>& cert) const {
-  return !filter_.IsCertAllowed(cert);
+  return !filter_.IsCertAllowed(cert->os_cert_handle());
 }
 
 NSSProfileFilterChromeOS::ModuleNotAllowedForProfilePredicate::

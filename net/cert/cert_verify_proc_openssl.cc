@@ -140,15 +140,9 @@ void GetCertChainInfo(X509_STORE_CTX* store_ctx,
       } else {
         root = verified_chain.back();
       }
-      const CertificateList& temporary_roots =
-          TestRootCerts::GetInstance()->temporary_roots();
-      for (size_t i = 0; i < temporary_roots.size(); ++i) {
-        if (X509Certificate::IsSameOSCert(
-                root, temporary_roots[i]->os_cert_handle())) {
+      TestRootCerts* root_certs = TestRootCerts::GetInstance();
+      if (root_certs->Contains(root))
           verify_result->is_issued_by_known_root = false;
-          break;
-        }
-      }
     }
   }
 }

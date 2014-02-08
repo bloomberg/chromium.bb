@@ -17,6 +17,7 @@
 #include "net/cert/cert_verifier.h"
 
 namespace net {
+class CertVerifyProc;
 class CertVerifyResult;
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
@@ -38,7 +39,8 @@ class PolicyCertVerifier : public net::CertVerifier,
   explicit PolicyCertVerifier(const base::Closure& anchor_used_callback);
   virtual ~PolicyCertVerifier();
 
-  void InitializeOnIOThread();
+  void InitializeOnIOThread(
+      const scoped_refptr<net::CertVerifyProc>& verify_proc);
 
   // Sets the additional trust anchors.
   void SetTrustAnchors(const net::CertificateList& trust_anchors);

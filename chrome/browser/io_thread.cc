@@ -52,8 +52,10 @@
 #include "net/base/network_time_notifier.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -102,6 +104,10 @@
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #endif
 
 using content::BrowserThread;
@@ -545,7 +551,14 @@ void IOThread::InitAsync() {
   globals_->system_network_delegate.reset(network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
   UpdateDnsClientEnabled();
-  globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
+#if defined(OS_CHROMEOS)
+  // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
+  globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
+      new chromeos::CertVerifyProcChromeOS()));
+#else
+  globals_->cert_verifier.reset(
+      new net::MultiThreadedCertVerifier(net::CertVerifyProc::CreateDefault()));
+#endif
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 #if !defined(USE_OPENSSL)
   // For now, Certificate Transparency is only implemented for platforms

@@ -10,14 +10,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/nss_util.h"
+#include "crypto/nss_util_internal.h"
 #include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_trust_anchor_provider.h"
-#include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
@@ -44,7 +45,8 @@ class PolicyCertVerifierTest : public testing::Test {
 
     cert_verifier_.reset(new PolicyCertVerifier(base::Bind(
         &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
-    cert_verifier_->InitializeOnIOThread();
+    cert_verifier_->InitializeOnIOThread(new chromeos::CertVerifyProcChromeOS(
+        crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
     ASSERT_TRUE(test_ca_cert_);

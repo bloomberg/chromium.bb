@@ -94,6 +94,7 @@
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
@@ -103,6 +104,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/ssl/client_cert_store_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -967,14 +969,20 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 #endif
 
 #if defined(OS_CHROMEOS)
+  username_hash_ = profile_params_->username_hash;
+  crypto::ScopedPK11Slot public_slot =
+      crypto::GetPublicSlotForChromeOSUser(username_hash_);
+  // The private slot won't be ready by this point. It shouldn't be necessary
+  // for cert trust purposes anyway.
+  scoped_refptr<net::CertVerifyProc> verify_proc =
+      new chromeos::CertVerifyProcChromeOS(public_slot.Pass());
   if (cert_verifier_) {
-    cert_verifier_->InitializeOnIOThread();
+    cert_verifier_->InitializeOnIOThread(verify_proc);
     main_request_context_->set_cert_verifier(cert_verifier_.get());
   } else {
     main_request_context_->set_cert_verifier(
-        io_thread_globals->cert_verifier.get());
+        new net::MultiThreadedCertVerifier(verify_proc.get()));
   }
-  username_hash_ = profile_params_->username_hash;
 #else
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());

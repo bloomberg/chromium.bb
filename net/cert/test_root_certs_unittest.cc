@@ -135,6 +135,39 @@ TEST(TestRootCertsTest, OverrideTrust) {
   EXPECT_EQ(bad_verify_result.cert_status, restored_verify_result.cert_status);
 }
 
+#if defined(USE_NSS) || (defined(USE_OPENSSL) && !defined(OS_ANDROID))
+TEST(TestRootCertsTest, Contains) {
+  // Another test root certificate.
+  const char kRootCertificateFile2[] = "2048-rsa-root.pem";
+
+  TestRootCerts* test_roots = TestRootCerts::GetInstance();
+  ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
+
+  scoped_refptr<X509Certificate> root_cert_1 =
+      ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert_1.get());
+
+  scoped_refptr<X509Certificate> root_cert_2 =
+      ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile2);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert_2.get());
+
+  EXPECT_FALSE(test_roots->Contains(root_cert_1->os_cert_handle()));
+  EXPECT_FALSE(test_roots->Contains(root_cert_2->os_cert_handle()));
+
+  EXPECT_TRUE(test_roots->Add(root_cert_1.get()));
+  EXPECT_TRUE(test_roots->Contains(root_cert_1->os_cert_handle()));
+  EXPECT_FALSE(test_roots->Contains(root_cert_2->os_cert_handle()));
+
+  EXPECT_TRUE(test_roots->Add(root_cert_2.get()));
+  EXPECT_TRUE(test_roots->Contains(root_cert_1->os_cert_handle()));
+  EXPECT_TRUE(test_roots->Contains(root_cert_2->os_cert_handle()));
+
+  test_roots->Clear();
+  EXPECT_FALSE(test_roots->Contains(root_cert_1->os_cert_handle()));
+  EXPECT_FALSE(test_roots->Contains(root_cert_2->os_cert_handle()));
+}
+#endif
+
 // TODO(rsleevi): Add tests for revocation checking via CRLs, ensuring that
 // TestRootCerts properly injects itself into the validation process. See
 // http://crbug.com/63958

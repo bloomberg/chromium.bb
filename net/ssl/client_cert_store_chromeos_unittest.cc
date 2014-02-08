@@ -37,10 +37,6 @@ class ClientCertStoreChromeOSTestDelegate {
   ClientCertStoreChromeOS store_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS,
-                              ClientCertStoreTest,
-                              ClientCertStoreChromeOSTestDelegate);
-
 class ClientCertStoreChromeOSTest : public ::testing::Test {
  public:
   scoped_refptr<X509Certificate> ImportCertForUser(

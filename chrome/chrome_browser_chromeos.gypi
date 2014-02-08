@@ -643,6 +643,8 @@
         'browser/chromeos/mobile/mobile_activator.h',
         'browser/chromeos/mobile_config.cc',
         'browser/chromeos/mobile_config.h',
+        'browser/chromeos/net/cert_verify_proc_chromeos.cc',
+        'browser/chromeos/net/cert_verify_proc_chromeos.h',
         'browser/chromeos/net/network_portal_detector.cc',
         'browser/chromeos/net/network_portal_detector.h',
         'browser/chromeos/net/network_portal_detector_impl.cc',
