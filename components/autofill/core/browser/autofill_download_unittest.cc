@@ -21,10 +21,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
 
 using base::ASCIIToUTF16;
-using blink::WebInputElement;
 
 namespace autofill {
 

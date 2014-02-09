@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
 namespace autofill {

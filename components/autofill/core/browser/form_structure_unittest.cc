@@ -11,11 +11,9 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
-using blink::WebInputElement;
 
 namespace autofill {
 namespace {
