@@ -446,17 +446,16 @@ def main(argv):
     SymUpload = TestingSymUpload
 
   if not opts.yes:
-    query = textwrap.wrap(textwrap.dedent("""
+    prolog = '\n'.join(textwrap.wrap(textwrap.dedent("""
         Uploading symbols for an entire Chromium OS build is really only
         necessary for release builds and in a few cases for developers
         to debug problems.  It will take considerable time to run.  For
         developer debugging purposes, consider instead passing specific
         files to upload.
-    """), 80)
-    cros_build_lib.Warning('\n%s', '\n'.join(query))
+    """), 80)).strip()
     if not cros_build_lib.BooleanPrompt(
         prompt='Are you sure you want to upload all build symbols',
-        default=False):
+        default=False, prolog=prolog):
       cros_build_lib.Die('better safe than sorry')
 
   ret = 0
