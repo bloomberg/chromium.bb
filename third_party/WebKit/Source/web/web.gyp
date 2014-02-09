@@ -42,7 +42,7 @@
     ],
     'targets': [
         {
-            'target_name': 'webkit',
+            'target_name': 'blink_web',
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
@@ -109,14 +109,14 @@
                         '../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
-                        # Compile Blink unittest files into webkit.dll in component build mode
+                        # Compile Blink unittest files into blink_web.dll in component build mode
                         # since there're methods that are tested but not exported.
                         # WebUnitTests.* exports an API that runs all the unittests inside
-                        # webkit.dll.
+                        # blink_web.dll.
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
-                        # FIXME: the next line should not be needed. We prefer to run these unit tests outside webkit.dll.
+                        # FIXME: the next line should not be needed. We prefer to run these unit tests outside blink_web.dll.
                         '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                         'WebTestingSupport.cpp',
@@ -131,7 +131,7 @@
                         ['clang==1', {
                             # FIXME: It would be nice to enable this in shared builds too,
                             # but the test files have global constructors from the GTEST macro
-                            # and we pull in the test files into the webkit target in the
+                            # and we pull in the test files into the blink_web target in the
                             # shared build.
                             'cflags!': ['-Wglobal-constructors'],
                             'xcode_settings': {
