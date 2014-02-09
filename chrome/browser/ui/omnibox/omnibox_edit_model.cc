@@ -466,8 +466,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // the user is probably holding down control to cause the copy, which will
   // screw up our calculation of the desired_tld.
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(*text,
-      KeywordIsSelected(), true, &match, NULL);
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
+      *text, KeywordIsSelected(), true, ClassifyPage(), &match, NULL);
   if (AutocompleteMatch::IsSearchType(match.type))
     return;
   *url = match.destination_url;
@@ -1329,7 +1329,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   } else {
     AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
         UserTextFromDisplayText(view_->GetText()), KeywordIsSelected(), true,
-        match, alternate_nav_url);
+        ClassifyPage(), match, alternate_nav_url);
   }
 }
 
@@ -1427,8 +1427,8 @@ void OmniboxEditModel::ClassifyStringForPasteAndGo(
     AutocompleteMatch* match,
     GURL* alternate_nav_url) const {
   DCHECK(match);
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(text,
-      false, false, match, alternate_nav_url);
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
+      text, false, false, ClassifyPage(), match, alternate_nav_url);
 }
 
 void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
