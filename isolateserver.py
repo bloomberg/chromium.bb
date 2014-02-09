@@ -1094,6 +1094,7 @@ class LocalCache(object):
   It can be accessed concurrently from multiple threads, so it should protect
   its internal state with some lock.
   """
+  cache_dir = None
 
   def __enter__(self):
     """Context manager interface."""
@@ -1884,7 +1885,15 @@ def directory_to_metadata(root, algo, blacklist):
 
 
 def archive(storage, algo, files, blacklist):
-  """Stores every entries and returns the relevant data."""
+  """Stores every entries and returns the relevant data.
+
+  Arguments:
+    storage: a Storage object that communicates with the remote object store.
+    algo: an hashlib class to hash content. Usually hashlib.sha1.
+    files: list of file paths to upload. If a directory is specified, a
+           .isolated file is created and its hash is returned.
+    blacklist: function that returns True if a file should be omitted.
+  """
   assert all(isinstance(i, unicode) for i in files), files
   if len(files) != len(set(map(os.path.abspath, files))):
     raise Error('Duplicate entries found.')
@@ -1936,8 +1945,8 @@ def archive(storage, algo, files, blacklist):
           raise Error('%s is neither a file or directory.' % f)
       except OSError:
         raise Error('Failed to process %s.' % f)
-    # Technically we would care about the uploaded files but we don't much in
-    # practice.
+    # Technically we would care about which files were uploaded but we don't
+    # much in practice.
     _uploaded_files = storage.upload_items(items_to_upload)
     return results
   finally:

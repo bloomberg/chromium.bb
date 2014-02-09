@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import StringIO
 import functools
 import hashlib
 import json
@@ -21,10 +22,16 @@ import run_isolated
 import test_utils
 from depot_tools import auto_stub
 
+ALGO = hashlib.sha1
+
 
 def write_content(filepath, content):
   with open(filepath, 'wb') as f:
     f.write(content)
+
+
+def json_dumps(data):
+  return json.dumps(data, sort_keys=True, separators=(',', ':'))
 
 
 class StorageFake(object):
@@ -169,11 +176,11 @@ class RunIsolatedTest(auto_stub.TestCase):
       calls.append(command)
       return 0
     self.mock(run_isolated.subprocess, 'call', call)
-    isolated = json.dumps(
+    isolated = json_dumps(
         {
           'command': ['foo.exe', 'cmd with space'],
         })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
@@ -197,11 +204,11 @@ class RunIsolatedTest(auto_stub.TestCase):
       calls.append(command)
       return 0
     self.mock(run_isolated.subprocess, 'call', call)
-    isolated = json.dumps(
+    isolated = json_dumps(
         {
           'command': ['foo.exe', 'cmd with space'],
         })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
@@ -235,29 +242,23 @@ class RunIsolatedTest(auto_stub.TestCase):
         run_isolated.subprocess, 'call',
         lambda *x, **y: subprocess_call.append((x, y)) or 0)
 
-    outdir = self.fake_make_temp_dir()
-    try:
-      ret = run_isolated.run_tha_test(
-          isolated_hash,
-          StorageFake(files),
-          run_isolated.isolateserver.MemoryCache(),
-          run_isolated.isolateserver.get_hash_algo('default-deflate'),
-          outdir,
-          [])
-    finally:
-      if os.path.isdir(outdir):
-        run_isolated.rmtree(outdir)
-        self.fail('Temporary directory should have been deleted')
+    ret = run_isolated.run_tha_test(
+        isolated_hash,
+        StorageFake(files),
+        run_isolated.isolateserver.MemoryCache(),
+        run_isolated.isolateserver.get_hash_algo('default-deflate'),
+        [])
     self.assertEqual(0, ret)
     return subprocess_call, make_tree_call
 
   def test_run_tha_test_naked(self):
-    isolated = json.dumps({'command': ['invalid', 'command']})
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated = json_dumps({'command': ['invalid', 'command']})
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_writeable', 'make_tree_deleteable'], make_tree_call)
+        ['make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable'],
+        make_tree_call)
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
@@ -265,16 +266,17 @@ class RunIsolatedTest(auto_stub.TestCase):
         [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_0(self):
-    isolated = json.dumps(
+    isolated = json_dumps(
         {
           'command': ['invalid', 'command'],
           'read_only': 0,
         })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_writeable', 'make_tree_deleteable'], make_tree_call)
+        ['make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable'],
+        make_tree_call)
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
@@ -282,16 +284,20 @@ class RunIsolatedTest(auto_stub.TestCase):
         [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_1(self):
-    isolated = json.dumps(
+    isolated = json_dumps(
         {
           'command': ['invalid', 'command'],
           'read_only': 1,
         })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_files_read_only', 'make_tree_deleteable'], make_tree_call)
+        [
+          'make_tree_files_read_only', 'make_tree_deleteable',
+          'make_tree_deleteable',
+        ],
+        make_tree_call)
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
@@ -299,16 +305,17 @@ class RunIsolatedTest(auto_stub.TestCase):
         [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_2(self):
-    isolated = json.dumps(
+    isolated = json_dumps(
         {
           'command': ['invalid', 'command'],
           'read_only': 2,
         })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_read_only', 'make_tree_deleteable'], make_tree_call)
+        ['make_tree_read_only', 'make_tree_deleteable', 'make_tree_deleteable'],
+        make_tree_call)
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
@@ -318,8 +325,8 @@ class RunIsolatedTest(auto_stub.TestCase):
   def test_main_naked(self):
     # The most naked .isolated file that can exist.
     self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
-    isolated = json.dumps({'command': ['invalid', 'command']})
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated = json_dumps({'command': ['invalid', 'command']})
+    isolated_hash = ALGO(isolated).hexdigest()
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
@@ -345,11 +352,11 @@ class RunIsolatedTest(auto_stub.TestCase):
         [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_modified_cwd(self):
-    isolated = json.dumps({
+    isolated = json_dumps({
         'command': ['../out/some.exe', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(1, len(subprocess_call))
@@ -360,11 +367,11 @@ class RunIsolatedTest(auto_stub.TestCase):
         subprocess_call)
 
   def test_python_cmd(self):
-    isolated = json.dumps({
+    isolated = json_dumps({
         'command': ['../out/cmd.py', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    isolated_hash = ALGO(isolated).hexdigest()
     files = {isolated_hash:isolated}
     subprocess_call, _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(1, len(subprocess_call))
@@ -374,6 +381,68 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(
         [(([sys.executable, os.path.join('..', 'out', 'cmd.py'), 'arg'],), {})],
         subprocess_call)
+
+  def test_output(self):
+    script = (
+      'import sys\n'
+      'open(sys.argv[1], "w").write("bar")\n')
+    script_hash = ALGO(script).hexdigest()
+    isolated = json_dumps(
+        {
+          'algo': 'sha-1',
+          'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
+          'files': {
+            'cmd.py': {
+              'h': script_hash,
+              'm': 0700,
+              's': len(script),
+            },
+          },
+          'version': run_isolated.isolateserver.ISOLATED_FILE_VERSION,
+        })
+    isolated_hash = ALGO(isolated).hexdigest()
+    contents = {
+        isolated_hash: isolated,
+        script_hash: script,
+    }
+
+    path = os.path.join(self.tempdir, 'store')
+    os.mkdir(path)
+    for h, c in contents.iteritems():
+      write_content(os.path.join(path, h), c)
+    store = run_isolated.isolateserver.get_storage(path, 'default-store')
+
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    ret = run_isolated.run_tha_test(
+        isolated_hash,
+        store,
+        run_isolated.isolateserver.MemoryCache(),
+        run_isolated.isolateserver.get_hash_algo('default-store'),
+        [])
+    self.assertEqual(0, ret)
+
+    # It uploaded back. Assert the store has a new item containing foo.
+    hashes = set(contents)
+    output_hash = ALGO('bar').hexdigest()
+    hashes.add(output_hash)
+    uploaded = json_dumps(
+        {
+          'algo': 'sha-1',
+          'files': {
+            'foo': {
+              'h': output_hash,
+              # TODO(maruel): Handle umask.
+              'm': 0640,
+              's': 3,
+            },
+          },
+          'version': run_isolated.isolateserver.ISOLATED_FILE_VERSION,
+        })
+    uploaded_hash = ALGO(uploaded).hexdigest()
+    hashes.add(uploaded_hash)
+    self.assertEqual(hashes, set(os.listdir(path)))
+    self.assertEqual(
+        'run_isolated output: %s\n' % uploaded_hash, sys.stdout.getvalue())
 
 
 if __name__ == '__main__':

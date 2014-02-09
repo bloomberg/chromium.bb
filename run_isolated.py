@@ -5,10 +5,16 @@
 
 """Reads a .isolated, creates a tree of hardlinks and runs the test.
 
-Keeps a local cache.
+To improve performance, it keeps a local cache. The local cache can safely be
+deleted.
+
+Any ${ISOLATED_OUTDIR} on the command line will be replaced by the location of a
+temporary directory upon execution of the command specified in the .isolated
+file. All content written to this directory will be uploaded upon termination
+and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.2.1'
+__version__ = '0.3'
 
 import ctypes
 import logging
@@ -326,7 +332,7 @@ def get_free_space(path):
 def make_temp_dir(prefix, root_dir):
   """Returns a temporary directory on the same file system as root_dir."""
   base_temp_dir = None
-  if not is_same_filesystem(root_dir, tempfile.gettempdir()):
+  if root_dir and not is_same_filesystem(root_dir, tempfile.gettempdir()):
     base_temp_dir = os.path.dirname(root_dir)
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
@@ -643,10 +649,34 @@ def change_tree_read_only(rootdir, read_only):
         (rootdir, read_only, read_only))
 
 
-def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
-  """Downloads the dependencies in the cache, hardlinks them into a |outdir|
-  and runs the executable.
+def process_command(command, out_dir):
+  """Replaces isolated specific variables in a command line."""
+  return [c.replace('${ISOLATED_OUTDIR}', out_dir) for c in command]
+
+
+def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
+  """Downloads the dependencies in the cache, hardlinks them into a temporary
+  directory and runs the executable from there.
+
+  A temporary directory is created to hold the output files. The content inside
+  this directory will be uploaded back to |storage| packaged as a .isolated
+  file.
+
+  Arguments:
+    isolated_hash: the sha-1 of the .isolated file that must be retrieved to
+                   recreate the tree of files to run the target executable.
+    storage: an isolateserver.Storage object to retrieve remote objects. This
+             object has a reference to an isolateserver.StorageApi, which does
+             the actual I/O.
+    cache: an isolateserver.LocalCache to keep from retrieving the same objects
+           constantly by caching the objects retrieved. Can be on-disk or
+           in-memory.
+    algo: an hashlib class to hash content. Usually hashlib.sha1.
+    extra_args: optional arguments to add to the command stated in the .isolate
+                file.
   """
+  run_dir = make_temp_dir('run_tha_test', cache.cache_dir)
+  out_dir = unicode(tempfile.mkdtemp(prefix='run_tha_test'))
   result = 0
   try:
     try:
@@ -655,7 +685,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
           storage=storage,
           cache=cache,
           algo=algo,
-          outdir=outdir,
+          outdir=run_dir,
           os_flavor=get_flavor(),
           require_command=True)
     except isolateserver.ConfigError as e:
@@ -663,8 +693,8 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
       result = 1
       return result
 
-    change_tree_read_only(outdir, settings.read_only)
-    cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
+    change_tree_read_only(run_dir, settings.read_only)
+    cwd = os.path.normpath(os.path.join(run_dir, settings.relative_cwd))
     command = settings.command + extra_args
 
     # subprocess.call doesn't consider 'cwd' when searching for executable.
@@ -672,6 +702,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
     # path if necessary.
     if not os.path.isabs(command[0]):
       command[0] = os.path.abspath(os.path.join(cwd, command[0]))
+    command = process_command(command, out_dir)
     logging.info('Running %s, cwd=%s' % (command, cwd))
 
     # TODO(csharp): This should be specified somewhere else.
@@ -687,23 +718,35 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
     except OSError as e:
       tools.report_error('Failed to run %s; cwd=%s: %s' % (command, cwd, e))
       result = 1
+
+    # Upload out_dir and generate a .isolated file out of this directory. It is
+    # only done if files were written in the directory.
+    if os.listdir(out_dir):
+      with tools.Profiler('ArchiveOutput'):
+        results = isolateserver.archive(storage, algo, [out_dir], None)
+      # TODO(maruel): Implement side-channel to publish this information.
+      print('run_isolated output: %s' % results[0][0])
+
   finally:
     try:
-      rmtree(outdir)
-    except OSError:
-      logging.warning('Leaking %s', outdir)
-      # Swallow the exception so it doesn't generate an infrastructure error.
-      #
-      # It usually happens on Windows when a child process is not properly
-      # terminated, usually because of a test case starting child processes
-      # that time out. This causes files to be locked and it becomes
-      # impossible to delete them.
-      #
-      # Only report an infrastructure error if the test didn't fail. This is
-      # because a swarming bot will likely not reboot. This situation will
-      # cause accumulation of temporary hardlink trees.
-      if not result:
-        raise
+      rmtree(out_dir)
+    finally:
+      try:
+        rmtree(run_dir)
+      except OSError:
+        logging.warning('Leaking %s', run_dir)
+        # Swallow the exception so it doesn't generate an infrastructure error.
+        #
+        # It usually happens on Windows when a child process is not properly
+        # terminated, usually because of a test case starting child processes
+        # that time out. This causes files to be locked and it becomes
+        # impossible to delete them.
+        #
+        # Only report an infrastructure error if the test didn't fail. This is
+        # because a swarming bot will likely not reboot. This situation will
+        # cause accumulation of temporary hardlink trees.
+        if not result:
+          raise
   return result
 
 
@@ -770,11 +813,10 @@ def main(args):
   try:
     # |options.cache| may not exist until DiskCache() instance is created.
     cache = DiskCache(options.cache, policies, algo)
-    outdir = make_temp_dir('run_tha_test', options.cache)
     with isolateserver.get_storage(
         options.isolate_server, options.namespace) as storage:
       return run_tha_test(
-          options.isolated or options.hash, storage, cache, algo, outdir, args)
+          options.isolated or options.hash, storage, cache, algo, args)
   except Exception as e:
     # Make sure any exception is logged.
     tools.report_error(e)
