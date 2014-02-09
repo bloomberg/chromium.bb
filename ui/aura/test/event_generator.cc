@@ -17,6 +17,8 @@
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #endif
 
 #if defined(OS_WIN)
@@ -496,6 +498,12 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   MSG native_event =
       { NULL, (is_press ? key_press : WM_KEYUP), key_code, 0 };
   TestKeyEvent keyev(native_event, flags, key_press == WM_CHAR);
+#elif defined(USE_X11)
+  ui::ScopedXI2Event xevent;
+  xevent.InitKeyEvent(is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
+                      key_code,
+                      flags);
+  ui::KeyEvent keyev(xevent, false);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
   ui::KeyEvent keyev(type, key_code, flags, false);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/magnifier/magnification_controller.h"
+
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
