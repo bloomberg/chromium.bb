@@ -1260,11 +1260,12 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
       UpdateUploadedList(filename, archive_path, upload_url, debug)
 
 
-def UploadSymbols(buildroot, board, official, cnt):
+def UploadSymbols(buildroot, board, official, cnt, failed_list):
   """Upload debug symbols for this build."""
   ret = upload_symbols.UploadSymbols(
       board=board, official=official, upload_count=cnt,
-      root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR))
+      root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
+      failed_list=failed_list)
   if ret:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437

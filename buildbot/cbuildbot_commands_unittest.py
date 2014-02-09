@@ -298,7 +298,7 @@ ca-t3/pk-g4-4.0.1-r333
   def testUploadSymbols(self, sym_mock, official=False, cnt=None):
     """Test UploadSymbols Command."""
     sym_mock.side_effect = [0]
-    commands.UploadSymbols(self.tempdir, self._board, official, cnt)
+    commands.UploadSymbols(self.tempdir, self._board, official, cnt, None)
     self.assertEquals(sym_mock.call_count, 1)
     _, kwargs = sym_mock.call_args
     self.assertEquals(kwargs['official'], official)
