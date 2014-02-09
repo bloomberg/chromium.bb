@@ -17,6 +17,7 @@ import getpass
 import os
 import re
 import tempfile
+import textwrap
 
 from chromite.buildbot import constants
 from chromite.lib import commandline
@@ -397,6 +398,8 @@ def main(argv):
   parser.add_argument('--sign-types', default=None, nargs='+',
                       choices=('recovery', 'factory', 'firmware'),
                       help='only sign specified image types')
+  parser.add_argument('--yes', action='store_true', default=False,
+                      help='answer yes to all prompts')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
@@ -406,6 +409,18 @@ def main(argv):
     force_keysets.add('test-keys-mp')
   if opts.test_sign_premp:
     force_keysets.add('test-keys-premp')
+
+  # If we aren't using mock or test or dry run mode, then let's prompt the user
+  # to make sure they actually want to do this.  It's rare that people want to
+  # run this directly and hit the release bucket.
+  if not (opts.mock or force_keysets or opts.dry_run) and not opts.yes:
+    prolog = '\n'.join(textwrap.wrap(textwrap.dedent(
+        'Uploading images for signing to the *release* bucket is not something '
+        'you generally should be doing yourself.'), 80)).strip()
+    if not cros_build_lib.BooleanPrompt(
+        prompt='Are you sure you want to sign these images',
+        default=False, prolog=prolog):
+      cros_build_lib.Die('better safe than sorry')
 
   PushImage(opts.image_dir, opts.board, versionrev=opts.version,
             profile=opts.profile, priority=opts.priority,

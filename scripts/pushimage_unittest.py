@@ -239,7 +239,7 @@ class MainTests(cros_test_lib.MockTestCase):
 
   def testBasic(self):
     """Simple smoke test"""
-    pushimage.main(['--board', 'test.board', '/src'])
+    pushimage.main(['--board', 'test.board', '/src', '--yes'])
 
 
 if __name__ == '__main__':
