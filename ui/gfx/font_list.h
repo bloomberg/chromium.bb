@@ -8,35 +8,34 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-// FontList represents a list of fonts either in the form of Font vector or in
-// the form of a string representing font names, styles, and size.
+class FontListImpl;
+
+// FontList represents a list of fonts and provides metrics which are common
+// in the fonts.  FontList is copyable and it's quite cheap to copy.
 //
-// The string representation is in the form "FAMILY_LIST [STYLE_OPTIONS] SIZE",
-// where FAMILY_LIST is a comma separated list of families terminated by a
-// comma, STYLE_OPTIONS is a whitespace separated list of words where each word
-// describes one of style, variant, weight, stretch, or gravity, and SIZE is
-// a decimal number followed by "px" for absolute size. STYLE_OPTIONS may be
-// absent.
-//
-// The string format complies with that of Pango detailed at
+// The format of font description string complies with that of Pango detailed at
 // http://developer.gnome.org/pango/stable/pango-Fonts.html#pango-font-description-from-string
-//
-// FontList could be initialized either way without conversion to the other
-// form. The conversion to the other form is done only when asked to get the
-// other form.
-//
-// FontList allows operator= since FontList is a data member type in RenderText,
-// and operator= is used in RenderText::SetFontList().
+// The format is "<FONT_FAMILY_LIST>,[STYLES] <SIZE>" where
+//     FONT_FAMILY_LIST is a comma-separated list of font family names,
+//     STYLES is a space-separated list of style names ("Bold" and "Italic"),
+//     SIZE is a font size in pixel with the suffix "px".
+// Here are examples of font description string:
+//     "Arial, Helvetica, Bold Italic 14px"
+//     "Arial, 14px"
 class GFX_EXPORT FontList {
  public:
   // Creates a font list with default font names, size and style, which are
   // specified by SetDefaultFontDescription().
   FontList();
+
+  // Creates a font list that is a clone of another font list.
+  FontList(const FontList& other);
 
   // Creates a font list from a string representing font names, styles, and
   // size.
@@ -55,6 +54,9 @@ class GFX_EXPORT FontList {
   explicit FontList(const Font& font);
 
   ~FontList();
+
+  // Copies the given font list into this object.
+  FontList& operator=(const FontList& other);
 
   // Sets the description string for default FontList construction. If it's
   // empty, FontList will initialize using the default Font constructor.
@@ -80,11 +82,6 @@ class GFX_EXPORT FontList {
   // style. |font_style| specifies the new style, which is a bitmask of the
   // values: Font::BOLD, Font::ITALIC and Font::UNDERLINE.
   FontList DeriveWithStyle(int font_style) const;
-
-  // Obsolete versions.  Use the abolve methods instead.
-  FontList DeriveFontListWithSizeDelta(int size_delta) const;
-  FontList DeriveFontListWithSizeDeltaAndStyle(int size_delta,
-                                               int font_style) const;
 
   // Returns the height of this font list, which is max(ascent) + max(descent)
   // for all the fonts in the font list.
@@ -121,33 +118,11 @@ class GFX_EXPORT FontList {
   const Font& GetPrimaryFont() const;
 
  private:
-  // Extracts common font height and baseline into |common_height_| and
-  // |common_baseline_|.
-  void CacheCommonFontHeightAndBaseline() const;
+  explicit FontList(FontListImpl* impl);
 
-  // Extracts font style and size into |font_style_| and |font_size_|.
-  void CacheFontStyleAndSize() const;
+  static const scoped_refptr<FontListImpl>& GetDefaultImpl();
 
-  // A vector of Font. If FontList is constructed with font description string,
-  // |fonts_| is not initialized during construction. Instead, it is computed
-  // lazily when user asked to get the font vector.
-  mutable std::vector<Font> fonts_;
-
-  // A string representing font names, styles, and sizes.
-  // Please refer to the comments before class declaration for details on string
-  // format.
-  // If FontList is constructed with a vector of font,
-  // |font_description_string_| is not initialized during construction. Instead,
-  // it is computed lazily when user asked to get the font description string.
-  mutable std::string font_description_string_;
-
-  // The cached common height and baseline of the fonts in the font list.
-  mutable int common_height_;
-  mutable int common_baseline_;
-
-  // Cached font style and size.
-  mutable int font_style_;
-  mutable int font_size_;
+  scoped_refptr<FontListImpl> impl_;
 };
 
 }  // namespace gfx

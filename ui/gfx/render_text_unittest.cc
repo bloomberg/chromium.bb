@@ -1339,8 +1339,7 @@ TEST_F(RenderTextTest, StringSizeHeight) {
   };
 
   const FontList default_font_list;
-  const FontList& larger_font_list =
-      default_font_list.DeriveFontListWithSizeDelta(24);
+  const FontList& larger_font_list = default_font_list.DeriveWithSizeDelta(24);
   EXPECT_GT(larger_font_list.GetHeight(), default_font_list.GetHeight());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {

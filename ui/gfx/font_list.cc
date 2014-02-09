@@ -4,13 +4,9 @@
 
 #include "ui/gfx/font_list.h"
 
-#include <algorithm>
-
 #include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "ui/gfx/font_list_impl.h"
 
 namespace {
 
@@ -18,148 +14,37 @@ namespace {
 base::LazyInstance<std::string>::Leaky g_default_font_description =
     LAZY_INSTANCE_INITIALIZER;
 
-// The default instance of gfx::FontList, whose metrics are pre-calculated.
-// The default ctor of gfx::FontList copies the metrics so it won't need to
-// scan the whole font list to calculate the metrics.
-const gfx::FontList* g_default_font_list = NULL;
-
-// Parses font description into |font_names|, |font_style| and |font_size|.
-void ParseFontDescriptionString(const std::string& font_description_string,
-                                std::vector<std::string>* font_names,
-                                int* font_style,
-                                int* font_size) {
-  base::SplitString(font_description_string, ',', font_names);
-  DCHECK_GT(font_names->size(), 1U);
-
-  // The last item is [STYLE_OPTIONS] SIZE.
-  std::vector<std::string> styles_size;
-  base::SplitString(font_names->back(), ' ', &styles_size);
-  DCHECK(!styles_size.empty());
-  base::StringToInt(styles_size.back(), font_size);
-  DCHECK_GT(*font_size, 0);
-  font_names->pop_back();
-
-  // Font supports BOLD and ITALIC; underline is supported via RenderText.
-  *font_style = 0;
-  for (size_t i = 0; i < styles_size.size() - 1; ++i) {
-    // Styles are separated by white spaces. base::SplitString splits styles
-    // by space, and it inserts empty string for continuous spaces.
-    if (styles_size[i].empty())
-      continue;
-    if (!styles_size[i].compare("Bold"))
-      *font_style |= gfx::Font::BOLD;
-    else if (!styles_size[i].compare("Italic"))
-      *font_style |= gfx::Font::ITALIC;
-    else
-      NOTREACHED();
-  }
-}
-
-// Returns the font style and size as a string.
-std::string FontStyleAndSizeToString(int font_style, int font_size) {
-  std::string result;
-  if (font_style & gfx::Font::BOLD)
-    result += "Bold ";
-  if (font_style & gfx::Font::ITALIC)
-    result += "Italic ";
-  result += base::IntToString(font_size);
-  result += "px";
-  return result;
-}
-
-// Returns font description from |font_names|, |font_style|, and |font_size|.
-std::string BuildFontDescription(const std::vector<std::string>& font_names,
-                                 int font_style,
-                                 int font_size) {
-  std::string description = JoinString(font_names, ',');
-  description += "," + FontStyleAndSizeToString(font_style, font_size);
-  return description;
-}
+// The default instance of gfx::FontListImpl.
+base::LazyInstance<scoped_refptr<gfx::FontListImpl> >::Leaky g_default_impl =
+    LAZY_INSTANCE_INITIALIZER;
+bool g_default_impl_initialized = false;
 
 }  // namespace
 
 namespace gfx {
 
-FontList::FontList()
-    : common_height_(-1),
-      common_baseline_(-1),
-      font_style_(-1),
-      font_size_(-1) {
-  // SetDefaultFontDescription() must be called and the default font description
-  // must be set earlier than any call of the default constructor.
-  DCHECK(!(g_default_font_description == NULL))  // != is not overloaded.
-      << "SetDefaultFontDescription has not been called.";
+FontList::FontList() : impl_(GetDefaultImpl()) {}
 
-  // Allocate the global instance of FontList for |g_default_font_list| without
-  // calling the default ctor.
-  static FontList default_font_list((Font()));
-
-  if (!g_default_font_list) {
-    default_font_list = g_default_font_description.Get().empty() ?
-        FontList(Font()) : FontList(g_default_font_description.Get());
-    // Pre-calculate the metrics if the underlying PlatformFont is supported.
-    // Note that not all the platforms support PlatformFont.
-    if (default_font_list.GetPrimaryFont().platform_font()) {
-      default_font_list.CacheCommonFontHeightAndBaseline();
-      default_font_list.CacheFontStyleAndSize();
-    }
-    g_default_font_list = &default_font_list;
-  }
-
-  // Copy the default font list specification and its pre-calculated metrics.
-  *this = *g_default_font_list;
-}
+FontList::FontList(const FontList& other) : impl_(other.impl_) {}
 
 FontList::FontList(const std::string& font_description_string)
-    : font_description_string_(font_description_string),
-      common_height_(-1),
-      common_baseline_(-1),
-      font_style_(-1),
-      font_size_(-1) {
-  DCHECK(!font_description_string.empty());
-  // DCHECK description string ends with "px" for size in pixel.
-  DCHECK(EndsWith(font_description_string, "px", true));
-}
+    : impl_(new FontListImpl(font_description_string)) {}
 
 FontList::FontList(const std::vector<std::string>& font_names,
                    int font_style,
                    int font_size)
-    : font_description_string_(BuildFontDescription(font_names, font_style,
-                                                    font_size)),
-      common_height_(-1),
-      common_baseline_(-1),
-      font_style_(font_style),
-      font_size_(font_size) {
-  DCHECK(!font_names.empty());
-  DCHECK(!font_names[0].empty());
-}
+    : impl_(new FontListImpl(font_names, font_style, font_size)) {}
 
 FontList::FontList(const std::vector<Font>& fonts)
-    : fonts_(fonts),
-      common_height_(-1),
-      common_baseline_(-1),
-      font_style_(-1),
-      font_size_(-1) {
-  DCHECK(!fonts.empty());
-  font_style_ = fonts[0].GetStyle();
-  font_size_ = fonts[0].GetFontSize();
-  if (DCHECK_IS_ON()) {
-    for (size_t i = 1; i < fonts.size(); ++i) {
-      DCHECK_EQ(fonts[i].GetStyle(), font_style_);
-      DCHECK_EQ(fonts[i].GetFontSize(), font_size_);
-    }
-  }
-}
+    : impl_(new FontListImpl(fonts)) {}
 
-FontList::FontList(const Font& font)
-    : common_height_(-1),
-      common_baseline_(-1),
-      font_style_(-1),
-      font_size_(-1) {
-  fonts_.push_back(font);
-}
+FontList::FontList(const Font& font) : impl_(new FontListImpl(font)) {}
 
-FontList::~FontList() {
+FontList::~FontList() {}
+
+FontList& FontList::operator=(const FontList& other) {
+  impl_ = other.impl_;
+  return *this;
 }
 
 // static
@@ -170,26 +55,11 @@ void FontList::SetDefaultFontDescription(const std::string& font_description) {
          EndsWith(font_description, "px", true));
 
   g_default_font_description.Get() = font_description;
-  g_default_font_list = NULL;
+  g_default_impl_initialized = false;
 }
 
 FontList FontList::Derive(int size_delta, int font_style) const {
-  // If there is a font vector, derive from that.
-  if (!fonts_.empty()) {
-    std::vector<Font> fonts = fonts_;
-    for (size_t i = 0; i < fonts.size(); ++i)
-      fonts[i] = fonts[i].DeriveFont(size_delta, font_style);
-    return FontList(fonts);
-  }
-
-  // Otherwise, parse the font description string to derive from it.
-  std::vector<std::string> font_names;
-  int old_size;
-  int old_style;
-  ParseFontDescriptionString(font_description_string_, &font_names,
-                             &old_style, &old_size);
-  const int size = std::max(1, old_size + size_delta);
-  return FontList(font_names, font_style, size);
+  return FontList(impl_->Derive(size_delta, font_style));
 }
 
 FontList FontList::DeriveWithSizeDelta(int size_delta) const {
@@ -200,117 +70,60 @@ FontList FontList::DeriveWithStyle(int font_style) const {
   return Derive(0, font_style);
 }
 
-FontList FontList::DeriveFontListWithSizeDelta(int size_delta) const {
-  return Derive(size_delta, GetFontStyle());
-}
-
-FontList FontList::DeriveFontListWithSizeDeltaAndStyle(int size_delta,
-                                                       int font_style) const {
-  return Derive(size_delta, font_style);
-}
-
 int FontList::GetHeight() const {
-  if (common_height_ == -1)
-    CacheCommonFontHeightAndBaseline();
-  return common_height_;
+  return impl_->GetHeight();
 }
 
 int FontList::GetBaseline() const {
-  if (common_baseline_ == -1)
-    CacheCommonFontHeightAndBaseline();
-  return common_baseline_;
+  return impl_->GetBaseline();
 }
 
 int FontList::GetCapHeight() const {
-  // Assume the primary font is used to render Latin characters.
-  return GetPrimaryFont().GetCapHeight();
+  return impl_->GetCapHeight();
 }
 
 int FontList::GetExpectedTextWidth(int length) const {
-  // Rely on the primary font metrics for the time being.
-  return GetPrimaryFont().GetExpectedTextWidth(length);
+  return impl_->GetExpectedTextWidth(length);
 }
 
 int FontList::GetFontStyle() const {
-  if (font_style_ == -1)
-    CacheFontStyleAndSize();
-  return font_style_;
+  return impl_->GetFontStyle();
 }
 
 const std::string& FontList::GetFontDescriptionString() const {
-  if (font_description_string_.empty()) {
-    DCHECK(!fonts_.empty());
-    for (size_t i = 0; i < fonts_.size(); ++i) {
-      std::string name = fonts_[i].GetFontName();
-      font_description_string_ += name;
-      font_description_string_ += ',';
-    }
-    // All fonts have the same style and size.
-    font_description_string_ +=
-        FontStyleAndSizeToString(fonts_[0].GetStyle(), fonts_[0].GetFontSize());
-  }
-  return font_description_string_;
+  return impl_->GetFontDescriptionString();
 }
 
 int FontList::GetFontSize() const {
-  if (font_size_ == -1)
-    CacheFontStyleAndSize();
-  return font_size_;
+  return impl_->GetFontSize();
 }
 
 const std::vector<Font>& FontList::GetFonts() const {
-  if (fonts_.empty()) {
-    DCHECK(!font_description_string_.empty());
-
-    std::vector<std::string> font_names;
-    // It's possible that gfx::Font::UNDERLINE is specified and it's already
-    // stored in |font_style_| but |font_description_string_| doesn't have the
-    // underline info.  So we should respect |font_style_| as long as it's
-    // valid.
-    int style = 0;
-    ParseFontDescriptionString(font_description_string_, &font_names,
-                               &style, &font_size_);
-    if (font_style_ == -1)
-      font_style_ = style;
-    for (size_t i = 0; i < font_names.size(); ++i) {
-      DCHECK(!font_names[i].empty());
-
-      Font font(font_names[i], font_size_);
-      if (font_style_ == Font::NORMAL)
-        fonts_.push_back(font);
-      else
-        fonts_.push_back(font.DeriveFont(0, font_style_));
-    }
-  }
-  return fonts_;
+  return impl_->GetFonts();
 }
 
 const Font& FontList::GetPrimaryFont() const {
-  return GetFonts()[0];
+  return impl_->GetPrimaryFont();
 }
 
-void FontList::CacheCommonFontHeightAndBaseline() const {
-  int ascent = 0;
-  int descent = 0;
-  const std::vector<Font>& fonts = GetFonts();
-  for (std::vector<Font>::const_iterator i = fonts.begin();
-       i != fonts.end(); ++i) {
-    ascent = std::max(ascent, i->GetBaseline());
-    descent = std::max(descent, i->GetHeight() - i->GetBaseline());
-  }
-  common_height_ = ascent + descent;
-  common_baseline_ = ascent;
-}
+FontList::FontList(FontListImpl* impl) : impl_(impl) {}
 
-void FontList::CacheFontStyleAndSize() const {
-  if (!fonts_.empty()) {
-    font_style_ = fonts_[0].GetStyle();
-    font_size_ = fonts_[0].GetFontSize();
-  } else {
-    std::vector<std::string> font_names;
-    ParseFontDescriptionString(font_description_string_, &font_names,
-                               &font_style_, &font_size_);
+// static
+const scoped_refptr<FontListImpl>& FontList::GetDefaultImpl() {
+  // SetDefaultFontDescription() must be called and the default font description
+  // must be set earlier than any call of this function.
+  DCHECK(!(g_default_font_description == NULL))  // != is not overloaded.
+      << "SetDefaultFontDescription has not been called.";
+
+  if (!g_default_impl_initialized) {
+    g_default_impl.Get() =
+        g_default_font_description.Get().empty() ?
+            new FontListImpl(Font()) :
+            new FontListImpl(g_default_font_description.Get());
+    g_default_impl_initialized = true;
   }
+
+  return g_default_impl.Get();
 }
 
 }  // namespace gfx
