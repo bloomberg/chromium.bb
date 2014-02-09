@@ -22,7 +22,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/libjingle/source/talk/base/urlencode.h"
 
 using content::BrowserThread;
 
