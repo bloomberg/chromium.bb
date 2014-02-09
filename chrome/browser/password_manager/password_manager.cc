@@ -14,25 +14,15 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/password_autofill_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
 
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
-using base::UserMetricsAction;
-using content::WebContents;
 
 namespace {
 
@@ -77,10 +67,8 @@ void PasswordManager::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-PasswordManager::PasswordManager(WebContents* web_contents,
-                                 PasswordManagerDelegate* delegate)
-    : web_contents_(web_contents),
-      delegate_(delegate),
+PasswordManager::PasswordManager(PasswordManagerDelegate* delegate)
+    : delegate_(delegate),
       driver_(delegate->GetDriver()) {
   DCHECK(delegate_);
   DCHECK(driver_);

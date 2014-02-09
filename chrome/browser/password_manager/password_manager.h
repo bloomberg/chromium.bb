@@ -44,8 +44,7 @@ class PasswordManager : public LoginModel {
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
 #endif
-  PasswordManager(content::WebContents* web_contents,
-                  PasswordManagerDelegate* delegate);
+  explicit PasswordManager(PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
   typedef base::Callback<void(const autofill::PasswordForm&)>
@@ -156,12 +155,6 @@ class PasswordManager : public LoginModel {
   // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
   // time a user submits a login form and gets to the next page.
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
-
-  // The WebContents instance associated with this instance. Scoped to the
-  // lifetime of this class, as this class is indirectly a WCUD via
-  // PasswordManagerDelegateImpl.
-  // TODO(blundell): Eliminate this ivar. crbug.com/340661
-  content::WebContents* web_contents_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerDelegate* const delegate_;

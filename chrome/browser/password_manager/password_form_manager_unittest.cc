@@ -70,7 +70,7 @@ class TestPasswordManagerDelegate : public PasswordManagerDelegate {
 class TestPasswordManager : public PasswordManager {
  public:
   explicit TestPasswordManager(PasswordManagerDelegate* delegate)
-      : PasswordManager(NULL, delegate) {}
+      : PasswordManager(delegate) {}
 
   virtual void Autofill(
       const autofill::PasswordForm& form_for_autofill,

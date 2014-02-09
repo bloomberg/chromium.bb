@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,9 +70,8 @@ ACTION_P(SaveToScopedPtr, scoped) {
 
 class TestPasswordManager : public PasswordManager {
  public:
-  TestPasswordManager(content::WebContents* contents,
-                      PasswordManagerDelegate* delegate)
-      : PasswordManager(contents, delegate) {}
+  explicit TestPasswordManager(PasswordManagerDelegate* delegate)
+      : PasswordManager(delegate) {}
   virtual ~TestPasswordManager() {}
 
   virtual void OnPasswordFormSubmitted(const PasswordForm& form) OVERRIDE {
@@ -101,7 +99,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
         WillRepeatedly(Return(profile()->GetTestingPrefService()));
     EXPECT_CALL(delegate_, GetDriver()).WillRepeatedly(Return(&driver_));
 
-    manager_.reset(new TestPasswordManager(web_contents(), &delegate_));
+    manager_.reset(new TestPasswordManager(&delegate_));
 
     EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));

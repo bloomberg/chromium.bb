@@ -21,7 +21,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::WebContents* web_contents,
     PasswordManagerDelegate* delegate)
     : WebContentsObserver(web_contents),
-      password_manager_(web_contents, delegate),
+      password_manager_(delegate),
       password_generation_manager_(web_contents, delegate) {
   DCHECK(web_contents);
 }
