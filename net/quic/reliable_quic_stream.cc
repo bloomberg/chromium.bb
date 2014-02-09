@@ -72,8 +72,8 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   return accepted;
 }
 
-void ReliableQuicStream::OnStreamReset(QuicRstStreamErrorCode error) {
-  stream_error_ = error;
+void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+  stream_error_ = frame.error_code;
   CloseWriteSide();
   CloseReadSide();
 }

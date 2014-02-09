@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   virtual void OnClose();
 
   // Called when we get a stream reset from the peer.
-  virtual void OnStreamReset(QuicRstStreamErrorCode error);
+  virtual void OnStreamReset(const QuicRstStreamFrame& frame);
 
   // Called when we get or send a connection close, and should immediately
   // close the stream.  This is not passed through the sequencer,

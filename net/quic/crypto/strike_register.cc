@@ -60,6 +60,13 @@ class StrikeRegister::InternalNode {
 // to consider times that are before the creation time.
 static const uint32 kCreationTimeFromInternalEpoch = 63115200.0;  // 2 years.
 
+void StrikeRegister::ValidateStrikeRegisterConfig(unsigned max_entries) {
+  // We only have 23 bits of index available.
+  CHECK_LT(max_entries, 1u << 23);
+  CHECK_GT(max_entries, 1u);           // There must be at least two entries.
+  CHECK_EQ(sizeof(InternalNode), 8u);  // in case of compiler changes.
+}
+
 StrikeRegister::StrikeRegister(unsigned max_entries,
                                uint32 current_time,
                                uint32 window_secs,
@@ -78,10 +85,7 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
       horizon_valid_(startup == DENY_REQUESTS_AT_STARTUP) {
   memcpy(orbit_, orbit, sizeof(orbit_));
 
-  // We only have 23 bits of index available.
-  CHECK_LT(max_entries, 1u << 23);
-  CHECK_GT(max_entries, 1u);           // There must be at least two entries.
-  CHECK_EQ(sizeof(InternalNode), 8u);  // in case of compiler changes.
+  ValidateStrikeRegisterConfig(max_entries);
   internal_nodes_ = new InternalNode[max_entries];
   external_nodes_.reset(new uint8[kExternalNodeSize * max_entries]);
 

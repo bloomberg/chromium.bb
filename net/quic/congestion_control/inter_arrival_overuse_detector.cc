@@ -163,9 +163,9 @@ void InterArrivalOveruseDetector::DetectDrift(int64 sigma_delta) {
     return;
   }
   if ((sigma_delta * kDetectTimeDiffStandardDeviation >
-          estimated_congestion_delay_.ToMicroseconds()) &&
+       estimated_congestion_delay_.ToMicroseconds()) &&
       (sigma_delta * kDetectDriftStandardDeviation >
-          abs(accumulated_deltas_.ToMicroseconds()))) {
+       std::abs(accumulated_deltas_.ToMicroseconds()))) {
     if (delta_estimate_ != kBandwidthSteady) {
       DVLOG(1) << "Bandwidth estimate drift: Steady"
                  << " mean:" << delta_mean_

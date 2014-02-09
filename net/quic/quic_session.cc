@@ -241,7 +241,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
           QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
     }
   }
-  stream->OnStreamReset(frame.error_code);
+  stream->OnStreamReset(frame);
 }
 
 void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {

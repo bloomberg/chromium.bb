@@ -31,7 +31,6 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // not claim to protect all the packets previously seen in this group.
   //   |fec_packet_entropy|: XOR of entropy of all packets in the fec group.
   bool UpdateFec(QuicPacketSequenceNumber fec_packet_sequence_number,
-                 bool fec_packet_entropy,
                  const QuicFecData& fec);
 
   // Returns true if a packet can be revived from this FEC group.
@@ -57,10 +56,6 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
     return base::StringPiece(payload_parity_, payload_parity_len_);
   }
 
-  bool entropy_parity() const {
-    return entropy_parity_;
-  }
-
   QuicPacketSequenceNumber min_protected_packet() const {
     return min_protected_packet_;
   }
@@ -70,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   }
 
  private:
-  bool UpdateParity(base::StringPiece payload, bool entropy);
+  bool UpdateParity(base::StringPiece payload);
   // Returns the number of missing packets, or size_t max if the number
   // of missing packets is not known.
   size_t NumMissingPackets() const;
@@ -88,7 +83,6 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // The cumulative parity calculation of all received packets.
   char payload_parity_[kMaxPacketSize];
   size_t payload_parity_len_;
-  bool entropy_parity_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFecGroup);
 };

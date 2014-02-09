@@ -11,7 +11,7 @@
 namespace net {
 namespace test {
 
-const float kBeta = static_cast<float>(0.7);  // Default Cubic backoff factor.
+const float kBeta = 0.7f;  // Default Cubic backoff factor.
 const uint32 kNumConnections = 2;
 const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
 const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *

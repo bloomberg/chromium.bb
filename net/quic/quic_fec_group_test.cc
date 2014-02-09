@@ -36,8 +36,6 @@ const bool kEntropyFlag[] = {
   true,
 };
 
-const bool kTestFecPacketEntropy = false;
-
 }  // namespace
 
 class QuicFecGroupTest : public ::testing::Test {
@@ -45,7 +43,6 @@ class QuicFecGroupTest : public ::testing::Test {
   void RunTest(size_t num_packets, size_t lost_packet, bool out_of_order) {
     size_t max_len = strlen(kData[0]);
     scoped_ptr<char[]> redundancy(new char[max_len]);
-    bool entropy_redundancy = false;
     for (size_t packet = 0; packet < num_packets; ++packet) {
       for (size_t i = 0; i < max_len; i++) {
         if (packet == 0) {
@@ -57,7 +54,6 @@ class QuicFecGroupTest : public ::testing::Test {
         uint8 byte = i > strlen(kData[packet]) ? 0x00 : kData[packet][i];
         redundancy[i] = redundancy[i] ^ byte;
       }
-      entropy_redundancy = (entropy_redundancy != kEntropyFlag[packet]);
     }
 
     QuicFecGroup group;
@@ -72,7 +68,7 @@ class QuicFecGroupTest : public ::testing::Test {
           QuicFecData fec;
           fec.fec_group = 0;
           fec.redundancy = StringPiece(redundancy.get(), strlen(kData[0]));
-          ASSERT_TRUE(group.UpdateFec(num_packets, entropy_redundancy, fec));
+          ASSERT_TRUE(group.UpdateFec(num_packets, fec));
         } else {
           QuicPacketHeader header;
           header.packet_sequence_number = packet;
@@ -101,7 +97,7 @@ class QuicFecGroupTest : public ::testing::Test {
       fec.fec_group = 0;
       fec.redundancy = StringPiece(redundancy.get(), strlen(kData[0]));
 
-      ASSERT_TRUE(group.UpdateFec(num_packets, entropy_redundancy, fec));
+      ASSERT_TRUE(group.UpdateFec(num_packets, fec));
     }
     QuicPacketHeader header;
     char recovered[kMaxPacketSize];
@@ -113,7 +109,8 @@ class QuicFecGroupTest : public ::testing::Test {
     EXPECT_EQ(lost_packet, header.packet_sequence_number)
         << "Failed to revive packet " << lost_packet << " out of "
         << num_packets;
-    EXPECT_EQ(kEntropyFlag[lost_packet], header.entropy_flag);
+    // Revived packets have an unknown entropy.
+    EXPECT_FALSE(header.entropy_flag);
     ASSERT_GE(len, strlen(kData[lost_packet])) << "Incorrect length";
     for (size_t i = 0; i < strlen(kData[lost_packet]); i++) {
       EXPECT_EQ(kData[lost_packet][i], recovered[i]);
@@ -158,7 +155,7 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
   fec.redundancy = redundancy;
 
   header.packet_sequence_number = 2;
-  ASSERT_FALSE(group.UpdateFec(2, kTestFecPacketEntropy, fec));
+  ASSERT_FALSE(group.UpdateFec(2, fec));
 }
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
@@ -207,7 +204,7 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
   fec.redundancy = kData[0];
 
   QuicFecGroup group;
-  ASSERT_TRUE(group.UpdateFec(3, kTestFecPacketEntropy, fec));
+  ASSERT_TRUE(group.UpdateFec(3, fec));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
   EXPECT_FALSE(group.ProtectsPacketsBefore(2));

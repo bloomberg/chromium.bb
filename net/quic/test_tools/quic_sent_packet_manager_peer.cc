@@ -68,7 +68,7 @@ bool QuicSentPacketManagerPeer::IsRetransmission(
   DCHECK(sent_packet_manager->HasRetransmittableFrames(sequence_number));
   return sent_packet_manager->HasRetransmittableFrames(sequence_number) &&
       sent_packet_manager->
-          unacked_packets_[sequence_number].previous_transmissions != NULL;
+          unacked_packets_[sequence_number].all_transmissions->size() > 1;
 }
 
 // static

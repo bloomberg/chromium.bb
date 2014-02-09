@@ -5,6 +5,7 @@
 #include "net/quic/quic_framer.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/stl_util.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -648,9 +649,9 @@ bool QuicFramer::ProcessPublicResetPacket(
     const QuicPacketPublicHeader& public_header) {
   QuicPublicResetPacket packet(public_header);
 
-  if (reader_->BytesRemaining() <=
-      kPublicResetNonceSize + PACKET_6BYTE_SEQUENCE_NUMBER) {
-    // An old-style public reset packet.
+  if (public_header.sequence_number_length == PACKET_6BYTE_SEQUENCE_NUMBER) {
+    // An old-style public reset packet has the
+    // PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE bits set in the public flags.
     // TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
     if (!reader_->ReadUInt64(&packet.nonce_proof)) {
       set_detailed_error("Unable to read nonce proof.");
@@ -1377,6 +1378,26 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
     last_sequence_number -= (range_length + 1);
   }
 
+  if (quic_version_ > QUIC_VERSION_14) {
+    // Parse the revived packets list.
+    uint8 num_revived_packets;
+    if (!reader_->ReadBytes(&num_revived_packets, 1)) {
+      set_detailed_error("Unable to read num revived packets.");
+      return false;
+    }
+
+    for (size_t i = 0; i < num_revived_packets; ++i) {
+      QuicPacketSequenceNumber revived_packet = 0;
+      if (!reader_->ReadBytes(&revived_packet,
+                              largest_observed_sequence_number_length)) {
+        set_detailed_error("Unable to read revived packet.");
+        return false;
+      }
+
+      received_info->revived_packets.insert(revived_packet);
+    }
+  }
+
   return true;
 }
 
@@ -1414,12 +1435,14 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     case kInterArrival: {
       CongestionFeedbackMessageInterArrival* inter_arrival =
           &frame->inter_arrival;
-      uint16 unused_accumulated_number_of_lost_packets;
-      if (!reader_->ReadUInt16(
-              &unused_accumulated_number_of_lost_packets)) {
-        set_detailed_error(
-            "Unable to read accumulated number of lost packets.");
-        return false;
+      if (quic_version_ <= QUIC_VERSION_14) {
+        uint16 unused_accumulated_number_of_lost_packets;
+        if (!reader_->ReadUInt16(
+                &unused_accumulated_number_of_lost_packets)) {
+          set_detailed_error(
+              "Unable to read accumulated number of lost packets.");
+          return false;
+        }
       }
       uint8 num_received_packets;
       if (!reader_->ReadBytes(&num_received_packets, 1)) {
@@ -1479,11 +1502,13 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     }
     case kTCP: {
       CongestionFeedbackMessageTCP* tcp = &frame->tcp;
-      uint16 unused_accumulated_number_of_lost_packets;
-      if (!reader_->ReadUInt16(&unused_accumulated_number_of_lost_packets)) {
-        set_detailed_error(
-            "Unable to read accumulated number of lost packets.");
-        return false;
+      if (quic_version_ <= QUIC_VERSION_14) {
+        uint16 unused_accumulated_number_of_lost_packets;
+        if (!reader_->ReadUInt16(&unused_accumulated_number_of_lost_packets)) {
+          set_detailed_error(
+              "Unable to read accumulated number of lost packets.");
+          return false;
+        }
       }
       // TODO(ianswett): Remove receive window, since it's constant.
       uint16 receive_window = 0;
@@ -1769,12 +1794,18 @@ size_t QuicFramer::GetAckFrameSize(
   QuicSequenceNumberLength missing_sequence_number_length =
       GetMinSequenceNumberLength(ack_info.max_delta);
 
-  return GetMinAckFrameSize(quic_version_,
-                            sequence_number_length,
-                            largest_observed_length) +
-      (ack_info.nack_ranges.empty() ? 0 : kNumberOfMissingPacketsSize) +
-       ack_info.nack_ranges.size() *
-           (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
+  size_t ack_size = GetMinAckFrameSize(quic_version_,
+                                       sequence_number_length,
+                                       largest_observed_length);
+  if (!ack_info.nack_ranges.empty()) {
+    ack_size += kNumberOfMissingPacketsSize  +
+        (quic_version_ <= QUIC_VERSION_14 ? 0 : kNumberOfRevivedPacketsSize);
+    ack_size += ack_info.nack_ranges.size() *
+      (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
+    ack_size +=
+        ack.received_info.revived_packets.size() * largest_observed_length;
+  }
+  return ack_size;
 }
 
 size_t QuicFramer::ComputeFrameLength(
@@ -1801,7 +1832,9 @@ size_t QuicFramer::ComputeFrameLength(
         case kInterArrival: {
           const CongestionFeedbackMessageInterArrival& inter_arrival =
               congestion_feedback.inter_arrival;
-          len += 2;
+          if (quic_version_ <= QUIC_VERSION_14) {
+            len += 2;  // Accumulated number of lost packets.
+          }
           len += 1;  // Number received packets.
           if (inter_arrival.received_packet_times.size() > 0) {
             len += PACKET_6BYTE_SEQUENCE_NUMBER;  // Smallest received.
@@ -1813,10 +1846,13 @@ size_t QuicFramer::ComputeFrameLength(
           break;
         }
         case kFixRate:
-          len += 4;
+          len += 4;  // Bitrate.
           break;
         case kTCP:
-          len += 4;
+          if (quic_version_ <= QUIC_VERSION_14) {
+            len += 2;  // Accumulated number of lost packets.
+          }
+          len += 2;  // Receive window.
           break;
         default:
           set_detailed_error("Illegal feedback type.");
@@ -1970,7 +2006,8 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   size_t available_range_bytes = writer->capacity() - writer->length() -
       GetMinAckFrameSize(quic_version_,
                          header.public_header.sequence_number_length,
-                         largest_observed_length);
+                         largest_observed_length) -
+      (quic_version_ <= QUIC_VERSION_14 ? 0 : kNumberOfRevivedPacketsSize);
   size_t max_num_ranges = available_range_bytes /
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
   max_num_ranges =
@@ -2012,6 +2049,15 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   DCHECK_GE(header.packet_sequence_number, frame.sent_info.least_unacked);
   const QuicPacketSequenceNumber least_unacked_delta =
       header.packet_sequence_number - frame.sent_info.least_unacked;
+  const QuicPacketSequenceNumber length_shift =
+      header.public_header.sequence_number_length * 8;
+  if (least_unacked_delta >> length_shift > 0) {
+    LOG(DFATAL) << "sequence_number_length "
+                << header.public_header.sequence_number_length
+                << " is too small for least_unacked_delta: "
+                << least_unacked_delta;
+    return false;
+  }
   if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,
                                   least_unacked_delta, writer)) {
     return false;
@@ -2085,8 +2131,32 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     last_sequence_written = ack_iter->first - 1;
     ++num_ranges_written;
   }
-
   DCHECK_EQ(num_missing_ranges, num_ranges_written);
+
+  if (quic_version_ > QUIC_VERSION_14) {
+    // Append revived packets.
+    // If not all the revived packets fit, only mention the ones that do.
+    uint8 num_revived_packets =
+        min(received_info.revived_packets.size(),
+            static_cast<size_t>(numeric_limits<uint8>::max()));
+    num_revived_packets = min(
+        static_cast<size_t>(num_revived_packets),
+        (writer->capacity() - writer->length()) / largest_observed_length);
+    if (!writer->WriteBytes(&num_revived_packets, 1)) {
+      return false;
+    }
+
+    SequenceNumberSet::const_iterator iter =
+        received_info.revived_packets.begin();
+    for (int i = 0; i < num_revived_packets; ++i, ++iter) {
+      LOG_IF(DFATAL, !ContainsKey(received_info.missing_packets, *iter));
+      if (!AppendPacketSequenceNumber(largest_observed_length,
+                                      *iter, writer)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -2101,9 +2171,11 @@ bool QuicFramer::AppendQuicCongestionFeedbackFrame(
     case kInterArrival: {
       const CongestionFeedbackMessageInterArrival& inter_arrival =
           frame.inter_arrival;
-      // accumulated_number_of_lost_packets is removed.  Always write 0.
-      if (!writer->WriteUInt16(0)) {
-        return false;
+      if (quic_version_ <= QUIC_VERSION_14) {
+        // accumulated_number_of_lost_packets is removed.  Always write 0.
+        if (!writer->WriteUInt16(0)) {
+          return false;
+        }
       }
       DCHECK_GE(numeric_limits<uint8>::max(),
                 inter_arrival.received_packet_times.size());
@@ -2165,9 +2237,11 @@ bool QuicFramer::AppendQuicCongestionFeedbackFrame(
       DCHECK_LE(tcp.receive_window, 1u << 20);
       // Simple bit packing, don't send the 4 least significant bits.
       uint16 receive_window = static_cast<uint16>(tcp.receive_window >> 4);
-      // accumulated_number_of_lost_packets is removed.  Always write 0.
-      if (!writer->WriteUInt16(0)) {
-        return false;
+      if (quic_version_ <= QUIC_VERSION_14) {
+        // accumulated_number_of_lost_packets is removed.  Always write 0.
+        if (!writer->WriteUInt16(0)) {
+          return false;
+        }
       }
       if (!writer->WriteUInt16(receive_window)) {
         return false;

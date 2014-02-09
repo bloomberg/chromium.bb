@@ -28,11 +28,11 @@ const uint64 kCubeFactor = (GG_UINT64_C(1) << kCubeScale) /
     kCubeCongestionWindowScale;
 
 const uint32 kNumConnections = 2;
-const float kBeta = static_cast<float>(0.7);  // Default Cubic backoff factor.
+const float kBeta = 0.7f;  // Default Cubic backoff factor.
 // Additional backoff factor when loss occurs in the concave part of the Cubic
 // curve. This additional backoff factor is expected to give up bandwidth to
 // new concurrent flows and speed up convergence.
-const float kBetaLastMax = static_cast<float>(0.85);
+const float kBetaLastMax = 0.85f;
 
 // kNConnectionBeta is the backoff factor after loss for our N-connection
 // emulation, which emulates the effective backoff of an ensemble of N TCP-Reno

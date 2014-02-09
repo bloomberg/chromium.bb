@@ -638,7 +638,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
   }
 
   size_t ProcessFecProtectedPacket(QuicPacketSequenceNumber number,
-                                 bool expect_revival, bool entropy_flag) {
+                                   bool expect_revival, bool entropy_flag) {
     if (expect_revival) {
       EXPECT_CALL(visitor_, OnStreamFrames(_)).WillOnce(Return(accept_packet_));
     }
@@ -1847,7 +1847,9 @@ TEST_F(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   ProcessAckPacket(&ack);
 
   connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
-  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+  // The retransmission alarm should not be set because there are
+  // no unacked packets.
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
 }
 
 TEST_F(QuicConnectionTest, ResumptionAlarmWhenWriteBlocked) {
@@ -1983,8 +1985,9 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacketsThenFecPacket) {
   // Don't send missing packet 2.
   ProcessFecProtectedPacket(3, false, !kEntropyFlag);
   ProcessFecPacket(4, 1, true, kEntropyFlag, NULL);
-  // Entropy flag should be true, so entropy should not be 0.
-  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
+  // Ensure QUIC no longer revives entropy for lost packets.
+  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
+  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 4));
 }
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
@@ -2007,8 +2010,9 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
   ProcessFecProtectedPacket(3, false, kEntropyFlag);
   ProcessFecProtectedPacket(4, false, kEntropyFlag);
   ProcessFecProtectedPacket(5, true, !kEntropyFlag);
-  // Entropy flag should be true, so entropy should be 0.
-  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
+  // Ensure entropy is not revived for the missing packet.
+  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
+  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 3));
 }
 
 TEST_F(QuicConnectionTest, RTO) {
@@ -2778,6 +2782,17 @@ TEST_F(QuicConnectionTest, ReceivedEntropyHashCalculation) {
   ProcessDataPacket(4, 1, kEntropyFlag);
   ProcessDataPacket(3, 1, !kEntropyFlag);
   ProcessDataPacket(7, 1, kEntropyFlag);
+  EXPECT_EQ(146u, outgoing_ack()->received_info.entropy_hash);
+}
+
+TEST_F(QuicConnectionTest, ReceivedEntropyHashCalculationHalfFEC) {
+  // FEC packets should not change the entropy hash calculation.
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  ProcessDataPacket(1, 1, kEntropyFlag);
+  ProcessFecPacket(4, 1, false, kEntropyFlag, NULL);
+  ProcessDataPacket(3, 3, !kEntropyFlag);
+  ProcessFecPacket(7, 3, false, kEntropyFlag, NULL);
   EXPECT_EQ(146u, outgoing_ack()->received_info.entropy_hash);
 }
 

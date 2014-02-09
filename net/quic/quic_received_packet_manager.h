@@ -32,12 +32,11 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // bytes: the packet size in bytes including Quic Headers.
   // header: the packet header.
   // timestamp: the arrival time of the packet.
-  // revived: true if the packet was lost and then recovered with help of a
-  // FEC packet.
   void RecordPacketReceived(QuicByteCount bytes,
                             const QuicPacketHeader& header,
-                            QuicTime receipt_time,
-                            bool revived);
+                            QuicTime receipt_time);
+
+  void RecordPacketRevived(QuicPacketSequenceNumber sequence_number);
 
   // Checks whether |sequence_number| is missing and less than largest observed.
   bool IsMissing(QuicPacketSequenceNumber sequence_number);
@@ -62,12 +61,11 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
 
-  // These two are called by OnAckFrame.
-  //
-  // Updates internal state based on |incoming_ack.received_info|.
-  void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& incoming_ack);
-  // Updates internal state based on |incoming_ack.sent_info|.
-  void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
+  // Updates internal state based on |received_info|.
+  void UpdatePacketInformationReceivedByPeer(
+      const ReceivedPacketInfo& received_nfo);
+  // Updates internal state based on |sent_info|.
+  void UpdatePacketInformationSentByPeer(const SentPacketInfo& sent_info);
 
   // Returns whether the peer is missing packets.
   bool HasMissingPackets();

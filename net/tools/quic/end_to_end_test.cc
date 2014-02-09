@@ -451,9 +451,9 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   QuicConnectionStats stats =
       client_->client()->session()->connection()->GetStats();
-  // TODO(rtenneti): Enable packets_lost check after bug(12887145) is fixed.
+  // TODO(ianswett): Restore the packets_lost expectation when fixing b/12887145
   // EXPECT_EQ(0u, stats.packets_lost);
-  // EXPECT_EQ(0u, stats.rto_count);
+  EXPECT_EQ(0u, stats.rto_count);
 }
 
 TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {

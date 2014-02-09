@@ -256,7 +256,8 @@ enum QuicVersion {
 
   QUIC_VERSION_12 = 12,
   QUIC_VERSION_13 = 13,
-  QUIC_VERSION_14 = 14,  // Current version.
+  QUIC_VERSION_14 = 14,
+  QUIC_VERSION_15 = 15,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -266,7 +267,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_14,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_15,
+                                                     QUIC_VERSION_14,
                                                      QUIC_VERSION_13,
                                                      QUIC_VERSION_12};
 
@@ -608,6 +610,10 @@ struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
 
   // Whether the ack had to be truncated when sent.
   bool is_truncated;
+
+  // Packets which have been revived via FEC.
+  // All of these must also be in missing_packets.
+  SequenceNumberSet revived_packets;
 };
 
 // True if the sequence number is greater than largest_observed or is listed

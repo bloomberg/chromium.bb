@@ -43,8 +43,7 @@ QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
 void QuicReceivedPacketManager::RecordPacketReceived(
     QuicByteCount bytes,
     const QuicPacketHeader& header,
-    QuicTime receipt_time,
-    bool revived) {
+    QuicTime receipt_time) {
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(IsAwaitingPacket(sequence_number));
 
@@ -65,11 +64,14 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   }
   RecordPacketEntropyHash(sequence_number, header.entropy_hash);
 
-  // Don't update the receive algorithm for revived packets.
-  if (!revived) {
-    receive_algorithm_->RecordIncomingPacket(
-        bytes, sequence_number, receipt_time);
-  }
+  receive_algorithm_->RecordIncomingPacket(
+      bytes, sequence_number, receipt_time);
+}
+
+void QuicReceivedPacketManager::RecordPacketRevived(
+    QuicPacketSequenceNumber sequence_number) {
+  LOG_IF(DFATAL, !IsAwaitingPacket(sequence_number));
+  received_info_.revived_packets.insert(sequence_number);
 }
 
 bool QuicReceivedPacketManager::IsMissing(
@@ -180,22 +182,23 @@ void QuicReceivedPacketManager::RecalculateEntropyHash(
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationReceivedByPeer(
-    const QuicAckFrame& incoming_ack) {
+    const ReceivedPacketInfo& received_info) {
   // ValidateAck should fail if largest_observed ever shrinks.
-  DCHECK_LE(peer_largest_observed_packet_,
-            incoming_ack.received_info.largest_observed);
-  peer_largest_observed_packet_ = incoming_ack.received_info.largest_observed;
+  DCHECK_LE(peer_largest_observed_packet_, received_info.largest_observed);
+  peer_largest_observed_packet_ = received_info.largest_observed;
 
-  if (incoming_ack.received_info.missing_packets.empty()) {
+  if (received_info.missing_packets.empty()) {
     least_packet_awaited_by_peer_ = peer_largest_observed_packet_ + 1;
   } else {
-    least_packet_awaited_by_peer_ =
-        *(incoming_ack.received_info.missing_packets.begin());
+    least_packet_awaited_by_peer_ = *(received_info.missing_packets.begin());
   }
 }
 
 bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
     QuicPacketSequenceNumber least_unacked) {
+  received_info_.revived_packets.erase(
+      received_info_.revived_packets.begin(),
+      received_info_.revived_packets.lower_bound(least_unacked));
   size_t missing_packets_count = received_info_.missing_packets.size();
   received_info_.missing_packets.erase(
       received_info_.missing_packets.begin(),
@@ -204,22 +207,19 @@ bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
-    const QuicAckFrame& incoming_ack) {
+    const SentPacketInfo& sent_info) {
   // ValidateAck() should fail if peer_least_packet_awaiting_ack_ shrinks.
-  DCHECK_LE(peer_least_packet_awaiting_ack_,
-            incoming_ack.sent_info.least_unacked);
-  if (incoming_ack.sent_info.least_unacked > peer_least_packet_awaiting_ack_) {
-    bool missed_packets =
-        DontWaitForPacketsBefore(incoming_ack.sent_info.least_unacked);
-    if (missed_packets || incoming_ack.sent_info.least_unacked >
+  DCHECK_LE(peer_least_packet_awaiting_ack_, sent_info.least_unacked);
+  if (sent_info.least_unacked > peer_least_packet_awaiting_ack_) {
+    bool missed_packets = DontWaitForPacketsBefore(sent_info.least_unacked);
+    if (missed_packets || sent_info.least_unacked >
             received_info_.largest_observed + 1) {
       DVLOG(1) << "Updating entropy hashed since we missed packets";
       // There were some missing packets that we won't ever get now. Recalculate
       // the received entropy hash.
-      RecalculateEntropyHash(incoming_ack.sent_info.least_unacked,
-                             incoming_ack.sent_info.entropy_hash);
+      RecalculateEntropyHash(sent_info.least_unacked, sent_info.entropy_hash);
     }
-    peer_least_packet_awaiting_ack_ = incoming_ack.sent_info.least_unacked;
+    peer_least_packet_awaiting_ack_ = sent_info.least_unacked;
   }
   DCHECK(received_info_.missing_packets.empty() ||
          *received_info_.missing_packets.begin() >=

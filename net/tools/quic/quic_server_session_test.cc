@@ -110,6 +110,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicDataStreamPeer::SetHeadersDecompressed(stream, true);
   }
 
+  QuicVersion version() const { return connection_->version(); }
+
   StrictMock<MockQuicServerSessionVisitor> owner_;
   StrictMock<MockConnection>* connection_;
   QuicConfig config_;
@@ -122,7 +124,7 @@ INSTANTIATE_TEST_CASE_P(Tests, QuicServerSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
   QuicStreamFrame data1(stream_id, false, 0, MakeIOVector("HT"));
@@ -148,7 +150,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
 }
 
 TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
   // Send a reset.
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   visitor_->OnRstStream(rst1);
@@ -159,7 +161,7 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
 
-  if (connection_->version() > QUIC_VERSION_12) {
+  if (version() > QUIC_VERSION_12) {
     EXPECT_TRUE(visitor_->OnStreamFrames(frames));
   } else {
     // When we get data for the closed stream, it implies the far side has
@@ -175,8 +177,8 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
 }
 
 TEST_P(QuicServerSessionTest, GoOverPrematureClosedStreamLimit) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
-  if (connection_->version() > QUIC_VERSION_12) {
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
+  if (version() > QUIC_VERSION_12) {
     // The prematurely closed stream limit is v12 specific.
     return;
   }
@@ -194,7 +196,7 @@ TEST_P(QuicServerSessionTest, GoOverPrematureClosedStreamLimit) {
 }
 
 TEST_P(QuicServerSessionTest, AcceptClosedStream) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
   vector<QuicStreamFrame> frames;
   // Send (empty) compressed headers followed by two bytes of data.
   frames.push_back(QuicStreamFrame(stream_id, false, 0,
@@ -222,7 +224,7 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
 }
 
 TEST_P(QuicServerSessionTest, MaxNumConnections) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
                                                            stream_id));
@@ -236,7 +238,7 @@ TEST_P(QuicServerSessionTest, MaxNumConnections) {
 }
 
 TEST_P(QuicServerSessionTest, MaxNumConnectionsImplicit) {
-  QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
+  QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
                                                            stream_id));

@@ -157,6 +157,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '3');
     case QUIC_VERSION_14:
       return MakeQuicTag('Q', '0', '1', '4');
+    case QUIC_VERSION_15:
+      return MakeQuicTag('Q', '0', '1', '5');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -186,6 +188,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_12);
     RETURN_STRING_LITERAL(QUIC_VERSION_13);
     RETURN_STRING_LITERAL(QUIC_VERSION_14);
+    RETURN_STRING_LITERAL(QUIC_VERSION_15);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -358,6 +361,12 @@ ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
   for (SequenceNumberSet::const_iterator it =
            received_info.missing_packets.begin();
        it != received_info.missing_packets.end(); ++it) {
+    os << *it << " ";
+  }
+  os << " ] revived_packets: [ ";
+  for (SequenceNumberSet::const_iterator it =
+           received_info.revived_packets.begin();
+       it != received_info.revived_packets.end(); ++it) {
     os << *it << " ";
   }
   os << " ] ";

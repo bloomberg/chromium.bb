@@ -81,6 +81,9 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   // external node. We flag the 24th bit to mark a pointer as external.
   static const uint32 kExternalFlag;
 
+  // Allows early validation before a strike register is created.
+  static void ValidateStrikeRegisterConfig(unsigned max_entries);
+
   // Construct a new set which can hold, at most, |max_entries| (which must be
   // less than 2**23). See the comments around StartupType about initial
   // behaviour. Otherwise, all nonces that are outside +/- |window_secs| from

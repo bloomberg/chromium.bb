@@ -186,7 +186,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,
-                        bool fec_entropy_flag,
                         QuicPacketHeader* header);
 
   // Allows a frame to be added without creating retransmittable frames.

@@ -340,7 +340,8 @@ void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
   } else {
     mean_deviation_ = QuicTime::Delta::FromMicroseconds(
         kOneMinusBeta * mean_deviation_.ToMicroseconds() +
-        kBeta * abs(smoothed_rtt_.ToMicroseconds() - rtt.ToMicroseconds()));
+        kBeta *
+            std::abs(smoothed_rtt_.ToMicroseconds() - rtt.ToMicroseconds()));
     smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
         kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
         kAlpha * rtt.ToMicroseconds());

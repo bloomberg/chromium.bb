@@ -368,6 +368,11 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     debug_visitor_->OnPacketHeader(header);
   }
 
+  if (header.fec_flag && framer_.version() <= QUIC_VERSION_14) {
+    DLOG(WARNING) << "Ignoring FEC packets for versions prior to 15.";
+    return false;
+  }
+
   if (!ProcessValidatedPacket()) {
     return false;
   }
@@ -473,8 +478,10 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
 
-  received_packet_manager_.UpdatePacketInformationReceivedByPeer(incoming_ack);
-  received_packet_manager_.UpdatePacketInformationSentByPeer(incoming_ack);
+  received_packet_manager_.UpdatePacketInformationReceivedByPeer(
+      incoming_ack.received_info);
+  received_packet_manager_.UpdatePacketInformationSentByPeer(
+      incoming_ack.sent_info);
   // Possibly close any FecGroups which are now irrelevant.
   CloseFecGroupsBefore(incoming_ack.sent_info.least_unacked + 1);
 
@@ -574,6 +581,15 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
+  for (SequenceNumberSet::const_iterator iter =
+           incoming_ack.received_info.revived_packets.begin();
+       iter != incoming_ack.received_info.revived_packets.end(); ++iter) {
+    if (!ContainsKey(incoming_ack.received_info.missing_packets, *iter)) {
+      DLOG(ERROR) << ENDPOINT
+                  << "Peer specified revived packet which was not missing.";
+      return false;
+    }
+  }
   return true;
 }
 
@@ -582,8 +598,7 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != NULL) {
-    group->UpdateFec(last_header_.packet_sequence_number,
-                     last_header_.entropy_flag, fec);
+    group->UpdateFec(last_header_.packet_sequence_number, fec);
   }
 }
 
@@ -645,10 +660,13 @@ void QuicConnection::OnPacketComplete() {
     return;
   }
 
-  received_packet_manager_.RecordPacketReceived(last_size_,
-                                                last_header_,
-                                                time_of_last_received_packet_,
-                                                last_packet_revived_);
+  if (last_packet_revived_) {
+    received_packet_manager_.RecordPacketRevived(
+        last_header_.packet_sequence_number);
+  } else {
+    received_packet_manager_.RecordPacketReceived(
+        last_size_, last_header_, time_of_last_received_packet_);
+  }
   for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
     stats_.stream_bytes_received +=
         last_stream_frames_[i].data.TotalBufferSize();

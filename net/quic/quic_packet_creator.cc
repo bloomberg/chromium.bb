@@ -89,7 +89,9 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
 }
 
 void QuicPacketCreator::MaybeStartFEC() {
-  if (options_.max_packets_per_fec_group > 0 && fec_group_.get() == NULL) {
+  // Don't send FEC until QUIC_VERSION_15.
+  if (framer_->version() > QUIC_VERSION_14 &&
+      options_.max_packets_per_fec_group > 0 && fec_group_.get() == NULL) {
     DCHECK(queued_frames_.empty());
     // Set the fec group number to the sequence number of the next packet.
     fec_group_number_ = sequence_number() + 1;
@@ -315,7 +317,7 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
     LOG(DFATAL) << "Attempt to serialize empty packet";
   }
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, false, false, &header);
+  FillPacketHeader(fec_group_number_, false, &header);
 
   MaybeAddPadding();
 
@@ -351,8 +353,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   DCHECK_LT(0u, fec_group_->NumReceivedPackets());
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, true,
-                   fec_group_->entropy_parity(), &header);
+  FillPacketHeader(fec_group_number_, true, &header);
   QuicFecData fec_data;
   fec_data.fec_group = fec_group_->min_protected_packet();
   fec_data.redundancy = fec_group_->payload_parity();
@@ -392,7 +393,6 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
                                          bool fec_flag,
-                                         bool fec_entropy_flag,
                                          QuicPacketHeader* header) {
   header->public_header.guid = guid_;
   header->public_header.reset_flag = false;
@@ -400,16 +400,7 @@ void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
   header->fec_flag = fec_flag;
   header->packet_sequence_number = ++sequence_number_;
   header->public_header.sequence_number_length = sequence_number_length_;
-
-  bool entropy_flag;
-  if (fec_flag) {
-    // FEC packets don't have an entropy of their own. Entropy flag for FEC
-    // packets is the XOR of entropy of previous packets.
-    entropy_flag = fec_entropy_flag;
-  } else {
-    entropy_flag = random_bool_source_->RandBool();
-  }
-  header->entropy_flag = entropy_flag;
+  header->entropy_flag = random_bool_source_->RandBool();
   header->is_in_fec_group = fec_group == 0 ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
   header->fec_group = fec_group;
 }

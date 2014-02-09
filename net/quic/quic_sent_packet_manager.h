@@ -189,29 +189,29 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     HANDSHAKE_MODE,
   };
 
-  struct TransmissionInfo {
-    TransmissionInfo()
-        : retransmittable_frames(NULL),
-          sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
-          sent_time(QuicTime::Zero()),
-          previous_transmissions(NULL),
-          pending(false) { }
+  struct NET_EXPORT_PRIVATE TransmissionInfo {
+    TransmissionInfo();
+
+    // Constructs a Transmission with a new all_tranmissions set
+    // containing |sequence_number|.
     TransmissionInfo(RetransmittableFrames* retransmittable_frames,
-                     QuicSequenceNumberLength sequence_number_length)
-        : retransmittable_frames(retransmittable_frames),
-          sequence_number_length(sequence_number_length),
-          sent_time(QuicTime::Zero()),
-          previous_transmissions(NULL),
-          pending(false) {
-    }
+                     QuicPacketSequenceNumber sequence_number,
+                     QuicSequenceNumberLength sequence_number_length);
+
+    // Constructs a Transmission with the specified |all_tranmissions| set
+    // and inserts |sequence_number| into it.
+    TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                     QuicPacketSequenceNumber sequence_number,
+                     QuicSequenceNumberLength sequence_number_length,
+                     SequenceNumberSet* all_transmissions);
 
     RetransmittableFrames* retransmittable_frames;
     QuicSequenceNumberLength sequence_number_length;
     // Zero when the packet is serialized, non-zero once it's sent.
     QuicTime sent_time;
-    // Stores all previous transmissions if the packet has been retransmitted,
-    // and is NULL otherwise.
-    SequenceNumberSet* previous_transmissions;
+    // Stores the sequence numbers of all transmissions of this packet.
+    // Can never be null.
+    SequenceNumberSet* all_transmissions;
     // Pending packets have not been abandoned or lost.
     bool pending;
   };
@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
       ReceivedByPeer received_by_peer);
 
   // Removes entries from the unacked packet map.
-  void DiscardPacket(QuicPacketSequenceNumber sequence_number);
+  void RemovePacket(QuicPacketSequenceNumber sequence_number);
 
   // Request that |sequence_number| be retransmitted after the other pending
   // retransmissions.  Does not add it to the retransmissions if it's already
@@ -284,9 +284,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void ClearPreviousRetransmissions(size_t num_to_clear);
 
   void CleanupPacketHistory();
-
-  // Removes |sequence_number| as a previous transmission of any other packets.
-  void RemovePreviousTransmission(QuicPacketSequenceNumber sequence_number);
 
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is
