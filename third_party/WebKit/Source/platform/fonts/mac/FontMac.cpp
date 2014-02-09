@@ -103,7 +103,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         break;
     }
 
-    if (!shouldUseSmoothing() || isRunningLayoutTest()) {
+    if (isRunningLayoutTest()) {
         shouldSmoothFonts = false;
         shouldAntialias = false;
     }

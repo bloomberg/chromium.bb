@@ -193,19 +193,6 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
 }
 
-static bool shouldUseFontSmoothing = true;
-
-void Font::setShouldUseSmoothing(bool shouldUseSmoothing)
-{
-    ASSERT(isMainThread());
-    shouldUseFontSmoothing = shouldUseSmoothing;
-}
-
-bool Font::shouldUseSmoothing()
-{
-    return shouldUseFontSmoothing;
-}
-
 void Font::setCodePath(CodePath p)
 {
     s_codePath = p;

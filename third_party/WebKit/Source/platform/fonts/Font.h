@@ -128,9 +128,6 @@ public:
     std::pair<GlyphData, GlyphPage*> glyphDataAndPageForCharacter(UChar32, bool mirror, FontDataVariant = AutoVariant) const;
     bool primaryFontHasGlyphForCharacter(UChar32) const;
 
-    static void setShouldUseSmoothing(bool);
-    static bool shouldUseSmoothing();
-
     CodePath codePath(const TextRun&) const;
 
 private:
