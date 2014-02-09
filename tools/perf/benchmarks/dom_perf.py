@@ -5,7 +5,6 @@
 import json
 import math
 import os
-import sys
 
 from telemetry import test
 from telemetry.core import util
@@ -67,6 +66,7 @@ class _DomPerfMeasurement(page_measurement.PageMeasurement):
     results.AddSummary(SCORE_TRACE_NAME, SCORE_UNIT, total, 'Total')
 
 
+@test.Disabled('android', 'linux')
 class DomPerf(test.Test):
   """A suite of JavaScript benchmarks for exercising the browser's DOM.
 
@@ -74,8 +74,6 @@ class DomPerf(test.Test):
   Scores are not comparable across benchmark suite versions and higher scores
   means better performance: Bigger is better!"""
   test = _DomPerfMeasurement
-
-  enabled = not sys.platform.startswith('linux')
 
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')

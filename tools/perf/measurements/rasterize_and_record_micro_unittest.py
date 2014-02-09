@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from measurements import rasterize_and_record_micro
+from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
-from telemetry.unittest import DisabledTest, options_for_unittests
+from telemetry.unittest import options_for_unittests
 
 
 class RasterizeAndRecordMicroUnitTest(
@@ -23,7 +24,7 @@ class RasterizeAndRecordMicroUnitTest(
     self._options.record_repeat = 1
     self._options.start_wait_time = 0.0
 
-  @DisabledTest
+  @test.Disabled
   def testRasterizeAndRecordMicro(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro()

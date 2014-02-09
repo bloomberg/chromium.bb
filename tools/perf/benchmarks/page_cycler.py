@@ -1,11 +1,9 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import sys
-
-from telemetry import test
 
 from measurements import page_cycler
+from telemetry import test
 
 
 class PageCyclerBloat(test.Test):
@@ -101,12 +99,10 @@ class PageCyclerToughLayoutCases(test.Test):
   options = {'pageset_repeat_iters': 10}
 
 
+# crbug.com/273986: This test is really flakey on xp.
+# cabug.com/341843: This test is always timing out on Android.
+@test.Disabled('android', 'win')
 class PageCyclerTypical25(test.Test):
-  # crbug.com/273986: This test is really flakey on xp.
-  # cabug.com/341843: This test is always timing out on Android. At present the
-  # only way to disable on Android is to disable on any run hosted on linux.
-  enabled = (not sys.platform.startswith('win') and not
-             sys.platform.startswith('linux'))
   test = page_cycler.PageCycler
   page_set = 'page_sets/typical_25.json'
   options = {'pageset_repeat_iters': 10}

@@ -13,6 +13,7 @@ from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+
 class MapsMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     js_get_results = 'document.getElementsByTagName("pre")[0].innerText'
@@ -23,10 +24,10 @@ class MapsMeasurement(page_measurement.PageMeasurement):
     results.Add('total_time', 'ms', total)
     results.Add('render_mean_time', 'ms', render)
 
+@test.Disabled
 class MapsBenchmark(test.Test):
   """Basic Google Maps benchmarks."""
   test = MapsMeasurement
-  enabled = False
 
   def CreatePageSet(self, options):
     page_set_path = os.path.join(

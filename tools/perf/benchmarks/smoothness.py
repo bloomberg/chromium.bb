@@ -2,11 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-
-from telemetry import test
-
 from measurements import smoothness
+from telemetry import test
 
 
 class SmoothnessTop25(test.Test):
@@ -17,9 +14,9 @@ class SmoothnessTop25(test.Test):
   page_set = 'page_sets/top_25.json'
 
 
+@test.Disabled('mac')
 class SmoothnessToughCanvasCases(test.Test):
   test = smoothness.Smoothness
-  enabled = sys.platform != 'darwin'
   page_set = 'page_sets/tough_canvas_cases.json'
 
 

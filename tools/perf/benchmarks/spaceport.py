@@ -6,7 +6,6 @@
 
 import logging
 import os
-import sys
 
 from metrics import power
 from telemetry import test
@@ -65,12 +64,11 @@ class _SpaceportMeasurement(page_measurement.PageMeasurement):
                 [float(x) for x in result_dict.values()])
 
 
+# crbug.com/166703: This test frequently times out on Windows.
+@test.Disabled('mac', 'win')
 class Spaceport(test.Test):
   """spaceport.io's PerfMarks benchmark."""
   test = _SpaceportMeasurement
-
-  # crbug.com/166703: This test frequently times out on Windows.
-  enabled = sys.platform != 'darwin' and not sys.platform.startswith('win')
 
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
