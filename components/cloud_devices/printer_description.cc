@@ -138,13 +138,15 @@ const int32 kMmToUm = 1000;
 const int32 kSizeTrasholdUm = 1000;
 
 #define MAP_CLOUD_PRINT_MEDIA_TYPE(type, width, height, unit_um) \
-    { type, #type, width*unit_um, height*unit_um }
+    { type, #type, \
+      static_cast<int>(width * unit_um + 0.5), \
+      static_cast<int>(height * unit_um + 0.5) }
 
 const struct MadiaDefinition {
   MediaType id;
   const char* const json_name;
-  int32 width_um;
-  int32 height_um;
+  int width_um;
+  int height_um;
 } kMediaDefinitions[] = {
   { CUSTOM_MEDIA, "CUSTOM" , 0, 0},
   MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INDEX_3X5, 3, 5, kInchToUm),
