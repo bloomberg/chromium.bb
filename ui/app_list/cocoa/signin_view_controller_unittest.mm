@@ -10,7 +10,7 @@
 #import "testing/gtest_mac.h"
 #include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 @class TestSigninViewDelegate;
 

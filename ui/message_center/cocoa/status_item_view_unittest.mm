@@ -5,7 +5,7 @@
 #import "ui/message_center/cocoa/status_item_view.h"
 
 #include "base/mac/scoped_nsobject.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 class StatusItemViewTest : public ui::CocoaTest {
  public:

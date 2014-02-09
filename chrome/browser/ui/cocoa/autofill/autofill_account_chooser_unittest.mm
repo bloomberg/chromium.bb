@@ -13,7 +13,7 @@
 #include "testing/platform_test.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/models/simple_menu_model.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 

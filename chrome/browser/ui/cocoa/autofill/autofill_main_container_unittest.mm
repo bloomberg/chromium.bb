@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 

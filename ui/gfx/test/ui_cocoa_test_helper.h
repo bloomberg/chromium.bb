@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
-#define UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
+#ifndef UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_
+#define UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_
 
 #include <set>
 
@@ -146,4 +146,4 @@ class CocoaTest : public PlatformTest {
                 [NSStringFromRect(expected) UTF8String] << \
                 " != " << [NSStringFromRect(actual) UTF8String]
 
-#endif  // UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
+#endif  // UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_

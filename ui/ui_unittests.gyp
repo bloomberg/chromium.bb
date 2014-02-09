@@ -17,8 +17,6 @@
         'gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
-        'base/test/ui_cocoa_test_helper.h',
-        'base/test/ui_cocoa_test_helper.mm',
         'base/test/ui_controls.h',
         'base/test/ui_controls_aura.cc',
         'base/test/ui_controls_gtk.cc',
@@ -286,6 +284,7 @@
         ['OS=="mac"',  {
           'dependencies': [
             'events/events.gyp:events_test_support',
+            'gfx/gfx.gyp:gfx_test_support',
           ],
         }],
         ['use_aura==1 or toolkit_views==1',  {

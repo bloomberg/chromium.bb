@@ -10,7 +10,7 @@
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 

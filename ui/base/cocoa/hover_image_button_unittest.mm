@@ -5,7 +5,7 @@
 #import "ui/base/cocoa/hover_image_button.h"
 
 #import "base/mac/scoped_nsobject.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 

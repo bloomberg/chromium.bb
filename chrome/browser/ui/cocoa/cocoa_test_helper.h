@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 // A test class that all tests that depend on AppKit should inherit from.
 // Sets up paths correctly, and makes sure that any windows created in the test

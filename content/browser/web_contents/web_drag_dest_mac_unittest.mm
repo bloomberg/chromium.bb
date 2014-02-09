@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 using content::DropData;
 using content::RenderViewHostImplTestHarness;

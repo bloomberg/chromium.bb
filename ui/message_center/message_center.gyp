@@ -206,7 +206,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
-            '../ui_unittests.gyp:ui_test_support',
+            '../gfx/gfx.gyp:gfx_test_support',
           ],
         }],
         ['toolkit_views==1', {

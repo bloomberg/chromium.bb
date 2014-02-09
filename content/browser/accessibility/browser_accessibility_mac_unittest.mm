@@ -12,7 +12,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 @interface MockAccessibilityDelegate :
     NSView<BrowserAccessibilityDelegateCocoa>

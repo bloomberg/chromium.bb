@@ -6,11 +6,11 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 

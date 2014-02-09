@@ -5,7 +5,7 @@
 #import "ui/message_center/cocoa/settings_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/fake_notifier_settings_provider.h"
 
 @implementation MCSettingsController (TestingInterface)

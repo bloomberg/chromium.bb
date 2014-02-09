@@ -141,6 +141,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
+        '../ui/ui_unittests.gyp:ui_test_support',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],

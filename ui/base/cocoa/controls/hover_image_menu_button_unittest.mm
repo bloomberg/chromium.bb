@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hover_image_menu_button_cell.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 

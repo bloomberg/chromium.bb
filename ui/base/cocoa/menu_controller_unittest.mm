@@ -13,8 +13,8 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/image/image.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 using base::ASCIIToUTF16;
 

@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 namespace test {
