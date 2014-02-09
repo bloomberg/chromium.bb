@@ -31,6 +31,13 @@ from chromite.lib import signing
 # R34-5126.0.0 will break into "34" and "5126.0.0".
 VERSION_REGEX = r'^R([0-9]+)-([^-]+)'
 
+# The test signers will scan this dir looking for test work.
+# Keep it in sync with the signer config files [gs_test_buckets].
+TEST_SIGN_BUCKET_BASE = 'gs://chromeos-throw-away-bucket/signer-tests'
+
+# Ketsets that are only valid in the above test bucket.
+TEST_KEYSETS = set(('test-keys-mp', 'test-keys-premp'))
+
 
 class MissingBoardInstructions(Exception):
   """Raised when a board lacks any signer instructions."""
@@ -176,7 +183,7 @@ def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
 
 
 def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
-              sign_types=None, dry_run=False, mock=False):
+              sign_types=None, dry_run=False, mock=False, force_keysets=()):
   """Push the image from the archive bucket to the release bucket.
 
   Args:
@@ -190,6 +197,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
       signing.  See the --sign-types option for more details.
     dry_run: Show what would be done, but do not upload anything.
     mock: Upload to a testing bucket rather than the real one.
+    force_keysets: Set of keysets to use rather than what the inputs say.
 
   Returns:
     A dictionary that maps 'channel' -> ['gs://signer_instruction_uri1',
@@ -218,12 +226,6 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
   ctx = gs.GSContext(dry_run=dry_run)
 
-  if mock:
-    gs_base = os.path.join(constants.TRASH_BUCKET, 'pushimage-tests',
-                           getpass.getuser())
-  else:
-    gs_base = constants.RELEASE_BUCKET
-
   try:
     input_insns = InputInsns(board)
   except MissingBoardInstructions as e:
@@ -232,7 +234,23 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     cros_build_lib.Warning('not uploading anything for signing')
     return
   channels = input_insns.GetChannels()
-  keysets = input_insns.GetKeysets()
+
+  # We want force_keysets as a set, and keysets as a list.
+  force_keysets = set(force_keysets)
+  keysets = list(force_keysets) if force_keysets else input_insns.GetKeysets()
+
+  if mock:
+    cros_build_lib.Info('Upload mode: mock; signers will not process anything')
+    tbs_base = gs_base = os.path.join(constants.TRASH_BUCKET, 'pushimage-tests',
+                                      getpass.getuser())
+  elif TEST_KEYSETS & force_keysets:
+    cros_build_lib.Info('Upload mode: test; signers will process test keys')
+    # We need the tbs_base to be in the place the signer will actually scan.
+    tbs_base = TEST_SIGN_BUCKET_BASE
+    gs_base = os.path.join(tbs_base, getpass.getuser())
+  else:
+    cros_build_lib.Info('Upload mode: normal; signers will process the images')
+    tbs_base = gs_base = constants.RELEASE_BUCKET
 
   sect_general = {
       'config_board': board,
@@ -346,7 +364,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
           gs_insns_path += '.instructions'
 
           ctx.Copy(insns_path.name, gs_insns_path)
-          MarkImageToBeSigned(ctx, gs_base, gs_insns_path, priority)
+          MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
           cros_build_lib.Info('Signing %s image %s', image_type, gs_insns_path)
           instruction_urls.setdefault(channel, []).append(gs_insns_path)
 
@@ -370,6 +388,10 @@ def main(argv):
                       help='show what would be done, but do not upload')
   parser.add_argument('-M', '--mock', default=False, action='store_true',
                       help='upload things to a testing bucket (dev testing)')
+  parser.add_argument('--test-sign-mp', default=False, action='store_true',
+                      help='mung signing behavior to sign w/test mp keys')
+  parser.add_argument('--test-sign-premp', default=False, action='store_true',
+                      help='mung signing behavior to sign w/test premp keys')
   parser.add_argument('--priority', type=int, default=50,
                       help='set signing priority (lower == higher prio)')
   parser.add_argument('--sign-types', default=None, nargs='+',
@@ -379,6 +401,13 @@ def main(argv):
   opts = parser.parse_args(argv)
   opts.Freeze()
 
+  force_keysets = set()
+  if opts.test_sign_mp:
+    force_keysets.add('test-keys-mp')
+  if opts.test_sign_premp:
+    force_keysets.add('test-keys-premp')
+
   PushImage(opts.image_dir, opts.board, versionrev=opts.version,
             profile=opts.profile, priority=opts.priority,
-            sign_types=opts.sign_types, dry_run=opts.dry_run, mock=opts.mock)
+            sign_types=opts.sign_types, dry_run=opts.dry_run, mock=opts.mock,
+            force_keysets=force_keysets)
