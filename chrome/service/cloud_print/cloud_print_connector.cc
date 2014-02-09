@@ -622,7 +622,7 @@ void CloudPrintConnector::OnReceivePrinterCaps(
           settings_.xmpp_ping_timeout_sec()),
       mime_boundary, std::string(), &post_data);
   post_data += GetPostDataForPrinterInfo(info, mime_boundary);
-  if (caps_and_defaults.caps_mime_type == kContentTypeCDD) {
+  if (caps_and_defaults.caps_mime_type == kContentTypeJSON) {
     net::AddMultipartValueForUpload(kUseCDD, "true", mime_boundary,
                                     std::string(), &post_data);
   }

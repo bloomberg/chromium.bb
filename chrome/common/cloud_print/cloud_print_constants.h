@@ -32,7 +32,7 @@ extern const char kPrinterLocalSettingsValue[];
 extern const char kMessageTextValue[];
 extern const char kUseCDD[];
 
-extern const char kContentTypeCDD[];
+extern const char kContentTypeJSON[];
 extern const char kContentTypePDF[];
 extern const char kContentTypeXML[];
 extern const char kContentTypeXPS[];

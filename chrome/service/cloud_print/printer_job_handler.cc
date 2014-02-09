@@ -316,9 +316,18 @@ PrinterJobHandler::HandleJobMetadataResponse(
                                   JOB_HANDLER_JOB_STARTED, JOB_HANDLER_MAX);
         SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
         request_ = CloudPrintURLFetcher::Create();
-        request_->StartGetRequest(CloudPrintURLFetcher::REQUEST_TICKET,
-            GURL(job_details_.print_ticket_url_), this, kJobDataMaxRetryCount,
-            std::string());
+        if (print_system_->UseCddAndCjt()) {
+          request_->StartGetRequest(
+              CloudPrintURLFetcher::REQUEST_TICKET,
+              GetUrlForJobCjt(cloud_print_server_url_, job_details_.job_id_,
+                              job_fetch_reason_),
+              this, kJobDataMaxRetryCount, std::string());
+        } else {
+          request_->StartGetRequest(
+              CloudPrintURLFetcher::REQUEST_TICKET,
+              GURL(job_details_.print_ticket_url_), this, kJobDataMaxRetryCount,
+              std::string());
+        }
       } else {
         job_available = false;
         base::MessageLoop::current()->PostDelayedTask(
@@ -683,7 +692,8 @@ void PrinterJobHandler::OnReceivePrinterCaps(
       // Hashes don't match, we need to upload new capabilities (the defaults
       // go for free along with the capabilities)
       printer_info_cloud_.caps_hash = caps_hash;
-      if (caps_and_defaults.caps_mime_type == kContentTypeCDD) {
+      if (caps_and_defaults.caps_mime_type == kContentTypeJSON) {
+        DCHECK(print_system_->UseCddAndCjt());
         net::AddMultipartValueForUpload(kUseCDD, "true", mime_boundary,
                                         std::string(), &post_data);
       }

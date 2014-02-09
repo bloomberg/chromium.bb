@@ -195,6 +195,10 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
       const std::string& printer_name) = 0;
   virtual JobSpooler* CreateJobSpooler() = 0;
 
+  // Returns a true if connector should use CDD for capabilities and CJT as
+  // print ticket.
+  virtual bool UseCddAndCjt() = 0;
+
   // Returns a comma separated list of mimetypes for print data that are
   // supported by this print system. The format of this string is the same as
   // that used for the HTTP Accept: header.

@@ -24,7 +24,7 @@ const char kPrinterLocalSettingsValue[] = "local_settings";
 const char kMessageTextValue[] = "message";
 const char kUseCDD[] = "use_cdd";
 
-const char kContentTypeCDD[] = "application/json";
+const char kContentTypeJSON[] = "application/json";
 const char kContentTypePDF[] = "application/pdf";
 const char kContentTypeXML[] = "application/xml";
 const char kContentTypeXPS[] = "application/vnd.ms-xpsdocument";

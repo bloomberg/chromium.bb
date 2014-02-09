@@ -44,6 +44,9 @@ GURL GetUrlForPrinterDelete(const GURL& cloud_print_server_url,
 GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
                        const std::string& printer_id,
                        const std::string& reason);
+GURL GetUrlForJobCjt(const GURL& cloud_print_server_url,
+                     const std::string& job_id,
+                     const std::string& reason);
 GURL GetUrlForJobDelete(const GURL& cloud_print_server_url,
                         const std::string& job_id);
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,

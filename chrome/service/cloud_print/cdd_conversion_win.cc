@@ -10,6 +10,124 @@
 
 namespace cloud_print {
 
+bool IsValidCjt(const std::string& print_ticket_data) {
+  cloud_devices::CloudDeviceDescription description;
+  return description.InitFromString(print_ticket_data);
+}
+
+scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
+                                   const std::string& print_ticket) {
+  cloud_devices::CloudDeviceDescription description;
+  if (!description.InitFromString(print_ticket))
+    return scoped_ptr<DEVMODE[]>();
+
+  printing::ScopedPrinterHandle printer;
+  if (!printer.OpenPrinter(printer_name.c_str()))
+    return scoped_ptr<DEVMODE[]>();
+
+  wchar_t* mutable_name = const_cast<wchar_t*>(printer_name.c_str());
+  LONG buffer_size =
+      DocumentProperties(NULL, printer, mutable_name, NULL, NULL, 0);
+  if (buffer_size <= 0)
+    return scoped_ptr<DEVMODE[]>();
+
+  scoped_ptr<DEVMODE[]> scoped_dev_mode(
+      reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
+  DEVMODE* dev_mode = scoped_dev_mode.get();
+  if (DocumentProperties(NULL, printer, mutable_name, dev_mode, NULL,
+                         DM_OUT_BUFFER) != IDOK) {
+    return scoped_ptr<DEVMODE[]>();
+  }
+
+  using namespace cloud_devices::printer;
+  ColorTicketItem color;
+  DuplexTicketItem duplex;
+  OrientationTicketItem orientation;
+  MarginsTicketItem margins;
+  DpiTicketItem dpi;
+  FitToPageTicketItem fit_to_page;
+  MediaTicketItem media;
+  CopiesTicketItem copies;
+  PageRangeTicketItem page_range;
+  CollateTicketItem collate;
+  ReverseTicketItem reverse;
+
+  if (orientation.LoadFrom(description)) {
+    dev_mode->dmFields |= DM_ORIENTATION;
+    if (orientation.value() == LANDSCAPE) {
+      dev_mode->dmOrientation = DMORIENT_LANDSCAPE;
+    } else {
+      dev_mode->dmOrientation = DMORIENT_PORTRAIT;
+    }
+  }
+
+  if (color.LoadFrom(description)) {
+    dev_mode->dmFields |= DM_COLOR;
+    if (color.value().type == STANDARD_MONOCHROME) {
+      dev_mode->dmColor = DMCOLOR_MONOCHROME;
+    } else if (color.value().type == STANDARD_COLOR) {
+      dev_mode->dmColor = DMCOLOR_COLOR;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  if (duplex.LoadFrom(description)) {
+    dev_mode->dmFields |= DM_DUPLEX;
+    if (duplex.value() == NO_DUPLEX) {
+      dev_mode->dmDuplex = DMDUP_SIMPLEX;
+    } else if (duplex.value() == LONG_EDGE) {
+      dev_mode->dmDuplex = DMDUP_VERTICAL;
+    } else if (duplex.value() == SHORT_EDGE) {
+      dev_mode->dmDuplex = DMDUP_HORIZONTAL;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  if (copies.LoadFrom(description)) {
+    dev_mode->dmFields |= DM_COPIES;
+    dev_mode->dmCopies = copies.value();
+  }
+
+  if (dpi.LoadFrom(description)) {
+    if (dpi.value().horizontal > 0) {
+      dev_mode->dmFields |= DM_PRINTQUALITY;
+      dev_mode->dmPrintQuality = dpi.value().horizontal;
+    }
+    if (dpi.value().vertical > 0) {
+      dev_mode->dmFields |= DM_YRESOLUTION;
+      dev_mode->dmYResolution = dpi.value().vertical;
+    }
+  }
+
+  if (collate.LoadFrom(description)) {
+    dev_mode->dmFields |= DM_COLLATE;
+    dev_mode->dmCollate = (collate.value() ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
+  }
+
+  if (media.LoadFrom(description)) {
+    static const size_t kFromUm = 100;  // Windows uses 0.1mm.
+    int width = media.value().width_um / kFromUm;
+    int height = media.value().height_um / kFromUm;
+    if (width > 0) {
+      dev_mode->dmFields |= DM_PAPERWIDTH;
+      dev_mode->dmPaperWidth = width;
+    }
+    if (height > 0) {
+      dev_mode->dmFields |= DM_PAPERLENGTH;
+      dev_mode->dmPaperLength = height;
+    }
+  }
+
+  if (DocumentProperties(NULL, printer, mutable_name, dev_mode, dev_mode,
+                         DM_OUT_BUFFER | DM_IN_BUFFER) != IDOK) {
+    return scoped_ptr<DEVMODE[]>();
+  }
+
+  return scoped_dev_mode.Pass();
+}
+
 std::string CapabilitiesToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   using namespace cloud_devices::printer;

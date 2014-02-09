@@ -77,18 +77,14 @@ scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for
       // PTConvertPrintTicketToDevMode.
-      LONG buffer_size =
-          DocumentProperties(NULL, printer,
-                             const_cast<LPWSTR>(printer_name.c_str()), NULL, dm,
-                             DM_IN_BUFFER);
+      wchar_t* mutable_name = const_cast<wchar_t*>(printer_name.c_str());
+      LONG buffer_size = DocumentProperties(NULL, printer, mutable_name, NULL,
+                                            dm, DM_IN_BUFFER);
       if (buffer_size <= 0)
         return scoped_ptr<DEVMODE[]>();
-
       scoped_dev_mode.reset(reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
-      if (DocumentProperties(NULL, printer,
-                             const_cast<LPWSTR>(printer_name.c_str()),
-                             scoped_dev_mode.get(), dm,
-                             DM_OUT_BUFFER | DM_IN_BUFFER) != IDOK) {
+      if (DocumentProperties(NULL, printer, mutable_name, scoped_dev_mode.get(),
+                             dm, DM_OUT_BUFFER | DM_IN_BUFFER) != IDOK) {
         scoped_dev_mode.reset();
       }
       printing::XPSModule::ReleaseMemory(dm);
@@ -338,9 +334,14 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       last_page_printed_ = -1;
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
-        DCHECK(print_ticket_mime_type == kContentTypeXML);
-        scoped_ptr<DEVMODE[]> dev_mode =
-            XpsTicketToDevMode(base::UTF8ToWide(printer_name), print_ticket);
+        scoped_ptr<DEVMODE[]> dev_mode;
+        if (print_ticket_mime_type == kContentTypeJSON) {
+          dev_mode = CjtToDevMode(base::UTF8ToWide(printer_name), print_ticket);
+        } else {
+          DCHECK(print_ticket_mime_type == kContentTypeXML);
+          dev_mode = XpsTicketToDevMode(base::UTF8ToWide(printer_name),
+                                        print_ticket);
+        }
 
         if (!dev_mode) {
           NOTREACHED();
@@ -368,6 +369,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         delegate_ = delegate;
         RenderNextPDFPages();
       } else if (print_data_mime_type == kContentTypeXPS) {
+        DCHECK(print_ticket_mime_type == kContentTypeXML);
         bool ret = PrintXPSDocument(printer_name,
                                     job_title,
                                     print_data_file_path,
@@ -627,7 +629,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
       const printing::PrinterSemanticCapsAndDefaults& semantic_info) OVERRIDE {
     printing::PrinterCapsAndDefaults printer_info;
     if (succeeded) {
-      printer_info.caps_mime_type = kContentTypeCDD;
+      printer_info.caps_mime_type = kContentTypeJSON;
       printer_info.printer_capabilities = CapabilitiesToCdd(semantic_info);
     }
     callback_.Run(succeeded, printer_name, printer_info);
@@ -711,6 +713,7 @@ class PrintSystemWin : public PrintSystem {
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name) OVERRIDE;
   virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
+  virtual bool UseCddAndCjt() OVERRIDE;
   virtual std::string GetSupportedMimeTypes() OVERRIDE;
 
  private:
@@ -718,22 +721,16 @@ class PrintSystemWin : public PrintSystem {
       const std::string& printer_name) const;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
-  bool use_xps_;
+  bool use_cdd_;
   DISALLOW_COPY_AND_ASSIGN(PrintSystemWin);
 };
 
-PrintSystemWin::PrintSystemWin() : use_xps_(false) {
+PrintSystemWin::PrintSystemWin() : use_cdd_(false) {
   print_backend_ = printing::PrintBackend::CreateInstance(NULL);
 }
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
-  use_xps_ = printing::XPSModule::Init();
-  if (!use_xps_) {
-    std::string message = l10n_util::GetStringFUTF8(
-        IDS_CLOUD_PRINT_XPS_UNAVAILABLE,
-        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
-    return PrintSystemResult(false, message);
-  }
+  use_cdd_ = !printing::XPSModule::Init();
   return PrintSystemResult(true, std::string());
 }
 
@@ -752,7 +749,10 @@ void PrintSystemWin::GetPrinterCapsAndDefaults(
   PrinterCapsHandler* handler =
       new PrinterCapsHandler(printer_name, callback);
   handler->AddRef();
-  handler->StartGetPrinterCapsAndDefaults();
+  if (use_cdd_)
+    handler->StartGetPrinterSemanticCapsAndDefaults();
+  else
+    handler->StartGetPrinterCapsAndDefaults();
 }
 
 bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
@@ -764,6 +764,11 @@ bool PrintSystemWin::ValidatePrintTicket(
     const std::string& print_ticket_data,
     const std::string& print_ticket_data_mime_type) {
   crash_keys::ScopedPrinterInfo crash_key(GetPrinterDriverInfo(printer_name));
+
+  if (use_cdd_) {
+    return print_ticket_data_mime_type == kContentTypeJSON &&
+           IsValidCjt(print_ticket_data);
+  }
   DCHECK(print_ticket_data_mime_type == kContentTypeXML);
 
   printing::ScopedXPSInitializer xps_initializer;
@@ -862,9 +867,13 @@ PrintSystem::JobSpooler* PrintSystemWin::CreateJobSpooler() {
   return new JobSpoolerWin();
 }
 
+bool PrintSystemWin::UseCddAndCjt() {
+  return use_cdd_;
+}
+
 std::string PrintSystemWin::GetSupportedMimeTypes() {
   std::string result;
-  if (use_xps_) {
+  if (!use_cdd_) {
     result = kContentTypeXPS;
     result += ",";
   }

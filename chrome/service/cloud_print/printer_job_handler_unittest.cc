@@ -421,6 +421,7 @@ class MockPrintSystem : public PrintSystem {
                PrintSystem::PrinterWatcher*(const std::string& printer_name));
   MOCK_METHOD0(CreateJobSpooler, PrintSystem::JobSpooler*());
 
+  MOCK_METHOD0(UseCddAndCjt, bool());
   MOCK_METHOD0(GetSupportedMimeTypes, std::string());
 
   friend class scoped_refptr<NiceMock<MockPrintSystem> >;

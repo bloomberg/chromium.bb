@@ -123,6 +123,17 @@ GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
+GURL GetUrlForJobCjt(const GURL& cloud_print_server_url,
+                     const std::string& job_id,
+                     const std::string& reason) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "ticket"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = base::StringPrintf(
+      "jobid=%s&deb=%s&use_cjt=true", job_id.c_str(), reason.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
+}
 
 GURL GetUrlForJobDelete(const GURL& cloud_print_server_url,
                         const std::string& job_id) {

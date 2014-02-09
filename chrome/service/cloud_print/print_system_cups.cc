@@ -96,6 +96,7 @@ class PrintSystemCUPS : public PrintSystem {
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name) OVERRIDE;
   virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
+  virtual bool UseCddAndCjt() OVERRIDE;
   virtual std::string GetSupportedMimeTypes() OVERRIDE;
 
   // Helper functions.
@@ -726,6 +727,10 @@ PrintSystem::PrinterWatcher* PrintSystemCUPS::CreatePrinterWatcher(
 PrintSystem::JobSpooler* PrintSystemCUPS::CreateJobSpooler() {
   DCHECK(initialized_);
   return new JobSpoolerCUPS(this);
+}
+
+bool PrintSystemCUPS::UseCddAndCjt() {
+  return false;
 }
 
 std::string PrintSystemCUPS::GetSupportedMimeTypes() {
