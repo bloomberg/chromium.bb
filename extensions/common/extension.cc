@@ -306,7 +306,8 @@ bool Extension::ShowConfigureContextMenus() const {
   // options for component extension button but now there is no component
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
-  return location() != Manifest::COMPONENT;
+  return location() != Manifest::COMPONENT &&
+         location() != Manifest::EXTERNAL_COMPONENT;
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
