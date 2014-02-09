@@ -17,6 +17,11 @@
 namespace media {
 namespace cast {
 
+static const size_t kRtcpCastLogHeaderSize = 12;
+static const size_t kRtcpSenderFrameLogSize = 4;
+static const size_t kRtcpReceiverFrameLogSize = 8;
+static const size_t kRtcpReceiverEventLogSize = 4;
+
 // Handle the per frame ACK and NACK messages.
 class RtcpCastMessage {
  public:
@@ -34,6 +39,9 @@ class RtcpCastMessage {
 
 // Log messages from receiver to sender.
 struct RtcpReceiverEventLogMessage {
+  RtcpReceiverEventLogMessage();
+  ~RtcpReceiverEventLogMessage();
+
   CastLoggingEvent type;
   base::TimeTicks event_timestamp;
   base::TimeDelta delay_delta;
@@ -42,8 +50,7 @@ struct RtcpReceiverEventLogMessage {
 
 typedef std::list<RtcpReceiverEventLogMessage> RtcpReceiverEventLogMessages;
 
-class RtcpReceiverFrameLogMessage {
- public:
+struct RtcpReceiverFrameLogMessage {
   explicit RtcpReceiverFrameLogMessage(uint32 rtp_timestamp);
   ~RtcpReceiverFrameLogMessage();
 
@@ -58,13 +65,15 @@ class RtcpReceiverFrameLogMessage {
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
 
 struct RtcpRpsiMessage {
+  RtcpRpsiMessage();
+  ~RtcpRpsiMessage();
+
   uint32 remote_ssrc;
   uint8 payload_type;
   uint64 picture_id;
 };
 
-class RtcpNackMessage {
- public:
+struct RtcpNackMessage {
   RtcpNackMessage();
   ~RtcpNackMessage();
 
@@ -74,8 +83,7 @@ class RtcpNackMessage {
   DISALLOW_COPY_AND_ASSIGN(RtcpNackMessage);
 };
 
-class RtcpRembMessage {
- public:
+struct RtcpRembMessage {
   RtcpRembMessage();
   ~RtcpRembMessage();
 
@@ -86,6 +94,9 @@ class RtcpRembMessage {
 };
 
 struct RtcpReceiverReferenceTimeReport {
+  RtcpReceiverReferenceTimeReport();
+  ~RtcpReceiverReferenceTimeReport();
+
   uint32 remote_ssrc;
   uint32 ntp_seconds;
   uint32 ntp_fraction;
@@ -97,6 +108,26 @@ inline bool operator==(RtcpReceiverReferenceTimeReport lhs,
          lhs.ntp_seconds == rhs.ntp_seconds &&
          lhs.ntp_fraction == rhs.ntp_fraction;
 }
+
+// Struct used by raw event subscribers as an intermediate format before
+// sending off to the other side via RTCP.
+// (i.e., WindowedRtcpEventRtp{Sender,Receiver}Subscriber)
+struct RtcpEvent {
+  RtcpEvent();
+  ~RtcpEvent();
+
+  CastLoggingEvent type;
+
+  // Time of event logged.
+  base::TimeTicks timestamp;
+
+  // Render/playout delay. Only set for kAudioPlayoutDelay and
+  // kVideoRenderDelay events.
+  base::TimeDelta delay_delta;
+
+  // Only set for packet events. (kAudioPacketReceived, kVideoPacketReceived)
+  uint16 packet_id;
+};
 
 }  // namespace cast
 }  // namespace media

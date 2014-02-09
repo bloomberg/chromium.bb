@@ -11,17 +11,31 @@
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/framer/framer.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/video_receiver/video_decoder.h"
 
-namespace media {
-namespace cast {
+namespace {
 
-const int64 kMinSchedulingDelayMs = 1;
+using media::cast::kMaxIpPacketSize;
+using media::cast::kRtcpCastLogHeaderSize;
+using media::cast::kRtcpReceiverEventLogSize;
+
+static const int64 kMinSchedulingDelayMs = 1;
 
 static const int64 kMinTimeBetweenOffsetUpdatesMs = 2000;
 static const int kTimeOffsetFilter = 8;
 static const int64_t kMinProcessIntervalMs = 5;
+
+// This is an upper bound on number of events that can fit into a single RTCP
+// packet.
+static const int64 kMaxEventSubscriberEntries =
+    (kMaxIpPacketSize - kRtcpCastLogHeaderSize) / kRtcpReceiverEventLogSize;
+
+}  // namespace
+
+namespace media {
+namespace cast {
 
 // Local implementation of RtpData (defined in rtp_rtcp_defines.h).
 // Used to pass payload data into the video receiver.
@@ -49,8 +63,7 @@ class LocalRtpVideoData : public RtpData {
 class LocalRtpVideoFeedback : public RtpPayloadFeedback {
  public:
   explicit LocalRtpVideoFeedback(VideoReceiver* video_receiver)
-      : video_receiver_(video_receiver) {
-  }
+      : video_receiver_(video_receiver) {}
 
   virtual void CastFeedback(const RtcpCastMessage& cast_message) OVERRIDE {
     video_receiver_->CastFeedback(cast_message);
@@ -65,17 +78,14 @@ class LocalRtpVideoFeedback : public RtpPayloadFeedback {
 class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
  public:
   explicit LocalRtpReceiverStatistics(RtpReceiver* rtp_receiver)
-     : rtp_receiver_(rtp_receiver) {
-  }
+      : rtp_receiver_(rtp_receiver) {}
 
   virtual void GetStatistics(uint8* fraction_lost,
                              uint32* cumulative_lost,  // 24 bits valid.
                              uint32* extended_high_sequence_number,
                              uint32* jitter) OVERRIDE {
-    rtp_receiver_->GetStatistics(fraction_lost,
-                                 cumulative_lost,
-                                 extended_high_sequence_number,
-                                 jitter);
+    rtp_receiver_->GetStatistics(fraction_lost, cumulative_lost,
+                                 extended_high_sequence_number, jitter);
   }
 
  private:
@@ -87,6 +97,11 @@ VideoReceiver::VideoReceiver(
     const VideoReceiverConfig& video_config,
     transport::PacedPacketSender* const packet_sender)
       : cast_environment_(cast_environment),
+        event_subscriber_(
+            cast_environment->GetMessageSingleThreadTaskRunnerForThread(
+                CastEnvironment::MAIN),
+            kMaxEventSubscriberEntries,
+            ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
         codec_(video_config.codec),
         target_delay_delta_(
             base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
@@ -112,25 +127,23 @@ VideoReceiver::VideoReceiver(
                            video_config.incoming_ssrc,
                            video_config.decoder_faster_than_max_frame_rate,
                            max_unacked_frames));
+
   if (!video_config.use_external_decoder) {
     video_decoder_.reset(new VideoDecoder(video_config, cast_environment));
   }
 
-  rtcp_.reset(new Rtcp(
-      cast_environment_,
-      NULL,
-      NULL,
-      packet_sender,
-      NULL,
-      rtp_video_receiver_statistics_.get(),
-      video_config.rtcp_mode,
-      base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-      video_config.feedback_ssrc,
-      video_config.incoming_ssrc,
-      video_config.rtcp_c_name));
+  rtcp_.reset(
+      new Rtcp(cast_environment_, NULL, NULL, packet_sender, NULL,
+               rtp_video_receiver_statistics_.get(), video_config.rtcp_mode,
+               base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
+               video_config.feedback_ssrc, video_config.incoming_ssrc,
+               video_config.rtcp_c_name));
+  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
 }
 
-VideoReceiver::~VideoReceiver() {}
+VideoReceiver::~VideoReceiver() {
+  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
+}
 
 void VideoReceiver::InitializeTimers() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -170,9 +183,10 @@ void VideoReceiver::DecodeVideoFrameThread(
   DCHECK(video_decoder_);
 
   if (!(video_decoder_->DecodeVideoFrame(encoded_frame.get(), render_time,
-        frame_decoded_callback))) {
+                                         frame_decoded_callback))) {
     // This will happen if we decide to decode but not show a frame.
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetRawVideoFrame, base::Unretained(this),
                    frame_decoded_callback));
   }
@@ -264,12 +278,13 @@ bool VideoReceiver::PullEncodedVideoFrame(
     // will wait for 2 to arrive, however if 2 never show up this timer will hit
     // and we will pull out frame 3 for decoding and rendering.
     base::TimeDelta time_until_release = time_until_render - min_wait_delta;
-    cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
+    cast_environment_->PostDelayedTask(
+        CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
     VLOG(1) << "Wait before releasing frame "
-            << static_cast<int>((*encoded_frame)->frame_id)
-            << " time " << time_until_release.InMilliseconds();
+            << static_cast<int>((*encoded_frame)->frame_id) << " time "
+            << time_until_release.InMilliseconds();
     return false;
   }
 
@@ -282,8 +297,7 @@ bool VideoReceiver::PullEncodedVideoFrame(
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   } else {
-    VLOG(1) << "Show frame "
-            << static_cast<int>((*encoded_frame)->frame_id)
+    VLOG(1) << "Show frame " << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   }
   // We have a copy of the frame, release this one.
@@ -321,7 +335,8 @@ void VideoReceiver::PlayoutTimeout() {
     if (!queued_encoded_callbacks_.empty()) {
       VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
       queued_encoded_callbacks_.pop_front();
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
           base::Bind(callback, base::Passed(&encoded_frame), render_time));
     }
   }
@@ -352,22 +367,20 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
       // Time to update the time_offset.
       base::TimeDelta time_offset =
           time_incoming_packet_ - rtp_timestamp_in_ticks;
-      time_offset_ = ((kTimeOffsetFilter - 1) * time_offset_ + time_offset)
-          / kTimeOffsetFilter;
+      time_offset_ = ((kTimeOffsetFilter - 1) * time_offset_ + time_offset) /
+                     kTimeOffsetFilter;
     }
   }
   // Reset |time_incoming_packet_updated_| to enable a future measurement.
   time_incoming_packet_updated_ = false;
-  if (!rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
-                                       rtp_timestamp,
+  if (!rtcp_->RtpTimestampInSenderTime(kVideoFrequency, rtp_timestamp,
                                        &rtp_timestamp_in_ticks)) {
     // This can fail if we have not received any RTCP packets in a long time.
     return now;
   }
   base::TimeTicks render_time =
       rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_;
-  if (last_render_time_ > render_time)
-    render_time = last_render_time_;
+  if (last_render_time_ > render_time) render_time = last_render_time_;
   last_render_time_ = render_time;
   return render_time;
 }
@@ -387,27 +400,29 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  if (time_incoming_packet_.is_null() || now - time_incoming_packet_ >
-      base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
+  if (time_incoming_packet_.is_null() ||
+      now - time_incoming_packet_ >
+          base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
     if (time_incoming_packet_.is_null()) InitializeTimers();
     incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
     time_incoming_packet_ = now;
     time_incoming_packet_updated_ = true;
   }
 
-  cast_environment_->Logging()->InsertPacketEvent(now, kVideoPacketReceived,
-      rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
-      rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
+  cast_environment_->Logging()->InsertPacketEvent(
+      now, kVideoPacketReceived, rtp_header.webrtc.header.timestamp,
+      rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
+      payload_size);
 
   bool duplicate = false;
-  bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header,
-                                        &duplicate);
+  bool complete =
+      framer_->InsertPacket(payload_data, payload_size, rtp_header, &duplicate);
 
   if (duplicate) {
-    cast_environment_->Logging()->InsertPacketEvent(now,
-        kDuplicatePacketReceived,
-        rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
-        rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
+    cast_environment_->Logging()->InsertPacketEvent(
+        now, kDuplicatePacketReceived, rtp_header.webrtc.header.timestamp,
+        rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
+        payload_size);
     // Duplicate packets are ignored.
     return;
   }
@@ -417,8 +432,8 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
   queued_encoded_callbacks_.pop_front();
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(&VideoReceiver::GetEncodedVideoFrame,
-          weak_factory_.GetWeakPtr(), callback));
+                              base::Bind(&VideoReceiver::GetEncodedVideoFrame,
+                                         weak_factory_.GetWeakPtr(), callback));
 }
 
 // Send a cast feedback message. Actual message created in the framer (cast
@@ -427,38 +442,13 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   RtcpReceiverLogMessage receiver_log;
-  VideoRtcpRawMap video_logs =
-      cast_environment_->Logging()->GetAndResetVideoRtcpRawData();
+  event_subscriber_.GetReceiverLogMessageAndReset(&receiver_log);
 
-  while (!video_logs.empty()) {
-    // TODO(hclam): Avoid calling begin() within a loop.
-    VideoRtcpRawMap::iterator it = video_logs.begin();
-    uint32 rtp_timestamp = it->first;
-    std::pair<VideoRtcpRawMap::iterator, VideoRtcpRawMap::iterator>
-        frame_range = video_logs.equal_range(rtp_timestamp);
-
-    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
-
-    VideoRtcpRawMap::const_iterator event_it = frame_range.first;
-    for (; event_it != frame_range.second; ++event_it) {
-      if (!RtcpSender::IsReceiverEvent(event_it->second.type))
-        continue;
-      RtcpReceiverEventLogMessage event_log_message;
-      event_log_message.type = event_it->second.type;
-      event_log_message.event_timestamp = event_it->second.timestamp;
-      event_log_message.delay_delta = event_it->second.delay_delta;
-      event_log_message.packet_id = event_it->second.packet_id;
-      frame_log.event_log_messages_.push_back(event_log_message);
-    }
-    receiver_log.push_back(frame_log);
-    video_logs.erase(rtp_timestamp);
-  }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->Logging()->InsertGenericEvent(now, kVideoAckSent,
-      cast_message.ack_frame_id_);
+                                                   cast_message.ack_frame_id_);
 
   rtcp_->SendRtcpFromRtpReceiver(&cast_message, &receiver_log);
-  time_last_sent_cast_message_= now;
 }
 
 // Cast messages should be sent within a maximum interval. Schedule a call
@@ -468,13 +458,15 @@ void VideoReceiver::ScheduleNextCastMessage() {
   base::TimeTicks send_time;
   framer_->TimeToSendNextCastMessage(&send_time);
 
-  base::TimeDelta time_to_send = send_time -
-      cast_environment_->Clock()->NowTicks();
-  time_to_send = std::max(time_to_send,
-      base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
-  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
+  base::TimeDelta time_to_send =
+      send_time - cast_environment_->Clock()->NowTicks();
+  time_to_send = std::max(
+      time_to_send, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
+  cast_environment_->PostDelayedTask(
+      CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&VideoReceiver::SendNextCastMessage,
-                 weak_factory_.GetWeakPtr()), time_to_send);
+                 weak_factory_.GetWeakPtr()),
+      time_to_send);
 }
 
 void VideoReceiver::SendNextCastMessage() {
@@ -487,14 +479,16 @@ void VideoReceiver::SendNextCastMessage() {
 void VideoReceiver::ScheduleNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta time_to_next = rtcp_->TimeToSendNextRtcpReport() -
-      cast_environment_->Clock()->NowTicks();
+                                 cast_environment_->Clock()->NowTicks();
 
-  time_to_next = std::max(time_to_next,
-      base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
+  time_to_next = std::max(
+      time_to_next, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
-  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(
+      CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&VideoReceiver::SendNextRtcpReport,
-                weak_factory_.GetWeakPtr()), time_to_next);
+                 weak_factory_.GetWeakPtr()),
+      time_to_next);
 }
 
 void VideoReceiver::SendNextRtcpReport() {

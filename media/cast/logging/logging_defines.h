@@ -17,9 +17,10 @@ namespace cast {
 static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 
 struct CastLoggingConfig {
-  CastLoggingConfig(bool sender);
+  explicit CastLoggingConfig(bool sender);
   ~CastLoggingConfig();
 
+  // TODO(imcheng): get rid of this field.
   bool is_sender;
   bool enable_raw_data_collection;
   bool enable_stats_data_collection;
@@ -30,6 +31,7 @@ struct CastLoggingConfig {
 // By default, enable raw and stats data collection. Disable tracing and UMA.
 CastLoggingConfig GetDefaultCastSenderLoggingConfig();
 CastLoggingConfig GetDefaultCastReceiverLoggingConfig();
+CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled();
 
 enum CastLoggingEvent {
   // Generic events.
@@ -39,6 +41,8 @@ enum CastLoggingEvent {
   kJitterMs,
   kVideoAckReceived,
   kRembBitrate,
+  // TODO(imcheng): k{Audio,Video}AckSent may need to be FrameEvents
+  // (crbug.com/339590)
   kAudioAckSent,
   kVideoAckSent,
   // Audio sender.
@@ -64,50 +68,63 @@ enum CastLoggingEvent {
   kAudioPacketReceived,
   kVideoPacketReceived,
   kDuplicatePacketReceived,
-
   kNumOfLoggingEvents,
 };
 
 std::string CastLoggingToString(CastLoggingEvent event);
 
+typedef uint32 RtpTimestamp;
+
 struct FrameEvent {
   FrameEvent();
   ~FrameEvent();
 
+  RtpTimestamp rtp_timestamp;
   uint32 frame_id;
-  // Size is set only for kAudioFrameEncoded and kVideoFrameEncoded.
-  size_t size;
-  std::vector<base::TimeTicks> timestamp;
-  std::vector<CastLoggingEvent> type;
-  // Delay is only set for kAudioPlayoutDelay and kVideoRenderDelay.
-  base::TimeDelta delay_delta;  // Render/playout delay.
+  size_t size;  // Encoded size only.
+
+  // Time of event logged.
+  base::TimeTicks timestamp;
+  CastLoggingEvent type;
+
+  // Render / playout delay. Only set for kAudioPlayoutDelay and
+  // kVideoRenderDelay events.
+  base::TimeDelta delay_delta;
 };
-
-// Internal map sorted by packet id.
-struct BasePacketInfo {
-  BasePacketInfo();
-  ~BasePacketInfo();
-
-  size_t size;
-  std::vector<base::TimeTicks> timestamp;
-  std::vector<CastLoggingEvent> type;
-};
-
-typedef std::map<uint16, BasePacketInfo> BasePacketMap;
 
 struct PacketEvent {
   PacketEvent();
   ~PacketEvent();
+
+  RtpTimestamp rtp_timestamp;
   uint32 frame_id;
-  int max_packet_id;
-  BasePacketMap packet_map;
+  uint16 max_packet_id;
+  uint16 packet_id;
+  size_t size;
+
+  // Time of event logged.
+  base::TimeTicks timestamp;
+  CastLoggingEvent type;
 };
 
 struct GenericEvent {
   GenericEvent();
   ~GenericEvent();
-  std::vector<int> value;
-  std::vector<base::TimeTicks> timestamp;
+
+  CastLoggingEvent type;
+
+  // Depending on |type|, |value| can have different meanings:
+  //  kRttMs - RTT in milliseconds
+  //  kPacketLoss - Fraction of packet loss, denominated in 256
+  //  kJitterMs - Jitter in milliseconds
+  //  kVideoAckReceived - Frame ID
+  //  kRembBitrate - Receiver Estimated Maximum Bitrate
+  //  kAudioAckSent - Frame ID
+  //  kVideoAckSent - Frame ID
+  int value;
+
+  // Time of event logged.
+  base::TimeTicks timestamp;
 };
 
 // Generic statistics given the raw data. More specific data (e.g. frame rate
@@ -146,23 +163,6 @@ struct GenericLogStats {
   int max;
 };
 
-struct ReceiverRtcpEvent {
-  ReceiverRtcpEvent();
-  ~ReceiverRtcpEvent();
-
-  CastLoggingEvent type;
-  base::TimeTicks timestamp;
-  base::TimeDelta delay_delta;  // Render/playout delay.
-  uint16 packet_id;
-};
-
-// Store all log types in a map based on the event.
-typedef std::map<uint32, FrameEvent> FrameRawMap;
-typedef std::map<uint32, PacketEvent> PacketRawMap;
-typedef std::map<CastLoggingEvent, GenericEvent> GenericRawMap;
-
-typedef std::multimap<uint32, ReceiverRtcpEvent> AudioRtcpRawMap;
-typedef std::multimap<uint32, ReceiverRtcpEvent> VideoRtcpRawMap;
 
 typedef std::map<CastLoggingEvent, FrameLogStats> FrameStatsMap;
 typedef std::map<CastLoggingEvent, PacketLogStats> PacketStatsMap;

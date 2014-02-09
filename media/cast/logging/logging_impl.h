@@ -29,54 +29,40 @@ class LoggingImpl : public base::NonThreadSafe {
   ~LoggingImpl();
 
   void InsertFrameEvent(const base::TimeTicks& time_of_event,
-                        CastLoggingEvent event,
-                        uint32 rtp_timestamp,
+                        CastLoggingEvent event, uint32 rtp_timestamp,
                         uint32 frame_id);
 
   void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
-                                CastLoggingEvent event,
-                                uint32 rtp_timestamp,
-                                uint32 frame_id,
-                                int frame_size);
+                                CastLoggingEvent event, uint32 rtp_timestamp,
+                                uint32 frame_id, int frame_size);
 
   void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
-                                 CastLoggingEvent event,
-                                 uint32 rtp_timestamp,
-                                 uint32 frame_id,
-                                 base::TimeDelta delay);
+                                 CastLoggingEvent event, uint32 rtp_timestamp,
+                                 uint32 frame_id, base::TimeDelta delay);
 
   void InsertPacketListEvent(const base::TimeTicks& time_of_event,
-                             CastLoggingEvent event,
-                             const PacketList& packets);
+                             CastLoggingEvent event, const PacketList& packets);
 
   void InsertPacketEvent(const base::TimeTicks& time_of_event,
-                         CastLoggingEvent event,
-                         uint32 rtp_timestamp,
-                         uint32 frame_id,
-                         uint16 packet_id,
-                         uint16 max_packet_id,
-                         size_t size);
+                         CastLoggingEvent event, uint32 rtp_timestamp,
+                         uint32 frame_id, uint16 packet_id,
+                         uint16 max_packet_id, size_t size);
 
   void InsertGenericEvent(const base::TimeTicks& time_of_event,
-                          CastLoggingEvent event,
-                          int value);
+                          CastLoggingEvent event, int value);
 
-  // Get raw data.
-  FrameRawMap GetFrameRawData() const;
-  PacketRawMap GetPacketRawData() const;
-  GenericRawMap GetGenericRawData() const;
 
-  // Get the RTCP data and reset the data.
-  AudioRtcpRawMap GetAndResetAudioRtcpRawData();
-  VideoRtcpRawMap GetAndResetVideoRtcpRawData();
+  // Delegates to |LoggingRaw::AddRawEventSubscriber()|.
+  void AddRawEventSubscriber(RawEventSubscriber* subscriber);
+
+  // Delegates to |LoggingRaw::RemoveRawEventSubscriber()|.
+  void RemoveRawEventSubscriber(RawEventSubscriber* subscriber);
 
   // Get stats only.
   FrameStatsMap GetFrameStatsData() const;
   PacketStatsMap GetPacketStatsData() const;
   GenericStatsMap GetGenericStatsData() const;
 
-  // Reset raw logging data (this does not reset the RTCP raw data).
-  void ResetRaw();
   // Reset stats logging data.
   void ResetStats();
 

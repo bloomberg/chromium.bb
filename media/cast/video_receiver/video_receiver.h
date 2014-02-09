@@ -16,6 +16,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
@@ -23,6 +24,7 @@
 
 namespace media {
 namespace cast {
+
 class Framer;
 class LocalRtpVideoData;
 class LocalRtpVideoFeedback;
@@ -51,8 +53,7 @@ class VideoReceiver : public base::NonThreadSafe,
   void IncomingPacket(scoped_ptr<Packet> packet);
 
  protected:
-  void IncomingParsedRtpPacket(const uint8* payload_data,
-                               size_t payload_size,
+  void IncomingParsedRtpPacket(const uint8* payload_data, size_t payload_size,
                                const RtpCastHeader& rtp_header);
 
   void DecodeVideoFrameThread(
@@ -98,6 +99,11 @@ class VideoReceiver : public base::NonThreadSafe,
 
   scoped_ptr<VideoDecoder> video_decoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  // Subscribes to raw events.
+  // Processes raw audio events to be sent over to the cast sender via RTCP.
+  ReceiverRtcpEventSubscriber event_subscriber_;
+
   scoped_ptr<Framer> framer_;
   const transport::VideoCodec codec_;
   base::TimeDelta target_delay_delta_;
@@ -107,7 +113,6 @@ class VideoReceiver : public base::NonThreadSafe,
   RtpReceiver rtp_receiver_;
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
-  base::TimeTicks time_last_sent_cast_message_;
   base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
   transport::TransportEncryptionHandler decryptor_;
   std::list<VideoFrameEncodedCallback> queued_encoded_callbacks_;

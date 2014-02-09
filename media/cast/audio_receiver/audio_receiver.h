@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +17,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp.h"                          // RtcpCastMessage
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"  // RtpCastHeader
 #include "media/cast/transport/utility/transport_encryption_handler.h"
@@ -51,8 +53,7 @@ class AudioReceiver : public base::NonThreadSafe,
 
   // Extract a raw audio frame from the cast receiver.
   // Actual decoding will be preformed on a designated audio_decoder thread.
-  void GetRawAudioFrame(int number_of_10ms_blocks,
-                        int desired_frequency,
+  void GetRawAudioFrame(int number_of_10ms_blocks, int desired_frequency,
                         const AudioFrameDecodedCallback& callback);
 
   // Extract an encoded audio frame from the cast receiver.
@@ -62,8 +63,7 @@ class AudioReceiver : public base::NonThreadSafe,
   void IncomingPacket(scoped_ptr<Packet> packet);
 
  protected:
-  void IncomingParsedRtpPacket(const uint8* payload_data,
-                               size_t payload_size,
+  void IncomingParsedRtpPacket(const uint8* payload_data, size_t payload_size,
                                const RtpCastHeader& rtp_header);
 
  private:
@@ -82,12 +82,10 @@ class AudioReceiver : public base::NonThreadSafe,
 
   // Actual decoding implementation - should be called under the audio decoder
   // thread.
-  void DecodeAudioFrameThread(int number_of_10ms_blocks,
-                              int desired_frequency,
+  void DecodeAudioFrameThread(int number_of_10ms_blocks, int desired_frequency,
                               const AudioFrameDecodedCallback callback);
   void ReturnDecodedFrameWithPlayoutDelay(
-      scoped_ptr<PcmAudioFrame> audio_frame,
-      uint32 rtp_timestamp,
+      scoped_ptr<PcmAudioFrame> audio_frame, uint32 rtp_timestamp,
       const AudioFrameDecodedCallback callback);
 
   // Return the playout time based on the current time and rtp timestamp.
@@ -112,6 +110,11 @@ class AudioReceiver : public base::NonThreadSafe,
   void SendNextCastMessage();
 
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  // Subscribes to raw events.
+  // Processes raw audio events to be sent over to the cast sender via RTCP.
+  ReceiverRtcpEventSubscriber event_subscriber_;
+
   base::WeakPtrFactory<AudioReceiver> weak_factory_;
 
   const transport::AudioCodec codec_;
@@ -132,6 +135,8 @@ class AudioReceiver : public base::NonThreadSafe,
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
   std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioReceiver);
 };
 
 }  // namespace cast

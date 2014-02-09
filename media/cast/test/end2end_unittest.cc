@@ -11,7 +11,9 @@
 
 #include <math.h>
 
+#include <functional>
 #include <list>
+#include <map>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,6 +25,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/video_utility.h"
@@ -76,9 +79,60 @@ std::string ConvertFromBase16String(const std::string base_16) {
 // Dummy callback function that does nothing except to accept ownership of
 // |audio_bus| for destruction.
 void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
+
 void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
 }
+
+// This is wrapped in a struct because it needs to be put into a std::map.
+typedef struct {
+  int counter[kNumOfLoggingEvents];
+} LoggingEventCounts;
+
+// Constructs a map from each frame (RTP timestamp) to counts of each event
+// type logged for that frame.
+std::map<RtpTimestamp, LoggingEventCounts> GetEventCountForFrameEvents(
+    const std::vector<FrameEvent>& frame_events) {
+  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame;
+  for (std::vector<FrameEvent>::const_iterator it = frame_events.begin();
+       it != frame_events.end(); ++it) {
+    std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
+        event_counter_for_frame.find(it->rtp_timestamp);
+    if (map_it == event_counter_for_frame.end()) {
+      LoggingEventCounts new_counter;
+      memset(&new_counter, 0, sizeof(new_counter));
+      ++(new_counter.counter[it->type]);
+      event_counter_for_frame.insert(
+          std::make_pair(it->rtp_timestamp, new_counter));
+    } else {
+      ++(map_it->second.counter[it->type]);
+    }
+  }
+  return event_counter_for_frame;
+}
+
+// Constructs a map from each packet (Packet ID) to counts of each event
+// type logged for that packet.
+std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
+    const std::vector<PacketEvent>& packet_events) {
+  std::map<uint16, LoggingEventCounts> event_counter_for_packet;
+  for (std::vector<PacketEvent>::const_iterator it = packet_events.begin();
+       it != packet_events.end(); ++it) {
+    std::map<uint16, LoggingEventCounts>::iterator map_it =
+        event_counter_for_packet.find(it->packet_id);
+    if (map_it == event_counter_for_packet.end()) {
+      LoggingEventCounts new_counter;
+      memset(&new_counter, 0, sizeof(new_counter));
+      ++(new_counter.counter[it->type]);
+      event_counter_for_packet.insert(
+          std::make_pair(it->packet_id, new_counter));
+    } else {
+      ++(map_it->second.counter[it->type]);
+    }
+  }
+  return event_counter_for_packet;
+}
+
 }  // namespace
 
 // Class that sends the packet direct from sender into the receiver with the
@@ -199,8 +253,7 @@ class TestReceiverAudioCallback
       return;  // No more checks needed.
 
     EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
-                CountZeroCrossings(audio_frame->samples),
-                1);
+                CountZeroCrossings(audio_frame->samples), 1);
   }
 
   void CheckCodedPcmAudioFrame(
@@ -238,8 +291,7 @@ class TestReceiverAudioCallback
     }
 
     EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
-                CountZeroCrossings(output_audio_samples),
-                1);
+                CountZeroCrossings(output_audio_samples), 1);
   }
 
   int number_times_called() const { return num_called_; }
@@ -268,9 +320,7 @@ class TestReceiverVideoCallback
 
   TestReceiverVideoCallback() : num_called_(0) {}
 
-  void AddExpectedResult(int start_value,
-                         int width,
-                         int height,
+  void AddExpectedResult(int start_value, int width, int height,
                          const base::TimeTicks& capture_time) {
     ExpectedVideoFrame expected_video_frame;
     expected_video_frame.start_value = start_value;
@@ -309,7 +359,7 @@ class TestReceiverVideoCallback
     EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
   }
 
-  int number_times_called() { return num_called_; }
+  int number_times_called() const { return num_called_; }
 
  protected:
   virtual ~TestReceiverVideoCallback() {}
@@ -320,13 +370,6 @@ class TestReceiverVideoCallback
   int num_called_;
   std::list<ExpectedVideoFrame> expected_frame_;
 };
-
-CastLoggingConfig EnableCastLoggingConfig(bool sender) {
-  CastLoggingConfig config(sender);
-  config.enable_raw_data_collection = true;
-  config.enable_stats_data_collection = true;
-  return config;
-}
 
 // The actual test class, generate synthetic data for both audio and video and
 // send those through the sender and receiver and analyzes the result.
@@ -346,13 +389,15 @@ class End2EndTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            EnableCastLoggingConfig(true))),
+            GetLoggingConfigWithRawEventsAndStatsEnabled())),
         receiver_to_sender_(cast_environment_),
         sender_to_receiver_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
-        test_receiver_video_callback_(new TestReceiverVideoCallback()) {
+        test_receiver_video_callback_(new TestReceiverVideoCallback()),
+        event_subscriber_(task_runner_) {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }
 
   void SetupConfig(transport::AudioCodec audio_codec,
@@ -431,10 +476,7 @@ class End2EndTest : public ::testing::Test {
         &sender_to_receiver_));
 
     cast_sender_.reset(CastSender::CreateCastSender(
-        cast_environment_,
-        audio_sender_config_,
-        video_sender_config_,
-        NULL,
+        cast_environment_, audio_sender_config_, video_sender_config_, NULL,
         base::Bind(&End2EndTest::InitializationResult, base::Unretained(this)),
         transport_sender_.get()));
 
@@ -451,9 +493,12 @@ class End2EndTest : public ::testing::Test {
                                 kSoundVolume));
   }
 
-  virtual ~End2EndTest() {}
+  virtual ~End2EndTest() {
+    cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
+  }
 
   virtual void TearDown() OVERRIDE {
+
     cast_sender_.reset();
     cast_receiver_.reset();
     task_runner_->RunTasks();
@@ -512,6 +557,11 @@ class End2EndTest : public ::testing::Test {
   scoped_refptr<TestReceiverVideoCallback> test_receiver_video_callback_;
 
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+
+  SimpleEventSubscriber event_subscriber_;
+  std::vector<FrameEvent> frame_events_;
+  std::vector<PacketEvent> packet_events_;
+  std::vector<GenericEvent> generic_events_;
 };
 
 // Audio and video test without packet loss using raw PCM 16 audio "codec";
@@ -579,7 +629,6 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
 
     video_start++;
   }
-  std::cout << std::endl;
 
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
@@ -856,7 +905,7 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
     RunTasks(kFrameTimerMs);
     video_start++;
   }
-  std::cout << std::endl;
+
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
   EXPECT_EQ(i / 2, test_receiver_video_callback_->number_times_called());
 }
@@ -999,8 +1048,8 @@ TEST_F(End2EndTest, VideoLogging) {
   Create();
 
   int video_start = 1;
-  int i = 0;
-  for (; i < 1; ++i) {
+  const int num_frames = 1;
+  for (int i = 0; i < num_frames; ++i) {
     base::TimeTicks send_time = testing_clock_->NowTicks();
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
@@ -1020,76 +1069,84 @@ TEST_F(End2EndTest, VideoLogging) {
 
   // Basic tests.
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  EXPECT_EQ(i, test_receiver_video_callback_->number_times_called());
-
-  // Sender logging tests.
-  LoggingImpl* sender_log = cast_environment_->Logging();
-
-  // Verify that all frames and all required events were logged.
-  FrameRawMap frame_raw_log = sender_log->GetFrameRawData();
-
-  // Every frame should have only one entry.
-  EXPECT_EQ(static_cast<unsigned int>(i), frame_raw_log.size());
-  FrameRawMap::const_iterator frame_it = frame_raw_log.begin();
-
-  // Choose a video frame, and verify that all events were logged.
-  std::vector<CastLoggingEvent> event_log = frame_it->second.type;
-  std::vector<CastLoggingEvent>::iterator event_it;
-  event_it =
-      std::find(event_log.begin(), event_log.end(), kVideoFrameSentToEncoder);
-  EXPECT_TRUE(event_it != event_log.end());
-  event_log.erase(event_it);
-
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameEncoded);
-  EXPECT_TRUE(event_it != event_log.end());
-  event_log.erase(event_it);
-
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameReceived);
-  EXPECT_TRUE(event_it != event_log.end());
-  event_log.erase(event_it);
-
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoRenderDelay);
-  EXPECT_TRUE(event_it != event_log.end());
-  event_log.erase(event_it);
-
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameDecoded);
-  EXPECT_TRUE(event_it != event_log.end());
-  event_log.erase(event_it);
-
-  // Verify that there were no other events logged with respect to this frame.
-  EXPECT_EQ(0u, event_log.size());
-
-  // Packet logging.
-  // Verify that all packet related events were logged.
-  PacketRawMap packet_raw_log = sender_log->GetPacketRawData();
-  // Every rtp_timestamp should have only one entry.
-  EXPECT_EQ(static_cast<unsigned int>(i), packet_raw_log.size());
-  PacketRawMap::const_iterator packet_it = packet_raw_log.begin();
-  // Choose a packet, and verify that all events were logged.
-  event_log = (++(packet_it->second.packet_map.begin()))->second.type;
-  EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kVideoPacketReceived)) !=
-      event_log.end());
+  int num_callbacks_called =
+      test_receiver_video_callback_->number_times_called();
+  EXPECT_EQ(num_frames, num_callbacks_called);
 
   RunTasks(750);  // Make sure that we send a RTCP message with the log.
 
-  // Receiver logging tests.
-  LoggingImpl* receiver_log = cast_environment_->Logging();
-
+  // Logging tests.
+  // Frame logging.
   // Verify that all frames and all required events were logged.
-  frame_raw_log = receiver_log->GetFrameRawData();
-  EXPECT_EQ(static_cast<unsigned int>(i), frame_raw_log.size());
-  frame_it = frame_raw_log.begin();
+  event_subscriber_.GetFrameEventsAndReset(&frame_events_);
 
-  // Choose a video frame, and verify that all events were logged.
-  event_log = frame_it->second.type;
+  // For each frame, count the number of events that occurred for each event
+  // for that frame.
+  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame =
+      GetEventCountForFrameEvents(frame_events_);
 
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameEncoded);
-  EXPECT_TRUE(event_it != event_log.end());
+  // Verify that there are logs for expected number of frames.
+  EXPECT_EQ(num_frames, static_cast<int>(event_counter_for_frame.size()));
 
-  event_it = std::find(event_log.begin(), event_log.end(), kVideoRenderDelay);
+  // Verify that each frame have the expected types of events logged.
+  for (std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
+           event_counter_for_frame.begin();
+       map_it != event_counter_for_frame.end(); ++map_it) {
+    int total_event_count_for_frame = 0;
+    for (int i = 0; i < kNumOfLoggingEvents; ++i) {
+      total_event_count_for_frame += map_it->second.counter[i];
+    }
 
-  EXPECT_TRUE(event_it != event_log.end());
+    int expected_event_count_for_frame = 0;
+
+    EXPECT_GT(map_it->second.counter[kVideoFrameSentToEncoder], 0);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kVideoFrameSentToEncoder];
+
+    EXPECT_GT(map_it->second.counter[kVideoFrameEncoded], 0);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kVideoFrameEncoded];
+
+    EXPECT_GT(map_it->second.counter[kVideoFrameReceived], 0);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kVideoFrameReceived];
+
+    EXPECT_GT(map_it->second.counter[kVideoRenderDelay], 0);
+    expected_event_count_for_frame += map_it->second.counter[kVideoRenderDelay];
+
+    EXPECT_GT(map_it->second.counter[kVideoFrameDecoded], 0);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kVideoFrameDecoded];
+
+    // Verify that there were no other events logged with respect to this frame.
+    // (i.e. Total event count = expected event count)
+    EXPECT_EQ(total_event_count_for_frame, expected_event_count_for_frame);
+  }
+
+  // Packet logging.
+  // Verify that all packet related events were logged.
+  event_subscriber_.GetPacketEventsAndReset(&packet_events_);
+  std::map<uint16, LoggingEventCounts> event_count_for_packet =
+      GetEventCountForPacketEvents(packet_events_);
+
+  // Verify that each packet have the expected types of events logged.
+  for (std::map<uint16, LoggingEventCounts>::iterator map_it =
+           event_count_for_packet.begin();
+       map_it != event_count_for_packet.end(); ++map_it) {
+    int total_event_count_for_packet = 0;
+    for (int i = 0; i < kNumOfLoggingEvents; ++i) {
+      total_event_count_for_packet += map_it->second.counter[i];
+    }
+
+    int expected_event_count_for_packet = 0;
+    EXPECT_GT(map_it->second.counter[kVideoPacketReceived], 0);
+    expected_event_count_for_packet +=
+        map_it->second.counter[kVideoPacketReceived];
+
+    // Verify that there were no other events logged with respect to this
+    // packet. (i.e. Total event count = expected event count)
+    EXPECT_EQ(total_event_count_for_packet, expected_event_count_for_packet);
+  }
 }
 
 // TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
@@ -1105,9 +1162,8 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
   Create();
 
   int audio_diff = kFrameTimerMs;
-  int i = 0;
-
-  for (; i < 10; ++i) {
+  const int num_frames = 10;
+  for (int i = 0; i < num_frames; ++i) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;
     base::TimeTicks send_time = testing_clock_->NowTicks();
@@ -1151,29 +1207,62 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
 
   // Basic tests.
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
-  EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
+
+  int num_times_called = test_receiver_audio_callback_->number_times_called();
+  EXPECT_EQ(num_frames - 1, num_times_called);
+
   // Logging tests.
-  LoggingImpl* sender_log = cast_environment_->Logging();
   // Verify that all frames and all required events were logged.
-  FrameRawMap frame_raw_log = sender_log->GetFrameRawData();
-  FrameRawMap::const_iterator frame_it = frame_raw_log.begin();
-  // Choose a video frame, and verify that all events were logged.
-  std::vector<CastLoggingEvent> event_log = frame_it->second.type;
-  EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kAudioFrameReceived)) !=
-      event_log.end());
-  EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kAudioFrameEncoded)) !=
-      event_log.end());
-  EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kAudioPlayoutDelay)) !=
-      event_log.end());
-  EXPECT_TRUE(
-      (std::find(event_log.begin(), event_log.end(), kAudioFrameDecoded)) !=
-      event_log.end());
+  event_subscriber_.GetFrameEventsAndReset(&frame_events_);
+
+  // Construct a map from each frame (RTP timestamp) to a count of each event
+  // type logged for that frame.
+  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame =
+      GetEventCountForFrameEvents(frame_events_);
+
+  // Verify that each frame have the expected types of events logged.
+  std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
+      event_counter_for_frame.begin();
+
+  // TODO(imcheng): This only checks the first frame. This doesn't work
+  // properly for all frames for two reasons:
+  // 1. There is a loopback of kAudioPlayoutDelay and kAudioFrameDecoded events
+  // due to shared CastEnvironment between sender and
+  // receiver in the test setup. We will need to create separate CastEnvironment
+  // once again to fix this.
+  // 2. kAudioPlayoutDelay and kAudioFrameDecoded RTP timestamps aren't exactly
+  // aligned with those of kAudioFrameReceived and kAudioFrameEncoded. Note that
+  // these RTP timestamps are output from webrtc::AudioCodingModule which are
+  // different from RTP timestamps that the cast library generates during the
+  // encode step (and which are sent to receiver). The first frame just happen
+  // to be aligned.
+  int total_event_count_for_frame = 0;
+  for (int j = 0; j < kNumOfLoggingEvents; ++j)
+    total_event_count_for_frame += map_it->second.counter[j];
+
+
+  int expected_event_count_for_frame = 0;
+
+  EXPECT_GT(map_it->second.counter[kAudioFrameReceived], 0);
+  expected_event_count_for_frame +=
+      map_it->second.counter[kAudioFrameReceived];
+
+  EXPECT_GT(map_it->second.counter[kAudioFrameEncoded], 0);
+  expected_event_count_for_frame +=
+      map_it->second.counter[kAudioFrameEncoded];
+
+  // Note that this is a big positive number instead of just 1 due to loopback
+  // described in TODO above.
+  EXPECT_GT(map_it->second.counter[kAudioPlayoutDelay], 0);
+  expected_event_count_for_frame +=
+      map_it->second.counter[kAudioPlayoutDelay];
+  EXPECT_GT(map_it->second.counter[kAudioFrameDecoded], 0);
+  expected_event_count_for_frame +=
+      map_it->second.counter[kAudioFrameDecoded];
+
   // Verify that there were no other events logged with respect to this frame.
-  EXPECT_EQ(4u, event_log.size());
+  // (i.e. Total event count = expected event count)
+  EXPECT_EQ(total_event_count_for_frame, expected_event_count_for_frame);
 }
 
 // TODO(pwestin): Add repeatable packet loss test.

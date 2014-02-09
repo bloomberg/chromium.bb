@@ -5,92 +5,75 @@
 #ifndef MEDIA_CAST_LOGGING_LOGGING_RAW_H_
 #define MEDIA_CAST_LOGGING_LOGGING_RAW_H_
 
-#include <map>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/raw_event_subscriber.h"
 
 namespace media {
 namespace cast {
 
 // This class is not thread safe, and should only be called from the main
 // thread.
-class LoggingRaw : public base::NonThreadSafe,
-                   public base::SupportsWeakPtr<LoggingRaw> {
+class LoggingRaw : public base::NonThreadSafe {
  public:
-  explicit LoggingRaw(bool is_sender);
+  LoggingRaw();
   ~LoggingRaw();
 
   // Inform of new event: three types of events: frame, packets and generic.
   // Frame events can be inserted with different parameters.
   void InsertFrameEvent(const base::TimeTicks& time_of_event,
-                        CastLoggingEvent event,
-                        uint32 rtp_timestamp,
+                        CastLoggingEvent event, uint32 rtp_timestamp,
                         uint32 frame_id);
 
   // Size - Inserting the size implies that this is an encoded frame.
+  // This function is only applicable for the following frame events:
+  // kAudioFrameEncoded, kVideoFrameEncoded
   void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
-                                CastLoggingEvent event,
-                                uint32 rtp_timestamp,
-                                uint32 frame_id,
-                                int frame_size);
+                                CastLoggingEvent event, uint32 rtp_timestamp,
+                                uint32 frame_id, int size);
 
   // Render/playout delay
+  // This function is only applicable for the following frame events:
+  // kAudioPlayoutDelay, kVideoRenderDelay
   void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
-                                 CastLoggingEvent event,
-                                 uint32 rtp_timestamp,
-                                 uint32 frame_id,
-                                 base::TimeDelta delay);
+                                 CastLoggingEvent event, uint32 rtp_timestamp,
+                                 uint32 frame_id, base::TimeDelta delay);
 
   // Insert a packet event.
   void InsertPacketEvent(const base::TimeTicks& time_of_event,
-                         CastLoggingEvent event,
-                         uint32 rtp_timestamp,
-                         uint32 frame_id,
-                         uint16 packet_id,
-                         uint16 max_packet_id,
-                         size_t size);
+                         CastLoggingEvent event, uint32 rtp_timestamp,
+                         uint32 frame_id, uint16 packet_id,
+                         uint16 max_packet_id, size_t size);
 
+  // Insert a generic event. The interpretation of |value| depends on
+  // type of |event|.
   void InsertGenericEvent(const base::TimeTicks& time_of_event,
-                          CastLoggingEvent event,
-                          int value);
+                          CastLoggingEvent event, int value);
 
-  // Get raw log data.
-  FrameRawMap GetFrameData() const;
-  PacketRawMap GetPacketData() const;
-  GenericRawMap GetGenericData() const;
+  // Adds |subscriber| so that it will start receiving events on main thread.
+  // Note that this class does not own |subscriber|.
+  // It is a no-op to add a subscriber that already exists.
+  void AddSubscriber(RawEventSubscriber* subscriber);
 
-  AudioRtcpRawMap GetAndResetAudioRtcpData();
-  VideoRtcpRawMap GetAndResetVideoRtcpData();
-
-  // Reset all log data; except the Rtcp copies.
-  void Reset();
+  // Removes |subscriber| so that it will stop receiving events.
+  // Note that this class does NOT own the subscribers. This function MUST be
+  // called before |subscriber| is destroyed if it was previously added.
+  // It is a no-op to remove a subscriber that doesn't exist.
+  void RemoveSubscriber(RawEventSubscriber* subscriber);
 
  private:
   void InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
-                            CastLoggingEvent event,
-                            uint32 frame_id,
-                            uint32 rtp_timestamp);
+                            CastLoggingEvent event, uint32 frame_id,
+                            uint32 rtp_timestamp, base::TimeDelta delay,
+                            int size);
 
-  void InsertRtcpFrameEvent(const base::TimeTicks& time_of_event,
-                            CastLoggingEvent event,
-                            uint32 rtp_timestamp,
-                            base::TimeDelta delay);
-
-  const bool is_sender_;
-  FrameRawMap frame_map_;
-  PacketRawMap packet_map_;
-  GenericRawMap generic_map_;
-  AudioRtcpRawMap audio_rtcp_map_;
-  VideoRtcpRawMap video_rtcp_map_;
-
-  base::WeakPtrFactory<LoggingRaw> weak_factory_;
+  // List of subscriber pointers. This class does not own the subscribers.
+  std::vector<RawEventSubscriber*> subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingRaw);
 };
@@ -99,4 +82,3 @@ class LoggingRaw : public base::NonThreadSafe,
 }  // namespace media
 
 #endif  // MEDIA_CAST_LOGGING_LOGGING_RAW_H_
-
