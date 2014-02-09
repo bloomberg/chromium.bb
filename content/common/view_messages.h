@@ -1546,13 +1546,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
                     std::string  /* security_origin */,
                     GURL         /* target URL */)
 
-IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailLoadWithError,
-                    int64 /* frame_id */,
-                    GURL /* validated_url */,
-                    bool /* is_main_frame */,
-                    int /* error_code */,
-                    base::string16 /* error_description */)
-
 // Tells the render view that a ViewHostMsg_PaintAtSize message was
 // processed, and the DIB is ready for use. |tag| has the same value that
 // the tag sent along with ViewMsg_PaintAtSize.

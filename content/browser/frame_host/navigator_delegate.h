@@ -32,6 +32,15 @@ class NavigatorDelegate {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
+  // Document load in |render_frame_host| failed.
+  virtual void DidFailLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      int64 frame_id,
+      const GURL& url,
+      bool is_main_frame,
+      int error_code,
+      const base::string16& error_description) {}
+
   // A redirect was processed in |render_frame_host| during a provisional load.
   virtual void DidRedirectProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,

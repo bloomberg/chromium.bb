@@ -450,8 +450,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailLoadWithError,
-                        OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
@@ -2046,6 +2044,19 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
                              render_frame_host->render_view_host()));
 }
 
+void WebContentsImpl::DidFailLoadWithError(
+    RenderFrameHostImpl* render_frame_host,
+    int64 frame_id,
+    const GURL& url,
+    bool is_main_frame,
+    int error_code,
+    const base::string16& error_description) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidFailLoad(frame_id, url, is_main_frame,
+                                error_code, error_description,
+                                render_frame_host->render_view_host()));
+}
+
 void WebContentsImpl::NotifyChangedNavigationState(
     InvalidateTypes changed_flags) {
   NotifyNavigationStateChanged(changed_flags);
@@ -2179,27 +2190,6 @@ void WebContentsImpl::OnDidFinishLoad(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishLoad(frame_id, validated_url, is_main_frame,
                                   render_view_message_source_));
-}
-
-void WebContentsImpl::OnDidFailLoadWithError(
-    int64 frame_id,
-    const GURL& url,
-    bool is_main_frame,
-    int error_code,
-    const base::string16& error_description) {
-  if (!render_view_message_source_) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD3"));
-    GetRenderProcessHost()->ReceivedBadMessage();
-    return;
-  }
-  GURL validated_url(url);
-  RenderProcessHost* render_process_host =
-      render_view_message_source_->GetProcess();
-  render_process_host->FilterURL(false, &validated_url);
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFailLoad(frame_id, validated_url, is_main_frame,
-                                error_code, error_description,
-                                render_view_message_source_));
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {

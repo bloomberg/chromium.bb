@@ -461,6 +461,13 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
       OVERRIDE;
+  virtual void DidFailLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      int64 frame_id,
+      const GURL& url,
+      bool is_main_frame,
+      int error_code,
+      const base::string16& error_description) OVERRIDE;
   virtual void DidRedirectProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& validated_target_url) OVERRIDE;
@@ -666,11 +673,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidFinishLoad(int64 frame_id,
                        const GURL& url,
                        bool is_main_frame);
-  void OnDidFailLoadWithError(int64 frame_id,
-                              const GURL& url,
-                              bool is_main_frame,
-                              int error_code,
-                              const base::string16& error_description);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,

@@ -168,6 +168,13 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRedirectProvisionalLoad,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishDocumentLoad,
                     int64 /* frame_id */)
 
+IPC_MESSAGE_ROUTED5(FrameHostMsg_DidFailLoadWithError,
+                    int64 /* frame_id */,
+                    GURL /* validated_url */,
+                    bool /* is_main_frame */,
+                    int /* error_code */,
+                    base::string16 /* error_description */)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

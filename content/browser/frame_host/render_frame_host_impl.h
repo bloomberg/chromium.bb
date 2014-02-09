@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -112,6 +113,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                          const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
+  void OnDidFailLoadWithError(
+      int64 frame_id,
+      const GURL& url,
+      bool is_main_frame,
+      int error_code,
+      const base::string16& error_description);
   void OnDidRedirectProvisionalLoad(int32 page_id,
                                     const GURL& source_url,
                                     const GURL& target_url);

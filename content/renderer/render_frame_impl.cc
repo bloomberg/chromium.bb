@@ -1137,7 +1137,26 @@ void RenderFrameImpl::didHandleOnloadEvents(blink::WebFrame* frame) {
 void RenderFrameImpl::didFailLoad(blink::WebFrame* frame,
                                   const blink::WebURLError& error) {
   // TODO(nasko): Move implementation here. No state needed.
+  WebDataSource* ds = frame->dataSource();
+  DCHECK(ds);
+
   render_view_->didFailLoad(frame, error);
+
+  const WebURLRequest& failed_request = ds->request();
+  base::string16 error_description;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      render_view_.get(),
+      frame,
+      failed_request,
+      error,
+      NULL,
+      &error_description);
+  Send(new FrameHostMsg_DidFailLoadWithError(routing_id_,
+                                             frame->identifier(),
+                                             failed_request.url(),
+                                             !frame->parent(),
+                                             error.reason,
+                                             error_description));
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {

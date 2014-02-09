@@ -44,6 +44,15 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {};
 
+  // The RenderFrameHostImpl has failed to load the document.
+  virtual void DidFailLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      int64 frame_id,
+      const GURL& url,
+      bool is_main_frame,
+      int error_code,
+      const base::string16& error_description) {}
+
   // The RenderFrameHostImpl processed a redirect during a provisional load.
   //
   // TODO(creis): Remove this method and have the pre-rendering code listen to

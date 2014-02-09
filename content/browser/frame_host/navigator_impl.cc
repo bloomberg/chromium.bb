@@ -243,6 +243,18 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);
 }
 
+void NavigatorImpl::DidFailLoadWithError(
+    RenderFrameHostImpl* render_frame_host,
+    int64 frame_id,
+    const GURL& url,
+    bool is_main_frame,
+    int error_code,
+    const base::string16& error_description) {
+  delegate_->DidFailLoadWithError(
+      render_frame_host, frame_id, url, is_main_frame, error_code,
+      error_description);
+}
+
 void NavigatorImpl::DidRedirectProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     int32 page_id,

@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -215,9 +216,9 @@ void TestWebContents::TestDidFailLoadWithError(
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
-  ViewHostMsg_DidFailLoadWithError msg(
+  FrameHostMsg_DidFailLoadWithError msg(
       0, frame_id, url, is_main_frame, error_code, error_description);
-  OnMessageReceived(GetRenderViewHost(), msg);
+  frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
 void TestWebContents::CreateNewWindow(
