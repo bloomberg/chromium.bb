@@ -683,10 +683,6 @@ void PrinterJobHandler::OnReceivePrinterCaps(
       // Hashes don't match, we need to upload new capabilities (the defaults
       // go for free along with the capabilities)
       printer_info_cloud_.caps_hash = caps_hash;
-      if (caps_and_defaults.caps_mime_type == kContentTypeCDD) {
-        net::AddMultipartValueForUpload(kUseCDD, "true", mime_boundary,
-                                        std::string(), &post_data);
-      }
       net::AddMultipartValueForUpload(kPrinterCapsValue,
           caps_and_defaults.printer_capabilities, mime_boundary,
           caps_and_defaults.caps_mime_type, &post_data);

@@ -13,7 +13,6 @@
 #include "base/win/scoped_hdc.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/service/cloud_print/cdd_conversion_win.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "grit/generated_resources.h"
@@ -621,35 +620,15 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     Release();
   }
 
-  virtual void OnGetPrinterSemanticCapsAndDefaults(
-      bool succeeded,
-      const std::string& printer_name,
-      const printing::PrinterSemanticCapsAndDefaults& semantic_info) OVERRIDE {
-    printing::PrinterCapsAndDefaults printer_info;
-    if (succeeded) {
-      printer_info.caps_mime_type = kContentTypeCDD;
-      printer_info.printer_capabilities = CapabilitiesToCdd(semantic_info);
-    }
-    callback_.Run(succeeded, printer_name, printer_info);
-    callback_.Reset();
-    Release();
-  }
-
-  void StartGetPrinterCapsAndDefaults() {
+  void Start() {
     g_service_process->io_thread()->message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
                     base::MessageLoopProxy::current()));
   }
 
-  void StartGetPrinterSemanticCapsAndDefaults() {
-    g_service_process->io_thread()->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&PrinterCapsHandler::GetPrinterSemanticCapsAndDefaultsImpl,
-                   this, base::MessageLoopProxy::current()));
-  }
-
  private:
+    // Called on the service process IO thread.
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::MessageLoopProxy>&
           client_message_loop_proxy) {
@@ -658,23 +637,6 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     scoped_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_message_loop_proxy));
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
-      // The object will self-destruct when the child process dies.
-      utility_host.release();
-    } else {
-      client_message_loop_proxy->PostTask(
-          FROM_HERE,
-          base::Bind(&PrinterCapsHandler::OnChildDied, this));
-    }
-  }
-
-  void GetPrinterSemanticCapsAndDefaultsImpl(
-      const scoped_refptr<base::MessageLoopProxy>&
-          client_message_loop_proxy) {
-    DCHECK(g_service_process->io_thread()->message_loop_proxy()->
-        BelongsToCurrentThread());
-    scoped_ptr<ServiceUtilityProcessHost> utility_host(
-        new ServiceUtilityProcessHost(this, client_message_loop_proxy));
-    if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
       utility_host.release();
     } else {
@@ -752,7 +714,7 @@ void PrintSystemWin::GetPrinterCapsAndDefaults(
   PrinterCapsHandler* handler =
       new PrinterCapsHandler(printer_name, callback);
   handler->AddRef();
-  handler->StartGetPrinterCapsAndDefaults();
+  handler->Start();
 }
 
 bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
