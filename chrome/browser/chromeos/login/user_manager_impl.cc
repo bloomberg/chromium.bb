@@ -301,6 +301,11 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
   if (!UserManager::IsMultipleProfilesAllowed())
     return UserList();
 
+  // Supervised users are not allowed to use multi profile.
+  if (logged_in_users_.size() == 1 &&
+      GetPrimaryUser()->GetType() != User::USER_TYPE_REGULAR)
+    return UserList();
+
   UserList result;
   int num_users_allowed = 0;
   const UserList& users = GetUsers();
