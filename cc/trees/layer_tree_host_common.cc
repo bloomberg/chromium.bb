@@ -328,21 +328,15 @@ template <typename LayerType> static inline bool IsRootLayer(LayerType* layer) {
 
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  // According to current W3C spec on CSS transforms, a layer is part of an
-  // established 3d rendering context if its parent has transform-style of
-  // preserves-3d.
-  return layer->parent() && layer->parent()->preserves_3d();
+  return layer->parent() && layer->parent()->is_3d_sorted();
 }
 
 template <typename LayerType>
 static bool IsRootLayerOfNewRenderingContext(LayerType* layer) {
-  // According to current W3C spec on CSS transforms (Section 6.1), a layer is
-  // the beginning of 3d rendering context if its parent does not have
-  // transform-style: preserve-3d, but this layer itself does.
   if (layer->parent())
-    return !layer->parent()->preserves_3d() && layer->preserves_3d();
+    return !layer->parent()->is_3d_sorted() && layer->is_3d_sorted();
 
-  return layer->preserves_3d();
+  return layer->is_3d_sorted();
 }
 
 template <typename LayerType>
@@ -574,9 +568,10 @@ static bool SubtreeShouldRenderToSeparateSurface(
   int num_descendants_that_draw_content =
       layer->draw_properties().num_descendants_that_draw_content;
 
-  // If the layer flattens its subtree (i.e. the layer doesn't preserve-3d), but
-  // it is treated as a 3D object by its parent (i.e. parent does preserve-3d).
-  if (LayerIsInExisting3DRenderingContext(layer) && !layer->preserves_3d() &&
+  // If the layer flattens its subtree, but it is treated as a 3D object by its
+  // parent (i.e. parent participates in a 3D rendering context).
+  if (LayerIsInExisting3DRenderingContext(layer) &&
+      layer->should_flatten_transform() &&
       num_descendants_that_draw_content > 0) {
     TRACE_EVENT_INSTANT0(
         "cc",
@@ -622,7 +617,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  if (layer->opacity() != 1.f && !layer->preserves_3d() &&
+  if (layer->opacity() != 1.f && layer->should_flatten_transform() &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc",
@@ -1577,7 +1572,7 @@ static void CalculateDrawPropertiesInternal(
   // layer's "screen space" and local content space.
   layer_draw_properties.screen_space_transform =
       data_from_ancestor.full_hierarchy_matrix;
-  if (!layer->preserves_3d())
+  if (layer->should_flatten_transform())
     layer_draw_properties.screen_space_transform.FlattenTo2d();
   layer_draw_properties.screen_space_transform.PreconcatTransform
       (layer_draw_properties.target_space_transform);
@@ -1883,7 +1878,7 @@ static void CalculateDrawPropertiesInternal(
     }
 
     // Flatten to 2D if the layer doesn't preserve 3D.
-    if (!layer->preserves_3d())
+    if (layer->should_flatten_transform())
       data_for_children.parent_matrix.FlattenTo2d();
 
     // Apply the sublayer transform at the anchor point of the layer.
@@ -2113,8 +2108,8 @@ static void CalculateDrawPropertiesInternal(
   // drawn from back to front. If the preserves-3d property is also set on the
   // parent then skip the sorting as the parent will sort all the descendants
   // anyway.
-  if (globals.layer_sorter && descendants.size() && layer->preserves_3d() &&
-      (!layer->parent() || !layer->parent()->preserves_3d())) {
+  if (globals.layer_sorter && descendants.size() && layer->is_3d_sorted() &&
+      !LayerIsInExisting3DRenderingContext(layer)) {
     SortLayers(descendants.begin() + sorting_start_index,
                descendants.end(),
                globals.layer_sorter);

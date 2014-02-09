@@ -161,7 +161,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 10)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPosition(arbitrary_point_f));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPreserves3d(true));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetShouldFlattenTransform(false));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetIs3dSorted(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->SetDoubleSided(false));  // constructor initializes it to "true".
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
@@ -224,7 +225,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetPosition(arbitrary_point_f));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetPreserves3d(true));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetShouldFlattenTransform(false));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetIs3dSorted(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetTransform(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
@@ -319,7 +322,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPreserves3d(true));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetShouldFlattenTransform(false));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetIs3dSorted(true));
+
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetDoubleSided(false));  // constructor initializes it to "true".
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentBounds(arbitrary_size));
@@ -347,7 +352,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPreserves3d(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetIs3dSorted(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetDoubleSided(false));  // constructor initializes it to "true".
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

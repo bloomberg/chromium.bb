@@ -51,17 +51,18 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       user_scrollable_vertical_(true),
       stacking_order_changed_(false),
       double_sided_(true),
+      should_flatten_transform_(true),
       layer_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
       is_root_for_isolated_group_(false),
-      preserves_3d_(false),
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
       draws_content_(false),
       hide_layer_and_subtree_(false),
       force_render_surface_(false),
       is_container_for_fixed_position_layers_(false),
+      is_3d_sorted_(false),
       background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -551,7 +552,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       is_container_for_fixed_position_layers_);
   layer->SetFixedContainerSizeDelta(fixed_container_size_delta_);
   layer->SetPositionConstraint(position_constraint_);
-  layer->SetPreserves3d(preserves_3d());
+  layer->SetShouldFlattenTransform(should_flatten_transform_);
+  layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);
   layer->SetTransform(transform_);
@@ -959,11 +961,19 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::SetPreserves3d(bool preserves3_d) {
-  if (preserves_3d_ == preserves3_d)
+void LayerImpl::SetShouldFlattenTransform(bool flatten) {
+  if (should_flatten_transform_ == flatten)
     return;
 
-  preserves_3d_ = preserves3_d;
+  should_flatten_transform_ = flatten;
+  NoteLayerPropertyChangedForSubtree();
+}
+
+void LayerImpl::SetIs3dSorted(bool sorted) {
+  if (is_3d_sorted_ == sorted)
+    return;
+
+  is_3d_sorted_ = sorted;
   NoteLayerPropertyChangedForSubtree();
 }
 
