@@ -20,10 +20,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
-      size_t max_transfer_buffer_usage_bytes) {
-    return make_scoped_ptr<RasterWorkerPool>(new PixelBufferRasterWorkerPool(
-        resource_provider, context_provider, max_transfer_buffer_usage_bytes));
-  }
+      size_t max_transfer_buffer_usage_bytes);
 
   // Overridden from RasterWorkerPool:
   virtual void Shutdown() OVERRIDE;
@@ -40,16 +37,18 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
       OVERRIDE;
   virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE;
 
+ protected:
+  PixelBufferRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+                              ResourceProvider* resource_provider,
+                              ContextProvider* context_provider,
+                              size_t max_transfer_buffer_usage_bytes);
+
  private:
   enum RasterTaskState { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED };
   typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskDeque;
   typedef internal::RasterWorkerPoolTask* RasterTaskMapKey;
   typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
-
-  PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
-                              ContextProvider* context_provider,
-                              size_t max_transfer_buffer_usage_bytes);
 
   // Overridden from RasterWorkerPool:
   virtual void OnRasterTasksFinished() OVERRIDE;
@@ -58,6 +57,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   void FlushUploads();
   void CheckForCompletedUploads();
   void ScheduleCheckForCompletedRasterTasks();
+  void OnCheckForCompletedRasterTasks();
   void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
   unsigned PendingRasterTaskCount() const;
@@ -81,14 +81,15 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   size_t bytes_pending_upload_;
   size_t max_bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
-  base::CancelableClosure check_for_completed_raster_tasks_callback_;
+  base::TimeTicks check_for_completed_raster_tasks_time_;
   bool check_for_completed_raster_tasks_pending_;
 
   bool should_notify_client_if_no_tasks_are_pending_;
   bool should_notify_client_if_no_tasks_required_for_activation_are_pending_;
   bool raster_finished_task_pending_;
   bool raster_required_for_activation_finished_task_pending_;
-  ResourceFormat format_;
+
+  base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);
 };

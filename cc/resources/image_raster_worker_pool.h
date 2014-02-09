@@ -16,10 +16,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
-      unsigned texture_target) {
-    return make_scoped_ptr<RasterWorkerPool>(new ImageRasterWorkerPool(
-        resource_provider, context_provider, texture_target));
-  }
+      unsigned texture_target);
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
@@ -35,11 +32,13 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
       OVERRIDE;
   virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE;
 
- private:
-  ImageRasterWorkerPool(ResourceProvider* resource_provider,
+ protected:
+  ImageRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+                        ResourceProvider* resource_provider,
                         ContextProvider* context_provider,
                         unsigned texture_target);
 
+ private:
   // Overridden from RasterWorkerPool:
   virtual void OnRasterTasksFinished() OVERRIDE;
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;

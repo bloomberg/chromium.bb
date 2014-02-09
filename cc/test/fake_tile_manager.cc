@@ -13,9 +13,17 @@ namespace cc {
 
 namespace {
 
+class FakeTaskGraphRunner : public internal::TaskGraphRunner {
+ public:
+  FakeTaskGraphRunner() : internal::TaskGraphRunner(0, "CompositorRaster") {}
+};
+base::LazyInstance<FakeTaskGraphRunner> g_task_graph_runner =
+    LAZY_INSTANCE_INITIALIZER;
+
 class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
-  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
+  FakeRasterWorkerPool()
+      : RasterWorkerPool(g_task_graph_runner.Pointer(), NULL, NULL) {}
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
@@ -30,6 +38,9 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
+    internal::Task::Vector completed_tasks;
+    CollectCompletedWorkerPoolTasks(&completed_tasks);
+
     while (!completed_tasks_.empty()) {
       internal::WorkerPoolTask* task = completed_tasks_.front().get();
 
@@ -92,10 +103,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   raster_task_limit_bytes,
                   NULL) {}
 
-FakeTileManager::~FakeTileManager() {
-  RasterWorkerPoolForTesting()->Shutdown();
-  RasterWorkerPoolForTesting()->CheckForCompletedTasks();
-}
+FakeTileManager::~FakeTileManager() {}
 
 void FakeTileManager::AssignMemoryToTiles(
     const GlobalStateThatImpactsTilePriority& state) {

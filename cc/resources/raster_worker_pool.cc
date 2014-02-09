@@ -448,15 +448,6 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
       RasterRequiredForActivationFinishedWorkerPoolTaskImpl);
 };
 
-class RasterTaskGraphRunner : public internal::TaskGraphRunner {
- public:
-  RasterTaskGraphRunner()
-      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
-                                  "CompositorRaster") {}
-};
-base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
 const int kDefaultNumRasterThreads = 1;
 
 int g_num_raster_threads = 0;
@@ -550,9 +541,11 @@ unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
     0u;
 unsigned RasterWorkerPool::kRasterTaskPriorityBase = 2u;
 
-RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
+RasterWorkerPool::RasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+                                   ResourceProvider* resource_provider,
                                    ContextProvider* context_provider)
-    : namespace_token_(g_task_graph_runner.Pointer()->GetNamespaceToken()),
+    : task_graph_runner_(task_graph_runner),
+      namespace_token_(task_graph_runner_->GetNamespaceToken()),
       client_(NULL),
       resource_provider_(resource_provider),
       context_provider_(context_provider),
@@ -626,7 +619,7 @@ void RasterWorkerPool::Shutdown() {
   raster_tasks_.clear();
   internal::TaskGraph empty;
   SetTaskGraph(&empty);
-  g_task_graph_runner.Pointer()->WaitForTasksToFinishRunning(namespace_token_);
+  task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -659,13 +652,12 @@ void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
     }
   }
 
-  g_task_graph_runner.Pointer()->SetTaskGraph(namespace_token_, graph);
+  task_graph_runner_->SetTaskGraph(namespace_token_, graph);
 }
 
 void RasterWorkerPool::CollectCompletedWorkerPoolTasks(
     internal::Task::Vector* completed_tasks) {
-  g_task_graph_runner.Pointer()->CollectCompletedTasks(namespace_token_,
-                                                       completed_tasks);
+  task_graph_runner_->CollectCompletedTasks(namespace_token_, completed_tasks);
 }
 
 void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {

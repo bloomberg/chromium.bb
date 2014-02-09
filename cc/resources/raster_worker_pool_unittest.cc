@@ -88,13 +88,14 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   DISALLOW_COPY_AND_ASSIGN(TestRasterWorkerPoolTaskImpl);
 };
 
-class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
+class BlockingTestRasterWorkerPoolTaskImpl
+    : public TestRasterWorkerPoolTaskImpl {
  public:
-  BlockingRasterWorkerPoolTaskImpl(const Resource* resource,
-                                   const Reply& reply,
-                                   base::Lock* lock,
-                                   internal::Task::Vector* dependencies,
-                                   bool use_gpu_rasterization)
+  BlockingTestRasterWorkerPoolTaskImpl(const Resource* resource,
+                                       const Reply& reply,
+                                       base::Lock* lock,
+                                       internal::Task::Vector* dependencies,
+                                       bool use_gpu_rasterization)
       : TestRasterWorkerPoolTaskImpl(resource,
                                      reply,
                                      dependencies,
@@ -111,20 +112,47 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
   virtual void RunReplyOnOriginThread() OVERRIDE {}
 
  protected:
-  virtual ~BlockingRasterWorkerPoolTaskImpl() {}
+  virtual ~BlockingTestRasterWorkerPoolTaskImpl() {}
 
  private:
   base::Lock* lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingRasterWorkerPoolTaskImpl);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTestRasterWorkerPoolTaskImpl);
 };
-
-}  // namespace
 
 class RasterWorkerPoolTest
     : public testing::TestWithParam<RasterWorkerPoolType>,
       public RasterWorkerPoolClient {
  public:
+  class RasterTask : public RasterWorkerPool::RasterTask {
+   public:
+    typedef std::vector<RasterTask> Vector;
+
+    static RasterTask Create(const Resource* resource,
+                             const TestRasterWorkerPoolTaskImpl::Reply& reply,
+                             bool use_gpu_rasterization) {
+      internal::Task::Vector dependencies;
+      return RasterTask(new TestRasterWorkerPoolTaskImpl(
+          resource, reply, &dependencies, use_gpu_rasterization));
+    }
+
+    static RasterTask CreateBlocking(
+        const Resource* resource,
+        const TestRasterWorkerPoolTaskImpl::Reply& reply,
+        base::Lock* lock,
+        bool use_gpu_rasterization) {
+      internal::Task::Vector dependencies;
+      return RasterTask(new BlockingTestRasterWorkerPoolTaskImpl(
+          resource, reply, lock, &dependencies, use_gpu_rasterization));
+    }
+
+   private:
+    friend class RasterWorkerPoolTest;
+
+    explicit RasterTask(internal::RasterWorkerPoolTask* task)
+        : RasterWorkerPool::RasterTask(task) {}
+  };
+
   struct RasterTaskResult {
     unsigned id;
     bool canceled;
@@ -142,15 +170,15 @@ class RasterWorkerPoolTest
                              output_surface_.get(), NULL, 0, false, 1).Pass();
 
     switch (GetParam()) {
-      case RASTER_WORKER_POOL_TYPE_IMAGE:
-        raster_worker_pool_ = ImageRasterWorkerPool::Create(
-            resource_provider_.get(), context_provider_.get(), GL_TEXTURE_2D);
-        break;
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
         raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
             resource_provider_.get(),
             context_provider_.get(),
             std::numeric_limits<size_t>::max());
+        break;
+      case RASTER_WORKER_POOL_TYPE_IMAGE:
+        raster_worker_pool_ = ImageRasterWorkerPool::Create(
+            resource_provider_.get(), context_provider_.get(), GL_TEXTURE_2D);
         break;
     }
 
@@ -196,9 +224,7 @@ class RasterWorkerPoolTest
   void ScheduleTasks() {
     RasterWorkerPool::RasterTask::Queue tasks;
 
-    for (std::vector<RasterWorkerPool::RasterTask>::iterator it =
-             tasks_.begin();
-         it != tasks_.end();
+    for (RasterTask::Vector::iterator it = tasks_.begin(); it != tasks_.end();
          ++it)
       tasks.Append(*it, false);
 
@@ -213,16 +239,13 @@ class RasterWorkerPoolTest
     resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    RasterWorkerPool::Task::Set empty;
     tasks_.push_back(
-        RasterWorkerPool::RasterTask(new TestRasterWorkerPoolTaskImpl(
-            const_resource,
-            base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
-                       base::Unretained(this),
-                       base::Passed(&resource),
-                       id),
-            &empty.tasks_,
-            use_gpu_rasterization)));
+        RasterTask::Create(const_resource,
+                           base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
+                                      base::Unretained(this),
+                                      base::Passed(&resource),
+                                      id),
+                           use_gpu_rasterization));
   }
 
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
@@ -233,17 +256,14 @@ class RasterWorkerPoolTest
     resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    RasterWorkerPool::Task::Set empty;
-    tasks_.push_back(
-        RasterWorkerPool::RasterTask(new BlockingRasterWorkerPoolTaskImpl(
-            const_resource,
-            base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
-                       base::Unretained(this),
-                       base::Passed(&resource),
-                       id),
-            lock,
-            &empty.tasks_,
-            false)));
+    tasks_.push_back(RasterTask::CreateBlocking(
+        const_resource,
+        base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
+                   base::Unretained(this),
+                   base::Passed(&resource),
+                   id),
+        lock,
+        false));
   }
 
   const std::vector<RasterTaskResult>& completed_tasks() const {
@@ -277,11 +297,9 @@ class RasterWorkerPoolTest
   base::CancelableClosure timeout_;
   int timeout_seconds_;
   bool timed_out_;
-  std::vector<RasterWorkerPool::RasterTask> tasks_;
+  std::vector<RasterTask> tasks_;
   std::vector<RasterTaskResult> completed_tasks_;
 };
-
-namespace {
 
 TEST_P(RasterWorkerPoolTest, Basic) {
   AppendTask(0u, false);

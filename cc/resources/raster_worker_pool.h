@@ -59,7 +59,6 @@ class CC_EXPORT WorkerPoolTask : public Task {
   WorkerPoolTask();
   virtual ~WorkerPoolTask();
 
- private:
   bool did_schedule_;
   bool did_complete_;
 };
@@ -127,7 +126,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
      private:
       friend class RasterWorkerPool;
-      friend class RasterWorkerPoolTest;
 
       internal::Task::Vector tasks_;
     };
@@ -143,7 +141,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
    protected:
     friend class RasterWorkerPool;
-    friend class RasterWorkerPoolTest;
 
     explicit Task(internal::WorkerPoolTask* internal);
 
@@ -183,7 +180,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
    protected:
     friend class RasterWorkerPool;
-    friend class RasterWorkerPoolTest;
 
     explicit RasterTask(internal::RasterWorkerPoolTask* internal);
 
@@ -247,7 +243,8 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
       RasterTaskVector;
   typedef base::hash_set<internal::RasterWorkerPoolTask*> RasterTaskSet;
 
-  RasterWorkerPool(ResourceProvider* resource_provider,
+  RasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+                   ResourceProvider* resource_provider,
                    ContextProvider* context_provider);
 
   virtual void OnRasterTasksFinished() = 0;
@@ -307,6 +304,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   void OnRasterRequiredForActivationFinished(
       const internal::WorkerPoolTask* source);
 
+  internal::TaskGraphRunner* task_graph_runner_;
   internal::NamespaceToken namespace_token_;
   RasterWorkerPoolClient* client_;
   ResourceProvider* resource_provider_;

@@ -130,11 +130,11 @@ class TaskGraphRunnerPerfTest : public testing::Test {
                                      int num_top_level_tasks,
                                      int num_tasks,
                                      int num_leaf_tasks) {
-    const int kNumVersions = 2;
+    const size_t kNumVersions = 2;
     PerfTaskImpl::Vector top_level_tasks[kNumVersions];
     PerfTaskImpl::Vector tasks[kNumVersions];
     PerfTaskImpl::Vector leaf_tasks[kNumVersions];
-    for (int i = 0; i < kNumVersions; ++i) {
+    for (size_t i = 0; i < kNumVersions; ++i) {
       CreateTasks(num_top_level_tasks, &top_level_tasks[i]);
       CreateTasks(num_tasks, &tasks[i]);
       CreateTasks(num_leaf_tasks, &leaf_tasks[i]);
@@ -145,7 +145,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     internal::TaskGraph graph;
     internal::Task::Vector completed_tasks;
 
-    int count = 0;
+    size_t count = 0;
     timer_.Reset();
     do {
       graph.Reset();

@@ -11,12 +11,37 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 
 namespace cc {
+namespace {
+
+class RasterTaskGraphRunner : public internal::TaskGraphRunner {
+ public:
+  RasterTaskGraphRunner()
+      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
+                                  "CompositorRaster") {}
+};
+base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// static
+scoped_ptr<RasterWorkerPool> ImageRasterWorkerPool::Create(
+    ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
+    unsigned texture_target) {
+  return make_scoped_ptr<RasterWorkerPool>(
+      new ImageRasterWorkerPool(g_task_graph_runner.Pointer(),
+                                resource_provider,
+                                context_provider,
+                                texture_target));
+}
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
+    internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
     unsigned texture_target)
-    : RasterWorkerPool(resource_provider, context_provider),
+    : RasterWorkerPool(task_graph_runner, resource_provider, context_provider),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {}

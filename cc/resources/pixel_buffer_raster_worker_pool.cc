@@ -25,13 +25,35 @@ bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
   return !task->HasFinishedRunning();
 }
 
+class RasterTaskGraphRunner : public internal::TaskGraphRunner {
+ public:
+  RasterTaskGraphRunner()
+      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
+                                  "CompositorRaster") {}
+};
+base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
+// static
+scoped_ptr<RasterWorkerPool> PixelBufferRasterWorkerPool::Create(
+    ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
+    size_t max_transfer_buffer_usage_bytes) {
+  return make_scoped_ptr<RasterWorkerPool>(
+      new PixelBufferRasterWorkerPool(g_task_graph_runner.Pointer(),
+                                      resource_provider,
+                                      context_provider,
+                                      max_transfer_buffer_usage_bytes));
+}
+
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
+    internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
     size_t max_transfer_buffer_usage_bytes)
-    : RasterWorkerPool(resource_provider, context_provider),
+    : RasterWorkerPool(task_graph_runner, resource_provider, context_provider),
       shutdown_(false),
       scheduled_raster_task_count_(0),
       bytes_pending_upload_(0),
@@ -42,7 +64,8 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
       should_notify_client_if_no_tasks_required_for_activation_are_pending_(
           false),
       raster_finished_task_pending_(false),
-      raster_required_for_activation_finished_task_pending_(false) {}
+      raster_required_for_activation_finished_task_pending_(false),
+      weak_factory_(this) {}
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
   DCHECK(shutdown_);
@@ -59,8 +82,10 @@ void PixelBufferRasterWorkerPool::Shutdown() {
 
   CheckForCompletedWorkerPoolTasks();
   CheckForCompletedUploads();
-  check_for_completed_raster_tasks_callback_.Cancel();
+
+  weak_factory_.InvalidateWeakPtrs();
   check_for_completed_raster_tasks_pending_ = false;
+
   for (RasterTaskStateMap::iterator it = raster_task_states_.begin();
        it != raster_task_states_.end();
        ++it) {
@@ -160,8 +185,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
   // Cancel any pending check for completed raster tasks and schedule
   // another check.
-  check_for_completed_raster_tasks_callback_.Cancel();
-  check_for_completed_raster_tasks_pending_ = false;
+  check_for_completed_raster_tasks_time_ = base::TimeTicks();
   ScheduleCheckForCompletedRasterTasks();
 
   if (!gpu_raster_tasks.empty())
@@ -393,17 +417,44 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
 }
 
 void PixelBufferRasterWorkerPool::ScheduleCheckForCompletedRasterTasks() {
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(kCheckForCompletedRasterTasksDelayMs);
+  if (check_for_completed_raster_tasks_time_.is_null())
+    check_for_completed_raster_tasks_time_ = base::TimeTicks::Now() + delay;
+
   if (check_for_completed_raster_tasks_pending_)
     return;
 
-  check_for_completed_raster_tasks_callback_.Reset(
-      base::Bind(&PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks,
-                 base::Unretained(this)));
   base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
-      check_for_completed_raster_tasks_callback_.callback(),
-      base::TimeDelta::FromMilliseconds(kCheckForCompletedRasterTasksDelayMs));
+      base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
+                 weak_factory_.GetWeakPtr()),
+      delay);
   check_for_completed_raster_tasks_pending_ = true;
+}
+
+void PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks() {
+  if (check_for_completed_raster_tasks_time_.is_null()) {
+    check_for_completed_raster_tasks_pending_ = false;
+    return;
+  }
+
+  base::TimeDelta delay =
+      check_for_completed_raster_tasks_time_ - base::TimeTicks::Now();
+
+  // Post another delayed task if it is not yet time to check for completed
+  // raster tasks.
+  if (delay > base::TimeDelta()) {
+    base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
+                   weak_factory_.GetWeakPtr()),
+        delay);
+    return;
+  }
+
+  check_for_completed_raster_tasks_pending_ = false;
+  CheckForCompletedRasterTasks();
 }
 
 void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
@@ -411,9 +462,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
                "PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks");
 
   DCHECK(should_notify_client_if_no_tasks_are_pending_);
-
-  check_for_completed_raster_tasks_callback_.Cancel();
-  check_for_completed_raster_tasks_pending_ = false;
+  check_for_completed_raster_tasks_time_ = base::TimeTicks();
 
   CheckForCompletedWorkerPoolTasks();
   CheckForCompletedUploads();
