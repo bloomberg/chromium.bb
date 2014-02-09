@@ -868,7 +868,7 @@ std::string PrintSystemWin::GetSupportedMimeTypes() {
     result = kContentTypeXPS;
     result += ",";
   }
-  result = kContentTypePDF;
+  result += kContentTypePDF;
   return result;
 }
 
