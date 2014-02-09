@@ -33,10 +33,12 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
  public:
   typedef std::map<IPAddressNumber, struct ifaddrmsg> AddressMap;
 
-  // Will run |address_callback| when the AddressMap changes and will run
-  // |link_callback| when the list of online links changes.
+  // Will run |address_callback| when the AddressMap changes, |link_callback|
+  // when the list of online links changes, and |tunnel_callback| when the list
+  // of online tunnels changes.
   AddressTrackerLinux(const base::Closure& address_callback,
-                      const base::Closure& link_callback);
+                      const base::Closure& link_callback,
+                      const base::Closure& tunnel_callback);
   virtual ~AddressTrackerLinux();
 
   // Starts watching system configuration for changes. The current thread must
@@ -52,18 +54,27 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
  private:
   friend class AddressTrackerLinuxTest;
 
+  // A function that returns the name of an interface given the interface index
+  // in |interface_index|.
+  typedef const char* (*GetInterfaceNameFunction)(int interface_index);
+
   // Sets |*address_changed| to indicate whether |address_map_| changed and
-  // sets |*link_changed| to indicate if |online_links_| changed while reading
-  // messages from |netlink_fd_|.
-  void ReadMessages(bool* address_changed, bool* link_changed);
+  // sets |*link_changed| to indicate if |online_links_| changed and sets
+  // |*tunnel_changed| to indicate if |online_links_| changed with regards to a
+  // tunnel interface while reading messages from |netlink_fd_|.
+  void ReadMessages(bool* address_changed,
+                    bool* link_changed,
+                    bool* tunnel_changed);
 
   // Sets |*address_changed| to true if |address_map_| changed, sets
-  // |*link_changed| to true if |online_links_| changed while reading the
-  // message from |buffer|.
+  // |*link_changed| to true if |online_links_| changed, sets |*tunnel_changed|
+  // to true if |online_links_| changed with regards to a tunnel interface while
+  // reading the message from |buffer|.
   void HandleMessage(char* buffer,
                      size_t length,
                      bool* address_changed,
-                     bool* link_changed);
+                     bool* link_changed,
+                     bool* tunnel_changed);
 
   // Call when some part of initialization failed; forces online and unblocks.
   void AbortAndForceOnline();
@@ -75,8 +86,17 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Close |netlink_fd_|
   void CloseSocket();
 
+  // Does |msg| refer to a tunnel interface?
+  bool IsTunnelInterface(const struct ifinfomsg* msg) const;
+
+  // Gets the name of an interface given the interface index |interface_index|.
+  // May return empty string if it fails but should not return NULL. This is
+  // overridden by tests.
+  GetInterfaceNameFunction get_interface_name_;
+
   base::Closure address_callback_;
   base::Closure link_callback_;
+  base::Closure tunnel_callback_;
 
   int netlink_fd_;
   base::MessageLoopForIO::FileDescriptorWatcher watcher_;

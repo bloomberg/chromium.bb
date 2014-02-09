@@ -46,7 +46,8 @@ NetworkChangeNotifierLinux::Thread::Thread()
           base::Bind(&NetworkChangeNotifier::
                      NotifyObserversOfIPAddressChange),
           base::Bind(&NetworkChangeNotifier::
-                     NotifyObserversOfConnectionTypeChange)) {
+                     NotifyObserversOfConnectionTypeChange),
+          base::Bind(base::DoNothing)) {
 }
 
 NetworkChangeNotifierLinux::Thread::~Thread() {

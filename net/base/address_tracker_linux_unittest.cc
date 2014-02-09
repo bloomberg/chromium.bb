@@ -13,21 +13,37 @@
 
 namespace net {
 namespace internal {
+namespace {
+
+const int kTestInterfaceTun = 123;
+
+const char* TestGetInterfaceName(int interface_index) {
+  if (interface_index == kTestInterfaceTun)
+    return "tun0";
+  return "eth0";
+}
+
+}  // namespace
 
 typedef std::vector<char> Buffer;
 
-void Noop() {}
-
 class AddressTrackerLinuxTest : public testing::Test {
  protected:
-  AddressTrackerLinuxTest() : tracker_(base::Bind(&Noop), base::Bind(&Noop)) {}
+  AddressTrackerLinuxTest()
+      : tracker_(base::Bind(&base::DoNothing),
+                 base::Bind(&base::DoNothing),
+                 base::Bind(&base::DoNothing)),
+        original_get_interface_name_(tracker_.get_interface_name_) {
+    tracker_.get_interface_name_ = TestGetInterfaceName;
+  }
 
   bool HandleAddressMessage(const Buffer& buf) {
     Buffer writable_buf = buf;
     bool address_changed = false;
     bool link_changed = false;
+    bool tunnel_changed = false;
     tracker_.HandleMessage(&writable_buf[0], buf.size(),
-                           &address_changed, &link_changed);
+                           &address_changed, &link_changed, &tunnel_changed);
     EXPECT_FALSE(link_changed);
     return address_changed;
   }
@@ -36,10 +52,22 @@ class AddressTrackerLinuxTest : public testing::Test {
     Buffer writable_buf = buf;
     bool address_changed = false;
     bool link_changed = false;
+    bool tunnel_changed = false;
     tracker_.HandleMessage(&writable_buf[0], buf.size(),
-                           &address_changed, &link_changed);
+                           &address_changed, &link_changed, &tunnel_changed);
     EXPECT_FALSE(address_changed);
     return link_changed;
+  }
+
+  bool HandleTunnelMessage(const Buffer& buf) {
+    Buffer writable_buf = buf;
+    bool address_changed = false;
+    bool link_changed = false;
+    bool tunnel_changed = false;
+    tracker_.HandleMessage(&writable_buf[0], buf.size(),
+                           &address_changed, &link_changed, &tunnel_changed);
+    EXPECT_FALSE(address_changed);
+    return tunnel_changed;
   }
 
   AddressTrackerLinux::AddressMap GetAddressMap() {
@@ -51,6 +79,7 @@ class AddressTrackerLinuxTest : public testing::Test {
   }
 
   AddressTrackerLinux tracker_;
+  AddressTrackerLinux::GetInterfaceNameFunction original_get_interface_name_;
 };
 
 namespace {
@@ -415,6 +444,53 @@ TEST_F(AddressTrackerLinuxTest, RemoveInterface) {
   MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks()->empty());
+}
+
+TEST_F(AddressTrackerLinuxTest, TunnelInterface) {
+  Buffer buffer;
+
+  // Ignores without "tun" prefixed name.
+  MakeLinkMessage(RTM_NEWLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  0, &buffer);
+  EXPECT_FALSE(HandleTunnelMessage(buffer));
+
+  // Verify success.
+  MakeLinkMessage(RTM_NEWLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  kTestInterfaceTun, &buffer);
+  EXPECT_TRUE(HandleTunnelMessage(buffer));
+
+  // Ignores redundant enables.
+  MakeLinkMessage(RTM_NEWLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  kTestInterfaceTun, &buffer);
+  EXPECT_FALSE(HandleTunnelMessage(buffer));
+
+  // Ignores deleting without "tun" prefixed name.
+  MakeLinkMessage(RTM_DELLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  0, &buffer);
+  EXPECT_FALSE(HandleTunnelMessage(buffer));
+
+  // Verify successful deletion
+  MakeLinkMessage(RTM_DELLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  kTestInterfaceTun, &buffer);
+  EXPECT_TRUE(HandleTunnelMessage(buffer));
+
+  // Ignores redundant deletions.
+  MakeLinkMessage(RTM_DELLINK,
+                  IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
+                  kTestInterfaceTun, &buffer);
+  EXPECT_FALSE(HandleTunnelMessage(buffer));
+}
+
+// Check AddressTrackerLinux::get_interface_name_ original implementation
+// doesn't crash or return NULL.
+TEST_F(AddressTrackerLinuxTest, GetInterfaceName) {
+  for (int i = 0; i < 10; i++)
+    EXPECT_NE((const char*)NULL, original_get_interface_name_(i));
 }
 
 }  // namespace

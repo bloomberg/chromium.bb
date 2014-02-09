@@ -1600,6 +1600,8 @@
         ['OS == "android"', {
           'sources/': [
             ['include', '^base/platform_mime_util_linux\\.cc$'],
+            ['include', '^base/address_tracker_linux\\.cc$'],
+            ['include', '^base/address_tracker_linux\\.h$'],
           ],
         }],
         ['OS == "ios"', {
