@@ -2010,18 +2010,6 @@
    fun:_ZN2v88internal18GvnBasicBlockState32*
 }
 {
-   bug_139633
-   Memcheck:Uninitialized
-   fun:_ZL19ConvertYUVToRGB32_ChhhPh
-   fun:LinearScaleYUVToRGB32RowWithRange_C
-   fun:_ZN5media23ScaleYUVToRGB32WithRectEPKhS1_S1_Phiiiiiiiiiii
-   fun:_ZN8remoting29ConvertAndScaleYUVToRGB32RectEPKhS1_S1_iiRK7SkTSizeIiERK7SkIRectPhiS5_S8_S8_
-   fun:_ZN8remoting10DecoderVp811RenderFrameERK7SkTSizeIiERK7SkIRectPhiP8SkRegion
-   fun:_ZN8remoting13DecoderTester11RenderFrameEv
-   fun:_ZN8remoting13DecoderTester14ReceivedPacketEPNS_11VideoPacketE
-   fun:_ZN8remoting13DecoderTester20ReceivedScopedPacketE10scoped_ptrINS_11VideoPacketEE
-}
-{
    bug_148865
    Memcheck:Leak
    fun:_Znw*

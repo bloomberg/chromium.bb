@@ -3436,13 +3436,6 @@
    fun:_ZN7WebCore13WorkerRunLoop15runCleanupTasksEPNS_13WorkerContextE
 }
 {
-   bug_113076
-   Memcheck:Uninitialized
-   fun:_ZN5mediaL19ConvertYUVToRGB32_CEhhhPh
-   fun:_ZN5media35LinearScaleYUVToRGB32RowWithRange_CEPKhS1_S1_Phiii
-   fun:_ZN5media23ScaleYUVToRGB32WithRectEPKhS1_S1_Phiiiiiiiiiii
-}
-{
    bug_115294
    Memcheck:Leak
    fun:_Znw*

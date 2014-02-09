@@ -20,6 +20,7 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "media/base/simd/convert_rgb_to_yuv.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
@@ -444,6 +445,9 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
   const int kFilterBufferSize = 4096;
   const bool kAvoidUsingOptimizedFilter = source_width > kFilterBufferSize;
   uint8 yuv_temp[16 + kFilterBufferSize * 3 + 16];
+  // memset() yuv_temp to 0 to avoid bogus warnings when running on Valgrind.
+  if (RunningOnValgrind())
+    memset(yuv_temp, 0, sizeof(yuv_temp));
   uint8* y_temp = reinterpret_cast<uint8*>(
       reinterpret_cast<uintptr_t>(yuv_temp + 15) & ~15);
   uint8* u_temp = y_temp + kFilterBufferSize;
