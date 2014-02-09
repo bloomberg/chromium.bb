@@ -1109,13 +1109,13 @@ def CMDhashtable(parser, args):
   shared accross slaves without an isolate server.
   """
   add_subdir_option(parser)
-  add_outdir_option(parser)
+  isolateserver.add_outdir_options(parser)
   add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
-  process_outdir(parser, options, cwd)
+  isolateserver.process_outdir_options(parser, 'hashtable', options, cwd)
 
   success = False
   try:
@@ -1194,13 +1194,13 @@ def CMDremap(parser, args):
   run.
   """
   parser.require_isolated = False
-  add_outdir_option(parser)
+  isolateserver.add_outdir_options(parser)
   add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
-  process_outdir(parser, options, cwd)
+  isolateserver.process_outdir_options(parser, 'remap', options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
   if not os.path.isdir(options.outdir):
@@ -1441,29 +1441,11 @@ def add_trace_option(parser):
            'test case.')
 
 
-def add_outdir_option(parser):
-  parser.add_option(
-      '-o', '--outdir', metavar='DIR',
-      help='Directory used to recreate the tree.')
-
-
 def add_skip_refresh_option(parser):
   parser.add_option(
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
-
-def process_outdir(parser, options, cwd):
-  if not options.outdir:
-    parser.error('--outdir is required.')
-  if file_path.is_url(options.outdir):
-    parser.error('Can\'t use an URL for --outdir with mode remap.')
-  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
-  # outdir doesn't need native path case since tracing is never done from there.
-  options.outdir = os.path.abspath(
-      os.path.normpath(os.path.join(cwd, options.outdir)))
-  # In theory, we'd create the directory outdir right away. Defer doing it in
-  # case there's errors in the command line.
 
 
 def parse_isolated_option(parser, options, cwd, require_isolated):

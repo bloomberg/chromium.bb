@@ -723,7 +723,8 @@ def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
     # only done if files were written in the directory.
     if os.listdir(out_dir):
       with tools.Profiler('ArchiveOutput'):
-        results = isolateserver.archive(storage, algo, [out_dir], None)
+        results = isolateserver.archive_files_to_storage(
+            storage, algo, [out_dir], None)
       # TODO(maruel): Implement side-channel to publish this information.
       print('run_isolated output: %s' % results[0][0])
 

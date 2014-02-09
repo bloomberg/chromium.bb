@@ -1884,7 +1884,7 @@ def directory_to_metadata(root, algo, blacklist):
   return items, metadata
 
 
-def archive(storage, algo, files, blacklist):
+def archive_files_to_storage(storage, algo, files, blacklist):
   """Stores every entries and returns the relevant data.
 
   Arguments:
@@ -1954,6 +1954,21 @@ def archive(storage, algo, files, blacklist):
       shutil.rmtree(tempdir)
 
 
+def archive(out, namespace, files, blacklist):
+  if files == ['-']:
+    files = sys.stdin.readlines()
+
+  if not files:
+    raise Error('Nothing to upload')
+
+  files = [f.decode('utf-8') for f in files]
+  algo = get_hash_algo(namespace)
+  blacklist = tools.gen_blacklist(blacklist)
+  with get_storage(out, namespace) as storage:
+    results = archive_files_to_storage(storage, algo, files, blacklist)
+  print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
+
+
 @subcommand.usage('<file1..fileN> or - to read from stdin')
 def CMDarchive(parser, args):
   """Archives data to the server.
@@ -1966,28 +1981,18 @@ def CMDarchive(parser, args):
   directories, the .isolated generated for the directory is listed as the
   directory entry itself.
   """
+  add_isolate_server_options(parser)
   parser.add_option(
       '--blacklist',
       action='append', default=list(DEFAULT_BLACKLIST),
       help='List of regexp to use as blacklist filter when uploading '
            'directories')
   options, files = parser.parse_args(args)
-
-  if files == ['-']:
-    files = sys.stdin.readlines()
-
-  if not files:
-    parser.error('Nothing to upload')
-
-  files = [f.decode('utf-8') for f in files]
-  algo = get_hash_algo(options.namespace)
-  blacklist = tools.gen_blacklist(options.blacklist)
+  process_isolate_server_options(parser, options)
   try:
-    with get_storage(options.isolate_server, options.namespace) as storage:
-      results = archive(storage, algo, files, blacklist)
+    archive(options.isolate_server, options.namespace, files, options.blacklist)
   except Error as e:
     parser.error(e.args[0])
-  print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
   return 0
 
 
@@ -1997,6 +2002,7 @@ def CMDdownload(parser, args):
   It can either download individual files or a complete tree from a .isolated
   file.
   """
+  add_isolate_server_options(parser)
   parser.add_option(
       '-i', '--isolated', metavar='HASH',
       help='hash of an isolated file, .isolated file content is discarded, use '
@@ -2008,6 +2014,7 @@ def CMDdownload(parser, args):
       '-t', '--target', metavar='DIR', default=os.getcwd(),
       help='destination directory')
   options, args = parser.parse_args(args)
+  process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported arguments: %s' % args)
   if bool(options.isolated) == bool(options.file):
@@ -2051,6 +2058,34 @@ def CMDdownload(parser, args):
   return 0
 
 
+@subcommand.usage('<file1..fileN> or - to read from stdin')
+def CMDhashtable(parser, args):
+  """Archives data to a hashtable on the file system.
+
+  If a directory is specified, a .isolated file is created the whole directory
+  is uploaded. Then this .isolated file can be included in another one to run
+  commands.
+
+  The commands output each file that was processed with its content hash. For
+  directories, the .isolated generated for the directory is listed as the
+  directory entry itself.
+  """
+  add_outdir_options(parser)
+  parser.add_option(
+      '--blacklist',
+      action='append', default=list(DEFAULT_BLACKLIST),
+      help='List of regexp to use as blacklist filter when uploading '
+           'directories')
+  options, files = parser.parse_args(args)
+  process_outdir_options(parser, 'hashtable', options, os.getcwd())
+  try:
+    # Do not compress files when archiving to the file system.
+    archive(options.outdir, 'default', files, options.blacklist)
+  except Error as e:
+    parser.error(e.args[0])
+  return 0
+
+
 def add_isolate_server_options(parser):
   """Adds --isolate-server and --namespace options to parser."""
   parser.add_option(
@@ -2079,6 +2114,25 @@ def process_isolate_server_options(parser, options):
     options.isolate_server = options.isolate_server.rstrip('/')
 
 
+def add_outdir_options(parser):
+  parser.add_option(
+      '-o', '--outdir', metavar='DIR',
+      help='Directory used to recreate the tree.')
+
+
+def process_outdir_options(parser, command, options, cwd):
+  if not options.outdir:
+    parser.error('--outdir is required.')
+  if file_path.is_url(options.outdir):
+    parser.error('Can\'t use an URL for --outdir with command %s.' % command)
+  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+  # outdir doesn't need native path case since tracing is never done from there.
+  options.outdir = os.path.abspath(
+      os.path.normpath(os.path.join(cwd, options.outdir)))
+  # In theory, we'd create the directory outdir right away. Defer doing it in
+  # case there's errors in the command line.
+
+
 class OptionParserIsolateServer(tools.OptionParserWithLogging):
   def __init__(self, **kwargs):
     tools.OptionParserWithLogging.__init__(
@@ -2086,13 +2140,11 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
         version=__version__,
         prog=os.path.basename(sys.modules[__name__].__file__),
         **kwargs)
-    add_isolate_server_options(self)
     auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
-    process_isolate_server_options(self, options)
     auth.process_auth_options(self, options)
     return options, args
 
