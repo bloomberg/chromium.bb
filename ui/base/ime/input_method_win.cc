@@ -319,38 +319,22 @@ HWND InputMethodWin::GetAttachedWindowHandle(
   // represents the valid top-level window handle because each top-level window
   // is responsible for lifecycle management of corresponding InputMethod
   // instance.
-#if defined(USE_AURA)
   return toplevel_window_handle_;
-#else
-  // On Non-Aura environment, TextInputClient::GetAttachedWindow() returns
-  // window handle to which each input method is bound.
-  if (!text_input_client)
-    return NULL;
-  return text_input_client->GetAttachedWindow();
-#endif
 }
 
 bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
   if (!client)
     return false;
   HWND attached_window_handle = GetAttachedWindowHandle(client);
-#if defined(USE_AURA)
   // When Aura is enabled, |attached_window_handle| should always be a top-level
   // window. So we can safely assume that |attached_window_handle| is ready for
   // receiving keyboard input as long as it is an active window. This works well
   // even when the |attached_window_handle| becomes active but has not received
   // WM_FOCUS yet.
   return attached_window_handle && GetActiveWindow() == attached_window_handle;
-#else
-  return attached_window_handle && GetFocus() == attached_window_handle;
-#endif
 }
 
 bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
-  // TODO(ananta)
-  // Support IMEs and RTL layout in Windows 8 metro Ash. The code below won't
-  // work with IMEs.
-  // Bug: https://code.google.com/p/chromium/issues/detail?id=164964
   if (event.is_char()) {
     if (GetTextInputClient()) {
       GetTextInputClient()->InsertChar(event.key_code(),
