@@ -187,8 +187,14 @@ PrefHashFilter::EnforcementLevel GetSettingsEnforcementLevel() {
         return kEnforcementLevelMap[i].level;
     }
   }
-  // TODO(gab): Switch default to ENFORCE_ALL when the field trial config is up.
+#if defined(OS_WIN)
+  // Default to ENFORCE_ALL in the absence of a valid value for the
+  // SettingsEnforcement field trial.
+  // TODO(gab): Switch other platforms over to this mode.
+  return PrefHashFilter::ENFORCE_ALL;
+#else
   return PrefHashFilter::NO_ENFORCEMENT;
+#endif
 }
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
