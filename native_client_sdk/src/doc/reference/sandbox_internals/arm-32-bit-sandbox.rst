@@ -2,13 +2,13 @@
 ARM 32-bit Sandbox
 ==================
 
-Native Client for ARM is a method for running programs---even malicious
-ones---safely, on computers that use 32-bit ARM processors. It's an
-extension of earlier work on Native Client for x86 processors. This
-security is provided with a low performance overhead of about 10% over
-regular ARM code, and as you'll see in this document the sandbox model
-is beautifully simple, meaning that the trusted codebase is much easier
-to validate.
+Native Client for ARM is a sandboxing technology for running
+programs---even malicious ones---safely, on computers that use 32-bit
+ARM processors. The ARM sandbox is an extension of earlier work on
+Native Client for x86 processors. Security is provided with a low
+performance overhead of about 10% over regular ARM code, and as you'll
+see in this document the sandbox model is beautifully simple, meaning
+that the trusted codebase is much easier to validate.
 
 As an implementation detail, the Native Client 32-bit ARM sandbox is
 currently used by Portable Native Client to execute code on 32-bit ARM

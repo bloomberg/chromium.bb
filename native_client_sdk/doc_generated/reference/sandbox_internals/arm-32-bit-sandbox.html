@@ -2,13 +2,13 @@
 
 <section id="arm-32-bit-sandbox">
 <h1 id="arm-32-bit-sandbox">ARM 32-bit Sandbox</h1>
-<p>Native Client for ARM is a method for running programs&#8212;even malicious
-ones&#8212;safely, on computers that use 32-bit ARM processors. It&#8217;s an
-extension of earlier work on Native Client for x86 processors. This
-security is provided with a low performance overhead of about 10% over
-regular ARM code, and as you&#8217;ll see in this document the sandbox model
-is beautifully simple, meaning that the trusted codebase is much easier
-to validate.</p>
+<p>Native Client for ARM is a sandboxing technology for running
+programs&#8212;even malicious ones&#8212;safely, on computers that use 32-bit
+ARM processors. The ARM sandbox is an extension of earlier work on
+Native Client for x86 processors. Security is provided with a low
+performance overhead of about 10% over regular ARM code, and as you&#8217;ll
+see in this document the sandbox model is beautifully simple, meaning
+that the trusted codebase is much easier to validate.</p>
 <p>As an implementation detail, the Native Client 32-bit ARM sandbox is
 currently used by Portable Native Client to execute code on 32-bit ARM
 machines in a safe manner. The portable bitcode contained in a <strong>pexe</strong>

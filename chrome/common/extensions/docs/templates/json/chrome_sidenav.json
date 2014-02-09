@@ -830,6 +830,16 @@
               {
                 "title": "Previous Versions",
                 "href": "/native-client/version.html"
+              },
+              {
+                "title": "Sandbox Internals",
+                "href": "/native-client/reference/sandbox_internals/index.html",
+                "items": [
+                    {
+                      "title": "ARM 32-bit Sandbox",
+                      "href": "/native-client/reference/sandbox_internals/arm-32-bit-sandbox.html"
+                    }
+                ]
               }
             ]
           },
