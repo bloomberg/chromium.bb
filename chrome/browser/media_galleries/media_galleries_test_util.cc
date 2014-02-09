@@ -201,3 +201,13 @@ void EnsureMediaDirectoriesExists::Init() {
   num_galleries_ = 3;
 #endif  // OS_CHROMEOS || OS_ANDROID
 }
+
+base::FilePath MakeMediaGalleriesTestingPath(const std::string& dir) {
+#if defined(OS_WIN)
+  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
+#elif defined(OS_POSIX)
+  return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
+#else
+  NOTREACHED();
+#endif
+}

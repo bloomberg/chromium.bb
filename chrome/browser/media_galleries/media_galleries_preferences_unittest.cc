@@ -88,16 +88,6 @@ class MockGalleryChangeObserver
   DISALLOW_COPY_AND_ASSIGN(MockGalleryChangeObserver);
 };
 
-base::FilePath MakePath(const std::string& dir) {
-#if defined(OS_WIN)
-  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
-#elif defined(OS_POSIX)
-  return base::FilePath(FILE_PATH_LITERAL("/")).AppendASCII(dir);
-#else
-  NOTREACHED();
-#endif
-}
-
 }  // namespace
 
 class MediaGalleriesPreferencesTest : public testing::Test {
@@ -293,7 +283,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   MediaGalleryPrefId AddFixedGalleryWithExepectation(
       const std::string& path_name, const std::string& name,
       MediaGalleryPrefInfo::Type type) {
-    base::FilePath path = MakePath(path_name);
+    base::FilePath path = MakeMediaGalleriesTestingPath(path_name);
     StorageInfo info;
     base::FilePath relative_path;
     MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
@@ -349,7 +339,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   Verify();
 
   // Add a new auto detected gallery.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   StorageInfo info;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
@@ -375,7 +365,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   EXPECT_EQ(auto_id, id);
 
   // Add a new user added gallery.
-  path = MakePath("new_user");
+  path = MakeMediaGalleriesTestingPath("new_user");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewUserGallery"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
@@ -402,7 +392,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   Verify();
 
   // Add a new scan result gallery.
-  path = MakePath("new_scan");
+  path = MakeMediaGalleriesTestingPath("new_scan");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewScanGallery"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
@@ -428,27 +418,31 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   Verify();
 
   // Lookup some galleries.
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"), NULL));
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_user"), NULL));
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_scan"), NULL));
-  EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(MakePath("other"), NULL));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_auto"), NULL));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_user"), NULL));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_scan"), NULL));
+  EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("other"), NULL));
 
   // Check that we always get the gallery info.
   MediaGalleryPrefInfo gallery_info;
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"),
-                                                   &gallery_info));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_auto"), &gallery_info));
   VerifyGalleryInfo(gallery_info, auto_id);
   EXPECT_FALSE(gallery_info.volume_metadata_valid);
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_user"),
-                                                   &gallery_info));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_user"), &gallery_info));
   VerifyGalleryInfo(gallery_info, user_added_id);
   EXPECT_FALSE(gallery_info.volume_metadata_valid);
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_scan"),
-                                                   &gallery_info));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_scan"), &gallery_info));
   VerifyGalleryInfo(gallery_info, scan_id);
   EXPECT_FALSE(gallery_info.volume_metadata_valid);
 
-  path = MakePath("other");
+  path = MakeMediaGalleriesTestingPath("other");
   EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(path, &gallery_info));
   EXPECT_EQ(kInvalidMediaGalleryPrefId, gallery_info.pref_id);
 
@@ -563,7 +557,7 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
   Verify();
 
   // Add a new auto detected gallery.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
                                    MediaGalleryPrefInfo::kAutoDetected,
@@ -577,8 +571,8 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
   Verify();
 
   MediaGalleryPrefInfo gallery_info;
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"),
-                                                   &gallery_info));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("new_auto"), &gallery_info));
   EXPECT_TRUE(gallery_info.volume_metadata_valid);
   EXPECT_EQ(ASCIIToUTF16("volume label"), gallery_info.volume_label);
   EXPECT_EQ(ASCIIToUTF16("vendor name"), gallery_info.vendor_name);
@@ -600,7 +594,7 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
   Verify();
 
   // Add an auto detected gallery in the prefs version 0 format.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   id = AddGalleryWithNameV0(info.device_id(), info.name(),
@@ -637,7 +631,7 @@ TEST_F(MediaGalleriesPreferencesTest, AutoAddedBlackListing) {
   Verify();
 
   // Add a new auto detect gallery to test with.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
@@ -680,7 +674,7 @@ TEST_F(MediaGalleriesPreferencesTest, ScanResultBlackListing) {
   Verify();
 
   // Add a new scan result gallery to test with.
-  path = MakePath("new_scan");
+  path = MakeMediaGalleriesTestingPath("new_scan");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewScanGallery"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
@@ -714,7 +708,7 @@ TEST_F(MediaGalleriesPreferencesTest, ScanResultBlackListing) {
 
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryNameV2) {
   // Add a new auto detect gallery to test with.
-  base::FilePath path = MakePath("new_auto");
+  base::FilePath path = MakeMediaGalleriesTestingPath("new_auto");
   StorageInfo info;
   base::FilePath relative_path;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
@@ -750,7 +744,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   Verify();
 
   // Add some galleries to test with.
-  path = MakePath("new_user");
+  path = MakeMediaGalleriesTestingPath("new_user");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewUserGallery"));
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
@@ -761,7 +755,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
                         MediaGalleryPrefInfo::kUserAdded);
   Verify();
 
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
@@ -772,7 +766,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
-  path = MakePath("to_blacklist");
+  path = MakeMediaGalleriesTestingPath("to_blacklist");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("ToBlacklistGallery"));
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
@@ -783,7 +777,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
-  path = MakePath("new_scan");
+  path = MakeMediaGalleriesTestingPath("new_scan");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewScanGallery"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
@@ -794,7 +788,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
                         MediaGalleryPrefInfo::kScanResult);
   Verify();
 
-  path = MakePath("to_scan_remove");
+  path = MakeMediaGalleriesTestingPath("to_scan_remove");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("ToScanRemoveGallery"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
@@ -930,7 +924,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
   Verify();
 
   // Add a new auto detect gallery to test with.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
@@ -958,7 +952,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   Verify();
 
   // Add a regular gallery
-  path = MakePath("new_user");
+  path = MakeMediaGalleriesTestingPath("new_user");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewUserGallery"));
   MediaGalleryPrefId user_added_id =
@@ -975,8 +969,8 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   EXPECT_EQ(1U, pref_id_set.size());
   EXPECT_TRUE(pref_id_set.find(user_added_id) != pref_id_set.end());
 
-  MediaStorageUtil::GetDeviceInfoFromPath(MakePath("new_user/foo"), &info,
-                                          &relative_path);
+  MediaStorageUtil::GetDeviceInfoFromPath(
+      MakeMediaGalleriesTestingPath("new_user/foo"), &info, &relative_path);
   pref_id_set = gallery_prefs()->LookUpGalleriesByDeviceId(info.device_id());
   EXPECT_EQ(0U, pref_id_set.size());
 
@@ -1032,7 +1026,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
   gallery_prefs()->AddGalleryChangeObserver(&observer1);
 
   // Add a new auto detected gallery.
-  base::FilePath path = MakePath("new_auto");
+  base::FilePath path = MakeMediaGalleriesTestingPath("new_auto");
   StorageInfo info;
   base::FilePath relative_path;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
@@ -1049,7 +1043,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
   gallery_prefs()->AddGalleryChangeObserver(&observer2);
 
   // Add a new user added gallery.
-  path = MakePath("new_user");
+  path = MakeMediaGalleriesTestingPath("new_user");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewUserGallery"));
   MediaGalleryPrefId user_added_id =
@@ -1089,7 +1083,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   Verify();
 
   // Add a new auto detect gallery to test with.
-  path = MakePath("new_auto");
+  path = MakeMediaGalleriesTestingPath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   info.set_device_id(StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
@@ -1105,7 +1099,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   MockGalleryChangeObserver observer(gallery_prefs());
   gallery_prefs()->AddGalleryChangeObserver(&observer);
 
-  path = MakePath("updated_path");
+  path = MakeMediaGalleriesTestingPath("updated_path");
   std::string updated_device_id =
       StorageInfo::MakeDeviceId(StorageInfo::ITUNES, path.AsUTF8Unsafe());
   EXPECT_TRUE(UpdateDeviceIDForSingletonType(updated_device_id));
@@ -1131,7 +1125,7 @@ TEST_F(MediaGalleriesPreferencesTest, ScanResults) {
   Verify();
 
   // Add a new scan result gallery to test with.
-  path = MakePath("new_scan");
+  path = MakeMediaGalleriesTestingPath("new_scan");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
                                    MediaGalleryPrefInfo::kScanResult,

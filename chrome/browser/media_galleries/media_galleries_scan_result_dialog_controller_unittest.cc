@@ -31,21 +31,12 @@
 
 namespace {
 
-base::FilePath MakePath(std::string dir) {
-#if defined(OS_WIN)
-  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
-#elif defined(OS_POSIX)
-  return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 MediaGalleryPrefId AddScanResult(MediaGalleriesPreferences* gallery_prefs,
                                  const std::string& path, int audio_count,
                                  int image_count, int video_count) {
   MediaGalleryPrefInfo gallery_info;
-  gallery_prefs->LookUpGalleryByPath(MakePath(path), &gallery_info);
+  gallery_prefs->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath(path), &gallery_info);
   return gallery_prefs->AddGallery(
       gallery_info.device_id,
       gallery_info.path,
@@ -233,10 +224,10 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, EmptyDialog) {
 TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
   // Start with two scan results.
   MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan1"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
                                         MediaGalleryPrefInfo::kScanResult);
   MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan2"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
                                         MediaGalleryPrefInfo::kScanResult);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -276,10 +267,10 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
 TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
   // Start with two scan results.
   MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan1"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
                                         MediaGalleryPrefInfo::kScanResult);
   MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan2"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
                                         MediaGalleryPrefInfo::kScanResult);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -296,7 +287,7 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
   controller()->DialogFinished(false);
 
   // Adding it as a user gallery should change its type.
-  gallery_prefs()->AddGalleryByPath(MakePath("scan2"),
+  gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
                                     MediaGalleryPrefInfo::kUserAdded);
   StartDialog();
   EXPECT_EQ(1U, controller()->GetGalleryList().size());
@@ -310,38 +301,41 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
 }
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
-  MediaGalleryPrefId selected =
-      gallery_prefs()->AddGalleryByPath(MakePath("selected"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected =
-      gallery_prefs()->AddGalleryByPath(MakePath("unselected"),
-                                        MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId selected = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("selected"),
+      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId unselected = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("unselected"),
+      MediaGalleryPrefInfo::kScanResult);
   MediaGalleryPrefId selected_add_permission =
-      gallery_prefs()->AddGalleryByPath(MakePath("selected_add_permission"),
-                                        MediaGalleryPrefInfo::kScanResult);
+      gallery_prefs()->AddGalleryByPath(
+          MakeMediaGalleriesTestingPath("selected_add_permission"),
+          MediaGalleryPrefInfo::kScanResult);
   MediaGalleryPrefId unselected_add_permission =
-      gallery_prefs()->AddGalleryByPath(MakePath("unselected_add_permission"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId selected_removed =
-      gallery_prefs()->AddGalleryByPath(MakePath("selected_removed"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected_removed =
-      gallery_prefs()->AddGalleryByPath(MakePath("unselected_removed"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId selected_update =
-      gallery_prefs()->AddGalleryByPath(MakePath("selected_update"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected_update =
-      gallery_prefs()->AddGalleryByPath(MakePath("unselected_update"),
-                                        MediaGalleryPrefInfo::kScanResult);
+      gallery_prefs()->AddGalleryByPath(
+          MakeMediaGalleriesTestingPath("unselected_add_permission"),
+          MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId selected_removed = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("selected_removed"),
+      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId unselected_removed = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("unselected_removed"),
+      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId selected_update = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("selected_update"),
+      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId unselected_update = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("unselected_update"),
+      MediaGalleryPrefInfo::kScanResult);
 
-  gallery_prefs()->AddGalleryByPath(MakePath("user"),
+  gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("user"),
                                     MediaGalleryPrefInfo::kUserAdded);
-  gallery_prefs()->AddGalleryByPath(MakePath("auto_detected"),
-                                    MediaGalleryPrefInfo::kAutoDetected);
-  MediaGalleryPrefId blacklisted =
-      gallery_prefs()->AddGalleryByPath(MakePath("blacklisted"),
-                                        MediaGalleryPrefInfo::kAutoDetected);
+  gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("auto_detected"),
+      MediaGalleryPrefInfo::kAutoDetected);
+  MediaGalleryPrefId blacklisted = gallery_prefs()->AddGalleryByPath(
+      MakeMediaGalleriesTestingPath("blacklisted"),
+      MediaGalleryPrefInfo::kAutoDetected);
   gallery_prefs()->ForgetGalleryById(blacklisted);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -419,10 +413,10 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
 TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
   // Start with two scan results.
   MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan1"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
                                         MediaGalleryPrefInfo::kScanResult);
   MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakePath("scan2"),
+      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
                                         MediaGalleryPrefInfo::kScanResult);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 

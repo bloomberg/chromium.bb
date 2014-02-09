@@ -108,9 +108,17 @@ class MediaGalleriesDialogController
   ui::MenuModel* GetContextMenu(MediaGalleryPrefId id);
 
  protected:
+  friend class MediaGalleriesDialogControllerTest;
+
+  typedef base::Callback<MediaGalleriesDialog* (
+      MediaGalleriesDialogController*)> CreateDialogCallback;
+
   // For use with tests.
-  explicit MediaGalleriesDialogController(
-      const extensions::Extension& extension);
+  MediaGalleriesDialogController(
+      const extensions::Extension& extension,
+      MediaGalleriesPreferences* preferences,
+      const CreateDialogCallback& create_dialog_callback,
+      const base::Closure& on_finish);
 
   virtual ~MediaGalleriesDialogController();
 
@@ -152,7 +160,18 @@ class MediaGalleriesDialogController
   // galleries.
   void InitializePermissions();
 
-  // Saves state of |known_galleries_| and |new_galleries_| to model.
+  // Saves state of |known_galleries_|, |new_galleries_| and
+  // |forgotten_gallery_ids_| to model.
+  //
+  // NOTE: possible states for a gallery:
+  //   K   N   F   (K = Known, N = New, F = Forgotten)
+  // +---+---+---+
+  // | Y | N | N |
+  // +---+---+---+
+  // | N | Y | N |
+  // +---+---+---+
+  // | Y | N | Y |
+  // +---+---+---+
   void SavePermissions();
 
   // Updates the model and view when |preferences_| changes. Some of the
@@ -188,6 +207,9 @@ class MediaGalleriesDialogController
   // never overlap with |known_galleries_|.
   GalleryPermissionsVector new_galleries_;
 
+  // Galleries in |known_galleries_| that the user has forgotten.
+  MediaGalleryPrefIdSet forgotten_gallery_ids_;
+
   // Callback to run when the dialog closes.
   base::Closure on_finish_;
 
@@ -201,6 +223,9 @@ class MediaGalleriesDialogController
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
   scoped_ptr<MediaGalleryContextMenu> context_menu_;
+
+  // Creates the dialog. Only changed for unit tests.
+  CreateDialogCallback create_dialog_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogController);
 };

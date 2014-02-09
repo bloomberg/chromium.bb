@@ -4,11 +4,24 @@
 
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+
 using ::testing::Return;
+
+namespace {
+MediaGalleriesDialog* NullDialog(MediaGalleriesDialogController*) {
+  return NULL;
+}
+
+}  // namespace
 
 MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock(
     const extensions::Extension& extension)
-    : MediaGalleriesDialogController(extension) {
+    : MediaGalleriesDialogController(
+          extension, NULL,
+          base::Bind(&NullDialog),
+          base::Bind(&base::DoNothing)) {
   EXPECT_CALL(*this, GetHeader()).
       WillRepeatedly(Return(base::string16()));
   EXPECT_CALL(*this, GetSubtext()).
