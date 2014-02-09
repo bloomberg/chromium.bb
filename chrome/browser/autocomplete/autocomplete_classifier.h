@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class AutocompleteController;
@@ -32,16 +33,20 @@ class AutocompleteClassifier : public BrowserContextKeyedService {
   // comments on AutocompleteController::Start().
   // |allow_exact_keyword_match| should be true when treating the string as a
   // potential keyword search is valid; see
-  // AutocompleteInput::allow_exact_keyword_match(). |match| should be a
-  // non-NULL outparam that will be set to the default match for this input, if
-  // any (for invalid input, there will be no default match, and |match| will be
-  // left unchanged).  |alternate_nav_url| is a possibly-NULL outparam that, if
-  // non-NULL, will be set to the navigational URL (if any) in case of an
-  // accidental search; see comments on
+  // AutocompleteInput::allow_exact_keyword_match().
+  // |page_classification| gives information about the context (e.g., is the
+  // user on a search results page doing search term replacement); this may
+  // be useful in deciding how the input should be interpreted.
+  // |match| should be a non-NULL outparam that will be set to the default
+  // match for this input, if any (for invalid input, there will be no default
+  // match, and |match| will be left unchanged).  |alternate_nav_url| is a
+  // possibly-NULL outparam that, if non-NULL, will be set to the navigational
+  // URL (if any) in case of an accidental search; see comments on
   // AutocompleteResult::alternate_nav_url_ in autocomplete.h.
   void Classify(const base::string16& text,
                 bool prefer_keyword,
                 bool allow_exact_keyword_match,
+                AutocompleteInput::PageClassification page_classification,
                 AutocompleteMatch* match,
                 GURL* alternate_nav_url);
 

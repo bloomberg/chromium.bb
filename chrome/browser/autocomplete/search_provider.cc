@@ -1367,7 +1367,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     //    anything special.
     if (!prevent_inline_autocomplete && classifier && (i->term != input_text)) {
       AutocompleteMatch match;
-      classifier->Classify(i->term, false, false, &match, NULL);
+      classifier->Classify(i->term, false, false,
+                           input_.current_page_classification(), &match, NULL);
       prevent_inline_autocomplete =
           !AutocompleteMatch::IsSearchType(match.type);
     }
