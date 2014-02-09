@@ -285,8 +285,9 @@ void AudioRendererImpl::OnDecoderSelected(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
+  decoder_ = decoder.Pass();
 
-  if (!decoder) {
+  if (!decoder_ || !stop_cb_.is_null()) {
     {
       base::AutoLock auto_lock(lock_);
       ChangeState_Locked(kUninitialized);
@@ -302,7 +303,6 @@ void AudioRendererImpl::OnDecoderSelected(
   }
 
   base::AutoLock auto_lock(lock_);
-  decoder_ = decoder.Pass();
   decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
 
   int sample_rate = decoder_->samples_per_second();

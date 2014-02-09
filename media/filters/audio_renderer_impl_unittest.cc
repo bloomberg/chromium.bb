@@ -43,6 +43,10 @@ static float kPlayingAudio = 0.5f;
 
 static const int kDataSize = 1024;
 
+ACTION_P(EnterPendingDecoderInitStateAction, test) {
+  test->EnterPendingDecoderInitState(arg1);
+}
+
 class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
@@ -156,6 +160,65 @@ class AudioRendererImplTest : public ::testing::Test {
 
     // We should have no reads.
     EXPECT_TRUE(read_cb_.is_null());
+  }
+
+  void InitializeAndStop() {
+    EXPECT_CALL(*decoder_, Initialize(_, _, _))
+        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    WaitableMessageLoopEvent event;
+    renderer_->Initialize(
+        &demuxer_stream_,
+        event.GetPipelineStatusCB(),
+        base::Bind(&AudioRendererImplTest::OnStatistics,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnUnderflow,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnAudioTimeCallback,
+                   base::Unretained(this)),
+        ended_event_.GetClosure(),
+        base::Bind(&AudioRendererImplTest::OnDisabled,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnError,
+                   base::Unretained(this)));
+    // Stop before we let the MessageLoop run, this simulates an interleaving
+    // in which we end up calling Stop() while the OnDecoderSelected callback
+    // is in flight.
+    renderer_->Stop(NewExpectedClosure());
+    event.RunAndWaitForStatus(PIPELINE_ERROR_ABORT);
+    EXPECT_EQ(renderer_->state_, AudioRendererImpl::kStopped);
+  }
+
+  void InitializeAndStopDuringDecoderInit() {
+    EXPECT_CALL(*decoder_, Initialize(_, _, _))
+        .WillOnce(EnterPendingDecoderInitStateAction(this));
+    WaitableMessageLoopEvent event;
+    renderer_->Initialize(
+        &demuxer_stream_,
+        event.GetPipelineStatusCB(),
+        base::Bind(&AudioRendererImplTest::OnStatistics,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnUnderflow,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnAudioTimeCallback,
+                   base::Unretained(this)),
+        ended_event_.GetClosure(),
+        base::Bind(&AudioRendererImplTest::OnDisabled,
+                   base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnError,
+                   base::Unretained(this)));
+
+    base::RunLoop().RunUntilIdle();
+    DCHECK(!init_decoder_cb_.is_null());
+
+    renderer_->Stop(NewExpectedClosure());
+    base::ResetAndReturn(&init_decoder_cb_).Run(PIPELINE_OK);
+
+    event.RunAndWaitForStatus(PIPELINE_ERROR_ABORT);
+    EXPECT_EQ(renderer_->state_, AudioRendererImpl::kStopped);
+  }
+
+  void EnterPendingDecoderInitState(PipelineStatusCB cb) {
+    init_decoder_cb_ = cb;
   }
 
   void Flush() {
@@ -459,8 +522,9 @@ class AudioRendererImplTest : public ::testing::Test {
 
   // Run during ReadDecoder() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_read_cb_;
-
   base::Closure stop_decoder_cb_;
+
+  PipelineStatusCB init_decoder_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
 };
@@ -911,6 +975,14 @@ TEST_F(AudioRendererImplTest, PendingStop_Read) {
   // Now let the stop callback run.
   DispatchHeldStopDecoderCB();
   stop_event.RunAndWait();
+}
+
+TEST_F(AudioRendererImplTest, InitializeThenStop) {
+  InitializeAndStop();
+}
+
+TEST_F(AudioRendererImplTest, InitializeThenStopDuringDecoderInit) {
+  InitializeAndStopDuringDecoderInit();
 }
 
 }  // namespace media
