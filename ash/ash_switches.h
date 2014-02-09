@@ -49,7 +49,6 @@ ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForBrowserOnly[];
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
 #if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnableMultiUserTray[];
 #endif
 ASH_EXPORT extern const char kAshEnableOak[];

@@ -120,7 +120,6 @@
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
-#include "ash/magnifier/magnifier_key_scroller.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
@@ -618,10 +617,6 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  RemovePreTargetHandler(magnifier_key_scroller_.get());
-  magnifier_key_scroller_.reset();
-#endif
   RemovePreTargetHandler(event_rewriter_filter_.get());
   RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
@@ -821,11 +816,6 @@ void Shell::Init() {
 
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
-
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  magnifier_key_scroller_.reset(new MagnifierKeyScroller);
-  AddPreTargetHandler(magnifier_key_scroller_.get());
-#endif
 
   // The order in which event filters are added is significant.
   event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
