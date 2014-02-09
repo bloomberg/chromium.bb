@@ -5,6 +5,7 @@
 #ifndef ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
 #define ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,8 +18,16 @@ class RootWindow;
 
 namespace ash {
 
-class MagnificationController {
+class ASH_EXPORT MagnificationController {
  public:
+  enum ScrollDirection {
+    SCROLL_NONE,
+    SCROLL_LEFT,
+    SCROLL_RIGHT,
+    SCROLL_UP,
+    SCROLL_DOWN
+  };
+
   virtual ~MagnificationController() {}
 
   // Creates a new MagnificationController. The caller takes ownership of the
@@ -42,10 +51,7 @@ class MagnificationController {
   // Returns the current top-left point of the magnification window.
   virtual gfx::Point GetWindowPosition() const = 0;
 
-  // Ensures that the given point/rect is inside the magnification window. If
-  // not, the controller moves the window to contain the given point/rect.
-  virtual void EnsureRectIsVisible(const gfx::Rect& rect, bool animate) = 0;
-  virtual void EnsurePointIsVisible(const gfx::Point& point, bool animate) = 0;
+  virtual void SetScrollDirection(ScrollDirection direction) = 0;
 
   // Returns |point_of_interest_| in MagnificationControllerImpl. This is
   // the internal variable to stores the last mouse cursor (or last touched)
@@ -54,6 +60,9 @@ class MagnificationController {
 
  protected:
   MagnificationController() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MagnificationController);
 };
 
 }  // namespace ash

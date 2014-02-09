@@ -4,10 +4,13 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
+#include "ash/ash_switches.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
@@ -74,10 +77,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   virtual gfx::Point GetWindowPosition() const OVERRIDE {
     return gfx::ToFlooredPoint(origin_);
   }
-  virtual void EnsureRectIsVisible(const gfx::Rect& rect,
-                                   bool animate) OVERRIDE;
-  virtual void EnsurePointIsVisible(const gfx::Point& point,
-                                    bool animate) OVERRIDE;
+  virtual void SetScrollDirection(ScrollDirection direction) OVERRIDE;
+
   // For test
   virtual gfx::Point GetPointOfInterestForTesting() OVERRIDE {
     return point_of_interest_;
@@ -100,22 +101,18 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   bool Redraw(const gfx::PointF& position, float scale, bool animate);
   bool RedrawDIP(const gfx::PointF& position, float scale, bool animate);
 
+  // 1) If the screen is scrolling (i.e. animating) and should scroll further,
+  // it does nothing.
+  // 2) If the screen is scrolling (i.e. animating) and the direction is NONE,
+  // it stops the scrolling animation.
+  // 3) If the direction is set to value other than NONE, it starts the
+  // scrolling/ animation towards that direction.
+  void StartOrStopScrollIfNecessary();
+
   // Redraw with the given zoom scale keeping the mouse cursor location. In
   // other words, zoom (or unzoom) centering around the cursor.
   void RedrawKeepingMousePosition(float scale, bool animate);
 
-  // Ensures that the given point, rect or last mouse location is inside
-  // magnification window. If not, the controller moves the window to contain
-  // the given point/rect.
-  void EnsureRectIsVisibleWithScale(const gfx::Rect& target_rect,
-                                    float scale,
-                                    bool animate);
-  void EnsureRectIsVisibleDIP(const gfx::Rect& target_rect_in_dip,
-                              float scale,
-                              bool animate);
-  void EnsurePointIsVisibleWithScale(const gfx::Point& point,
-                                     float scale,
-                                     bool animate);
   void OnMouseMove(const gfx::Point& location);
 
   // Move the mouse cursot to the given point. Actual move will be done when
@@ -169,6 +166,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   float scale_;
   gfx::PointF origin_;
 
+  ScrollDirection scroll_direction_;
+
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerImpl);
 };
 
@@ -176,11 +175,12 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 // MagnificationControllerImpl:
 
 MagnificationControllerImpl::MagnificationControllerImpl()
-    : root_window_(ash::Shell::GetPrimaryRootWindow()),
+    : root_window_(Shell::GetPrimaryRootWindow()),
       is_on_animation_(false),
       is_enabled_(false),
       move_cursor_after_animation_(false),
-      scale_(kNonMagnifiedScale) {
+      scale_(kNonMagnifiedScale),
+      scroll_direction_(SCROLL_NONE) {
   Shell::GetInstance()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
   point_of_interest_ = root_window_->bounds().CenterPoint();
@@ -282,53 +282,34 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   return true;
 }
 
-void MagnificationControllerImpl::EnsureRectIsVisibleWithScale(
-    const gfx::Rect& target_rect,
-    float scale,
-    bool animate) {
-  const gfx::Rect target_rect_in_dip =
-      ui::ConvertRectToDIP(root_window_->layer(), target_rect);
-  EnsureRectIsVisibleDIP(target_rect_in_dip, scale, animate);
-}
-
-void MagnificationControllerImpl::EnsureRectIsVisibleDIP(
-    const gfx::Rect& target_rect,
-    float scale,
-    bool animate) {
-  ValidateScale(&scale);
-
-  const gfx::Rect window_rect = gfx::ToEnclosingRect(GetWindowRectDIP(scale));
-  if (scale == scale_ && window_rect.Contains(target_rect))
+void MagnificationControllerImpl::StartOrStopScrollIfNecessary() {
+  // This value controls the scrolling speed.
+  const int kMoveOffset = 40;
+  if (is_on_animation_) {
+    if (scroll_direction_ == SCROLL_NONE)
+      root_window_->layer()->GetAnimator()->StopAnimating();
     return;
+  }
 
-  // TODO(yoshiki): Un-zoom and change the scale if the magnification window
-  // can't contain the whole given rect.
-
-  gfx::Rect rect = window_rect;
-  if (target_rect.width() > rect.width())
-    rect.set_x(target_rect.CenterPoint().x() - rect.x() / 2);
-  else if (target_rect.right() < rect.x())
-    rect.set_x(target_rect.right());
-  else if (rect.right() < target_rect.x())
-    rect.set_x(target_rect.x() - rect.width());
-
-  if (rect.height() > window_rect.height())
-    rect.set_y(target_rect.CenterPoint().y() - rect.y() / 2);
-  else if (target_rect.bottom() < rect.y())
-    rect.set_y(target_rect.bottom());
-  else if (rect.bottom() < target_rect.y())
-    rect.set_y(target_rect.y() - rect.height());
-
-  RedrawDIP(rect.origin(), scale, animate);
-}
-
-void MagnificationControllerImpl::EnsurePointIsVisibleWithScale(
-    const gfx::Point& point,
-    float scale,
-    bool animate) {
-  EnsureRectIsVisibleWithScale(gfx::Rect(point, gfx::Size(0, 0)),
-                               scale,
-                               animate);
+  gfx::PointF new_origin = origin_;
+  switch (scroll_direction_) {
+    case SCROLL_NONE:
+      // No need to take action.
+      return;
+    case SCROLL_LEFT:
+      new_origin.Offset(-kMoveOffset, 0);
+      break;
+    case SCROLL_RIGHT:
+      new_origin.Offset(kMoveOffset, 0);
+      break;
+    case SCROLL_UP:
+      new_origin.Offset(0, -kMoveOffset);
+      break;
+    case SCROLL_DOWN:
+      new_origin.Offset(0, kMoveOffset);
+      break;
+  }
+  RedrawDIP(new_origin, scale_, true);
 }
 
 void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
@@ -448,6 +429,8 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
   }
 
   is_on_animation_ = false;
+
+  StartOrStopScrollIfNecessary();
 }
 
 void MagnificationControllerImpl::OnWindowDestroying(
@@ -504,7 +487,7 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  ash::Shell::GetInstance()->accessibility_delegate()->
+  Shell::GetInstance()->accessibility_delegate()->
       SaveScreenMagnifierScale(scale);
   RedrawKeepingMousePosition(scale, animate);
 }
@@ -524,28 +507,17 @@ void MagnificationControllerImpl::MoveWindow(const gfx::Point& point,
   Redraw(point, scale_, animate);
 }
 
-void MagnificationControllerImpl::EnsureRectIsVisible(
-    const gfx::Rect& target_rect,
-    bool animate) {
-  if (!is_enabled_)
-    return;
-
-  EnsureRectIsVisibleWithScale(target_rect, scale_, animate);
-}
-
-void MagnificationControllerImpl::EnsurePointIsVisible(
-    const gfx::Point& point,
-    bool animate) {
-  if (!is_enabled_)
-    return;
-
-  EnsurePointIsVisibleWithScale(point, scale_, animate);
+void MagnificationControllerImpl::SetScrollDirection(
+    ScrollDirection direction) {
+  scroll_direction_ = direction;
+  StartOrStopScrollIfNecessary();
 }
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
+  Shell* shell = Shell::GetInstance();
   if (enabled) {
     float scale =
-        ash::Shell::GetInstance()->accessibility_delegate()->
+        Shell::GetInstance()->accessibility_delegate()->
         GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = kInitialMagnifiedScale;
@@ -557,8 +529,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 
     is_enabled_ = enabled;
     RedrawKeepingMousePosition(scale, true);
-    ash::Shell::GetInstance()->accessibility_delegate()->
-        SaveScreenMagnifierScale(scale);
+    shell->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   } else {
     // Do nothing, if already disabled.
     if (!is_enabled_)

@@ -172,6 +172,8 @@
         'magnifier/magnification_controller.cc',
         'magnifier/magnification_controller.h',
         'magnifier/magnifier_constants.h',
+        'magnifier/magnifier_key_scroller.cc',
+        'magnifier/magnifier_key_scroller.h',
         'magnifier/partial_magnification_controller.cc',
         'magnifier/partial_magnification_controller.h',
         'metrics/user_metrics_recorder.cc',
@@ -638,6 +640,8 @@
             ['exclude', 'display/display_change_observer_chromeos.h'],
             ['exclude', 'display/display_error_observer_chromeos.cc'],
             ['exclude', 'display/display_error_observer_chromeos.h'],
+            ['exclude', 'magnifier/magnifier_key_scroller.cc'],
+            ['exclude', 'magnifier/magnifier_key_scroller.h'],
           ],
         }],
         ['chromeos==1', {
@@ -843,6 +847,7 @@
         'keyboard_overlay/keyboard_overlay_delegate_unittest.cc',
         'keyboard_overlay/keyboard_overlay_view_unittest.cc',
         'magnifier/magnification_controller_unittest.cc',
+        'magnifier/magnifier_key_scroller_unittest.cc',
         'root_window_controller_unittest.cc',
         'screen_util_unittest.cc',
         'screensaver/screensaver_view_unittest.cc',
@@ -973,6 +978,7 @@
           'sources/': [
             ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
             ['exclude', 'display/display_error_observer_chromeos_unittest.cc'],
+	    ['exclude', 'magnifier/magnifier_key_scroller_unittest.cc'],
           ],
         }],
         ['chromeos==1', {

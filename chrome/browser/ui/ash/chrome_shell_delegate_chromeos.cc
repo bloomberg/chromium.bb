@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/magnifier/magnifier_key_scroller.h"
 #include "ash/media_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -41,15 +43,20 @@
 
 namespace {
 
-// This function is used for restoring focus after the user session is started.
-// It's needed because some windows can be opened in background while login UI
-// is still active because we currently restore browser windows before login UI
-// is deleted.
-void RestoreFocus() {
+void InitAfterSessionStart() {
+  // Restor focus after the user session is started.  It's needed
+  // because some windows can be opened in background while login UI
+  // is still active because we currently restore browser windows
+  // before login UI is deleted.
+  ash::Shell* shell = ash::Shell::GetInstance();
   ash::MruWindowTracker::WindowList mru_list =
-      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+      shell->mru_window_tracker()->BuildMruWindowList();
   if (!mru_list.empty())
     mru_list.front()->Focus();
+
+  // Enable magnifier accelerators as there may be no mouse cursor in
+  // kiosk mode.
+  ash::MagnifierKeyScroller::SetEnabled(chrome::IsRunningInForcedAppMode());
 }
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
@@ -269,7 +276,7 @@ void ChromeShellDelegate::Observe(int type,
       ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
       break;
     case chrome::NOTIFICATION_SESSION_STARTED:
-      RestoreFocus();
+      InitAfterSessionStart();
       ash::Shell::GetInstance()->ShowShelf();
       break;
     case chrome::NOTIFICATION_APP_TERMINATING:

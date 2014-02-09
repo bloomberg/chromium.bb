@@ -65,7 +65,7 @@ void OpenAsh() {
 #if defined(OS_CHROMEOS)
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
-  ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
+  shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 
   DCHECK(chromeos::MagnificationManager::Get());
@@ -73,9 +73,9 @@ void OpenAsh() {
       chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   ash::MagnifierType magnifier_type =
       chromeos::MagnificationManager::Get()->GetMagnifierType();
-  ash::Shell::GetInstance()->magnification_controller()->
+  shell->magnification_controller()->
       SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_FULL);
-  ash::Shell::GetInstance()->partial_magnification_controller()->
+  shell->partial_magnification_controller()->
       SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_PARTIAL);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(

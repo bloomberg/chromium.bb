@@ -119,6 +119,10 @@ const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
 
 #if defined(OS_CHROMEOS)
+// Enables key bindings to scroll magnified screen.
+const char kAshEnableMagnifierKeyScroller[] =
+    "ash-enable-magnifier-key-scroller";
+
 // Enables the multi user icons in the system tray.
 const char kAshEnableMultiUserTray[] = "ash-enable-multi-user-tray";
 #endif
