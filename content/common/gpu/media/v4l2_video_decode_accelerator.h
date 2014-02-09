@@ -132,10 +132,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Decode() to DecodeTask().
   struct BitstreamBufferRef;
 
-  // Auto-destruction reference for an array of PictureBuffer, for
-  // simpler EGLImage cleanup if any calls fail in AssignPictureBuffers().
-  struct PictureBufferArrayRef;
-
   // Auto-destruction reference for EGLSync (for message-passing).
   struct EGLSyncKHRRef;
 
@@ -243,7 +239,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   void StartResolutionChangeIfNeeded();
   void FinishResolutionChange();
-  void ResumeAfterResolutionChange();
 
   // Try to get output format, detected after parsing the beginning
   // of the stream. Sets |again| to true if more parsing is needed.
@@ -285,7 +280,12 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // Destroy buffers.
   void DestroyInputBuffers();
-  void DestroyOutputBuffers();
+  // In contrast to DestroyInputBuffers, which is called only from destructor,
+  // we call DestroyOutputBuffers also during playback, on resolution change.
+  // Even if anything fails along the way, we still want to go on and clean
+  // up as much as possible, so return false if this happens, so that the
+  // caller can error out on resolution change.
+  bool DestroyOutputBuffers();
   void ResolutionChangeDestroyBuffers();
 
   // Send decoded pictures to PictureReady.

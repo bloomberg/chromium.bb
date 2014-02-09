@@ -74,21 +74,6 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   const int32 input_id;
 };
 
-struct V4L2VideoDecodeAccelerator::PictureBufferArrayRef {
-  PictureBufferArrayRef(EGLDisplay egl_display);
-  ~PictureBufferArrayRef();
-
-  struct PictureBufferRef {
-    PictureBufferRef(EGLImageKHR egl_image, int32 picture_id)
-        : egl_image(egl_image), picture_id(picture_id) {}
-    EGLImageKHR egl_image;
-    int32 picture_id;
-  };
-
-  EGLDisplay const egl_display;
-  std::vector<PictureBufferRef> picture_buffers;
-};
-
 struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
   EGLSyncKHRRef(EGLDisplay egl_display, EGLSyncKHR egl_sync);
   ~EGLSyncKHRRef();
@@ -122,18 +107,6 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
   }
 }
 
-V4L2VideoDecodeAccelerator::PictureBufferArrayRef::PictureBufferArrayRef(
-    EGLDisplay egl_display)
-    : egl_display(egl_display) {}
-
-V4L2VideoDecodeAccelerator::PictureBufferArrayRef::~PictureBufferArrayRef() {
-  for (size_t i = 0; i < picture_buffers.size(); ++i) {
-    EGLImageKHR egl_image = picture_buffers[i].egl_image;
-    if (egl_image != EGL_NO_IMAGE_KHR)
-      eglDestroyImageKHR(egl_display, egl_image);
-  }
-}
-
 V4L2VideoDecodeAccelerator::EGLSyncKHRRef::EGLSyncKHRRef(
     EGLDisplay egl_display, EGLSyncKHR egl_sync)
     : egl_display(egl_display),
@@ -141,6 +114,9 @@ V4L2VideoDecodeAccelerator::EGLSyncKHRRef::EGLSyncKHRRef(
 }
 
 V4L2VideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
+  // We don't check for eglDestroySyncKHR failures, because if we get here
+  // with a valid sync object, something went wrong and we are getting
+  // destroyed anyway.
   if (egl_sync != EGL_NO_SYNC_KHR)
     eglDestroySyncKHR(egl_display, egl_sync);
 }
@@ -350,10 +326,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
 
-  // It's safe to manipulate all the buffer state here, because the decoder
-  // thread is waiting on pictures_assigned_.
-  scoped_ptr<PictureBufferArrayRef> picture_buffers_ref(
-      new PictureBufferArrayRef(egl_display_));
   gfx::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
   EGLint attrs[] = {
       EGL_WIDTH,                     0, EGL_HEIGHT,                    0,
@@ -364,50 +336,49 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   attrs[1] = frame_buffer_size_.width();
   attrs[3] = frame_buffer_size_.height();
   attrs[5] = DRM_FORMAT_NV12;
+
+  // It's safe to manipulate all the buffer state here, because the decoder
+  // thread is waiting on pictures_assigned_.
+  DCHECK(free_output_buffers_.empty());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     DCHECK(buffers[i].size() == frame_buffer_size_);
-    OutputRecord& output_record = output_buffer_map_[i];
-    attrs[7]  = output_record.fds[0];
-    attrs[9]  = 0;
-    attrs[11] = frame_buffer_size_.width();
-    attrs[13] = output_record.fds[1];
-    attrs[15] = 0;
-    attrs[17] = frame_buffer_size_.width();
-    EGLImageKHR egl_image = eglCreateImageKHR(
-        egl_display_, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attrs);
-    if (egl_image == EGL_NO_IMAGE_KHR) {
-      DLOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
-    }
 
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffers[i].texture_id());
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image);
-    picture_buffers_ref->picture_buffers.push_back(
-        PictureBufferArrayRef::PictureBufferRef(egl_image, buffers[i].id()));
-  }
-
-  DCHECK(free_output_buffers_.empty());
-  DCHECK_EQ(picture_buffers_ref->picture_buffers.size(),
-            output_buffer_map_.size());
-  for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     OutputRecord& output_record = output_buffer_map_[i];
-    PictureBufferArrayRef::PictureBufferRef& buffer_ref =
-        picture_buffers_ref->picture_buffers[i];
-    // We should be blank right now.
     DCHECK(!output_record.at_device);
     DCHECK(!output_record.at_client);
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK_EQ(output_record.cleared, false);
-    output_record.egl_image = buffer_ref.egl_image;
-    output_record.picture_id = buffer_ref.picture_id;
+
+    attrs[7]  = output_record.fds[0];
+    attrs[9]  = 0;
+    attrs[11] = frame_buffer_size_.width();
+    attrs[13] = output_record.fds[1];
+    attrs[15] = 0;
+    attrs[17] = frame_buffer_size_.width();
+
+    EGLImageKHR egl_image = eglCreateImageKHR(
+        egl_display_, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attrs);
+    if (egl_image == EGL_NO_IMAGE_KHR) {
+      DLOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
+      // Ownership of EGLImages allocated in previous iterations of this loop
+      // has been transferred to output_buffer_map_. After we error-out here
+      // the destructor will handle their cleanup.
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
+    }
+
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffers[i].texture_id());
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image);
+
+    output_record.egl_image = egl_image;
+    output_record.picture_id = buffers[i].id();
     free_output_buffers_.push(i);
     DVLOG(3) << "AssignPictureBuffers(): buffer[" << i
-             << "]: picture_id=" << buffer_ref.picture_id;
+             << "]: picture_id=" << output_record.picture_id;
   }
-  picture_buffers_ref->picture_buffers.clear();
+
   pictures_assigned_.Signal();
 }
 
@@ -1174,9 +1145,16 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
     // If we have to wait for completion, wait.  Note that
     // free_output_buffers_ is a FIFO queue, so we always wait on the
     // buffer that has been in the queue the longest.
-    eglClientWaitSyncKHR(egl_display_, output_record.egl_sync, 0,
-        EGL_FOREVER_KHR);
-    eglDestroySyncKHR(egl_display_, output_record.egl_sync);
+    if (eglClientWaitSyncKHR(egl_display_, output_record.egl_sync, 0,
+                             EGL_FOREVER_KHR) == EGL_FALSE) {
+      // This will cause tearing, but is safe otherwise.
+      DVLOG(1) << __func__ << " eglClientWaitSyncKHR failed!";
+    }
+    if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
+      DLOG(FATAL) << __func__ << " eglDestroySyncKHR failed!";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return false;
+    }
     output_record.egl_sync = EGL_NO_SYNC_KHR;
   }
   struct v4l2_buffer qbuf;
@@ -1564,13 +1542,6 @@ void V4L2VideoDecodeAccelerator::FinishResolutionChange() {
     return;
   }
 
-  ResumeAfterResolutionChange();
-}
-
-void V4L2VideoDecodeAccelerator::ResumeAfterResolutionChange() {
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
-  DVLOG(3) << "ResumeAfterResolutionChange()";
-
   decoder_state_ = kDecoding;
 
   if (resolution_change_reset_pending_) {
@@ -1832,39 +1803,43 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   free_input_buffers_.clear();
 }
 
-void V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
+bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   DVLOG(3) << "DestroyOutputBuffers()";
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
+  bool success = true;
 
-  if (output_buffer_map_.size() != 0) {
-    // TODO(sheu, posciak): Making the context current should not be required
-    // anymore. Remove it and verify (crbug.com/327869).
-    if (!make_context_current_.Run()) {
-      DLOG(ERROR) << "DestroyOutputBuffers(): "
-                  << "could not make context current";
-    } else {
-      size_t i = 0;
-      do {
-        OutputRecord& output_record = output_buffer_map_[i];
-        for (size_t j = 0; j < arraysize(output_record.fds); ++j) {
-          if (output_record.fds[j] != -1)
-            close(output_record.fds[j]);
-          if (output_record.egl_image != EGL_NO_IMAGE_KHR)
-            eglDestroyImageKHR(egl_display_, output_record.egl_image);
-          if (output_record.egl_sync != EGL_NO_SYNC_KHR)
-            eglDestroySyncKHR(egl_display_, output_record.egl_sync);
+  for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
+    OutputRecord& output_record = output_buffer_map_[i];
+    for (size_t j = 0; j < arraysize(output_record.fds); ++j) {
+      if (output_record.fds[j] != -1) {
+        if (close(output_record.fds[j])) {
+          DVPLOG(1) << __func__ << " close() on a dmabuf fd failed.";
+          success = false;
         }
-        DVLOG(1) << "DestroyOutputBuffers(): dismissing PictureBuffer id="
-                 << output_record.picture_id;
-        child_message_loop_proxy_->PostTask(
-            FROM_HERE,
-            base::Bind(&Client::DismissPictureBuffer,
-                       client_,
-                       output_record.picture_id));
-        i++;
-      } while (i < output_buffer_map_.size());
+      }
     }
+    if (output_record.egl_image != EGL_NO_IMAGE_KHR) {
+      if (eglDestroyImageKHR(egl_display_, output_record.egl_image) !=
+          EGL_TRUE) {
+        DVLOG(1) << __func__ << " eglDestroyImageKHR failed.";
+        success = false;
+      }
+    }
+
+    if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
+      if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
+        DVLOG(1) << __func__ << " eglDestroySyncKHR failed.";
+        success = false;
+      }
+    }
+
+    DVLOG(1) << "DestroyOutputBuffers(): dismissing PictureBuffer id="
+             << output_record.picture_id;
+    child_message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &Client::DismissPictureBuffer, client_, output_record.picture_id));
   }
 
   struct v4l2_requestbuffers reqbufs;
@@ -1872,19 +1847,27 @@ void V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0)
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
     DPLOG(ERROR) << "DestroyOutputBuffers() ioctl() failed: VIDIOC_REQBUFS";
+    success = false;
+  }
 
   output_buffer_map_.clear();
   while (!free_output_buffers_.empty())
     free_output_buffers_.pop();
+
+  return success;
 }
 
 void V4L2VideoDecodeAccelerator::ResolutionChangeDestroyBuffers() {
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DVLOG(3) << "ResolutionChangeDestroyBuffers()";
 
-  DestroyOutputBuffers();
+  if (!DestroyOutputBuffers()) {
+    DLOG(FATAL) << __func__ << " Failed destroying output buffers.";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
 
   // Finish resolution change on decoder thread.
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(

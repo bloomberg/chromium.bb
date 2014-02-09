@@ -510,7 +510,6 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_queued_fragments_(0),
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
-      profile_(profile),
       texture_target_(0),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
@@ -521,6 +520,12 @@ GLRenderingVDAClient::GLRenderingVDAClient(
   // |num_in_flight_decodes_| is unsupported if |decode_calls_per_second_| > 0.
   if (decode_calls_per_second_ > 0)
     CHECK_EQ(1, num_in_flight_decodes_);
+
+  // Default to H264 baseline if no profile provided.
+  profile_ = (profile != media::VIDEO_CODEC_PROFILE_UNKNOWN
+                  ? profile
+                  : media::H264PROFILE_BASELINE);
+
   if (rendering_fps > 0)
     throttling_client_.reset(new ThrottlingVDAClient(
         this,
@@ -580,9 +585,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   if (decoder_deleted())
     return;
 
-  // Configure the decoder.
-  profile_ = (profile_ != media::VIDEO_CODEC_PROFILE_UNKNOWN ?
-              profile_ : media::H264PROFILE_BASELINE);
   CHECK(decoder_->Initialize(profile_));
 }
 
@@ -866,8 +868,8 @@ static bool FragmentHasConfigInfo(const uint8* data, size_t size,
              profile <= media::VP8PROFILE_MAX) {
     return (size > 0 && !(data[0] & 0x01));
   }
-
-  CHECK(false) << "Invalid profile";  // Shouldn't happen at this point.
+  // Shouldn't happen at this point.
+  LOG(FATAL) << "Invalid profile: " << profile;
   return false;
 }
 
