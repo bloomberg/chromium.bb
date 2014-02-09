@@ -136,29 +136,17 @@ IN_PROC_BROWSER_TEST_F(PluginTest, UnloadNoCrash) {
   NavigateAway();
 }
 
-// Disable PluginTest.SelfDeletePluginGetUrl,
-// PluginTest.SelfDeletePluginInvoke, PluginTest.SelfDeletePluginInvokeAlert
-// on OSX. See http://crbug.com/340806.
-#if defined(OS_MACOSX)
-#define MAYBE_SelfDeletePluginGetUrl DISABLED_SelfDeletePluginGetUrl
-#define MAYBE_SelfDeletePluginInvoke DISABLED_SelfDeletePluginInvoke
-#define MAYBE_SelfDeletePluginInvokeAlert DISABLED_SelfDeletePluginInvokeAlert
-#else
-#define MAYBE_SelfDeletePluginGetUrl MAYBE(SelfDeletePluginGetUrl)
-#define MAYBE_SelfDeletePluginInvoke MAYBE(SelfDeletePluginInvoke)
-#define MAYBE_SelfDeletePluginInvokeAlert MAYBE(SelfDeletePluginInvokeAlert)
-#endif
 // Tests if a plugin executing a self deleting script using NPN_GetURL
 // works without crashing or hanging
 // Flaky: http://crbug.com/59327
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_SelfDeletePluginGetUrl) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginGetUrl)) {
   LoadAndWait(GetURL("self_delete_plugin_geturl.html"));
 }
 
 // Tests if a plugin executing a self deleting script using Invoke
 // works without crashing or hanging
 // Flaky. See http://crbug.com/30702
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_SelfDeletePluginInvoke) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvoke)) {
   LoadAndWait(GetURL("self_delete_plugin_invoke.html"));
 }
 
@@ -210,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_GetURLRequest404Response) {
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
 // Disabled, flakily exceeds timeout, http://crbug.com/46257.
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_SelfDeletePluginInvokeAlert) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvokeAlert)) {
   // Navigate asynchronously because if we waitd until it completes, there's a
   // race condition where the alert can come up before we start watching for it.
   shell()->LoadURL(GetURL("self_delete_plugin_invoke_alert.html"));
