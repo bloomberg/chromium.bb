@@ -566,6 +566,35 @@ bool ShellWindow::IsAlwaysOnTop() const {
   return cached_always_on_top_;
 }
 
+void ShellWindow::GetSerializedState(base::DictionaryValue* properties) const {
+  DCHECK(properties);
+
+  properties->SetBoolean("fullscreen",
+      native_app_window_->IsFullscreenOrPending());
+  properties->SetBoolean("minimized", native_app_window_->IsMinimized());
+  properties->SetBoolean("maximized", native_app_window_->IsMaximized());
+  properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
+  scoped_ptr<base::DictionaryValue> boundsValue(new base::DictionaryValue());
+  gfx::Rect bounds = GetClientBounds();
+  boundsValue->SetInteger("left", bounds.x());
+  boundsValue->SetInteger("top", bounds.y());
+  boundsValue->SetInteger("width", bounds.width());
+  boundsValue->SetInteger("height", bounds.height());
+  properties->Set("bounds", boundsValue.release());
+
+  const SizeConstraints& constraints = size_constraints();
+  gfx::Size min_size = constraints.GetMinimumSize();
+  gfx::Size max_size = constraints.GetMaximumSize();
+  if (min_size.width() != SizeConstraints::kUnboundedSize)
+    properties->SetInteger("minWidth", min_size.width());
+  if (min_size.height() != SizeConstraints::kUnboundedSize)
+    properties->SetInteger("minHeight", min_size.height());
+  if (max_size.width() != SizeConstraints::kUnboundedSize)
+    properties->SetInteger("maxWidth", max_size.width());
+  if (max_size.height() != SizeConstraints::kUnboundedSize)
+    properties->SetInteger("maxHeight", max_size.height());
+}
+
 //------------------------------------------------------------------------------
 // Private methods
 

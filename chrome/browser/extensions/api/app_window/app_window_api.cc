@@ -52,8 +52,6 @@ const char kHtmlFrameOption[] = "experimental-html";
 
 namespace {
 
-const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
-
 // Opens an inspector window and delays the response to the
 // AppWindowCreateFunction until the DevToolsWindow has finished loading, and is
 // ready to stop on breakpoints in the callback.
@@ -88,34 +86,6 @@ class DevToolsRestorer : public content::NotificationObserver {
   scoped_refptr<AppWindowCreateFunction> delayed_create_function_;
   content::NotificationRegistrar registrar_;
 };
-
-void SetCreateResultFromShellWindow(ShellWindow* window,
-                                    base::DictionaryValue* result) {
-  result->SetBoolean("fullscreen", window->GetBaseWindow()->IsFullscreen());
-  result->SetBoolean("minimized", window->GetBaseWindow()->IsMinimized());
-  result->SetBoolean("maximized", window->GetBaseWindow()->IsMaximized());
-  result->SetBoolean("alwaysOnTop", window->IsAlwaysOnTop());
-  base::DictionaryValue* boundsValue = new base::DictionaryValue();
-  gfx::Rect bounds = window->GetClientBounds();
-  boundsValue->SetInteger("left", bounds.x());
-  boundsValue->SetInteger("top", bounds.y());
-  boundsValue->SetInteger("width", bounds.width());
-  boundsValue->SetInteger("height", bounds.height());
-  result->Set("bounds", boundsValue);
-
-  const ShellWindow::SizeConstraints& size_constraints =
-      window->size_constraints();
-  gfx::Size min_size = size_constraints.GetMinimumSize();
-  gfx::Size max_size = size_constraints.GetMaximumSize();
-  if (min_size.width() != kUnboundedSize)
-    result->SetInteger("minWidth", min_size.width());
-  if (min_size.height() != kUnboundedSize)
-    result->SetInteger("minHeight", min_size.height());
-  if (max_size.width() != kUnboundedSize)
-    result->SetInteger("maxWidth", max_size.width());
-  if (max_size.height() != kUnboundedSize)
-    result->SetInteger("maxHeight", max_size.height());
-}
 
 }  // namespace
 
@@ -185,7 +155,7 @@ bool AppWindowCreateFunction::RunImpl() {
 
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", new base::FundamentalValue(view_id));
-          SetCreateResultFromShellWindow(window, result);
+          window->GetSerializedState(result);
           result->SetBoolean("existingWindow", true);
           result->SetBoolean("injectTitlebar", false);
           SetResult(result);
@@ -320,7 +290,7 @@ bool AppWindowCreateFunction::RunImpl() {
   result->Set("injectTitlebar",
       new base::FundamentalValue(inject_html_titlebar));
   result->Set("id", new base::StringValue(shell_window->window_key()));
-  SetCreateResultFromShellWindow(shell_window, result);
+  shell_window->GetSerializedState(result);
   SetResult(result);
 
   if (apps::ShellWindowRegistry::Get(GetProfile())

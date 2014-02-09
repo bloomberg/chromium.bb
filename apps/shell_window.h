@@ -24,6 +24,10 @@ class GURL;
 class Profile;
 class SkRegion;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace content {
 class WebContents;
 }
@@ -343,6 +347,10 @@ class ShellWindow : public content::NotificationObserver,
   // API. Note that the actual value of this property in the native app window
   // may be false if the bit is silently switched off for security reasons.
   bool IsAlwaysOnTop() const;
+
+  // Retrieve the current state of the app window as a dictionary, to pass to
+  // the renderer.
+  void GetSerializedState(base::DictionaryValue* properties) const;
 
  protected:
   virtual ~ShellWindow();

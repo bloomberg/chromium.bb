@@ -19,12 +19,6 @@
 
 namespace app_window = extensions::api::app_window;
 
-namespace {
-
-const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
-
-}
-
 namespace apps {
 
 AppWindowContents::AppWindowContents(ShellWindow* host)
@@ -86,32 +80,7 @@ void AppWindowContents::NativeWindowChanged(
   base::ListValue args;
   base::DictionaryValue* dictionary = new base::DictionaryValue();
   args.Append(dictionary);
-
-  gfx::Rect bounds = host_->GetClientBounds();
-  app_window::Bounds update;
-  update.left.reset(new int(bounds.x()));
-  update.top.reset(new int(bounds.y()));
-  update.width.reset(new int(bounds.width()));
-  update.height.reset(new int(bounds.height()));
-  dictionary->Set("bounds", update.ToValue().release());
-  dictionary->SetBoolean("fullscreen",
-                         native_app_window->IsFullscreenOrPending());
-  dictionary->SetBoolean("minimized", native_app_window->IsMinimized());
-  dictionary->SetBoolean("maximized", native_app_window->IsMaximized());
-  dictionary->SetBoolean("alwaysOnTop", host_->IsAlwaysOnTop());
-
-  const ShellWindow::SizeConstraints& size_constraints =
-      host_->size_constraints();
-  gfx::Size min_size = size_constraints.GetMinimumSize();
-  gfx::Size max_size = size_constraints.GetMaximumSize();
-  if (min_size.width() != kUnboundedSize)
-    dictionary->SetInteger("minWidth", min_size.width());
-  if (min_size.height() != kUnboundedSize)
-    dictionary->SetInteger("minHeight", min_size.height());
-  if (max_size.width() != kUnboundedSize)
-    dictionary->SetInteger("maxWidth", max_size.width());
-  if (max_size.height() != kUnboundedSize)
-    dictionary->SetInteger("maxHeight", max_size.height());
+  host_->GetSerializedState(dictionary);
 
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
