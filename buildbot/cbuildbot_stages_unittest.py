@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -185,10 +184,11 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     parser = cbuildbot._CreateParser()
     if not cmd_args:
       # Fill in default command args.
-      cmd_args = ['-r', self.build_root, '--buildbot', '--noprebuilts',
-                  '--buildnumber', '1234',
-                  '--branch', self.TARGET_MANIFEST_BRANCH,
-                 ]
+      cmd_args = [
+          '-r', self.build_root, '--buildbot', '--noprebuilts',
+          '--buildnumber', '1234',
+          '--branch', self.TARGET_MANIFEST_BRANCH,
+      ]
     if extra_cmd_args:
       cmd_args += extra_cmd_args
     (options, args) = parser.parse_args(cmd_args)
@@ -563,7 +563,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
                                           set()))
     self.assertFalse(stage._IsFailureFatal(set(), set(['sanity']), set()))
     self.assertTrue(stage._IsFailureFatal(set(), set(['sanity']),
-                                           set(['test1'])))
+                                          set(['test1'])))
     self.assertFalse(stage._IsFailureFatal(set(), set(),
                                            set(['sanity'])))
 
@@ -651,8 +651,7 @@ class SetupBoardTest(RunCommandAbstractStageTest):
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
     self._Run(dir_exists)
-    cmd = ['./setup_board', '--board=%s' % self._current_board,
-           '--nousepkg']
+    cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
     self.assertCommandContains(cmd, expected=not dir_exists)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd, expected=False)
@@ -1031,9 +1030,9 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1', 'chan1_uri2'],
-            'chan2': ['chan2_uri1'],
-          })
+          'chan1': ['chan1_uri1', 'chan1_uri2'],
+          'chan2': ['chan2_uri1'],
+      })
 
       stage.PerformStage()
       for result in results:
@@ -1060,10 +1059,10 @@ class SignerResultsStageTest(AbstractStageTest):
     # By making a single chan1 url take longer to appear, we see if
     # chan2 finishes before chan1 as we would expect.
     self.fails_remaining = {
-          'chan1_uri1.json': 2,
-          'chan1_uri2.json': 1,
-          'chan2_uri1.json': 1,
-        }
+        'chan1_uri1.json': 2,
+        'chan1_uri2.json': 1,
+        'chan2_uri1.json': 1,
+    }
 
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
@@ -1071,9 +1070,9 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1', 'chan1_uri2'],
-            'chan2': ['chan2_uri1'],
-          })
+          'chan1': ['chan1_uri1', 'chan1_uri2'],
+          'chan2': ['chan2_uri1'],
+      })
 
       stage.PerformStage()
 
@@ -1091,8 +1090,8 @@ class SignerResultsStageTest(AbstractStageTest):
           """
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1'],
-          })
+          'chan1': ['chan1_uri1'],
+      })
 
       self.assertRaises(stages.SignerFailure, stage.PerformStage)
 
@@ -1121,8 +1120,8 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1'],
-          })
+          'chan1': ['chan1_uri1'],
+      })
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testPerformStageMissingResults(self):
@@ -1136,8 +1135,8 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1'],
-          })
+          'chan1': ['chan1_uri1'],
+      })
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testPerformStageMalformedJson(self):
@@ -1148,8 +1147,8 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1'],
-          })
+          'chan1': ['chan1_uri1'],
+      })
       self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
 
   def testPerformStageTimeout(self):
@@ -1159,9 +1158,10 @@ class SignerResultsStageTest(AbstractStageTest):
 
       stage = self.ConstructStage()
       stage.archive_stage._push_image_status_queue.put({
-            'chan1': ['chan1_uri1'],
-          })
+          'chan1': ['chan1_uri1'],
+      })
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+
 
 class AUTestStageTest(AbstractStageTest,
                       cros_build_lib_unittest.RunCommandTestCase):
@@ -1512,7 +1512,6 @@ class ArchiveStageTest(AbstractStageTest):
     # pylint: disable=E1101
     self.assertEquals(commands.PushImages.call_count, 0)
 
-
   def ConstructStageForArchiveStep(self):
     """Stage construction for archive steps."""
     stage = self.ConstructStage()
@@ -1712,7 +1711,6 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
     self.run.config['binhost_bucket'] = 'gs://testbucket'
     self.run.config['binhost_key'] = 'dontcare'
     self.run.config['binhost_base_url'] = 'https://dontcare/here'
-
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
@@ -1939,8 +1937,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
         ('Pass2', results_lib.Results.SUCCESS),
-        ('Fail', FailStage.FAIL_EXCEPTION)]
-
+        ('Fail', FailStage.FAIL_EXCEPTION),
+    ]
     self._verifyRunResults(expectedResults)
 
   def testSuccessTest(self):
@@ -2147,8 +2145,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
         ('Pass2', results_lib.Results.SUCCESS),
-        ('Fail', FailStage.FAIL_EXCEPTION)]
-
+        ('Fail', FailStage.FAIL_EXCEPTION),
+    ]
     self._verifyRunResults(expectedResults)
 
   def testFailedButForgiven(self):
