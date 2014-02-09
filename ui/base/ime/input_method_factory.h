@@ -27,20 +27,6 @@ UI_BASE_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
 // Makes CreateInputMethod return a MockInputMethod.
 UI_BASE_EXPORT void SetUpInputMethodFactoryForTesting();
 
-#if defined(OS_WIN)
-// Returns a shared input method object for the platform. Caller must not
-// delete the object. Currently supported only on Windows. This method is
-// for non-Aura environment, where only one input method object is created for
-// the browser process.
-UI_BASE_EXPORT InputMethod* GetSharedInputMethod();
-
-namespace internal {
-// Destroys the shared input method object returned by GetSharedInputMethod().
-// This function must be called only from input_method_initializer.cc.
-void DestroySharedInputMethod();
-}  // namespace internal
-#endif
-
 }  // namespace ui;
 
 #endif  // UI_BASE_IME_INPUT_METHOD_FACTORY_H_

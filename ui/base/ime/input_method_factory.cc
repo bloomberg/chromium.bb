@@ -24,10 +24,6 @@ bool g_input_method_set_for_testing = false;
 
 bool g_create_input_method_called = false;
 
-#if defined(OS_WIN)
-ui::InputMethod* g_shared_input_method = NULL;
-#endif
-
 }  // namespace
 
 namespace ui {
@@ -65,22 +61,5 @@ void SetUpInputMethodFactoryForTesting() {
 
   g_input_method_set_for_testing = true;
 }
-
-#if defined(OS_WIN)
-InputMethod* GetSharedInputMethod() {
-  if (!g_shared_input_method)
-    g_shared_input_method = CreateInputMethod(NULL, NULL).release();
-  return g_shared_input_method;
-}
-
-namespace internal {
-
-void DestroySharedInputMethod() {
-  delete g_shared_input_method;
-  g_shared_input_method = NULL;
-}
-
-}  // namespace internal
-#endif
 
 }  // namespace ui

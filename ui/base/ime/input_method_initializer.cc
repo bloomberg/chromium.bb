@@ -9,9 +9,6 @@
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
 #include "ui/base/ime/input_method_auralinux.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
-#elif defined(OS_WIN)
-#include "base/win/metro.h"
-#include "ui/base/ime/input_method_factory.h"
 #endif
 
 namespace {
@@ -36,8 +33,6 @@ void InitializeInputMethod() {
 void ShutdownInputMethod() {
 #if defined(OS_CHROMEOS)
   chromeos::IMEBridge::Shutdown();
-#elif defined(OS_WIN)
-  internal::DestroySharedInputMethod();
 #endif
 }
 
@@ -68,8 +63,6 @@ void ShutdownInputMethodForTesting() {
   LinuxInputMethodContextFactory::SetInstance(NULL);
   delete g_linux_input_method_context_factory;
   g_linux_input_method_context_factory = NULL;
-#elif defined(OS_WIN)
-  internal::DestroySharedInputMethod();
 #endif
 }
 
