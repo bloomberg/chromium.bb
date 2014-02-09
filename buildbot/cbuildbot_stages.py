@@ -4068,6 +4068,13 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       return dict((b, download_url + '/index.html') for b in boards)
 
   def PerformStage(self):
+    # Make sure local archive directory is prepared, if it was not already.
+    # TODO(mtennant): It is not clear how this happens, but a CQ master run
+    # that never sees an open tree somehow reaches Report stage without a
+    # set up archive directory.
+    if not os.path.exists(self.archive_path):
+      self.archive.SetupArchivePath()
+
     archive_urls = {}
 
     if results_lib.Results.BuildSucceededSoFar():

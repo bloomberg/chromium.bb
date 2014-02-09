@@ -179,6 +179,9 @@ class Builder(object):
     else:
       self._run.attrs.release_tag = None
 
+    cros_build_lib.Debug('Saved release_tag value for run: %r',
+                         self._run.attrs.release_tag)
+
   def _RunStage(self, stage, *args, **kwargs):
     """Wrapper to run a stage.
 
@@ -199,9 +202,6 @@ class Builder(object):
       sync_instance.Run()
     finally:
       self._SetReleaseTag()
-
-    # Set up local archive directory for this run, now that we have a version.
-    self._run.GetArchive().SetupArchivePath()
 
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run.
@@ -512,6 +512,9 @@ class SimpleBuilder(Builder):
 
     tasks = []
     for builder_run in builder_runs:
+      # Prepare a local archive directory for each "run".
+      builder_run.GetArchive().SetupArchivePath()
+
       for board in builder_run.config.boards:
         archive_stage = self._GetStageInstance(
             stages.ArchiveStage, board, builder_run=builder_run,
