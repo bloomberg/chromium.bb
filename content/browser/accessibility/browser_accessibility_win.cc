@@ -3357,7 +3357,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // WebKit marks everything as readonly unless it's editable text, so if it's
   // not readonly, mark it as editable now. The final computation of the
   // READONLY state for MSAA is below, after the switch.
-  if (!HasState(ui::AX_STATE_READONLY))
+  if (!HasState(ui::AX_STATE_READ_ONLY))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   base::string16 invalid;
@@ -3526,7 +3526,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_LINKED;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case ui::AX_ROLE_LABEL:
+    case ui::AX_ROLE_LABEL_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
@@ -3778,7 +3778,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ != ROLE_SYSTEM_DOCUMENT) {
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   }
-  if (!HasState(ui::AX_STATE_READONLY))
+  if (!HasState(ui::AX_STATE_READ_ONLY))
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   if (GetBoolAttribute(ui::AX_ATTR_ARIA_READONLY))
     ia_state_ |= STATE_SYSTEM_READONLY;

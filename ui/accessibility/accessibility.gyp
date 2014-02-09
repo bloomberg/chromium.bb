@@ -11,17 +11,20 @@
     {
       'target_name': 'accessibility',
       'type': '<(component)',
+      'export_dependent_settings': [
+        'ax_gen',
+      ],
       'dependencies': [
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        'ax_gen',
       ],
       'defines': [
         'ACCESSIBILITY_IMPLEMENTATION',
       ],
       'sources': [
         # All .cc, .h under accessibility, except unittests
-        'ax_enums.h',
         'ax_node.cc',
         'ax_node_data.cc',
         'ax_node_data.h',
@@ -47,12 +50,42 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'accessibility',
+        'ax_gen',
       ],
       'sources': [
         'ax_generated_tree_unittest.cc',
         'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
       ]
+    },
+    {
+      'target_name': 'ax_gen',
+      'type': 'static_library',
+      # This target exports a hard dependency because dependent targets may
+      # include ax_enums.h, a generated header.
+      'hard_dependency': 1,
+      'dependencies': [
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations'
+        ],
+      'sources': [
+        '<@(schema_files)',
+      ],
+      'msvs_disabled_warnings': [ 4267 ],
+      'includes': [
+        '../../build/json_schema_bundle_compile.gypi',
+        '../../build/json_schema_compile.gypi',
+      ],
+      'variables': {
+        'chromium_code': 1,
+        'schema_files': [
+          'ax_enums.idl',
+        ],
+        'non_compiled_schema_files': [],
+        'cc_dir': 'ui/accessibility',
+        # TODO(dtseng): Change this once all files under ui/accessibility
+        # namespaced under ui::ax.
+        'root_namespace': '',
+      },
     },
   ],
 }

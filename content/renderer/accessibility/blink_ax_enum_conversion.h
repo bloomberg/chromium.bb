@@ -22,6 +22,11 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
 // in AXNodeData instead.)
 uint32 AXStateFromBlink(const blink::WebAXObject& o);
 
+// Convert a Blink WebAXTextDirection to an AXTextDirection defined in
+// ui/accessibility.
+ui::AXTextDirection AXTextDirectionFromBlink(
+    blink::WebAXTextDirection text_direction);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_ENUM_CONVERSION_H_

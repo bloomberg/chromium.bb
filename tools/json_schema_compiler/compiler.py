@@ -71,13 +71,6 @@ def GenerateSchema(generator,
     path, filename = os.path.split(schema_filename)
     short_filename, extension = os.path.splitext(filename)
 
-    # Filenames are checked against the unix_names of the namespaces they
-    # generate because the gyp uses the names of the JSON files to generate
-    # the names of the .cc and .h files. We want these to be using unix_names.
-    if namespace.unix_name != short_filename:
-      sys.exit("Filename %s is illegal. Name files using unix_hacker style." %
-               schema_filename)
-
   # Construct the type generator with all the namespaces in this model.
   type_generator = CppTypeGenerator(api_model,
                                     schema_loader,
@@ -99,8 +92,8 @@ def GenerateSchema(generator,
   elif generator == 'cpp':
     cpp_generator = CppGenerator(type_generator, root_namespace)
     generators = [
-      ('%s.h' % namespace.unix_name, cpp_generator.h_generator),
-      ('%s.cc' % namespace.unix_name, cpp_generator.cc_generator)
+      ('%s.h' % short_filename, cpp_generator.h_generator),
+      ('%s.cc' % short_filename, cpp_generator.cc_generator)
     ]
   elif generator == 'dart':
     generators = [

@@ -423,19 +423,19 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   ui::AXNodeData text1;
   text1.id = 11;
   text1.role = ui::AX_ROLE_STATIC_TEXT;
-  text1.state = 1 << ui::AX_STATE_READONLY;
+  text1.state = 1 << ui::AX_STATE_READ_ONLY;
   text1.SetName(text1_name);
 
   ui::AXNodeData text2;
   text2.id = 12;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
-  text2.state = 1 << ui::AX_STATE_READONLY;
+  text2.state = 1 << ui::AX_STATE_READ_ONLY;
   text2.SetName(text2_name);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 1 << ui::AX_STATE_READONLY;
+  root.state = 1 << ui::AX_STATE_READ_ONLY;
   root.child_ids.push_back(11);
   root.child_ids.push_back(12);
 
@@ -491,13 +491,13 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ui::AXNodeData text1;
   text1.id = 11;
   text1.role = ui::AX_ROLE_STATIC_TEXT;
-  text1.state = 1 << ui::AX_STATE_READONLY;
+  text1.state = 1 << ui::AX_STATE_READ_ONLY;
   text1.SetName(text1_name);
 
   ui::AXNodeData text2;
   text2.id = 12;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
-  text2.state = 1 << ui::AX_STATE_READONLY;
+  text2.state = 1 << ui::AX_STATE_READ_ONLY;
   text2.SetName(text2_name);
 
   ui::AXNodeData button1, button1_text;
@@ -506,8 +506,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   button1_text.SetName(button1_text_name);
   button1.role = ui::AX_ROLE_BUTTON;
   button1_text.role = ui::AX_ROLE_STATIC_TEXT;
-  button1.state = 1 << ui::AX_STATE_READONLY;
-  button1_text.state = 1 << ui::AX_STATE_READONLY;
+  button1.state = 1 << ui::AX_STATE_READ_ONLY;
+  button1_text.state = 1 << ui::AX_STATE_READ_ONLY;
   button1.child_ids.push_back(15);
 
   ui::AXNodeData link1, link1_text;
@@ -516,14 +516,14 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   link1_text.SetName(link1_text_name);
   link1.role = ui::AX_ROLE_LINK;
   link1_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link1.state = 1 << ui::AX_STATE_READONLY;
-  link1_text.state = 1 << ui::AX_STATE_READONLY;
+  link1.state = 1 << ui::AX_STATE_READ_ONLY;
+  link1_text.state = 1 << ui::AX_STATE_READ_ONLY;
   link1.child_ids.push_back(16);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 1 << ui::AX_STATE_READONLY;
+  root.state = 1 << ui::AX_STATE_READ_ONLY;
   root.child_ids.push_back(11);
   root.child_ids.push_back(13);
   root.child_ids.push_back(12);
@@ -604,7 +604,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // set automatically.
   CountedBrowserAccessibility::reset();
   const int32 busy_state = 1 << ui::AX_STATE_BUSY;
-  const int32 readonly_state = 1 << ui::AX_STATE_READONLY;
+  const int32 readonly_state = 1 << ui::AX_STATE_READ_ONLY;
   const int32 enabled_state = 1 << blink::WebAXStateEnabled;
   scoped_ptr<content::LegacyRenderWidgetHostHWND> accessible_hwnd(
       content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()));

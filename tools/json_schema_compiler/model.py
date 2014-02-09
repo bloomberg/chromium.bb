@@ -107,6 +107,7 @@ class Namespace(object):
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
+    self.short_filename = os.path.basename(source_file).split('.')[0]
     self.parent = None
     self.platforms = _GetPlatforms(json)
     toplevel_origin = Origin(from_client=True, from_json=True)
@@ -189,6 +190,7 @@ class Type(object):
     elif 'enum' in json and json_type == 'string':
       self.property_type = PropertyType.ENUM
       self.enum_values = [EnumValue(value) for value in json['enum']]
+      self.cpp_omit_enum_type = 'cpp_omit_enum_type' in json
     elif json_type == 'any':
       self.property_type = PropertyType.ANY
     elif json_type == 'binary':

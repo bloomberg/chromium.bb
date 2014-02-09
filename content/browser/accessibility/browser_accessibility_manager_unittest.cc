@@ -640,7 +640,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 29, 9);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionLR);
+                               ui::AX_TEXT_DIRECTION_LR);
   std::vector<int32> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
@@ -659,7 +659,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(100, 109, 28, 9);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionLR);
+                               ui::AX_TEXT_DIRECTION_LR);
   std::vector<int32> character_offsets2;
   character_offsets2.push_back(5);
   character_offsets2.push_back(10);
@@ -736,7 +736,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 30, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionLR);
+                               ui::AX_TEXT_DIRECTION_LR);
   std::vector<int32> character_offsets1;
   character_offsets1.push_back(10);  // 0
   character_offsets1.push_back(20);  // 1
@@ -751,7 +751,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(130, 100, 30, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionRL);
+                               ui::AX_TEXT_DIRECTION_RL);
   std::vector<int32> character_offsets2;
   character_offsets2.push_back(10);
   character_offsets2.push_back(20);
@@ -837,7 +837,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 40, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionLR);
+                               ui::AX_TEXT_DIRECTION_LR);
   std::vector<int32> character_offsets1;
   character_offsets1.push_back(20);  // 0
   character_offsets1.push_back(40);  // 1
@@ -850,7 +850,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(160, 100, 40, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                               blink::WebAXTextDirectionLR);
+                               ui::AX_TEXT_DIRECTION_LR);
   std::vector<int32> character_offsets2;
   character_offsets2.push_back(20);  // 0
   character_offsets2.push_back(40);  // 1

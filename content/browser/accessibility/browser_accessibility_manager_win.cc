@@ -59,7 +59,7 @@ ui::AXNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state =
       (1 << blink::WebAXStateEnabled) |
-      (1 << ui::AX_STATE_READONLY) |
+      (1 << ui::AX_STATE_READ_ONLY) |
       (1 << ui::AX_STATE_BUSY);
   return empty_document;
 }

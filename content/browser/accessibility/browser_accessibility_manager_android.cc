@@ -77,7 +77,7 @@ ui::AXNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  empty_document.state = 1 << ui::AX_STATE_READONLY;
+  empty_document.state = 1 << ui::AX_STATE_READ_ONLY;
   return empty_document;
 }
 

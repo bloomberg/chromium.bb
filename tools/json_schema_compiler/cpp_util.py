@@ -110,6 +110,10 @@ def OpenNamespace(namespace):
   """Get opening root namespace declarations.
   """
   c = Code()
+  # In lieu of GYP supporting None for the namespace variable the '' namespace
+  # implies there is no root namespace.
+  if namespace == '':
+    return c
   for component in namespace.split('::'):
     c.Append('namespace %s {' % component)
   return c
@@ -119,6 +123,10 @@ def CloseNamespace(namespace):
   """Get closing root namespace declarations.
   """
   c = Code()
+  # In lieu of GYP supporting None for the namespace variable the '' namespace
+  # implies there is no root namespace.
+  if namespace == '':
+    return c
   for component in reversed(namespace.split('::')):
     c.Append('}  // namespace %s' % component)
   return c

@@ -12,6 +12,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/events/events.gyp:events_base',
         '../ui/events/events.gyp:events_test_support',
@@ -887,6 +888,7 @@
             'content_shell_lib',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
           ],
           'sources': [
             'test/accessibility_browser_test_utils.cc',
@@ -936,6 +938,7 @@
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:ui',
             '../webkit/child/webkit_child.gyp:webkit_child',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
           ],
           'include_dirs': [
             '..',

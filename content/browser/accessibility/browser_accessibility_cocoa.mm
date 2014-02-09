@@ -95,7 +95,7 @@ RoleMap BuildRoleMap() {
     { ui::AX_ROLE_IMAGE_MAP, NSAccessibilityGroupRole },
     { ui::AX_ROLE_IMAGE_MAP_LINK, NSAccessibilityLinkRole },
     { ui::AX_ROLE_INCREMENTOR, NSAccessibilityIncrementorRole },
-    { ui::AX_ROLE_LABEL, NSAccessibilityGroupRole },
+    { ui::AX_ROLE_LABEL_TEXT, NSAccessibilityGroupRole },
     { ui::AX_ROLE_LINK, NSAccessibilityLinkRole },
     { ui::AX_ROLE_LIST, NSAccessibilityListRole },
     { ui::AX_ROLE_LIST_BOX, NSAccessibilityListRole },

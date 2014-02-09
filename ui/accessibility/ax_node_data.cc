@@ -76,121 +76,7 @@ std::string AXNodeData::ToString() const {
   std::string result;
 
   result += "id=" + IntToString(id);
-
-  switch (role) {
-    case ui::AX_ROLE_ALERT: result += " ALERT"; break;
-    case ui::AX_ROLE_ALERT_DIALOG: result += " ALERT_DIALOG"; break;
-    case ui::AX_ROLE_ANNOTATION: result += " ANNOTATION"; break;
-    case ui::AX_ROLE_APPLICATION: result += " APPLICATION"; break;
-    case ui::AX_ROLE_ARTICLE: result += " ARTICLE"; break;
-    case ui::AX_ROLE_BANNER: result += " BANNER"; break;
-    case ui::AX_ROLE_BROWSER: result += " BROWSER"; break;
-    case ui::AX_ROLE_BUSY_INDICATOR: result += " BUSY_INDICATOR"; break;
-    case ui::AX_ROLE_BUTTON: result += " BUTTON"; break;
-    case ui::AX_ROLE_CANVAS: result += " CANVAS"; break;
-    case ui::AX_ROLE_CELL: result += " CELL"; break;
-    case ui::AX_ROLE_CHECK_BOX: result += " CHECKBOX"; break;
-    case ui::AX_ROLE_COLOR_WELL: result += " COLOR_WELL"; break;
-    case ui::AX_ROLE_COLUMN: result += " COLUMN"; break;
-    case ui::AX_ROLE_COLUMN_HEADER: result += " COLUMN_HEADER"; break;
-    case ui::AX_ROLE_COMBO_BOX: result += " COMBO_BOX"; break;
-    case ui::AX_ROLE_COMPLEMENTARY: result += " COMPLEMENTARY"; break;
-    case ui::AX_ROLE_CONTENT_INFO: result += " CONTENTINFO"; break;
-    case ui::AX_ROLE_DEFINITION: result += " DEFINITION"; break;
-    case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL: result += " DD"; break;
-    case ui::AX_ROLE_DESCRIPTION_LIST_TERM: result += " DT"; break;
-    case ui::AX_ROLE_DIALOG: result += " DIALOG"; break;
-    case ui::AX_ROLE_DIRECTORY: result += " DIRECTORY"; break;
-    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
-        result += " DISCLOSURE_TRIANGLE"; break;
-    case ui::AX_ROLE_DIV: result += " DIV"; break;
-    case ui::AX_ROLE_DOCUMENT: result += " DOCUMENT"; break;
-    case ui::AX_ROLE_DRAWER: result += " DRAWER"; break;
-    case ui::AX_ROLE_EDITABLE_TEXT: result += " EDITABLE_TEXT"; break;
-    case ui::AX_ROLE_FOOTER: result += " FOOTER"; break;
-    case ui::AX_ROLE_FORM: result += " FORM"; break;
-    case ui::AX_ROLE_GRID: result += " GRID"; break;
-    case ui::AX_ROLE_GROUP: result += " GROUP"; break;
-    case ui::AX_ROLE_GROW_AREA: result += " GROW_AREA"; break;
-    case ui::AX_ROLE_HEADING: result += " HEADING"; break;
-    case ui::AX_ROLE_HELP_TAG: result += " HELP_TAG"; break;
-    case ui::AX_ROLE_HORIZONTAL_RULE: result += " HORIZONTAL_RULE"; break;
-    case ui::AX_ROLE_IGNORED: result += " IGNORED"; break;
-    case ui::AX_ROLE_IMAGE: result += " IMAGE"; break;
-    case ui::AX_ROLE_IMAGE_MAP: result += " IMAGE_MAP"; break;
-    case ui::AX_ROLE_IMAGE_MAP_LINK: result += " IMAGE_MAP_LINK"; break;
-    case ui::AX_ROLE_INCREMENTOR: result += " INCREMENTOR"; break;
-    case ui::AX_ROLE_INLINE_TEXT_BOX: result += " INLINE_TEXT_BOX"; break;
-    case ui::AX_ROLE_LABEL: result += " LABEL"; break;
-    case ui::AX_ROLE_LINK: result += " LINK"; break;
-    case ui::AX_ROLE_LIST: result += " LIST"; break;
-    case ui::AX_ROLE_LIST_BOX: result += " LISTBOX"; break;
-    case ui::AX_ROLE_LIST_BOX_OPTION: result += " LISTBOX_OPTION"; break;
-    case ui::AX_ROLE_LIST_ITEM: result += " LIST_ITEM"; break;
-    case ui::AX_ROLE_LIST_MARKER: result += " LIST_MARKER"; break;
-    case ui::AX_ROLE_LOG: result += " LOG"; break;
-    case ui::AX_ROLE_MAIN: result += " MAIN"; break;
-    case ui::AX_ROLE_MARQUEE: result += " MARQUEE"; break;
-    case ui::AX_ROLE_MATH: result += " MATH"; break;
-    case ui::AX_ROLE_MATTE: result += " MATTE"; break;
-    case ui::AX_ROLE_MENU: result += " MENU"; break;
-    case ui::AX_ROLE_MENU_BAR: result += " MENU_BAR"; break;
-    case ui::AX_ROLE_MENU_BUTTON: result += " MENU_BUTTON"; break;
-    case ui::AX_ROLE_MENU_ITEM: result += " MENU_ITEM"; break;
-    case ui::AX_ROLE_MENU_LIST_OPTION: result += " MENU_LIST_OPTION"; break;
-    case ui::AX_ROLE_MENU_LIST_POPUP: result += " MENU_LIST_POPUP"; break;
-    case ui::AX_ROLE_NAVIGATION: result += " NAVIGATION"; break;
-    case ui::AX_ROLE_NOTE: result += " NOTE"; break;
-    case ui::AX_ROLE_OUTLINE: result += " OUTLINE"; break;
-    case ui::AX_ROLE_PARAGRAPH: result += " PARAGRAPH"; break;
-    case ui::AX_ROLE_POP_UP_BUTTON: result += " POPUP_BUTTON"; break;
-    case ui::AX_ROLE_PRESENTATIONAL: result += " PRESENTATIONAL"; break;
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-        result += " PROGRESS_INDICATOR"; break;
-    case ui::AX_ROLE_RADIO_BUTTON: result += " RADIO_BUTTON"; break;
-    case ui::AX_ROLE_RADIO_GROUP: result += " RADIO_GROUP"; break;
-    case ui::AX_ROLE_REGION: result += " REGION"; break;
-    case ui::AX_ROLE_ROOT_WEB_AREA: result += " ROOT_WEB_AREA"; break;
-    case ui::AX_ROLE_ROW: result += " ROW"; break;
-    case ui::AX_ROLE_ROW_HEADER: result += " ROW_HEADER"; break;
-    case ui::AX_ROLE_RULER: result += " RULER"; break;
-    case ui::AX_ROLE_RULER_MARKER: result += " RULER_MARKER"; break;
-    case ui::AX_ROLE_SVG_ROOT: result += " SVG_ROOT"; break;
-    case ui::AX_ROLE_SCROLL_AREA: result += " SCROLLAREA"; break;
-    case ui::AX_ROLE_SCROLL_BAR: result += " SCROLLBAR"; break;
-    case ui::AX_ROLE_SEARCH: result += " SEARCH"; break;
-    case ui::AX_ROLE_SHEET: result += " SHEET"; break;
-    case ui::AX_ROLE_SLIDER: result += " SLIDER"; break;
-    case ui::AX_ROLE_SLIDER_THUMB: result += " SLIDER_THUMB"; break;
-    case ui::AX_ROLE_SPIN_BUTTON: result += " SPIN_BUTTON"; break;
-    case ui::AX_ROLE_SPIN_BUTTON_PART: result += " SPIN_BUTTON_PART"; break;
-    case ui::AX_ROLE_SPLIT_GROUP: result += " SPLIT_GROUP"; break;
-    case ui::AX_ROLE_SPLITTER: result += " SPLITTER"; break;
-    case ui::AX_ROLE_STATIC_TEXT: result += " STATIC_TEXT"; break;
-    case ui::AX_ROLE_STATUS: result += " STATUS"; break;
-    case ui::AX_ROLE_SYSTEM_WIDE: result += " SYSTEM_WIDE"; break;
-    case ui::AX_ROLE_TAB: result += " TAB"; break;
-    case ui::AX_ROLE_TAB_LIST: result += " TAB_LIST"; break;
-    case ui::AX_ROLE_TAB_PANEL: result += " TAB_PANEL"; break;
-    case ui::AX_ROLE_TABLE: result += " TABLE"; break;
-    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
-        result += " TABLE_HDR_CONTAINER"; break;
-    case ui::AX_ROLE_TEXT_AREA: result += " TEXTAREA"; break;
-    case ui::AX_ROLE_TEXT_FIELD: result += " TEXT_FIELD"; break;
-    case ui::AX_ROLE_TIMER: result += " TIMER"; break;
-    case ui::AX_ROLE_TOGGLE_BUTTON: result += " TOGGLE_BUTTON"; break;
-    case ui::AX_ROLE_TOOLBAR: result += " TOOLBAR"; break;
-    case ui::AX_ROLE_TREE: result += " TREE"; break;
-    case ui::AX_ROLE_TREE_GRID: result += " TREE_GRID"; break;
-    case ui::AX_ROLE_TREE_ITEM: result += " TREE_ITEM"; break;
-    case ui::AX_ROLE_UNKNOWN: result += " UNKNOWN"; break;
-    case ui::AX_ROLE_TOOLTIP: result += " TOOLTIP"; break;
-    case ui::AX_ROLE_VALUE_INDICATOR: result += " VALUE_INDICATOR"; break;
-    case ui::AX_ROLE_WEB_AREA: result += " WEB_AREA"; break;
-    case ui::AX_ROLE_WINDOW: result += " WINDOW"; break;
-    default:
-      assert(false);
-  }
+  result += " " + ui::ToString(role);
 
   if (state & (1 << ui::AX_STATE_BUSY))
     result += " BUSY";
@@ -222,7 +108,7 @@ std::string AXNodeData::ToString() const {
     result += " PRESSED";
   if (state & (1 << ui::AX_STATE_PROTECTED))
     result += " PROTECTED";
-  if (state & (1 << ui::AX_STATE_READONLY))
+  if (state & (1 << ui::AX_STATE_READ_ONLY))
     result += " READONLY";
   if (state & (1 << ui::AX_STATE_REQUIRED))
     result += " REQUIRED";
@@ -332,6 +218,8 @@ std::string AXNodeData::ToString() const {
             break;
         }
         break;
+      case AX_INT_ATTRIBUTE_NONE:
+        break;
     }
   }
 
@@ -395,6 +283,8 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_VALUE:
         result += " value=" + value;
         break;
+      case AX_STRING_ATTRIBUTE_NONE:
+        break;
     }
   }
 
@@ -412,6 +302,8 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_MIN_VALUE_FOR_RANGE:
         result += " min_value=" + value;
+        break;
+      case AX_FLOAT_ATTRIBUTE_NONE:
         break;
     }
   }
@@ -449,6 +341,8 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_CANVAS_HAS_FALLBACK:
         result += " has_fallback=" + value;
         break;
+      case AX_BOOL_ATTRIBUTE_NONE:
+        break;
     }
   }
 
@@ -475,6 +369,8 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_WORD_ENDS:
         result += " word_ends=" + IntVectorToString(values);
+        break;
+      case AX_INT_LIST_ATTRIBUTE_NONE:
         break;
     }
   }

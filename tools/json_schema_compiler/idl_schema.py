@@ -309,7 +309,8 @@ class Enum(object):
               'description': self.description,
               'type': 'string',
               'enum': enum}
-    for property_name in ('inline_doc', 'noinline_doc', 'nodoc'):
+    for property_name in (
+        'inline_doc', 'noinline_doc', 'nodoc', 'cpp_omit_enum_type',):
       if self.node.GetProperty(property_name):
         result[property_name] = True
     if self.node.GetProperty('deprecated'):

@@ -46,7 +46,7 @@ class _Generator(object):
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
-          (self._namespace.source_file_dir, self._namespace.unix_name))
+              (self._namespace.source_file_dir, self._namespace.short_filename))
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
       .Append()
       .Concat(cpp_util.OpenNamespace(self._cpp_namespace))
@@ -91,6 +91,7 @@ class _Generator(object):
     (c.Concat(self._type_helper.GetNamespaceEnd())
       .Cblock(cpp_util.CloseNamespace(self._cpp_namespace))
     )
+    c.Append()
     return c
 
   def _GenerateType(self, cpp_namespace, type_):

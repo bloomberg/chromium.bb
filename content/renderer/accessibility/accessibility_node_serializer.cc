@@ -103,7 +103,8 @@ void SerializeAccessibilityNode(
   }
 
   if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
-    dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION, src.textDirection());
+    dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
+                         AXTextDirectionFromBlink(src.textDirection()));
 
     WebVector<int> src_character_offsets;
     src.characterOffsets(src_character_offsets);

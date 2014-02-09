@@ -259,6 +259,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
 
     gfx::Rect child_overlap_rect;
     switch (text_direction) {
+      case ui::AX_TEXT_DIRECTION_NONE:
       case ui::AX_TEXT_DIRECTION_LR: {
         int left = child_rect.x() + start_pixel_offset;
         int right = child_rect.x() + end_pixel_offset;
@@ -602,7 +603,7 @@ bool BrowserAccessibility::IsEditableText() const {
   // Note: WebAXStateReadonly being false means it's either a text control,
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.
-  return (!HasState(ui::AX_STATE_READONLY) ||
+  return (!HasState(ui::AX_STATE_READ_ONLY) ||
           role_ == ui::AX_ROLE_TEXT_FIELD ||
           role_ == ui::AX_ROLE_TEXT_AREA);
 }

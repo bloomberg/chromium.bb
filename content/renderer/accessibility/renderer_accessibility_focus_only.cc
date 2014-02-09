@@ -101,7 +101,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.state =
-      (1 << ui::AX_STATE_READONLY) |
+      (1 << ui::AX_STATE_READ_ONLY) |
       (1 << ui::AX_STATE_FOCUSABLE);
   if (!node_has_focus)
     root.state |= (1 << ui::AX_STATE_FOCUSED);
@@ -125,7 +125,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
         (1 << ui::AX_STATE_FOCUSABLE) |
         (1 << ui::AX_STATE_FOCUSED);
     if (!node_is_editable_text)
-      child.state |= (1 << ui::AX_STATE_READONLY);
+      child.state |= (1 << ui::AX_STATE_READ_ONLY);
   }
 
 #ifndef NDEBUG

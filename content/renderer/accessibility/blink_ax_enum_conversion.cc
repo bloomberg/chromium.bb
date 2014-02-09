@@ -54,7 +54,7 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o) {
     state |= (1 << ui::AX_STATE_PROTECTED);
 
   if (o.isReadOnly())
-    state |= (1 << ui::AX_STATE_READONLY);
+    state |= (1 << ui::AX_STATE_READ_ONLY);
 
   if (o.isRequired())
     state |= (1 << ui::AX_STATE_REQUIRED);
@@ -69,7 +69,7 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o) {
     state |= (1 << ui::AX_STATE_VISITED);
 
   if (o.isEnabled())
-    state |= (1 << blink::WebAXStateEnabled);
+    state |= (1 << ui::AX_STATE_ENABLED);
 
   if (o.isVertical())
     state |= (1 << ui::AX_STATE_VERTICAL);
@@ -167,7 +167,7 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
     case blink::WebAXRoleInlineTextBox:
       return ui::AX_ROLE_INLINE_TEXT_BOX;
     case blink::WebAXRoleLabel:
-      return ui::AX_ROLE_LABEL;
+      return ui::AX_ROLE_LABEL_TEXT;
     case blink::WebAXRoleLegend:
       return ui::AX_ROLE_LEGEND;
     case blink::WebAXRoleLink:
@@ -370,6 +370,24 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
 
   NOTREACHED();
   return static_cast<ui::AXEvent>(-1);
+}
+
+ui::AXTextDirection AXTextDirectionFromBlink(
+    blink::WebAXTextDirection text_direction) {
+  switch (text_direction) {
+    case blink::WebAXTextDirectionLR:
+      return ui::AX_TEXT_DIRECTION_LR;
+    case blink::WebAXTextDirectionRL:
+      return ui::AX_TEXT_DIRECTION_RL;
+    case blink::WebAXTextDirectionTB:
+      return ui::AX_TEXT_DIRECTION_TB;
+    case blink::WebAXTextDirectionBT:
+      return ui::AX_TEXT_DIRECTION_BT;
+    default:
+      NOTREACHED();
+  }
+
+  return ui::AX_TEXT_DIRECTION_NONE;
 }
 
 }  // namespace content

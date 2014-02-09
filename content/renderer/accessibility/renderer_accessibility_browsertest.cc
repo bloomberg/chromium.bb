@@ -132,7 +132,7 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     EXPECT_EQ(event.nodes[0].role,
               ui::AX_ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << ui::AX_STATE_READONLY) |
+              (1U << ui::AX_STATE_READ_ONLY) |
               (1U << ui::AX_STATE_FOCUSABLE) |
               (1U << ui::AX_STATE_FOCUSED));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
@@ -152,7 +152,7 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     EXPECT_EQ(event.nodes[0].role,
               ui::AX_ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << ui::AX_STATE_READONLY) |
+              (1U << ui::AX_STATE_READ_ONLY) |
               (1U << ui::AX_STATE_FOCUSABLE));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
     EXPECT_EQ(event.nodes[1].id, 3);
@@ -211,7 +211,7 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     EXPECT_EQ(event.nodes[1].state,
               (1U << ui::AX_STATE_FOCUSABLE) |
               (1U << ui::AX_STATE_FOCUSED) |
-              (1U << ui::AX_STATE_READONLY));
+              (1U << ui::AX_STATE_READ_ONLY));
   }
 
   {
@@ -224,7 +224,7 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     EXPECT_EQ(event.nodes[1].state,
               (1U << ui::AX_STATE_FOCUSABLE) |
               (1U << ui::AX_STATE_FOCUSED) |
-              (1U << ui::AX_STATE_READONLY));
+              (1U << ui::AX_STATE_READ_ONLY));
   }
 
   // Clear focus.
