@@ -2222,6 +2222,7 @@
             'chrome.*:10-',
             'chrome_os:11-',
             'ios:99-',
+            'android:33-',
           ],
           'features': {
             'dynamic_refresh': True,
