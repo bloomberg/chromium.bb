@@ -15,8 +15,10 @@
 
 #define IPC_MESSAGE_START SpeechRecognitionMsgStart
 
-IPC_ENUM_TRAITS(content::SpeechAudioErrorDetails)
-IPC_ENUM_TRAITS(content::SpeechRecognitionErrorCode)
+IPC_ENUM_TRAITS_MAX_VALUE(content::SpeechAudioErrorDetails,
+                          content::SPEECH_AUDIO_ERROR_DETAILS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::SpeechRecognitionErrorCode,
+                          content::SPEECH_RECOGNITION_ERROR_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionError)
   IPC_STRUCT_TRAITS_MEMBER(code)

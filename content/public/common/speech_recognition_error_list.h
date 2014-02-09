@@ -32,3 +32,7 @@ DEFINE_SPEECH_RECOGNITION_ERROR(NO_MATCH, 6)
 
 // There was an error in the speech recognition grammar.
 DEFINE_SPEECH_RECOGNITION_ERROR(BAD_GRAMMAR, 7)
+
+// Reports the highest value. Update when adding a new error code.
+DEFINE_SPEECH_RECOGNITION_ERROR(LAST, 7)
+
