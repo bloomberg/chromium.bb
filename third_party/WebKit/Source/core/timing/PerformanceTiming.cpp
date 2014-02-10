@@ -349,7 +349,9 @@ unsigned long long PerformanceTiming::monotonicTimeToIntegerMilliseconds(double 
 {
     ASSERT(monotonicSeconds >= 0);
     const DocumentLoadTiming* timing = documentLoadTiming();
-    ASSERT(timing);
+    if (!timing)
+        return 0;
+
     return toIntegerMilliseconds(timing->monotonicTimeToPseudoWallTime(monotonicSeconds));
 }
 
