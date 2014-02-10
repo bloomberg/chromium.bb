@@ -14,9 +14,9 @@
 #include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
-#include "chrome/browser/ui/login/login_model.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/login_model.h"
 
 class PasswordManagerClient;
 class PasswordManagerDriver;

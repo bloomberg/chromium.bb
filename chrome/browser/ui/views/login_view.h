@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/login/login_model.h"
+#include "components/password_manager/core/browser/login_model.h"
 #include "ui/views/view.h"
 
 namespace views {

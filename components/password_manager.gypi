@@ -25,6 +25,7 @@
         'password_manager/core/browser/login_database_mac.cc',
         'password_manager/core/browser/login_database_posix.cc',
         'password_manager/core/browser/login_database_win.cc',
+        'password_manager/core/browser/login_model.h',
         'password_manager/core/browser/password_store.cc',
         'password_manager/core/browser/password_store.h',
         'password_manager/core/browser/password_store_change.h',
