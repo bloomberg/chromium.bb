@@ -367,17 +367,6 @@ bool Internals::isSharingStyle(Element* element1, Element* element2, ExceptionSt
     return element1->renderStyle() == element2->renderStyle();
 }
 
-PassRefPtr<Element> Internals::createContentElement(ExceptionState& exceptionState)
-{
-    Document* document = contextDocument();
-    if (!document) {
-        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
-        return 0;
-    }
-
-    return HTMLContentElement::create(*document);
-}
-
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& exceptionState)
 {
     if (!insertionPoint || !insertionPoint->isInsertionPoint()) {

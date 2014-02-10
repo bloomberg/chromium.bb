@@ -13,7 +13,7 @@ var container = document.getElementById("container");
 
 var content;
 function test(select, valid) {
-    content = internals.createContentElement();
+    content = document.createElement('content');
     if (select != null)
         content.setAttribute('select', select);
 

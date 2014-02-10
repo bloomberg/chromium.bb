@@ -110,7 +110,6 @@ public:
     unsigned numberOfActiveAnimations() const;
     void pauseAnimations(double pauseTime, ExceptionState&);
 
-    PassRefPtr<Element> createContentElement(ExceptionState&);
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
     Node* treeScopeRootNode(Node*, ExceptionState&);
     Node* parentTreeScope(Node*, ExceptionState&);

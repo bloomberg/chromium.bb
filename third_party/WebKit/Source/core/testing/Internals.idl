@@ -58,7 +58,6 @@
     [RaisesException] unsigned long countElementShadow(Node Root);
     [RaisesException] DOMString shadowPseudoId(Element element);
     [RaisesException] void setShadowPseudoId(Element element, DOMString id);
-    [RaisesException] Element createContentElement();
     [RaisesException] boolean isValidContentSelect(Element contentElement);
     [RaisesException] Node treeScopeRootNode(Node node);
     [RaisesException] Node parentTreeScope(Node node);

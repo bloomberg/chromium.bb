@@ -39,7 +39,7 @@ shouldBe("includerFor(childOfElementWithShadow)", "null");
 var elementWithShadowContent = document.createElement("div");
 container.appendChild(elementWithShadowContent);
 var shadowRootOfElementWithShadowContent = elementWithShadowContent.createShadowRoot();
-var shadowContentOfElementWithShadowContent = internals.createContentElement();
+var shadowContentOfElementWithShadowContent = document.createElement('content');
 shadowRootOfElementWithShadowContent.appendChild(shadowContentOfElementWithShadowContent);
 var childOfElementWithShadowContent = document.createElement("span");
 elementWithShadowContent.appendChild(childOfElementWithShadowContent);
@@ -64,7 +64,7 @@ elementWithShadow.removeChild(movingChild);
 var anotherElementWithShadowContent = document.createElement("div");
 container.appendChild(anotherElementWithShadowContent);
 var anotherShadowRootOfElementWithShadowContent = anotherElementWithShadowContent.createShadowRoot();
-var anotherShadowContentOfElementWithShadowContent = internals.createContentElement();
+var anotherShadowContentOfElementWithShadowContent = document.createElement('content');
 anotherShadowRootOfElementWithShadowContent.appendChild(anotherShadowContentOfElementWithShadowContent);
 
 anotherElementWithShadowContent.appendChild(movingChild);

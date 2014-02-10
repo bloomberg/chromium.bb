@@ -62,7 +62,7 @@ function createTreeFrom(html)
     var contentPlaceholder = root.getElementsByTagName("CONTENT")[0];
     if (contentPlaceholder) {
         var contentParent = contentPlaceholder.parentNode;
-        contentParent.replaceChild(window.internals.createContentElement(), contentPlaceholder);
+        contentParent.replaceChild(window.document.createElement('content'), contentPlaceholder);
     };
 
     return root;
@@ -82,7 +82,7 @@ function createTargetTree(contentHtml, shadowHtml)
     var host = document.createElement("blockquote");
     var shadowRoot = host.createShadowRoot();
     moveChildren(content, host);
-    moveChildren(shadow, shadowRoot); 
+    moveChildren(shadow, shadowRoot);
     return host;
 }
 
@@ -138,7 +138,7 @@ function test()
             var testLabel = i + "," + j;
             testWithContentAndShadow(contentSources[i], shadowSources[j], testLabel);
         }
-    } 
+    }
 
     document.getElementById("test").style.display = "none";
     document.getElementById("console").style.display = "block";
