@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -124,6 +125,7 @@ void CrosDBusService::Initialize() {
     service->RegisterServiceProvider(new DisplayPowerServiceProvider);
     service->RegisterServiceProvider(new LivenessServiceProvider);
     service->RegisterServiceProvider(new PrinterServiceProvider);
+    service->RegisterServiceProvider(new ScreenLockServiceProvider);
     g_cros_dbus_service = service;
     service->Start();
   } else {

@@ -115,6 +115,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // lock event only after a user is logged in.
   static void InitClass();
 
+  // Handles a request from the session manager to lock the screen.
+  static void HandleLockScreenRequest();
+
   // Show the screen locker.
   static void Show();
 

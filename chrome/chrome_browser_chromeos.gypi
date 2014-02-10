@@ -206,6 +206,8 @@
         'browser/chromeos/dbus/printer_service_provider.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
+        'browser/chromeos/dbus/screen_lock_service_provider.cc',
+        'browser/chromeos/dbus/screen_lock_service_provider.h',
         'browser/chromeos/device_hierarchy_observer.h',
         'browser/chromeos/device_uma.cc',
         'browser/chromeos/device_uma.h',

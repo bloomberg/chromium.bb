@@ -35,6 +35,8 @@ class PowerButtonObserver : public content::NotificationObserver,
       bool down, const base::TimeTicks& timestamp) OVERRIDE;
 
   // SessionManagerClient::Observer implementation:
+  // TODO(derat): Remove this once the session manager is making LockScreen
+  // method calls instead.
   virtual void LockScreen() OVERRIDE;
 
   content::NotificationRegistrar registrar_;

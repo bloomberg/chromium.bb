@@ -1073,7 +1073,7 @@ void SystemTrayDelegateChromeOS::LoggedInStateChanged() {
 }
 
 // Overridden from SessionManagerClient::Observer.
-void SystemTrayDelegateChromeOS::LockScreen() {
+void SystemTrayDelegateChromeOS::ScreenIsLocked() {
   screen_locked_ = true;
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
 }

@@ -58,6 +58,8 @@
 using base::UserMetricsAction;
 using content::BrowserThread;
 
+namespace chromeos {
+
 namespace {
 
 // Timeout for unlock animation guard - some animations may be required to run
@@ -66,9 +68,9 @@ namespace {
 const int kUnlockGuardTimeoutMs = 400;
 
 // Observer to start ScreenLocker when the screen lock
-class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
+class ScreenLockObserver : public SessionManagerClient::Observer,
                            public content::NotificationObserver,
-                           public chromeos::UserAddingScreen::Observer {
+                           public UserAddingScreen::Observer {
  public:
   ScreenLockObserver() : session_started_(false) {
     registrar_.Add(this,
@@ -79,6 +81,8 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
                    content::NotificationService::AllSources());
   }
 
+  bool session_started() const { return session_started_; }
+
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -86,8 +90,8 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
         // Register Screen Lock only after a user has logged in.
-        chromeos::SessionManagerClient* session_manager =
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+        SessionManagerClient* session_manager =
+            DBusThreadManager::Get()->GetSessionManagerClient();
         if (!session_manager->HasObserver(this))
           session_manager->AddObserver(this);
         break;
@@ -103,40 +107,21 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
     }
   }
 
+  // TODO(derat): Remove this once the session manager is calling the LockScreen
+  // method instead of emitting a signal.
   virtual void LockScreen() OVERRIDE {
     VLOG(1) << "Received LockScreen D-Bus signal from session manager";
-    if (chromeos::UserAddingScreen::Get()->IsRunning()) {
-      VLOG(1) << "Waiting for user adding screen to stop";
-      chromeos::UserAddingScreen::Get()->AddObserver(this);
-      chromeos::UserAddingScreen::Get()->Cancel();
-      return;
-    }
-    if (session_started_ &&
-        chromeos::UserManager::Get()->CanCurrentUserLock()) {
-      chromeos::ScreenLocker::Show();
-    } else {
-      // If the current user's session cannot be locked or the user has not
-      // completed all sign-in steps yet, log out instead. The latter is done to
-      // avoid complications with displaying the lock screen over the login
-      // screen while remaining secure in the case the user walks away during
-      // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
-      VLOG(1) << "Calling session manager's StopSession D-Bus method";
-      chromeos::DBusThreadManager::Get()->
-          GetSessionManagerClient()->StopSession();
-    }
+    ScreenLocker::HandleLockScreenRequest();
   }
 
   virtual void OnUserAddingFinished() OVERRIDE {
-    chromeos::UserAddingScreen::Get()->RemoveObserver(this);
+    UserAddingScreen::Get()->RemoveObserver(this);
     LockScreen();
   }
 
  private:
   bool session_started_;
   content::NotificationRegistrar registrar_;
-  std::string saved_previous_input_method_id_;
-  std::string saved_current_input_method_id_;
-  std::vector<std::string> saved_active_input_method_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
@@ -145,8 +130,6 @@ static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace chromeos {
 
 // static
 ScreenLocker* ScreenLocker::screen_locker_ = NULL;
@@ -340,6 +323,34 @@ void ScreenLocker::SetLoginStatusConsumer(
 }
 
 // static
+void ScreenLocker::InitClass() {
+  g_screen_lock_observer.Get();
+}
+
+// static
+void ScreenLocker::HandleLockScreenRequest() {
+  VLOG(1) << "Received LockScreen request from session manager";
+  if (UserAddingScreen::Get()->IsRunning()) {
+    VLOG(1) << "Waiting for user adding screen to stop";
+    UserAddingScreen::Get()->AddObserver(g_screen_lock_observer.Pointer());
+    UserAddingScreen::Get()->Cancel();
+    return;
+  }
+  if (g_screen_lock_observer.Get().session_started() &&
+      UserManager::Get()->CanCurrentUserLock()) {
+    ScreenLocker::Show();
+  } else {
+    // If the current user's session cannot be locked or the user has not
+    // completed all sign-in steps yet, log out instead. The latter is done to
+    // avoid complications with displaying the lock screen over the login
+    // screen while remaining secure in the case the user walks away during
+    // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
+    VLOG(1) << "Calling session manager's StopSession D-Bus method";
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+  }
+}
+
+// static
 void ScreenLocker::Show() {
   content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(base::MessageLoopForUI::IsCurrent());
@@ -404,11 +415,6 @@ void ScreenLocker::ScheduleDeletion() {
 
   delete screen_locker_;
   screen_locker_ = NULL;
-}
-
-// static
-void ScreenLocker::InitClass() {
-  g_screen_lock_observer.Get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -158,7 +158,7 @@ class SystemTrayDelegateChromeOS
   virtual void LoggedInStateChanged() OVERRIDE;
 
   // Overridden from SessionManagerClient::Observer.
-  virtual void LockScreen() OVERRIDE;
+  virtual void ScreenIsLocked() OVERRIDE;
   virtual void ScreenIsUnlocked() OVERRIDE;
 
   gfx::NativeWindow GetNativeWindow() const;
