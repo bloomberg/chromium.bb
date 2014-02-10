@@ -147,25 +147,25 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
 };
 
 TEST_F(CalcDrawPropsMainTest, TenTen) {
-  SetTestName("10_10");
+  SetTestName("10_10_main_thread");
   ReadTestFile("10_10_layer_tree");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsMainTest, HeavyPage) {
-  SetTestName("heavy_page");
+  SetTestName("heavy_page_main_thread");
   ReadTestFile("heavy_layer_tree");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsMainTest, TouchRegionLight) {
-  SetTestName("touch_region_light");
+  SetTestName("touch_region_light_main_thread");
   ReadTestFile("touch_region_light");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsMainTest, TouchRegionHeavy) {
-  SetTestName("touch_region_heavy");
+  SetTestName("touch_region_heavy_main_thread");
   ReadTestFile("touch_region_heavy");
   RunCalcDrawProps();
 }
