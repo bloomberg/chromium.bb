@@ -146,7 +146,6 @@ CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 CONTENT_EXPORT extern const char kEnableDirectWrite[];
 CONTENT_EXPORT extern const char kEnableHighResolutionTime[];
 #endif
-CONTENT_EXPORT extern const char kEnableHTMLImports[];
 CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
 extern const char kEnableInputModeAttribute[];
 CONTENT_EXPORT extern const char kEnableLogging[];
