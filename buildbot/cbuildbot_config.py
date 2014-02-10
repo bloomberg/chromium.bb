@@ -879,6 +879,7 @@ brillo = _config(
   packages=['chromeos-base/chromeos'],
   build_tests=False,
   sync_chrome=False,
+  chrome_sdk=False,
   hw_tests=[],
 )
 
@@ -1954,11 +1955,17 @@ _arm_release.add_config('nyan_big-release',
 )
 
 # Brillo devices do not have Chrome or currently need for test or dev images.
-_arm_brillo_release = _arm_release.derive(brillo,
-  chrome_sdk=False,
+_brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
   signer_tests=False,
+  vm_tests=None,
 )
+
+_brillo_release.add_config('duck-release',
+   boards=['duck'],
+)
+
+_arm_brillo_release = _brillo_release.derive(arm)
 
 _beaglebone_release = _arm_brillo_release.derive(beaglebone)
 
@@ -1977,10 +1984,6 @@ _arm_brillo_release.add_config('daisy_winter-full',
   boards=['daisy_winter'],
   manifest='lasercats.xml',
   manifest_version=False,
-)
-
-_arm_brillo_release.add_config('duck-release',
-  boards=['duck'],
 )
 
 _release.add_config('stumpy_moblab-release',

@@ -180,6 +180,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           '-build_tests' in config['useflags'] and config['vm_tests'],
           'Config %s: has vm_tests and use -build_tests.' % build_name)
 
+  def testSyncToChromeSdk(self):
+    """Verify none of the configs build chrome sdk but don't sync chrome."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['sync_chrome'] is not None and not config['sync_chrome']:
+        self.assertFalse(
+            config['chrome_sdk'],
+            'Config %s: has chrome_sdk but not sync_chrome.' % build_name)
+
   def testARMNoVMTest(self):
     """Verify ARM builds don't get VMTests turned on by accident"""
     for build_name, config in cbuildbot_config.config.iteritems():
