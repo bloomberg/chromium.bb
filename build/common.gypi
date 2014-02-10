@@ -1147,6 +1147,9 @@
     # TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
     'enable_wexit_time_destructors%': 0,
 
+    # Build libpeerconnection as a static library by default.
+    'libpeer_target_type%': 'static_library',
+
     # Set to 1 to compile with the built in pdf viewer.
     'internal_pdf%': 0,
 
