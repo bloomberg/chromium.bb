@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <ctype.h>
 #include <dirent.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -20,14 +21,16 @@
  *   All memory counters are expressed in Kb.
  */
 
-#define CONV_PAGES_TO_KB(x) (x << (PAGE_SHIFT - 10))
-
 static void dump_time(void) {
-  struct timespec tm = {0, 0};
+  float uptime_secs = 0.0F;
   const long rate = sysconf(_SC_CLK_TCK);
-  clock_gettime(CLOCK_MONOTONIC, &tm);
-  const long ticks = rate * (tm.tv_sec * 1000L + tm.tv_nsec / 1000000) / 1000;
-  printf("  \"time\": { \"ticks\": %d, \"rate\": %d}", ticks, rate);
+  FILE *f = fopen("/proc/uptime", "r");
+  if (!f)
+    return;
+  fscanf(f, "%f", &uptime_secs);
+  fclose(f);
+  const long ticks = (long) (rate * uptime_secs);
+  printf("  \"time\": { \"ticks\": %ld, \"rate\": %ld}", ticks, rate);
 }
 
 static void dump_cpu_stats(void) {
@@ -95,8 +98,9 @@ static void dump_proc_stats(void) {
   if (!d)
     return;
 
+  const long kb_per_page = sysconf(_SC_PAGESIZE) / 1024;
   bool terminate_prev_line = false;
-  printf("  \"processes\":\n  [\n");
+  printf("  \"processes\":\n  {\n");
   while ((de = readdir(d))) {
     if (!isdigit(de->d_name[0]))
       continue;
@@ -133,8 +137,8 @@ static void dump_proc_stats(void) {
     f = fopen(fpath, "r");
     if (!f)
       continue;
-    fscanf(f, "%*d %s %*c %*d %*d %*d %*d %*d %*u %lu %*lu %lu %*lu %lu %lu "
-           "%*ld %*ld %*ld %*ld %ld %*ld %llu %*lu %ld", proc_name, &min_faults,
+    fscanf(f, "%*d %s %*c %*d %*d %*d %*d %*d %*u %lu %*u %lu %*u %lu %lu "
+           "%*d %*d %*d %*d %ld %*d %llu %*u %ld", proc_name, &min_faults,
            &maj_faults, &utime, &ktime, &num_threads, &start_time, &vm_rss);
     fclose(f);
 
@@ -144,8 +148,7 @@ static void dump_proc_stats(void) {
     if (terminate_prev_line)
       printf(",\n");
     terminate_prev_line = true;
-    printf("    {"
-           "\"pid\": %d, "
+    printf("   \"%d\": {"
            "\"name\": \"%s\", "
            "\"n_threads\": %ld, "
            "\"start_time\": %llu, "
@@ -163,10 +166,10 @@ static void dump_proc_stats(void) {
            ktime,
            min_faults,
            maj_faults,
-           CONV_PAGES_TO_KB(vm_rss));
+           vm_rss * kb_per_page);
   }
   closedir(d);
-  printf("\n  ]");
+  printf("\n  }");
 }
 
 int main()
