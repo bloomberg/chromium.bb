@@ -94,7 +94,16 @@ public:
         static const bool safeToCompareToEmptyOrDeleted = DefaultHash<StringType>::Hash::safeToCompareToEmptyOrDeleted;
     };
 
-    typedef HashMap<std::pair<unsigned char, AtomicString>, LiveNodeListBase*, NodeListCacheMapEntryHash<AtomicString> > NodeListAtomicNameCacheMap;
+    struct NodeListAtomicCacheMapEntryHash {
+        static unsigned hash(const std::pair<unsigned char, StringImpl*>& entry)
+        {
+            return DefaultHash<StringImpl*>::Hash::hash(entry.second) + entry.first;
+        }
+        static bool equal(const std::pair<unsigned char, StringImpl*>& a, const std::pair<unsigned char, StringImpl*>& b) { return a == b; }
+        static const bool safeToCompareToEmptyOrDeleted = DefaultHash<StringImpl*>::Hash::safeToCompareToEmptyOrDeleted;
+    };
+
+    typedef HashMap<std::pair<unsigned char, StringImpl*>, LiveNodeListBase*, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
     typedef HashMap<std::pair<unsigned char, String>, LiveNodeListBase*, NodeListCacheMapEntryHash<String> > NodeListNameCacheMap;
     typedef HashMap<QualifiedName, TagCollection*> TagCollectionCacheNS;
 
@@ -228,9 +237,11 @@ private:
         : m_childNodeList(0)
     { }
 
-    std::pair<unsigned char, AtomicString> namedNodeListKey(CollectionType type, const AtomicString& name)
+    std::pair<unsigned char, StringImpl*> namedNodeListKey(CollectionType type, const AtomicString& name)
     {
-        return std::pair<unsigned char, AtomicString>(type, name);
+        // Holding the raw StringImpl is safe because |name| is retained by the NodeList and the NodeList
+        // is reponsible for removing itself from the cache on deletion.
+        return std::pair<unsigned char, StringImpl*>(type, name.impl());
     }
 
     std::pair<unsigned char, String> namedNodeListKey(CollectionType type, const String& name)
