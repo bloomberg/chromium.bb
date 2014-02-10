@@ -27,14 +27,14 @@ public class AwResource {
 
     // Raw resource ID for an HTML page to be displayed in the case of
     // a specific load error.
-    public static int RAW_LOAD_ERROR;
+    private static int RAW_LOAD_ERROR;
 
     // Raw resource ID for an HTML page to be displayed in the case of
     // a generic load error. (It's called NO_DOMAIN for legacy reasons).
-    public static int RAW_NO_DOMAIN;
+    private static int RAW_NO_DOMAIN;
 
     // String resource ID for the default text encoding to use.
-    public static int STRING_DEFAULT_TEXT_ENCODING;
+    private static int STRING_DEFAULT_TEXT_ENCODING;
 
     // The embedder should inject a Resources object that will be used
     // to resolve Resource IDs into the actual resources.
