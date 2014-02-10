@@ -289,7 +289,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         implemented_as_class = implemented_as(idl_type)
         if used_as_argument:
             return implemented_as_class + '*'
-        if is_garbage_collected(idl_type):
+        if is_will_be_garbage_collected(idl_type):
             return cpp_template_type('RefPtrWillBeRawPtr', implemented_as_class)
         return cpp_template_type('RefPtr', implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
@@ -307,18 +307,6 @@ def cpp_template_type(template, inner_type):
 
 def v8_type(interface_type):
     return 'V8' + interface_type
-
-
-# [GarbageCollected]
-garbage_collected_types = set()
-
-
-def is_garbage_collected(idl_type):
-    return idl_type in garbage_collected_types
-
-
-def set_garbage_collected_types(new_garbage_collected_types):
-    garbage_collected_types.update(new_garbage_collected_types)
 
 
 # [ImplementedAs]
@@ -340,6 +328,18 @@ def implemented_as(idl_type):
 
 def set_implemented_as_interfaces(new_implemented_as_interfaces):
     implemented_as_interfaces.update(new_implemented_as_interfaces)
+
+
+# [WillBeGarbageCollected]
+will_be_garbage_collected_types = set()
+
+
+def is_will_be_garbage_collected(idl_type):
+    return idl_type in will_be_garbage_collected_types
+
+
+def set_will_be_garbage_collected_types(new_will_be_garbage_collected_types):
+    will_be_garbage_collected_types.update(new_will_be_garbage_collected_types)
 
 
 ################################################################################

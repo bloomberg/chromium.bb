@@ -437,5 +437,5 @@ interface TestObjectPython {
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)
     attribute TestInterfacePython testInterfacePythonAttribute; // [ImplementedAs]
-    attribute TestInterfaceGarbageCollected? testInterfaceGarbageCollectedAttribute; // [GarbageCollected]
+    attribute TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedAttribute; // [WillBeGarbageCollected]
 };

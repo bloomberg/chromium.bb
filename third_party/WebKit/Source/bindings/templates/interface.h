@@ -132,7 +132,7 @@ public:
     {# Custom internal fields #}
     {% set custom_internal_field_counter = 0 %}
     {# persistentHandleIndex must be the first field, if it is present #}
-    {% if is_garbage_collected %}
+    {% if is_will_be_garbage_collected %}
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
     {% endif %}

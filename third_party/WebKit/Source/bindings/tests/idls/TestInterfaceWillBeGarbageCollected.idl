@@ -31,7 +31,7 @@
 [
     Constructor(DOMString str),
     WillBeGarbageCollected,
-] interface TestInterfaceGarbageCollected {
-    attribute TestInterfaceGarbageCollected attr1;
-    void func(TestInterfaceGarbageCollected arg);
+] interface TestInterfaceWillBeGarbageCollected {
+    attribute TestInterfaceWillBeGarbageCollected attr1;
+    void func(TestInterfaceWillBeGarbageCollected arg);
 };
