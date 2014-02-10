@@ -56,6 +56,20 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     private List<AutofillSuggestion> mSuggestions;
 
     /**
+     * An interface that can be injected to log field names selected by
+     * the autofill.
+     */
+    public interface AutofillLogger {
+        public void logSuggestionSelected(String fieldName);
+    }
+
+    private static AutofillLogger sAutofillLogger = null;
+
+    public static void setAutofillLogger(AutofillLogger autofillLogger) {
+        sAutofillLogger = autofillLogger;
+    }
+
+    /**
      * An interface to handle the touch interaction with an AutofillPopup object.
      */
     public interface AutofillPopupDelegate {
@@ -219,8 +233,12 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         AutofillListAdapter adapter = (AutofillListAdapter) parent.getAdapter();
-        int listIndex = mSuggestions.indexOf(adapter.getItem(position));
+        AutofillSuggestion selectedSuggestion = adapter.getItem(position);
+        int listIndex = mSuggestions.indexOf(selectedSuggestion);
         assert listIndex > -1;
+        if (sAutofillLogger != null) {
+            sAutofillLogger.logSuggestionSelected(selectedSuggestion.mLabel);
+        }
         mAutofillCallback.suggestionSelected(listIndex);
     }
 
