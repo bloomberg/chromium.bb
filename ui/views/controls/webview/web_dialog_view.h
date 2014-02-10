@@ -74,7 +74,6 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from ui::WebDialogDelegate:
-  using ui::WebDialogDelegate::HandleContextMenu;
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual base::string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -92,6 +91,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // Overridden from content::WebContentsDelegate:
   virtual void MoveContents(content::WebContents* source,
@@ -113,9 +114,6 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;
-  virtual bool HandleContextMenu(
-      content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);

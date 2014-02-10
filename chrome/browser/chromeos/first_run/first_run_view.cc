@@ -56,7 +56,6 @@ content::WebContents* FirstRunView::GetWebContents() {
 }
 
 bool FirstRunView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Discards context menu.
   return true;

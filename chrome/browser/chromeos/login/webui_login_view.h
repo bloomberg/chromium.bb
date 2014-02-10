@@ -125,7 +125,6 @@ class WebUILoginView : public views::View,
 
   // Overridden from content::WebContentsDelegate.
   virtual bool HandleContextMenu(
-      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,

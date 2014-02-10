@@ -342,7 +342,6 @@ void WebUILoginView::Observe(int type,
 // WebUILoginView private: -----------------------------------------------------
 
 bool WebUILoginView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Do not show the context menu.
 #ifndef NDEBUG

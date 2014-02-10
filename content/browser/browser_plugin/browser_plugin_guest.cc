@@ -789,8 +789,7 @@ JavaScriptDialogManager* BrowserPluginGuest::GetJavaScriptDialogManager() {
   return this;
 }
 
-bool BrowserPluginGuest::HandleContextMenu(RenderFrameHost* render_frame_host,
-                                           const ContextMenuParams& params) {
+bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
   // TODO(fsamuel): We show the regular page context menu handler for now until
   // we implement the Apps Context Menu API for Browser Plugin (see
   // http://crbug.com/140315).

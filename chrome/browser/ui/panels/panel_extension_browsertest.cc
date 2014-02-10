@@ -145,7 +145,6 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
   Panel* panel = panel_manager->panels().front();
   content::WebContents* web_contents = panel->GetWebContents();
   ASSERT_TRUE(web_contents);
-  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
 
   // Verify basic menu contents. The basic extension does not add any
   // context menu items so the panel's menu should include only the
@@ -154,8 +153,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     content::ContextMenuParams params;
     params.page_url = web_contents->GetURL();
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(
-        render_frame_host, params));
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
@@ -176,8 +174,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     params.is_editable = true;
     params.page_url = web_contents->GetURL();
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(
-        render_frame_host, params));
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
@@ -198,8 +195,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     params.page_url = web_contents->GetURL();
     params.selection_text = base::ASCIIToUTF16("Select me");
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(
-        render_frame_host, params));
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
@@ -220,8 +216,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     params.page_url = web_contents->GetURL();
     params.unfiltered_link_url = GURL("http://google.com/");
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(
-        render_frame_host, params));
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
@@ -253,14 +248,12 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   Panel* panel = panel_manager->panels().front();
   content::WebContents* web_contents = panel->GetWebContents();
   ASSERT_TRUE(web_contents);
-  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
 
   content::ContextMenuParams params;
   params.page_url = web_contents->GetURL();
 
   // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-  EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(
-      render_frame_host, params));
+  EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
   // Verify menu contents contains the custom item added by their own extension.
   scoped_ptr<PanelContextMenu> menu;

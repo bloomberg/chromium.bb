@@ -35,7 +35,6 @@ class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogManager;
 class PageState;
-class RenderFrameHost;
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
@@ -229,8 +228,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual int GetExtraRenderViewHeight() const;
 
   // Returns true if the context menu operation was handled by the delegate.
-  virtual bool HandleContextMenu(RenderFrameHost* render_frame_host,
-                                 const content::ContextMenuParams& params);
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
   // Opens source view for given WebContents that is navigated to the given
   // page url.
