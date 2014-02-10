@@ -19,6 +19,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
+from chromite.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git
@@ -533,6 +534,13 @@ def RunDevModeTest(buildroot, board, image_dir):
   cmd = [os.path.join(crostestutils, test_script), '--verbose', board,
          image_path]
   cros_build_lib.RunCommand(cmd)
+
+
+def RunCrosVMTest(board, image_dir):
+  """Runs cros_vm_test script to verify cros flash/deploy works."""
+  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  test = cros_vm_test.CrosCommandTest(board, image_path)
+  test.Run()
 
 
 def ArchiveTestResults(buildroot, test_results_dir, test_basename):
