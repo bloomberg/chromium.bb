@@ -12,11 +12,6 @@
 
 EXTERN_C_BEGIN
 
-// Initialize srpc connection to the browser. Some APIs like manifest file
-// opening do not need full ppapi initialization and so can be used after
-// this function returns.
-int IrtInit(void);
-
 // The entry point for the main thread of the PPAPI plugin process.
 int PpapiPluginMain(void);
 
