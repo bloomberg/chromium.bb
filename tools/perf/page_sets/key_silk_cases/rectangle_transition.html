@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+
+    <title>Expanding boxes</title>
+    <div id="cf" style="right:400px">
+        <div id="momofuku" style="background-color:#8888FF; text-align:left; color: rgba(0, 0, 0, 1);">
+            Momofuku
+        </div>
+        <div id="large_description" style="background-color:#8888FF; text-align:left; position: absolute; overflow:hidden; top:0px;">
+            Noodle Bar
+        </div>
+        <div id="restaurant_icon" style="background-image:url(restaurant_icon.png); background-position:center; position: absolute; background-size: contain;">
+        </div>
+        <div id="maps_icon" style="background-image:url(maps_icon.png); background-position:center; position: absolute; background-size: contain;">
+        </div>
+        <div id="small_description" style="background-color:#8888FF; text-align:left; font-size:14px; float:bottom;">
+            Noodle Bar<br>12p<br>
+        </div>
+        <div id="long_description" style="background-color:#FFFF88; width:50%; float:left; font-size:12px; overflow:hidden">
+            <br>
+            <b>Address</b><br>
+            163 1st Ave<br>
+            Btwn 10th & 11th St.<br>
+            New York, NY 10003<br>
+            <br>
+            <b>Contact</b><br>
+            (212) 315-4441<br>
+            <br>
+            <b>When</b><br>
+            Saturday, September 7th at 12:00pm<br>
+            <br>
+            <b>Reminder</b><br>
+            2 hours before<br>
+        </div>
+        <div id="menu_image" style="width:50%; left:50%; float:left; background-image:url(momofuku_noodle_bar.jpg); background-position:center;">
+        </div>
+    </div>
+    <style>
+        #cf {
+            position:absolute;
+            width:100px;
+            color: rgba(0, 0, 0, 0);
+            box-shadow: 0px 0px 0px #000000;
+            -webkit-transition-duration: 1s;
+            -webkit-transform: translate3d(10px, 0, 0);
+        }
+        #cf.hover {
+            width:400px;
+            font-size:24px;
+            color: rgba(0, 0, 0, 1);
+            box-shadow: 0px 0px 15px #000000;
+            -webkit-transform: translate3d(20px, 0, 0);
+        }
+        #small_description {
+            color: rgba(0, 0, 0, 1);
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #small_description {
+            color: rgba(0, 0, 0, 0);
+        }
+        #long_description {
+            height:0px;
+            color: rgba(0, 0, 0, 0);
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #long_description {
+            color: rgba(0, 0, 0, 1);
+            height:210px;
+        }
+        #menu_image {
+            height:0px;
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #menu_image {
+            height:210px;
+        }
+        #large_description {
+            color: rgba(0, 0, 0, 0);
+            font-size:14px;
+            height:16px;
+            width:0px;
+            left:64px;
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #large_description {
+            font-size:24px;
+            height:28px;
+            width:180px;
+            left:116px;
+            color: rgba(0, 0, 0, 1);
+        }
+        #momofuku {
+            font-size:14px;
+            height:16px;
+            left:100px;
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #momofuku {
+            font-size:24px;
+            height:28px;
+        }
+        #restaurant_icon {
+            top:15px;
+            right:15px;
+            width:30px;
+            height:30px;
+            opacity:0;
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #restaurant_icon {
+            top:5px;
+            right:5px;
+            width:50px;
+            height:50px;
+            opacity:1;
+        }
+        #maps_icon {
+            top:50px;
+            left:45px;
+            width:0px;
+            height:0px;
+            opacity:0;
+            -webkit-transition-duration: 1s;
+        }
+        #cf.hover #maps_icon {
+            top:75px;
+            left:130px;
+            width:50px;
+            height:50px;
+            opacity:1;
+        }
+        </style>
+<style type="text/css"></style></head>
+  <script>
+    setInterval(function() {
+      document.querySelector('#cf').classList.toggle('hover');
+    }, 1500);
+  </script>
+</html>
