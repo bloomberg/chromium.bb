@@ -76,6 +76,15 @@
         if (currentPlayOrder !== -1) {
           // Success
           this.tracks[newValue].active = true;
+
+          var trackSelector = '.track[index="' + newValue + '"]';
+          var trackElement = this.impl.querySelector(trackSelector);
+          if (trackElement) {
+            this.scrollTop = Math.max(
+                0,
+                (trackElement.offsetTop + trackElement.offsetHeight -
+                 this.clientHeight));
+          }
           return;
         }
       }

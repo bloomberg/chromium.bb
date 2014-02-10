@@ -50,11 +50,11 @@
   <polymer-element name="track-list" attributes="tracks">
     <template>
       <link rel="stylesheet" href="audio_player/elements/track_list.css"></link>
-      <template id="tracks" repeat="{{tracks}}">
-        <div class="track" active="{{active}}" on-click="{{trackClicked}}">
+      <template id="tracks" repeat="{{track, index in tracks}}">
+        <div class="track" active?="{{track.active}}" index="{{index}}" on-click="{{trackClicked}}">
           <div class="data">
-            <div class="data-title">{{title}}</div>
-            <div class="data-artist">{{artist}}</div>
+            <div class="data-title">{{track.title}}</div>
+            <div class="data-artist">{{track.artist}}</div>
           </div>
         </div>
       </template>

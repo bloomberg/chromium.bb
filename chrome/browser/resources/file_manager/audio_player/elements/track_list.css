@@ -33,12 +33,12 @@
   width: 100%;
 }
 
-track-list:not([expanded]) > .track:not([active='true']) {
+track-list:not([expanded]) > .track:not([active]) {
   display: none;
 }
 
 /* In the expanded mode the selected track is highlighted. */
-.track[active='true'] {
+.track[active] {
   background-color: rgb(66, 129, 244);
 }
 
@@ -70,7 +70,7 @@ track-list:not([expanded]) > .track:not([active='true']) {
   color: #969696;
 }
 
-.track[active='true'] .data .data-title,
-.track[active='true'] .data .data-artist {
+.track[active] .data .data-title,
+.track[active] .data .data-artist {
   color: #fff;
 }
