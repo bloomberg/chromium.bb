@@ -433,7 +433,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                          false /* Without loading caption. */));
     chrome.fileBrowserPrivate.onDesktopChanged.addListener(function() {
       this.updateVisitDesktopMenus_();
-      this.ui_.updateProfileBatch();
+      this.ui_.updateProfileBadge();
     }.bind(this));
     chrome.fileBrowserPrivate.onProfileAdded.addListener(
         this.updateVisitDesktopMenus_.bind(this));

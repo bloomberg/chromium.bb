@@ -148,11 +148,11 @@ body {
   line-height: 45px;
 }
 
-.dialog-navigation-list-header #profile-batch {
+.dialog-navigation-list-header #profile-badge {
   display: none;
 }
 
-.dialog-navigation-list-header #profile-batch[src] {
+.dialog-navigation-list-header #profile-badge[src] {
   display: inline-block;
   height: 30px;
   margin: 8px;
@@ -166,7 +166,7 @@ body {
   font-size: 130%;
 }
 
-.dialog-navigation-list-header #profile-batch[src] + #app-name {
+.dialog-navigation-list-header #profile-badge[src] + #app-name {
   -webkit-margin-start: 0;
 }
 

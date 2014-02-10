@@ -101,7 +101,7 @@ var FileManagerUI = function(element, dialogType) {
   Object.seal(this);
 
   // Initialize the header.
-  this.updateProfileBatch();
+  this.updateProfileBadge();
   this.element_.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;
 
@@ -191,9 +191,9 @@ FileManagerUI.prototype.initAdditionalUI = function() {
 };
 
 /**
- * Updates visibility and image of the profile batch.
+ * Updates visibility and image of the profile badge.
  */
-FileManagerUI.prototype.updateProfileBatch = function() {
+FileManagerUI.prototype.updateProfileBadge = function() {
   if (this.dialogType_ !== DialogType.FULL_PAGE)
     return;
 
@@ -209,10 +209,10 @@ FileManagerUI.prototype.updateProfileBatch = function() {
         }
       }
     }
-    var profileBatch = this.element_.querySelector('#profile-batch');
+    var profileBadge = this.element_.querySelector('#profile-badge');
     if (imageUri)
-      profileBatch.setAttribute('src', imageUri);
+      profileBadge.setAttribute('src', imageUri);
     else
-      profileBatch.removeAttribute('src');
+      profileBadge.removeAttribute('src');
   }.bind(this));
 };
