@@ -550,8 +550,6 @@ crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html
 crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
-crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
-crbug.com/248067 storage/quota/storageinfo-query-usage.html [ Pass Failure ]
 
 crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -793,7 +791,6 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
-crbug.com/311804 [ Mac Win Linux ] storage/quota/storagequota-query-usage.html [ Failure Pass ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 

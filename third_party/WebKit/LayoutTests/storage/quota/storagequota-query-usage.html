@@ -19,10 +19,8 @@ function usageCallback(usage, quota)
     returnedUsage = usage;
     returnedQuota = quota;
 
-    // Usage should be 0 (if other storage tests have correctly cleaned up their test data before exiting).
-    shouldBe("returnedUsage", "0");
-
     // Quota value would vary depending on the test environment.
+    shouldBeGreaterThanOrEqual("returnedUsage", "0");
     shouldBeGreaterThanOrEqual("returnedQuota", "returnedUsage");
 
     finishJSTest();

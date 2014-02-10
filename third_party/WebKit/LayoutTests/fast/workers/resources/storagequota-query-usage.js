@@ -16,11 +16,10 @@ worker.onmessage = function(evt) {
     if (match) {
         usageData = JSON.parse(match[1]);
 
-        // Usage should be 0 (if other storage tests have correctly cleaned up their test data before exiting).
-        shouldBe("usageData.usage", "0");
-
         // Quota value would vary depending on the test environment.
+        shouldBeGreaterThanOrEqual("usageData.usage", "0");
         shouldBeGreaterThanOrEqual("usageData.quota", "usageData.usage");
+
         worker.postMessage("close");
         finishJSTest();
     }
