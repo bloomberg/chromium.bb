@@ -248,7 +248,16 @@ class TarballCache(DiskCache):
 
   def _Fetch(self, url, local_path):
     """Fetch a remote file."""
-    retry_util.RunCurl([url, '-o', local_path], debug_level=logging.DEBUG)
+    # We have to nest the import because gs.GSContext uses us to cache its own
+    # gsutil tarball.  We know we won't get into a recursive loop though as it
+    # only fetches files via non-gs URIs.
+    from chromite.lib import gs
+
+    if url.startswith(gs.BASE_GS_URL):
+      ctx = gs.GSContext()
+      ctx.Copy(url, local_path)
+    else:
+      retry_util.RunCurl([url, '-o', local_path], debug_level=logging.DEBUG)
 
   def _Insert(self, key, tarball_path):
     """Insert a tarball and its extracted contents into the cache.
