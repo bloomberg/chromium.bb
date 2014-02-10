@@ -17,6 +17,7 @@ aren't in a third-party directory with a README.chromium file.
 """
 
 import glob
+import imp
 import optparse
 import os
 import re
@@ -28,10 +29,21 @@ import textwrap
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
 
+# Import third_party/PRESUBMIT.py via imp to avoid importing a random
+# PRESUBMIT.py from $PATH, also make sure we don't generate a .pyc file.
+sys.dont_write_bytecode = True
+third_party = \
+  imp.load_source('PRESUBMIT', \
+                  os.path.join(REPOSITORY_ROOT, 'third_party', 'PRESUBMIT.py'))
+
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
 import known_issues
+
+class InputApi(object):
+  def __init__(self):
+    self.re = re
 
 def GetIncompatibleDirectories():
   """Gets a list of third-party directories which use licenses incompatible
@@ -40,23 +52,6 @@ def GetIncompatibleDirectories():
     A list of directories.
   """
 
-  whitelist = [
-    'A(pple )?PSL 2(\.0)?',
-    'Apache( Version)? 2(\.0)?',
-    '(New )?([23]-Clause )?BSD( [23]-Clause)?( with advertising clause)?',
-    'L?GPL ?v?2(\.[01])?( or later)?',
-    'MIT(/X11)?(-like)?',
-    'MPL 1\.1 ?/ ?GPL 2(\.0)? ?/ ?LGPL 2\.1',
-    'MPL 2(\.0)?',
-    'Microsoft Limited Public License',
-    'Microsoft Permissive License',
-    'Public Domain',
-    'Python',
-    'SGI Free Software License B',
-    'University of Illinois\/NCSA Open Source',
-    'X11',
-  ]
-  regex = '^(%s)$' % '|'.join(whitelist)
   result = []
   for directory in _FindThirdPartyDirs():
     if directory in known_issues.KNOWN_ISSUES:
@@ -71,11 +66,8 @@ def GetIncompatibleDirectories():
     if metadata.get('License Android Compatible', 'no').upper() == 'YES':
       continue
     license = re.split(' [Ll]icenses?$', metadata['License'])[0]
-    tokens = [x.strip() for x in re.split(' and |,', license) if len(x) > 0]
-    for token in tokens:
-      if not re.match(regex, token, re.IGNORECASE):
-        result.append(directory)
-        break
+    if not third_party.LicenseIsCompatibleWithAndroid(InputApi(), license):
+      result.append(directory)
   return result
 
 def GetUnknownIncompatibleDirectories():

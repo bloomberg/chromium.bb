@@ -2,6 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+ANDROID_WHITELISTED_LICENSES = [
+  'A(pple )?PSL 2(\.0)?',
+  'Apache( Version)? 2(\.0)?',
+  '(New )?([23]-Clause )?BSD( [23]-Clause)?( with advertising clause)?',
+  'L?GPL ?v?2(\.[01])?( or later)?',
+  'MIT(/X11)?(-like)?',
+  'MPL 1\.1 ?/ ?GPL 2(\.0)? ?/ ?LGPL 2\.1',
+  'MPL 2(\.0)?',
+  'Microsoft Limited Public License',
+  'Microsoft Permissive License',
+  'Public Domain',
+  'Python',
+  'SGI Free Software License B',
+  'University of Illinois\/NCSA Open Source',
+  'X11',
+]
+
+def LicenseIsCompatibleWithAndroid(input_api, license):
+  regex = '^(%s)$' % '|'.join(ANDROID_WHITELISTED_LICENSES)
+  tokens = \
+    [x.strip() for x in input_api.re.split(' and |,', license) if len(x) > 0]
+  has_compatible_license = False
+  for token in tokens:
+    if input_api.re.match(regex, token, input_api.re.IGNORECASE):
+      has_compatible_license = True
+      break
+  return has_compatible_license
+
 def _CheckThirdPartyReadmesUpdated(input_api, output_api):
   """
   Checks to make sure that README.chromium files are properly updated
@@ -36,10 +64,13 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     r'^Version: [a-zA-Z0-9_\-\.:]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   release_pattern = input_api.re.compile(
-    r'^Security Critical: (yes)|(no)\r?$',
+    r'^Security Critical: (yes|no)\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   license_pattern = input_api.re.compile(
-    r'^License: .+\r?$',
+    r'^License: (.+)\r?$',
+    input_api.re.IGNORECASE | input_api.re.MULTILINE)
+  license_android_compatible_pattern = input_api.re.compile(
+    r'^License Android Compatible: (yes|no)\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
 
   for f in readmes:
@@ -68,10 +99,19 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
         'field. This field specifies whether the package is built with\n'
         'Chromium. Check README.chromium.template for details.',
         [f]))
-    if not license_pattern.search(contents):
+    license_match = license_pattern.search(contents)
+    if not license_match:
       errors.append(output_api.PresubmitError(
         'Third party README files should contain a \'License\' field.\n'
         'This field specifies the license used by the package. Check\n'
+        'README.chromium.template for details.',
+        [f]))
+    elif not LicenseIsCompatibleWithAndroid(input_api, license_match.group(1)) \
+         and not license_android_compatible_pattern.search(contents):
+      errors.append(output_api.PresubmitPromptWarning(
+        'Cannot determine whether specified license is compatible with\n' +
+        'the Android licensing requirements. Please check that the license\n' +
+        'name is spelled according to third_party/PRESUBMIT.py. Please see\n' +
         'README.chromium.template for details.',
         [f]))
   return errors
