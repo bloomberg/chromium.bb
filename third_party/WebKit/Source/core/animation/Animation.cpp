@@ -184,6 +184,14 @@ static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* elemen
         if (compositeString == "add")
             keyframe->setComposite(AnimationEffect::CompositeAdd);
 
+        String timingFunctionString;
+        if (keyframeDictionaryVector[i].get("easing", timingFunctionString)) {
+            RefPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
+            if (timingFunctionValue) {
+                keyframe->setEasing(CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false));
+            }
+        }
+
         Vector<String> keyframeProperties;
         keyframeDictionaryVector[i].getOwnPropertyNames(keyframeProperties);
 

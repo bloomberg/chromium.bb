@@ -105,8 +105,10 @@ TEST_F(AnimationAnimationTest, CanCreateAnAnimation)
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(keyframe1, "easing", "ease-in-out");
     setV8ObjectPropertyAsString(keyframe2, "width", "0px");
     setV8ObjectPropertyAsString(keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
 
     jsKeyframes.append(Dictionary(keyframe1, isolate));
     jsKeyframes.append(Dictionary(keyframe2, isolate));
@@ -140,6 +142,9 @@ TEST_F(AnimationAnimationTest, CanCreateAnAnimation)
 
     EXPECT_EQ("100px", toAnimatableLength(keyframe1Width)->toCSSValue()->cssText());
     EXPECT_EQ("0px", toAnimatableLength(keyframe2Width)->toCSSValue()->cssText());
+
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut)), *keyframes[0]->easing());
+    EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), *keyframes[1]->easing());
 }
 
 TEST_F(AnimationAnimationTest, CanSetDuration)

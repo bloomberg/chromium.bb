@@ -87,6 +87,8 @@ private:
     bool m_dependsOnUnderlyingValue;
 };
 
+const double accuracyForKeyframeEasing = 0.0000001;
+
 } // namespace
 
 
@@ -100,6 +102,7 @@ Keyframe::Keyframe()
 Keyframe::Keyframe(const Keyframe& copyFrom)
     : m_offset(copyFrom.m_offset)
     , m_composite(copyFrom.m_composite)
+    , m_easing(copyFrom.m_easing)
 {
     for (PropertyValueMap::const_iterator iter = copyFrom.m_propertyValues.begin(); iter != copyFrom.m_propertyValues.end(); ++iter)
         setPropertyValue(iter->key, iter->value.get());
@@ -253,7 +256,7 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
                 groupIter = result.iterator;
             }
             groupIter->value->appendKeyframe(adoptPtr(
-                new PropertySpecificKeyframe(keyframe->offset(), keyframe->propertyValue(property), keyframe->composite())));
+                new PropertySpecificKeyframe(keyframe->offset(), keyframe->easing(), keyframe->propertyValue(property), keyframe->composite())));
         }
     }
 
@@ -265,16 +268,18 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
 }
 
 
-KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, const AnimatableValue* value, CompositeOperation composite)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
+    , m_easing(easing)
     , m_value(composite == AnimationEffect::CompositeReplace ?
         AnimatableValue::takeConstRef(value) :
         static_cast<PassRefPtr<CompositableValue> >(AddCompositableValue::create(value)))
 {
 }
 
-KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue> value)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<CompositableValue> value)
     : m_offset(offset)
+    , m_easing(easing)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
@@ -282,7 +287,7 @@ KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double o
 
 PassOwnPtr<KeyframeEffectModel::PropertySpecificKeyframe> KeyframeEffectModel::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    return adoptPtr(new PropertySpecificKeyframe(offset, PassRefPtr<CompositableValue>(m_value)));
+    return adoptPtr(new PropertySpecificKeyframe(offset, m_easing, PassRefPtr<CompositableValue>(m_value)));
 }
 
 
@@ -328,7 +333,7 @@ void KeyframeEffectModel::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfR
     if (!offset)
         appendKeyframe(m_keyframes.first()->cloneWithOffset(1.0));
     else
-        m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, AnimatableValue::neutralValue(), CompositeAdd)));
+        m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, 0, AnimatableValue::neutralValue(), CompositeAdd)));
 }
 
 PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const
@@ -376,8 +381,11 @@ PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpec
         return const_cast<CompositableValue*>((*before)->value());
     if ((*after)->offset() == offset)
         return const_cast<CompositableValue*>((*after)->value());
-    return BlendedCompositableValue::create((*before)->value(), (*after)->value(),
-        (offset - (*before)->offset()) / ((*after)->offset() - (*before)->offset()));
+
+    double fraction = (offset - (*before)->offset()) / ((*after)->offset() - (*before)->offset());
+    if (const TimingFunction* timingFunction = (*before)->easing())
+        fraction = timingFunction->evaluate(fraction, accuracyForKeyframeEasing);
+    return BlendedCompositableValue::create((*before)->value(), (*after)->value(), fraction);
 }
 
 } // namespace

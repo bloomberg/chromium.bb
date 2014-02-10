@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
+#include "platform/animation/TimingFunction.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -61,6 +62,8 @@ public:
     double offset() const { return m_offset; }
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
     AnimationEffect::CompositeOperation composite() const { return m_composite; }
+    void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
+    TimingFunction* easing() const { return m_easing.get(); }
     void setPropertyValue(CSSPropertyID, const AnimatableValue*);
     void clearPropertyValue(CSSPropertyID);
     const AnimatableValue* propertyValue(CSSPropertyID) const;
@@ -72,6 +75,7 @@ private:
     Keyframe(const Keyframe&);
     double m_offset;
     AnimationEffect::CompositeOperation m_composite;
+    RefPtr<TimingFunction> m_easing;
     typedef HashMap<CSSPropertyID, RefPtr<AnimatableValue> > PropertyValueMap;
     PropertyValueMap m_propertyValues;
 };
@@ -105,14 +109,16 @@ public:
 
     class PropertySpecificKeyframe {
     public:
-        PropertySpecificKeyframe(double offset, const AnimatableValue*, CompositeOperation);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, CompositeOperation);
         double offset() const { return m_offset; }
+        const TimingFunction* easing() const { return m_easing.get(); }
         const CompositableValue* value() const { return m_value.get(); }
         PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
     private:
         // Used by cloneWithOffset().
-        PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue>);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<CompositableValue>);
         double m_offset;
+        RefPtr<TimingFunction> m_easing;
         RefPtr<CompositableValue> m_value;
     };
 

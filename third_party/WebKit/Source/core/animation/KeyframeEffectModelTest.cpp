@@ -34,6 +34,8 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/resolver/CSSToStyleMap.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -121,6 +123,28 @@ TEST(AnimationKeyframeEffectModel, CompositeAdd)
     keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
     RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
     expectDoubleValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, effect->sample(0, 0.6)->at(0).second->compositeOnto(pixelAnimatableValue(7.0)));
+}
+
+TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
+{
+    KeyframeEffectModel::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
+    RefPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("ease-in");
+    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setEasing(CSSToStyleMap::animationTimingFunction(timingFunction.get(), false));
+    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
+    expectDoubleValue(3.8582394, effect->sample(0, 0.6)->at(0).second->compositeOnto(unknownAnimatableValue(7.0)));
+}
+
+TEST(AnimationKeyframeEffectModel, CompositeCubicBezier)
+{
+    KeyframeEffectModel::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
+    RefPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("cubic-bezier(0.42, 0, 0.58, 1)");
+    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setEasing(CSSToStyleMap::animationTimingFunction(timingFunction.get(), false));
+    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
+    expectDoubleValue(4.3362322, effect->sample(0, 0.6)->at(0).second->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
 TEST(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable)
