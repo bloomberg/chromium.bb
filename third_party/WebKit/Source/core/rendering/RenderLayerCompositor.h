@@ -98,8 +98,9 @@ public:
     // composited layer tree.
     void updateCompositingLayers();
 
-    // Update the compositing state of the given layer. Returns true if that state changed.
-    bool updateLayerCompositingState(RenderLayer*);
+    // Update the compositing dirty bits, based on the compositing-impacting properties of the layer.
+    // (At the moment, it also has some legacy compatibility hacks.)
+    void updateLayerCompositingState(RenderLayer*);
 
     // Update the geometry for compositing children of compositingAncestor.
     void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
@@ -196,6 +197,19 @@ public:
 
 private:
     class OverlapMap;
+
+    enum CompositingStateTransitionType {
+        NoCompositingStateChange,
+        AllocateOwnCompositedLayerMapping,
+        RemoveOwnCompositedLayerMapping,
+        AddToSquashingLayer,
+        RemoveFromSquashingLayer
+    };
+
+    CompositingStateTransitionType computeCompositedLayerUpdate(const RenderLayer*);
+    // Make updates to the layer based on viewport-constrained properties such as position:fixed. This can in turn affect
+    // compositing.
+    bool updateLayerIfViewportConstrained(RenderLayer*);
 
     // GraphicsLayerClient implementation
     virtual void notifyAnimationStarted(const GraphicsLayer*, double, double) OVERRIDE { }
@@ -322,6 +336,9 @@ private:
 #if USE(RUBBER_BANDING)
     bool requiresOverhangLayers() const;
 #endif
+
+    void applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
+    void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged);
 
 private:
     DocumentLifecycle& lifecycle() const;

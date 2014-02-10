@@ -548,45 +548,45 @@ void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
 bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer)
 {
     bool compositedLayerMappingChanged = false;
-    RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
-    requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
+    bool nonCompositedReasonChanged = updateLayerIfViewportConstrained(layer);
+    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 
     // FIXME: It would be nice to directly use the layer's compositing reason,
     // but allocateOrClearCompositedLayerMapping also gets called without having updated compositing
     // requirements fully.
-    if (needsOwnBacking(layer)) {
+    switch (compositedLayerUpdate) {
+    case AllocateOwnCompositedLayerMapping:
+        ASSERT(!layer->hasCompositedLayerMapping());
         enableCompositingMode();
 
-        if (!layer->hasCompositedLayerMapping()) {
-            // If we need to repaint, do so before allocating the compositedLayerMapping
-            repaintOnCompositingChange(layer);
+        // If we need to repaint, do so before allocating the compositedLayerMapping
+        repaintOnCompositingChange(layer);
+        layer->ensureCompositedLayerMapping();
+        compositedLayerMappingChanged = true;
 
-            layer->ensureCompositedLayerMapping();
-            compositedLayerMappingChanged = true;
-
-            // At this time, the ScrollingCooridnator only supports the top-level frame.
-            if (layer->isRootLayer() && isMainFrame()) {
-                if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                    scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
-            }
-
-            // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
-            // that computing repaint rects will know the layer's correct compositingState.
-            // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
-            // Need to create a test where a squashed layer pops into compositing. And also to cover all other
-            // sorts of compositingState transitions.
-            layer->setGroupedMapping(0);
-
-            // FIXME: it seems premature to compute this before all compositing state has been updated?
-            // This layer and all of its descendants have cached repaints rects that are relative to
-            // the repaint container, so change when compositing changes; we need to update them here.
-            if (layer->parent())
-                layer->repainter().computeRepaintRectsIncludingDescendants();
+        // At this time, the ScrollingCooridnator only supports the top-level frame.
+        if (layer->isRootLayer() && isMainFrame()) {
+            if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+                scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
         }
 
-        if (layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
-            compositedLayerMappingChanged = true;
-    } else {
+        // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
+        // that computing repaint rects will know the layer's correct compositingState.
+        // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
+        // Need to create a test where a squashed layer pops into compositing. And also to cover all other
+        // sorts of compositingState transitions.
+        layer->setGroupedMapping(0);
+
+        // FIXME: it seems premature to compute this before all compositing state has been updated?
+        // This layer and all of its descendants have cached repaints rects that are relative to
+        // the repaint container, so change when compositing changes; we need to update them here.
+        if (layer->parent())
+            layer->repainter().computeRepaintRectsIncludingDescendants();
+
+        break;
+    case RemoveOwnCompositedLayerMapping:
+    // AddToSquashingLayer means you might have to remove the composited layer mapping first.
+    case AddToSquashingLayer:
         if (layer->hasCompositedLayerMapping()) {
             // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
             // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
@@ -611,7 +611,16 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             // If we need to repaint, do so now that we've removed the compositedLayerMapping
             repaintOnCompositingChange(layer);
         }
+
+        break;
+    case RemoveFromSquashingLayer:
+    case NoCompositingStateChange:
+        // Do nothing.
+        break;
     }
+
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
+        compositedLayerMappingChanged = true;
 
     if (compositedLayerMappingChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
@@ -624,37 +633,78 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
     // If a fixed position layer gained/lost a compositedLayerMapping or the reason not compositing it changed,
     // the scrolling coordinator needs to recalculate whether it can do fast scrolling.
-    bool nonCompositedReasonChanged = false;
-    if (layer->renderer()->style()->position() == FixedPosition) {
-        if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
-            layer->setViewportConstrainedNotCompositedReason(viewportConstrainedNotCompositedReason);
-            nonCompositedReasonChanged = true;
-        }
-        if (compositedLayerMappingChanged || nonCompositedReasonChanged) {
-            if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView->frameView());
-        }
+    if (compositedLayerMappingChanged || nonCompositedReasonChanged) {
+        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+            scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView->frameView());
     }
 
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
-bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
+bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
+{
+    RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
+    requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
+
+    if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
+        ASSERT(layer->renderer()->style()->position() == FixedPosition);
+
+        layer->setViewportConstrainedNotCompositedReason(viewportConstrainedNotCompositedReason);
+        return true;
+    }
+    return false;
+}
+
+RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::computeCompositedLayerUpdate(const RenderLayer* layer)
+{
+    CompositingStateTransitionType update = NoCompositingStateChange;
+    if (needsOwnBacking(layer)) {
+        if (!layer->hasCompositedLayerMapping()) {
+            update = AllocateOwnCompositedLayerMapping;
+        }
+    } else if (layer->hasCompositedLayerMapping()) {
+        update = RemoveOwnCompositedLayerMapping;
+    }
+    if (layerSquashingEnabled()) {
+        if (requiresSquashing(layer->compositingReasons())) {
+            // We can't compute at this time whether the squashing layer update is a no-op,
+            // since that requires walking the render layer tree.
+            update = AddToSquashingLayer;
+        } else if (layer->groupedMapping()) {
+            update = RemoveFromSquashingLayer;
+        }
+    }
+    return update;
+}
+
+// These are temporary hacks to work around chicken-egg issues while we continue to refactor the compositing code.
+// See crbug.com/339892 for a list of tests that fail if this method is removed.
+void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer* layer, CompositingStateTransitionType compositedLayerUpdate)
+{
+    if (compositedLayerUpdate != NoCompositingStateChange)
+        allocateOrClearCompositedLayerMapping(layer);
+}
+
+void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
 {
     updateDirectCompositingReasons(layer);
-    bool layerChanged = allocateOrClearCompositedLayerMapping(layer);
+    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 
-    if (layerSquashingEnabled()) {
-        // FIXME: this is not correct... info may be out of date and squashing returning true doesn't indicate that the layer changed
-        layerChanged = requiresSquashing(layer->compositingReasons());
+    if (compositedLayerUpdate != NoCompositingStateChange) {
+        setCompositingLayersNeedRebuild();
+        setNeedsToRecomputeCompositingRequirements();
     }
 
     // See if we need content or clipping layers. Methods called here should assume
     // that the compositing state of descendant layers has not been updated yet.
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration())
-        layerChanged = true;
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration()) {
+        setCompositingLayersNeedRebuild();
+    } else if (compositedLayerUpdate == NoCompositingStateChange) {
+        if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
+            setCompositingLayersNeedRebuild();
+    }
 
-    return layerChanged;
+    applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
 }
 
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
@@ -1081,16 +1131,30 @@ void RenderLayerCompositor::assignLayersToBackings(RenderLayer* updateRoot, bool
         squashingState.mostRecentMapping->finishAccumulatingSquashingLayers(squashingState.nextSquashedLayerIndex);
 }
 
+void RenderLayerCompositor::assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged)
+{
+    if (computeCompositedLayerUpdate(reflectionLayer) != NoCompositingStateChange) {
+        layersChanged = true;
+        allocateOrClearCompositedLayerMapping(reflectionLayer);
+    }
+    updateDirectCompositingReasons(reflectionLayer);
+    if (reflectionLayer->hasCompositedLayerMapping())
+        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
+}
+
 void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged)
 {
     if (allocateOrClearCompositedLayerMapping(layer))
         layersChanged = true;
 
-    if (layer->reflectionInfo() && updateLayerCompositingState(layer->reflectionInfo()->reflectionLayer()))
-        layersChanged = true;
+    // FIXME: special-casing reflection layers here is not right.
+    if (layer->reflectionInfo())
+        assignLayersToBackingsForReflectionLayer(layer->reflectionInfo()->reflectionLayer(), layersChanged);
 
     // Add this layer to a squashing backing if needed.
     if (layerSquashingEnabled()) {
+        // FIXME: refactor to use computeLayerCompositingState().
+
         // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
         // the squashed RenderLayer's own primary contents. This would happen when we have a composited negative z-index element that needs
         // to paint on top of the background, but below the layer's main contents. For now, because we always composite layers
