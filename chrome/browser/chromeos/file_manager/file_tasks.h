@@ -117,6 +117,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -226,7 +227,8 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task);
 
 // The callback is used for ExecuteFileTask(). Will be called with true if
 // the file task execution is successful, or false if unsuccessful.
-typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
+typedef base::Callback<void(extensions::api::file_browser_private::TaskResult
+                                result)> FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.
 // Returns |false| if the execution cannot be initiated. Otherwise returns

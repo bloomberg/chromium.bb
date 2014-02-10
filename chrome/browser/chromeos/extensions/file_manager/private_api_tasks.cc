@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -59,17 +58,23 @@ std::set<std::string> GetUniqueMimeTypes(
 
 bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
   using extensions::api::file_browser_private::ExecuteTask::Params;
+  using extensions::api::file_browser_private::ExecuteTask::Results::Create;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   file_manager::file_tasks::TaskDescriptor task;
   if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
     LOG(WARNING) << "Invalid task " << params->task_id;
+    results_ =
+        Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
     return false;
   }
 
-  if (params->file_urls.empty())
+  if (params->file_urls.empty()) {
+    results_ = Create(extensions::api::file_browser_private::TASK_RESULT_EMPTY);
+    SendResponse(true);
     return true;
+  }
 
   const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
@@ -81,22 +86,33 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
         file_system_context->CrackURL(GURL(params->file_urls[i]));
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       SetError(kInvalidFileUrl);
+      results_ =
+          Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
       return false;
     }
     file_urls.push_back(url);
   }
 
-  return file_manager::file_tasks::ExecuteFileTask(
+  const bool result = file_manager::file_tasks::ExecuteFileTask(
       GetProfile(),
       source_url(),
       task,
       file_urls,
       base::Bind(&FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted, this));
+  if (!result) {
+    results_ =
+        Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
+  }
+  return result;
 }
 
-void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(bool success) {
-  SetResult(new base::FundamentalValue(success));
-  SendResponse(true);
+void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(
+    extensions::api::file_browser_private::TaskResult result) {
+  results_ =
+      extensions::api::file_browser_private::ExecuteTask::Results::Create(
+          result);
+  SendResponse(result !=
+               extensions::api::file_browser_private::TASK_RESULT_FAILED);
 }
 
 bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {

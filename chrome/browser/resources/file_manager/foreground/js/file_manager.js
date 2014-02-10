@@ -65,6 +65,9 @@ FileManager.prototype = {
   },
   get volumeManager() {
     return this.volumeManager_;
+  },
+  get ui() {
+    return this.ui_;
   }
 };
 

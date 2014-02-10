@@ -111,6 +111,19 @@ enum DriveSyncErrorType {
   misc
 };
 
+// Result of task execution.
+enum TaskResult {
+  // The task execution succeeded and a new window/tab was opened.
+  opened,
+  // The task execution succeeded and the message was sent to the proper
+  // extension.
+  message_sent,
+  // The task execution failed.
+  failed,
+  // No URL is specified.
+  empty
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -392,8 +405,8 @@ dictionary DeviceEvent {
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
-// |success| True of task execution was successfully initiated.
-callback ExecuteTaskCallback = void(optional boolean success);
+// |result| Result of the task execution.
+callback ExecuteTaskCallback = void(TaskResult result);
 
 // |tasks| The list of matched file URL patterns for this task.
 callback GetFileTasksCallback = void(FileTask[] tasks);

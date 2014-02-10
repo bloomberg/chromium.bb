@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -310,7 +311,10 @@ void FileBrowserHandlerExecutor::Execute(
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!done_.is_null())
-    done_.Run(success);
+    done_.Run(
+        success
+            ? extensions::api::file_browser_private::TASK_RESULT_MESSAGE_SENT
+            : extensions::api::file_browser_private::TASK_RESULT_FAILED);
   delete this;
 }
 
@@ -475,7 +479,11 @@ bool ExecuteFileBrowserHandler(
   // Some action IDs of the file manager's file browser handlers require the
   // files to be directly opened with the browser.
   if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
-    return OpenFilesWithBrowser(profile, file_urls);
+    const bool result = OpenFilesWithBrowser(profile, file_urls);
+    done.Run(result
+                 ? extensions::api::file_browser_private::TASK_RESULT_OPENED
+                 : extensions::api::file_browser_private::TASK_RESULT_FAILED);
+    return result;
   }
 
   // The executor object will be self deleted on completion.

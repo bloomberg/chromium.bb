@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
@@ -272,7 +273,7 @@ bool ExecuteFileTask(Profile* profile,
     }
 
     if (!done.is_null())
-      done.Run(true);
+      done.Run(extensions::api::file_browser_private::TASK_RESULT_MESSAGE_SENT);
     return true;
   }
   NOTREACHED();

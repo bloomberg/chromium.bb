@@ -7,6 +7,7 @@
 /**
  * This object encapsulates everything related to tasks execution.
  *
+ * TODO(hirono): Pass each component instead of the entire FileManager.
  * @param {FileManager} fileManager FileManager instance.
  * @param {Object=} opt_params File manager load parameters.
  * @constructor
@@ -371,17 +372,32 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
         showAlert);
   }.bind(this);
 
-  var onViewFiles = function(success) {
-    if (success)
-      callback(success, entries);
-    else
-      onViewFilesFailure();
+  var onViewFiles = function(result) {
+    switch (result) {
+      case 'opened':
+        callback(success, entries);
+        break;
+      case 'message_sent':
+        util.isTeleported(window).then(function(teleported) {
+          if (teleported)
+            this.fileManager_.ui.showOpenInOtherDesktopAlert(entries);
+        }.bind(this));
+        callback(success, entries);
+        break;
+      case 'empty':
+        callback(success, entries);
+        break;
+      case 'failed':
+        onViewFilesFailure();
+        break;
+    }
   }.bind(this);
 
   this.checkAvailability_(function() {
     // TODO(mtomasz): Pass entries instead.
     var urls = util.entriesToURLs(entries);
-    util.viewFilesInBrowser(urls, onViewFiles);
+    var taskId = chrome.runtime.id + '|file|view-in-browser';
+    chrome.fileBrowserPrivate.executeTask(taskId, urls, onViewFiles);
   }.bind(this));
 };
 
@@ -414,7 +430,14 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
     } else {
       // TODO(mtomasz): Pass entries instead.
       var urls = util.entriesToURLs(entries);
-      chrome.fileBrowserPrivate.executeTask(taskId, urls);
+      chrome.fileBrowserPrivate.executeTask(taskId, urls, function(result) {
+        if (result !== 'message_sent')
+          return;
+        util.isTeleported(window).then(function(teleported) {
+          if (teleported)
+            this.fileManager_.ui.showOpenInOtherDesktopAlert(entries);
+        }.bind(this));
+      }.bind(this));
     }
   }.bind(this));
 };
@@ -802,26 +825,6 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
   };
 };
 
-
-/**
- * Decorates a FileTasks method, so it will be actually executed after the tasks
- * are available.
- * This decorator expects an implementation called |method + '_'|.
- *
- * @param {string} method The method name.
- */
-FileTasks.decorate = function(method) {
-  var privateMethod = method + '_';
-  FileTasks.prototype[method] = function() {
-    if (this.tasks_) {
-      this[privateMethod].apply(this, arguments);
-    } else {
-      this.pendingInvocations_.push([privateMethod, arguments]);
-    }
-    return this;
-  };
-};
-
 /**
  * Shows modal action picker dialog with currently available list of tasks.
  *
@@ -847,6 +850,25 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
       function(item) {
         onSuccess(item.task);
       });
+};
+
+/**
+ * Decorates a FileTasks method, so it will be actually executed after the tasks
+ * are available.
+ * This decorator expects an implementation called |method + '_'|.
+ *
+ * @param {string} method The method name.
+ */
+FileTasks.decorate = function(method) {
+  var privateMethod = method + '_';
+  FileTasks.prototype[method] = function() {
+    if (this.tasks_) {
+      this[privateMethod].apply(this, arguments);
+    } else {
+      this.pendingInvocations_.push([privateMethod, arguments]);
+    }
+    return this;
+  };
 };
 
 FileTasks.decorate('display');

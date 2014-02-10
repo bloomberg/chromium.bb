@@ -1086,17 +1086,6 @@ util.isSameEntry = function(entry1, entry2) {
 };
 
 /**
- * Views files in the browser.
- *
- * @param {Array.<string>} urls URLs of files to view.
- * @param {function(bool)} callback Callback notifying success or not.
- */
-util.viewFilesInBrowser = function(urls, callback) {
-  var taskId = chrome.runtime.id + '|file|view-in-browser';
-  chrome.fileBrowserPrivate.executeTask(taskId, urls, callback);
-};
-
-/**
  * Checks if the child entry is a descendant of another entry. If the entries
  * point to the same file or directory, then returns false.
  *
@@ -1179,6 +1168,21 @@ util.URLsToEntries = function(urls, callback) {
       function() {
         callback(result);
       });
+};
+
+/**
+ * Returns whether the window is teleported or not.
+ * @param {DOMWindow} window Window.
+ * @return {Promise.<boolean>} Whether the window is teleported or not.
+ */
+util.isTeleported = function(window) {
+  return new Promise(function(onFulfilled) {
+    window.chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                          currentId,
+                                                          displayedId) {
+      onFullfilled(currentId !== displayedId);
+    });
+  });
 };
 
 /**
