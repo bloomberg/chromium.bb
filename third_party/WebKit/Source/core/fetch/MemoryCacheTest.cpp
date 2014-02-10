@@ -57,7 +57,6 @@ public:
             setDecodedSize(this->size());
         }
 
-    protected:
         virtual void destroyDecodedData()
         {
             setDecodedSize(0);

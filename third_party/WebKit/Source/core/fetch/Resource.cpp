@@ -348,32 +348,6 @@ void Resource::willSendRequest(ResourceRequest& request, const ResourceResponse&
     m_requestedFromNetworkingLayer = true;
 }
 
-bool Resource::unlock()
-{
-    if (hasClients() || m_proxyResource || m_resourceToRevalidate || !m_loadFinishTime || !isSafeToUnlock())
-        return false;
-
-    if (m_purgeableData) {
-        ASSERT(!m_data);
-        return true;
-    }
-    if (!m_data)
-        return false;
-
-    // Should not make buffer purgeable if it has refs other than this since we don't want two copies.
-    if (!m_data->hasOneRef())
-        return false;
-
-    m_data->createPurgeableBuffer();
-    if (!m_data->hasPurgeableBuffer())
-        return false;
-
-    m_purgeableData = m_data->releasePurgeableBuffer();
-    m_purgeableData->unlock();
-    m_data.clear();
-    return true;
-}
-
 void Resource::responseReceived(const ResourceResponse& response)
 {
     setResponse(response);
@@ -640,12 +614,6 @@ void Resource::finishPendingClients()
     }
 }
 
-void Resource::prune()
-{
-    destroyDecodedData();
-    unlock();
-}
-
 void Resource::setResourceToRevalidate(Resource* resource)
 {
     ASSERT(resource);
@@ -839,18 +807,37 @@ bool Resource::canUseCacheValidator() const
     return m_response.hasCacheValidatorFields();
 }
 
-bool Resource::isPurgeable() const
+bool Resource::isSafeToMakePurgeable() const
 {
-    return m_purgeableData && !m_purgeableData->isLocked();
+    return !hasClients() && !m_proxyResource && !m_resourceToRevalidate;
 }
 
-bool Resource::wasPurged() const
+bool Resource::makePurgeable(bool purgeable)
 {
-    return m_wasPurged;
-}
+    if (purgeable) {
+        ASSERT(isSafeToMakePurgeable());
 
-bool Resource::lock()
-{
+        if (m_purgeableData) {
+            ASSERT(!m_data);
+            return true;
+        }
+        if (!m_data)
+            return false;
+
+        // Should not make buffer purgeable if it has refs other than this since we don't want two copies.
+        if (!m_data->hasOneRef())
+            return false;
+
+        m_data->createPurgeableBuffer();
+        if (!m_data->hasPurgeableBuffer())
+            return false;
+
+        m_purgeableData = m_data->releasePurgeableBuffer();
+        m_purgeableData->unlock();
+        m_data.clear();
+        return true;
+    }
+
     if (!m_purgeableData)
         return true;
 
@@ -864,6 +851,16 @@ bool Resource::lock()
 
     m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());
     return true;
+}
+
+bool Resource::isPurgeable() const
+{
+    return m_purgeableData && !m_purgeableData->isLocked();
+}
+
+bool Resource::wasPurged() const
+{
+    return m_wasPurged;
 }
 
 size_t Resource::overheadSize() const

@@ -85,6 +85,7 @@ public:
     virtual void didRemoveClient(ResourceClient*) OVERRIDE;
 
     virtual void allClientsRemoved() OVERRIDE;
+    virtual void destroyDecodedData() OVERRIDE;
 
     virtual void appendData(const char*, int) OVERRIDE;
     virtual void error(Resource::Status) OVERRIDE;
@@ -104,10 +105,6 @@ public:
     virtual bool shouldPauseAnimation(const WebCore::Image*) OVERRIDE;
     virtual void animationAdvanced(const WebCore::Image*) OVERRIDE;
     virtual void changedInRect(const WebCore::Image*, const IntRect&) OVERRIDE;
-
-protected:
-    virtual bool isSafeToUnlock() const OVERRIDE;
-    virtual void destroyDecodedData() OVERRIDE;
 
 private:
     void clear();

@@ -137,7 +137,7 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL)
     ASSERT(WTF::isMainThread());
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
     Resource* resource = m_resources.get(url);
-    if (resource && !resource->lock()) {
+    if (resource && !resource->makePurgeable(false)) {
         ASSERT(!resource->hasClients());
         bool didEvict = evict(resource);
         ASSERT_UNUSED(didEvict, didEvict);
@@ -192,10 +192,10 @@ void MemoryCache::pruneLiveResources()
                 if (elapsedTime < m_delayBeforeLiveDecodedPrune)
                     return;
 
-                // Destroy our decoded data if possible. This will remove us
-                // from m_liveDecodedResources, and possibly move us to a
-                // different LRU list in m_allResources.
-                current->prune();
+                // Destroy our decoded data. This will remove us from
+                // m_liveDecodedResources, and possibly move us to a different LRU
+                // list in m_allResources.
+                current->destroyDecodedData();
 
                 if (targetSize && m_liveSize <= targetSize)
                     return;
@@ -242,10 +242,10 @@ void MemoryCache::pruneDeadResources()
             ResourcePtr<Resource> previous = current->m_prevInAllResourcesList;
             ASSERT(!previous || previous->inCache());
             if (!current->hasClients() && !current->isPreloaded() && current->isLoaded()) {
-                // Destroy our decoded data if possible. This will remove us
-                // from m_liveDecodedResources, and possibly move us to a
-                // different LRU list in m_allResources.
-                current->prune();
+                // Destroy our decoded data. This will remove us from
+                // m_liveDecodedResources, and possibly move us to a different
+                // LRU list in m_allResources.
+                current->destroyDecodedData();
 
                 if (targetSize && m_deadSize <= targetSize)
                     return;
