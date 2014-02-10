@@ -19,13 +19,6 @@
 
 class PrefService;
 
-// The defaults after which extra shortcuts for options
-// can be shown.
-struct ShortcutConfiguration {
-  int always_translate_min_count;
-  int never_translate_min_count;
-};
-
 class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
@@ -66,8 +59,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                      const std::string& original_language,
                      const std::string& target_language,
                      TranslateErrors::Type error_type,
-                     PrefService* prefs,
-                     const ShortcutConfiguration& shortcut_config);
+                     PrefService* prefs);
 
   // Returns the number of languages supported.
   size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
@@ -179,8 +171,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            const std::string& original_language,
                            const std::string& target_language,
                            TranslateErrors::Type error_type,
-                           PrefService* prefs,
-                           ShortcutConfiguration shortcut_config);
+                           PrefService* prefs);
 
  private:
   friend class TranslationInfoBarTest;
@@ -212,8 +203,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // The translation related preferences.
   TranslatePrefs prefs_;
 
-  // Translation shortcut configuration
-  ShortcutConfiguration shortcut_config_;
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 

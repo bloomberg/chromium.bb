@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/translate/translate_bubble_model.h"
-#include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,10 +22,8 @@ struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
 class Profile;
-struct ShortcutConfiguration;
 class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
-class TranslateInfoBarDelegate;
 
 namespace content {
 class WebContents;
@@ -67,13 +63,6 @@ class TranslateManager : public content::NotificationObserver {
   // the webpage's original language.
   static std::string GetAutoTargetLanguage(const std::string& original_language,
                                            PrefService* prefs);
-
-  // Returns true if the new translate bubble is enabled.
-  static bool IsTranslateBubbleEnabled();
-
-  // Sets whether of not the infobar UI is used. This method is intented to be
-  // used only for tests.
-  static void SetUseInfobar(bool value);
 
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
@@ -158,19 +147,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // Notifies to the observers when translate failed.
   void NotifyTranslateError(const TranslateErrorDetails& details);
-
-  // Shows the translate bubble.
-  void ShowBubble(content::WebContents* web_contents,
-                  TranslateBubbleModel::ViewState view_state,
-                  TranslateErrors::Type error_type);
-
-  // Whether or not the infobar is used. This is intented to be used
-  // only for testing.
-  static bool use_infobar_;
-
-  // Returns the different parameters used to decide whether extra shortcuts
-  // are needed.
-  static ShortcutConfiguration ShortcutConfig();
 
   content::NotificationRegistrar notification_registrar_;
 

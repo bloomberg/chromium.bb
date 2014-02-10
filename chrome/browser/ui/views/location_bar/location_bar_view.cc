@@ -27,7 +27,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1476,7 +1476,7 @@ bool LocationBarView::RefreshManagePasswordsIconView() {
 }
 
 void LocationBarView::RefreshTranslateIcon() {
-  if (!TranslateManager::IsTranslateBubbleEnabled())
+  if (!TranslateService::IsTranslateBubbleEnabled())
     return;
 
   WebContents* web_contents = GetWebContents();

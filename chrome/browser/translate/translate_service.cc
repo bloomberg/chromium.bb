@@ -4,8 +4,10 @@
 
 #include "chrome/browser/translate/translate_service.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 
 namespace {
@@ -13,7 +15,7 @@ namespace {
 TranslateService* g_translate_service = NULL;
 }
 
-TranslateService::TranslateService() {
+TranslateService::TranslateService() : use_infobar_(false) {
   resource_request_allowed_notifier_.Init(this);
 }
 
@@ -59,4 +61,25 @@ void TranslateService::OnResourceRequestsAllowed() {
 
   language_list->SetResourceRequestsAllowed(
       resource_request_allowed_notifier_.ResourceRequestsAllowed());
+}
+
+// static
+bool TranslateService::IsTranslateBubbleEnabled() {
+#if defined(USE_AURA)
+  Initialize();
+  return !g_translate_service->use_infobar_;
+#elif defined(OS_MACOSX)
+  // The bubble UX is experimental on Mac OS X.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTranslateNewUX);
+#else
+  // The bubble UX is not implemented on the non-Aura platforms.
+  return false;
+#endif
+}
+
+// static
+void TranslateService::SetUseInfobar(bool value) {
+  Initialize();
+  g_translate_service->use_infobar_ = value;
 }

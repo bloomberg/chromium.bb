@@ -26,6 +26,27 @@
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// Counts used to decide whether infobars should be shown.
+// Android and iOS implementations do not offer a drop down (for space reasons),
+// so we are more aggressive about showing the shortcut to never translate.
+// The "Always Translate" option is always shown on iOS and Android.
+#if defined(OS_ANDROID)
+  const int kAlwaysTranslateMinCount = 1;
+  const int kNeverTranslateMinCount = 1;
+#elif defined(OS_IOS)
+  // The iOS implementation, like the Android implementation, shows the "Never
+  // translate" infobar after two denials. There is an offset of one because on
+  // Android the last event is not counted.
+  const int kAlwaysTranslateMinCount = 1;
+  const int kNeverTranslateMinCount = 2;
+#else
+  const int kAlwaysTranslateMinCount = 3;
+  const int kNeverTranslateMinCount = 3;
+#endif
+
+}  // namespace
 
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::NO_INDEX;
 
@@ -33,15 +54,13 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 }
 
 // static
-void TranslateInfoBarDelegate::Create(
-    bool replace_existing_infobar,
-    content::WebContents* web_contents,
-    Type infobar_type,
-    const std::string& original_language,
-    const std::string& target_language,
-    TranslateErrors::Type error_type,
-    PrefService* prefs,
-    const ShortcutConfiguration& shortcut_config) {
+void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
+                                      content::WebContents* web_contents,
+                                      Type infobar_type,
+                                      const std::string& original_language,
+                                      const std::string& target_language,
+                                      TranslateErrors::Type error_type,
+                                      PrefService* prefs) {
   // Check preconditions.
   if (infobar_type != TRANSLATION_ERROR) {
     DCHECK(TranslateDownloadManager::IsSupportedLanguage(target_language));
@@ -83,7 +102,7 @@ void TranslateInfoBarDelegate::Create(
   scoped_ptr<InfoBar> infobar(CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
           web_contents, infobar_type, old_delegate, original_language,
-          target_language, error_type, prefs, shortcut_config))));
+          target_language, error_type, prefs))));
   if (old_delegate)
     infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
   else
@@ -238,14 +257,14 @@ bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationDeniedCount(original_language_code()) >=
-          shortcut_config_.never_translate_min_count);
+          kNeverTranslateMinCount);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationAcceptedCount(original_language_code()) >=
-          shortcut_config_.always_translate_min_count);
+          kAlwaysTranslateMinCount);
 }
 
 // static
@@ -297,15 +316,13 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     const std::string& original_language,
     const std::string& target_language,
     TranslateErrors::Type error_type,
-    PrefService* prefs,
-    ShortcutConfiguration shortcut_config)
+    PrefService* prefs)
     : InfoBarDelegate(),
       infobar_type_(infobar_type),
       background_animation_(NONE),
       ui_delegate_(web_contents, original_language, target_language),
       error_type_(error_type),
-      prefs_(prefs),
-      shortcut_config_(shortcut_config) {
+      prefs_(prefs) {
   DCHECK_NE((infobar_type_ == TRANSLATION_ERROR),
             (error_type_ == TranslateErrors::NONE));
 

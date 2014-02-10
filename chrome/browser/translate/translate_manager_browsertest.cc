@@ -243,7 +243,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     download_manager->ClearTranslateScriptForTesting();
     download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
     TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
-    TranslateManager::SetUseInfobar(true);
+    TranslateService::SetUseInfobar(true);
 
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
@@ -1480,7 +1480,7 @@ TEST_F(TranslateManagerBrowserTest, DownloadsAndHistoryNotTranslated) {
 
 TEST_F(TranslateManagerBrowserTest, BubbleNormalTranslate) {
   // Prepare for the bubble
-  TranslateManager::SetUseInfobar(false);
+  TranslateService::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);
@@ -1521,7 +1521,7 @@ TEST_F(TranslateManagerBrowserTest, BubbleNormalTranslate) {
 
 TEST_F(TranslateManagerBrowserTest, BubbleTranslateScriptNotAvailable) {
   // Prepare for the bubble
-  TranslateManager::SetUseInfobar(false);
+  TranslateService::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);
@@ -1553,7 +1553,7 @@ TEST_F(TranslateManagerBrowserTest, BubbleTranslateScriptNotAvailable) {
 
 TEST_F(TranslateManagerBrowserTest, BubbleUnknownLanguage) {
   // Prepare for the bubble
-  TranslateManager::SetUseInfobar(false);
+  TranslateService::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);

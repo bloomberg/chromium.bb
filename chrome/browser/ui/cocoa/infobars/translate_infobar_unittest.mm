@@ -39,10 +39,9 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
   MockTranslateInfoBarDelegate(content::WebContents* web_contents,
                                TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
-                               PrefService* prefs,
-                               ShortcutConfiguration config)
+                               PrefService* prefs)
       : TranslateInfoBarDelegate(web_contents, type, NULL, "en", "es", error,
-                                 prefs, config) {
+                                 prefs) {
   }
 
   MOCK_METHOD0(Translate, void());
@@ -89,14 +88,11 @@ class TranslationInfoBarTest : public CocoaProfileTest {
       error = TranslateErrors::NETWORK;
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-    ShortcutConfiguration config;
-    config.never_translate_min_count = 3;
-    config.always_translate_min_count = 3;
     [[infobar_controller_ view] removeFromSuperview];
 
     scoped_ptr<TranslateInfoBarDelegate> delegate(
         new MockTranslateInfoBarDelegate(web_contents_.get(), type, error,
-                                         profile->GetPrefs(), config));
+                                         profile->GetPrefs()));
     scoped_ptr<InfoBar> infobar(
         TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
     if (infobar_)

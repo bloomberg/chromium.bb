@@ -10,7 +10,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -54,7 +54,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
         infobar_service_(NULL) {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    TranslateManager::SetUseInfobar(true);
+    TranslateService::SetUseInfobar(true);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
