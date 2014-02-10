@@ -927,6 +927,34 @@ class WebSocketChannelStreamTest : public WebSocketChannelTest {
   scoped_ptr<MockWebSocketStream> mock_stream_;
 };
 
+// Fixture for tests which test UTF-8 validation of sent Text frames via the
+// EventInterface.
+class WebSocketChannelSendUtf8Test
+    : public WebSocketChannelEventInterfaceTest {
+ public:
+  virtual void SetUp() {
+    set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
+    // For the purpose of the tests using this fixture, it doesn't matter
+    // whether these methods are called or not.
+    EXPECT_CALL(*event_interface_, OnAddChannelResponse(_, _, _))
+        .Times(AnyNumber());
+    EXPECT_CALL(*event_interface_, OnFlowControl(_))
+        .Times(AnyNumber());
+  }
+};
+
+// Fixture for tests which test UTF-8 validation of received Text frames using a
+// mock WebSocketStream.
+class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
+ public:
+  virtual void SetUp() {
+    // For the purpose of the tests using this fixture, it doesn't matter
+    // whether these methods are called or not.
+    EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+    EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
+  }
+};
+
 // Simple test that everything that should be passed to the creator function is
 // passed to the creator function.
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
@@ -1233,7 +1261,7 @@ TEST_F(WebSocketChannelDeletingTest, FailChannelDueToUnknownOpCodeNull) {
 TEST_F(WebSocketChannelDeletingTest, FailChannelDueInvalidCloseReason) {
   scoped_ptr<ReadableFakeWebSocketStream> stream(
       new ReadableFakeWebSocketStream);
-   static const InitFrame frames[] = {
+  static const InitFrame frames[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
        NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "\xFF")}};
   stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
@@ -2530,6 +2558,292 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReadBinaryFramesAre8BitClean) {
                           WebSocketFrameHeader::kOpCodeBinary,
                           std::vector<char>(kBinaryBlob,
                                             kBinaryBlob + kBinaryBlobSize)));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// Invalid UTF-8 is not permitted in Text frames.
+TEST_F(WebSocketChannelSendUtf8Test, InvalidUtf8Rejected) {
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel("Browser sent a text frame containing invalid UTF-8"));
+
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeText, AsVector("\xff"));
+}
+
+// A Text message cannot end with a partial UTF-8 character.
+TEST_F(WebSocketChannelSendUtf8Test, IncompleteCharacterInFinalFrame) {
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel("Browser sent a text frame containing invalid UTF-8"));
+
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeText, AsVector("\xc2"));
+}
+
+// A non-final Text frame may end with a partial UTF-8 character (compare to
+// previous test).
+TEST_F(WebSocketChannelSendUtf8Test, IncompleteCharacterInNonFinalFrame) {
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeText, AsVector("\xc2"));
+}
+
+// UTF-8 parsing context must be retained between frames.
+TEST_F(WebSocketChannelSendUtf8Test, ValidCharacterSplitBetweenFrames) {
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeText, AsVector("\xf1"));
+  channel_->SendFrame(true,
+                      WebSocketFrameHeader::kOpCodeContinuation,
+                      AsVector("\x80\xa0\xbf"));
+}
+
+// Similarly, an invalid character should be detected even if split.
+TEST_F(WebSocketChannelSendUtf8Test, InvalidCharacterSplit) {
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel("Browser sent a text frame containing invalid UTF-8"));
+
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeText, AsVector("\xe1"));
+  channel_->SendFrame(true,
+                      WebSocketFrameHeader::kOpCodeContinuation,
+                      AsVector("\x80\xa0\xbf"));
+}
+
+// An invalid character must be detected in continuation frames.
+TEST_F(WebSocketChannelSendUtf8Test, InvalidByteInContinuation) {
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel("Browser sent a text frame containing invalid UTF-8"));
+
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeText, AsVector("foo"));
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeContinuation, AsVector("bar"));
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeContinuation, AsVector("\xff"));
+}
+
+// However, continuation frames of a Binary frame will not be tested for UTF-8
+// validity.
+TEST_F(WebSocketChannelSendUtf8Test, BinaryContinuationNotChecked) {
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeBinary, AsVector("foo"));
+  channel_->SendFrame(
+      false, WebSocketFrameHeader::kOpCodeContinuation, AsVector("bar"));
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeContinuation, AsVector("\xff"));
+}
+
+// Multiple text messages can be validated without the validation state getting
+// confused.
+TEST_F(WebSocketChannelSendUtf8Test, ValidateMultipleTextMessages) {
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("foo"));
+  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("bar"));
+}
+
+// UTF-8 validation is enforced on received Text frames.
+TEST_F(WebSocketChannelEventInterfaceTest, ReceivedInvalidUtf8) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xff"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(kDefaultInitialQuota));
+  EXPECT_CALL(*event_interface_,
+              OnFailChannel("Could not decode a text frame as UTF-8."));
+
+  CreateChannelAndConnectSuccessfully();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+// Invalid UTF-8 is not sent over the network.
+TEST_F(WebSocketChannelStreamTest, InvalidUtf8TextFrameNotSent) {
+  static const InitFrame expected[] = {{FINAL_FRAME,
+                                        WebSocketFrameHeader::kOpCodeClose,
+                                        MASKED, CLOSE_DATA(GOING_AWAY, "")}};
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+      .WillOnce(Return(OK));
+  EXPECT_CALL(*mock_stream_, Close()).Times(1);
+
+  CreateChannelAndConnectSuccessfully();
+
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeText, AsVector("\xff"));
+}
+
+// The rest of the tests for receiving invalid UTF-8 test the communication with
+// the server. Since there is only one code path, it would be redundant to
+// perform the same tests on the EventInterface as well.
+
+// If invalid UTF-8 is received in a Text frame, the connection is failed.
+TEST_F(WebSocketChannelReceiveUtf8Test, InvalidTextFrameRejected) {
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xff"}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
+       CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+        .WillOnce(ReturnFrames(&frames))
+        .WillRepeatedly(Return(ERR_IO_PENDING));
+    EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+        .WillOnce(Return(OK));
+    EXPECT_CALL(*mock_stream_, Close()).Times(1);
+  }
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// A received Text message is not permitted to end with a partial UTF-8
+// character.
+TEST_F(WebSocketChannelReceiveUtf8Test, IncompleteCharacterReceived) {
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xc2"}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
+       CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+      .WillOnce(Return(OK));
+  EXPECT_CALL(*mock_stream_, Close()).Times(1);
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// However, a non-final Text frame may end with a partial UTF-8 character.
+TEST_F(WebSocketChannelReceiveUtf8Test, IncompleteCharacterIncompleteMessage) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xc2"}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// However, it will become an error if it is followed by an empty final frame.
+TEST_F(WebSocketChannelReceiveUtf8Test, TricksyIncompleteCharacter) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xc2"},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation, NOT_MASKED, ""}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
+       CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+      .WillOnce(Return(OK));
+  EXPECT_CALL(*mock_stream_, Close()).Times(1);
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// UTF-8 parsing context must be retained between received frames of the same
+// message.
+TEST_F(WebSocketChannelReceiveUtf8Test, ReceivedParsingContextRetained) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xf1"},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,  "\x80\xa0\xbf"}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// An invalid character must be detected even if split between frames.
+TEST_F(WebSocketChannelReceiveUtf8Test, SplitInvalidCharacterReceived) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xe1"},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,  "\x80\xa0\xbf"}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
+       CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+      .WillOnce(Return(OK));
+  EXPECT_CALL(*mock_stream_, Close()).Times(1);
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// An invalid character received in a continuation frame must be detected.
+TEST_F(WebSocketChannelReceiveUtf8Test, InvalidReceivedIncontinuation) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "foo"},
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,      "bar"},
+      {FINAL_FRAME,     WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,      "\xff"}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
+       CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+      .WillOnce(Return(OK));
+  EXPECT_CALL(*mock_stream_, Close()).Times(1);
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// Continuations of binary frames must not be tested for UTF-8 validity.
+TEST_F(WebSocketChannelReceiveUtf8Test, ReceivedBinaryNotUtf8Tested) {
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeBinary, NOT_MASKED, "foo"},
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,      "bar"},
+      {FINAL_FRAME,     WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED,      "\xff"}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// Multiple Text messages can be validated.
+TEST_F(WebSocketChannelReceiveUtf8Test, ValidateMultipleReceived) {
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "foo"},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "bar"}};
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
 
   CreateChannelAndConnectSuccessfully();
 }

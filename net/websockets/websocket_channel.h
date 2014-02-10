@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
+#include "base/i18n/streaming_utf8_validator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -309,6 +310,14 @@ class NET_EXPORT WebSocketChannel {
 
   // |notification_sender_| is owned by this object.
   scoped_ptr<HandshakeNotificationSender> notification_sender_;
+
+  // UTF-8 validator for outgoing Text messages.
+  base::StreamingUtf8Validator outgoing_utf8_validator_;
+  bool sending_text_message_;
+
+  // UTF-8 validator for incoming Text messages.
+  base::StreamingUtf8Validator incoming_utf8_validator_;
+  bool receiving_text_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };

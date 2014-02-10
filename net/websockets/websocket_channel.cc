@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/big_endian.h"
@@ -32,6 +32,8 @@
 namespace net {
 
 namespace {
+
+using base::StreamingUtf8Validator;
 
 const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
@@ -225,7 +227,9 @@ WebSocketChannel::WebSocketChannel(
       timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
       closing_code_(0),
       state_(FRESHLY_CONSTRUCTED),
-      notification_sender_(new HandshakeNotificationSender(this)) {}
+      notification_sender_(new HandshakeNotificationSender(this)),
+      sending_text_message_(false),
+      receiving_text_message_(false) {}
 
 WebSocketChannel::~WebSocketChannel() {
   // The stream may hold a pointer to read_frames_, and so it needs to be
@@ -291,12 +295,29 @@ void WebSocketChannel::SendFrame(bool fin,
                 << " data.size()=" << data.size();
     return;
   }
+  if (op_code == WebSocketFrameHeader::kOpCodeText ||
+      (op_code == WebSocketFrameHeader::kOpCodeContinuation &&
+       sending_text_message_)) {
+    StreamingUtf8Validator::State state =
+        outgoing_utf8_validator_.AddBytes(vector_as_array(&data), data.size());
+    if (state == StreamingUtf8Validator::INVALID ||
+        (state == StreamingUtf8Validator::VALID_MIDPOINT && fin)) {
+      // TODO(ricea): Kill renderer.
+      AllowUnused(
+          FailChannel("Browser sent a text frame containing invalid UTF-8",
+                      kWebSocketErrorGoingAway,
+                      ""));
+      // |this| has been deleted.
+      return;
+    }
+    sending_text_message_ = !fin;
+    DCHECK(!fin || state == StreamingUtf8Validator::VALID_ENDPOINT);
+  }
   current_send_quota_ -= data.size();
   // TODO(ricea): If current_send_quota_ has dropped below
   // send_quota_low_water_mark_, it might be good to increase the "low
   // water mark" and "high water mark", but only if the link to the WebSocket
   // server is not saturated.
-  // TODO(ricea): For kOpCodeText, do UTF-8 validation?
   scoped_refptr<IOBuffer> buffer(new IOBuffer(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
   AllowUnused(SendIOBuffer(fin, op_code, buffer, data.size()));
@@ -341,7 +362,8 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // |this| may have been deleted.
     return;
   }
-  AllowUnused(SendClose(code, IsStringUTF8(reason) ? reason : std::string()));
+  AllowUnused(SendClose(
+      code, StreamingUtf8Validator::Validate(reason) ? reason : std::string()));
   // |this| may have been deleted.
 }
 
@@ -646,8 +668,23 @@ ChannelState WebSocketChannel::HandleFrame(
     case WebSocketFrameHeader::kOpCodeBinary:  // fall-thru
     case WebSocketFrameHeader::kOpCodeContinuation:
       if (state_ == CONNECTED) {
-        // TODO(ricea): Need to fail the connection if UTF-8 is invalid
-        // post-reassembly. Requires a streaming UTF-8 validator.
+        if (opcode == WebSocketFrameHeader::kOpCodeText ||
+            (opcode == WebSocketFrameHeader::kOpCodeContinuation &&
+             receiving_text_message_)) {
+          // This call is not redundant when size == 0 because it tells us what
+          // the current state is.
+          StreamingUtf8Validator::State state =
+              incoming_utf8_validator_.AddBytes(
+                  size ? data_buffer->data() : NULL, size);
+          if (state == StreamingUtf8Validator::INVALID ||
+              (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
+            return FailChannel("Could not decode a text frame as UTF-8.",
+                               kWebSocketErrorProtocolError,
+                               "Invalid UTF-8 in text frame");
+          }
+          receiving_text_message_ = !final;
+          DCHECK(!final || state == StreamingUtf8Validator::VALID_ENDPOINT);
+        }
         // TODO(ricea): Can this copy be eliminated?
         const char* const data_begin = size ? data_buffer->data() : NULL;
         const char* const data_end = data_begin + size;
@@ -847,9 +884,7 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   }
   if (parsed_ok) {
     std::string text(data + kWebSocketCloseCodeLength, data + size);
-    // IsStringUTF8() blocks surrogate pairs and non-characters, so it is
-    // strictly stronger than required by RFC3629.
-    if (IsStringUTF8(text)) {
+    if (StreamingUtf8Validator::Validate(text)) {
       reason->swap(text);
     } else {
       *code = kWebSocketErrorProtocolError;
