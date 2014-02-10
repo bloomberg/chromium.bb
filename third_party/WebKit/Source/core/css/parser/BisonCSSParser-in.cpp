@@ -8418,7 +8418,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseImageSet(CSSParserValueList* valueList
     if (!functionArgs || !functionArgs->size() || !functionArgs->current())
         return 0;
 
-    RefPtr<CSSImageSetValue> imageSet = CSSImageSetValue::create();
+    RefPtrWillBeRawPtr<CSSImageSetValue> imageSet = CSSImageSetValue::create();
 
     CSSParserValue* arg = functionArgs->current();
     while (arg) {
@@ -8720,9 +8720,9 @@ static void filterInfoForName(const CSSParserString& name, CSSFilterValue::Filte
     }
 }
 
-PassRefPtr<CSSFilterValue> BisonCSSParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSFilterValue::FilterOperationType filterType)
+PassRefPtrWillBeRawPtr<CSSFilterValue> BisonCSSParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSFilterValue::FilterOperationType filterType)
 {
-    RefPtr<CSSFilterValue> filterValue = CSSFilterValue::create(filterType);
+    RefPtrWillBeRawPtr<CSSFilterValue> filterValue = CSSFilterValue::create(filterType);
     ASSERT(args);
 
     switch (filterType) {
@@ -8827,7 +8827,7 @@ PassRefPtr<CSSValueList> BisonCSSParser::parseFilter()
 
         // See if the specified primitive is one we understand.
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            RefPtr<CSSFilterValue> referenceFilterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
+            RefPtrWillBeRawPtr<CSSFilterValue> referenceFilterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
             list->append(referenceFilterValue);
             referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
         } else {
@@ -8843,7 +8843,7 @@ PassRefPtr<CSSValueList> BisonCSSParser::parseFilter()
             if (!args)
                 return 0;
 
-            RefPtr<CSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
+            RefPtrWillBeRawPtr<CSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
             if (!filterValue)
                 return 0;
 

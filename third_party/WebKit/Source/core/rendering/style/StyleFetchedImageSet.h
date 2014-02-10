@@ -77,6 +77,11 @@ private:
 
     ResourcePtr<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
+
+    // FIXME: oilpan: Change to RawPtrWillBeMember when moving this class onto oilpan heap.
+    // Also add "if !ENABLE(OILPAN)" around clearImageSetValue above as well as around its
+    // caller since it should not be needed once both of the objects are on the heap and
+    // oilpan is enabled.
     CSSImageSetValue* m_imageSetValue; // Not retained; it owns us.
 };
 

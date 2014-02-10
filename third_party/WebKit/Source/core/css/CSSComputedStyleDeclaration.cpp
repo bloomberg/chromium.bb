@@ -790,7 +790,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    RefPtr<CSSFilterValue> filterValue;
+    RefPtrWillBeRawPtr<CSSFilterValue> filterValue;
 
     Vector<RefPtr<FilterOperation> >::const_iterator end = style.filter().operations().end();
     for (Vector<RefPtr<FilterOperation> >::const_iterator it = style.filter().operations().begin(); it != end; ++it) {

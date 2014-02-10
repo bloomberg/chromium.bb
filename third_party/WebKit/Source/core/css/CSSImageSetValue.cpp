@@ -185,9 +185,9 @@ CSSImageSetValue::CSSImageSetValue(const CSSImageSetValue& cloneFrom)
     // Non-CSSValueList data is not accessible through CSS OM, no need to clone.
 }
 
-PassRefPtr<CSSImageSetValue> CSSImageSetValue::cloneForCSSOM() const
+PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::cloneForCSSOM() const
 {
-    return adoptRef(new CSSImageSetValue(*this));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageSetValue(*this));
 }
 
 } // namespace WebCore

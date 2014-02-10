@@ -253,7 +253,7 @@ public:
     PassRefPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
     PassRefPtr<CSSValueList> parseFilter();
-    PassRefPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
+    PassRefPtrWillBeRawPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
 
     static bool isBlendMode(CSSValueID);
     static bool isCompositeOperator(CSSValueID);

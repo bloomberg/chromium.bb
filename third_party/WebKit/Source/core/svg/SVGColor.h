@@ -41,25 +41,25 @@ public:
         SVG_COLORTYPE_CURRENTCOLOR = 3
     };
 
-    static PassRefPtr<SVGColor> createFromString(const String& rgbColor)
+    static PassRefPtrWillBeRawPtr<SVGColor> createFromString(const String& rgbColor)
     {
-        RefPtr<SVGColor> color = adoptRef(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
+        RefPtrWillBeRawPtr<SVGColor> color = adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
         StyleColor styleColor = colorFromRGBColorString(rgbColor);
         ASSERT(!styleColor.isCurrentColor());
         color->setColor(styleColor.color());
         return color.release();
     }
 
-    static PassRefPtr<SVGColor> createFromColor(const Color& rgbColor)
+    static PassRefPtrWillBeRawPtr<SVGColor> createFromColor(const Color& rgbColor)
     {
-        RefPtr<SVGColor> color = adoptRef(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
+        RefPtrWillBeRawPtr<SVGColor> color = adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
         color->setColor(rgbColor);
         return color.release();
     }
 
-    static PassRefPtr<SVGColor> createCurrentColor()
+    static PassRefPtrWillBeRawPtr<SVGColor> createCurrentColor()
     {
-        return adoptRef(new SVGColor(SVG_COLORTYPE_CURRENTCOLOR));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_CURRENTCOLOR));
     }
 
     const Color& color() const { return m_color; }
@@ -76,7 +76,7 @@ public:
 
     ~SVGColor() { }
 
-    PassRefPtr<SVGColor> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<SVGColor> cloneForCSSOM() const;
 
     bool equals(const SVGColor&) const;
 

@@ -43,6 +43,7 @@ namespace WTF {
 template<typename T>
 class RawPtr {
 public:
+    RawPtr() : m_ptr(0) { }
     RawPtr(T* ptr) : m_ptr(ptr) { }
 
     template<typename U>

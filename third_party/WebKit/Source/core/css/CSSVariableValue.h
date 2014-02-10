@@ -37,9 +37,9 @@ namespace WebCore {
 
 class CSSVariableValue : public CSSValue {
 public:
-    static PassRefPtr<CSSVariableValue> create(const AtomicString& name, const String& value)
+    static PassRefPtrWillBeRawPtr<CSSVariableValue> create(const AtomicString& name, const String& value)
     {
-        return adoptRef(new CSSVariableValue(name, value));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSVariableValue(name, value));
     }
 
     const AtomicString& name() const { return m_name; }

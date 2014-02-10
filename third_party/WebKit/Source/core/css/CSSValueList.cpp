@@ -129,10 +129,7 @@ bool CSSValueList::equals(const CSSValueList& other) const
 {
     // FIXME: the explicit Vector conversion copies into a temporary and is
     // wasteful.
-    Vector<RefPtr<CSSValue> > tmpValues(m_values);
-    Vector<RefPtr<CSSValue> > tmpOtherValues(other.m_values);
-    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(tmpValues, tmpOtherValues);
-}
+    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(Vector<RefPtr<CSSValue> >(m_values), Vector<RefPtr<CSSValue> >(other.m_values));}
 
 bool CSSValueList::equals(const CSSValue& other) const
 {

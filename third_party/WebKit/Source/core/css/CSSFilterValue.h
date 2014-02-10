@@ -51,16 +51,16 @@ public:
 
     static bool typeUsesSpaceSeparator(FilterOperationType);
 
-    static PassRefPtr<CSSFilterValue> create(FilterOperationType type)
+    static PassRefPtrWillBeRawPtr<CSSFilterValue> create(FilterOperationType type)
     {
-        return adoptRef(new CSSFilterValue(type));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFilterValue(type));
     }
 
     String customCSSText() const;
 
     FilterOperationType operationType() const { return m_type; }
 
-    PassRefPtr<CSSFilterValue> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<CSSFilterValue> cloneForCSSOM() const;
 
     bool equals(const CSSFilterValue&) const;
 

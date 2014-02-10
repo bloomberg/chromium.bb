@@ -23,6 +23,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/NullPtr.h"
+#include "wtf/RawPtr.h"
 #include "wtf/TypeTraits.h"
 
 namespace WTF {
@@ -60,6 +61,7 @@ namespace WTF {
     public:
         PassRefPtr() : m_ptr(0) { }
         PassRefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
+        template<typename U> PassRefPtr(const RawPtr<U>& ptr, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(ptr.get()) { refIfNotNull(m_ptr); }
         explicit PassRefPtr(T& ptr) : m_ptr(&ptr) { m_ptr->ref(); }
         // It somewhat breaks the type system to allow transfer of ownership out of
         // a const PassRefPtr. However, it makes it much easier to work with PassRefPtr
