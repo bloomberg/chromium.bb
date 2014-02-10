@@ -49,18 +49,6 @@ case "${host_arch}" in
     return 1
 esac
 
-case "${host_os}" in
-  "linux")
-    toolchain_dir="linux-${host_arch}"
-    ;;
-  "mac")
-    toolchain_dir="darwin-${host_arch}"
-    ;;
-  *)
-    echo "Host platform ${host_os} is not supported" >& 2
-    return 1
-esac
-
 CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
 if [[ -z "${CHROME_SRC}" ]]; then
   # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
