@@ -138,7 +138,7 @@ mode);
 * lou_backTranslateString and also by functions in liblouisxml
 */
 
-void EXPORT_CALL lou_registerTableResolver (char * (* resolver) (const char *table, const char *base))
+void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *table, const char *base));
 /* Register a new table resolver. Overrides the default resolver. */
 
   int EXPORT_CALL lou_compileString (const char *tableList, const char
