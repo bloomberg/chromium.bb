@@ -1614,6 +1614,7 @@ internal_brillo_paladin.add_config('duck-paladin',
   boards=['duck'],
   paladin_builder_name='duck paladin',
   trybot_list=True,
+  quick_unit=False,
 )
 
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
