@@ -697,6 +697,10 @@ void SystemTray::AddTrayUserItemForTest(internal::TrayUser* tray_user) {
   user_items_.push_back(tray_user);
 }
 
+internal::TrayDate* SystemTray::GetTrayDateForTesting() const {
+  return tray_date_;
+}
+
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).

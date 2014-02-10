@@ -51,7 +51,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
 };
 
 // Popup view used to display the date and day of week.
-class DateView : public BaseDateTimeView {
+class ASH_EXPORT DateView : public BaseDateTimeView {
  public:
   DateView();
   virtual ~DateView();
@@ -63,6 +63,8 @@ class DateView : public BaseDateTimeView {
 
   // Updates the format of the displayed time.
   void UpdateTimeFormat();
+
+  base::HourClockType GetHourTypeForTesting() const;
 
  private:
   // Overridden from BaseDateTimeView.
@@ -97,6 +99,8 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
 
   // Updates clock layout.
   void UpdateClockLayout(TrayDate::ClockLayout clock_layout);
+
+  base::HourClockType GetHourTypeForTesting() const;
 
  private:
   friend class TimeViewTest;

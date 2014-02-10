@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_DATE_TRAY_DATE_H_
 #define ASH_SYSTEM_DATE_TRAY_DATE_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,8 +26,7 @@ namespace tray {
 class TimeView;
 }
 
-class TrayDate : public SystemTrayItem,
-                 public ClockObserver {
+class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
  public:
   enum ClockLayout {
    HORIZONTAL_CLOCK,
@@ -37,6 +37,10 @@ class TrayDate : public SystemTrayItem,
 
   // Returns view for help button if it is exists. Returns NULL otherwise.
   views::View* GetHelpButtonView() const;
+
+  const tray::TimeView* GetTimeTrayForTesting() const;
+  const DateDefaultView* GetDefaultViewForTesting() const;
+  views::View* CreateDefaultViewForTesting(user::LoginStatus status);
 
  private:
   // Overridden from SystemTrayItem.

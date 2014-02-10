@@ -158,6 +158,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // will be owned by the SystemTray after the call.
   void AddTrayUserItemForTest(internal::TrayUser* tray_user);
 
+  // Gets tray_date_ for browser tests.
+  internal::TrayDate* GetTrayDateForTesting() const;
+
  private:
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);

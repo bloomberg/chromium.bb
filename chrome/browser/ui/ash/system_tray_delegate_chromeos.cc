@@ -142,15 +142,13 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->third_party = extension_ime_util::IsExtensionIME(ime.id());
 }
 
-gfx::NativeWindow GetNativeWindowByStatus(
-    ash::user::LoginStatus login_status,
-    bool session_started) {
+gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
+                                          bool session_started) {
   int container_id =
-      (!session_started ||
-       login_status == ash::user::LOGGED_IN_NONE ||
+      (!session_started || login_status == ash::user::LOGGED_IN_NONE ||
        login_status == ash::user::LOGGED_IN_LOCKED) ?
-           ash::internal::kShellWindowId_LockSystemModalContainer :
-           ash::internal::kShellWindowId_SystemModalContainer;
+          ash::internal::kShellWindowId_LockSystemModalContainer :
+          ash::internal::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);
 }
@@ -162,7 +160,7 @@ bool ConvertToDriveOperationStatus(const drive::JobInfo& info,
   if (info.job_type == drive::TYPE_DOWNLOAD_FILE) {
     status->type = ash::DriveOperationStatus::OPERATION_DOWNLOAD;
   } else if (info.job_type == drive::TYPE_UPLOAD_NEW_FILE ||
-           info.job_type == drive::TYPE_UPLOAD_EXISTING_FILE) {
+             info.job_type == drive::TYPE_UPLOAD_EXISTING_FILE) {
     status->type = ash::DriveOperationStatus::OPERATION_UPLOAD;
   } else {
     return false;
@@ -189,9 +187,9 @@ bool ConvertToFinishedDriveOperationStatus(const drive::JobInfo& info,
                                            ash::DriveOperationStatus* status) {
   if (!ConvertToDriveOperationStatus(info, status))
     return false;
-  status->state = (error == drive::FILE_ERROR_OK) ?
-      ash::DriveOperationStatus::OPERATION_COMPLETED :
-      ash::DriveOperationStatus::OPERATION_FAILED;
+  status->state = (error == drive::FILE_ERROR_OK)
+                      ? ash::DriveOperationStatus::OPERATION_COMPLETED
+                      : ash::DriveOperationStatus::OPERATION_FAILED;
   return true;
 }
 
@@ -222,9 +220,8 @@ void BluetoothDeviceConnectError(
 
 // Shows the settings sub page in the last active browser. If there is no such
 // browser, creates a new browser with the settings sub page.
-void ShowSettingsSubPageForAppropriateBrowser(
-    const std::string& sub_page,
-    Profile* profile) {
+void ShowSettingsSubPageForAppropriateBrowser(const std::string& sub_page,
+                                              Profile* profile) {
   chrome::ScopedTabbedBrowserDisplayer displayer(profile,
                                                  chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowSettingsSubPage(displayer.browser(), sub_page);
@@ -233,11 +230,9 @@ void ShowSettingsSubPageForAppropriateBrowser(
 void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
-  content::RecordAction(
-      base::UserMetricsAction("OpenInternetOptionsDialog"));
+  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForAppropriateBrowser(
-      page,
-      ProfileManager::GetPrimaryUserProfile());
+      page, ProfileManager::GetPrimaryUserProfile());
 }
 
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
@@ -246,1096 +241,1066 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
   UserAddingScreen::Get()->Start();
 }
 
-class SystemTrayDelegate : public ash::SystemTrayDelegate,
-                           public SessionManagerClient::Observer,
-                           public drive::JobListObserver,
-                           public content::NotificationObserver,
-                           public input_method::InputMethodManager::Observer,
-                           public chromeos::LoginState::Observer,
-                           public device::BluetoothAdapter::Observer,
-                           public SystemKeyEventListener::CapsLockObserver,
-                           public policy::CloudPolicyStore::Observer,
-                           public ash::SessionStateObserver {
- public:
-  SystemTrayDelegate()
-      : ui_weak_ptr_factory_(
-          new base::WeakPtrFactory<SystemTrayDelegate>(this)),
-        user_profile_(NULL),
-        clock_type_(base::GetHourClockType()),
-        search_key_mapped_to_(input_method::kSearchKey),
-        screen_locked_(false),
-        have_session_start_time_(false),
-        have_session_length_limit_(false),
-        volume_control_delegate_(new VolumeController()) {
-    // Register notifications on construction so that events such as
-    // PROFILE_CREATED do not get missed if they happen before Initialize().
-    registrar_.reset(new content::NotificationRegistrar);
-    registrar_->Add(this,
-                   chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                   content::NotificationService::AllSources());
-    registrar_->Add(this,
-                   chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                   content::NotificationService::AllSources());
-    if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE) {
-      registrar_->Add(this,
-                     chrome::NOTIFICATION_SESSION_STARTED,
-                     content::NotificationService::AllSources());
-    }
-    registrar_->Add(this,
-                   chrome::NOTIFICATION_PROFILE_CREATED,
-                   content::NotificationService::AllSources());
-    registrar_->Add(this,
-                   chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::NotificationService::AllSources());
-    registrar_->Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-        content::NotificationService::AllSources());
-    registrar_->Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-        content::NotificationService::AllSources());
-    registrar_->Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-        content::NotificationService::AllSources());
-    registrar_->Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-        content::NotificationService::AllSources());
-  }
-
-  virtual void Initialize() OVERRIDE {
-    DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
-
-    input_method::InputMethodManager::Get()->AddObserver(this);
-    UpdateClockType();
-
-    if (SystemKeyEventListener::GetInstance())
-      SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
-
-    device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&SystemTrayDelegate::InitializeOnAdapterReady,
-                   ui_weak_ptr_factory_->GetWeakPtr()));
-
-    ash::Shell::GetInstance()->session_state_delegate()->
-        AddSessionStateObserver(this);
-
-    if (LoginState::IsInitialized())
-      LoginState::Get()->AddObserver(this);
-  }
-
-  virtual void Shutdown() OVERRIDE {
-  }
-
-  void InitializeOnAdapterReady(
-      scoped_refptr<device::BluetoothAdapter> adapter) {
-    bluetooth_adapter_ = adapter;
-    CHECK(bluetooth_adapter_.get());
-    bluetooth_adapter_->AddObserver(this);
-
-    local_state_registrar_.reset(new PrefChangeRegistrar);
-    local_state_registrar_->Init(g_browser_process->local_state());
-
-    UpdateSessionStartTime();
-    UpdateSessionLengthLimit();
-
-    local_state_registrar_->Add(
-        prefs::kSessionStartTime,
-        base::Bind(&SystemTrayDelegate::UpdateSessionStartTime,
-                   base::Unretained(this)));
-    local_state_registrar_->Add(
-        prefs::kSessionLengthLimit,
-        base::Bind(&SystemTrayDelegate::UpdateSessionLengthLimit,
-                   base::Unretained(this)));
-
-    policy::BrowserPolicyConnectorChromeOS* policy_connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-        policy_connector->GetDeviceCloudPolicyManager();
-    if (policy_manager)
-      policy_manager->core()->store()->AddObserver(this);
-    UpdateEnterpriseDomain();
-  }
-
-  virtual ~SystemTrayDelegate() {
-    // Unregister PrefChangeRegistrars.
-    local_state_registrar_.reset();
-    user_pref_registrar_.reset();
-
-    // Unregister content notifications befure destroying any components.
-    registrar_.reset();
-
-    DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
-    input_method::InputMethodManager::Get()->RemoveObserver(this);
-    if (SystemKeyEventListener::GetInstance())
-      SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
-    bluetooth_adapter_->RemoveObserver(this);
-    ash::Shell::GetInstance()->session_state_delegate()->
-        RemoveSessionStateObserver(this);
-    LoginState::Get()->RemoveObserver(this);
-
-    // Stop observing Drive operations.
-    UnobserveDriveUpdates();
-
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-        connector->GetDeviceCloudPolicyManager();
-    if (policy_manager)
-      policy_manager->core()->store()->RemoveObserver(this);
-  }
-
-  // Overridden from ash::SystemTrayDelegate:
-  virtual bool GetTrayVisibilityOnStartup() OVERRIDE {
-    // In case of OOBE / sign in screen tray will be shown later.
-    return LoginState::Get()->IsUserLoggedIn();
-  }
-
-  virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
-    // All non-logged in ChromeOS specific LOGGED_IN states map to the same
-    // Ash specific LOGGED_IN state.
-    if (!LoginState::Get()->IsUserLoggedIn())
-      return ash::user::LOGGED_IN_NONE;
-
-    if (screen_locked_)
-      return ash::user::LOGGED_IN_LOCKED;
-
-    LoginState::LoggedInUserType user_type =
-        LoginState::Get()->GetLoggedInUserType();
-    switch (user_type) {
-      case LoginState::LOGGED_IN_USER_NONE:
-        return ash::user::LOGGED_IN_NONE;
-      case LoginState::LOGGED_IN_USER_REGULAR:
-        return ash::user::LOGGED_IN_USER;
-      case LoginState::LOGGED_IN_USER_OWNER:
-        return ash::user::LOGGED_IN_OWNER;
-      case LoginState::LOGGED_IN_USER_GUEST:
-        return ash::user::LOGGED_IN_GUEST;
-      case LoginState::LOGGED_IN_USER_RETAIL_MODE:
-        return ash::user::LOGGED_IN_RETAIL_MODE;
-      case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
-        return ash::user::LOGGED_IN_PUBLIC;
-      case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
-        return ash::user::LOGGED_IN_LOCALLY_MANAGED;
-      case LoginState::LOGGED_IN_USER_KIOSK_APP:
-        return ash::user::LOGGED_IN_KIOSK_APP;
-    }
-    NOTREACHED();
-    return ash::user::LOGGED_IN_NONE;
-  }
-
-  virtual bool IsOobeCompleted() const OVERRIDE {
-    if (!base::SysInfo::IsRunningOnChromeOS() &&
-        LoginState::Get()->IsUserLoggedIn())
-      return true;
-    return StartupUtils::IsOobeCompleted();
-  }
-
-  virtual void ChangeProfilePicture() OVERRIDE {
-    content::RecordAction(
-        base::UserMetricsAction("OpenChangeProfilePictureDialog"));
-    ShowSettingsSubPageForAppropriateBrowser(
-        chrome::kChangeProfilePictureSubPage,
-        ProfileManager::GetActiveUserProfile());
-  }
-
-  virtual const std::string GetEnterpriseDomain() const OVERRIDE {
-    return enterprise_domain_;
-  }
-
-  virtual const base::string16 GetEnterpriseMessage() const OVERRIDE {
-    if (GetEnterpriseDomain().empty())
-        return base::string16();
-    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
-                                      base::UTF8ToUTF16(GetEnterpriseDomain()));
-  }
-
-  virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
-    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-      return std::string();
-    return UserManager::Get()->GetSupervisedUserManager()->
-        GetManagerDisplayEmail(
-            chromeos::UserManager::Get()->GetActiveUser()->email());
-  }
-
-  virtual const base::string16
-  GetLocallyManagedUserManagerName() const OVERRIDE {
-    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-      return base::string16();
-    return UserManager::Get()->GetSupervisedUserManager()->
-        GetManagerDisplayName(
-            chromeos::UserManager::Get()->GetActiveUser()->email());
-  }
-
-  virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE {
-    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-        return base::string16();
-    return l10n_util::GetStringFUTF16(
-        IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
-        base::UTF8ToUTF16(GetLocallyManagedUserManager()));
-  }
-
-  virtual bool SystemShouldUpgrade() const OVERRIDE {
-    return UpgradeDetector::GetInstance()->notify_upgrade();
-  }
-
-  virtual base::HourClockType GetHourClockType() const OVERRIDE {
-    return clock_type_;
-  }
-
-  virtual void ShowSettings() OVERRIDE {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        ProfileManager::GetActiveUserProfile(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowSettings(displayer.browser());
-  }
-
-  virtual bool ShouldShowSettings() OVERRIDE {
-    return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings();
-  }
-
-  virtual void ShowDateSettings() OVERRIDE {
-    content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
-    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-    // Everybody can change the time zone (even though it is a device setting).
-    ShowSettingsSubPageForAppropriateBrowser(
-        sub_page,
-        ProfileManager::GetActiveUserProfile());
-  }
-
-  virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
-    if (!LoginState::Get()->IsUserLoggedIn())
-      return;
-    ShowNetworkSettingsPage(service_path);
-  }
-
-  virtual void ShowBluetoothSettings() OVERRIDE {
-    // TODO(sad): Make this work.
-  }
-
-  virtual void ShowDisplaySettings() OVERRIDE {
-    content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
-    ShowSettingsSubPageForAppropriateBrowser(
-        kDisplaySettingsSubPageName,
-        ProfileManager::GetActiveUserProfile());
-  }
-
-  virtual void ShowChromeSlow() OVERRIDE {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetPrimaryUserProfile(),
-         chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowSlow(displayer.browser());
-  }
-
-  virtual bool ShouldShowDisplayNotification() OVERRIDE {
-    // Packaged app is not counted as 'last active', so if a browser opening the
-    // display settings is in background of a packaged app, it will return true.
-    // TODO(mukai): fix this.
-    Browser* active_browser = chrome::FindLastActiveWithHostDesktopType(
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    if (!active_browser)
-      return true;
-
-    content::WebContents* active_contents =
-        active_browser->tab_strip_model()->GetActiveWebContents();
-    if (!active_contents)
-      return true;
-
-    GURL visible_url = active_contents->GetLastCommittedURL();
-    std::string display_settings_url =
-        std::string(chrome::kChromeUISettingsURL) + kDisplaySettingsSubPageName;
-    std::string display_overscan_url =
-        std::string(chrome::kChromeUISettingsURL) +
-        kDisplayOverscanSettingsSubPageName;
-    return (visible_url.spec() != display_settings_url) &&
-        (visible_url.spec() != display_overscan_url);
-  }
-
-  virtual void ShowDriveSettings() OVERRIDE {
-    // TODO(tengs): Open the drive-specific settings page once we put it in.
-    // For now just show Google Drive main page.
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetActiveUserProfile(),
-         chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowSingletonTabOverwritingNTP(
-        displayer.browser(),
-        chrome::GetSingletonTabNavigateParams(displayer.browser(),
-                                              GURL(kDriveSettingsPageURL)));
-  }
-
-  virtual void ShowIMESettings() OVERRIDE {
-    content::RecordAction(
-        base::UserMetricsAction("OpenLanguageOptionsDialog"));
-    ShowSettingsSubPageForAppropriateBrowser(
-        chrome::kLanguageOptionsSubPage,
-        ProfileManager::GetActiveUserProfile());
-  }
-
-  virtual void ShowHelp() OVERRIDE {
-    chrome::ShowHelpForProfile(ProfileManager::GetActiveUserProfile(),
-                               chrome::HOST_DESKTOP_TYPE_ASH,
-                               chrome::HELP_SOURCE_MENU);
-  }
-
-  virtual void ShowAccessibilityHelp() OVERRIDE {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        ProfileManager::GetActiveUserProfile(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    accessibility::ShowAccessibilityHelp(displayer.browser());
-  }
-
-  virtual void ShowAccessibilitySettings() OVERRIDE {
-    content::RecordAction(
-        base::UserMetricsAction("ShowAccessibilitySettings"));
-    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-        l10n_util::GetStringUTF8(
-            IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-    ShowSettingsSubPageForAppropriateBrowser(
-        sub_page,
-        ProfileManager::GetActiveUserProfile());
-  }
-
-  virtual void ShowPublicAccountInfo() OVERRIDE {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetActiveUserProfile(),
-         chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowPolicy(displayer.browser());
-  }
-
-  virtual void ShowLocallyManagedUserInfo() OVERRIDE {
-    // TODO(antrim): find out what should we show in this case.
-    // http://crbug.com/229762
-  }
-
-  virtual void ShowEnterpriseInfo() OVERRIDE {
-    ash::user::LoginStatus status = GetUserLoginStatus();
-    if (status == ash::user::LOGGED_IN_NONE ||
-        status == ash::user::LOGGED_IN_LOCKED) {
-      scoped_refptr<chromeos::HelpAppLauncher> help_app(
-         new chromeos::HelpAppLauncher(GetNativeWindow()));
-      help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
-    } else {
-      GURL url(google_util::StringAppendGoogleLocaleParam(
-          chrome::kLearnMoreEnterpriseURL));
-      chrome::ScopedTabbedBrowserDisplayer displayer(
-          ProfileManager::GetActiveUserProfile(),
-          chrome::HOST_DESKTOP_TYPE_ASH);
-      chrome::ShowSingletonTab(displayer.browser(), url);
-    }
-  }
-
-  virtual void ShowUserLogin() OVERRIDE {
-    ash::Shell* shell = ash::Shell::GetInstance();
-    if (!shell->delegate()->IsMultiProfilesEnabled())
-      return;
-
-    // Only regular users could add other users to current session.
-    if (UserManager::Get()->GetActiveUser()->GetType() !=
-            User::USER_TYPE_REGULAR) {
-      return;
-    }
-
-    if (static_cast<int>(UserManager::Get()->GetLoggedInUsers().size()) >=
-            shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers())
-      return;
-
-    // Launch sign in screen to add another user to current session.
-    if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size()) {
-      // Don't show dialog if any logged in user in multi-profiles session
-      // dismissed it.
-      bool show_intro = true;
-      const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
-      for (UserList::const_iterator it = logged_in_users.begin();
-           it != logged_in_users.end(); ++it) {
-        show_intro &= !multi_user_util::GetProfileFromUserID(
-            multi_user_util::GetUserIDFromEmail((*it)->email()))->GetPrefs()->
-            GetBoolean(prefs::kMultiProfileNeverShowIntro);
-        if (!show_intro)
-          break;
-      }
-      if (show_intro) {
-        base::Callback<void(bool)> on_accept =
-            base::Bind(&OnAcceptMultiprofilesIntro);
-        ShowMultiprofilesIntroDialog(on_accept);
-      } else {
-        UserAddingScreen::Get()->Start();
-      }
-    }
-  }
-
-  virtual void ShowSpringChargerReplacementDialog() OVERRIDE {
-    if (!ChargerReplacementDialog::ShouldShowDialog())
-      return;
-
-    ChargerReplacementDialog* dialog =
-        new ChargerReplacementDialog(GetNativeWindow());
-    dialog->Show();
-  }
-
-  virtual bool HasUserConfirmedSafeSpringCharger() OVERRIDE {
-    return ChargerReplacementHandler::GetChargerStatusPref() ==
-        ChargerReplacementHandler::CONFIRM_SAFE_CHARGER;
-  }
-
-  virtual void ShutDown() OVERRIDE {
-    ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
-  }
-
-  virtual void SignOut() OVERRIDE {
-    chrome::AttemptUserExit();
-  }
-
-  virtual void RequestLockScreen() OVERRIDE {
-    // TODO(antrim) : additional logging for crbug/173178
-    LOG(WARNING) << "Requesting screen lock from AshSystemTrayDelegate";
-    DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
-  }
-
-  virtual void RequestRestartForUpdate() OVERRIDE {
-    // We expect that UpdateEngine is in "Reboot for update" state now.
-    chrome::NotifyAndTerminate(true /* fast path */);
-  }
-
-  virtual void GetAvailableBluetoothDevices(
-      ash::BluetoothDeviceList* list) OVERRIDE {
-    device::BluetoothAdapter::DeviceList devices =
-        bluetooth_adapter_->GetDevices();
-    for (size_t i = 0; i < devices.size(); ++i) {
-      device::BluetoothDevice* device = devices[i];
-      ash::BluetoothDeviceInfo info;
-      info.address = device->GetAddress();
-      info.display_name = device->GetName();
-      info.connected = device->IsConnected();
-      info.connecting = device->IsConnecting();
-      info.paired = device->IsPaired();
-      list->push_back(info);
-    }
-  }
-
-  virtual void BluetoothStartDiscovering() OVERRIDE {
-    bluetooth_adapter_->StartDiscovering(
-        base::Bind(&base::DoNothing),
-        base::Bind(&BluetoothSetDiscoveringError));
-  }
-
-  virtual void BluetoothStopDiscovering() OVERRIDE {
-    bluetooth_adapter_->StopDiscovering(
-        base::Bind(&base::DoNothing),
-        base::Bind(&BluetoothSetDiscoveringError));
-  }
-
-  virtual void ConnectToBluetoothDevice(const std::string& address) OVERRIDE {
-    device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
-    if (!device || device->IsConnecting() ||
-        (device->IsConnected() && device->IsPaired())) {
-      return;
-    }
-    if (device->IsPaired() && !device->IsConnectable())
-      return;
-    if (device->IsPaired() || !device->IsPairable()) {
-      ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE);
-      device->Connect(
-          NULL,
-          base::Bind(&base::DoNothing),
-          base::Bind(&BluetoothDeviceConnectError));
-    } else {  // Show paring dialog for the unpaired device.
-      ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE);
-      BluetoothPairingDialog* dialog =
-          new BluetoothPairingDialog(GetNativeWindow(), device);
-      // The dialog deletes itself on close.
-      dialog->Show();
-    }
-  }
-
-  virtual bool IsBluetoothDiscovering() OVERRIDE {
-    return bluetooth_adapter_->IsDiscovering();
-  }
-
-  virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE {
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::Get();
-    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-    input_method::InputMethodDescriptor ime = manager->GetCurrentInputMethod();
-    ExtractIMEInfo(ime, *util, info);
-    info->selected = true;
-  }
-
-  virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE {
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::Get();
-    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-    scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
-        manager->GetActiveInputMethods());
-    std::string current = manager->GetCurrentInputMethod().id();
-    for (size_t i = 0; i < ime_descriptors->size(); i++) {
-      input_method::InputMethodDescriptor& ime = ime_descriptors->at(i);
-      ash::IMEInfo info;
-      ExtractIMEInfo(ime, *util, &info);
-      info.selected = ime.id() == current;
-      list->push_back(info);
-    }
-  }
-
-  virtual void GetCurrentIMEProperties(
-      ash::IMEPropertyInfoList* list) OVERRIDE {
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::Get();
-    input_method::InputMethodPropertyList properties =
-        manager->GetCurrentInputMethodProperties();
-    for (size_t i = 0; i < properties.size(); ++i) {
-      ash::IMEPropertyInfo property;
-      property.key = properties[i].key;
-      property.name = base::UTF8ToUTF16(properties[i].label);
-      property.selected = properties[i].is_selection_item_checked;
-      list->push_back(property);
-    }
-  }
-
-  virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
-    input_method::InputMethodManager::Get()->ChangeInputMethod(ime_id);
-  }
-
-  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
-    input_method::InputMethodManager::Get()->
-        ActivateInputMethodProperty(key);
-  }
-
-  virtual void CancelDriveOperation(int32 operation_id) OVERRIDE {
-    DriveIntegrationService* integration_service =
-        FindDriveIntegrationService();
-    if (!integration_service)
-      return;
-
-    integration_service->job_list()->CancelJob(operation_id);
-  }
-
-  virtual void GetDriveOperationStatusList(
-      ash::DriveOperationStatusList* list) OVERRIDE {
-    DriveIntegrationService* integration_service =
-        FindDriveIntegrationService();
-    if (!integration_service)
-      return;
-
-    *list = ConvertToDriveStatusList(
-        integration_service->job_list()->GetJobInfoList());
-  }
-
-  virtual void ShowNetworkConfigure(const std::string& network_id,
-                                    gfx::NativeWindow parent_window) OVERRIDE {
-    NetworkConfigView::Show(network_id, parent_window);
-  }
-
-  virtual bool EnrollNetwork(const std::string& network_id,
-                             gfx::NativeWindow parent_window) OVERRIDE {
-    return enrollment::CreateDialog(network_id, parent_window);
-  }
-
-  virtual void ManageBluetoothDevices() OVERRIDE {
-    content::RecordAction(
-        base::UserMetricsAction("ShowBluetoothSettingsPage"));
-    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-    ShowSettingsSubPageForAppropriateBrowser(
-        sub_page,
-        ProfileManager::GetPrimaryUserProfile());
-  }
-
-  virtual void ToggleBluetooth() OVERRIDE {
-    bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
-                                   base::Bind(&base::DoNothing),
-                                   base::Bind(&BluetoothPowerFailure));
-  }
-
-  virtual void ShowMobileSimDialog() OVERRIDE {
-    SimDialogDelegate::ShowDialog(GetNativeWindow(),
-                                  SimDialogDelegate::SIM_DIALOG_UNLOCK);
-  }
-
-  virtual void ShowMobileSetupDialog(const std::string& service_path) OVERRIDE {
-    MobileSetupDialog::Show(service_path);
-  }
-
-  virtual void ShowOtherNetworkDialog(const std::string& type) OVERRIDE {
-    if (type == shill::kTypeCellular) {
-      ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
-      return;
-    }
-    NetworkConfigView::ShowForType(type, GetNativeWindow());
-  }
-
-  virtual bool GetBluetoothAvailable() OVERRIDE {
-    return bluetooth_adapter_->IsPresent();
-  }
-
-  virtual bool GetBluetoothEnabled() OVERRIDE {
-    return bluetooth_adapter_->IsPowered();
-  }
-
-  virtual void ChangeProxySettings() OVERRIDE {
-    CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
-    LoginDisplayHostImpl::default_host()->OpenProxySettings();
-  }
-
-  virtual ash::VolumeControlDelegate*
-  GetVolumeControlDelegate() const OVERRIDE {
-    return volume_control_delegate_.get();
-  }
-
-  virtual void SetVolumeControlDelegate(
-      scoped_ptr<ash::VolumeControlDelegate> delegate) OVERRIDE {
-    volume_control_delegate_.swap(delegate);
-  }
-
-  virtual bool GetSessionStartTime(
-      base::TimeTicks* session_start_time) OVERRIDE {
-    *session_start_time = session_start_time_;
-    return have_session_start_time_;
-  }
-
-  virtual bool GetSessionLengthLimit(
-      base::TimeDelta* session_length_limit) OVERRIDE {
-    *session_length_limit = session_length_limit_;
-    return have_session_length_limit_;
-  }
-
-  virtual int GetSystemTrayMenuWidth() OVERRIDE {
-    return l10n_util::GetLocalizedContentsWidthInPixels(
-        IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
-  }
-
-  virtual void ActiveUserWasChanged() OVERRIDE {
-    GetSystemTrayNotifier()->NotifyUserUpdate();
-  }
-
- private:
-  ash::SystemTray* GetPrimarySystemTray() {
-    return ash::Shell::GetInstance()->GetPrimarySystemTray();
-  }
-
-  ash::SystemTrayNotifier* GetSystemTrayNotifier() {
-    return ash::Shell::GetInstance()->system_tray_notifier();
-  }
-
-  void SetProfile(Profile* profile) {
-    // Stop observing the current |user_profile_| on Drive integration status.
-    UnobserveDriveUpdates();
-
-    user_profile_ = profile;
-
-    // Restart observation, now for the newly set |profile|.
-    ObserveDriveUpdates();
-
-    PrefService* prefs = profile->GetPrefs();
-    user_pref_registrar_.reset(new PrefChangeRegistrar);
-    user_pref_registrar_->Init(prefs);
-    user_pref_registrar_->Add(
-        prefs::kUse24HourClock,
-        base::Bind(&SystemTrayDelegate::UpdateClockType,
-                   base::Unretained(this)));
-    user_pref_registrar_->Add(
-        prefs::kLanguageRemapSearchKeyTo,
-        base::Bind(&SystemTrayDelegate::OnLanguageRemapSearchKeyToChanged,
-                   base::Unretained(this)));
-    user_pref_registrar_->Add(
-        prefs::kShowLogoutButtonInTray,
-        base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
-                   base::Unretained(this)));
-    user_pref_registrar_->Add(
-        prefs::kLogoutDialogDurationMs,
-        base::Bind(&SystemTrayDelegate::UpdateLogoutDialogDuration,
-                   base::Unretained(this)));
-    user_pref_registrar_->Add(
-        prefs::kLargeCursorEnabled,
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this),
-                   ash::A11Y_NOTIFICATION_NONE));
-    user_pref_registrar_->Add(
-        prefs::kAutoclickEnabled,
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this),
-                   ash::A11Y_NOTIFICATION_NONE));
-    user_pref_registrar_->Add(
-        prefs::kShouldAlwaysShowAccessibilityMenu,
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this),
-                   ash::A11Y_NOTIFICATION_NONE));
-    user_pref_registrar_->Add(
-        prefs::kPerformanceTracingEnabled,
-        base::Bind(&SystemTrayDelegate::UpdatePerformanceTracing,
-                   base::Unretained(this)));
-
-    UpdateClockType();
-    UpdateShowLogoutButtonInTray();
-    UpdateLogoutDialogDuration();
-    UpdatePerformanceTracing();
-    search_key_mapped_to_ =
-        profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
-  }
-
-  bool UnsetProfile(Profile* profile) {
-    if (profile != user_profile_)
-      return false;
-    user_pref_registrar_.reset();
-    return true;
-  }
-
-  void ObserveDriveUpdates() {
-    DriveIntegrationService* integration_service =
-        FindDriveIntegrationService();
-    if (integration_service)
-      integration_service->job_list()->AddObserver(this);
-  }
-
-  void UnobserveDriveUpdates() {
-    DriveIntegrationService* integration_service =
-        FindDriveIntegrationService();
-    if (integration_service)
-      integration_service->job_list()->RemoveObserver(this);
-  }
-
-  bool ShouldUse24HourClock() const {
-    // On login screen and in guest mode owner default is used for
-    // kUse24HourClock preference.
-    const ash::user::LoginStatus status = GetUserLoginStatus();
-    const CrosSettings* const cros_settings = CrosSettings::Get();
-    bool system_use_24_hour_clock = true;
-    const bool system_value_found = cros_settings->GetBoolean(
-        kSystemUse24HourClock, &system_use_24_hour_clock);
-
-    if (status == ash::user::LOGGED_IN_NONE)
-      return (system_value_found
-                  ? system_use_24_hour_clock
-                  : (base::GetHourClockType() == base::k24HourClock));
-
-    const PrefService::Preference* user_pref =
-        user_pref_registrar_->prefs()->FindPreference(prefs::kUse24HourClock);
-    if (status == ash::user::LOGGED_IN_GUEST && user_pref->IsDefaultValue())
-      return (system_value_found
-                  ? system_use_24_hour_clock
-                  : (base::GetHourClockType() == base::k24HourClock));
-
-    bool use_24_hour_clock = true;
-    user_pref->GetValue()->GetAsBoolean(&use_24_hour_clock);
-    return use_24_hour_clock;
-  }
-
-  void UpdateClockType() {
-    if (!user_pref_registrar_)
-      return;
-
-    const bool use_24_hour_clock = ShouldUse24HourClock();
-    clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
-    GetSystemTrayNotifier()->NotifyDateFormatChanged();
-    // This also works for enterprise-managed devices because they never have
-    // local owner.
-    if (chromeos::UserManager::Get()->IsCurrentUserOwner())
-      CrosSettings::Get()->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
-  }
-
-  void UpdateShowLogoutButtonInTray() {
-    GetSystemTrayNotifier()->NotifyShowLoginButtonChanged(
-        user_pref_registrar_->prefs()->GetBoolean(
-            prefs::kShowLogoutButtonInTray));
-  }
-
-  void UpdateLogoutDialogDuration() {
-    const int duration_ms = user_pref_registrar_->prefs()->GetInteger(
-        prefs::kLogoutDialogDurationMs);
-    GetSystemTrayNotifier()->NotifyLogoutDialogDurationChanged(
-        base::TimeDelta::FromMilliseconds(duration_ms));
-  }
-
-  void UpdateSessionStartTime() {
-    const PrefService* local_state = local_state_registrar_->prefs();
-    if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
-      have_session_start_time_ = true;
-      session_start_time_ = base::TimeTicks::FromInternalValue(
-          local_state->GetInt64(prefs::kSessionStartTime));
-    } else {
-      have_session_start_time_ = false;
-      session_start_time_ = base::TimeTicks();
-    }
-    GetSystemTrayNotifier()->NotifySessionStartTimeChanged();
-  }
-
-  void UpdateSessionLengthLimit() {
-    const PrefService* local_state = local_state_registrar_->prefs();
-    if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
-      have_session_length_limit_ = true;
-      session_length_limit_ = base::TimeDelta::FromMilliseconds(
-          std::min(std::max(local_state->GetInteger(prefs::kSessionLengthLimit),
-                            kSessionLengthLimitMinMs),
-                   kSessionLengthLimitMaxMs));
-    } else {
-      have_session_length_limit_ = false;
-      session_length_limit_ = base::TimeDelta();
-    }
-    GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
-  }
-
-  // LoginState::Observer overrides.
-  virtual void LoggedInStateChanged() OVERRIDE {
-    // It apparently sometimes takes a while after login before the current user
-    // is recognized as the owner. Make sure that the system-wide clock setting
-    // is updated when the recognition eventually happens
-    // (http://crbug.com/278601).
-    //
-    // Note that it isn't safe to blindly call UpdateClockType() from this
-    // method, as LoggedInStateChanged() is also called before the logged-in
-    // user's profile has actually been loaded (http://crbug.com/317745). The
-    // system tray's time format is updated at login via SetProfile().
-    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
-      CrosSettings::Get()->SetBoolean(kSystemUse24HourClock,
-                                      ShouldUse24HourClock());
-    }
-  }
-
-  // Overridden from SessionManagerClient::Observer.
-  virtual void LockScreen() OVERRIDE {
-    screen_locked_ = true;
-    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-        GetUserLoginStatus());
-  }
-
-  virtual void ScreenIsUnlocked() OVERRIDE {
-    screen_locked_ = false;
-    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-        GetUserLoginStatus());
-  }
-
-  gfx::NativeWindow GetNativeWindow() const {
-    bool session_started = ash::Shell::GetInstance()->session_state_delegate()
-        ->IsActiveUserSessionStarted();
-    return GetNativeWindowByStatus(GetUserLoginStatus(), session_started);
-  }
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    switch (type) {
-      case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-        UpgradeDetector* detector =
-            content::Source<UpgradeDetector>(source).ptr();
-        ash::UpdateObserver::UpdateSeverity severity =
-            ash::UpdateObserver::UPDATE_NORMAL;
-        switch (detector->upgrade_notification_stage()) {
-          case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-            severity = ash::UpdateObserver::UPDATE_SEVERE_RED;
-            break;
-
-          case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-            severity = ash::UpdateObserver::UPDATE_HIGH_ORANGE;
-            break;
-
-          case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-            severity = ash::UpdateObserver::UPDATE_LOW_GREEN;
-            break;
-
-          case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-          default:
-            severity = ash::UpdateObserver::UPDATE_NORMAL;
-            break;
-        }
-        GetSystemTrayNotifier()->NotifyUpdateRecommended(severity);
-        break;
-      }
-      case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
-        // This notification is also sent on login screen when user avatar
-        // is loaded from file.
-        if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE) {
-          GetSystemTrayNotifier()->NotifyUserUpdate();
-        }
-        break;
-      }
-      case chrome::NOTIFICATION_PROFILE_CREATED: {
-        SetProfile(content::Source<Profile>(source).ptr());
-        registrar_->Remove(this,
-                           chrome::NOTIFICATION_PROFILE_CREATED,
-                           content::NotificationService::AllSources());
-        break;
-      }
-      case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-        if (UnsetProfile(content::Source<Profile>(source).ptr())) {
-          registrar_->Remove(this,
-                             chrome::NOTIFICATION_PROFILE_DESTROYED,
-                             content::NotificationService::AllSources());
-        }
-        break;
-      }
-      case chrome::NOTIFICATION_SESSION_STARTED: {
-        ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-            GetUserLoginStatus());
-        SetProfile(ProfileManager::GetActiveUserProfile());
-        break;
-      }
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER:
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD: {
-        AccessibilityStatusEventDetails* accessibility_status =
-            content::Details<AccessibilityStatusEventDetails>(details).ptr();
-        OnAccessibilityModeChanged(accessibility_status->notify);
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void OnLanguageRemapSearchKeyToChanged() {
-    search_key_mapped_to_ = user_pref_registrar_->prefs()->GetInteger(
-        prefs::kLanguageRemapSearchKeyTo);
-  }
-
-  void OnAccessibilityModeChanged(
-      ash::AccessibilityNotificationVisibility notify) {
-    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
-  }
-
-  void UpdatePerformanceTracing() {
-    if (!user_pref_registrar_)
-      return;
-    bool value =
-        user_pref_registrar_->prefs()->GetBoolean(
-            prefs::kPerformanceTracingEnabled);
-    GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
-  }
-
-  // Overridden from InputMethodManager::Observer.
-  virtual void InputMethodChanged(
-      input_method::InputMethodManager* manager, bool show_message) OVERRIDE {
-    // |show_message| in ash means the message_center notifications
-    // which should not be shown unless kDisableIMEModeIndicator is
-    // on, since the mode indicator already notifies the user.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableIMEModeIndicator)) {
-      show_message = false;
-    }
-    GetSystemTrayNotifier()->NotifyRefreshIME(show_message);
-  }
-
-  virtual void InputMethodPropertyChanged(
-      input_method::InputMethodManager* manager) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshIME(false);
-  }
-
-  // drive::JobListObserver overrides.
-  virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE {
-    OnJobUpdated(job_info);
-  }
-
-  virtual void OnJobDone(const drive::JobInfo& job_info,
-                         drive::FileError error) OVERRIDE {
-    ash::DriveOperationStatus status;
-    if (ConvertToFinishedDriveOperationStatus(job_info, error, &status))
-      GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
-  }
-
-  virtual void OnJobUpdated(const drive::JobInfo& job_info) OVERRIDE {
-    ash::DriveOperationStatus status;
-    if (ConvertToDriveOperationStatus(job_info, &status))
-      GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
-  }
-
-  DriveIntegrationService* FindDriveIntegrationService() {
-    return user_profile_ ?
-        DriveIntegrationServiceFactory::FindForProfile(user_profile_) : NULL;
-  }
-
-  // Overridden from BluetoothAdapter::Observer.
-  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshBluetooth();
-  }
-
-  virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                     bool powered) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshBluetooth();
-  }
-
-  virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
-                                         bool discovering) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
-  }
-
-  virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshBluetooth();
-  }
-
-  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshBluetooth();
-  }
-
-  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshBluetooth();
-  }
-
-  // Overridden from SystemKeyEventListener::CapsLockObserver.
-  virtual void OnCapsLockChange(bool enabled) OVERRIDE {
-    bool search_mapped_to_caps_lock = false;
-    if (!base::SysInfo::IsRunningOnChromeOS() ||
-        search_key_mapped_to_ == input_method::kCapsLockKey)
-      search_mapped_to_caps_lock = true;
-    GetSystemTrayNotifier()->NotifyCapsLockChanged(
-        enabled, search_mapped_to_caps_lock);
-  }
-
-  void UpdateEnterpriseDomain() {
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    std::string enterprise_domain = connector->GetEnterpriseDomain();
-    if (enterprise_domain_ != enterprise_domain) {
-       enterprise_domain_ = enterprise_domain;
-       GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
-    }
-  }
-
-  // Overridden from CloudPolicyStore::Observer
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE {
-    UpdateEnterpriseDomain();
-  }
-
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE {
-    UpdateEnterpriseDomain();
-  }
-
-  // Overridden from ash::SessionStateObserver
-  virtual void UserAddedToSession(const std::string& user_id) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyUserAddedToSession();
-  }
-
-  scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
-  scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
-  Profile* user_profile_;
-  base::HourClockType clock_type_;
-  int search_key_mapped_to_;
-  bool screen_locked_;
-  bool have_session_start_time_;
-  base::TimeTicks session_start_time_;
-  bool have_session_length_limit_;
-  base::TimeDelta session_length_limit_;
-  std::string enterprise_domain_;
-
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
-};
-
 }  // namespace
 
+SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
+    : weak_ptr_factory_(this),
+      user_profile_(NULL),
+      clock_type_(base::GetHourClockType()),
+      search_key_mapped_to_(input_method::kSearchKey),
+      screen_locked_(false),
+      have_session_start_time_(false),
+      have_session_length_limit_(false),
+      volume_control_delegate_(new VolumeController()),
+      device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
+          kSystemUse24HourClock,
+          base::Bind(&SystemTrayDelegateChromeOS::UpdateClockType,
+                     base::Unretained(this)))) {
+  // Register notifications on construction so that events such as
+  // PROFILE_CREATED do not get missed if they happen before Initialize().
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                  content::NotificationService::AllSources());
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                  content::NotificationService::AllSources());
+  if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE) {
+    registrar_->Add(this,
+                    chrome::NOTIFICATION_SESSION_STARTED,
+                    content::NotificationService::AllSources());
+  }
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_PROFILE_CREATED,
+                  content::NotificationService::AllSources());
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_PROFILE_DESTROYED,
+                  content::NotificationService::AllSources());
+  registrar_->Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+      content::NotificationService::AllSources());
+  registrar_->Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      content::NotificationService::AllSources());
+  registrar_->Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+      content::NotificationService::AllSources());
+  registrar_->Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+      content::NotificationService::AllSources());
+}
+
+void SystemTrayDelegateChromeOS::Initialize() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+
+  input_method::InputMethodManager::Get()->AddObserver(this);
+  UpdateClockType();
+
+  if (SystemKeyEventListener::GetInstance())
+    SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
+
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&SystemTrayDelegateChromeOS::InitializeOnAdapterReady,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  ash::Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(
+      this);
+
+  if (LoginState::IsInitialized())
+    LoginState::Get()->AddObserver(this);
+}
+
+void SystemTrayDelegateChromeOS::Shutdown() {
+  device_settings_observer_.reset();
+}
+
+void SystemTrayDelegateChromeOS::InitializeOnAdapterReady(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  bluetooth_adapter_ = adapter;
+  CHECK(bluetooth_adapter_.get());
+  bluetooth_adapter_->AddObserver(this);
+
+  local_state_registrar_.reset(new PrefChangeRegistrar);
+  local_state_registrar_->Init(g_browser_process->local_state());
+
+  UpdateSessionStartTime();
+  UpdateSessionLengthLimit();
+
+  local_state_registrar_->Add(
+      prefs::kSessionStartTime,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdateSessionStartTime,
+                 base::Unretained(this)));
+  local_state_registrar_->Add(
+      prefs::kSessionLengthLimit,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdateSessionLengthLimit,
+                 base::Unretained(this)));
+
+  policy::BrowserPolicyConnectorChromeOS* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      policy_connector->GetDeviceCloudPolicyManager();
+  if (policy_manager)
+    policy_manager->core()->store()->AddObserver(this);
+  UpdateEnterpriseDomain();
+}
+
+SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
+  // Unregister PrefChangeRegistrars.
+  local_state_registrar_.reset();
+  user_pref_registrar_.reset();
+
+  // Unregister content notifications befure destroying any components.
+  registrar_.reset();
+
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+  input_method::InputMethodManager::Get()->RemoveObserver(this);
+  if (SystemKeyEventListener::GetInstance())
+    SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
+  bluetooth_adapter_->RemoveObserver(this);
+  ash::Shell::GetInstance()
+      ->session_state_delegate()
+      ->RemoveSessionStateObserver(this);
+  LoginState::Get()->RemoveObserver(this);
+
+  // Stop observing Drive operations.
+  UnobserveDriveUpdates();
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  if (policy_manager)
+    policy_manager->core()->store()->RemoveObserver(this);
+}
+
+// Overridden from ash::SystemTrayDelegate:
+bool SystemTrayDelegateChromeOS::GetTrayVisibilityOnStartup() {
+  // In case of OOBE / sign in screen tray will be shown later.
+  return LoginState::Get()->IsUserLoggedIn();
+}
+
+ash::user::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
+  // All non-logged in ChromeOS specific LOGGED_IN states map to the same
+  // Ash specific LOGGED_IN state.
+  if (!LoginState::Get()->IsUserLoggedIn())
+    return ash::user::LOGGED_IN_NONE;
+
+  if (screen_locked_)
+    return ash::user::LOGGED_IN_LOCKED;
+
+  LoginState::LoggedInUserType user_type =
+      LoginState::Get()->GetLoggedInUserType();
+  switch (user_type) {
+    case LoginState::LOGGED_IN_USER_NONE:
+      return ash::user::LOGGED_IN_NONE;
+    case LoginState::LOGGED_IN_USER_REGULAR:
+      return ash::user::LOGGED_IN_USER;
+    case LoginState::LOGGED_IN_USER_OWNER:
+      return ash::user::LOGGED_IN_OWNER;
+    case LoginState::LOGGED_IN_USER_GUEST:
+      return ash::user::LOGGED_IN_GUEST;
+    case LoginState::LOGGED_IN_USER_RETAIL_MODE:
+      return ash::user::LOGGED_IN_RETAIL_MODE;
+    case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
+      return ash::user::LOGGED_IN_PUBLIC;
+    case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
+      return ash::user::LOGGED_IN_LOCALLY_MANAGED;
+    case LoginState::LOGGED_IN_USER_KIOSK_APP:
+      return ash::user::LOGGED_IN_KIOSK_APP;
+  }
+  NOTREACHED();
+  return ash::user::LOGGED_IN_NONE;
+}
+
+bool SystemTrayDelegateChromeOS::IsOobeCompleted() const {
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      LoginState::Get()->IsUserLoggedIn())
+    return true;
+  return StartupUtils::IsOobeCompleted();
+}
+
+void SystemTrayDelegateChromeOS::ChangeProfilePicture() {
+  content::RecordAction(
+      base::UserMetricsAction("OpenChangeProfilePictureDialog"));
+  ShowSettingsSubPageForAppropriateBrowser(
+      chrome::kChangeProfilePictureSubPage,
+      ProfileManager::GetActiveUserProfile());
+}
+
+const std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
+  return enterprise_domain_;
+}
+
+const base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
+  if (GetEnterpriseDomain().empty())
+    return base::string16();
+  return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
+                                    base::UTF8ToUTF16(GetEnterpriseDomain()));
+}
+
+const std::string SystemTrayDelegateChromeOS::GetLocallyManagedUserManager()
+    const {
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+    return std::string();
+  return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayEmail(
+      chromeos::UserManager::Get()->GetActiveUser()->email());
+}
+
+const base::string16
+SystemTrayDelegateChromeOS::GetLocallyManagedUserManagerName() const {
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+    return base::string16();
+  return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayName(
+      chromeos::UserManager::Get()->GetActiveUser()->email());
+}
+
+const base::string16 SystemTrayDelegateChromeOS::GetLocallyManagedUserMessage()
+    const {
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+    return base::string16();
+  return l10n_util::GetStringFUTF16(
+      IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
+      base::UTF8ToUTF16(GetLocallyManagedUserManager()));
+}
+
+bool SystemTrayDelegateChromeOS::SystemShouldUpgrade() const {
+  return UpgradeDetector::GetInstance()->notify_upgrade();
+}
+
+base::HourClockType SystemTrayDelegateChromeOS::GetHourClockType() const {
+  return clock_type_;
+}
+
+void SystemTrayDelegateChromeOS::ShowSettings() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSettings(displayer.browser());
+}
+
+bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
+  return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings();
+}
+
+void SystemTrayDelegateChromeOS::ShowDateSettings() {
+  content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
+  std::string sub_page =
+      std::string(chrome::kSearchSubPage) + "#" +
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
+  // Everybody can change the time zone (even though it is a device setting).
+  ShowSettingsSubPageForAppropriateBrowser(
+      sub_page, ProfileManager::GetActiveUserProfile());
+}
+
+void SystemTrayDelegateChromeOS::ShowNetworkSettings(
+    const std::string& service_path) {
+  if (!LoginState::Get()->IsUserLoggedIn())
+    return;
+  ShowNetworkSettingsPage(service_path);
+}
+
+void SystemTrayDelegateChromeOS::ShowBluetoothSettings() {
+  // TODO(sad): Make this work.
+}
+
+void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
+  content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
+  ShowSettingsSubPageForAppropriateBrowser(
+      kDisplaySettingsSubPageName, ProfileManager::GetActiveUserProfile());
+}
+
+void SystemTrayDelegateChromeOS::ShowChromeSlow() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetPrimaryUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSlow(displayer.browser());
+}
+
+bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
+  // Packaged app is not counted as 'last active', so if a browser opening the
+  // display settings is in background of a packaged app, it will return true.
+  // TODO(mukai): fix this.
+  Browser* active_browser =
+      chrome::FindLastActiveWithHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
+  if (!active_browser)
+    return true;
+
+  content::WebContents* active_contents =
+      active_browser->tab_strip_model()->GetActiveWebContents();
+  if (!active_contents)
+    return true;
+
+  GURL visible_url = active_contents->GetLastCommittedURL();
+  std::string display_settings_url =
+      std::string(chrome::kChromeUISettingsURL) + kDisplaySettingsSubPageName;
+  std::string display_overscan_url = std::string(chrome::kChromeUISettingsURL) +
+                                     kDisplayOverscanSettingsSubPageName;
+  return (visible_url.spec() != display_settings_url) &&
+         (visible_url.spec() != display_overscan_url);
+}
+
+void SystemTrayDelegateChromeOS::ShowDriveSettings() {
+  // TODO(tengs): Open the drive-specific settings page once we put it in.
+  // For now just show Google Drive main page.
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSingletonTabOverwritingNTP(
+      displayer.browser(),
+      chrome::GetSingletonTabNavigateParams(displayer.browser(),
+                                            GURL(kDriveSettingsPageURL)));
+}
+
+void SystemTrayDelegateChromeOS::ShowIMESettings() {
+  content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
+  ShowSettingsSubPageForAppropriateBrowser(
+      chrome::kLanguageOptionsSubPage, ProfileManager::GetActiveUserProfile());
+}
+
+void SystemTrayDelegateChromeOS::ShowHelp() {
+  chrome::ShowHelpForProfile(ProfileManager::GetActiveUserProfile(),
+                             chrome::HOST_DESKTOP_TYPE_ASH,
+                             chrome::HELP_SOURCE_MENU);
+}
+
+void SystemTrayDelegateChromeOS::ShowAccessibilityHelp() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  accessibility::ShowAccessibilityHelp(displayer.browser());
+}
+
+void SystemTrayDelegateChromeOS::ShowAccessibilitySettings() {
+  content::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
+  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+                         l10n_util::GetStringUTF8(
+                             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
+  ShowSettingsSubPageForAppropriateBrowser(
+      sub_page, ProfileManager::GetActiveUserProfile());
+}
+
+void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowPolicy(displayer.browser());
+}
+
+void SystemTrayDelegateChromeOS::ShowLocallyManagedUserInfo() {
+  // TODO(antrim): find out what should we show in this case.
+  // http://crbug.com/229762
+}
+
+void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
+  ash::user::LoginStatus status = GetUserLoginStatus();
+  if (status == ash::user::LOGGED_IN_NONE ||
+      status == ash::user::LOGGED_IN_LOCKED) {
+    scoped_refptr<chromeos::HelpAppLauncher> help_app(
+        new chromeos::HelpAppLauncher(GetNativeWindow()));
+    help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
+  } else {
+    GURL url(google_util::StringAppendGoogleLocaleParam(
+        chrome::kLearnMoreEnterpriseURL));
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+        ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowSingletonTab(displayer.browser(), url);
+  }
+}
+
+void SystemTrayDelegateChromeOS::ShowUserLogin() {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  if (!shell->delegate()->IsMultiProfilesEnabled())
+    return;
+
+  // Only regular users could add other users to current session.
+  if (UserManager::Get()->GetActiveUser()->GetType() !=
+      User::USER_TYPE_REGULAR) {
+    return;
+  }
+
+  if (static_cast<int>(UserManager::Get()->GetLoggedInUsers().size()) >=
+      shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers())
+    return;
+
+  // Launch sign in screen to add another user to current session.
+  if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size()) {
+    // Don't show dialog if any logged in user in multi-profiles session
+    // dismissed it.
+    bool show_intro = true;
+    const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
+    for (UserList::const_iterator it = logged_in_users.begin();
+         it != logged_in_users.end();
+         ++it) {
+      show_intro &= !multi_user_util::GetProfileFromUserID(
+                         multi_user_util::GetUserIDFromEmail((*it)->email()))
+                         ->GetPrefs()
+                         ->GetBoolean(prefs::kMultiProfileNeverShowIntro);
+      if (!show_intro)
+        break;
+    }
+    if (show_intro) {
+      base::Callback<void(bool)> on_accept =
+          base::Bind(&OnAcceptMultiprofilesIntro);
+      ShowMultiprofilesIntroDialog(on_accept);
+    } else {
+      UserAddingScreen::Get()->Start();
+    }
+  }
+}
+
+void SystemTrayDelegateChromeOS::ShowSpringChargerReplacementDialog() {
+  if (!ChargerReplacementDialog::ShouldShowDialog())
+    return;
+
+  ChargerReplacementDialog* dialog =
+      new ChargerReplacementDialog(GetNativeWindow());
+  dialog->Show();
+}
+
+bool SystemTrayDelegateChromeOS::HasUserConfirmedSafeSpringCharger() {
+  return ChargerReplacementHandler::GetChargerStatusPref() ==
+         ChargerReplacementHandler::CONFIRM_SAFE_CHARGER;
+}
+
+void SystemTrayDelegateChromeOS::ShutDown() {
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+}
+
+void SystemTrayDelegateChromeOS::SignOut() {
+  chrome::AttemptUserExit();
+}
+
+void SystemTrayDelegateChromeOS::RequestLockScreen() {
+  // TODO(antrim) : additional logging for crbug/173178
+  LOG(WARNING) << "Requesting screen lock from AshSystemTrayDelegate";
+  DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
+}
+
+void SystemTrayDelegateChromeOS::RequestRestartForUpdate() {
+  // We expect that UpdateEngine is in "Reboot for update" state now.
+  chrome::NotifyAndTerminate(true /* fast path */);
+}
+
+void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
+    ash::BluetoothDeviceList* list) {
+  device::BluetoothAdapter::DeviceList devices =
+      bluetooth_adapter_->GetDevices();
+  for (size_t i = 0; i < devices.size(); ++i) {
+    device::BluetoothDevice* device = devices[i];
+    ash::BluetoothDeviceInfo info;
+    info.address = device->GetAddress();
+    info.display_name = device->GetName();
+    info.connected = device->IsConnected();
+    info.connecting = device->IsConnecting();
+    info.paired = device->IsPaired();
+    list->push_back(info);
+  }
+}
+
+void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
+  bluetooth_adapter_->StartDiscovering(
+      base::Bind(&base::DoNothing), base::Bind(&BluetoothSetDiscoveringError));
+}
+
+void SystemTrayDelegateChromeOS::BluetoothStopDiscovering() {
+  bluetooth_adapter_->StopDiscovering(
+      base::Bind(&base::DoNothing), base::Bind(&BluetoothSetDiscoveringError));
+}
+
+void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
+    const std::string& address) {
+  device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
+  if (!device || device->IsConnecting() ||
+      (device->IsConnected() && device->IsPaired())) {
+    return;
+  }
+  if (device->IsPaired() && !device->IsConnectable())
+    return;
+  if (device->IsPaired() || !device->IsPairable()) {
+    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE);
+    device->Connect(NULL,
+                    base::Bind(&base::DoNothing),
+                    base::Bind(&BluetoothDeviceConnectError));
+  } else {  // Show paring dialog for the unpaired device.
+    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE);
+    BluetoothPairingDialog* dialog =
+        new BluetoothPairingDialog(GetNativeWindow(), device);
+    // The dialog deletes itself on close.
+    dialog->Show();
+  }
+}
+
+bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() {
+  return bluetooth_adapter_->IsDiscovering();
+}
+
+void SystemTrayDelegateChromeOS::GetCurrentIME(ash::IMEInfo* info) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+  input_method::InputMethodDescriptor ime = manager->GetCurrentInputMethod();
+  ExtractIMEInfo(ime, *util, info);
+  info->selected = true;
+}
+
+void SystemTrayDelegateChromeOS::GetAvailableIMEList(ash::IMEInfoList* list) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+  scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
+      manager->GetActiveInputMethods());
+  std::string current = manager->GetCurrentInputMethod().id();
+  for (size_t i = 0; i < ime_descriptors->size(); i++) {
+    input_method::InputMethodDescriptor& ime = ime_descriptors->at(i);
+    ash::IMEInfo info;
+    ExtractIMEInfo(ime, *util, &info);
+    info.selected = ime.id() == current;
+    list->push_back(info);
+  }
+}
+
+void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
+    ash::IMEPropertyInfoList* list) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  input_method::InputMethodPropertyList properties =
+      manager->GetCurrentInputMethodProperties();
+  for (size_t i = 0; i < properties.size(); ++i) {
+    ash::IMEPropertyInfo property;
+    property.key = properties[i].key;
+    property.name = base::UTF8ToUTF16(properties[i].label);
+    property.selected = properties[i].is_selection_item_checked;
+    list->push_back(property);
+  }
+}
+
+void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
+  input_method::InputMethodManager::Get()->ChangeInputMethod(ime_id);
+}
+
+void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
+  input_method::InputMethodManager::Get()->ActivateInputMethodProperty(key);
+}
+
+void SystemTrayDelegateChromeOS::CancelDriveOperation(int32 operation_id) {
+  DriveIntegrationService* integration_service = FindDriveIntegrationService();
+  if (!integration_service)
+    return;
+
+  integration_service->job_list()->CancelJob(operation_id);
+}
+
+void SystemTrayDelegateChromeOS::GetDriveOperationStatusList(
+    ash::DriveOperationStatusList* list) {
+  DriveIntegrationService* integration_service = FindDriveIntegrationService();
+  if (!integration_service)
+    return;
+
+  *list = ConvertToDriveStatusList(
+      integration_service->job_list()->GetJobInfoList());
+}
+
+void SystemTrayDelegateChromeOS::ShowNetworkConfigure(
+    const std::string& network_id,
+    gfx::NativeWindow parent_window) {
+  NetworkConfigView::Show(network_id, parent_window);
+}
+
+bool SystemTrayDelegateChromeOS::EnrollNetwork(
+    const std::string& network_id,
+    gfx::NativeWindow parent_window) {
+  return enrollment::CreateDialog(network_id, parent_window);
+}
+
+void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
+  content::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
+  std::string sub_page =
+      std::string(chrome::kSearchSubPage) + "#" +
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
+  ShowSettingsSubPageForAppropriateBrowser(
+      sub_page, ProfileManager::GetPrimaryUserProfile());
+}
+
+void SystemTrayDelegateChromeOS::ToggleBluetooth() {
+  bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
+                                 base::Bind(&base::DoNothing),
+                                 base::Bind(&BluetoothPowerFailure));
+}
+
+void SystemTrayDelegateChromeOS::ShowMobileSimDialog() {
+  SimDialogDelegate::ShowDialog(GetNativeWindow(),
+                                SimDialogDelegate::SIM_DIALOG_UNLOCK);
+}
+
+void SystemTrayDelegateChromeOS::ShowMobileSetupDialog(
+    const std::string& service_path) {
+  MobileSetupDialog::Show(service_path);
+}
+
+void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(
+    const std::string& type) {
+  if (type == shill::kTypeCellular) {
+    ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
+    return;
+  }
+  NetworkConfigView::ShowForType(type, GetNativeWindow());
+}
+
+bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
+  return bluetooth_adapter_->IsPresent();
+}
+
+bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
+  return bluetooth_adapter_->IsPowered();
+}
+
+void SystemTrayDelegateChromeOS::ChangeProxySettings() {
+  CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
+  LoginDisplayHostImpl::default_host()->OpenProxySettings();
+}
+
+ash::VolumeControlDelegate*
+SystemTrayDelegateChromeOS::GetVolumeControlDelegate() const {
+  return volume_control_delegate_.get();
+}
+
+void SystemTrayDelegateChromeOS::SetVolumeControlDelegate(
+    scoped_ptr<ash::VolumeControlDelegate> delegate) {
+  volume_control_delegate_.swap(delegate);
+}
+
+bool SystemTrayDelegateChromeOS::GetSessionStartTime(
+    base::TimeTicks* session_start_time) {
+  *session_start_time = session_start_time_;
+  return have_session_start_time_;
+}
+
+bool SystemTrayDelegateChromeOS::GetSessionLengthLimit(
+    base::TimeDelta* session_length_limit) {
+  *session_length_limit = session_length_limit_;
+  return have_session_length_limit_;
+}
+
+int SystemTrayDelegateChromeOS::GetSystemTrayMenuWidth() {
+  return l10n_util::GetLocalizedContentsWidthInPixels(
+      IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
+}
+
+void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
+  GetSystemTrayNotifier()->NotifyUserUpdate();
+}
+
+ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
+  return ash::Shell::GetInstance()->GetPrimarySystemTray();
+}
+
+ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
+  return ash::Shell::GetInstance()->system_tray_notifier();
+}
+
+void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
+  // Stop observing the current |user_profile_| on Drive integration status.
+  UnobserveDriveUpdates();
+
+  user_profile_ = profile;
+
+  // Restart observation, now for the newly set |profile|.
+  ObserveDriveUpdates();
+
+  PrefService* prefs = profile->GetPrefs();
+  user_pref_registrar_.reset(new PrefChangeRegistrar);
+  user_pref_registrar_->Init(prefs);
+  user_pref_registrar_->Add(
+      prefs::kUse24HourClock,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdateClockType,
+                 base::Unretained(this)));
+  user_pref_registrar_->Add(
+      prefs::kLanguageRemapSearchKeyTo,
+      base::Bind(&SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged,
+                 base::Unretained(this)));
+  user_pref_registrar_->Add(
+      prefs::kShowLogoutButtonInTray,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray,
+                 base::Unretained(this)));
+  user_pref_registrar_->Add(
+      prefs::kLogoutDialogDurationMs,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdateLogoutDialogDuration,
+                 base::Unretained(this)));
+  user_pref_registrar_->Add(
+      prefs::kLargeCursorEnabled,
+      base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
+                 base::Unretained(this),
+                 ash::A11Y_NOTIFICATION_NONE));
+  user_pref_registrar_->Add(
+      prefs::kAutoclickEnabled,
+      base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
+                 base::Unretained(this),
+                 ash::A11Y_NOTIFICATION_NONE));
+  user_pref_registrar_->Add(
+      prefs::kShouldAlwaysShowAccessibilityMenu,
+      base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
+                 base::Unretained(this),
+                 ash::A11Y_NOTIFICATION_NONE));
+  user_pref_registrar_->Add(
+      prefs::kPerformanceTracingEnabled,
+      base::Bind(&SystemTrayDelegateChromeOS::UpdatePerformanceTracing,
+                 base::Unretained(this)));
+
+  UpdateClockType();
+  UpdateShowLogoutButtonInTray();
+  UpdateLogoutDialogDuration();
+  UpdatePerformanceTracing();
+  search_key_mapped_to_ =
+      profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
+}
+
+bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
+  if (profile != user_profile_)
+    return false;
+  user_pref_registrar_.reset();
+  return true;
+}
+
+void SystemTrayDelegateChromeOS::ObserveDriveUpdates() {
+  DriveIntegrationService* integration_service = FindDriveIntegrationService();
+  if (integration_service)
+    integration_service->job_list()->AddObserver(this);
+}
+
+void SystemTrayDelegateChromeOS::UnobserveDriveUpdates() {
+  DriveIntegrationService* integration_service = FindDriveIntegrationService();
+  if (integration_service)
+    integration_service->job_list()->RemoveObserver(this);
+}
+
+bool SystemTrayDelegateChromeOS::GetShouldUse24HourClockForTesting() const {
+  return ShouldUse24HourClock();
+}
+
+bool SystemTrayDelegateChromeOS::ShouldUse24HourClock() const {
+  // On login screen and in guest mode owner default is used for
+  // kUse24HourClock preference.
+  const ash::user::LoginStatus status = GetUserLoginStatus();
+  const CrosSettings* const cros_settings = CrosSettings::Get();
+  bool system_use_24_hour_clock = true;
+  const bool system_value_found = cros_settings->GetBoolean(
+      kSystemUse24HourClock, &system_use_24_hour_clock);
+
+  if ((status == ash::user::LOGGED_IN_NONE) || !user_pref_registrar_)
+    return (system_value_found
+                ? system_use_24_hour_clock
+                : (base::GetHourClockType() == base::k24HourClock));
+
+  const PrefService::Preference* user_pref =
+      user_pref_registrar_->prefs()->FindPreference(prefs::kUse24HourClock);
+  if (status == ash::user::LOGGED_IN_GUEST && user_pref->IsDefaultValue())
+    return (system_value_found
+                ? system_use_24_hour_clock
+                : (base::GetHourClockType() == base::k24HourClock));
+
+  bool use_24_hour_clock = true;
+  user_pref->GetValue()->GetAsBoolean(&use_24_hour_clock);
+  return use_24_hour_clock;
+}
+
+void SystemTrayDelegateChromeOS::UpdateClockType() {
+  const bool use_24_hour_clock = ShouldUse24HourClock();
+  clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
+  GetSystemTrayNotifier()->NotifyDateFormatChanged();
+  // This also works for enterprise-managed devices because they never have
+  // local owner.
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
+    CrosSettings::Get()->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
+}
+
+void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {
+  GetSystemTrayNotifier()->NotifyShowLoginButtonChanged(
+      user_pref_registrar_->prefs()->GetBoolean(
+          prefs::kShowLogoutButtonInTray));
+}
+
+void SystemTrayDelegateChromeOS::UpdateLogoutDialogDuration() {
+  const int duration_ms =
+      user_pref_registrar_->prefs()->GetInteger(prefs::kLogoutDialogDurationMs);
+  GetSystemTrayNotifier()->NotifyLogoutDialogDurationChanged(
+      base::TimeDelta::FromMilliseconds(duration_ms));
+}
+
+void SystemTrayDelegateChromeOS::UpdateSessionStartTime() {
+  const PrefService* local_state = local_state_registrar_->prefs();
+  if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
+    have_session_start_time_ = true;
+    session_start_time_ = base::TimeTicks::FromInternalValue(
+        local_state->GetInt64(prefs::kSessionStartTime));
+  } else {
+    have_session_start_time_ = false;
+    session_start_time_ = base::TimeTicks();
+  }
+  GetSystemTrayNotifier()->NotifySessionStartTimeChanged();
+}
+
+void SystemTrayDelegateChromeOS::UpdateSessionLengthLimit() {
+  const PrefService* local_state = local_state_registrar_->prefs();
+  if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
+    have_session_length_limit_ = true;
+    session_length_limit_ = base::TimeDelta::FromMilliseconds(
+        std::min(std::max(local_state->GetInteger(prefs::kSessionLengthLimit),
+                          kSessionLengthLimitMinMs),
+                 kSessionLengthLimitMaxMs));
+  } else {
+    have_session_length_limit_ = false;
+    session_length_limit_ = base::TimeDelta();
+  }
+  GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
+}
+
+// LoginState::Observer overrides.
+void SystemTrayDelegateChromeOS::LoggedInStateChanged() {
+  // It apparently sometimes takes a while after login before the current user
+  // is recognized as the owner. Make sure that the system-wide clock setting
+  // is updated when the recognition eventually happens
+  // (http://crbug.com/278601).
+  //
+  // Note that it isn't safe to blindly call UpdateClockType() from this
+  // method, as LoggedInStateChanged() is also called before the logged-in
+  // user's profile has actually been loaded (http://crbug.com/317745). The
+  // system tray's time format is updated at login via SetProfile().
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    CrosSettings::Get()->SetBoolean(kSystemUse24HourClock,
+                                    ShouldUse24HourClock());
+  }
+}
+
+// Overridden from SessionManagerClient::Observer.
+void SystemTrayDelegateChromeOS::LockScreen() {
+  screen_locked_ = true;
+  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+}
+
+void SystemTrayDelegateChromeOS::ScreenIsUnlocked() {
+  screen_locked_ = false;
+  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+}
+
+gfx::NativeWindow SystemTrayDelegateChromeOS::GetNativeWindow() const {
+  bool session_started = ash::Shell::GetInstance()
+                             ->session_state_delegate()
+                             ->IsActiveUserSessionStarted();
+  return GetNativeWindowByStatus(GetUserLoginStatus(), session_started);
+}
+
+// content::NotificationObserver implementation.
+void SystemTrayDelegateChromeOS::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
+      UpgradeDetector* detector =
+          content::Source<UpgradeDetector>(source).ptr();
+      ash::UpdateObserver::UpdateSeverity severity =
+          ash::UpdateObserver::UPDATE_NORMAL;
+      switch (detector->upgrade_notification_stage()) {
+        case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+          severity = ash::UpdateObserver::UPDATE_SEVERE_RED;
+          break;
+
+        case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+          severity = ash::UpdateObserver::UPDATE_HIGH_ORANGE;
+          break;
+
+        case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+          severity = ash::UpdateObserver::UPDATE_LOW_GREEN;
+          break;
+
+        case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
+        default:
+          severity = ash::UpdateObserver::UPDATE_NORMAL;
+          break;
+      }
+      GetSystemTrayNotifier()->NotifyUpdateRecommended(severity);
+      break;
+    }
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
+      // This notification is also sent on login screen when user avatar
+      // is loaded from file.
+      if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE) {
+        GetSystemTrayNotifier()->NotifyUserUpdate();
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      SetProfile(content::Source<Profile>(source).ptr());
+      registrar_->Remove(this,
+                         chrome::NOTIFICATION_PROFILE_CREATED,
+                         content::NotificationService::AllSources());
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      if (UnsetProfile(content::Source<Profile>(source).ptr())) {
+        registrar_->Remove(this,
+                           chrome::NOTIFICATION_PROFILE_DESTROYED,
+                           content::NotificationService::AllSources());
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_SESSION_STARTED: {
+      ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+          GetUserLoginStatus());
+      SetProfile(ProfileManager::GetActiveUserProfile());
+      break;
+    }
+    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
+    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
+    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER:
+    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD: {
+      AccessibilityStatusEventDetails* accessibility_status =
+          content::Details<AccessibilityStatusEventDetails>(details).ptr();
+      OnAccessibilityModeChanged(accessibility_status->notify);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
+  search_key_mapped_to_ = user_pref_registrar_->prefs()->GetInteger(
+      prefs::kLanguageRemapSearchKeyTo);
+}
+
+void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
+    ash::AccessibilityNotificationVisibility notify) {
+  GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
+}
+
+void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
+  if (!user_pref_registrar_)
+    return;
+  bool value = user_pref_registrar_->prefs()->GetBoolean(
+      prefs::kPerformanceTracingEnabled);
+  GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
+}
+
+// Overridden from InputMethodManager::Observer.
+void SystemTrayDelegateChromeOS::InputMethodChanged(
+    input_method::InputMethodManager* manager,
+    bool show_message) {
+  // |show_message| in ash means the message_center notifications
+  // which should not be shown unless kDisableIMEModeIndicator is
+  // on, since the mode indicator already notifies the user.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableIMEModeIndicator)) {
+    show_message = false;
+  }
+  GetSystemTrayNotifier()->NotifyRefreshIME(show_message);
+}
+
+void SystemTrayDelegateChromeOS::InputMethodPropertyChanged(
+    input_method::InputMethodManager* manager) {
+  GetSystemTrayNotifier()->NotifyRefreshIME(false);
+}
+
+// drive::JobListObserver overrides.
+void SystemTrayDelegateChromeOS::OnJobAdded(const drive::JobInfo& job_info) {
+  OnJobUpdated(job_info);
+}
+
+void SystemTrayDelegateChromeOS::OnJobDone(const drive::JobInfo& job_info,
+                                           drive::FileError error) {
+  ash::DriveOperationStatus status;
+  if (ConvertToFinishedDriveOperationStatus(job_info, error, &status))
+    GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
+}
+
+void SystemTrayDelegateChromeOS::OnJobUpdated(const drive::JobInfo& job_info) {
+  ash::DriveOperationStatus status;
+  if (ConvertToDriveOperationStatus(job_info, &status))
+    GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
+}
+
+DriveIntegrationService*
+SystemTrayDelegateChromeOS::FindDriveIntegrationService() {
+  return user_profile_
+             ? DriveIntegrationServiceFactory::FindForProfile(user_profile_)
+             : NULL;
+}
+
+// Overridden from BluetoothAdapter::Observer.
+void SystemTrayDelegateChromeOS::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+void SystemTrayDelegateChromeOS::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+void SystemTrayDelegateChromeOS::AdapterDiscoveringChanged(
+    device::BluetoothAdapter* adapter,
+    bool discovering) {
+  GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
+}
+
+void SystemTrayDelegateChromeOS::DeviceAdded(device::BluetoothAdapter* adapter,
+                                             device::BluetoothDevice* device) {
+  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+void SystemTrayDelegateChromeOS::DeviceChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
+  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+void SystemTrayDelegateChromeOS::DeviceRemoved(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
+  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+// Overridden from SystemKeyEventListener::CapsLockObserver.
+void SystemTrayDelegateChromeOS::OnCapsLockChange(bool enabled) {
+  bool search_mapped_to_caps_lock = false;
+  if (!base::SysInfo::IsRunningOnChromeOS() ||
+      search_key_mapped_to_ == input_method::kCapsLockKey)
+    search_mapped_to_caps_lock = true;
+  GetSystemTrayNotifier()->NotifyCapsLockChanged(enabled,
+                                                 search_mapped_to_caps_lock);
+}
+
+void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  std::string enterprise_domain = connector->GetEnterpriseDomain();
+  if (enterprise_domain_ != enterprise_domain) {
+    enterprise_domain_ = enterprise_domain;
+    GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
+  }
+}
+
+// Overridden from CloudPolicyStore::Observer
+void SystemTrayDelegateChromeOS::OnStoreLoaded(
+    policy::CloudPolicyStore* store) {
+  UpdateEnterpriseDomain();
+}
+
+void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
+  UpdateEnterpriseDomain();
+}
+
+// Overridden from ash::SessionStateObserver
+void SystemTrayDelegateChromeOS::UserAddedToSession(
+    const std::string& user_id) {
+  GetSystemTrayNotifier()->NotifyUserAddedToSession();
+}
+
 ash::SystemTrayDelegate* CreateSystemTrayDelegate() {
-  return new chromeos::SystemTrayDelegate();
+  return new SystemTrayDelegateChromeOS();
 }
 
 }  // namespace chromeos

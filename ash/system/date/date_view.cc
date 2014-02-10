@@ -155,6 +155,10 @@ void DateView::UpdateTimeFormat() {
   UpdateText();
 }
 
+base::HourClockType DateView::GetHourTypeForTesting() const {
+  return hour_type_;
+}
+
 void DateView::UpdateTextInternal(const base::Time& now) {
   SetAccessibleName(
       base::TimeFormatFriendlyDate(now) +
@@ -206,6 +210,10 @@ void TimeView::UpdateTimeFormat() {
   hour_type_ =
       ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
   UpdateText();
+}
+
+base::HourClockType TimeView::GetHourTypeForTesting() const {
+  return hour_type_;
 }
 
 void TimeView::UpdateTextInternal(const base::Time& now) {

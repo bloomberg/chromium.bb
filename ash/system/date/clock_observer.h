@@ -5,9 +5,11 @@
 #ifndef ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
 #define ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
-class ClockObserver {
+class ASH_EXPORT ClockObserver {
  public:
   virtual ~ClockObserver() {}
 
@@ -18,6 +20,6 @@ class ClockObserver {
   virtual void Refresh() = 0;
 };
 
-};
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
