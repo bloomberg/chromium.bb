@@ -208,11 +208,8 @@ void TabAndroid::Observe(int type,
         if (popup_blocker_helper)
           num_popups = popup_blocker_helper->GetBlockedPopupsCount();
 
-        if (num_popups > 0) {
-          PopupBlockedInfoBarDelegate::Create(
-              InfoBarService::FromWebContents(web_contents()),
-              num_popups);
-        }
+        if (num_popups > 0)
+          PopupBlockedInfoBarDelegate::Create(web_contents(), num_popups);
 
         settings->SetBlockageHasBeenIndicated(CONTENT_SETTINGS_TYPE_POPUPS);
       }

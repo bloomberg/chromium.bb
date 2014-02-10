@@ -6,19 +6,26 @@
 #define CHROME_BROWSER_UI_ANDROID_CONTENT_SETTINGS_POPUP_BLOCKED_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "url/gurl.h"
 
-class InfoBarService;
+namespace content {
+class WebContents;
+}  // namespace content
+
+class HostContentSettingsMap;
 
 class PopupBlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a popup blocked infobar and delegate and adds the infobar to
   // |infobar_service|.
-  static void Create(InfoBarService* infobar_service, int num_popups);
+  static void Create(content::WebContents* web_contents, int num_popups);
 
   virtual ~PopupBlockedInfoBarDelegate();
 
  private:
-  explicit PopupBlockedInfoBarDelegate(int num_popups);
+  PopupBlockedInfoBarDelegate(int num_popups,
+                              const GURL& url,
+                              HostContentSettingsMap* map);
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
@@ -29,6 +36,9 @@ class PopupBlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
 
   int num_popups_;
+  GURL url_;
+  HostContentSettingsMap* map_;
+  bool can_show_popups_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBlockedInfoBarDelegate);
 };
