@@ -51,6 +51,9 @@ class ExtensionAppItem : public app_list::AppListItem,
   // it gray.
   void UpdateIcon();
 
+  // Only updates the icon if the overlay needs to be added/removed.
+  void UpdateIconOverlay();
+
   // Update page and app launcher ordinals to put the app in between |prev| and
   // |next|. Note that |prev| and |next| could be NULL when the app is put at
   // the beginning or at the end.
@@ -75,8 +78,8 @@ class ExtensionAppItem : public app_list::AppListItem,
   // Private equivalent to Activate(), without refocus for already-running apps.
   void Launch(int event_flags);
 
-  // Whether or not the app item has an overlay.
-  bool HasOverlay() const;
+  // Whether or not the app item needs an overlay.
+  bool NeedsOverlay() const;
 
   // Overridden from extensions::IconImage::Observer:
   virtual void OnExtensionIconImageChanged(
@@ -116,6 +119,9 @@ class ExtensionAppItem : public app_list::AppListItem,
 
   // Whether or not this app is a platform app.
   bool is_platform_app_;
+
+  // Whether this app item has an overlay.
+  bool has_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

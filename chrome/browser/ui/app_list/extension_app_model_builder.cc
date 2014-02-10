@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,11 +19,13 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/gfx/image/image_skia.h"
@@ -64,6 +68,8 @@ void ExtensionAppModelBuilder::InitializeWithService(
   model_->item_list()->AddObserver(this);
   service_ = service;
   profile_ = service->profile();
+  InitializePrefChangeRegistrar();
+
   BuildModel();
 }
 
@@ -74,7 +80,40 @@ void ExtensionAppModelBuilder::InitializeWithProfile(
   model_ = model;
   model_->item_list()->AddObserver(this);
   profile_ = profile;
+  InitializePrefChangeRegistrar();
+
   BuildModel();
+}
+
+void ExtensionAppModelBuilder::InitializePrefChangeRegistrar() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps))
+    return;
+
+  const ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (!extension_service)
+    return;
+
+  extension_pref_change_registrar_.Init(
+      extension_service->extension_prefs()->pref_service());
+  extension_pref_change_registrar_.Add(
+    extensions::pref_names::kExtensions,
+    base::Bind(&ExtensionAppModelBuilder::OnExtensionPreferenceChanged,
+               base::Unretained(this)));
+}
+
+void ExtensionAppModelBuilder::OnExtensionPreferenceChanged() {
+  // TODO(calamity): analyze the performance impact of doing this every
+  // extension pref change.
+  app_list::AppListItemList* item_list = model_->item_list();
+  for (size_t i = 0; i < item_list->item_count(); ++i) {
+    app_list::AppListItem* item = item_list->item_at(i);
+    if (item->GetItemType() != ExtensionAppItem::kItemType)
+      continue;
+
+    static_cast<ExtensionAppItem*>(item)->UpdateIconOverlay();
+  }
 }
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(

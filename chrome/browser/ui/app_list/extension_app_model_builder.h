@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
@@ -104,9 +105,20 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   // Returns app instance matching |extension_id| or NULL.
   ExtensionAppItem* GetExtensionAppItem(const std::string& extension_id);
 
+  // Initializes the |extension_pref_change_registrar| to listen for extension
+  // prefs changes. OnExtensionPreferenceChanged() is called when extension
+  // prefs change.
+  void InitializePrefChangeRegistrar();
+
+  // Handles extension prefs changes.
+  void OnExtensionPreferenceChanged();
+
   // Unowned pointers to the service that owns this and associated profile.
   app_list::AppListSyncableService* service_;
   Profile* profile_;
+
+  // Registrar used to monitor the extension prefs.
+  PrefChangeRegistrar extension_pref_change_registrar_;
 
   // Unowned pointer to the app list controller.
   AppListControllerDelegate* controller_;

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -125,7 +128,8 @@ ExtensionAppItem::ExtensionAppItem(
       installing_icon_(
           gfx::ImageSkiaOperations::CreateHSLShiftedImage(installing_icon,
                                                           shift)),
-      is_platform_app_(is_platform_app) {
+      is_platform_app_(is_platform_app),
+      has_overlay_(false) {
   Reload();
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     // An existing synced position exists, use that.
@@ -142,12 +146,25 @@ ExtensionAppItem::ExtensionAppItem(
 ExtensionAppItem::~ExtensionAppItem() {
 }
 
-bool ExtensionAppItem::HasOverlay() const {
+bool ExtensionAppItem::NeedsOverlay() const {
+  // The overlay icon is disabled for hosted apps in windowed mode with
+  // streamlined hosted apps.
+  bool streamlined_hosted_apps = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableStreamlinedHostedApps);
 #if defined(OS_CHROMEOS)
-  return false;
-#else
-  return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId;
+  if (!streamlined_hosted_apps)
+    return false;
 #endif
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+
+  extensions::LaunchType launch_type = GetExtension()
+      ? extensions::GetLaunchType(service->extension_prefs(), GetExtension())
+      : extensions::LAUNCH_TYPE_WINDOW;
+
+  return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId &&
+      (!streamlined_hosted_apps ||
+       launch_type != extensions::LAUNCH_TYPE_WINDOW);
 }
 
 void ExtensionAppItem::Reload() {
@@ -164,27 +181,33 @@ void ExtensionAppItem::Reload() {
 }
 
 void ExtensionAppItem::UpdateIcon() {
-  if (!GetExtension()) {
-    gfx::ImageSkia icon = installing_icon_;
-    if (HasOverlay())
-      icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
-    SetIcon(icon, !HasOverlay());
-    return;
+  gfx::ImageSkia icon = installing_icon_;
+
+  // Use the app icon if the app exists. Turn the image greyscale if the app is
+  // not launchable.
+  if (GetExtension()) {
+    icon = icon_->image_skia();
+    const bool enabled = extensions::util::IsAppLaunchable(extension_id_,
+                                                           profile_);
+    if (!enabled) {
+      const color_utils::HSL shift = {-1, 0, 0.6};
+      icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
+    }
+
+    if (GetExtension()->from_bookmark())
+      icon = gfx::ImageSkia(new RoundedCornersImageSource(icon), icon.size());
   }
-  gfx::ImageSkia icon = icon_->image_skia();
-
-  if (!extensions::util::IsAppLaunchable(extension_id_, profile_)) {
-    const color_utils::HSL shift = {-1, 0, 0.6};
-    icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
-  }
-
-  if (GetExtension()->from_bookmark())
-    icon = gfx::ImageSkia(new RoundedCornersImageSource(icon), icon.size());
-
-  if (HasOverlay())
+  // Paint the shortcut overlay if necessary.
+  has_overlay_ = NeedsOverlay();
+  if (has_overlay_)
     icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
 
-  SetIcon(icon, !HasOverlay());
+  SetIcon(icon, true);
+}
+
+void ExtensionAppItem::UpdateIconOverlay() {
+  if (has_overlay_ != NeedsOverlay())
+    UpdateIcon();
 }
 
 void ExtensionAppItem::Move(const ExtensionAppItem* prev,
