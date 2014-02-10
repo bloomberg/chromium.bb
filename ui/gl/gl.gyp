@@ -260,6 +260,8 @@
             'gl_context_nsview.h',
             'gl_surface_nsview.mm',
             'gl_surface_nsview.h',
+            'scoped_cgl.cc',
+            'scoped_cgl.h',
           ],
           'link_settings': {
             'libraries': [

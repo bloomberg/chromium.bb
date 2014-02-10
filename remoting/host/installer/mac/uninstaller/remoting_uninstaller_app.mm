@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_cftyperef.h"
 #include "remoting/host/installer/mac/uninstaller/remoting_uninstaller.h"
 
 @implementation RemotingUninstallerAppDelegate

@@ -295,6 +295,7 @@
           'mac/scoped_nsobject.h',
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
+          'mac/scoped_typeref.h',
           'mac/sdk_forward_declarations.h',
           'macros.h',
           'md5.cc',
