@@ -157,6 +157,23 @@ GDataErrorCode FakeDriveServiceHelper::TrashResource(
   return error;
 }
 
+GDataErrorCode FakeDriveServiceHelper::UpdateModificationTime(
+    const std::string& file_id,
+    const base::Time& modification_time) {
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> entry;
+  error = GetResourceEntry(file_id, &entry);
+  if (error != google_apis::HTTP_SUCCESS)
+    return error;
+
+  fake_drive_service_->UpdateResource(
+      file_id, std::string(), entry->title(),
+      modification_time, entry->last_viewed_time(),
+      CreateResultReceiver(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+  return error;
+}
+
 GDataErrorCode FakeDriveServiceHelper::RenameResource(
     const std::string& file_id,
     const std::string& new_title) {

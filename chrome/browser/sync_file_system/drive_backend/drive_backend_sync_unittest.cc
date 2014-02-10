@@ -432,11 +432,11 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   void VerifyLocalFile(const std::string& app_id,
-                       const base::FilePath& path,
+                       const base::FilePath::StringType& path,
                        const std::string& content) {
     SCOPED_TRACE(testing::Message() << "Verifying local file: "
                                     << "app_id = " << app_id
-                                    << ", path = " << path.value());
+                                    << ", path = " << path);
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->VerifyFile(
@@ -444,10 +444,10 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   void VerifyLocalFolder(const std::string& app_id,
-                         const base::FilePath& path) {
+                         const base::FilePath::StringType& path) {
     SCOPED_TRACE(testing::Message() << "Verifying local file: "
                                     << "app_id = " << app_id
-                                    << ", path = " << path.value());
+                                    << ", path = " << path);
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->DirectoryExists(CreateURL(app_id, path)));
@@ -513,7 +513,7 @@ TEST_F(DriveBackendSyncTest, LocalToRemoteBasicTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+  VerifyLocalFile(app_id, FPL("file"), "abcde");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -536,7 +536,7 @@ TEST_F(DriveBackendSyncTest, RemoteToLocalBasicTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+  VerifyLocalFile(app_id, FPL("file"), "abcde");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -559,7 +559,7 @@ TEST_F(DriveBackendSyncTest, LocalFileUpdateTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "1234567890");
+  VerifyLocalFile(app_id, FPL("file"), "1234567890");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -588,7 +588,7 @@ TEST_F(DriveBackendSyncTest, RemoteFileUpdateTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "1234567890");
+  VerifyLocalFile(app_id, FPL("file"), "1234567890");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -660,7 +660,7 @@ TEST_F(DriveBackendSyncTest, RemoteRenameTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("renamed_file")), "abcde");
+  VerifyLocalFile(app_id, FPL("renamed_file"), "abcde");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -694,7 +694,7 @@ TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+  VerifyLocalFile(app_id, FPL("file"), "abcde");
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -727,8 +727,8 @@ TEST_F(DriveBackendSyncTest, ReorganizeToOtherFolder) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(4u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("folder_dest")));
-  VerifyLocalFile(app_id, base::FilePath(FPL("folder_dest/file")), "abcde");
+  VerifyLocalFolder(app_id, FPL("folder_dest"));
+  VerifyLocalFile(app_id, FPL("folder_dest/file"), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
   EXPECT_EQ(5u, CountTracker());
@@ -764,8 +764,7 @@ TEST_F(DriveBackendSyncTest, ReorganizeToOtherApp) {
   EXPECT_EQ(2u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(src_app_id));
   EXPECT_EQ(3u, CountLocalFile(dest_app_id));
-  VerifyLocalFile(
-      dest_app_id, base::FilePath(FPL("folder_dest/file")), "abcde");
+  VerifyLocalFile(dest_app_id, FPL("folder_dest/file"), "abcde");
 
   EXPECT_EQ(6u, CountMetadata());
   EXPECT_EQ(6u, CountTracker());
@@ -848,9 +847,9 @@ TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(4u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("parent1")));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("parent2")));
-  VerifyLocalFile(app_id, base::FilePath(FPL("parent1/file")), "abcde");
+  VerifyLocalFolder(app_id, FPL("parent1"));
+  VerifyLocalFolder(app_id, FPL("parent2"));
+  VerifyLocalFile(app_id, FPL("parent1/file"), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
   EXPECT_EQ(5u, CountTracker());
@@ -894,8 +893,8 @@ TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(4u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("folder")));
-  VerifyLocalFile(app_id, base::FilePath(FPL("folder/file")), "abcde");
+  VerifyLocalFolder(app_id, FPL("folder"));
+  VerifyLocalFile(app_id, FPL("folder/file"), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
   EXPECT_EQ(5u, CountTracker());
@@ -928,8 +927,8 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFolder) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(3u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
+  VerifyLocalFolder(app_id, FPL("conflict_to_pending_remote"));
+  VerifyLocalFolder(app_id, FPL("conflict_to_existing_remote"));
 
   EXPECT_EQ(4u, CountMetadata());
   EXPECT_EQ(4u, CountTracker());
@@ -966,7 +965,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFolder) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(2u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
+  VerifyLocalFolder(app_id, FPL("conflict_to_pending_remote"));
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
@@ -997,8 +996,8 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFile) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(3u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
+  VerifyLocalFolder(app_id, FPL("conflict_to_pending_remote"));
+  VerifyLocalFolder(app_id, FPL("conflict_to_existing_remote"));
 
   EXPECT_EQ(4u, CountMetadata());
   EXPECT_EQ(4u, CountTracker());
@@ -1037,8 +1036,8 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFile) {
 
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(3u, CountLocalFile(app_id));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
-  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
+  VerifyLocalFolder(app_id, FPL("conflict_to_pending_remote"));
+  VerifyLocalFolder(app_id, FPL("conflict_to_existing_remote"));
 
   EXPECT_EQ(4u, CountMetadata());
   EXPECT_EQ(4u, CountTracker());
