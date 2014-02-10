@@ -94,6 +94,33 @@ class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
     self.ctx = gs.GSContext()
 
 
+class CanonicalizeURLTest(cros_test_lib.TestCase):
+  """Tests for the CanonicalizeURL function."""
+
+  def _checkit(self, in_url, exp_url):
+    self.assertEqual(gs.CanonicalizeURL(in_url), exp_url)
+
+  def testPublicUrl(self):
+    """Test public https URLs."""
+    self._checkit(
+        'https://commondatastorage.googleapis.com/releases/some/file/t.gz',
+        'gs://releases/some/file/t.gz')
+
+  def testPrivateUrl(self):
+    """Test private https URLs."""
+    self._checkit(
+        'https://storage.cloud.google.com/releases/some/file/t.gz',
+        'gs://releases/some/file/t.gz')
+
+  def testDuplicateBase(self):
+    """Test multiple prefixes in a single URL."""
+    self._checkit(
+        ('https://storage.cloud.google.com/releases/some/'
+         'https://storage.cloud.google.com/some/file/t.gz'),
+        ('gs://releases/some/'
+         'https://storage.cloud.google.com/some/file/t.gz'))
+
+
 class VersionTest(AbstractGSContextTest):
   """Tests GSContext.gsutil_version functionality."""
 

@@ -36,7 +36,7 @@ def CanonicalizeURL(url, strict=False):
   """
   for prefix in (PUBLIC_BASE_HTTPS_URL, PRIVATE_BASE_HTTPS_URL):
     if url.startswith(prefix):
-      return url.replace(prefix, BASE_GS_URL)
+      return url.replace(prefix, BASE_GS_URL, 1)
 
   if not url.startswith(BASE_GS_URL) and strict:
     raise ValueError('Url %r cannot be canonicalized.' % url)
