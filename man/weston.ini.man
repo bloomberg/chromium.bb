@@ -92,16 +92,29 @@ The
 .B core
 section is used to select the startup compositor modules.
 .TP 7
-.BI "modules=" desktop-shell.so,xwayland.so
-specifies the modules to load (string). Available modules in the
+.BI "shell=" desktop-shell.so
+specifies a shell to load (string). This can be used to load your own
+implemented shell or one with Weston as default. Available shells
+in the
 .IR "__weston_modules_dir__"
 directory are:
 .PP
 .RS 10
 .nf
 .BR desktop-shell.so
-.BR tablet-shell.so
+.fi
+.RE
+.TP 7
+.TP 7
+.BI "modules=" xwayland.so,cms-colord.so
+specifies the modules to load (string). Available modules in the
+.IR "__weston_modules_dir__"
+directory are:
+.PP
+.RS 10
+.nf
 .BR xwayland.so
+.BR cms-colord.so
 .fi
 .RE
 .TP 7
