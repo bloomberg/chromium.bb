@@ -41,11 +41,6 @@ public:
         return adoptRef(new Geoposition(coordinates, timestamp));
     }
 
-    PassRefPtr<Geoposition> isolatedCopy() const
-    {
-        return Geoposition::create(m_coordinates->isolatedCopy(), m_timestamp);
-    }
-
     DOMTimeStamp timestamp() const { return m_timestamp; }
     Coordinates* coords() const { return m_coordinates.get(); }
 

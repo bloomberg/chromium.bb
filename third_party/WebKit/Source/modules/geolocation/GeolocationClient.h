@@ -48,8 +48,6 @@ public:
     virtual void requestPermission(Geolocation*) = 0;
     virtual void cancelPermissionRequest(Geolocation*) = 0;
 
-    void provideGeolocationTo(Page*, GeolocationClient*);
-
 protected:
     virtual ~GeolocationClient() { }
 };

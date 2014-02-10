@@ -36,11 +36,6 @@ class Coordinates : public RefCounted<Coordinates>, public ScriptWrappable {
 public:
     static PassRefPtr<Coordinates> create(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed) { return adoptRef(new Coordinates(latitude, longitude, providesAltitude, altitude, accuracy, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed)); }
 
-    PassRefPtr<Coordinates> isolatedCopy() const
-    {
-        return Coordinates::create(m_latitude, m_longitude, m_canProvideAltitude, m_altitude, m_accuracy, m_canProvideAltitudeAccuracy, m_altitudeAccuracy, m_canProvideHeading, m_heading, m_canProvideSpeed, m_speed);
-    }
-
     double latitude() const { return m_latitude; }
     double longitude() const { return m_longitude; }
     double altitude(bool& isNull) const;
