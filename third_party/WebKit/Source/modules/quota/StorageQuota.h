@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,11 +42,12 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class StorageQuota FINAL : public RefCounted<StorageQuota>, public ScriptWrappable {
+class StorageQuota FINAL : public RefCountedWillBeGarbageCollectedFinalized<StorageQuota>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<StorageQuota> create()
+    static PassRefPtrWillBeRawPtr<StorageQuota> create()
     {
-        return adoptRef(new StorageQuota());
+        return adoptRefWillBeNoop(new StorageQuota());
     }
 
     Vector<String> supportedTypes() const;
@@ -54,6 +56,8 @@ public:
     ScriptPromise requestPersistentQuota(ExecutionContext*, unsigned long long newQuota);
 
     ~StorageQuota();
+
+    void trace(Visitor*) { }
 
 private:
     StorageQuota();

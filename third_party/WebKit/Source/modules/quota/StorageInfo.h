@@ -32,23 +32,27 @@
 #define StorageInfo_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class StorageInfo FINAL : public RefCounted<StorageInfo>, public ScriptWrappable {
+class StorageInfo FINAL : public RefCountedWillBeGarbageCollectedFinalized<StorageInfo>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<StorageInfo> create(unsigned long long usage, unsigned long long quota)
+    static PassRefPtrWillBeRawPtr<StorageInfo> create(unsigned long long usage, unsigned long long quota)
     {
-        return adoptRef(new StorageInfo(usage, quota));
+        return adoptRefWillBeNoop(new StorageInfo(usage, quota));
     }
 
     unsigned long long usage() const { return m_usage; }
     unsigned long long quota() const { return m_quota; }
 
     ~StorageInfo();
+
+    void trace(Visitor*) { }
 
 private:
     StorageInfo(unsigned long long usage, unsigned long long quota);

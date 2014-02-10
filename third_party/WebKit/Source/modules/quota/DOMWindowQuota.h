@@ -32,6 +32,7 @@
 #define DOMWindowQuota_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -50,7 +51,7 @@ private:
     explicit DOMWindowQuota(DOMWindow*);
     static const char* supplementName();
 
-    mutable RefPtr<DeprecatedStorageInfo> m_storageInfo;
+    mutable RefPtrWillBePersistent<DeprecatedStorageInfo> m_storageInfo;
 };
 
 } // namespace WebCore

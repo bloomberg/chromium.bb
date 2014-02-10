@@ -32,28 +32,30 @@
 #define DeprecatedStorageInfo_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
+#include "modules/quota/DeprecatedStorageQuota.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class DeprecatedStorageQuota;
 class ExecutionContext;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageInfo : public RefCounted<DeprecatedStorageInfo>, public ScriptWrappable {
+class DeprecatedStorageInfo : public RefCountedWillBeGarbageCollectedFinalized<DeprecatedStorageInfo>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
     enum {
         TEMPORARY,
         PERSISTENT,
     };
 
-    static PassRefPtr<DeprecatedStorageInfo> create()
+    static PassRefPtrWillBeRawPtr<DeprecatedStorageInfo> create()
     {
-        return adoptRef(new DeprecatedStorageInfo());
+        return adoptRefWillBeNoop(new DeprecatedStorageInfo());
     }
 
     void queryUsageAndQuota(ExecutionContext*, int storageType, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
@@ -62,13 +64,15 @@ public:
 
     ~DeprecatedStorageInfo();
 
+    void trace(Visitor*);
+
 private:
     DeprecatedStorageInfo();
 
     DeprecatedStorageQuota* getStorageQuota(int storageType);
 
-    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
+    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore
