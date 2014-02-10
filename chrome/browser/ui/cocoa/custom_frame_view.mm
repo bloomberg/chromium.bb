@@ -4,8 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 
-#import <objc/runtime.h>
 #import <Carbon/Carbon.h>
+#include <crt_externs.h>
+#import <objc/runtime.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -43,6 +45,20 @@ BOOL gCanGetCornerRadius = NO;
 // roll overs for our close widgets, but things should still function
 // correctly.
 + (void)load {
+  // Swizzling should only happen in the browser process. Interacting with
+  // AppKit will run +[borderViewClass initialize] in the renderer, which
+  // may establish Mach IPC with com.apple.windowserver.
+  // Note that CommandLine has not been initialized yet, since this is running
+  // as a module initializer.
+  const char* const* const argv = *_NSGetArgv();
+  const int argc = *_NSGetArgc();
+  const char kType[] = "--type=";
+  for (int i = 1; i < argc; ++i) {
+    const char* arg = argv[i];
+    if (strncmp(arg, kType, strlen(kType)) == 0)
+      return;
+  }
+
   base::mac::ScopedNSAutoreleasePool pool;
 
   // On 10.8+ the background for textured windows are no longer drawn by
