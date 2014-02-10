@@ -1692,8 +1692,6 @@
         'browser/ui/view_ids.h',
         'browser/ui/views/accelerator_utils_aura.cc',
         'browser/ui/views/accelerator_utils_views.cc',
-        'browser/ui/views/about_ipc_dialog.cc',
-        'browser/ui/views/about_ipc_dialog.h',
         'browser/ui/views/accessibility/accessibility_event_router_views.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views.h',
         'browser/ui/views/accessibility/invert_bubble_view.cc',
@@ -1881,7 +1879,6 @@
         'browser/ui/views/frame/browser_non_client_frame_view_ash.h',
         'browser/ui/views/frame/browser_non_client_frame_view_ash.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
-        'browser/ui/views/frame/browser_non_client_frame_view_factory_win.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc',
         'browser/ui/views/frame/browser_root_view.cc',
         'browser/ui/views/frame/browser_root_view.h',
@@ -2172,8 +2169,6 @@
         'browser/ui/views/uninstall_view.h',
         'browser/ui/views/update_recommended_message_box.cc',
         'browser/ui/views/update_recommended_message_box.h',
-        'browser/ui/views/user_data_dir_dialog_view.cc',
-        'browser/ui/views/user_data_dir_dialog_view.h',
         'browser/ui/views/user_manager_view.cc',
         'browser/ui/views/user_manager_view.h',
         'browser/ui/views/validation_message_bubble_delegate.h',
@@ -2915,9 +2910,6 @@
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^browser/ui/screen_capture_notification_ui_stub.cc'],
-            ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
-            ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_win.cc'],
-            ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
             ['include', '^browser/ui/webui/certificate_viewer_webui.cc'],
