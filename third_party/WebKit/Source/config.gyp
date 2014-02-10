@@ -35,6 +35,7 @@
     # Set to 1 to enable the clang plugin that checks the usage of the Blink
     # garbage-collection infrastructure during compilation.
     # Requires building locally since GOMA doesn't yet support the plugin.
+    'enable_oilpan%': 0,
     'blink_gc_plugin%': 0,
   },
   'targets': [
@@ -104,7 +105,7 @@
         }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
-          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh)'],
+          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan))'],
         }],
       ],
     },
