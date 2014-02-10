@@ -169,10 +169,14 @@ public class AwZoomTest extends AwTestBase {
         runMagnificationTest();
     }
 
+    /*
     // According to Android CTS test, zoomIn/Out must work
     // even if supportZoom is turned off.
     @SmallTest
     @Feature({"AndroidWebView"})
+    crbug.com/340327
+    */
+    @DisabledTest
     public void testMagnificationWithZoomSupportOff() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setSupportZoom(false);
         runMagnificationTest();
