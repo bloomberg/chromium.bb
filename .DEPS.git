@@ -49,8 +49,6 @@ deps_os = {
             Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'third_party/mingw-w64/mingw/bin':
             Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
-        'third_party/python_26':
-            Var('git_url') + '/chromium/deps/python_26.git@0f769a0323d9a5a301bb9c50e48f43166939a923',
     },
 }
 
