@@ -355,6 +355,12 @@ bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
   return PlatformHandleContextMenu(params);
 }
 
+void Shell::WebContentsFocused(WebContents* contents) {
+#if defined(TOOLKIT_VIEWS)
+  PlatformWebContentsFocused(contents);
+#endif
+}
+
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   if (entry)
     PlatformSetTitle(entry->GetTitle());

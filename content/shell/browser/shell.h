@@ -151,6 +151,7 @@ class Shell : public WebContentsDelegate,
   virtual void WorkerCrashed(WebContents* source) OVERRIDE;
   virtual bool HandleContextMenu(const content::ContextMenuParams& params)
       OVERRIDE;
+  virtual void WebContentsFocused(WebContents* contents) OVERRIDE;
 
  private:
   enum UIControl {
@@ -201,6 +202,9 @@ class Shell : public WebContentsDelegate,
                                           bool enter_fullscreen);
   bool PlatformIsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
+#endif
+#if defined(TOOLKIT_VIEWS)
+  void PlatformWebContentsFocused(WebContents* contents);
 #endif
 
   gfx::NativeView GetContentView();
