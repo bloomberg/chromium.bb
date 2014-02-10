@@ -92,8 +92,7 @@
                   '|Source/platform/graphics'
     },
     'platform': {
-      'filepath': 'Source/core/platform' \
-                  '|Source/platform'
+      'filepath': 'Source/platform'
     },
     'svg': {
       'filepath': 'Source/core/svg|Source/core/rendering/svg',
@@ -191,11 +190,11 @@
                   '|Source/bindings/v8/CustomElementHelpers'
     },
     'mediastream': {
-      'filepath': 'Source/core/platform/mediastream/' \
+      'filepath': 'Source/modules/mediastream/' \
                   '|Source/platform/mediastream/' \
-                  '|Source/modules/mediastream/' \
-                  '|LayoutTests/fast/mediastream/' \
-                  '|Source/core/platform/chromium/support/'
+                  '|Source/platform/exported/WebMediaStream' \
+                  '|Source/platform/exported/WebRTC' \
+                  '|LayoutTests/fast/mediastream/'
     },
     'geolocation': {
       'filepath': 'LayoutTests/fast/dom/Geolocation/' \
