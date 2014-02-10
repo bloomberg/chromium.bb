@@ -12,6 +12,7 @@ for those executables involved).
 from __future__ import print_function
 
 import ctypes
+import datetime
 import functools
 import httplib
 import multiprocessing
@@ -300,7 +301,7 @@ def SymbolFinder(paths):
 
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None, sym_paths=None, failed_list=None,
+                  upload_limit=None, sym_paths=None, failed_list=None,
                   root=None, retry=True):
   """Upload all the generated symbols for |board| to the crash server
 
@@ -315,7 +316,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     breakpad_dir: The full path to the breakpad directory where symbols live
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: How long to sleep in between uploads
-    upload_count: If set, only upload this many symbols (meant for testing)
+    upload_limit: If set, only upload this many symbols (meant for testing)
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
     failed_list: Write the names of all sym files we did not upload; can be a
@@ -350,6 +351,11 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       UploadSymbol, file_limit=file_limit, sleep=sleep, num_errors=bg_errors,
       watermark_errors=watermark_errors, failed_queue=failed_queue)
 
+  start_time = datetime.datetime.now()
+  Counters = cros_build_lib.Collection(
+      'Counters', upload_limit=upload_limit, uploaded_count=0)
+  counters = Counters()
+
   # For the first run, we collect the symbols that failed.  If the
   # overall failure rate was low, we'll retry them on the second run.
   for retry in (retry, False):
@@ -359,15 +365,14 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     # http://crbug.com/212496
     with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
       for sym_file in SymbolFinder(sym_paths):
-        if upload_count == 0:
+        if counters.upload_limit == 0:
           break
 
         queue.put([sym_file, upload_url])
+        counters.uploaded_count += 1
 
-        if upload_count is not None:
-          upload_count -= 1
-          if upload_count == 0:
-            break
+        if counters.upload_limit is not None:
+          counters.upload_limit -= 1
 
     # See if we need to retry, and if we haven't failed too many times already.
     if not retry or ErrorLimitHit(bg_errors, watermark_errors):
@@ -378,8 +383,8 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       sym_paths.append(failed_queue.get())
     if sym_paths:
       cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
-      if upload_count is not None:
-        upload_count += len(sym_paths)
+      if counters.upload_limit is not None:
+        counters.upload_limit += len(sym_paths)
       # Decrement the error count in case we recover in the second pass.
       assert bg_errors.value >= len(sym_paths), 'more failed files than errors?'
       bg_errors.value -= len(sym_paths)
@@ -397,6 +402,10 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
           path = os.path.relpath(path, breakpad_dir)
         f.write('%s\n' % path)
 
+  cros_build_lib.Info('uploaded %i symbols which took: %s',
+                      counters.uploaded_count,
+                      datetime.datetime.now() - start_time)
+
   return bg_errors.value
 
 
@@ -412,7 +421,7 @@ def main(argv):
                       help='point to official symbol server')
   parser.add_argument('--regenerate', action='store_true', default=False,
                       help='regenerate all symbols')
-  parser.add_argument('--upload-count', type=int, default=None,
+  parser.add_argument('--upload-limit', type=int, default=None,
                       help='only upload # number of symbols')
   parser.add_argument('--strip_cfi', type=int,
                       default=CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024),
@@ -466,7 +475,7 @@ def main(argv):
   ret += UploadSymbols(opts.board, official=opts.official_build,
                        breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
-                       upload_count=opts.upload_count, sym_paths=opts.sym_paths,
+                       upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
                        failed_list=opts.failed_list)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)

@@ -76,7 +76,7 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
       m.reset_mock()
       with parallel_unittest.ParallelMock():
         ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir,
-                                           sleep=0, upload_count=c)
+                                           sleep=0, upload_limit=c)
         self.assertEquals(ret, 0)
         self.assertEqual(m.call_count, c)
 
