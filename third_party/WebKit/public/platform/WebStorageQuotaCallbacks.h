@@ -76,10 +76,6 @@ private:
     WebPrivatePtr<WebStorageQuotaCallbacksPrivate> m_private;
 };
 
-// FIXME: Remove this after two-side patches are landed.
-// (http://crbug.com/338995)
-#define NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
-
 } // namespace blink
 
 #endif // WebStorageQuotaCallbacks_h
