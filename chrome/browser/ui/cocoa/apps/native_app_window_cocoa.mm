@@ -631,6 +631,11 @@ void NativeAppWindowCocoa::UpdateWindowTitle() {
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
+void NativeAppWindowCocoa::UpdateBadgeIcon() {
+  // TODO(benwells): implement.
+  NOTIMPLEMENTED();
+}
+
 void NativeAppWindowCocoa::UpdateShape(scoped_ptr<SkRegion> region) {
   NOTIMPLEMENTED();
 }

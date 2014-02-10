@@ -637,6 +637,10 @@ void NativeAppWindowGtk::UpdateWindowTitle() {
   gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
 }
 
+void NativeAppWindowGtk::UpdateBadgeIcon() {
+  NOTIMPLEMENTED();
+}
+
 void NativeAppWindowGtk::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.

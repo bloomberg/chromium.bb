@@ -74,8 +74,43 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
 
 // Helper class for tests related to the Apps Window API (chrome.app.window).
 class AppWindowAPITest : public extensions::PlatformAppBrowserTest {
- public:
+ protected:
   bool RunAppWindowAPITest(const char* testName) {
+    if (!BeginAppWindowAPITest(testName))
+      return false;
+
+    ResultCatcher catcher;
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+
+    return true;
+  }
+
+  bool RunAppWindowAPITestAndWaitForRoundTrip(const char* testName) {
+    if (!BeginAppWindowAPITest(testName))
+      return false;
+
+    ExtensionTestMessageListener round_trip_listener("WaitForRoundTrip", true);
+    if (!round_trip_listener.WaitUntilSatisfied()) {
+      message_ = "Did not get the 'WaitForRoundTrip' message.";
+      return false;
+    }
+
+    round_trip_listener.Reply("");
+
+    ResultCatcher catcher;
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+
+    return true;
+  }
+
+ private:
+  bool BeginAppWindowAPITest(const char* testName) {
     ExtensionTestMessageListener launched_listener("Launched", true);
     LoadAndLaunchPlatformApp("window_api");
     if (!launched_listener.WaitUntilSatisfied()) {
@@ -83,14 +118,7 @@ class AppWindowAPITest : public extensions::PlatformAppBrowserTest {
       return false;
     }
 
-    ResultCatcher catcher;
     launched_listener.Reply(testName);
-
-    if (!catcher.GetNextResult()) {
-      message_ = catcher.message();
-      return false;
-    }
-
     return true;
   }
 };
@@ -177,4 +205,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   ResultCatcher catcher;
   geometry_listener.Reply("");
   ASSERT_TRUE(catcher.GetNextResult());
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestBadging) {
+  ASSERT_TRUE(
+      RunAppWindowAPITestAndWaitForRoundTrip("testBadging")) << message_;
 }

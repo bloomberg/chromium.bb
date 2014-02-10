@@ -262,7 +262,9 @@ class ShellWindow : public content::NotificationObserver,
   }
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
-  const GURL& app_icon_url() { return app_icon_url_; }
+  const GURL& app_icon_url() const { return app_icon_url_; }
+  const gfx::Image& badge_icon() const { return badge_icon_; }
+  const GURL& badge_icon_url() const { return badge_icon_url_; }
 
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
@@ -287,6 +289,12 @@ class ShellWindow : public content::NotificationObserver,
 
   // Specifies a url for the launcher icon.
   void SetAppIconUrl(const GURL& icon_url);
+
+  // Specifies a url for the window badge.
+  void SetBadgeIconUrl(const GURL& icon_url);
+
+  // Clear the current badge.
+  void ClearBadge();
 
   // Set the window shape. Passing a NULL |region| sets the default shape.
   void UpdateShape(scoped_ptr<SkRegion> region);
@@ -465,6 +473,10 @@ class ShellWindow : public content::NotificationObserver,
   virtual web_modal::WebContentsModalDialogHost*
       GetWebContentsModalDialogHost() OVERRIDE;
 
+  // Updates the badge to |image|. Called internally from the image loader
+  // callback.
+  void UpdateBadgeIcon(const gfx::Image& image);
+
   // Callback from web_contents()->DownloadFavicon.
   void DidDownloadFavicon(int id,
                           int http_status_code,
@@ -498,6 +510,15 @@ class ShellWindow : public content::NotificationObserver,
 
   // An object to load the app's icon as an extension resource.
   scoped_ptr<extensions::IconImage> app_icon_image_;
+
+  // Badge for icon shown in the task bar.
+  gfx::Image badge_icon_;
+
+  // URL to be used for setting the badge on the app icon.
+  GURL badge_icon_url_;
+
+  // An object to load the badge as an extension resource.
+  scoped_ptr<extensions::IconImage> badge_icon_image_;
 
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<ShellWindowContents> shell_window_contents_;

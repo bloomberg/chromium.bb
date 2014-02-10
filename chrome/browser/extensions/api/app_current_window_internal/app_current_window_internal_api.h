@@ -185,6 +185,28 @@ class AppCurrentWindowInternalSetIconFunction
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalSetBadgeIconFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setBadgeIcon",
+                             APP_CURRENTWINDOWINTERNAL_SETBADGEICON)
+
+ protected:
+  virtual ~AppCurrentWindowInternalSetBadgeIconFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
+class AppCurrentWindowInternalClearBadgeFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.clearBadge",
+                             APP_CURRENTWINDOWINTERNAL_CLEARBADGE)
+
+ protected:
+  virtual ~AppCurrentWindowInternalClearBadgeFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
 class AppCurrentWindowInternalSetShapeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:

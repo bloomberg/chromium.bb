@@ -433,7 +433,11 @@ base::string16 ShellWindow::GetTitle() const {
 }
 
 void ShellWindow::SetAppIconUrl(const GURL& url) {
-  // Avoid using any previous app icons were are being downloaded.
+  // If the same url is being used for the badge, ignore it.
+  if (url == badge_icon_url_)
+    return;
+
+  // Avoid using any previous icons that were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
   // Reset |app_icon_image_| to abort pending image load (if any).
@@ -446,6 +450,28 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
       0,  // no maximum size
       base::Bind(&ShellWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
+}
+
+void ShellWindow::SetBadgeIconUrl(const GURL& url) {
+  // Avoid using any previous icons that were being downloaded.
+  image_loader_ptr_factory_.InvalidateWeakPtrs();
+
+  // Reset |app_icon_image_| to abort pending image load (if any).
+  badge_icon_image_.reset();
+
+  badge_icon_url_ = url;
+  web_contents()->DownloadImage(
+      url,
+      true,  // is a favicon
+      0,  // no maximum size
+      base::Bind(&ShellWindow::DidDownloadFavicon,
+                 image_loader_ptr_factory_.GetWeakPtr()));
+}
+
+void ShellWindow::ClearBadge() {
+  badge_icon_image_.reset();
+  badge_icon_url_ = GURL();
+  UpdateBadgeIcon(gfx::Image());
 }
 
 void ShellWindow::UpdateShape(scoped_ptr<SkRegion> region) {
@@ -598,14 +624,21 @@ void ShellWindow::GetSerializedState(base::DictionaryValue* properties) const {
 //------------------------------------------------------------------------------
 // Private methods
 
+void ShellWindow::UpdateBadgeIcon(const gfx::Image& image) {
+  badge_icon_ = image;
+  native_app_window_->UpdateBadgeIcon();
+}
+
 void ShellWindow::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
-  if (image_url != app_icon_url_ || bitmaps.empty())
+  if ((image_url != app_icon_url_ && image_url != badge_icon_url_) ||
+      bitmaps.empty()) {
     return;
+  }
 
   // Bitmaps are ordered largest to smallest. Choose the smallest bitmap
   // whose height >= the preferred size.
@@ -616,7 +649,12 @@ void ShellWindow::DidDownloadFavicon(
     largest_index = i;
   }
   const SkBitmap& largest = bitmaps[largest_index];
-  UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
+  if (image_url == app_icon_url_) {
+    UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
+    return;
+  }
+
+  UpdateBadgeIcon(gfx::Image::CreateFrom1xBitmap(largest));
 }
 
 void ShellWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
@@ -626,7 +664,7 @@ void ShellWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
 }
 
 void ShellWindow::UpdateExtensionAppIcon() {
-  // Avoid using any previous app icons were are being downloaded.
+  // Avoid using any previous app icons were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
   app_icon_image_.reset(new extensions::IconImage(

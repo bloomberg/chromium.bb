@@ -26,6 +26,7 @@ namespace SetMinHeight = app_current_window_internal::SetMinHeight;
 namespace SetMaxWidth = app_current_window_internal::SetMaxWidth;
 namespace SetMaxHeight = app_current_window_internal::SetMaxHeight;
 namespace SetIcon = app_current_window_internal::SetIcon;
+namespace SetBadgeIcon = app_current_window_internal::SetBadgeIcon;
 namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 
@@ -232,6 +233,36 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
     url = GetExtension()->GetResourceURL(params->icon_url);
 
   window->SetAppIconUrl(url);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
+    ShellWindow* window) {
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    error_ = kDevChannelOnly;
+    return false;
+  }
+
+  scoped_ptr<SetBadgeIcon::Params> params(SetBadgeIcon::Params::Create(*args_));
+  CHECK(params.get());
+  // The |icon_url| parameter may be a blob url (e.g. an image fetched with an
+  // XMLHttpRequest) or a resource url.
+  GURL url(params->icon_url);
+  if (!url.is_valid() && !params->icon_url.empty())
+    url = GetExtension()->GetResourceURL(params->icon_url);
+
+  window->SetBadgeIconUrl(url);
+  return true;
+}
+
+bool AppCurrentWindowInternalClearBadgeFunction::RunWithWindow(
+    ShellWindow* window) {
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    error_ = kDevChannelOnly;
+    return false;
+  }
+
+  window->ClearBadge();
   return true;
 }
 

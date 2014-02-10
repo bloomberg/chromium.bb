@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -979,6 +980,22 @@ void NativeAppWindowViews::UpdateWindowIcon() {
 
 void NativeAppWindowViews::UpdateWindowTitle() {
   window_->UpdateWindowTitle();
+}
+
+void NativeAppWindowViews::UpdateBadgeIcon() {
+  const gfx::Image* icon = NULL;
+  if (!shell_window_->badge_icon().IsEmpty()) {
+    icon = &shell_window_->badge_icon();
+    // chrome::DrawTaskbarDecoration can do interesting things with non-square
+    // bitmaps.
+    // TODO(benwells): Refactor chrome::DrawTaskbarDecoration to not be avatar
+    // specific, and lift this restriction.
+    if (icon->Width() != icon->Height()) {
+      LOG(ERROR) << "Attempt to set a non-square badge; request ignored.";
+      return;
+    }
+  }
+  chrome::DrawTaskbarDecoration(GetNativeWindow(), icon);
 }
 
 void NativeAppWindowViews::UpdateDraggableRegions(
