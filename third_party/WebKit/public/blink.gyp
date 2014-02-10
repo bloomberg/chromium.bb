@@ -60,5 +60,15 @@
                 '../Source/platform/blink_platform.gyp:blink_common',
             ],
         },
+        {
+            'target_name': 'blink_web_test_support',
+            'type': 'none',
+            'dependencies': [
+                '../Source/web/web.gyp:webkit_test_support',
+            ],
+            'export_dependent_settings': [
+                '../Source/web/web.gyp:webkit_test_support',
+            ],
+        },
     ],
 }
