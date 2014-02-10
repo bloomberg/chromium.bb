@@ -25,10 +25,14 @@ import textwrap
 import tempfile
 import time
 import urllib2
+import urlparse
 
 from chromite.buildbot import constants
+from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
@@ -402,22 +406,69 @@ def SymbolDeduplicator(storage, sym_paths):
   return items
 
 
-def SymbolFinder(paths):
+def IsTarball(path):
+  """Guess if this is a tarball based on the filename."""
+  parts = path.split('.')
+  if len(parts) <= 1:
+    return False
+
+  if parts[-1] == 'tar':
+    return True
+
+  if parts[-2] == 'tar':
+    return parts[-1] in ('bz2', 'gz', 'xz')
+
+  return parts[-1] in ('tbz2', 'tbz', 'tgz', 'txz')
+
+
+def SymbolFinder(tempdir, paths):
   """Locate symbol files in |paths|
 
   Args:
+    tempdir: Path to use for temporary files (caller will clean up).
     paths: A list of input paths to walk. Files are returned w/out any checks.
-      Dirs are searched for files that end in ".sym".
+      Dirs are searched for files that end in ".sym". Urls are fetched and then
+      processed. Tarballs are unpacked and walked.
 
   Returns:
     Yield every viable sym file.
   """
   for p in paths:
-    if os.path.isdir(p):
+    o = urlparse.urlparse(p)
+    if o.scheme:
+      # Support globs of filenames.
+      ctx = gs.GSContext()
+      for p in ctx.LS(p):
+        cros_build_lib.Info('processing files inside %s', p)
+        o = urlparse.urlparse(p)
+        cache_dir = commandline.GetCacheDir()
+        common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
+        tar_cache = cache.TarballCache(common_path)
+        key = ('%s%s' % (o.netloc, o.path)).split('/')
+        # The common cache will not be LRU, removing the need to hold a read
+        # lock on the cached gsutil.
+        ref = tar_cache.Lookup(key)
+        try:
+          ref.SetDefault(p)
+        except cros_build_lib.RunCommandError as e:
+          cros_build_lib.Warning('ignoring %s\n%s', p, e)
+          continue
+        for p in SymbolFinder(tempdir, [ref.path]):
+          yield p
+
+    elif os.path.isdir(p):
       for root, _, files in os.walk(p):
         for f in files:
           if f.endswith('.sym'):
             yield os.path.join(root, f)
+
+    elif IsTarball(p):
+      cros_build_lib.Info('processing files inside %s', p)
+      tardir = tempfile.mkdtemp(dir=tempdir)
+      cache.Untar(os.path.realpath(p), tardir)
+      for p in SymbolFinder(tardir, [tardir]):
+        yield p
+
     else:
       yield p
 
@@ -538,46 +589,47 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
     counters.deduped_count += (len(files) - missing_count)
 
-  storage_notify_proc.start()
-  # For the first run, we collect the symbols that failed.  If the
-  # overall failure rate was low, we'll retry them on the second run.
-  for retry in (retry, False):
-    # We need to limit ourselves to one upload at a time to avoid the server
-    # kicking in DoS protection.  See these bugs for more details:
-    # http://crbug.com/209442
-    # http://crbug.com/212496
-    with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
-      dedupe_list = []
-      for sym_file in SymbolFinder(sym_paths):
-        dedupe_list.append(sym_file)
-        dedupe_len = len(dedupe_list)
-        if dedupe_len < dedupe_limit:
-          if (counters.upload_limit is None or
-              dedupe_len < counters.upload_limit):
-            continue
-
-        _Upload(queue, counters, dedupe_list)
+  with osutils.TempDir(prefix='upload_symbols.') as tempdir:
+    storage_notify_proc.start()
+    # For the first run, we collect the symbols that failed.  If the
+    # overall failure rate was low, we'll retry them on the second run.
+    for retry in (retry, False):
+      # We need to limit ourselves to one upload at a time to avoid the server
+      # kicking in DoS protection.  See these bugs for more details:
+      # http://crbug.com/209442
+      # http://crbug.com/212496
+      with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
         dedupe_list = []
-      _Upload(queue, counters, dedupe_list)
+        for sym_file in SymbolFinder(tempdir, sym_paths):
+          dedupe_list.append(sym_file)
+          dedupe_len = len(dedupe_list)
+          if dedupe_len < dedupe_limit:
+            if (counters.upload_limit is None or
+                dedupe_len < counters.upload_limit):
+              continue
 
-    # See if we need to retry, and if we haven't failed too many times yet.
-    if not retry or ErrorLimitHit(bg_errors, watermark_errors):
-      break
+          _Upload(queue, counters, dedupe_list)
+          dedupe_list = []
+        _Upload(queue, counters, dedupe_list)
 
-    sym_paths = []
-    while not failed_queue.empty():
-      sym_paths.append(failed_queue.get())
-    if sym_paths:
-      cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
-      if counters.upload_limit is not None:
-        counters.upload_limit += len(sym_paths)
-      # Decrement the error count in case we recover in the second pass.
-      assert bg_errors.value >= len(sym_paths), \
-             'more failed files than errors?'
-      bg_errors.value -= len(sym_paths)
-    else:
-      # No failed symbols, so just return now.
-      break
+      # See if we need to retry, and if we haven't failed too many times yet.
+      if not retry or ErrorLimitHit(bg_errors, watermark_errors):
+        break
+
+      sym_paths = []
+      while not failed_queue.empty():
+        sym_paths.append(failed_queue.get())
+      if sym_paths:
+        cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
+        if counters.upload_limit is not None:
+          counters.upload_limit += len(sym_paths)
+        # Decrement the error count in case we recover in the second pass.
+        assert bg_errors.value >= len(sym_paths), \
+               'more failed files than errors?'
+        bg_errors.value -= len(sym_paths)
+      else:
+        # No failed symbols, so just return now.
+        break
 
   # If the user has requested it, save all the symbol files that we failed to
   # upload to a listing file.  This should help with recovery efforts later.
@@ -601,7 +653,8 @@ def main(argv):
 
   parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_argument('sym_paths', type='path', nargs='*', default=None)
+  parser.add_argument('sym_paths', type='path_or_uri', nargs='*', default=None,
+                      help='symbol file or directory or URL or tarball')
   parser.add_argument('--board', default=None,
                       help='board to build packages for')
   parser.add_argument('--breakpad_root', type='path', default=None,

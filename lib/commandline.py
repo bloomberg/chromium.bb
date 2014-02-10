@@ -18,6 +18,7 @@ import optparse
 import signal
 import sys
 import tempfile
+import urlparse
 
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
@@ -129,6 +130,20 @@ def ParseDate(value):
     raise
 
 
+def NormalizeUri(value):
+  """Normalize a local path or URI."""
+  o = urlparse.urlparse(value)
+  if o.scheme == 'file':
+    # Trim off the file:// prefix.
+    return VALID_TYPES['path'](value[7:])
+  elif o.scheme not in ('', 'gs'):
+    o = list(o)
+    o[2] = os.path.normpath(o[2])
+    return urlparse.urlunparse(o)
+  else:
+    return NormalizeLocalOrGSPath(value)
+
+
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
   """Optparse adapter for type checking functionality."""
   try:
@@ -143,6 +158,7 @@ VALID_TYPES = {
     'path': osutils.ExpandPath,
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
+    'path_or_uri': NormalizeUri,
 }
 
 

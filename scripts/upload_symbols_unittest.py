@@ -40,6 +40,11 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
       for f in ('ignored', 'real.sym', 'no.sym.here'):
         f = os.path.join(d, f)
         osutils.Touch(f)
+    self.sym_paths = [
+        'bar/real.sym',
+        'foo/real.sym',
+        'some/dir/here/real.sym',
+    ]
 
     self.upload_mock = self.PatchObject(upload_symbols, 'UploadSymbol')
     self.PatchObject(cros_generate_breakpad_symbols, 'ReadSymsHeader',
@@ -102,12 +107,53 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
 
       # Need to sort the output as parallel/fs discovery can be unordered.
       got_list = sorted(osutils.ReadFile(failed_list).splitlines())
-      exp_list = [
-          'bar/real.sym',
-          'foo/real.sym',
-          'some/dir/here/real.sym',
-      ]
-      self.assertEquals(exp_list, got_list)
+      self.assertEquals(self.sym_paths, got_list)
+
+  def _testUpload(self, inputs, sym_paths=None):
+    """Helper for testing uploading of specific paths"""
+    if sym_paths is None:
+      sym_paths = inputs
+
+    self.upload_mock.return_value = 0
+    with parallel_unittest.ParallelMock():
+      ret = upload_symbols.UploadSymbols(sym_paths=inputs, sleep=0,
+                                         retry=False)
+      self.assertEquals(ret, 0)
+      self.assertEquals(self.upload_mock.call_count, len(sym_paths))
+
+      # Since upload order is arbitrary, we have to do a manual scan for each
+      # path ourselves against the uploaded file list.
+      found_syms = [x[0][1].sym_file for x in self.upload_mock.call_args_list]
+      for found_sym in found_syms:
+        for path in sym_paths:
+          if found_sym.endswith(path):
+            break
+        else:
+          raise AssertionError('Could not locate %s in %r' % (path, found_syms))
+
+  def testUploadFiles(self):
+    """Test uploading specific symbol files"""
+    sym_paths = (
+        os.path.join(self.tempdir, 'bar', 'real.sym'),
+        os.path.join(self.tempdir, 'foo', 'real.sym'),
+    )
+    self._testUpload(sym_paths)
+
+  def testUploadDirectory(self):
+    """Test uploading directory of symbol files"""
+    self._testUpload([self.tempdir], sym_paths=self.sym_paths)
+
+  def testUploadLocalTarball(self):
+    """Test uploading symbols contains in a local tarball"""
+    tarball = os.path.join(self.tempdir, 'syms.tar.gz')
+    cros_build_lib.CreateTarball(
+        'syms.tar.gz', self.tempdir, compression=cros_build_lib.COMP_GZIP,
+        inputs=('foo', 'bar', 'some'))
+    self._testUpload([tarball], sym_paths=self.sym_paths)
+
+  def testUploadRemoteTarball(self):
+    """Test uploading symbols contains in a remote tarball"""
+    # TODO: Need to figure out how to mock out lib.cache.TarballCache.
 
 
 class SymbolDeduplicatorNotifyTest(cros_test_lib.MockTestCase):
