@@ -1853,7 +1853,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSelectedColorInColorChooser,
                     SkColor /* color */)
 
 // Asks the browser to display the file chooser.  The result is returned in a
-// ViewHost_RunFileChooserResponse message.
+// ViewMsg_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
                     content::FileChooserParams)
 

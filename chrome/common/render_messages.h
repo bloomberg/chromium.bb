@@ -47,8 +47,8 @@
 class SkBitmap;
 
 // Command values for the cmd parameter of the
-// ViewHost_JavaScriptStressTestControl message. For each command the parameter
-// passed has a different meaning:
+// ChromeViewMsg_JavaScriptStressTestControl message. For each command the
+// parameter passed has a different meaning:
 // For the command kJavaScriptStressTestSetStressRunType the parameter it the
 // type taken from the enumeration v8::Testing::StressType.
 // For the command kJavaScriptStressTestPrepareStressRun the parameter it the
