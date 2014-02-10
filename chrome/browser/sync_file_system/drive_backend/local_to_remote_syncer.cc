@@ -370,6 +370,11 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
   // For PRECONDITION / CONFLICT case, the remote file is modified since the
   // last sync completed.  As our policy for deletion-modification conflict
   // resolution, ignore the local deletion.
+  if (error == google_apis::HTTP_NOT_FOUND) {
+    metadata_database()->UpdateByDeletedRemoteFile(
+        remote_file_tracker_->file_id(), callback);
+    return;
+  }
   callback.Run(SYNC_STATUS_OK);
 }
 
