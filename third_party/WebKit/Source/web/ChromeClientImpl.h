@@ -50,7 +50,6 @@ class FileChooser;
 class GraphicsLayerFactory;
 class HTMLInputElement;
 class KeyboardEvent;
-class PopupContainer;
 class PopupMenuClient;
 class RenderBox;
 class SecurityOrigin;
@@ -153,10 +152,6 @@ public:
     virtual void exitFullScreenForElement(WebCore::Element*) OVERRIDE;
 
     // ChromeClient methods:
-    virtual void popupOpened(WebCore::PopupContainer* popupContainer,
-        const WebCore::IntRect& bounds,
-        bool handleExternally) OVERRIDE;
-    virtual void popupClosed(WebCore::PopupContainer*) OVERRIDE;
     virtual void postAccessibilityNotification(WebCore::AXObject*, WebCore::AXObjectCache::AXNotification) OVERRIDE;
     virtual String acceptLanguages() OVERRIDE;
 
@@ -198,7 +193,6 @@ private:
     virtual bool isChromeClientImpl() const OVERRIDE { return true; }
 
     WebNavigationPolicy getNavigationPolicy();
-    void getPopupMenuInfo(WebCore::PopupContainer*, WebPopupMenuInfo*);
     void setCursor(const WebCursorInfo&);
 
     WebViewImpl* m_webView;  // weak pointer

@@ -38,7 +38,6 @@
 #include "ExternalDateTimeChooser.h"
 #include "ExternalPopupMenu.h"
 #include "HTMLNames.h"
-#include "PopupContainer.h"
 #include "PopupMenuChromium.h"
 #include "RuntimeEnabledFeatures.h"
 #include "WebAXObject.h"
@@ -59,7 +58,6 @@
 #include "WebPluginContainerImpl.h"
 #include "WebPopupMenuImpl.h"
 #include "WebPopupMenuInfo.h"
-#include "WebPopupType.h"
 #include "WebSettings.h"
 #include "WebSettingsImpl.h"
 #include "WebTextDirection.h"
@@ -113,20 +111,6 @@
 using namespace WebCore;
 
 namespace blink {
-
-// Converts a WebCore::PopupContainerType to a blink::WebPopupType.
-static WebPopupType convertPopupType(PopupContainer::PopupType type)
-{
-    switch (type) {
-    case PopupContainer::Select:
-        return WebPopupTypeSelect;
-    case PopupContainer::Suggestion:
-        return WebPopupTypeSuggestion;
-    default:
-        ASSERT_NOT_REACHED();
-        return WebPopupTypeNone;
-    }
-}
 
 // Converts a WebCore::AXObjectCache::AXNotification to a blink::WebAXEvent
 static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
@@ -656,34 +640,6 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
         chooserCompletion->didChooseFile(WebVector<WebString>());
 }
 
-void ChromeClientImpl::popupOpened(PopupContainer* popupContainer,
-                                   const IntRect& bounds,
-                                   bool handleExternally)
-{
-    if (!m_webView->client())
-        return;
-
-    WebWidget* webwidget;
-    if (handleExternally) {
-        WebPopupMenuInfo popupInfo;
-        getPopupMenuInfo(popupContainer, &popupInfo);
-        webwidget = m_webView->client()->createPopupMenu(popupInfo);
-    } else {
-        webwidget = m_webView->client()->createPopupMenu(
-            convertPopupType(popupContainer->popupType()));
-        // We only notify when the WebView has to handle the popup, as when
-        // the popup is handled externally, the fact that a popup is showing is
-        // transparent to the WebView.
-        m_webView->popupOpened(popupContainer);
-    }
-    toWebPopupMenuImpl(webwidget)->initialize(popupContainer, bounds);
-}
-
-void ChromeClientImpl::popupClosed(WebCore::PopupContainer* popupContainer)
-{
-    m_webView->popupClosed(popupContainer);
-}
-
 void ChromeClientImpl::setCursor(const WebCore::Cursor& cursor)
 {
     setCursor(WebCursorInfo(cursor));
@@ -713,47 +669,6 @@ void ChromeClientImpl::formStateDidChange(const Node* node)
     WebFrameImpl* webframe = WebFrameImpl::fromFrame(node->document().frame());
     if (webframe->client())
         webframe->client()->didUpdateCurrentHistoryItem(webframe);
-}
-
-void ChromeClientImpl::getPopupMenuInfo(PopupContainer* popupContainer,
-                                        WebPopupMenuInfo* info)
-{
-    const Vector<PopupItem*>& inputItems = popupContainer->popupData();
-
-    WebVector<WebMenuItemInfo> outputItems(inputItems.size());
-
-    for (size_t i = 0; i < inputItems.size(); ++i) {
-        const PopupItem& inputItem = *inputItems[i];
-        WebMenuItemInfo& outputItem = outputItems[i];
-
-        outputItem.label = inputItem.label;
-        outputItem.enabled = inputItem.enabled;
-        if (inputItem.textDirection == WebCore::RTL)
-            outputItem.textDirection = WebTextDirectionRightToLeft;
-        else
-            outputItem.textDirection = WebTextDirectionLeftToRight;
-        outputItem.hasTextDirectionOverride = inputItem.hasTextDirectionOverride;
-
-        switch (inputItem.type) {
-        case PopupItem::TypeOption:
-            outputItem.type = WebMenuItemInfo::Option;
-            break;
-        case PopupItem::TypeGroup:
-            outputItem.type = WebMenuItemInfo::Group;
-            break;
-        case PopupItem::TypeSeparator:
-            outputItem.type = WebMenuItemInfo::Separator;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    info->itemHeight = popupContainer->menuItemHeight();
-    info->itemFontSize = popupContainer->menuItemFontSize();
-    info->selectedIndex = popupContainer->selectedIndex();
-    info->items.swap(outputItems);
-    info->rightAligned = popupContainer->menuStyle().textDirection() == RTL;
 }
 
 void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)

@@ -461,7 +461,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     // If there is a popup open, close it as the user is clicking on the page (outside of the
     // popup). We also save it so we can prevent a click on an element from immediately
     // reopening the same popup.
-    RefPtr<WebCore::PopupContainer> selectPopup;
+    RefPtr<PopupContainer> selectPopup;
     RefPtr<WebPagePopupImpl> pagePopup;
     if (event.button == WebMouseEvent::ButtonLeft) {
         selectPopup = m_selectPopup;
@@ -660,7 +660,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             break;
         }
 
-        RefPtr<WebCore::PopupContainer> selectPopup;
+        RefPtr<PopupContainer> selectPopup;
         selectPopup = m_selectPopup;
         hideSelectPopup();
         ASSERT(!m_selectPopup);
@@ -1402,9 +1402,9 @@ bool WebViewImpl::bubblingScroll(ScrollDirection scrollDirection, ScrollGranular
     return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
 }
 
-void  WebViewImpl::popupOpened(WebCore::PopupContainer* popupContainer)
+void WebViewImpl::popupOpened(PopupContainer* popupContainer)
 {
-    if (popupContainer->popupType() == WebCore::PopupContainer::Select) {
+    if (popupContainer->popupType() == PopupContainer::Select) {
         ASSERT(!m_selectPopup);
         m_selectPopup = popupContainer;
         Document* document = mainFrameImpl()->frame()->document();
@@ -1412,9 +1412,9 @@ void  WebViewImpl::popupOpened(WebCore::PopupContainer* popupContainer)
     }
 }
 
-void  WebViewImpl::popupClosed(WebCore::PopupContainer* popupContainer)
+void WebViewImpl::popupClosed(PopupContainer* popupContainer)
 {
-    if (popupContainer->popupType() == WebCore::PopupContainer::Select) {
+    if (popupContainer->popupType() == PopupContainer::Select) {
         ASSERT(m_selectPopup);
         m_selectPopup = 0;
         Document* document = mainFrameImpl()->frame()->document();

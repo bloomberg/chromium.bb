@@ -165,9 +165,6 @@ public:
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) OVERRIDE { }
 
-    virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds, bool handleExternal) OVERRIDE { }
-    virtual void popupClosed(PopupContainer* popupContainer) OVERRIDE { }
-
     virtual void annotatedRegionsChanged() OVERRIDE { }
     virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) OVERRIDE { return false; }
     virtual String acceptLanguages() OVERRIDE;

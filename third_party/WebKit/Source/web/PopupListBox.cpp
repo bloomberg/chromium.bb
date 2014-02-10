@@ -57,9 +57,10 @@
 #include "wtf/CurrentTime.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF::Unicode;
+using namespace WebCore;
 
 const int PopupListBox::defaultMaxHeight = 500;
 static const int maxVisibleRows = 20;
@@ -374,6 +375,8 @@ void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
 
 static const int separatorPadding = 4;
 static const int separatorHeight = 1;
+static const int minRowHeight = 0;
+static const int optionRowHeightForTouch = 28;
 
 void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowIndex)
 {
@@ -564,9 +567,7 @@ void PopupListBox::setOriginalIndex(int index)
 
 int PopupListBox::getRowHeight(int index)
 {
-    int minimumHeight = PopupMenuChromium::minimumRowHeight();
-    if (m_deviceSupportsTouch)
-        minimumHeight = max(minimumHeight, PopupMenuChromium::optionRowHeightForTouch());
+    int minimumHeight = m_deviceSupportsTouch ? optionRowHeightForTouch : minRowHeight;
 
     if (index < 0 || m_popupClient->itemStyle(index).isDisplayNone())
         return minimumHeight;
@@ -823,4 +824,4 @@ int PopupListBox::popupContentHeight() const
     return height();
 }
 
-} // namespace WebCore
+} // namespace blink

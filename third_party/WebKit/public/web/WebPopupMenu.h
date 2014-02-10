@@ -41,9 +41,6 @@ class WebWidgetClient;
 class WebPopupMenu : public WebWidget {
 public:
     BLINK_EXPORT static WebPopupMenu* create(WebWidgetClient*);
-
-    // Sets the minimum height of a popup listbox row.
-    BLINK_EXPORT static void setMinimumRowHeight(int);
 };
 
 } // namespace blink

@@ -31,6 +31,11 @@
 #include "config.h"
 #include "PopupContainer.h"
 
+#include "WebPopupMenuImpl.h"
+#include "WebPopupMenuInfo.h"
+#include "WebPopupType.h"
+#include "WebViewClient.h"
+#include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -50,7 +55,9 @@
 #include "platform/scroll/FramelessScrollViewClient.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
+
+using namespace WebCore;
 
 static const int borderSize = 1;
 
@@ -211,7 +218,7 @@ void PopupContainer::showPopup(FrameView* view)
     listBox()->m_focusedElement = m_frameView->frame().document()->focusedElement();
 
     IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
-    chromeClient().popupOpened(this, layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
+    popupOpened(layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
     m_popupOpen = true;
 
     if (!m_listBox->parent())
@@ -236,7 +243,7 @@ void PopupContainer::notifyPopupHidden()
     if (!m_popupOpen)
         return;
     m_popupOpen = false;
-    chromeClient().popupClosed(this);
+    WebViewImpl::fromPage(m_frameView->frame().page())->popupClosed(this);
 }
 
 void PopupContainer::fitToListBox()
@@ -459,4 +466,76 @@ String PopupContainer::getSelectedItemToolTip()
     return listBox()->m_popupClient->itemToolTip(listBox()->m_selectedIndex);
 }
 
-} // namespace WebCore
+// Converts a blink::PopupContainerType to a blink::WebPopupType.
+static WebPopupType convertPopupType(PopupContainer::PopupType type)
+{
+    switch (type) {
+    case PopupContainer::Select:
+        return WebPopupTypeSelect;
+    case PopupContainer::Suggestion:
+        return WebPopupTypeSuggestion;
+    }
+    ASSERT_NOT_REACHED();
+    return WebPopupTypeNone;
+}
+
+void PopupContainer::popupOpened(const IntRect& bounds, bool handleExternally)
+{
+    WebViewImpl* webView = WebViewImpl::fromPage(m_frameView->frame().page());
+    if (!webView->client())
+        return;
+
+    WebWidget* webwidget;
+    if (handleExternally) {
+        WebPopupMenuInfo popupInfo;
+        getPopupMenuInfo(&popupInfo);
+        webwidget = webView->client()->createPopupMenu(popupInfo);
+    } else {
+        webwidget = webView->client()->createPopupMenu(convertPopupType(popupType()));
+        // We only notify when the WebView has to handle the popup, as when
+        // the popup is handled externally, the fact that a popup is showing is
+        // transparent to the WebView.
+        webView->popupOpened(this);
+    }
+    toWebPopupMenuImpl(webwidget)->initialize(this, bounds);
+}
+
+void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
+{
+    const Vector<PopupItem*>& inputItems = popupData();
+
+    WebVector<WebMenuItemInfo> outputItems(inputItems.size());
+
+    for (size_t i = 0; i < inputItems.size(); ++i) {
+        const PopupItem& inputItem = *inputItems[i];
+        WebMenuItemInfo& outputItem = outputItems[i];
+
+        outputItem.label = inputItem.label;
+        outputItem.enabled = inputItem.enabled;
+        if (inputItem.textDirection == WebCore::RTL)
+            outputItem.textDirection = WebTextDirectionRightToLeft;
+        else
+            outputItem.textDirection = WebTextDirectionLeftToRight;
+        outputItem.hasTextDirectionOverride = inputItem.hasTextDirectionOverride;
+
+        switch (inputItem.type) {
+        case PopupItem::TypeOption:
+            outputItem.type = WebMenuItemInfo::Option;
+            break;
+        case PopupItem::TypeGroup:
+            outputItem.type = WebMenuItemInfo::Group;
+            break;
+        case PopupItem::TypeSeparator:
+            outputItem.type = WebMenuItemInfo::Separator;
+            break;
+        }
+    }
+
+    info->itemHeight = menuItemHeight();
+    info->itemFontSize = menuItemFontSize();
+    info->selectedIndex = selectedIndex();
+    info->items.swap(outputItems);
+    info->rightAligned = menuStyle().textDirection() == RTL;
+}
+
+} // namespace blink

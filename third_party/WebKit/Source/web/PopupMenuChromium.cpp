@@ -37,10 +37,9 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
-int PopupMenuChromium::s_minimumRowHeight = 0;
-int PopupMenuChromium::s_optionRowHeightForTouch = 28;
+using namespace WebCore;
 
 PopupMenuChromium::PopupMenuChromium(Frame& frame, PopupMenuClient* client)
     : m_popupClient(client)
@@ -60,7 +59,7 @@ void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& co
 {
     if (!m_popup) {
         bool deviceSupportsTouch = m_frameView->frame().settings()->deviceSupportsTouch();
-        m_popup = PopupContainer::create(client(), PopupContainer::Select, deviceSupportsTouch);
+        m_popup = PopupContainer::create(m_popupClient, PopupContainer::Select, deviceSupportsTouch);
     }
     m_popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);
 }
@@ -82,4 +81,4 @@ void PopupMenuChromium::disconnectClient()
     m_popupClient = 0;
 }
 
-} // namespace WebCore
+} // namespace blink

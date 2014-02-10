@@ -74,7 +74,6 @@ class PageGroup;
 class PagePopup;
 class PagePopupClient;
 class PlatformKeyboardEvent;
-class PopupContainer;
 class PopupMenuClient;
 class RenderLayerCompositor;
 }
@@ -87,6 +86,7 @@ class GeolocationClientProxy;
 class LinkHighlight;
 class MIDIClientProxy;
 class PinchViewports;
+class PopupContainer;
 class PrerendererClientImpl;
 class SpeechInputClientImpl;
 class SpeechRecognitionClientProxy;
@@ -441,8 +441,8 @@ public:
     bool bubblingScroll(WebCore::ScrollDirection, WebCore::ScrollGranularity);
 
     // Notification that a popup was opened/closed.
-    void popupOpened(WebCore::PopupContainer* popupContainer);
-    void popupClosed(WebCore::PopupContainer* popupContainer);
+    void popupOpened(PopupContainer*);
+    void popupClosed(PopupContainer*);
     // PagePopupDriver functions.
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
@@ -466,7 +466,7 @@ public:
 
     virtual void setVisibilityState(WebPageVisibilityState, bool) OVERRIDE;
 
-    WebCore::PopupContainer* selectPopup() const { return m_selectPopup.get(); }
+    PopupContainer* selectPopup() const { return m_selectPopup.get(); }
     bool hasOpenedPopup() const { return m_selectPopup || m_pagePopup; }
 
     // Returns true if the event leads to scrolling.
@@ -712,7 +712,7 @@ private:
     OwnPtr<ContextFeaturesClientImpl> m_featureSwitchClient;
 
     // The popup associated with a select element.
-    RefPtr<WebCore::PopupContainer> m_selectPopup;
+    RefPtr<PopupContainer> m_selectPopup;
 
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;

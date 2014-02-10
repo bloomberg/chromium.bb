@@ -111,7 +111,7 @@ void WebPopupMenuImpl::handleMouseMove(const WebMouseEvent& event)
         m_widget->handleMouseMoveEvent(PlatformMouseEventBuilder(m_widget, event));
 
         // We cannot call setToolTipText() in PopupContainer, because PopupContainer is in WebCore, and we cannot refer to WebKit from Webcore.
-        WebCore::PopupContainer* container = static_cast<WebCore::PopupContainer*>(m_widget);
+        PopupContainer* container = static_cast<PopupContainer*>(m_widget);
         client()->setToolTipText(container->getSelectedItemToolTip(), container->menuStyle().textDirection() == WebCore::RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight);
     }
 }
@@ -351,11 +351,6 @@ void WebPopupMenuImpl::mouseCaptureLost()
 
 void WebPopupMenuImpl::setFocus(bool)
 {
-}
-
-void WebPopupMenu::setMinimumRowHeight(int minimumRowHeight)
-{
-    PopupMenuChromium::setMinimumRowHeight(minimumRowHeight);
 }
 
 bool WebPopupMenuImpl::setComposition(const WebString&, const WebVector<WebCompositionUnderline>&, int, int)

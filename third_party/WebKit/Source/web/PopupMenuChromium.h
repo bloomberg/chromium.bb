@@ -35,40 +35,31 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-
 class Frame;
 class FrameView;
-class IntRect;
-class PopupContainer;
-struct PopupItem;
 class PopupMenuClient;
+}
 
-class PopupMenuChromium FINAL : public PopupMenu {
+namespace blink {
+
+class PopupContainer;
+
+class PopupMenuChromium FINAL : public WebCore::PopupMenu {
 public:
-    PopupMenuChromium(Frame&, PopupMenuClient*);
+    PopupMenuChromium(WebCore::Frame&, WebCore::PopupMenuClient*);
     virtual ~PopupMenuChromium();
 
-    virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) OVERRIDE;
+    virtual void show(const WebCore::FloatQuad& controlPosition, const WebCore::IntSize& controlSize, int index) OVERRIDE;
     virtual void hide() OVERRIDE;
     virtual void updateFromElement() OVERRIDE;
     virtual void disconnectClient() OVERRIDE;
 
-    static int minimumRowHeight() { return s_minimumRowHeight; }
-    static void setMinimumRowHeight(int minimumRowHeight) { s_minimumRowHeight = minimumRowHeight; }
-    static int optionRowHeightForTouch() { return s_optionRowHeightForTouch; }
-    static void setOptionRowHeightForTouch(int optionRowHeightForTouch) { s_optionRowHeightForTouch = optionRowHeightForTouch; }
-
 private:
-    PopupMenuClient* client() const { return m_popupClient; }
-
-    PopupMenuClient* m_popupClient;
-    RefPtr<FrameView> m_frameView;
+    WebCore::PopupMenuClient* m_popupClient;
+    RefPtr<WebCore::FrameView> m_frameView;
     RefPtr<PopupContainer> m_popup;
-
-    static int s_minimumRowHeight;
-    static int s_optionRowHeightForTouch;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
