@@ -396,8 +396,8 @@ void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
         ),
         floatSizeForLengthSize(m_topLeftRadius, boundingBox),
         floatSizeForLengthSize(m_topRightRadius, boundingBox),
-        floatSizeForLengthSize(m_bottomRightRadius, boundingBox),
-        floatSizeForLengthSize(m_bottomLeftRadius, boundingBox)
+        floatSizeForLengthSize(m_bottomLeftRadius, boundingBox),
+        floatSizeForLengthSize(m_bottomRightRadius, boundingBox)
     );
 }
 
