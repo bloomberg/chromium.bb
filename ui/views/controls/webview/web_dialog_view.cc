@@ -261,13 +261,6 @@ bool WebDialogView::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool WebDialogView::HandleContextMenu(
-    const content::ContextMenuParams& params) {
-  if (delegate_)
-    return delegate_->HandleContextMenu(params);
-  return WebDialogWebContentsDelegate::HandleContextMenu(params);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // content::WebContentsDelegate implementation:
 
@@ -345,6 +338,15 @@ void WebDialogView::BeforeUnloadFired(content::WebContents* tab,
                                       bool* proceed_to_fire_unload) {
   before_unload_fired_ = true;
   *proceed_to_fire_unload = proceed;
+}
+
+bool WebDialogView::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
+  if (delegate_)
+    return delegate_->HandleContextMenu(params);
+  return WebDialogWebContentsDelegate::HandleContextMenu(render_frame_host,
+                                                         params);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

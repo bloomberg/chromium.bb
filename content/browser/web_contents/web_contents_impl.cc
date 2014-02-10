@@ -2701,7 +2701,7 @@ void WebContentsImpl::WorkerCrashed(RenderFrameHost* render_frame_host) {
 void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                       const ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
-  if (delegate_ && delegate_->HandleContextMenu(params))
+  if (delegate_ && delegate_->HandleContextMenu(render_frame_host, params))
     return;
 
   render_view_host_delegate_view_->ShowContextMenu(render_frame_host, params);
