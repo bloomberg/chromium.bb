@@ -89,11 +89,9 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     TestSpecialOperationsNotEnumerable* collection = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());

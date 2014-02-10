@@ -621,11 +621,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     TestInterface* collection = V8TestInterface::toNative(info.Holder());

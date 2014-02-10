@@ -107,11 +107,9 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     TestSpecialOperationsInt* collection = V8TestSpecialOperationsInt::toNative(info.Holder());
@@ -131,11 +129,9 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     TestSpecialOperationsInt* collection = V8TestSpecialOperationsInt::toNative(info.Holder());
