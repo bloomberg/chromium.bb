@@ -1055,28 +1055,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID">$1<ex>12345</ex></ph>) on another computer (<ph name="HOST_NAME">$2<ex>example.com</ex></ph>). Chromium has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chromium.
       </message>
 
-      <!-- Mac First-run dialog messages -->
-      <if expr="is_macosx">
-        <message name="IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL" desc="Label for checkbox that sets the default browser">
-          Set Chromium as your default browser
-        </message>
-      </if>
-
-      <!-- chrome://settings. Android uses native UI for settings -->
-      <if expr="not is_android">
-        <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chromium is set to auto-launch on startup or not.">
-          Launch Chromium automatically when your computer starts
-        </message>
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chromium as default' browser button">
-          Make Chromium the default browser
-        </message>
-      </if>
-
-      <!-- Toast experiment. -->
-      <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chromium the default browser">
-        Make Chromium the default browser
-      </message>
-
     </messages>
   </release>
 </grit>
