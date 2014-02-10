@@ -54,27 +54,25 @@ public:
         : m_ruleData(ruleData)
         , m_specificity(specificity)
         , m_cascadeScope(cascadeScope)
-        , m_styleSheetIndex(styleSheetIndex)
         , m_parentStyleSheet(parentStyleSheet)
     {
         ASSERT(m_ruleData);
         static const unsigned BitsForPositionInRuleData = 18;
-        m_position = (cascadeOrder << BitsForPositionInRuleData) + m_ruleData->position();
+        static const unsigned BitsForStyleSheetIndex = 32;
+        m_position = ((uint64_t)cascadeOrder << (BitsForStyleSheetIndex + BitsForPositionInRuleData)) + ((uint64_t)styleSheetIndex << BitsForPositionInRuleData)+ m_ruleData->position();
     }
 
     const RuleData* ruleData() const { return m_ruleData; }
     uint32_t cascadeScope() const { return m_cascadeScope; }
-    uint32_t position() const { return m_position; }
+    uint64_t position() const { return m_position; }
     unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
-    uint32_t styleSheetIndex() const { return m_styleSheetIndex; }
     const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
 
 private:
     const RuleData* m_ruleData;
     unsigned m_specificity;
     CascadeScope m_cascadeScope;
-    uint32_t m_position;
-    uint32_t m_styleSheetIndex;
+    uint64_t m_position;
     const CSSStyleSheet* m_parentStyleSheet;
 };
 

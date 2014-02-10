@@ -410,14 +410,17 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
-    CascadeOrder cascadeOrder = 0;
+    // When comparing rules declared in outer treescopes, outer's rules win.
+    CascadeOrder outerCascadeOrder = m_treeBoundaryCrossingRules.size() + m_treeBoundaryCrossingRules.size();
+    // When comparing rules declared in inner treescopes, inner's rules win.
+    CascadeOrder innerCascadeOrder = m_treeBoundaryCrossingRules.size();
 
-    DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.end();
-    while (it != m_treeBoundaryCrossingRules.begin()) {
-        --it;
+    DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.begin();
+    while (it != m_treeBoundaryCrossingRules.end()) {
         const ContainerNode* scopingNode = toContainerNode(*it);
         RuleSet* ruleSet = m_treeBoundaryCrossingRules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
+        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
 
         // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
         // the scoping node's shadow host, we should use ScopeIsShadowHost.
@@ -426,7 +429,13 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
                 boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
             scopingNode = toShadowRoot(scopingNode)->host();
         }
-        collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder++);
+
+        CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
+
+        collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder);
+        ++innerCascadeOrder;
+        --outerCascadeOrder;
+        ++it;
     }
 }
 

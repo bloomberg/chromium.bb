@@ -45,6 +45,7 @@ public:
     void remove(const Node*);
     bool isEmpty() const { return m_nodes.isEmpty(); }
     void clear() { m_nodes.clear(); }
+    size_t size() const { return m_nodes.size(); }
 
     typedef ListHashSet<Node*, 32>::iterator iterator;
 

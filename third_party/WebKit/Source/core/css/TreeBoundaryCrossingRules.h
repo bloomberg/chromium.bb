@@ -45,6 +45,7 @@ public:
 
     DocumentOrderedList::iterator begin() { return m_scopingNodes.begin(); }
     DocumentOrderedList::iterator end() { return m_scopingNodes.end(); }
+    size_t size() const { return m_scopingNodes.size(); }
     RuleSet* ruleSetScopedBy(const ContainerNode* scopingNode) { return m_treeBoundaryCrossingRuleSetMap.get(scopingNode); }
 
 private:

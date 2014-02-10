@@ -378,9 +378,6 @@ static inline bool compareRules(const MatchedRule& matchedRule1, const MatchedRu
     if (specificity1 != specificity2)
         return specificity1 < specificity2;
 
-    if (matchedRule1.styleSheetIndex() != matchedRule2.styleSheetIndex())
-        return matchedRule1.styleSheetIndex() < matchedRule2.styleSheetIndex();
-
     return matchedRule1.position() < matchedRule2.position();
 }
 
