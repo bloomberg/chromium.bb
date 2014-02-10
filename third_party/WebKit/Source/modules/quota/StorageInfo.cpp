@@ -33,6 +33,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(StorageInfo);
+
 StorageInfo::StorageInfo(unsigned long long usage, unsigned long long quota)
     : m_usage(usage)
     , m_quota(quota)

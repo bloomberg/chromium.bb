@@ -42,6 +42,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(DeprecatedStorageInfo);
+
 DeprecatedStorageInfo::DeprecatedStorageInfo()
 {
     ScriptWrappable::init(this);
@@ -88,6 +90,12 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(int storageType)
         return m_persistentStorage.get();
     }
     return 0;
+}
+
+void DeprecatedStorageInfo::trace(Visitor* visitor)
+{
+    visitor->trace(m_temporaryStorage);
+    visitor->trace(m_persistentStorage);
 }
 
 } // namespace WebCore
