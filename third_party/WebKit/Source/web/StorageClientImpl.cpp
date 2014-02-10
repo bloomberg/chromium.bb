@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL GOOGLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,36 +23,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageNamespace_h
-#define StorageNamespace_h
+#include "config.h"
+#include "StorageClientImpl.h"
 
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "WebFrameImpl.h"
+#include "WebViewImpl.h"
+#include "core/storage/StorageNamespace.h"
+#include "public/platform/WebStorageNamespace.h"
+#include "public/web/WebPermissionClient.h"
+#include "public/web/WebViewClient.h"
 
 namespace blink {
-class WebStorageNamespace;
+
+StorageClientImpl::StorageClientImpl(WebViewImpl* webView)
+    : m_webView(webView)
+{
 }
 
-namespace WebCore {
+PassOwnPtr<WebCore::StorageNamespace> StorageClientImpl::createSessionStorageNamespace()
+{
+    return adoptPtr(new WebCore::StorageNamespace(adoptPtr(m_webView->client()->createSessionStorageNamespace())));
+}
 
-class Page;
-class SecurityOrigin;
-class StorageArea;
+bool StorageClientImpl::canAccessStorage(WebCore::Frame* frame, WebCore::StorageType type) const
+{
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(webFrame, type == WebCore::LocalStorage);
+}
 
-class StorageNamespace {
-public:
-    explicit StorageNamespace(PassOwnPtr<blink::WebStorageNamespace>);
-    ~StorageNamespace();
-
-    static PassOwnPtr<StorageArea> localStorageArea(SecurityOrigin*);
-
-    PassOwnPtr<StorageArea> storageArea(SecurityOrigin*);
-    bool isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const;
-
-private:
-    OwnPtr<blink::WebStorageNamespace> m_webStorageNamespace;
-};
-
-} // namespace WebCore
-
-#endif // StorageNamespace_h
+} // namespace blink

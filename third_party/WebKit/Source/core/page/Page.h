@@ -69,6 +69,7 @@ class Range;
 class RenderBox;
 class RenderObject;
 class RenderTheme;
+class StorageClient;
 class VisibleSelection;
 class ScrollableArea;
 class ScrollingCoordinator;
@@ -102,6 +103,7 @@ public:
         InspectorClient* inspectorClient;
         BackForwardClient* backForwardClient;
         SpellCheckerClient* spellCheckerClient;
+        StorageClient* storageClient;
     };
 
     explicit Page(PageClients&);
@@ -192,6 +194,7 @@ public:
     static void visitedStateChanged(LinkHash visitedHash);
 
     StorageNamespace* sessionStorage(bool optionalCreate = true);
+    StorageClient& storageClient() const { return *m_storageClient; }
 
     // Don't allow more than a certain number of frames in a page.
     // This seems like a reasonable upper bound, and otherwise mutually
@@ -264,6 +267,7 @@ private:
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
     SpellCheckerClient* const m_spellCheckerClient;
+    StorageClient* m_storageClient;
 
     UseCounter m_useCounter;
 

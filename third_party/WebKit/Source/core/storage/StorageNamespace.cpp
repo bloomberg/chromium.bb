@@ -23,30 +23,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageNamespaceProxy_h
-#define StorageNamespaceProxy_h
-
-#include "core/storage/StorageArea.h"
+#include "config.h"
 #include "core/storage/StorageNamespace.h"
 
-namespace blink { class WebStorageNamespace; }
+#include "core/storage/StorageArea.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebStorageArea.h"
+#include "public/platform/WebStorageNamespace.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
-// Instances of StorageNamespaceProxy are only used to interact with
-// SessionStorage, never LocalStorage.
-class StorageNamespaceProxy FINAL : public StorageNamespace {
-public:
-    explicit StorageNamespaceProxy(PassOwnPtr<blink::WebStorageNamespace>);
-    virtual ~StorageNamespaceProxy();
-    virtual PassOwnPtr<StorageArea> storageArea(SecurityOrigin*) OVERRIDE;
+StorageNamespace::StorageNamespace(PassOwnPtr<blink::WebStorageNamespace> webStorageNamespace)
+    : m_webStorageNamespace(webStorageNamespace)
+{
+}
 
-    bool isSameNamespace(const blink::WebStorageNamespace&);
+StorageNamespace::~StorageNamespace()
+{
+}
 
-private:
-    OwnPtr<blink::WebStorageNamespace> m_storageNamespace;
-};
+PassOwnPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
+{
+    ASSERT(isMainThread());
+    static blink::WebStorageNamespace* localStorageNamespace = 0;
+    if (!localStorageNamespace)
+        localStorageNamespace = blink::Platform::current()->createLocalStorageNamespace();
+    return adoptPtr(new StorageArea(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage));
+}
+
+PassOwnPtr<StorageArea> StorageNamespace::storageArea(SecurityOrigin* origin)
+{
+    return adoptPtr(new StorageArea(adoptPtr(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage));
+}
+
+bool StorageNamespace::isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const
+{
+    return m_webStorageNamespace && m_webStorageNamespace->isSameNamespace(sessionNamespace);
+}
 
 } // namespace WebCore
-
-#endif // StorageNamespaceProxy_h

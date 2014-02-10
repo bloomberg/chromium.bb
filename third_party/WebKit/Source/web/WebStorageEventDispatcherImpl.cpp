@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebStorageEventDispatcher.h"
 
-#include "StorageAreaProxy.h"
 #include "WebViewImpl.h"
+#include "core/storage/StorageArea.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
@@ -47,7 +47,7 @@ void WebStorageEventDispatcher::dispatchLocalStorageEvent(
         bool originatedInProcess)
 {
     RefPtr<WebCore::SecurityOrigin> securityOrigin = WebCore::SecurityOrigin::create(origin);
-    WebCore::StorageAreaProxy::dispatchLocalStorageEvent(
+    WebCore::StorageArea::dispatchLocalStorageEvent(
             key, oldValue, newValue, securityOrigin.get(), pageURL,
             sourceAreaInstance, originatedInProcess);
 }
@@ -59,7 +59,7 @@ void WebStorageEventDispatcher::dispatchSessionStorageEvent(
         WebStorageArea* sourceAreaInstance, bool originatedInProcess)
 {
     RefPtr<WebCore::SecurityOrigin> securityOrigin = WebCore::SecurityOrigin::create(origin);
-    WebCore::StorageAreaProxy::dispatchSessionStorageEvent(
+    WebCore::StorageArea::dispatchSessionStorageEvent(
             key, oldValue, newValue, securityOrigin.get(), pageURL,
             sessionNamespace, sourceAreaInstance, originatedInProcess);
 }

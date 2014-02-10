@@ -32,6 +32,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/frame/Frame.h"
+#include "core/storage/StorageNamespace.h"
 #include "platform/ColorChooser.h"
 #include "platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"
@@ -62,6 +63,9 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
 
     static SpellCheckerClient* dummySpellCheckerClient = adoptPtr(new EmptySpellCheckerClient).leakPtr();
     pageClients.spellCheckerClient = dummySpellCheckerClient;
+
+    static StorageClient* dummyStorageClient = adoptPtr(new EmptyStorageClient).leakPtr();
+    pageClients.storageClient = dummyStorageClient;
 }
 
 class EmptyPopupMenu : public PopupMenu {
@@ -142,6 +146,11 @@ void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 }
 
 PassOwnPtr<blink::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>)
+{
+    return nullptr;
+}
+
+PassOwnPtr<StorageNamespace> EmptyStorageClient::createSessionStorageNamespace()
 {
     return nullptr;
 }

@@ -34,6 +34,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
@@ -49,7 +50,7 @@
 #include "core/page/PageGroup.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
-#include "core/frame/Settings.h"
+#include "core/page/StorageClient.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"
@@ -116,6 +117,7 @@ Page::Page(PageClients& pageClients)
     , m_editorClient(pageClients.editorClient)
     , m_validationMessageClient(0)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
+    , m_storageClient(pageClients.storageClient)
     , m_subframeCount(0)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
@@ -391,7 +393,7 @@ void Page::visitedStateChanged(LinkHash linkHash)
 StorageNamespace* Page::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)
-        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this);
+        m_sessionStorage = m_storageClient->createSessionStorageNamespace();
     return m_sessionStorage.get();
 }
 
@@ -530,6 +532,7 @@ Page::PageClients::PageClients()
     , inspectorClient(0)
     , backForwardClient(0)
     , spellCheckerClient(0)
+    , storageClient(0)
 {
 }
 

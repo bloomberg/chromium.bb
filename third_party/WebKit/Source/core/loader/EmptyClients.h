@@ -40,6 +40,7 @@
 #include "core/page/FocusDirection.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
+#include "core/page/StorageClient.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
@@ -320,6 +321,12 @@ public:
     virtual int backListCount() OVERRIDE { return 0; }
     virtual int forwardListCount() OVERRIDE { return 0; }
     virtual int backForwardListCount() OVERRIDE { return 0; }
+};
+
+class EmptyStorageClient FINAL : public StorageClient {
+public:
+    virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() OVERRIDE;
+    virtual bool canAccessStorage(Frame*, StorageType) const OVERRIDE { return false; }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

@@ -42,6 +42,7 @@
 #include "PageScaleConstraintsSet.h"
 #include "PageWidgetDelegate.h"
 #include "SpellCheckerClientImpl.h"
+#include "StorageClientImpl.h"
 #include "UserMediaClientImpl.h"
 #include "WebInputEvent.h"
 #include "WebNavigationPolicy.h"
@@ -627,6 +628,7 @@ private:
     InspectorClientImpl m_inspectorClientImpl;
     BackForwardClientImpl m_backForwardClientImpl;
     SpellCheckerClientImpl m_spellCheckerClientImpl;
+    StorageClientImpl m_storageClientImpl;
 
     WebSize m_size;
     bool m_fixedLayoutSizeLock;
