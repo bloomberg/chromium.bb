@@ -131,14 +131,18 @@ public:
     {% endif %}
     {# Custom internal fields #}
     {% set custom_internal_field_counter = 0 %}
-    {# persistentHandleIndex must be the first field, if it is present #}
-    {% if is_will_be_garbage_collected %}
-    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
-    {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
-    {% endif %}
     {% if is_event_target and not is_node %}
     {# Event listeners on DOM nodes are explicitly supported in the GC controller. #}
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+    {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
+    {% endif %}
+    {# persistentHandleIndex must be the last field, if it is present.
+       Detailed explanation: https://codereview.chromium.org/139173012
+       FIXME: Remove this internal field, and share one field for either:
+       * a persistent handle (if the object is in oilpan) or
+       * a C++ pointer to the DOM object (if the object is not in oilpan) #}
+    {% if is_will_be_garbage_collected %}
+    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
     {% endif %}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};

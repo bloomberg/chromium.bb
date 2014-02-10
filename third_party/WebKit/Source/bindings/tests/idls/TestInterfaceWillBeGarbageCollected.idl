@@ -31,7 +31,7 @@
 [
     Constructor(DOMString str),
     WillBeGarbageCollected,
-] interface TestInterfaceWillBeGarbageCollected {
+] interface TestInterfaceWillBeGarbageCollected : EventTarget { // Inherit from EventTarget to test order of internal fields
     attribute TestInterfaceWillBeGarbageCollected attr1;
     void func(TestInterfaceWillBeGarbageCollected arg);
 };

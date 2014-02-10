@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceWillBeGa
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::derefObject, 0, 0, 0, V8TestInterfaceWillBeGarbageCollected::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, true };
+const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::derefObject, 0, V8TestInterfaceWillBeGarbageCollected::toEventTarget, 0, V8TestInterfaceWillBeGarbageCollected::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, true };
 
 namespace TestInterfaceWillBeGarbageCollectedV8Internal {
 
@@ -161,7 +161,7 @@ static void configureV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Handle<v8
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceWillBeGarbageCollected", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceWillBeGarbageCollected", V8EventTarget::domTemplate(isolate, currentWorldType), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
         V8TestInterfaceWillBeGarbageCollectedAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedAttributes),
         0, 0,
         V8TestInterfaceWillBeGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedMethods),
@@ -194,6 +194,11 @@ bool V8TestInterfaceWillBeGarbageCollected::hasInstance(v8::Handle<v8::Value> js
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+EventTarget* V8TestInterfaceWillBeGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)
+{
+    return toNative(object);
 }
 
 v8::Handle<v8::Object> V8TestInterfaceWillBeGarbageCollected::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
