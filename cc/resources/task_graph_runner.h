@@ -5,10 +5,10 @@
 #ifndef CC_RESOURCES_TASK_GRAPH_RUNNER_H_
 #define CC_RESOURCES_TASK_GRAPH_RUNNER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
@@ -160,7 +160,7 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
     size_t num_running_tasks;
   };
 
-  typedef base::ScopedPtrHashMap<int, TaskNamespace> TaskNamespaceMap;
+  typedef std::map<int, TaskNamespace> TaskNamespaceMap;
 
   static bool CompareTaskPriority(const PrioritizedTask& a,
                                   const PrioritizedTask& b) {

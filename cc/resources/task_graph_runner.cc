@@ -165,13 +165,13 @@ void TaskGraphRunner::WaitForTasksToFinishRunning(NamespaceToken token) {
   {
     base::AutoLock lock(lock_);
 
-    TaskNamespaceMap::iterator it = namespaces_.find(token.id_);
+    TaskNamespaceMap::const_iterator it = namespaces_.find(token.id_);
     if (it == namespaces_.end())
       return;
 
-    TaskNamespace* task_namespace = it->second;
+    const TaskNamespace& task_namespace = it->second;
 
-    while (!HasFinishedRunningTasksInNamespace(task_namespace))
+    while (!HasFinishedRunningTasksInNamespace(&task_namespace))
       has_namespaces_with_finished_running_tasks_cv_.Wait();
 
     // There may be other namespaces that have finished running
@@ -195,16 +195,11 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
 
     DCHECK(!shutdown_);
 
-    scoped_ptr<TaskNamespace> task_namespace =
-        namespaces_.take_and_erase(token.id_);
-
-    // Create task namespace if it doesn't exist.
-    if (!task_namespace)
-      task_namespace.reset(new TaskNamespace);
+    TaskNamespace& task_namespace = namespaces_[token.id_];
 
     // First adjust number of dependencies to reflect completed tasks.
-    for (Task::Vector::iterator it = task_namespace->completed_tasks.begin();
-         it != task_namespace->completed_tasks.end();
+    for (Task::Vector::iterator it = task_namespace.completed_tasks.begin();
+         it != task_namespace.completed_tasks.end();
          ++it) {
       for (DependentIterator node_it(graph, it->get()); node_it; ++node_it) {
         TaskGraph::Node& node = *node_it;
@@ -214,7 +209,7 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
     }
 
     // Build new "ready to run" queue and remove nodes from old graph.
-    task_namespace->ready_to_run_tasks.clear();
+    task_namespace.ready_to_run_tasks.clear();
     for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
          it != graph->nodes.end();
          ++it) {
@@ -224,12 +219,12 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
       // that the old graph is left all nodes not present in this graph, which
       // we use below to determine what tasks need to be canceled.
       TaskGraph::Node::Vector::iterator old_it =
-          std::find_if(task_namespace->graph.nodes.begin(),
-                       task_namespace->graph.nodes.end(),
+          std::find_if(task_namespace.graph.nodes.begin(),
+                       task_namespace.graph.nodes.end(),
                        TaskGraph::Node::TaskComparator(node.task));
-      if (old_it != task_namespace->graph.nodes.end()) {
-        std::swap(*old_it, task_namespace->graph.nodes.back());
-        task_namespace->graph.nodes.pop_back();
+      if (old_it != task_namespace.graph.nodes.end()) {
+        std::swap(*old_it, task_namespace.graph.nodes.back());
+        task_namespace.graph.nodes.pop_back();
       }
 
       // Task is not ready to run if dependencies are not yet satisfied.
@@ -245,18 +240,18 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
           running_tasks_.end())
         continue;
 
-      task_namespace->ready_to_run_tasks.push_back(
+      task_namespace.ready_to_run_tasks.push_back(
           PrioritizedTask(node.task, node.priority));
     }
 
     // Rearrange the elements in |ready_to_run_tasks| in such a way that
     // they form a heap.
-    std::make_heap(task_namespace->ready_to_run_tasks.begin(),
-                   task_namespace->ready_to_run_tasks.end(),
+    std::make_heap(task_namespace.ready_to_run_tasks.begin(),
+                   task_namespace.ready_to_run_tasks.end(),
                    CompareTaskPriority);
 
     // Swap task graph.
-    task_namespace->graph.Swap(graph);
+    task_namespace.graph.Swap(graph);
 
     // Determine what tasks in old graph need to be canceled.
     for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
@@ -273,18 +268,16 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
           running_tasks_.end())
         continue;
 
-      task_namespace->completed_tasks.push_back(node.task);
+      task_namespace.completed_tasks.push_back(node.task);
     }
-
-    namespaces_.set(token.id_, task_namespace.Pass());
 
     // Build new "ready to run" task namespaces queue.
     ready_to_run_namespaces_.clear();
     for (TaskNamespaceMap::iterator it = namespaces_.begin();
          it != namespaces_.end();
          ++it) {
-      if (!it->second->ready_to_run_tasks.empty())
-        ready_to_run_namespaces_.push_back(it->second);
+      if (!it->second.ready_to_run_tasks.empty())
+        ready_to_run_namespaces_.push_back(&it->second);
     }
 
     // Rearrange the task namespaces in |ready_to_run_namespaces_|
@@ -312,17 +305,17 @@ void TaskGraphRunner::CollectCompletedTasks(NamespaceToken token,
     if (it == namespaces_.end())
       return;
 
-    TaskNamespace* task_namespace = it->second;
+    TaskNamespace& task_namespace = it->second;
 
     DCHECK_EQ(0u, completed_tasks->size());
-    completed_tasks->swap(task_namespace->completed_tasks);
-    if (!HasFinishedRunningTasksInNamespace(task_namespace))
+    completed_tasks->swap(task_namespace.completed_tasks);
+    if (!HasFinishedRunningTasksInNamespace(&task_namespace))
       return;
 
     // Remove namespace if finished running tasks.
-    DCHECK_EQ(0u, task_namespace->completed_tasks.size());
-    DCHECK_EQ(0u, task_namespace->ready_to_run_tasks.size());
-    DCHECK_EQ(0u, task_namespace->num_running_tasks);
+    DCHECK_EQ(0u, task_namespace.completed_tasks.size());
+    DCHECK_EQ(0u, task_namespace.ready_to_run_tasks.size());
+    DCHECK_EQ(0u, task_namespace.num_running_tasks);
     namespaces_.erase(it);
   }
 }
