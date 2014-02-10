@@ -72,6 +72,10 @@ public:
     virtual void didClose(WebSocketHandle* /* handle */, bool wasClean, unsigned short code, const WebString& reason) = 0;
 
     virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
+
+    // Called when the browser receives a Close frame from the remote
+    // server. Not called when the renderer initiates the closing handshake.
+    virtual void didStartClosingHandshake(WebSocketHandle*) = 0;
 };
 
 } // namespace blink

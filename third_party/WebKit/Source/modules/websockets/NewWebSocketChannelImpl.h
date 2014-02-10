@@ -136,6 +136,7 @@ private:
     virtual void didReceiveData(blink::WebSocketHandle*, bool fin, blink::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
     virtual void didClose(blink::WebSocketHandle*, bool wasClean, unsigned short code, const blink::WebString& reason) OVERRIDE;
     virtual void didReceiveFlowControl(blink::WebSocketHandle*, int64_t quota) OVERRIDE;
+    virtual void didStartClosingHandshake(blink::WebSocketHandle*) OVERRIDE;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);

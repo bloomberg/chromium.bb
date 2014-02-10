@@ -461,6 +461,13 @@ void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int
     sendInternal();
 }
 
+void NewWebSocketChannelImpl::didStartClosingHandshake(WebSocketHandle* handle)
+{
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartClosingHandshake(%p)", this, handle);
+    if (m_client)
+        m_client->didStartClosingHandshake();
+}
+
 void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)
 {
     m_blobLoader.clear();
