@@ -50,6 +50,8 @@ For more information of cros build usage:
     self.clean_binpkg = True
     self.ssh_hostname = None
     self.ssh_port = None
+    # The installation root of packages.
+    self.root = None
 
   @classmethod
   def AddParser(cls, parser):
@@ -66,6 +68,10 @@ For more information of cros build usage:
     parser.add_argument(
         '--unmerge',  dest='emerge', action='store_false', default=True,
         help='Unmerge requested packages.')
+    parser.add_argument(
+        '--root', default='/',
+        help="Package installation root, e.g. '/' or '/usr/local'"
+        "(default: '/').")
     parser.add_argument(
         '--no-clean-binpkg', dest='clean_binpkg', action='store_false',
         default=True, help='Do not clean outdated binary packages. '
@@ -111,13 +117,14 @@ For more information of cros build usage:
     return portage_utilities.GetBinaryPackagePath(
         category, package_name, version, sysroot=sysroot)
 
-  def _Emerge(self, device, board, pkg, extra_args=None):
+  def _Emerge(self, device, board, pkg, root, extra_args=None):
     """Copies |pkg| to |device| and emerges it.
 
     Args:
       device: A ChromiumOSDevice object.
       board: The board to use for retrieving |pkg|.
       pkg: A package name.
+      root: The installation root of |pkg|.
       extra_args: Extra arguments to pass to emerge.
     """
     latest_pkg = self.GetLatestPackage(board, pkg)
@@ -149,6 +156,7 @@ For more information of cros build usage:
         'PORTDIR': device.work_dir,
     }
     cmd = ['emerge', '--usepkg', pkg_path]
+    cmd.append('--root=%s' % root)
     if extra_args:
       cmd.append(extra_args)
 
@@ -161,15 +169,17 @@ For more information of cros build usage:
     else:
       logging.info('%s has been installed.', pkg)
 
-  def _Unmerge(self, device, pkg):
+  def _Unmerge(self, device, pkg, root):
     """Unmerges |pkg| on |device|.
 
     Args:
       device: A RemoteDevice object.
       pkg: A package name.
+      root: The installation root of |pkg|.
     """
     logging.info('Unmerging %s...', pkg)
     cmd = ['emerge', '--unmerge', pkg]
+    cmd.append('--root=%s' % root)
     try:
       result = device.RunCommand(cmd, capture_output=True)
       logging.debug(result.output)
@@ -179,10 +189,25 @@ For more information of cros build usage:
     else:
       logging.info('%s has been uninstalled.', pkg)
 
+  def _IsPathWritable(self, device, path):
+    """Returns True if |path| on |device| is writable."""
+    tmp_file = os.path.join(path, 'tmp.cros_flash')
+    result = device.RunCommand(
+      ['echo', '"writable"', '>', tmp_file], error_code_ok=True)
+
+    if result.returncode != 0:
+      return False
+
+    device.RunCommand(
+        ['rm', tmp_file], error_code_ok=True)
+
+    return True
+
   def _ReadOptions(self):
     """Processes options and set variables."""
     self.emerge = self.options.emerge
     self.clean_binpkg = self.options.clean_binpkg
+    self.root = self.options.root
     device = self.options.device
     # pylint: disable=E1101
     if urlparse.urlparse(device).scheme == '':
@@ -214,15 +239,17 @@ For more information of cros build usage:
           logging.info('Cleaning outdated binary packages for %s', board)
           portage_utilities.CleanOutdatedBinaryPackages(board)
 
-        if not device.MountRootfsReadWrite():
-          cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting...')
+        if not self._IsPathWritable(device, self.root):
+          # Only remounts rootfs if the given root is not writable.
+          if not device.MountRootfsReadWrite():
+            cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting.')
 
         for pkg in self.options.packages:
           if self.emerge:
-            self._Emerge(device, board, pkg,
+            self._Emerge(device, board, pkg, self.root,
                          extra_args=self.options.emerge_args)
           else:
-            self._Unmerge(device, pkg)
+            self._Unmerge(device, pkg, self.root)
 
     except Exception:
       logging.error('Cros Deploy terminated before completing!')
