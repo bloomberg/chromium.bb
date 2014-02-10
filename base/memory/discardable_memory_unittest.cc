@@ -77,9 +77,8 @@ TEST_P(DiscardableMemoryTest, LockAndUnLock) {
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
   memory->Unlock();
-  // The system should have no reason to purge discardable blocks in this brief
-  // interval, though technically speaking this might flake.
-  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS, memory->Lock());
+
+  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED, memory->Lock());
   addr = memory->Memory();
   ASSERT_NE(static_cast<void*>(NULL), addr);
 

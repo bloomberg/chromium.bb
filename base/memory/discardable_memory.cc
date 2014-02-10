@@ -16,7 +16,8 @@ const struct TypeNamePair {
 } kTypeNamePairs[] = {
   { DISCARDABLE_MEMORY_TYPE_ANDROID, "android" },
   { DISCARDABLE_MEMORY_TYPE_MAC, "mac" },
-  { DISCARDABLE_MEMORY_TYPE_EMULATED, "emulated" }
+  { DISCARDABLE_MEMORY_TYPE_EMULATED, "emulated" },
+  { DISCARDABLE_MEMORY_TYPE_MALLOC, "malloc" }
 };
 
 DiscardableMemoryType g_preferred_type = DISCARDABLE_MEMORY_TYPE_NONE;
