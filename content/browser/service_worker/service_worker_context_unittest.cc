@@ -48,14 +48,13 @@ ServiceWorkerContextCore::UnregistrationCallback MakeUnregisteredCallback(
 class ServiceWorkerContextTest : public testing::Test {
  public:
   ServiceWorkerContextTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        render_process_id_(99) {}
 
   virtual void SetUp() OVERRIDE {
     context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(context_.get()));
-
-    render_process_id_ = 99;
-    helper_->SimulateCreateWorker(render_process_id_);
+    helper_.reset(new EmbeddedWorkerTestHelper(
+        context_.get(), render_process_id_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -67,7 +66,7 @@ class ServiceWorkerContextTest : public testing::Test {
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-  int render_process_id_;
+  const int render_process_id_;
 };
 
 void RegistrationCallback(

@@ -42,17 +42,15 @@ class ServiceWorkerContextCore;
 class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  public IPC::Listener {
  public:
-  EmbeddedWorkerTestHelper(ServiceWorkerContextCore* context);
+  // Initialize this helper for |context|, and enable this as an IPC
+  // sender for |mock_render_process_id|.
+  EmbeddedWorkerTestHelper(ServiceWorkerContextCore* context,
+                           int mock_render_process_id);
   virtual ~EmbeddedWorkerTestHelper();
 
   // Call this to simulate add/associate a process to a worker.
-  void SimulateAddProcess(int embedded_worker_id, int process_id);
-  void SimulateRemoveProcess(int embedded_worker_id, int process_id);
-
-  // Call to create a new worker and also associate a process to
-  // it. Returns the new embedded worker id which can be used for
-  // SimulateRemoveProcess.
-  int SimulateCreateWorker(int process_id);
+  // This also registers this sender for the process.
+  void SimulateAddProcessToWorker(int embedded_worker_id, int process_id);
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;

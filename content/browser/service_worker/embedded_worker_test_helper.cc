@@ -14,38 +14,24 @@
 namespace content {
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
-    ServiceWorkerContextCore* context)
+    ServiceWorkerContextCore* context,
+    int mock_render_process_id)
     : context_(context->AsWeakPtr()),
       next_thread_id_(0),
       weak_factory_(this) {
+  registry()->AddChildProcessSender(mock_render_process_id, this);
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 }
 
-int EmbeddedWorkerTestHelper::SimulateCreateWorker(int process_id) {
-  scoped_ptr<EmbeddedWorkerInstance> worker = registry()->CreateWorker();
-
-  int embedded_worker_id = worker->embedded_worker_id();
-  SimulateAddProcess(embedded_worker_id, process_id);
-  return embedded_worker_id;
-}
-
-void EmbeddedWorkerTestHelper::SimulateAddProcess(
+void EmbeddedWorkerTestHelper::SimulateAddProcessToWorker(
     int embedded_worker_id,
     int process_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   registry()->AddChildProcessSender(process_id, this);
   worker->AddProcessReference(process_id);
-}
-
-void EmbeddedWorkerTestHelper::SimulateRemoveProcess(
-    int embedded_worker_id, int process_id) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker);
-  registry()->RemoveChildProcessSender(process_id);
-  worker->ReleaseProcessReference(process_id);
 }
 
 bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {

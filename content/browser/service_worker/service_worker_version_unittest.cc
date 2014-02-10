@@ -30,10 +30,12 @@ namespace content {
 
 namespace {
 
+static const int kRenderProcessId = 1;
+
 class MessageReceiver : public EmbeddedWorkerTestHelper {
  public:
   MessageReceiver(ServiceWorkerContextCore* context)
-      : EmbeddedWorkerTestHelper(context),
+      : EmbeddedWorkerTestHelper(context, kRenderProcessId),
         current_embedded_worker_id_(0),
         current_request_id_(0) {}
   virtual ~MessageReceiver() {}
@@ -102,7 +104,7 @@ class ServiceWorkerVersionTest : public testing::Test {
 
     // Simulate adding one process to the worker.
     int embedded_worker_id = version_->embedded_worker()->embedded_worker_id();
-    helper_->SimulateAddProcess(embedded_worker_id, 1);
+    helper_->SimulateAddProcessToWorker(embedded_worker_id, kRenderProcessId);
   }
 
   virtual void TearDown() OVERRIDE {

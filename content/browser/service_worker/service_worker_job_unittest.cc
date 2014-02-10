@@ -93,18 +93,12 @@ class ServiceWorkerJobTest : public testing::Test {
  public:
   ServiceWorkerJobTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        render_process_id_(-1) {}
+        render_process_id_(88) {}
 
   virtual void SetUp() OVERRIDE {
     context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(context_.get()));
-
-    scoped_ptr<EmbeddedWorkerInstance> worker =
-        context_->embedded_worker_registry()->CreateWorker();
-
-    render_process_id_ = 88;
-    int embedded_worker_id = worker->embedded_worker_id();
-    helper_->SimulateAddProcess(embedded_worker_id, render_process_id_);
+    helper_.reset(new EmbeddedWorkerTestHelper(context_.get(),
+                                               render_process_id_));
   }
 
   virtual void TearDown() OVERRIDE {

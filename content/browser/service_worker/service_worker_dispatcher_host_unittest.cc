@@ -31,9 +31,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   virtual void SetUp() {
     context_wrapper_ = new ServiceWorkerContextWrapper;
     context_wrapper_->Init(base::FilePath(), NULL);
-    helper_.reset(new EmbeddedWorkerTestHelper(context()));
-
-    helper_->SimulateCreateWorker(kRenderProcessId);
+    helper_.reset(new EmbeddedWorkerTestHelper(context(), kRenderProcessId));
   }
 
   virtual void TearDown() {

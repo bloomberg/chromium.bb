@@ -15,6 +15,8 @@
 
 namespace content {
 
+static const int kRenderProcessId = 11;
+
 class EmbeddedWorkerInstanceTest : public testing::Test {
  protected:
   EmbeddedWorkerInstanceTest()
@@ -22,7 +24,8 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(context_.get()));
+    helper_.reset(new EmbeddedWorkerTestHelper(
+        context_.get(), kRenderProcessId));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -50,7 +53,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
   const int embedded_worker_id = worker->embedded_worker_id();
-  const int process_id = 11;
   const int64 service_worker_version_id = 55L;
   const GURL url("http://example.com/worker.js");
 
@@ -60,7 +62,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
   // Simulate adding one process to the worker.
-  helper_->SimulateAddProcess(embedded_worker_id, process_id);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, kRenderProcessId);
 
   // Start should succeed.
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -70,7 +72,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
 
   // Worker started message should be notified (by EmbeddedWorkerTestHelper).
   EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
-  EXPECT_EQ(process_id, worker->process_id());
+  EXPECT_EQ(kRenderProcessId, worker->process_id());
 
   // Stop the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
@@ -95,12 +97,12 @@ TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
   // Simulate adding processes to the worker.
   // Process 1 has 1 ref, 2 has 2 refs and 3 has 3 refs.
   const int embedded_worker_id = worker->embedded_worker_id();
-  helper_->SimulateAddProcess(embedded_worker_id, 1);
-  helper_->SimulateAddProcess(embedded_worker_id, 2);
-  helper_->SimulateAddProcess(embedded_worker_id, 2);
-  helper_->SimulateAddProcess(embedded_worker_id, 3);
-  helper_->SimulateAddProcess(embedded_worker_id, 3);
-  helper_->SimulateAddProcess(embedded_worker_id, 3);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 1);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 2);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 2);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
+  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
 
   // Process 3 has the biggest # of references and it should be chosen.
   EXPECT_EQ(SERVICE_WORKER_OK,
