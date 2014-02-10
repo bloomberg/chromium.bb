@@ -6,9 +6,8 @@
 #define MOJO_SYSTEM_MESSAGE_IN_TRANSIT_H_
 
 #include <stdint.h>
-#include <stdlib.h>  // For |free()|.
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -40,8 +39,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
 
-  // Creates a |MessageInTransit| of the given |type| and |subtype|, with the
-  // data given by |bytes|/|num_bytes|.
+  // Creates a |MessageInTransit| of the given |type| and |subtype|, with
+  // message data given by |bytes|/|num_bytes|.
+  // TODO(vtl): Add ability to tack on handle information.
   static MessageInTransit* Create(Type type,
                                   Subtype subtype,
                                   const void* bytes,
@@ -49,12 +49,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                                   uint32_t num_handles);
 
   // Destroys a |MessageInTransit| created using |Create()|.
-  inline void Destroy() {
-    // No need to call the destructor, since we're POD.
-    free(this);
-  }
+  void Destroy();
 
-  // Gets the size of the data (in number of bytes).
+  // Gets the size of the data (in number of bytes). This is the full size of
+  // the data that follows the header, and may include data other than the
+  // message data. (See also |num_bytes()|.)
   uint32_t data_size() const {
     return data_size_;
   }
@@ -64,8 +63,15 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     return reinterpret_cast<const char*>(this) + sizeof(*this);
   }
 
-  // TODO(vtl): Add a |num_bytes()| and use that (instead of |data_size()|)
-  // where appropriate. Similarly for |bytes()| (instead of |data()|)?
+  // Gets the size of the message data.
+  uint32_t num_bytes() const {
+    return num_bytes_;
+  }
+
+  // Gets the message data (of size |num_bytes()| bytes).
+  const void* bytes() const {
+    return reinterpret_cast<const char*>(this) + sizeof(*this);
+  }
 
   uint32_t num_handles() const {
     return num_handles_;
@@ -93,21 +99,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
 
  private:
-  // TODO(vtl): Set |num_bytes_| and |num_handles_| properly.
-  explicit MessageInTransit(uint32_t data_size,
-                            Type type,
-                            Subtype subtype,
-                            uint32_t num_bytes,
-                            uint32_t num_handles)
-      : data_size_(data_size),
-        type_(type),
-        subtype_(subtype),
-        source_id_(kInvalidEndpointId),
-        destination_id_(kInvalidEndpointId),
-        num_bytes_(num_bytes),
-        num_handles_(num_handles),
-        reserved0_(0),
-        reserved1_(0) {}
+  MessageInTransit(uint32_t data_size,
+                   Type type,
+                   Subtype subtype,
+                   uint32_t num_bytes,
+                   uint32_t num_handles);
 
   // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
   // size.

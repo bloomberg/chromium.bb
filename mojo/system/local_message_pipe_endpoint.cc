@@ -149,9 +149,9 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   bool enough_space = true;
   const MessageInTransit* queued_message = message_queue_.front().message();
   if (num_bytes)
-    *num_bytes = queued_message->data_size();
-  if (queued_message->data_size() <= max_bytes)
-    memcpy(bytes, queued_message->data(), queued_message->data_size());
+    *num_bytes = queued_message->num_bytes();
+  if (queued_message->num_bytes() <= max_bytes)
+    memcpy(bytes, queued_message->bytes(), queued_message->num_bytes());
   else
     enough_space = false;
 

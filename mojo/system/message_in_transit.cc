@@ -4,14 +4,13 @@
 
 #include "mojo/system/message_in_transit.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include <new>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/aligned_memory.h"
 #include "mojo/system/constants.h"
 
 namespace mojo {
@@ -55,10 +54,8 @@ MessageInTransit* MessageInTransit::Create(Type type,
   const size_t size_with_header_and_padding =
       RoundUpMessageAlignment(size_with_header);
 
-  char* buffer = static_cast<char*>(malloc(size_with_header_and_padding));
-  DCHECK_EQ(reinterpret_cast<size_t>(buffer) %
-                MessageInTransit::kMessageAlignment, 0u);
-
+  char* buffer = static_cast<char*>(
+      base::AlignedAlloc(size_with_header_and_padding, kMessageAlignment));
   // The buffer consists of the header (a |MessageInTransit|, constructed using
   // a placement new), followed by the data, followed by padding (of zeros).
   MessageInTransit* rv = new (buffer) MessageInTransit(
@@ -67,6 +64,28 @@ MessageInTransit* MessageInTransit::Create(Type type,
   memset(buffer + size_with_header, 0,
          size_with_header_and_padding - size_with_header);
   return rv;
+}
+
+void MessageInTransit::Destroy() {
+  // No need to call the destructor, since we're POD.
+  base::AlignedFree(this);
+}
+
+MessageInTransit::MessageInTransit(uint32_t data_size,
+                                   Type type,
+                                   Subtype subtype,
+                                   uint32_t num_bytes,
+                                   uint32_t num_handles)
+    : data_size_(data_size),
+      type_(type),
+      subtype_(subtype),
+      source_id_(kInvalidEndpointId),
+      destination_id_(kInvalidEndpointId),
+      num_bytes_(num_bytes),
+      num_handles_(num_handles),
+      reserved0_(0),
+      reserved1_(0) {
+  DCHECK_GE(data_size_, num_bytes_);
 }
 
 }  // namespace system
