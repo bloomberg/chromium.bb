@@ -225,13 +225,11 @@
       <if expr="is_macosx">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_mac.json" type="BINDATA" />
       </if>
-      <if expr="is_linux">
-        <if expr="pp_ifdef('chromeos')">
-          <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_chromeos.json" type="BINDATA" />
-        </if>
-        <if expr="not pp_ifdef('chromeos')">
-          <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
-        </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_chromeos.json" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('desktop_linux')">
+        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
       </if>
       <if expr="is_android">
         <include name="IDR_POLICY_CSS" file="resources\policy_android.css" type="BINDATA"/>
@@ -358,7 +356,7 @@
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_NETWORK_CONFIGURATION_MANIFEST" file="resources\chromeos\network_configuration\manifest.json" type="BINDATA" />
       </if>
-      <if expr="(is_linux and pp_ifdef('toolkit_views')) or pp_ifdef('use_ash')">
+      <if expr="(pp_ifdef('desktop_linux') and pp_ifdef('toolkit_views')) or pp_ifdef('use_ash')">
         <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TAB_MODAL_CONFIRM_DIALOG_HTML" file="resources\tab_modal_confirm_dialog.html" flattenhtml="true" type="BINDATA" />
       </if>
