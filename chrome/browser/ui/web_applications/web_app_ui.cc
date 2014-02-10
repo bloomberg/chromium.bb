@@ -461,7 +461,7 @@ void UpdateShortcutInfoAndIconForApp(
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           resource,
-          extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
           gfx::Size(size, size),
           ui::SCALE_FACTOR_100P));
     }
@@ -483,7 +483,7 @@ void UpdateShortcutInfoAndIconForApp(
     }
     info_list.push_back(extensions::ImageLoader::ImageRepresentation(
         resource,
-        extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
         gfx::Size(size, size),
         ui::SCALE_FACTOR_100P));
   }
