@@ -140,16 +140,6 @@ bool IsTouchpadEvent(const base::NativeEvent& event) {
   return false;
 }
 
-bool IsNoopEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-base::NativeEvent CreateNoopEvent() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 int GetModifiersFromKeyState() {
   NOTIMPLEMENTED();
   return 0;

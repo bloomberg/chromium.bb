@@ -89,7 +89,7 @@ uint32_t AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
   if (!associated_window_)
     return POST_DISPATCH_QUIT_LOOP;
 
-  if (!ui::IsNoopEvent(event) && !associated_window_->CanReceiveEvents())
+  if (!associated_window_->CanReceiveEvents())
     return POST_DISPATCH_PERFORM_DEFAULT;
 
   if (IsKeyEvent(event)) {

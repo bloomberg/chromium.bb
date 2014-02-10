@@ -225,10 +225,6 @@ double GetTouchParamFromXEvent(XEvent* xev,
   return default_value;
 }
 
-Atom GetNoopEventAtom() {
-  return XInternAtom(gfx::GetXDisplay(), "noop", False);
-}
-
 }  // namespace
 
 namespace ui {
@@ -678,27 +674,6 @@ bool IsNaturalScrollEnabled() {
 
 bool IsTouchpadEvent(const base::NativeEvent& event) {
   return DeviceDataManager::GetInstance()->IsTouchpadXInputEvent(event);
-}
-
-bool IsNoopEvent(const base::NativeEvent& event) {
-  return (event->type == ClientMessage &&
-      event->xclient.message_type == GetNoopEventAtom());
-}
-
-base::NativeEvent CreateNoopEvent() {
-  static XEvent* noop = NULL;
-  if (!noop) {
-    noop = new XEvent();
-    memset(noop, 0, sizeof(XEvent));
-    noop->xclient.type = ClientMessage;
-    noop->xclient.window = None;
-    noop->xclient.format = 8;
-    DCHECK(!noop->xclient.display);
-  }
-  // Make sure we use atom from current xdisplay, which may
-  // change during the test.
-  noop->xclient.message_type = GetNoopEventAtom();
-  return noop;
 }
 
 }  // namespace ui

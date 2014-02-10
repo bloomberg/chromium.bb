@@ -227,9 +227,4 @@ TEST_F(EventsMacTest, KeyboardCodeFromNative) {
   EXPECT_EQ(ui::VKEY_MENU, code);
 }
 
-TEST_F(EventsMacTest, CreateNoopEvent) {
-  NSEvent* native_event = ui::CreateNoopEvent();
-  EXPECT_TRUE(native_event != nil);
-}
-
 }  // namespace

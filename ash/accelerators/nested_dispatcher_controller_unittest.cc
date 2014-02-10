@@ -38,8 +38,7 @@ class MockDispatcher : public base::MessagePumpDispatcher {
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
-    return ui::IsNoopEvent(event) ? POST_DISPATCH_QUIT_LOOP
-                                  : POST_DISPATCH_NONE;
+    return POST_DISPATCH_NONE;
   }
 
  private:
@@ -91,9 +90,9 @@ void DispatchKeyReleaseA() {
   native_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
   dispatcher->host()->PostNativeEvent(native_event);
 #endif
-
-  // Send noop event to signal dispatcher to exit.
-  dispatcher->host()->PostNativeEvent(ui::CreateNoopEvent());
+  // Make sure the inner message-loop terminates after dispatching the events.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->QuitClosure());
 }
 
 }  // namespace
@@ -120,10 +119,10 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
 TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
   MockDispatcher inner_dispatcher;
 
-  scoped_ptr<aura::Window>mock_lock_container(
+  scoped_ptr<aura::Window> mock_lock_container(
       CreateTestWindowInShellWithId(0));
-  aura::test::CreateTestWindowWithId(0, mock_lock_container.get());
-  scoped_ptr<aura::Window> associated_window(CreateTestWindowInShellWithId(0));
+  aura::test::CreateTestWindowWithId(1, mock_lock_container.get());
+  scoped_ptr<aura::Window> associated_window(CreateTestWindowInShellWithId(2));
   EXPECT_TRUE(aura::test::WindowIsAbove(associated_window.get(),
       mock_lock_container.get()));
 

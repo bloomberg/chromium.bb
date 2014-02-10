@@ -129,15 +129,6 @@ bool IsTouchpadEvent(const base::NativeEvent& native_event) {
   return false;
 }
 
-bool IsNoopEvent(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-base::NativeEvent CreateNoopEvent() {
-  return base::NativeEvent();
-}
-
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return static_cast<KeyboardCode>(0);

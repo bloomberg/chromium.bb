@@ -355,16 +355,6 @@ bool IsTouchpadEvent(const base::NativeEvent& event) {
   return false;
 }
 
-bool IsNoopEvent(const base::NativeEvent& event) {
-  return event.message == WM_USER + 310;
-}
-
-base::NativeEvent CreateNoopEvent() {
-  MSG event = { NULL };
-  event.message = WM_USER + 310;
-  return event;
-}
-
 int GetModifiersFromACCEL(const ACCEL& accel) {
   int modifiers = EF_NONE;
   if (accel.fVirt & FSHIFT)

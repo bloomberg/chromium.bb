@@ -187,20 +187,4 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
   return false;
 }
 
-bool IsNoopEvent(const base::NativeEvent& event) {
-  return ([event type] == NSApplicationDefined && [event subtype] == 0);
-}
-
-base::NativeEvent CreateNoopEvent() {
-  return [NSEvent otherEventWithType:NSApplicationDefined
-                            location:NSZeroPoint
-                       modifierFlags:0
-                           timestamp:[NSDate timeIntervalSinceReferenceDate]
-                        windowNumber:0
-                             context:nil
-                             subtype:0
-                               data1:0
-                               data2:0];
-}
-
 }  // namespace ui

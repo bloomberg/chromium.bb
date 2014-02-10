@@ -140,12 +140,6 @@ EVENTS_EXPORT gfx::Display::TouchSupport GetInternalDisplayTouchSupport();
 // before calling this function.
 EVENTS_EXPORT bool IsTouchpadEvent(const base::NativeEvent& event);
 
-// Returns true if event is noop.
-EVENTS_EXPORT bool IsNoopEvent(const base::NativeEvent& event);
-
-// Creates and returns no-op event.
-EVENTS_EXPORT base::NativeEvent CreateNoopEvent();
-
 #if defined(OS_WIN)
 EVENTS_EXPORT int GetModifiersFromACCEL(const ACCEL& accel);
 EVENTS_EXPORT int GetModifiersFromKeyState();
