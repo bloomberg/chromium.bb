@@ -4,6 +4,8 @@
 
 #include "mojo/public/utility/run_loop.h"
 
+#include <string>
+
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/utility/run_loop_handler.h"
@@ -94,7 +96,7 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
 TEST_F(RunLoopTest, HandleReady) {
   RemoveOnReadyRunLoopHandler handler;
   MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
@@ -130,7 +132,7 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
 TEST_F(RunLoopTest, QuitFromReady) {
   QuitOnReadyRunLoopHandler handler;
   MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);

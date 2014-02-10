@@ -12,8 +12,18 @@
 namespace mojo {
 namespace test {
 
-bool WriteTextMessage(MessagePipeHandle handle, const std::string& text);
-bool ReadTextMessage(MessagePipeHandle handle, std::string* text);
+// Writes a message to |handle| with message data |text|. Returns true on
+// success.
+bool WriteTextMessage(const MessagePipeHandle& handle, const std::string& text);
+
+// Reads a message from |handle|, putting its contents into |*text|. Returns
+// true on success. (This blocks if necessary and will call |MojoReadMessage()|
+// multiple times, e.g., to query the size of the message.)
+bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text);
+
+// Discards a message from |handle|. Returns true on success. (This does not
+// block. It will fail if no message is available to discard.)
+bool DiscardMessage(const MessagePipeHandle& handle);
 
 // Run |single_iteration| an appropriate number of times and report its
 // performance appropriately. (This actually runs |single_iteration| for a fixed
@@ -22,9 +32,6 @@ typedef void (*PerfTestSingleIteration)(void* closure);
 void IterateAndReportPerf(const char* test_name,
                           PerfTestSingleIteration single_iteration,
                           void* closure);
-
-MojoResult WriteEmptyMessage(const MessagePipeHandle& handle);
-MojoResult ReadEmptyMessage(const MessagePipeHandle& handle);
 
 }  // namespace test
 }  // namespace mojo

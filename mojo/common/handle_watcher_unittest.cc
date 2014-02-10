@@ -4,6 +4,8 @@
 
 #include "mojo/common/handle_watcher.h"
 
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -119,8 +121,8 @@ TEST_F(HandleWatcherTest, SingleHandler) {
   callback_helper.Start(&watcher, test_pipe.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper.got_callback());
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe.handle1.get(),
+                                           std::string()));
   callback_helper.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper.got_callback());
 }
@@ -160,8 +162,8 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
   EXPECT_FALSE(callback_helper3.got_callback());
 
   // Write to 3 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe3.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe3.handle1.get(),
+                                           std::string()));
   callback_helper3.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -170,10 +172,10 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
 
   // Write to 1 and 3. Only 1 should be notified since 3 was is no longer
   // running.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe1.handle1.get()));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe3.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe1.handle1.get(),
+                                           std::string()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe3.handle1.get(),
+                                           std::string()));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -181,10 +183,10 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
   callback_helper1.clear_callback();
 
   // Write to 1 and 2. Only 2 should be notified (since 1 was already notified).
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe1.handle1.get()));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe2.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe1.handle1.get(),
+                                           std::string()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe2.handle1.get(),
+                                           std::string()));
   callback_helper2.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_TRUE(callback_helper2.got_callback());
@@ -213,18 +215,17 @@ TEST_F(HandleWatcherTest, Restart) {
   EXPECT_FALSE(callback_helper2.got_callback());
 
   // Write to 1 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe1.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe1.handle1.get(),
+                                           std::string()));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   callback_helper1.clear_callback();
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::ReadEmptyMessage(test_pipe1.handle0.get()));
+  EXPECT_TRUE(mojo::test::DiscardMessage(test_pipe1.handle0.get()));
 
   // Write to 2 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe2.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe2.handle1.get(),
+                                           std::string()));
   callback_helper2.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_TRUE(callback_helper2.got_callback());
@@ -237,8 +238,8 @@ TEST_F(HandleWatcherTest, Restart) {
   EXPECT_FALSE(callback_helper2.got_callback());
 
   // Write to 1 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::test::WriteEmptyMessage(test_pipe1.handle1.get()));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe1.handle1.get(),
+                                           std::string()));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -297,7 +298,8 @@ TEST_F(HandleWatcherTest, DeleteInCallback) {
                                     base::Bind(&DeleteWatcherAndForwardResult,
                                                watcher,
                                                callback_helper.GetCallback()));
-  mojo::test::WriteEmptyMessage(test_pipe.handle0.get());
+  EXPECT_TRUE(mojo::test::WriteTextMessage(test_pipe.handle0.get(),
+                                           std::string()));
   callback_helper.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper.got_callback());
 }

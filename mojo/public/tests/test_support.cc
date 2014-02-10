@@ -10,7 +10,8 @@
 namespace mojo {
 namespace test {
 
-bool WriteTextMessage(MessagePipeHandle handle, const std::string& text) {
+bool WriteTextMessage(const MessagePipeHandle& handle,
+                      const std::string& text) {
   MojoResult rv = WriteMessageRaw(handle,
                                   text.data(),
                                   static_cast<uint32_t>(text.size()),
@@ -20,7 +21,7 @@ bool WriteTextMessage(MessagePipeHandle handle, const std::string& text) {
   return rv == MOJO_RESULT_OK;
 }
 
-bool ReadTextMessage(MessagePipeHandle handle, std::string* text) {
+bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
   MojoResult rv;
   bool did_wait = false;
 
@@ -57,6 +58,12 @@ bool ReadTextMessage(MessagePipeHandle handle, std::string* text) {
   return rv == MOJO_RESULT_OK;
 }
 
+bool DiscardMessage(const MessagePipeHandle& handle) {
+  MojoResult rv = ReadMessageRaw(handle, NULL, NULL, NULL, NULL,
+                                 MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+  return rv == MOJO_RESULT_OK;
+}
+
 void IterateAndReportPerf(const char* test_name,
                           PerfTestSingleIteration single_iteration,
                           void* closure) {
@@ -78,16 +85,6 @@ void IterateAndReportPerf(const char* test_name,
   base::LogPerfResult(test_name,
                       1000000.0 * iterations / (end_time - start_time),
                       "iterations/second");
-}
-
-MojoResult WriteEmptyMessage(const MessagePipeHandle& handle) {
-  return WriteMessageRaw(handle, NULL, 0, NULL, 0,
-                         MOJO_WRITE_MESSAGE_FLAG_NONE);
-}
-
-MojoResult ReadEmptyMessage(const MessagePipeHandle& handle) {
-  return ReadMessageRaw(handle, NULL, NULL, NULL, NULL,
-                        MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
 }
 
 }  // namespace test

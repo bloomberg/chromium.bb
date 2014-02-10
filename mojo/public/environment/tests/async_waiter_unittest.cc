@@ -4,6 +4,8 @@
 
 #include "mojo/public/environment/default_async_waiter.h"
 
+#include <string>
+
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/system/macros.h"
@@ -70,8 +72,7 @@ class AsyncWaiterTest : public testing::Test {
 TEST_F(AsyncWaiterTest, CallbackNotified) {
   TestAsyncWaitCallback callback;
   MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe.handle1.get()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
   CallAsyncWait(test_pipe.handle0.get(),
                 MOJO_WAIT_FLAG_READABLE,
@@ -87,10 +88,8 @@ TEST_F(AsyncWaiterTest, TwoCallbacksNotified) {
   TestAsyncWaitCallback callback2;
   MessagePipe test_pipe1;
   MessagePipe test_pipe2;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe1.handle1.get()));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe2.handle1.get()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe1.handle1.get(), std::string()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe2.handle1.get(), std::string()));
 
   CallAsyncWait(test_pipe1.handle0.get(), MOJO_WAIT_FLAG_READABLE, &callback1);
   CallAsyncWait(test_pipe2.handle0.get(), MOJO_WAIT_FLAG_READABLE, &callback2);
@@ -106,7 +105,7 @@ TEST_F(AsyncWaiterTest, TwoCallbacksNotified) {
 TEST_F(AsyncWaiterTest, CancelCallback) {
   TestAsyncWaitCallback callback;
   MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
+  EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
   CallCancelWait(
       CallAsyncWait(test_pipe.handle0.get(),
