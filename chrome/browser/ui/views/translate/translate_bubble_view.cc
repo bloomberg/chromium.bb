@@ -735,13 +735,13 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   layout->AddView(CreateLink(this,
                              IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS,
                              LINK_ID_LANGUAGE_SETTINGS));
-  advanced_cancel_button_ = CreateLabelButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL), BUTTON_ID_CANCEL);
-  layout->AddView(advanced_cancel_button_);
   advanced_done_button_ = CreateLabelButton(
       this, l10n_util::GetStringUTF16(IDS_DONE), BUTTON_ID_DONE);
   advanced_done_button_->SetIsDefault(true);
+  advanced_cancel_button_ = CreateLabelButton(
+      this, l10n_util::GetStringUTF16(IDS_CANCEL), BUTTON_ID_CANCEL);
   layout->AddView(advanced_done_button_);
+  layout->AddView(advanced_cancel_button_);
 
   UpdateAdvancedView();
 
