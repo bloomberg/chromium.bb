@@ -425,7 +425,7 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
 
   // Response has completed.
   EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoadingFinished));
-  loader_->didFinishLoading(url_loader_, 0);
+  loader_->didFinishLoading(url_loader_, 0, -1);
 
   // Try to read 10 from position 25 will just return with 5 bytes.
   EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 5));
@@ -518,7 +518,7 @@ TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
 
   EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoadingFinished));
   EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 5));
-  loader_->didFinishLoading(url_loader_, 0);
+  loader_->didFinishLoading(url_loader_, 0, -1);
 }
 
 TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {

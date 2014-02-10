@@ -247,7 +247,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE;
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE;
 
  private:
   friend class base::RefCounted<Context>;
@@ -601,7 +602,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const std::string& security_info,
-    const base::TimeTicks& completion_time) {
+    const base::TimeTicks& completion_time,
+    int64 total_transfer_size) {
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
@@ -622,7 +624,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
                                             error_code));
     } else {
       client_->didFinishLoading(
-          loader_, (completion_time - TimeTicks()).InSecondsF());
+          loader_, (completion_time - TimeTicks()).InSecondsF(),
+          total_transfer_size);
     }
   }
 
@@ -674,7 +677,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   }
 
   OnCompletedRequest(error_code, false, false, info.security_info,
-                     base::TimeTicks::Now());
+                     base::TimeTicks::Now(), 0);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

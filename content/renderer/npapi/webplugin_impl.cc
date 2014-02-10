@@ -132,7 +132,9 @@ class MultiPartResponseClient : public WebURLLoaderClient {
     byte_range_lower_bound_ += data_length;
   }
 
-  virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
+  virtual void didFinishLoading(WebURLLoader*,
+                                double finishTime,
+                                int64_t total_encoded_data_length) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
  private:
@@ -510,7 +512,8 @@ void WebPluginImpl::LoaderClient::didReceiveCachedMetadata(
 }
 
 void WebPluginImpl::LoaderClient::didFinishLoading(
-    blink::WebURLLoader* loader, double finishTime) {
+    blink::WebURLLoader* loader, double finishTime,
+    int64_t total_encoded_data_length) {
   parent_->didFinishLoading(loader, finishTime);
 }
 

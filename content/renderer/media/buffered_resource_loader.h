@@ -164,7 +164,8 @@ class CONTENT_EXPORT BufferedResourceLoader
       const char* data, int dataLength);
   virtual void didFinishLoading(
       blink::WebURLLoader* loader,
-      double finishTime);
+      double finishTime,
+      int64_t total_encoded_data_length);
   virtual void didFail(
       blink::WebURLLoader* loader,
       const blink::WebURLError&);

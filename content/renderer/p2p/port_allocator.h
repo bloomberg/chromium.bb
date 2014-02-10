@@ -94,7 +94,8 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
   virtual void didFinishLoading(blink::WebURLLoader* loader,
-                                double finish_time) OVERRIDE;
+                                double finish_time,
+                                int64_t total_encoded_data_length) OVERRIDE;
   virtual void didFail(blink::WebURLLoader* loader,
                        const blink::WebURLError& error) OVERRIDE;
 

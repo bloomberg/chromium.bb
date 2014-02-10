@@ -37,7 +37,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     return;
   }
   client_->didReceiveData(this, data.data(), data.size(), data.size());
-  client_->didFinishLoading(this, 0);
+  client_->didFinishLoading(this, 0, data.size());
 }
 
 blink::WebURLRequest WebURLLoaderMock::ServeRedirect(

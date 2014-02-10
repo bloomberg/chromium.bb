@@ -211,7 +211,8 @@ void PepperWebPluginImpl::didReceiveData(const char* data, int data_length) {
 void PepperWebPluginImpl::didFinishLoading() {
   blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
-    document_loader->didFinishLoading(NULL, 0.0);
+    document_loader->didFinishLoading(NULL, 0.0,
+        blink::WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void PepperWebPluginImpl::didFailLoading(const blink::WebURLError& error) {

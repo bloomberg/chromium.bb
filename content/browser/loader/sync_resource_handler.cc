@@ -25,7 +25,8 @@ SyncResourceHandler::SyncResourceHandler(
     : ResourceHandler(request),
       read_buffer_(new net::IOBuffer(kReadBufSize)),
       result_message_(result_message),
-      rdh_(resource_dispatcher_host) {
+      rdh_(resource_dispatcher_host),
+      total_transfer_size_(0) {
   result_.final_url = request->url();
 }
 
@@ -65,6 +66,8 @@ bool SyncResourceHandler::OnRequestRedirected(
     return false;
   }
   result_.final_url = new_url;
+
+  total_transfer_size_ += request()->GetTotalReceivedBytes();
   return true;
 }
 
@@ -136,8 +139,8 @@ void SyncResourceHandler::OnResponseCompleted(
 
   result_.error_code = status.error();
 
-  result_.encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request());
+  int total_transfer_size = request()->GetTotalReceivedBytes();
+  result_.encoded_data_length = total_transfer_size_ + total_transfer_size;
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter->Send(result_message_);

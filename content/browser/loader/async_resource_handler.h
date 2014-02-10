@@ -92,6 +92,8 @@ class AsyncResourceHandler : public ResourceHandler,
   bool sent_received_response_msg_;
   bool sent_first_data_msg_;
 
+  int64_t reported_transfer_size_;
+
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };
 

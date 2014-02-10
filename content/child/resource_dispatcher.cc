@@ -552,7 +552,8 @@ void ResourceDispatcher::OnRequestComplete(
                            request_complete_data.was_ignored_by_handler,
                            request_complete_data.exists_in_cache,
                            request_complete_data.security_info,
-                           renderer_completion_time);
+                           renderer_completion_time,
+                           request_complete_data.encoded_data_length);
 }
 
 int ResourceDispatcher::AddPendingRequest(

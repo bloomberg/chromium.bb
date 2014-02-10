@@ -72,7 +72,8 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE {
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE {
     EXPECT_FALSE(complete_);
     complete_ = true;
   }
@@ -298,7 +299,8 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE {
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE {
   }
 
  protected:
@@ -386,7 +388,8 @@ class TimeConversionTest : public ResourceDispatcherTest,
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE {
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE {
   }
 
   const ResourceResponseInfo& response_info() const { return response_info_; }

@@ -175,7 +175,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   void FinishLoading() {
     data_source_->set_loading(false);
-    loader()->didFinishLoading(url_loader(), 0);
+    loader()->didFinishLoading(url_loader(), 0, -1);
     message_loop_.RunUntilIdle();
   }
 

@@ -87,7 +87,8 @@ AsyncResourceHandler::AsyncResourceHandler(
       did_defer_(false),
       has_checked_for_sufficient_resources_(false),
       sent_received_response_msg_(false),
-      sent_first_data_msg_(false) {
+      sent_first_data_msg_(false),
+      reported_transfer_size_(0) {
   InitializeResourceBufferConstants();
 }
 
@@ -159,6 +160,8 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->GetTotalReceivedBytes();
+  reported_transfer_size_ = 0;
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
   return info->filter()->Send(new ResourceMsg_ReceivedRedirect(
@@ -279,8 +282,10 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   }
 
   int data_offset = buffer_->GetLastAllocationOffset();
-  int encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request());
+
+  int64_t current_transfer_size = request()->GetTotalReceivedBytes();
+  int encoded_data_length = current_transfer_size - reported_transfer_size_;
+  reported_transfer_size_ = current_transfer_size;
 
   filter->Send(new ResourceMsg_DataReceived(
       request_id, data_offset, bytes_read, encoded_data_length));
@@ -302,8 +307,9 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 
 void AsyncResourceHandler::OnDataDownloaded(
     int request_id, int bytes_downloaded) {
-  int encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request());
+  int64_t current_transfer_size = request()->GetTotalReceivedBytes();
+  int encoded_data_length = current_transfer_size - reported_transfer_size_;
+  reported_transfer_size_ = current_transfer_size;
 
   ResourceMessageFilter* filter = GetFilter();
   if (filter) {
@@ -360,6 +366,8 @@ void AsyncResourceHandler::OnResponseCompleted(
   request_complete_data.exists_in_cache = request()->response_info().was_cached;
   request_complete_data.security_info = security_info;
   request_complete_data.completion_time = TimeTicks::Now();
+  request_complete_data.encoded_data_length =
+      request()->GetTotalReceivedBytes();
   info->filter()->Send(
       new ResourceMsg_RequestComplete(request_id, request_complete_data));
 }

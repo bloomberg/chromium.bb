@@ -229,6 +229,9 @@ IPC_STRUCT_BEGIN(ResourceMsg_RequestCompleteData)
 
   // Time the request completed.
   IPC_STRUCT_MEMBER(base::TimeTicks, completion_time)
+
+  // Total amount of data received from the network.
+  IPC_STRUCT_MEMBER(int64, encoded_data_length)
 IPC_STRUCT_END()
 
 // Resource messages sent from the browser to the renderer.

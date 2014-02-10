@@ -133,8 +133,9 @@ void P2PPortAllocatorSession::didReceiveData(
   relay_session_response_.append(data, data + data_length);
 }
 
-void P2PPortAllocatorSession::didFinishLoading(WebURLLoader* loader,
-                                               double finish_time) {
+void P2PPortAllocatorSession::didFinishLoading(
+    WebURLLoader* loader, double finish_time,
+    int64_t total_encoded_data_length) {
   ParseRelayResponse();
 }
 

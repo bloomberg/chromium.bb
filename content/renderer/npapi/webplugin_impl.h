@@ -353,7 +353,8 @@ class WebPluginImpl : public WebPlugin,
                                           const char* data,
                                           int dataLength) OVERRIDE;
     virtual void didFinishLoading(blink::WebURLLoader*,
-                                  double finishTime) OVERRIDE;
+                                  double finishTime,
+                                  int64_t total_encoded_data_length) OVERRIDE;
     virtual void didFail(blink::WebURLLoader*,
                          const blink::WebURLError&) OVERRIDE;
 

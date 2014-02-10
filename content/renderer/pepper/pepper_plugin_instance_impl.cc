@@ -428,8 +428,8 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
                                     0 /* encoded_data_length */);
   }
   if (finished_loading_) {
-    document_loader->didFinishLoading(NULL,
-                                      0 /* finish_time */);
+    document_loader->didFinishLoading(NULL, 0 /* finish_time */,
+        blink::WebURLLoaderClient::kUnknownEncodedDataLength);
   }
   if (error_.get()) {
     document_loader->didFail(NULL, *error_);
@@ -446,7 +446,8 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::didReceiveData(
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::didFinishLoading(
     WebURLLoader* loader,
-    double finish_time) {
+    double finish_time,
+    int64_t total_encoded_data_length) {
   DCHECK(!finished_loading_);
   finished_loading_ = true;
 }

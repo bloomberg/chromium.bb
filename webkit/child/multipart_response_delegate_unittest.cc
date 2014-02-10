@@ -75,7 +75,8 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     data_.append(data, data_length);
     total_encoded_data_length_ += encoded_data_length;
   }
-  virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
+  virtual void didFinishLoading(
+      WebURLLoader*, double finishTime, int64_t total_encoded_data_length) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
   void Reset() {

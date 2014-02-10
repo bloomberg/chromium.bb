@@ -173,7 +173,8 @@ void PepperURLLoaderHost::didReceiveData(WebURLLoader* loader,
 }
 
 void PepperURLLoaderHost::didFinishLoading(WebURLLoader* loader,
-                                           double finish_time) {
+                                           double finish_time,
+                                           int64_t total_encoded_data_length) {
   // Note that |loader| will be NULL for document loads.
   SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_FinishedLoading(PP_OK));
 }

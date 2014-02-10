@@ -147,7 +147,8 @@ void MediaInfoLoader::didReceiveCachedMetadata(
 
 void MediaInfoLoader::didFinishLoading(
     WebURLLoader* loader,
-    double finishTime) {
+    double finishTime,
+    int64_t total_encoded_data_length) {
   DCHECK(active_loader_.get());
   DidBecomeReady(kOk);
 }

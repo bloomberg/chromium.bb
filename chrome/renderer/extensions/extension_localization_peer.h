@@ -46,7 +46,8 @@ class ExtensionLocalizationPeer
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE;
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE;
 
  private:
   friend class ExtensionLocalizationPeerTest;

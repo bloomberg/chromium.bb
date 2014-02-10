@@ -70,7 +70,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const std::string& security_info,
-    const base::TimeTicks& completion_time) {
+    const base::TimeTicks& completion_time,
+    int64 total_transfer_size) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
 
@@ -80,7 +81,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     original_peer_->OnReceivedResponse(response_info_);
     original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
                                        stale_copy_in_cache, security_info,
-                                       completion_time);
+                                       completion_time,
+                                       total_transfer_size);
     return;
   }
 
@@ -93,7 +95,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
                                    -1);
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache,
-                                     security_info, completion_time);
+                                     security_info, completion_time,
+                                     total_transfer_size);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

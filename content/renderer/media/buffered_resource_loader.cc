@@ -483,7 +483,8 @@ void BufferedResourceLoader::didReceiveCachedMetadata(
 
 void BufferedResourceLoader::didFinishLoading(
     WebURLLoader* loader,
-    double finishTime) {
+    double finishTime,
+    int64_t total_encoded_data_length) {
   DVLOG(1) << "didFinishLoading";
   DCHECK(active_loader_.get());
 

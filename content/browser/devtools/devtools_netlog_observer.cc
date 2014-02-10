@@ -42,10 +42,6 @@ void DevToolsNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
 
   if (entry.source().type == net::NetLog::SOURCE_URL_REQUEST)
     OnAddURLRequestEntry(entry);
-  else if (entry.source().type == net::NetLog::SOURCE_HTTP_STREAM_JOB)
-    OnAddHTTPStreamJobEntry(entry);
-  else if (entry.source().type == net::NetLog::SOURCE_SOCKET)
-    OnAddSocketEntry(entry);
 }
 
 void DevToolsNetLogObserver::OnAddURLRequestEntry(
@@ -74,22 +70,12 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       }
 
       request_to_info_[entry.source().id] = new ResourceInfo();
-
-      if (request_to_encoded_data_length_.size() > kMaxNumEntries) {
-        LOG(WARNING) << "The encoded data length observer url request count "
-                        "has grown larger than expected, resetting";
-        request_to_encoded_data_length_.clear();
-      }
-
-      request_to_encoded_data_length_[entry.source().id] = 0;
     }
     return;
   } else if (entry.type() == net::NetLog::TYPE_REQUEST_ALIVE) {
     // Cleanup records based on the TYPE_REQUEST_ALIVE entry.
-    if (is_end) {
+    if (is_end)
       request_to_info_.erase(entry.source().id);
-      request_to_encoded_data_length_.erase(entry.source().id);
-    }
     return;
   }
 
@@ -167,96 +153,8 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
               response_headers->raw_headers());
       break;
     }
-    case net::NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB: {
-      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
-      net::NetLog::Source http_stream_job_source;
-      if (!net::NetLog::Source::FromEventParameters(event_params.get(),
-                                                    &http_stream_job_source)) {
-        NOTREACHED();
-        break;
-      }
-
-      uint32 http_stream_job_id = http_stream_job_source.id;
-      HTTPStreamJobToSocketMap::iterator it =
-          http_stream_job_to_socket_.find(http_stream_job_id);
-      if (it == http_stream_job_to_socket_.end())
-        return;
-      uint32 socket_id = it->second;
-
-      if (socket_to_request_.size() > kMaxNumEntries) {
-        LOG(WARNING) << "The url request observer socket count has grown "
-                        "larger than expected, resetting";
-        socket_to_request_.clear();
-      }
-
-      socket_to_request_[socket_id] = entry.source().id;
-      http_stream_job_to_socket_.erase(http_stream_job_id);
-      break;
-    }
     default:
       break;
-  }
-}
-
-void DevToolsNetLogObserver::OnAddHTTPStreamJobEntry(
-    const net::NetLog::Entry& entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (entry.type() == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET) {
-    scoped_ptr<base::Value> event_params(entry.ParametersToValue());
-    net::NetLog::Source socket_source;
-    if (!net::NetLog::Source::FromEventParameters(event_params.get(),
-                                                  &socket_source)) {
-      NOTREACHED();
-      return;
-    }
-
-    // Prevents us from passively growing the memory unbounded in
-    // case something went wrong. Should not happen.
-    if (http_stream_job_to_socket_.size() > kMaxNumEntries) {
-      LOG(WARNING) << "The load timing observer http stream job count "
-                      "has grown larger than expected, resetting";
-      http_stream_job_to_socket_.clear();
-    }
-    http_stream_job_to_socket_[entry.source().id] = socket_source.id;
-  }
-}
-
-void DevToolsNetLogObserver::OnAddSocketEntry(
-    const net::NetLog::Entry& entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  bool is_end = entry.phase() == net::NetLog::PHASE_END;
-
-  SocketToRequestMap::iterator it =
-      socket_to_request_.find(entry.source().id);
-  if (it == socket_to_request_.end())
-    return;
-  uint32 request_id = it->second;
-
-  if (entry.type() == net::NetLog::TYPE_SOCKET_IN_USE) {
-    if (is_end)
-      socket_to_request_.erase(entry.source().id);
-    return;
-  }
-
-  RequestToEncodedDataLengthMap::iterator encoded_data_length_it =
-      request_to_encoded_data_length_.find(request_id);
-  if (encoded_data_length_it == request_to_encoded_data_length_.end())
-    return;
-
-  if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == entry.type()) {
-    int byte_count = 0;
-    scoped_ptr<base::Value> value(entry.ParametersToValue());
-    if (!value->IsType(base::Value::TYPE_DICTIONARY))
-      return;
-
-    base::DictionaryValue* dValue =
-        static_cast<base::DictionaryValue*>(value.get());
-    if (!dValue->GetInteger("byte_count", &byte_count))
-      return;
-
-    encoded_data_length_it->second += byte_count;
   }
 }
 
@@ -301,28 +199,6 @@ void DevToolsNetLogObserver::PopulateResponseInfo(
     return;
   response->head.devtools_info =
       dev_tools_net_log_observer->GetResourceInfo(source_id);
-}
-
-// static
-int DevToolsNetLogObserver::GetAndResetEncodedDataLength(
-    net::URLRequest* request) {
-  if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
-    return -1;
-
-  uint32 source_id = request->net_log().source().id;
-  DevToolsNetLogObserver* dev_tools_net_log_observer =
-      DevToolsNetLogObserver::GetInstance();
-  if (dev_tools_net_log_observer == NULL)
-    return -1;
-
-  RequestToEncodedDataLengthMap::iterator it =
-      dev_tools_net_log_observer->request_to_encoded_data_length_.find(
-          source_id);
-  if (it == dev_tools_net_log_observer->request_to_encoded_data_length_.end())
-    return -1;
-  int encoded_data_length = it->second;
-  it->second = 0;
-  return encoded_data_length;
 }
 
 }  // namespace content

@@ -155,16 +155,14 @@ class ResourceLoaderBridge {
     // that case, OnReceivedData will not be called.
     // The encoded_data_length is the length of the encoded data transferred
     // over the network, which could be different from data length (e.g. for
-    // gzipped content), or -1 if unknown. It is only valid while devtools are
-    // attached. Otherwise it becomes -1.
+    // gzipped content).
     virtual void OnDownloadedData(int len, int encoded_data_length) = 0;
 
     // Called when a chunk of response data is available. This method may
     // be called multiple times or not at all if an error occurs.
     // The encoded_data_length is the length of the encoded data transferred
     // over the network, which could be different from data length (e.g. for
-    // gzipped content), or -1 if unknown. It is only valid while devtools are
-    // attached. Otherwise it becomes -1.
+    // gzipped content).
     virtual void OnReceivedData(const char* data,
                                 int data_length,
                                 int encoded_data_length) = 0;
@@ -180,7 +178,8 @@ class ResourceLoaderBridge {
         bool was_ignored_by_handler,
         bool stale_copy_in_cache,
         const std::string& security_info,
-        const base::TimeTicks& completion_time) = 0;
+        const base::TimeTicks& completion_time,
+        int64 total_transfer_size) = 0;
 
    protected:
     virtual ~Peer() {}

@@ -70,6 +70,7 @@ class SyncResourceHandler : public ResourceHandler {
   SyncLoadResult result_;
   IPC::Message* result_message_;
   ResourceDispatcherHostImpl* rdh_;
+  int64 total_transfer_size_;
 };
 
 }  // namespace content

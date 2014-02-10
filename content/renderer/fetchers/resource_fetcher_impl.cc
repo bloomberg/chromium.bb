@@ -164,7 +164,8 @@ void ResourceFetcherImpl::didReceiveCachedMetadata(
 }
 
 void ResourceFetcherImpl::didFinishLoading(
-    WebURLLoader* loader, double finishTime) {
+    WebURLLoader* loader, double finishTime,
+    int64_t total_encoded_data_length) {
   DCHECK(!completed_);
 
   RunCallback(response_, data_);

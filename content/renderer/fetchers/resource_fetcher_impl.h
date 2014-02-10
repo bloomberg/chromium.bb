@@ -70,7 +70,8 @@ class ResourceFetcherImpl : public ResourceFetcher,
       blink::WebURLLoader* loader, const char* data, int data_length,
       int encoded_data_length);
   virtual void didFinishLoading(
-      blink::WebURLLoader* loader, double finishTime);
+      blink::WebURLLoader* loader, double finishTime,
+      int64_t total_encoded_data_length);
   virtual void didFail(
       blink::WebURLLoader* loader, const blink::WebURLError& error);
 

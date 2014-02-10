@@ -538,7 +538,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                 int data_length,
                                 int encoded_data_length);
     virtual void didFinishLoading(blink::WebURLLoader* loader,
-                                  double finish_time);
+                                  double finish_time,
+                                  int64_t total_encoded_data_length);
     virtual void didFail(blink::WebURLLoader* loader,
                          const blink::WebURLError& error);
 

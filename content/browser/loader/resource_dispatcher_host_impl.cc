@@ -164,7 +164,7 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
     request_complete_data.exists_in_cache = false;
     // No security info needed, connection not established.
     request_complete_data.completion_time = base::TimeTicks();
-
+    request_complete_data.encoded_data_length = 0;
     filter->Send(new ResourceMsg_RequestComplete(
         request_id, request_complete_data));
   }

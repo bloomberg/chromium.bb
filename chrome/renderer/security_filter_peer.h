@@ -45,7 +45,8 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE;
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE;
 
  protected:
   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
@@ -78,7 +79,8 @@ class BufferedPeer : public SecurityFilterPeer {
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE;
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -123,7 +125,8 @@ class ReplaceContentPeer : public SecurityFilterPeer {
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) OVERRIDE;
+      const base::TimeTicks& completion_time,
+      int64 total_transfer_size) OVERRIDE;
 
  private:
   webkit_glue::ResourceResponseInfo response_info_;
