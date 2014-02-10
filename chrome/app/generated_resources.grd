@@ -2260,7 +2260,7 @@ Even if you have downloaded files from this website before, the website might ha
         Allow all sites to download multiple files automatically
       </message>
       <message name="IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure multiple automatic downloads per-site.">
-        Ask me when a site tries to download files automatically after the first file (recommended)
+        Ask when a site tries to download files automatically after the first file (recommended)
       </message>
       <message name="IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to download multiple files automatically.">
         Do not allow any site to download multiple files automatically
@@ -8090,7 +8090,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Allow local data to be set (recommended)
       </message>
       <message name="IDS_COOKIES_SESSION_ONLY_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data for the current session only.">
-        Keep local data only until I quit my browser
+        Keep local data only until you quit your browser
       </message>
       <message name="IDS_COOKIES_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking cookies and other site data from being stored on your computer.">
         Block sites from setting any data
@@ -8105,22 +8105,22 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Media exceptions
       </message>
       <message name="IDS_MEDIA_STREAM_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access any capture device.">
-        Do not allow sites to access my camera and microphone
+        Do not allow sites to access your camera and microphone
       </message>
       <message name="IDS_MEDIA_STREAM_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access capture devices.">
-        Ask me when a site requires access to my camera and microphone (recommended)
+        Ask when a site requires access to your camera and microphone (recommended)
       </message>
       <message name="IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access audio capture device.">
-        Do not allow sites to access my microphone
+        Do not allow sites to access your microphone
       </message>
       <message name="IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access audio capture devices.">
-        Ask me when a site requires access to my microphone (recommended)
+        Ask when a site requires access to your microphone (recommended)
       </message>
       <message name="IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access video capture device.">
-        Do not allow sites to access my camera
+        Do not allow sites to access your camera
       </message>
       <message name="IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access video capture devices.">
-        Ask me when a site requires access to my camera (recommended)
+        Ask when a site requires access to your camera (recommended)
       </message>
       <message name="IDS_MEDIA_STREAM_AUDIO_MANAGED" desc="A notification bubble shown if the access to audio capture devices is controlled through policy.">
         Access to your microphone is controlled by your administrator.
@@ -8171,26 +8171,26 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
       <if expr="not is_macosx and not pp_ifdef('chromeos')">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site data when I close my browser
+          Clear cookies and other site data when you close your browser
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site and plug-in data when I close my browser
+          Clear cookies and other site and plug-in data when you close your browser
         </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is quit (Mac).">
-          Clear cookies and other site data when I quit my browser
+          Clear cookies and other site data when you quit your browser
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is quit (Mac).">
-          Clear cookies and other site and plug-in data when I quit my browser
+          Clear cookies and other site and plug-in data when you quit your browser
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site data when I log out
+          Clear cookies and other site data when you log out
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site and plug-in data when I log out
+          Clear cookies and other site and plug-in data when you log out
         </message>
       </if>
 
@@ -8295,13 +8295,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Geolocation exceptions
       </message>
       <message name="IDS_GEOLOCATION_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites access to geolocation data.">
-        Allow all sites to track my physical location
+        Allow all sites to track your physical location
       </message>
       <message name="IDS_GEOLOCATION_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites access to gelocation data.">
-        Ask me when a site tries to track my physical location (recommended)
+        Ask when a site tries to track your physical location (recommended)
       </message>
       <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
-        Do not allow any site to track my physical location
+        Do not allow any site to track your physical location
       </message>
       <message name="IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX" desc="The label of the 'Allow Google services to access your location' checkbox">
         Allow Google services to access your location
@@ -8325,7 +8325,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Do not allow any site to show desktop notifications
       </message>
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
-        Ask me when a site wants to show desktop notifications (recommended)
+        Ask when a site wants to show desktop notifications (recommended)
       </message>
       <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
         Fullscreen
@@ -8370,7 +8370,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Allow all sites to disable the mouse cursor
       </message>
       <message name="IDS_MOUSE_LOCK_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites to disable the mouse cursor.">
-        Ask me when a site tries to disable the mouse cursor (recommended)
+        Ask when a site tries to disable the mouse cursor (recommended)
       </message>
       <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
         Do not allow any site to disable the mouse cursor
@@ -8393,13 +8393,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Unsandboxed plug-in access
       </message>
       <message name="IDS_PPAPI_BROKER_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to access the PPAPI broker.">
-        Allow all sites to use a plug-in to access my computer
+        Allow all sites to use a plug-in to access your computer
       </message>
       <message name="IDS_PPAPI_BROKER_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access the PPAPI broker.">
-        Do not allow any sites to use a plug-in to access my computer
+        Do not allow any sites to use a plug-in to access your computer
       </message>
       <message name="IDS_PPAPI_BROKER_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access the PPAPI broker.">
-        Ask me when a site wants to use a plug-in to access my computer (recommended)
+        Ask when a site wants to use a plug-in to access your computer (recommended)
       </message>
 
       <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
@@ -9836,9 +9836,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_FIRSTRUN_DLG_MAC_COMPLETE_INSTALLATION_LABEL" desc="Label at top of Dialog noting what's going to happen">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is ready to complete your installation
         </message>
-        <message name="IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL" desc="Label for checkbox that sets the default browser">
-          Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as my default browser
-        </message>
         <message name="IDS_FIRSTRUN_DLG_MAC_OPTIONS_SEND_USAGE_STATS_LABEL" desc="Label for checkbox to ask whether to send usage stats to Google">
           Help make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> better by automatically sending usage statistics and crash reports to Google
         </message>
@@ -10081,7 +10078,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Open the New Tab page
         </message>
         <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
-          Continue where I left off
+          Continue where you left off
         </message>
         <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
           Open a specific page or set of pages.
@@ -10152,12 +10149,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
           This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
         </message>
-        <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
-          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
-        </message>
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
-          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
-        </message>
         <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
           Downloads
         </message>
@@ -10180,7 +10171,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages.
         </message>
         <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
-          Offer to translate pages that aren't in a language I read.
+          Offer to translate pages that aren't in a language you read.
         </message>
         <message name="IDS_OPTIONS_TRANSLATE_MANAGE_LANGUAGES" desc="The link that is clicked to manage languages for translate">
           Manage languages
@@ -10189,7 +10180,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Passwords and forms
         </message>
         <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
-          Offer to save passwords I enter on the web.
+          Offer to save your web passwords.
         </message>
         <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="The label of the 'Manage saved passwords' button">
           Manage saved passwords...
@@ -10219,7 +10210,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Autofill settings
         </message>
         <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
-          Include addresses from my Address Book card
+          Include addresses from your Address Book card
         </message>
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
           Addresses
@@ -10705,16 +10696,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
         <!-- Autofill dialog: notification area -->
         <message name="IDS_AUTOFILL_DIALOG_USE_WALLET" desc="Text that shows on top of the autofill dialog when using data Google Wallet already knows about the user.">
-          Protect my payment with Google Wallet.
+          Protect your payment with Google Wallet.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_USE_WALLET_LINK" desc="Text that shows as a link at the top of the autofill dialog to select to use Google wallet.">
           Use Google Wallet
         </message>
         <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Wallet.">
-          Save and protect my details with Google Wallet.
+          Save and protect your details with Google Wallet.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_SAVE_IN_WALLET_TOOLTIP" desc="Tooltip text that explains how Google Wallet integration works.">
-          A Google Wallet Virtual Card will be used for this transacation. A Virtual Card is a new card number so the seller never sees your real credit card number.
+          A Google Wallet Virtual Card will be used for this transaction. A Virtual Card is a new card number so the seller never sees your real credit card number.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Wallet is found to be unavailable.">
           Oops, <ph name="WALLET_ERROR">$1<ex>Google Wallet is unavailable at this time.</ex></ph> You can complete this transaction without Google Wallet.
@@ -11057,10 +11048,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <!-- Enterprise sign-in profile linking -->
       <!-- TODO(dconnelly): remove "new-style" once the old dialog is gone. -->
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE" desc="Text of the button to create a new profile after enterprise account sign-in">
-        No, create new profile
+        Create a new profile
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE" desc="Text of the button to link the current profile with the signed-in enterprise account">
-        Yes, link my data
+        Link data
       </message>
 
       <message name="IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
@@ -14372,11 +14363,6 @@ Do you accept?
     <message name="IDS_FLAGS_USE_SYSTEM_TITLE_BAR_DESCRIPTION"
              desc="Description of about:flag option to turn on the host operating system's title bar and window borders.">
       Use the host operating system's window title bar and borders, instead of custom window dressing.
-    </message>
-
-    <!-- Toast experiment. -->
-    <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chrome the default browser">
-      Make it my default browser
     </message>
 
     <!-- Windows 8 Metro mode. -->
