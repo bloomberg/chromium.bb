@@ -483,6 +483,9 @@ const char kEnableDirectWrite[]             = "enable-direct-write";
 const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
 #endif
 
+// Enable HTML Imports
+extern const char kEnableHTMLImports[]      = "enable-html-imports";
+
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[]        = "enable-inband-text-tracks";
 

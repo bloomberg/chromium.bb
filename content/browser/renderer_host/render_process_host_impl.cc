@@ -1031,6 +1031,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuClientTracing,
     switches::kEnableGPUServiceLogging,
     switches::kEnableHighDpiCompositingForFixedPosition,
+    switches::kEnableHTMLImports,
     switches::kEnableInbandTextTracks,
     switches::kEnableInputModeAttribute,
     switches::kEnableLayerSquashing,
