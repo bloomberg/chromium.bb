@@ -68,12 +68,16 @@ class NET_EXPORT WebSocketEventInterface {
   // callers must take care not to provide details that could be useful to
   // attackers attempting to use WebSockets to probe networks.
   //
+  // |was_clean| should be true if the closing handshake completed successfully.
+  //
   // The channel should not be used again after OnDropChannel() has been
   // called.
   //
   // This method returns a ChannelState for consistency, but all implementations
   // must delete the Channel and return CHANNEL_DELETED.
-  virtual ChannelState OnDropChannel(uint16 code, const std::string& reason)
+  virtual ChannelState OnDropChannel(bool was_clean,
+                                     uint16 code,
+                                     const std::string& reason)
       WARN_UNUSED_RESULT = 0;
 
   // Called when the browser fails the channel, as specified in the spec.

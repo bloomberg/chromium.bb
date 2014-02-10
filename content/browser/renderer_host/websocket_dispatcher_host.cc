@@ -154,9 +154,9 @@ WebSocketHostState WebSocketDispatcherHost::NotifyFailure(
 
 WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
     int routing_id,
+    bool was_clean,
     uint16 code,
     const std::string& reason) {
-  bool was_clean = true;
   if (SendOrDrop(
           new WebSocketMsg_DropChannel(routing_id, was_clean, code, reason)) ==
       WEBSOCKET_HOST_DELETED)

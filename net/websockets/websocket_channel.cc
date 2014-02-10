@@ -321,7 +321,7 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // Abort the in-progress handshake and drop the connection immediately.
     stream_request_.reset();
     state_ = CLOSED;
-    AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure, ""));
+    AllowUnused(DoDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
     return;
   }
   if (state_ != CONNECTED) {
@@ -504,7 +504,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
       stream_->Close();
       DCHECK_NE(CLOSED, state_);
       state_ = CLOSED;
-      return DoDropChannel(kWebSocketErrorAbnormalClosure, "");
+      return DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
   }
 }
 
@@ -568,11 +568,13 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       state_ = CLOSED;
       uint16 code = kWebSocketErrorAbnormalClosure;
       std::string reason = "";
+      bool was_clean = false;
       if (closing_code_ != 0) {
         code = closing_code_;
         reason = closing_reason_;
+        was_clean = (result == ERR_CONNECTION_CLOSED);
       }
-      return DoDropChannel(code, reason);
+      return DoDropChannel(was_clean, code, reason);
   }
 }
 
@@ -859,19 +861,20 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   return parsed_ok;
 }
 
-ChannelState WebSocketChannel::DoDropChannel(uint16 code,
+ChannelState WebSocketChannel::DoDropChannel(bool was_clean,
+                                             uint16 code,
                                              const std::string& reason) {
   if (CHANNEL_DELETED ==
       notification_sender_->SendImmediately(event_interface_.get()))
     return CHANNEL_DELETED;
-  return event_interface_->OnDropChannel(code, reason);
+  return event_interface_->OnDropChannel(was_clean, code, reason);
 }
 
 void WebSocketChannel::CloseTimeout() {
   stream_->Close();
   DCHECK_NE(CLOSED, state_);
   state_ = CLOSED;
-  AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure, ""));
+  AllowUnused(DoDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
   // |this| has been deleted.
 }
 

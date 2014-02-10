@@ -92,7 +92,8 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
                                    const std::vector<char>& data) OVERRIDE;
   virtual ChannelState OnClosingHandshake() OVERRIDE;
   virtual ChannelState OnFlowControl(int64 quota) OVERRIDE;
-  virtual ChannelState OnDropChannel(uint16 code,
+  virtual ChannelState OnDropChannel(bool was_clean,
+                                     uint16 code,
                                      const std::string& reason) OVERRIDE;
   virtual ChannelState OnFailChannel(const std::string& message) OVERRIDE;
   virtual ChannelState OnStartOpeningHandshake(
@@ -151,12 +152,14 @@ ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
   return StateCast(dispatcher_->SendFlowControl(routing_id_, quota));
 }
 
-ChannelState WebSocketEventHandler::OnDropChannel(uint16 code,
+ChannelState WebSocketEventHandler::OnDropChannel(bool was_clean,
+                                                  uint16 code,
                                                   const std::string& reason) {
   DVLOG(3) << "WebSocketEventHandler::OnDropChannel"
-           << " routing_id=" << routing_id_ << " code=" << code
-           << " reason=\"" << reason << "\"";
-  return StateCast(dispatcher_->DoDropChannel(routing_id_, code, reason));
+           << " routing_id=" << routing_id_ << " was_clean=" << was_clean
+           << " code=" << code << " reason=\"" << reason << "\"";
+  return StateCast(
+      dispatcher_->DoDropChannel(routing_id_, was_clean, code, reason));
 }
 
 ChannelState WebSocketEventHandler::OnFailChannel(const std::string& message) {

@@ -244,7 +244,9 @@ class NET_EXPORT WebSocketChannel {
   // Drop this channel.
   // If there are pending opening handshake notifications, notify them
   // before dropping.
-  ChannelState DoDropChannel(uint16 code, const std::string& reason);
+  ChannelState DoDropChannel(bool was_clean,
+                             uint16 code,
+                             const std::string& reason);
 
   // Called if the closing handshake times out. Closes the connection and
   // informs the |event_interface_| if appropriate.

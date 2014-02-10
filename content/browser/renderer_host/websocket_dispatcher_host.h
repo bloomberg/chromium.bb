@@ -104,6 +104,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // channel.
   WebSocketHostState DoDropChannel(
       int routing_id,
+      bool was_clean,
       uint16 code,
       const std::string& reason) WARN_UNUSED_RESULT;
 

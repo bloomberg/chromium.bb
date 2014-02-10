@@ -152,8 +152,8 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
   MOCK_METHOD1(OnFlowControl, ChannelState(int64));  // NOLINT
   MOCK_METHOD0(OnClosingHandshake, ChannelState(void));  // NOLINT
   MOCK_METHOD1(OnFailChannel, ChannelState(const std::string&));  // NOLINT
-  MOCK_METHOD2(OnDropChannel,
-               ChannelState(uint16, const std::string&));  // NOLINT
+  MOCK_METHOD3(OnDropChannel,
+               ChannelState(bool, uint16, const std::string&));  // NOLINT
 
   // We can't use GMock with scoped_ptr.
   ChannelState OnStartOpeningHandshake(
@@ -192,7 +192,8 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
   virtual ChannelState OnFailChannel(const std::string& message) OVERRIDE {
     return CHANNEL_DELETED;
   }
-  virtual ChannelState OnDropChannel(uint16 code,
+  virtual ChannelState OnDropChannel(bool was_clean,
+                                     uint16 code,
                                      const std::string& reason) OVERRIDE {
     return CHANNEL_DELETED;
   }
@@ -854,7 +855,8 @@ class ChannelDeletingFakeWebSocketEventInterface
     return fixture_->DeleteIfDeleting(EVENT_ON_FAIL_CHANNEL);
   }
 
-  virtual ChannelState OnDropChannel(uint16 code,
+  virtual ChannelState OnDropChannel(bool was_clean,
+                                     uint16 code,
                                      const std::string& reason) OVERRIDE {
     return fixture_->DeleteIfDeleting(EVENT_ON_DROP_CHANNEL);
   }
@@ -889,7 +891,7 @@ class WebSocketChannelEventInterfaceTest : public WebSocketChannelTest {
     DefaultValue<ChannelState>::Set(CHANNEL_ALIVE);
     ON_CALL(*event_interface_, OnAddChannelResponse(true, _, _))
         .WillByDefault(Return(CHANNEL_DELETED));
-    ON_CALL(*event_interface_, OnDropChannel(_, _))
+    ON_CALL(*event_interface_, OnDropChannel(_, _, _))
         .WillByDefault(Return(CHANNEL_DELETED));
     ON_CALL(*event_interface_, OnFailChannel(_))
         .WillByDefault(Return(CHANNEL_DELETED));
@@ -1329,9 +1331,10 @@ TEST_F(WebSocketChannelEventInterfaceTest, CloseAfterHandshake) {
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(*event_interface_, OnClosingHandshake());
-    EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorInternalServerError,
-                              "Internal Server Error"));
+    EXPECT_CALL(
+        *event_interface_,
+        OnDropChannel(
+            true, kWebSocketErrorInternalServerError, "Internal Server Error"));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -1350,7 +1353,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectionCloseAfterHandshake) {
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _));
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -1519,7 +1522,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, AsyncAbnormalClosure) {
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _));
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -1538,7 +1541,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectionReset) {
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _));
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -1762,7 +1765,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailedWrite) {
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _));
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _));
     EXPECT_CALL(checkpoint, Call(2));
   }
 
@@ -1781,7 +1784,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, SendCloseDropsChannel) {
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
     EXPECT_CALL(*event_interface_, OnFlowControl(_));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketNormalClosure, "Fred"));
+                OnDropChannel(true, kWebSocketNormalClosure, "Fred"));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -1794,7 +1797,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, SendCloseDropsChannel) {
 // OnDropChannel.
 TEST_F(WebSocketChannelEventInterfaceTest, CloseDuringConnection) {
   EXPECT_CALL(*event_interface_,
-              OnDropChannel(kWebSocketErrorAbnormalClosure, ""));
+              OnDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
 
   CreateChannelAndConnect();
   channel_->StartClosingHandshake(kWebSocketNormalClosure, "Joe");
@@ -1808,7 +1811,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnDropChannelCalledOnce) {
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
 
   EXPECT_CALL(*event_interface_,
-              OnDropChannel(kWebSocketErrorAbnormalClosure, ""))
+              OnDropChannel(false, kWebSocketErrorAbnormalClosure, ""))
       .Times(1);
 
   CreateChannelAndConnectSuccessfully();
@@ -1832,7 +1835,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, CloseWithNoPayloadGivesStatus1005) {
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
   EXPECT_CALL(*event_interface_, OnClosingHandshake());
   EXPECT_CALL(*event_interface_,
-              OnDropChannel(kWebSocketErrorNoStatusReceived, _));
+              OnDropChannel(true, kWebSocketErrorNoStatusReceived, _));
 
   CreateChannelAndConnectSuccessfully();
 }
@@ -1852,7 +1855,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
   EXPECT_CALL(*event_interface_, OnClosingHandshake());
   EXPECT_CALL(*event_interface_,
-              OnDropChannel(kWebSocketErrorNoStatusReceived, _));
+              OnDropChannel(true, kWebSocketErrorNoStatusReceived, _));
 
   CreateChannelAndConnectSuccessfully();
 }
@@ -2063,7 +2066,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _))
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _))
         .WillOnce(InvokeClosureReturnDeleted(completion.closure()));
   }
   CreateChannelAndConnectSuccessfully();
@@ -2097,7 +2100,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*event_interface_, OnClosingHandshake());
     EXPECT_CALL(*event_interface_,
-                OnDropChannel(kWebSocketErrorAbnormalClosure, _))
+                OnDropChannel(false, kWebSocketErrorAbnormalClosure, _))
         .WillOnce(InvokeClosureReturnDeleted(completion.closure()));
   }
   CreateChannelAndConnectSuccessfully();
