@@ -16,7 +16,7 @@ InspectorTest.replaceInSource = function(sourceFrame, string, replacement)
 
 InspectorTest.commitSource = function(sourceFrame)
 {
-    sourceFrame._commitEditing();
+    sourceFrame.commitEditing();
 }
 
 InspectorTest.undoSourceEditing = function(sourceFrame)
