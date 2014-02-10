@@ -27,14 +27,20 @@ class CONTENT_EXPORT RTCMediaConstraints
   virtual ~RTCMediaConstraints();
   virtual const Constraints& GetMandatory() const OVERRIDE;
   virtual const Constraints& GetOptional() const OVERRIDE;
-  void AddOptional(const std::string& key, const std::string& value);
   // Adds a mandatory constraint, optionally overriding an existing one.
   // If the constraint is already set and |override_if_exists| is false,
   // the function will return false, otherwise true.
   bool AddMandatory(const std::string& key, const std::string& value,
                     bool override_if_exists);
+  // As above, but against the optional constraints.
+  bool AddOptional(const std::string& key, const std::string& value,
+                   bool override_if_exists);
 
  protected:
+  bool AddConstraint(Constraints* constraints,
+                     const std::string& key,
+                     const std::string& value,
+                     bool override_if_exists);
   Constraints mandatory_;
   Constraints optional_;
 };

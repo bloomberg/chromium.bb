@@ -67,16 +67,24 @@ RTCMediaConstraints::GetOptional() const {
   return optional_;
 }
 
-void RTCMediaConstraints::AddOptional(const std::string& key,
-                                      const std::string& value) {
-  optional_.push_back(Constraint(key, value));
+bool RTCMediaConstraints::AddOptional(const std::string& key,
+                                      const std::string& value,
+                                      bool override_if_exists) {
+  return AddConstraint(&optional_, key, value, override_if_exists);
 }
 
 bool RTCMediaConstraints::AddMandatory(const std::string& key,
                                        const std::string& value,
                                        bool override_if_exists) {
-  for (Constraints::iterator iter = mandatory_.begin();
-       iter != mandatory_.end();
+  return AddConstraint(&mandatory_, key, value, override_if_exists);
+}
+
+bool RTCMediaConstraints::AddConstraint(Constraints* constraints,
+                                        const std::string& key,
+                                        const std::string& value,
+                                        bool override_if_exists) {
+  for (Constraints::iterator iter = constraints->begin();
+       iter != constraints->end();
        ++iter) {
     if (iter->key == key) {
       if (override_if_exists)
@@ -85,7 +93,7 @@ bool RTCMediaConstraints::AddMandatory(const std::string& key,
     }
   }
   // The key wasn't found, add it.
-  mandatory_.push_back(Constraint(key, value));
+  constraints->push_back(Constraint(key, value));
   return true;
 }
 

@@ -408,8 +408,7 @@ MockMediaStreamDependencyFactory::CreateVideoSource(
 
 scoped_refptr<WebAudioCapturerSource>
 MockMediaStreamDependencyFactory::CreateWebAudioSource(
-    blink::WebMediaStreamSource* source,
-    const RTCMediaConstraints& constraints) {
+    blink::WebMediaStreamSource* source) {
   return NULL;
 }
 

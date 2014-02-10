@@ -154,8 +154,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           cricket::VideoCapturer* capturer,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      blink::WebMediaStreamSource* source,
-      const RTCMediaConstraints& constraints) OVERRIDE;
+      blink::WebMediaStreamSource* source) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>

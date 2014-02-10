@@ -171,11 +171,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // specific for a WebAudio source. The created WebAudioCapturerSource
   // instance will function as audio source instead of the default
   // WebRtcAudioCapturer.
-  // The |constraints| will be modified to include the default, mandatory
-  // WebAudio constraints.
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      blink::WebMediaStreamSource* source,
-      const RTCMediaConstraints& constraints);
+      blink::WebMediaStreamSource* source);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::AudioTrackInterface>

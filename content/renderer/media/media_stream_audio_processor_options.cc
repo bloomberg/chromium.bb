@@ -50,7 +50,7 @@ void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints) {
     bool already_set_value;
     if (!webrtc::FindConstraint(constraints, kDefaultAudioConstraints[i].key,
                                 &already_set_value, NULL)) {
-      constraints->AddMandatory(kDefaultAudioConstraints[i].key,
+      constraints->AddOptional(kDefaultAudioConstraints[i].key,
           kDefaultAudioConstraints[i].value, false);
     } else {
       DVLOG(1) << "Constraint " << kDefaultAudioConstraints[i].key
@@ -64,8 +64,8 @@ bool NeedsAudioProcessing(const blink::WebMediaConstraints& constraints,
   RTCMediaConstraints native_constraints(constraints);
   ApplyFixedAudioConstraints(&native_constraints);
   if (effects & media::AudioParameters::ECHO_CANCELLER) {
-    // If platform echo cancellator is enabled, disable the software AEC.
-    native_constraints.AddMandatory(
+    // If platform echo canceller is enabled, disable the software AEC.
+    native_constraints.AddOptional(
         MediaConstraintsInterface::kEchoCancellation,
         MediaConstraintsInterface::kValueFalse, true);
   }

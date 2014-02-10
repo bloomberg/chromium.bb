@@ -63,6 +63,43 @@ struct {
     media::AudioParameters::ECHO_CANCELLER},
 };
 
+// If any platform effects are available, check them against the constraints.
+// Disable effects to match false constraints, but if a constraint is true, set
+// the constraint to false to later disable the software effect.
+//
+// This function may modify both |constraints| and |effects|.
+void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
+                                    int* effects) {
+  if (*effects != media::AudioParameters::NO_EFFECTS) {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
+      bool value;
+      size_t is_mandatory = 0;
+      if (!webrtc::FindConstraint(constraints,
+                                  kConstraintEffectMap[i].constraint,
+                                  &value,
+                                  &is_mandatory) || !value) {
+        // If the constraint is false, or does not exist, disable the platform
+        // effect.
+        *effects &= ~kConstraintEffectMap[i].effect;
+        DVLOG(1) << "Disabling platform effect: "
+                 << kConstraintEffectMap[i].effect;
+      } else if (*effects & kConstraintEffectMap[i].effect) {
+        // If the constraint is true, leave the platform effect enabled, and
+        // set the constraint to false to later disable the software effect.
+        if (is_mandatory) {
+          constraints->AddMandatory(kConstraintEffectMap[i].constraint,
+              webrtc::MediaConstraintsInterface::kValueFalse, true);
+        } else {
+          constraints->AddOptional(kConstraintEffectMap[i].constraint,
+              webrtc::MediaConstraintsInterface::kValueFalse, true);
+        }
+        DVLOG(1) << "Disabling constraint: "
+                 << kConstraintEffectMap[i].constraint;
+      }
+    }
+  }
+}
+
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
   P2PPortAllocatorFactory(
@@ -161,35 +198,9 @@ bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
 
   StreamDeviceInfo device_info = source_data->device_info();
   RTCMediaConstraints constraints = native_audio_constraints;
-
-  // If any platform effects are available, check them against the
-  // constraints. Disable effects to match false constraints, but if a
-  // constraint is true, set the constraint to false to later disable the
-  // software effect.
-  int effects = device_info.device.input.effects;
-  if (effects != media::AudioParameters::NO_EFFECTS) {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
-      bool value;
-      if (!webrtc::FindConstraint(&constraints,
-                                  kConstraintEffectMap[i].constraint, &value,
-                                  NULL) || !value) {
-        // If the constraint is false, or does not exist, disable the platform
-        // effect.
-        effects &= ~kConstraintEffectMap[i].effect;
-        DVLOG(1) << "Disabling constraint: "
-            << kConstraintEffectMap[i].constraint;
-      } else if (effects & kConstraintEffectMap[i].effect) {
-        // If the constraint is true, leave the platform effect enabled, and
-        // set the constraint to false to later disable the software effect.
-        constraints.AddMandatory(kConstraintEffectMap[i].constraint,
-                                 webrtc::MediaConstraintsInterface::kValueFalse,
-                                 true);
-        DVLOG(1) << "Disabling platform effect: "
-            << kConstraintEffectMap[i].constraint;
-      }
-    }
-    device_info.device.input.effects = effects;
-  }
+  // May modify both |constraints| and |effects|.
+  HarmonizeConstraintsAndEffects(&constraints,
+                                 &device_info.device.input.effects);
 
   scoped_refptr<WebRtcAudioCapturer> capturer(
       CreateAudioCapturer(render_view_id, device_info, audio_constraints));
@@ -271,20 +282,12 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
   MediaStreamAudioSource* source_data =
       static_cast<MediaStreamAudioSource*>(source.extraData());
 
-  // In the future the constraints will belong to the track itself, but
-  // right now they're on the source, so we fetch them from there.
-  RTCMediaConstraints track_constraints(source.constraints());
-
-  // Apply default audio constraints that enable echo cancellation,
-  // automatic gain control, noise suppression and high-pass filter.
-  ApplyFixedAudioConstraints(&track_constraints);
-
   scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
-      webaudio_source = CreateWebAudioSource(&source, track_constraints);
+      webaudio_source = CreateWebAudioSource(&source);
       source_data =
           static_cast<MediaStreamAudioSource*>(source.extraData());
     } else {
@@ -596,8 +599,7 @@ MediaStreamDependencyFactory::CreateLocalAudioSource(
 
 scoped_refptr<WebAudioCapturerSource>
 MediaStreamDependencyFactory::CreateWebAudioSource(
-    blink::WebMediaStreamSource* source,
-    const RTCMediaConstraints& constraints) {
+    blink::WebMediaStreamSource* source) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
   DCHECK(GetWebRtcAudioDevice());
 
@@ -607,7 +609,7 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
-  source_data->SetLocalAudioSource(CreateLocalAudioSource(&constraints).get());
+  source_data->SetLocalAudioSource(CreateLocalAudioSource(NULL).get());
   source->setExtraData(source_data);
 
   // Replace the default source with WebAudio as source instead.
