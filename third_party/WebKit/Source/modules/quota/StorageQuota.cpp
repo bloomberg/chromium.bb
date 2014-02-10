@@ -70,8 +70,6 @@ blink::WebStorageQuotaType stringToStorageQuotaType(const String& type)
 
 } // namespace
 
-DEFINE_GC_INFO(StorageQuota);
-
 StorageQuota::StorageQuota()
 {
     ScriptWrappable::init(this);

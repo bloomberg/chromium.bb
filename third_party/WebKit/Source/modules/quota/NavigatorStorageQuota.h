@@ -32,12 +32,11 @@
 #define NavigatorStorageQuota_h
 
 #include "core/frame/DOMWindowProperty.h"
-#include "heap/Handle.h"
-#include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
 
+class DeprecatedStorageQuota;
 class Frame;
 class Navigator;
 class StorageQuota;
@@ -59,9 +58,9 @@ private:
     explicit NavigatorStorageQuota(Frame*);
     static const char* supplementName();
 
-    mutable RefPtrWillBePersistent<StorageQuota> m_storageQuota;
-    mutable RefPtrWillBePersistent<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtrWillBePersistent<DeprecatedStorageQuota> m_persistentStorage;
+    mutable RefPtr<StorageQuota> m_storageQuota;
+    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore

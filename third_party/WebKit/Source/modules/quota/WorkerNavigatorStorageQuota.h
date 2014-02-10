@@ -33,11 +33,12 @@
 
 #include "core/frame/DOMWindowProperty.h"
 #include "core/workers/WorkerNavigator.h"
-#include "heap/Handle.h"
-#include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
+
+class DeprecatedStorageQuota;
+class WorkerNavigator;
 
 class WorkerNavigatorStorageQuota FINAL : public Supplement<WorkerNavigator> {
 public:
@@ -53,8 +54,8 @@ private:
     explicit WorkerNavigatorStorageQuota();
     static const char* supplementName();
 
-    mutable RefPtrWillBePersistent<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtrWillBePersistent<DeprecatedStorageQuota> m_persistentStorage;
+    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore
