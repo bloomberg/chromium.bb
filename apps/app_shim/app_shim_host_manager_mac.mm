@@ -4,18 +4,23 @@
 
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 
+#include <unistd.h>
+
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_host_mac.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/sha1.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
-#include "ipc/unix_domain_socket_util.h"
 
 using content::BrowserThread;
 
@@ -26,9 +31,24 @@ void CreateAppShimHost(const IPC::ChannelHandle& handle) {
   (new AppShimHost)->ServeChannel(handle);
 }
 
-}  // namespace
+base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
+  base::FilePath temp_dir;
+  CHECK(PathService::Get(base::DIR_TEMP, &temp_dir));
+  // Check that it's shorter than the IPC socket length (104) minus the
+  // intermediate folder ("/chrome-XXXXXX/") and kAppShimSocketShortName.
+  DCHECK_GT(83u, temp_dir.value().length());
+  return temp_dir.Append("chrome-XXXXXX");
+}
 
-const base::FilePath* AppShimHostManager::g_override_user_data_dir_ = NULL;
+void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
+                       const base::FilePath& symlink_path) {
+  if (!directory_in_tmp.empty())
+    base::DeleteFile(directory_in_tmp, true);
+  if (!symlink_path.empty())
+    base::DeleteFile(symlink_path, false);
+}
+
+}  // namespace
 
 AppShimHostManager::AppShimHostManager() {}
 
@@ -42,31 +62,56 @@ void AppShimHostManager::Init() {
 
 AppShimHostManager::~AppShimHostManager() {
   apps::AppShimHandler::SetDefaultHandler(NULL);
+  factory_.reset();
+  base::FilePath symlink_path;
+  if (PathService::Get(chrome::DIR_USER_DATA, &symlink_path))
+    symlink_path = symlink_path.Append(app_mode::kAppShimSocketSymlinkName);
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&DeleteSocketFiles, directory_in_tmp_, symlink_path));
 }
 
 void AppShimHostManager::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath user_data_dir;
-  if (g_override_user_data_dir_) {
-    user_data_dir = *g_override_user_data_dir_;
-  } else if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    LOG(ERROR) << "Couldn't get user data directory while creating App Shim "
-               << "Host manager.";
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return;
+
+  // The socket path must be shorter than 104 chars (IPC::kMaxSocketNameLength).
+  // To accommodate this, we use a short path in /tmp/ that is generated from a
+  // hash of the user data dir.
+  std::string directory_string =
+      GetDirectoryInTmpTemplate(user_data_dir).value();
+
+  // mkdtemp() replaces trailing X's randomly and creates the directory.
+  if (!mkdtemp(&directory_string[0])) {
+    PLOG(ERROR) << directory_string;
     return;
   }
 
+  directory_in_tmp_ = base::FilePath(directory_string);
+  // Check that the directory was created with the correct permissions.
+  int dir_mode = 0;
+  if (!base::GetPosixFilePermissions(directory_in_tmp_, &dir_mode) ||
+      dir_mode != base::FILE_PERMISSION_USER_MASK) {
+    NOTREACHED();
+    return;
+  }
+
+  // IPC::ChannelFactory creates the socket immediately.
   base::FilePath socket_path =
-      user_data_dir.Append(app_mode::kAppShimSocketName);
-  // This mirrors a check in unix_domain_socket_util.cc which will guarantee
-  // failure and spam log files on bots because they have deeply nested paths to
-  // |user_data_dir| when swarming. See http://crbug.com/240554. Shim tests that
-  // run on the bots must override the path using AppShimHostManagerTestApi.
-  if (socket_path.value().length() >= IPC::kMaxSocketNameLength &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    return;
-  }
-
+      directory_in_tmp_.Append(app_mode::kAppShimSocketShortName);
   factory_.reset(new IPC::ChannelFactory(socket_path, this));
+
+  // Create a symlink to the socket in the user data dir. This lets the shim
+  // process started from Finder find the actual socket path by following the
+  // symlink with ::readlink().
+  base::FilePath symlink_path =
+      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+  base::DeleteFile(symlink_path, false);
+  base::CreateSymbolicLink(socket_path, symlink_path);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AppShimHostManager::ListenOnIOThread, this));

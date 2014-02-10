@@ -14,6 +14,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -109,6 +110,9 @@ class AppShimController : public IPC::Listener {
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
 
+  // Create a channel from |socket_path| and send a LaunchApp message.
+  void CreateChannelAndSendLaunchApp(const base::FilePath& socket_path);
+
   // Builds main menu bar items.
   void SetUpMenu();
 
@@ -140,7 +144,8 @@ class AppShimController : public IPC::Listener {
   // Terminates the app shim process.
   void Close();
 
-  IPC::ChannelProxy* channel_;
+  base::FilePath user_data_dir_;
+  scoped_ptr<IPC::ChannelProxy> channel_;
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   bool ping_chrome_reply_received_;
@@ -149,8 +154,7 @@ class AppShimController : public IPC::Listener {
 };
 
 AppShimController::AppShimController()
-    : channel_(NULL),
-      delegate_([[AppShimDelegate alloc] init]),
+    : delegate_([[AppShimDelegate alloc] init]),
       launch_app_done_(false),
       ping_chrome_reply_received_(false) {
   // Since AppShimController is created before the main message loop starts,
@@ -189,15 +193,32 @@ void AppShimController::Init() {
 
   // The user_data_dir for shims actually contains the app_data_path.
   // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/
-  base::FilePath user_data_dir =
-      g_info->user_data_dir.DirName().DirName().DirName();
-  CHECK(!user_data_dir.empty());
+  user_data_dir_ = g_info->user_data_dir.DirName().DirName().DirName();
+  CHECK(!user_data_dir_.empty());
 
-  base::FilePath socket_path =
-      user_data_dir.Append(app_mode::kAppShimSocketName);
+  base::FilePath symlink_path =
+      user_data_dir_.Append(app_mode::kAppShimSocketSymlinkName);
+
+  base::FilePath socket_path;
+  if (!base::ReadSymbolicLink(symlink_path, &socket_path)) {
+    // The path in the user data dir is not a symlink, try connecting directly.
+    CreateChannelAndSendLaunchApp(symlink_path);
+    return;
+  }
+
+  app_mode::VerifySocketPermissions(socket_path);
+
+  CreateChannelAndSendLaunchApp(socket_path);
+}
+
+void AppShimController::CreateChannelAndSendLaunchApp(
+    const base::FilePath& socket_path) {
   IPC::ChannelHandle handle(socket_path.value());
-  channel_ = new IPC::ChannelProxy(handle, IPC::Channel::MODE_NAMED_CLIENT,
-      this, g_io_thread->message_loop_proxy().get());
+  channel_.reset(
+      new IPC::ChannelProxy(handle,
+                            IPC::Channel::MODE_NAMED_CLIENT,
+                            this,
+                            g_io_thread->message_loop_proxy().get()));
 
   bool launched_by_chrome =
       CommandLine::ForCurrentProcess()->HasSwitch(

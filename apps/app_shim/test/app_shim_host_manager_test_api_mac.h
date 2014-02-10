@@ -21,11 +21,11 @@ namespace test {
 
 class AppShimHostManagerTestApi {
  public:
-  static void OverrideUserDataDir(const base::FilePath& user_data_dir);
-
   explicit AppShimHostManagerTestApi(AppShimHostManager* host_manager);
 
   IPC::ChannelFactory* factory();
+
+  const base::FilePath& directory_in_tmp();
 
  private:
   AppShimHostManager* host_manager_;  // Not owned.

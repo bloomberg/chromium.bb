@@ -23,8 +23,11 @@ const AEEventClass kAEChromeAppClass = 'cApp';
 const AEEventID kAEChromeAppPing = 'ping';
 
 // The IPC socket used to communicate between app shims and Chrome will be
-// created under the user data directory with this name.
-extern const char kAppShimSocketName[];
+// created under a temporary directory with this name.
+extern const char kAppShimSocketShortName[];
+// A symlink to allow the app shim to find the socket will be created under the
+// user data dir with this name.
+extern const char kAppShimSocketSymlinkName[];
 
 // Special app mode id used for the App Launcher.
 extern const char kAppListModeId[];
@@ -126,6 +129,10 @@ struct ChromeAppModeInfo {
   // Directory of the profile associated with the app.
   base::FilePath profile_dir;
 };
+
+// Check that the socket and its parent directory have the correct permissions
+// and are owned by the user.
+void VerifySocketPermissions(const base::FilePath& socket_path);
 
 }  // namespace app_mode
 

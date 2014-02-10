@@ -29,7 +29,7 @@ const char kTestAppMode[] = "test_app";
 // A test version of the AppShimController IPC client in chrome_main_app_mode.
 class TestShimClient : public IPC::Listener {
  public:
-  TestShimClient(const base::FilePath& socket_path);
+  TestShimClient();
   virtual ~TestShimClient();
 
   template <class T>
@@ -48,11 +48,19 @@ class TestShimClient : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(TestShimClient);
 };
 
-TestShimClient::TestShimClient(const base::FilePath& socket_path)
-    : io_thread_("TestShimClientIO") {
+TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
   base::Thread::Options io_thread_options;
   io_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(io_thread_options);
+
+  base::FilePath user_data_dir;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  base::FilePath symlink_path =
+      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+
+  base::FilePath socket_path;
+  CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
+  app_mode::VerifySocketPermissions(socket_path);
 
   IPC::ChannelHandle handle(socket_path.value());
   channel_.reset(new IPC::ChannelProxy(handle, IPC::Channel::MODE_NAMED_CLIENT,
@@ -86,7 +94,6 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   // InProcessBrowserTest overrides:
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void TearDownOnMainThread() OVERRIDE;
-  virtual bool SetUpUserDataDirectory() OVERRIDE;
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
@@ -101,13 +108,11 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
 
   scoped_ptr<TestShimClient> test_client_;
-  base::FilePath short_socket_path_;
   std::vector<base::FilePath> last_launch_files_;
   apps::AppShimLaunchType last_launch_type_;
 
 private:
   scoped_refptr<content::MessageLoopRunner> runner_;
-  base::ScopedTempDir short_temp_dir_;
 
   int launch_count_;
   int quit_count_;
@@ -148,26 +153,6 @@ void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
   apps::AppShimHandler::RemoveHandler(kTestAppMode);
 }
 
-bool AppShimHostManagerBrowserTest::SetUpUserDataDirectory() {
-  // Create a symlink at /tmp/scoped_dir_XXXXXX/udd that points to the real user
-  // data dir, and use this as the domain socket path. This is required because
-  // there is a path length limit for named sockets that is exceeded in
-  // multi-process test spawning.
-  base::FilePath real_user_data_dir;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &real_user_data_dir));
-  EXPECT_TRUE(
-      short_temp_dir_.CreateUniqueTempDirUnderPath(base::FilePath("/tmp")));
-  base::FilePath shortened_user_data_dir = short_temp_dir_.path().Append("udd");
-  EXPECT_EQ(0, ::symlink(real_user_data_dir.AsUTF8Unsafe().c_str(),
-                         shortened_user_data_dir.AsUTF8Unsafe().c_str()));
-
-  test::AppShimHostManagerTestApi::OverrideUserDataDir(shortened_user_data_dir);
-  short_socket_path_ =
-      shortened_user_data_dir.Append(app_mode::kAppShimSocketName);
-
-  return InProcessBrowserTest::SetUpUserDataDirectory();
-}
-
 void AppShimHostManagerBrowserTest::OnShimLaunch(
     apps::AppShimHandler::Host* host,
     apps::AppShimLaunchType launch_type,
@@ -187,7 +172,7 @@ void AppShimHostManagerBrowserTest::OnShimQuit(
 
 // Test regular launch, which would ask Chrome to launch the app.
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchNormal) {
-  test_client_.reset(new TestShimClient(short_socket_path_));
+  test_client_.reset(new TestShimClient());
   test_client_->Send(new AppShimHostMsg_LaunchApp(
       browser()->profile()->GetPath(),
       kTestAppMode,
@@ -201,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchNormal) {
 
 // Test register-only launch, used when Chrome has already launched the app.
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchRegisterOnly) {
-  test_client_.reset(new TestShimClient(short_socket_path_));
+  test_client_.reset(new TestShimClient());
   test_client_->Send(new AppShimHostMsg_LaunchApp(
       browser()->profile()->GetPath(),
       kTestAppMode,
@@ -230,43 +215,57 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
   EXPECT_TRUE(test_api.factory());
 }
 
-// Test for AppShimHostManager that fails to create the socket.
-class AppShimHostManagerBrowserTestFailsCreate :
-    public AppShimHostManagerBrowserTest {
+// Tests for the files created by AppShimHostManager.
+class AppShimHostManagerBrowserTestSocketFiles
+    : public AppShimHostManagerBrowserTest {
  public:
-  AppShimHostManagerBrowserTestFailsCreate() {}
+  AppShimHostManagerBrowserTestSocketFiles() {}
+
+ protected:
+  base::FilePath directory_in_tmp_;
+  base::FilePath symlink_path_;
 
  private:
   virtual bool SetUpUserDataDirectory() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
-  base::ScopedTempDir barrier_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestFailsCreate);
+  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSocketFiles);
 };
 
-bool AppShimHostManagerBrowserTestFailsCreate::SetUpUserDataDirectory() {
+bool AppShimHostManagerBrowserTestSocketFiles::SetUpUserDataDirectory() {
+  // Create an existing symlink. It should be replaced by AppShimHostManager.
   base::FilePath user_data_dir;
-  // Start in the "real" user data dir for this test. This is a meta-test for
-  // the symlinking steps used in the superclass. That is, by putting the
-  // clobber in the actual user data dir, the test will fail if the symlink
-  // does not actually point to the user data dir, since it won't be clobbered.
   EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  base::FilePath socket_path =
-      user_data_dir.Append(app_mode::kAppShimSocketName);
-  // Create a "barrier" to forming the UNIX domain socket. This is just a
-  // pre-existing directory which can not be unlink()ed, in order to place a
-  // named socked there instead.
-  EXPECT_TRUE(barrier_dir_.Set(socket_path));
+  symlink_path_ = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+  base::FilePath temp_dir;
+  PathService::Get(base::DIR_TEMP, &temp_dir);
+  EXPECT_TRUE(base::CreateSymbolicLink(temp_dir.Append("chrome-XXXXXX"),
+                                       symlink_path_));
   return AppShimHostManagerBrowserTest::SetUpUserDataDirectory();
 }
 
-// Test error handling. This is essentially testing for lifetime correctness
-// during startup for unexpected failures.
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestFailsCreate,
-                       SocketFailure) {
+void AppShimHostManagerBrowserTestSocketFiles::
+    TearDownInProcessBrowserTestFixture() {
+  // Check that created files have been deleted.
+  EXPECT_FALSE(base::PathExists(directory_in_tmp_));
+  EXPECT_FALSE(base::PathExists(symlink_path_));
+}
+
+IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
+                       ReplacesSymlinkAndCleansUpFiles) {
+  // Get the directory created by AppShimHostManager.
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_FALSE(test_api.factory());
+  directory_in_tmp_ = test_api.directory_in_tmp();
+
+  // Check that socket files have been created.
+  EXPECT_TRUE(base::PathExists(directory_in_tmp_));
+  EXPECT_TRUE(base::PathExists(symlink_path_));
+
+  // Check that the symlink has been replaced.
+  base::FilePath socket_path;
+  ASSERT_TRUE(base::ReadSymbolicLink(symlink_path_, &socket_path));
+  EXPECT_EQ(app_mode::kAppShimSocketShortName, socket_path.BaseName().value());
 }
 
 }  // namespace

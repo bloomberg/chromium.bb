@@ -56,8 +56,7 @@ class AppShimHostManager
   // Called on the IO thread to begin listening for connections from app shims.
   void ListenOnIOThread();
 
-  // If set, used instead of chrome::DIR_USER_DATA for placing the socket.
-  static const base::FilePath* g_override_user_data_dir_;
+  base::FilePath directory_in_tmp_;
 
   scoped_ptr<IPC::ChannelFactory> factory_;
 

@@ -4,9 +4,12 @@
 
 #include "chrome/common/mac/app_mode_common.h"
 
+#include "base/file_util.h"
+
 namespace app_mode {
 
-const char kAppShimSocketName[] = "App Shim Socket";
+const char kAppShimSocketShortName[] = "Socket";
+const char kAppShimSocketSymlinkName[] = "App Shim Socket";
 
 const char kAppListModeId[] = "app_list";
 
@@ -38,6 +41,14 @@ ChromeAppModeInfo::ChromeAppModeInfo()
 }
 
 ChromeAppModeInfo::~ChromeAppModeInfo() {
+}
+
+void VerifySocketPermissions(const base::FilePath& socket_path) {
+  CHECK(base::PathIsWritable(socket_path));
+  base::FilePath socket_dir = socket_path.DirName();
+  int socket_dir_mode = 0;
+  CHECK(base::GetPosixFilePermissions(socket_dir, &socket_dir_mode));
+  CHECK_EQ(0700, socket_dir_mode);
 }
 
 }  // namespace app_mode

@@ -9,14 +9,6 @@
 
 namespace test {
 
-// static
-void AppShimHostManagerTestApi::OverrideUserDataDir(
-    const base::FilePath& user_data_dir) {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, override_user_data_dir, ());
-  override_user_data_dir = user_data_dir;
-  AppShimHostManager::g_override_user_data_dir_ = &override_user_data_dir;
-}
-
 AppShimHostManagerTestApi::AppShimHostManagerTestApi(
     AppShimHostManager* host_manager)
     : host_manager_(host_manager) {
@@ -25,6 +17,10 @@ AppShimHostManagerTestApi::AppShimHostManagerTestApi(
 
 IPC::ChannelFactory* AppShimHostManagerTestApi::factory() {
   return host_manager_->factory_.get();
+}
+
+const base::FilePath& AppShimHostManagerTestApi::directory_in_tmp() {
+  return host_manager_->directory_in_tmp_;
 }
 
 }  // namespace test
