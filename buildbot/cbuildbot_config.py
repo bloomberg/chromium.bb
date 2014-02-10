@@ -48,6 +48,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'asan-informational',
     'refresh-packages',
     'test-ap',
+    'test-ap-group',
     constants.BRANCH_UTIL_CONFIG,
 )
 
@@ -1352,12 +1353,18 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   boards=['x86-alex'],
 )
 
-internal.add_config('test-ap',
-  vm_tests=None,
+# A test-ap image is just a test image with a special profile enabled.
+# Note that each board enabled for test-ap use has to have the testbed-ap
+# profile linked to from its private overlay.
+_test_ap = internal.derive(
   description='WiFi AP images used in testing',
-  boards=['stumpy', 'panther'],
-  images=['test'],  # We need Python and utilities found only in test.
   profile='testbed-ap',
+  vm_tests=None,
+)
+
+_config.add_group('test-ap-group',
+  _test_ap.add_config('stumpy-test-ap', boards=['stumpy']),
+  _test_ap.add_config('panther-test-ap', boards=['panther']),
 )
 
 ### Master paladin (CQ builder).
