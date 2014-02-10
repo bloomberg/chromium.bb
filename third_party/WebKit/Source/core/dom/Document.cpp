@@ -1572,7 +1572,8 @@ void Document::scheduleStyleRecalc()
 
     ASSERT(shouldCallRecalcStyleForDocument());
 
-    view()->scheduleAnimation();
+    if (!view()->isServicingAnimations())
+        view()->scheduleAnimation();
     m_lifecycle.advanceTo(DocumentLifecycle::StyleRecalcPending);
 
     InspectorInstrumentation::didScheduleStyleRecalculation(this);

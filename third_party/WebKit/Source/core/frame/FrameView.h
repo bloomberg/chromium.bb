@@ -214,6 +214,8 @@ public:
     bool hasEverPainted() const { return m_lastPaintTime; }
     void setNodeToDraw(Node*);
 
+    bool isServicingAnimations() const { return m_servicingAnimations; }
+
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) OVERRIDE;
     virtual void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&) OVERRIDE;
@@ -506,6 +508,8 @@ private:
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
 
     bool m_hasSoftwareFilters;
+
+    bool m_servicingAnimations;
 
     float m_visibleContentScaleFactor;
     IntSize m_inputEventsOffsetForEmulation;

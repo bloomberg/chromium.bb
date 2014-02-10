@@ -156,6 +156,7 @@ FrameView::FrameView(Frame* frame)
     , m_inAutoSize(false)
     , m_didRunAutosize(false)
     , m_hasSoftwareFilters(false)
+    , m_servicingAnimations(false)
     , m_visibleContentScaleFactor(1)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_partialLayout()
@@ -1817,7 +1818,8 @@ void FrameView::scheduleRelayout()
     if (m_hasPendingLayout)
         return;
     m_hasPendingLayout = true;
-    scheduleAnimation();
+    if (!isServicingAnimations())
+        scheduleAnimation();
 }
 
 static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* descendant)
@@ -1866,7 +1868,8 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_hasPendingLayout = true;
-        scheduleAnimation();
+        if (!isServicingAnimations())
+            scheduleAnimation();
     }
 }
 
@@ -1901,6 +1904,8 @@ void FrameView::setNeedsLayout()
 
 void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
+    TemporaryChange<bool> servicing(m_servicingAnimations, true);
+
     for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
