@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+from extensions_paths import SERVER2
 import logging
 import os
 import sys
@@ -53,8 +54,14 @@ def _ReplaceLogging(name, replacement):
 
 
 def ChromiumPath(*path):
-  return os.path.join(
+  abspath = os.path.join(
       sys.path[0], '..', '..', '..', '..', '..', *path)
+  # os.path.relpath kills any trailing '/'.
+  return os.path.relpath(abspath) + ('/' if abspath.endswith('/') else '')
+
+
+def Server2Path(*path):
+  return ChromiumPath(SERVER2, *path)
 
 
 def ReadFile(*path, **read_args):

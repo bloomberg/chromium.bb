@@ -10,6 +10,7 @@ import posixpath
 from urlparse import urlsplit
 
 from file_system_util import CreateURLsFromPaths
+from path_util import AssertIsDirectory
 
 
 Page = namedtuple('Page', 'status, links, anchors, anchor_refs')
@@ -122,6 +123,7 @@ class LinkErrorDetector(object):
     template files. All URLs in |root_pages| are used as the starting nodes for
     the orphaned page search.
     '''
+    AssertIsDirectory(public_path)
     self._file_system = file_system
     self._renderer = renderer
     self._public_path = public_path
@@ -141,9 +143,9 @@ class LinkErrorDetector(object):
     processing the resultant html to pull out all links and anchors.
     '''
     top_level_directories = (
-      ('docs/templates/public', ''),
-      ('docs/static', 'static/'),
-      ('docs/examples', 'extensions/examples/'),
+      ('docs/templates/public/', ''),
+      ('docs/static/', 'static/'),
+      ('docs/examples/', 'extensions/examples/'),
     )
 
     for dirpath, urlprefix in top_level_directories:

@@ -1,12 +1,13 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 from itertools import groupby
 from operator import itemgetter
+import posixpath
 
 from data_source import DataSource
-from extensions_paths import JSON_TEMPLATES
-from extensions_paths import PUBLIC_TEMPLATES
+from extensions_paths import JSON_TEMPLATES, PUBLIC_TEMPLATES
 from future import Gettable, Future
 
 
@@ -58,7 +59,7 @@ class WhatsNewDataSource(DataSource):
 
   def _GenerateWhatsNewDict(self):
     whats_new_json_future = self._parse_cache.GetFromFile(
-        '%s/whats_new.json' % JSON_TEMPLATES)
+        posixpath.join(JSON_TEMPLATES, 'whats_new.json'))
     def _MakeDictByPlatform(platform):
       whats_new_json = whats_new_json_future.Get()
       platform_list = []

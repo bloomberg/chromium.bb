@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from collections import Mapping
+import posixpath
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
@@ -28,7 +29,7 @@ def _GetChannelFromFeatures(api_name, json_fs, filename):
   given |json_fs|. Returns None if channel information for the API cannot be
   located.
   '''
-  feature = json_fs.GetFromFile('%s/%s' % (API, filename)).Get().get(api_name)
+  feature = json_fs.GetFromFile(API + filename).Get().get(api_name)
   if feature is None:
     return None
   if isinstance(feature, Mapping):
@@ -80,7 +81,7 @@ class AvailabilityFinder(object):
     availability information for an API.
     '''
     api_info = self._json_fs.GetFromFile(
-        '%s/api_availabilities.json' % JSON_TEMPLATES).Get().get(api_name)
+        JSON_TEMPLATES + 'api_availabilities.json').Get().get(api_name)
     if api_info is None:
       return None
     if api_info['channel'] == 'stable':
@@ -95,14 +96,14 @@ class AvailabilityFinder(object):
     in which case it is unknown whether the API actually exists there.
     '''
     def under_api_path(path):
-      return '%s/%s' % (API, path)
+      return API + path
 
     if version == 'trunk' or version > _ORIGINAL_FEATURES_MIN_VERSION:
       # API schema filenames switch format to unix_hacker_style.
       api_name = UnixName(api_name)
 
     # |file_system| will cache the results from the ReadSingle() call.
-    filenames = file_system.ReadSingle(API + '/').Get()
+    filenames = file_system.ReadSingle(API).Get()
 
     for ext in ('json', 'idl'):
       filename = '%s.%s' % (api_name, ext)

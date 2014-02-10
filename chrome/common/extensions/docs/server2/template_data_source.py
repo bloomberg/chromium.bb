@@ -10,6 +10,7 @@ from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Collect
+from path_util import AssertIsDirectory
 
 
 class TemplateDataSource(DataSource):
@@ -17,6 +18,7 @@ class TemplateDataSource(DataSource):
   '''
 
   def __init__(self, server_instance, _, partial_dir=PRIVATE_TEMPLATES):
+    AssertIsDirectory(partial_dir)
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         server_instance.host_file_system_provider.GetTrunk())
     self._partial_dir = partial_dir
@@ -24,7 +26,7 @@ class TemplateDataSource(DataSource):
 
   def get(self, path):
     try:
-      return self._template_cache.GetFromFile('%s/%s.html' %
+      return self._template_cache.GetFromFile('%s%s.html' %
           (self._partial_dir, path)).Get()
     except FileNotFoundError:
       logging.warning(traceback.format_exc())

@@ -4,16 +4,17 @@
 
 from file_system import FileSystem, FileNotFoundError, StatInfo
 from future import Future
-from path_util import IsDirectory
+from path_util import AssertIsValid, AssertIsDirectory, IsDirectory
 
 
 def MoveTo(base, obj):
   '''Returns an object as |obj| moved to |base|. That is,
   MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
   '''
+  AssertIsDirectory(base)
   result = {}
   leaf = result
-  for k in base.split('/'):
+  for k in base.rstrip('/').split('/'):
     leaf[k] = {}
     leaf = leaf[k]
   leaf.update(obj)
@@ -37,6 +38,7 @@ def _List(file_system):
   assert isinstance(file_system, dict)
   result = {}
   def update_result(item, path):
+    AssertIsValid(path)
     if isinstance(item, dict):
       if path != '':
         path += '/'
@@ -115,7 +117,8 @@ class TestFileSystem(FileSystem):
   def Read(self, paths):
     for path in paths:
       if path not in self._path_values:
-        return FileNotFoundError.RaiseInFuture(path)
+        return FileNotFoundError.RaiseInFuture(
+            '%s not in %s' % (path, '\n'.join(self._path_values)))
     return Future(value=dict((k, v) for k, v in self._path_values.iteritems()
                              if k in paths))
 

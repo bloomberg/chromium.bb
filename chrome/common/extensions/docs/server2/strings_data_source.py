@@ -17,7 +17,7 @@ class StringsDataSource(DataSource):
         server_instance.host_file_system_provider.GetTrunk())
 
   def _GetStringsData(self):
-    return self._cache.GetFromFile('%s/strings.json' % JSON_TEMPLATES)
+    return self._cache.GetFromFile('%sstrings.json' % JSON_TEMPLATES)
 
   def Cron(self):
     return self._GetStringsData()

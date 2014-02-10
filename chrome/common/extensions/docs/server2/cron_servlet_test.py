@@ -7,6 +7,7 @@ import unittest
 
 from appengine_wrappers import GetAppVersion
 from app_yaml_helper import AppYamlHelper
+from content_providers import IgnoreMissingContentProviders
 from cron_servlet import CronServlet
 from empty_dir_file_system import EmptyDirFileSystem
 from extensions_paths import (
@@ -85,6 +86,7 @@ class CronServletTest(unittest.TestCase):
           read_count=0,
           stat_count=first_run_file_systems[i].GetStatCount()))
 
+  @IgnoreMissingContentProviders
   def testSafeRevision(self):
     test_data = {
       'api': {
@@ -141,8 +143,8 @@ class CronServletTest(unittest.TestCase):
         'static.txt': update
       })
 
-    storage_html_path = '%s/apps/storage.html' % PUBLIC_TEMPLATES
-    static_txt_path = '%s/static.txt' % STATIC_DOCS
+    storage_html_path = PUBLIC_TEMPLATES + 'apps/storage.html'
+    static_txt_path = STATIC_DOCS + 'static.txt'
 
     def create_file_system(revision=None):
       '''Creates a MockFileSystem at |revision| by applying that many |updates|
@@ -233,6 +235,7 @@ class CronServletTest(unittest.TestCase):
                      file_systems[-1].ReadSingle(storage_html_path).Get())
     self.assertEqual('important content!',
                      file_systems[-1].ReadSingle(static_txt_path).Get())
+
 
 if __name__ == '__main__':
   unittest.main()

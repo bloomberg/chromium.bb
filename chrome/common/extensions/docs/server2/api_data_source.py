@@ -5,6 +5,7 @@
 import copy
 import logging
 import os
+import posixpath
 
 from environment import IsPreviewServer
 from extensions_paths import (
@@ -78,9 +79,9 @@ class _JSCModel(object):
     self._disable_refs = disable_refs
     self._availability_finder = availability_finder
     self._api_availabilities = json_cache.GetFromFile(
-        '%s/api_availabilities.json' % JSON_TEMPLATES)
+        posixpath.join(JSON_TEMPLATES, 'api_availabilities.json'))
     self._intro_tables = json_cache.GetFromFile(
-        '%s/intro_tables.json' % JSON_TEMPLATES)
+        posixpath.join(JSON_TEMPLATES, 'intro_tables.json'))
     self._api_features = json_cache.GetFromFile(API_FEATURES)
     self._template_cache = template_cache
     self._event_byname_function = event_byname_function
@@ -373,8 +374,9 @@ class _JSCModel(object):
       'title': 'Availability',
       'content': [{
         'partial': self._template_cache.GetFromFile(
-                       '%s/intro_tables/%s_message.html' %
-                           (PRIVATE_TEMPLATES, status)).Get(),
+          posixpath.join(PRIVATE_TEMPLATES,
+                         'intro_tables',
+                         '%s_message.html' % status)).Get(),
         'version': version
       }]
     }
@@ -446,8 +448,8 @@ class _JSCModel(object):
         # If there is a 'partial' argument and it hasn't already been
         # converted to a Handlebar object, transform it to a template.
         if 'partial' in node:
-          node['partial'] = self._template_cache.GetFromFile('%s/%s' %
-              (PRIVATE_TEMPLATES, node['partial'])).Get()
+          node['partial'] = self._template_cache.GetFromFile(
+              posixpath.join(PRIVATE_TEMPLATES, node['partial'])).Get()
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
 

@@ -49,7 +49,7 @@ file_system = TestFileSystem({
 })
 
 class LinkErrorDetectorTest(unittest.TestCase):
-  def render(self, path):
+  def _Render(self, path):
     try:
       return Response(
           content=file_system.ReadSingle('docs/templates/public/' + path).Get(),
@@ -70,7 +70,7 @@ class LinkErrorDetectorTest(unittest.TestCase):
       (200, 'apps/unreachable.html', '#aoesu', 'target anchor not found')])
 
     link_error_detector = LinkErrorDetector(
-        file_system, self.render, 'templates/public', ('apps/index.html'))
+        file_system, self._Render, 'templates/public/', ('apps/index.html'))
     broken_links = link_error_detector.GetBrokenLinks()
 
     self.assertEqual(expected_broken_links, set(broken_links))
@@ -81,7 +81,7 @@ class LinkErrorDetectorTest(unittest.TestCase):
       'apps/devtools_disconnected.html'])
 
     link_error_detector = LinkErrorDetector(
-        file_system, self.render, 'templates/public', ('apps/crx.html',))
+        file_system, self._Render, 'templates/public/', ('apps/crx.html',))
     orphaned_pages = link_error_detector.GetOrphanedPages()
 
     self.assertEqual(expected_orphaned_pages, set(orphaned_pages))

@@ -12,13 +12,13 @@ from appengine_wrappers import files
 from fake_fetchers import ConfigureFakeFetchers
 from github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
+from test_util import Server2Path
+
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
     ConfigureFakeFetchers()
-    self._base_path = os.path.join(sys.path[0],
-                                   'test_data',
-                                   'github_file_system')
+    self._base_path = Server2Path('test_data', 'github_file_system')
     self._file_system = GithubFileSystem.CreateChromeAppsSamples(
         ObjectStoreCreator.ForTest())
 
@@ -28,7 +28,7 @@ class GithubFileSystemTest(unittest.TestCase):
 
   def testList(self):
     self.assertEqual(json.loads(self._ReadLocalFile('expected_list.json')),
-                     self._file_system.Read(['/']).Get())
+                     self._file_system.Read(['']).Get())
 
   def testRead(self):
     self.assertEqual(self._ReadLocalFile('expected_read.txt'),

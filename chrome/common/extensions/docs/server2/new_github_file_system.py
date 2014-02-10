@@ -16,6 +16,7 @@ from docs_server_utils import StringIdentity
 from file_system import FileNotFoundError, FileSystem, FileSystemError, StatInfo
 from future import Future, Gettable
 from object_store_creator import ObjectStoreCreator
+from path_util import AssertIsDirectory, IsDirectory
 import url_constants
 
 
@@ -79,7 +80,7 @@ class _GithubZipFile(object):
     '''Returns all files within a directory at |path|. Not recursive. Paths
     are returned relative to |path|.
     '''
-    assert path == '' or path.endswith('/')
+    AssertIsDirectory(path)
     return [p[len(path):] for p in self._paths
             if p != path and
                p.startswith(path) and
@@ -120,8 +121,8 @@ class GithubFileSystem(FileSystem):
         fake_fetcher)
 
   def __init__(self, base_url, owner, repo, object_store_creator, Fetcher):
-    self._repo_key = '%s/%s' % (owner, repo)
-    self._repo_url = '%s/%s/%s' % (base_url, owner, repo)
+    self._repo_key = posixpath.join(owner, repo)
+    self._repo_url = posixpath.join(base_url, owner, repo)
     self._username, self._password = _LoadCredentials(object_store_creator)
     self._blobstore = blobstore.AppEngineBlobstore()
     self._fetcher = Fetcher(self._repo_url)
@@ -251,7 +252,7 @@ class GithubFileSystem(FileSystem):
       for path in paths:
         if path not in repo_zip.Paths():
           raise FileNotFoundError('"%s": %s not found' % (self._repo_key, path))
-        if path == '' or path.endswith('/'):
+        if IsDirectory(path):
           reads[path] = repo_zip.List(path)
         else:
           reads[path] = repo_zip.Read(path)
@@ -281,7 +282,7 @@ class GithubFileSystem(FileSystem):
                                  'should be a version cached for it')
 
     stat_info = StatInfo(version)
-    if path == '' or path.endswith('/'):
+    if IsDirectory(path):
       stat_info.child_versions = dict((p, StatInfo(version))
                                       for p in repo_zip.List(path))
     return stat_info

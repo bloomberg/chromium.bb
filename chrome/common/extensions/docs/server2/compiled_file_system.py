@@ -8,7 +8,7 @@ import schema_util
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Gettable, Future
-from path_util import ToDirectory
+from path_util import AssertIsDirectory, AssertIsFile
 from third_party.handlebar import Handlebar
 from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
@@ -206,6 +206,8 @@ class CompiledFileSystem(object):
     apply for the first time the file is fetched; if already cached, |binary|
     will be ignored.
     '''
+    AssertIsFile(path)
+
     try:
       version = self._file_system.Stat(path).version
     except FileNotFoundError:
@@ -226,8 +228,7 @@ class CompiledFileSystem(object):
     '''Calls |compilation_function| on the listing of the files at |path|.
     Assumes that the path given is to a directory.
     '''
-    # TODO(kalman): assert IsDirectory(path)
-    path = ToDirectory(path)
+    AssertIsDirectory(path)
 
     try:
       version = self._file_system.Stat(path).version

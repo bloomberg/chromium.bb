@@ -29,9 +29,10 @@ class RenderServletTest(unittest.TestCase):
         self._Render('storage.html'))
 
   def testChannelRedirect(self):
-    self.assertEqual(
-        Response.Redirect('/extensions/storage.html', permanent=True),
-        self._Render('stable/extensions/storage.html'))
+    for channel in ('stable', 'beta', 'dev', 'trunk'):
+      self.assertEqual(
+          Response.Redirect('/extensions/storage.html', permanent=True),
+          self._Render('%s/extensions/storage.html' % channel))
 
   def testNotFound(self):
     def create_404_response(real_path):
@@ -66,7 +67,7 @@ class RenderServletTest(unittest.TestCase):
     self.assertTrue(response.headers['Content-Type'] in (
         'application/javascript; charset=utf-8',
         'application/x-javascript; charset=utf-8'))
-    self.assertEqual(ReadFile('%s/%s' % (EXAMPLES, sample_file)),
+    self.assertEqual(ReadFile('%s%s' % (EXAMPLES, sample_file)),
                      response.content.ToString())
 
   def testSampleZip(self):
@@ -81,7 +82,7 @@ class RenderServletTest(unittest.TestCase):
     self.assertEqual(200, response.status)
     self.assertEqual('text/css; charset=utf-8',
                      response.headers['Content-Type'])
-    self.assertEqual(ReadFile('%s/%s' % (STATIC_DOCS, static_file)),
+    self.assertEqual(ReadFile('%s%s' % (STATIC_DOCS, static_file)),
                      response.content.ToString())
 
   def testHtmlTemplate(self):
@@ -92,7 +93,7 @@ class RenderServletTest(unittest.TestCase):
                      response.headers.get('Content-Type'))
     # Can't really test rendering all that well.
     self.assertTrue(len(response.content) >
-                    len(ReadFile('%s/%s' % (PUBLIC_TEMPLATES, html_file))))
+                    len(ReadFile('%s%s' % (PUBLIC_TEMPLATES, html_file))))
 
   def testDevelopersGoogleComRedirect(self):
     def assert_redirect(request_path):

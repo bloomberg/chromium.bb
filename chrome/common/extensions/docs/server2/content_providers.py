@@ -12,6 +12,22 @@ from future import Gettable, Future
 from third_party.json_schema_compiler.memoize import memoize
 
 
+_IGNORE_MISSING_CONTENT_PROVIDERS = [False]
+
+
+def IgnoreMissingContentProviders(fn):
+  '''Decorates |fn| to ignore missing content providers during its run.
+  '''
+  def run(*args, **optargs):
+    saved = _IGNORE_MISSING_CONTENT_PROVIDERS[0]
+    _IGNORE_MISSING_CONTENT_PROVIDERS[0] = True
+    try:
+      return fn(*args, **optargs)
+    finally:
+      _IGNORE_MISSING_CONTENT_PROVIDERS[0] = saved
+  return run
+
+
 class ContentProviders(object):
   '''Implements the content_providers.json configuration; see
   chrome/common/extensions/docs/templates/json/content_providers.json for its
@@ -107,8 +123,9 @@ class ContentProviders(object):
       try:
         return callback()
       except:
-        logging.error('Error %s Cron for ContentProvider "%s":\n%s' %
-                      (action, name, traceback.format_exc()))
+        if not _IGNORE_MISSING_CONTENT_PROVIDERS[0]:
+          logging.error('Error %s Cron for ContentProvider "%s":\n%s' %
+                        (action, name, traceback.format_exc()))
         return None
 
     futures = [(name, safe(name,

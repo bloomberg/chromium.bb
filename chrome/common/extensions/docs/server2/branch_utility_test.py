@@ -10,6 +10,7 @@ import unittest
 from branch_utility import BranchUtility, ChannelInfo
 from fake_url_fetcher import FakeUrlFetcher
 from object_store_creator import ObjectStoreCreator
+from test_util import Server2Path
 
 
 class BranchUtilityTest(unittest.TestCase):
@@ -18,7 +19,7 @@ class BranchUtilityTest(unittest.TestCase):
     self._branch_util = BranchUtility(
         os.path.join('branch_utility', 'first.json'),
         os.path.join('branch_utility', 'second.json'),
-        FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
+        FakeUrlFetcher(Server2Path('test_data')),
         ObjectStoreCreator.ForTest())
 
   def testSplitChannelNameFromPath(self):

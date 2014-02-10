@@ -17,7 +17,7 @@ from mock_function import MockFunction
 from object_store_creator import ObjectStoreCreator
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
-
+from test_util import Server2Path
 
 
 TABS_UNMODIFIED_VERSIONS = (16, 20, 23, 24)
@@ -28,7 +28,7 @@ class AvailabilityFinderTest(unittest.TestCase):
     self._branch_utility = BranchUtility(
         os.path.join('branch_utility', 'first.json'),
         os.path.join('branch_utility', 'second.json'),
-        FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
+        FakeUrlFetcher(Server2Path('test_data')),
         ObjectStoreCreator.ForTest())
     api_fs_creator = FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
     self._node_fs_creator = FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)

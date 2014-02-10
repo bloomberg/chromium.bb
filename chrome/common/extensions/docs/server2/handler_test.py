@@ -5,17 +5,13 @@
 
 import unittest
 
-from fake_fetchers import ConfigureFakeFetchers
 from handler import Handler
 from servlet import Request
 
 class HandlerTest(unittest.TestCase):
-  def setUp(self):
-    ConfigureFakeFetchers()
 
   def testInvalid(self):
     handler = Handler(Request.ForTest('_notreal'))
-
     self.assertEqual(404, handler.Get().status)
 
 if __name__ == '__main__':

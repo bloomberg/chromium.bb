@@ -5,15 +5,17 @@
 
 import os
 import sys
+import posixpath
 import unittest
 
+from extensions_paths import SERVER2
 from local_file_system import LocalFileSystem
+
 
 class LocalFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._file_system = LocalFileSystem(os.path.join(sys.path[0],
-                                                     'test_data',
-                                                     'file_system'))
+    self._file_system = LocalFileSystem.Create(
+        SERVER2, 'test_data', 'file_system/')
 
   def testReadFiles(self):
     expected = {
@@ -31,6 +33,7 @@ class LocalFileSystemTest(unittest.TestCase):
       expected.append('file%d.html' % i)
     self.assertEqual(expected,
                      sorted(self._file_system.ReadSingle('list/').Get()))
+
 
 if __name__ == '__main__':
   unittest.main()

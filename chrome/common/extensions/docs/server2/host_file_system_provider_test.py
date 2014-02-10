@@ -15,7 +15,7 @@ from test_file_system import TestFileSystem
 
 class HostFileSystemProviderTest(unittest.TestCase):
   def setUp(self):
-    self._idle_path = '%s/idle.json' % API
+    self._idle_path = API + 'idle.json'
     self._canned_data = deepcopy(CANNED_API_FILE_SYSTEM_DATA)
 
   def _constructor_for_test(self, branch, **optargs):

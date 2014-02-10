@@ -25,7 +25,7 @@ class TableOfContentsRenderer(object):
     '''Renders a list of DocumentSections |sections| and returns a tuple
     (text, warnings).
     '''
-    path = '%s/table_of_contents.html' % PRIVATE_TEMPLATES
+    path = '%stable_of_contents.html' % PRIVATE_TEMPLATES
     try:
       table_of_contents_template = self._templates.GetFromFile(path).Get()
     except FileNotFoundError:
@@ -50,7 +50,7 @@ class TableOfContentsRenderer(object):
 
     return self._template_renderer.Render(
         self._templates.GetFromFile(
-            '%s/table_of_contents.html' % PRIVATE_TEMPLATES).Get(),
+            '%stable_of_contents.html' % PRIVATE_TEMPLATES).Get(),
         None,  # no request
         data_sources=('partials'),
         additional_context={'items': toc_items})

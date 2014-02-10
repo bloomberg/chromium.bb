@@ -83,8 +83,6 @@ class TestFileSystemTest(unittest.TestCase):
                      sorted(fs.ReadSingle('').Get()))
     self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
                      sorted(fs.ReadSingle('apps/').Get()))
-    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
-                     sorted(fs.ReadSingle('apps/').Get()))
     self.assertEqual(['file.html'], fs.ReadSingle('apps/fakedir/').Get())
 
   def testStat(self):
@@ -179,11 +177,11 @@ class TestFileSystemTest(unittest.TestCase):
 
   def testMoveTo(self):
     self.assertEqual({'foo': {'a': 'b', 'c': 'd'}},
-                     MoveTo('foo', {'a': 'b', 'c': 'd'}))
+                     MoveTo('foo/', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'a': 'b', 'c': 'd'}}},
-                     MoveTo('foo/bar', {'a': 'b', 'c': 'd'}))
+                     MoveTo('foo/bar/', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'baz': {'a': 'b'}}}},
-                     MoveTo('foo/bar/baz', {'a': 'b'}))
+                     MoveTo('foo/bar/baz/', {'a': 'b'}))
 
 
 if __name__ == '__main__':

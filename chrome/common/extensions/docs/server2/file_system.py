@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 import posixpath
+import traceback
 
 from future import Gettable, Future
-from path_util import IsDirectory, SplitParent, ToDirectory
+from path_util import AssertIsDirectory, AssertIsValid, SplitParent, ToDirectory
 
 
 class _BaseFileSystemException(Exception):
@@ -14,7 +15,8 @@ class _BaseFileSystemException(Exception):
 
   @classmethod
   def RaiseInFuture(cls, message):
-    def boom(): raise cls(message)
+    stack = traceback.format_stack()
+    def boom(): raise cls('%s. Creation stack:\n%s' % (message, ''.join(stack)))
     return Future(delegate=Gettable(boom))
 
 
@@ -77,6 +79,7 @@ class FileSystem(object):
     '''Reads a single file from the FileSystem. Returns a Future with the same
     rules as Read().
     '''
+    AssertIsValid(path)
     read_single = self.Read([path])
     return Future(delegate=Gettable(lambda: read_single.Get()[path]))
 
@@ -88,7 +91,8 @@ class FileSystem(object):
     There are several ways to implement this method via the interface but this
     method exists to do so in a canonical and most efficient way for caching.
     '''
-    if path in ('', '/'):
+    AssertIsValid(path)
+    if path == '':
       # There is always a root directory.
       return Future(value=True)
 
@@ -140,11 +144,11 @@ class FileSystem(object):
     If |root| cannot be found, raises a FileNotFoundError.
     For any other failure, raises a FileSystemError.
     '''
-    root = ToDirectory(root)  # TODO(kalman): assert IsDirectory(root)
+    AssertIsDirectory(root)
     basepath = root
 
     def walk(root):
-      assert IsDirectory(root), root
+      AssertIsDirectory(root)
       dirs, files = [], []
 
       for f in self.ReadSingle(root).Get():

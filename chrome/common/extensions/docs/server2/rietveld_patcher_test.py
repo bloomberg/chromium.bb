@@ -13,6 +13,7 @@ from extensions_paths import (
 from fake_fetchers import ConfigureFakeFetchers
 from file_system import FileNotFoundError
 from rietveld_patcher import RietveldPatcher
+from test_util import Server2Path
 import url_constants
 
 
@@ -28,11 +29,10 @@ class RietveldPatcherTest(unittest.TestCase):
         AppEngineUrlFetcher(url_constants.CODEREVIEW_SERVER))
 
   def _ReadLocalFile(self, filename):
-    with open(os.path.join(sys.path[0],
-                           'test_data',
-                           'rietveld_patcher',
-                           'expected',
-                           filename), 'r') as f:
+    with open(Server2Path('test_data',
+                          'rietveld_patcher',
+                          'expected',
+                          filename), 'r') as f:
       return f.read()
 
   def _ApplySingle(self, path):
@@ -49,7 +49,7 @@ class RietveldPatcherTest(unittest.TestCase):
                            'templates/articles/test_foo.html',
                            'templates/public/extensions/test_foo.html']))
     self.assertEqual(deleted,
-                     ['%s/extensions/runtime.html' % PUBLIC_TEMPLATES])
+                     ['%sextensions/runtime.html' % PUBLIC_TEMPLATES])
     self.assertEqual(
         sorted(modified),
         _PrefixWith(EXTENSIONS, ['api/test.json',
@@ -57,17 +57,17 @@ class RietveldPatcherTest(unittest.TestCase):
                                  'manifest.h']))
 
   def testApply(self):
-    article_path = '%s/test_foo.html' % ARTICLES_TEMPLATES
+    article_path = '%stest_foo.html' % ARTICLES_TEMPLATES
 
     # Apply to an added file.
     self.assertEqual(
         self._ReadLocalFile('test_foo.html'),
-        self._ApplySingle('%s/extensions/test_foo.html' % PUBLIC_TEMPLATES))
+        self._ApplySingle('%sextensions/test_foo.html' % PUBLIC_TEMPLATES))
 
     # Apply to a modified file.
     self.assertEqual(
         self._ReadLocalFile('extensions_sidenav.json'),
-        self._ApplySingle('%s/extensions_sidenav.json' % JSON_TEMPLATES))
+        self._ApplySingle('%sextensions_sidenav.json' % JSON_TEMPLATES))
 
     # Applying to a deleted file doesn't throw exceptions. It just returns
     # empty content.

@@ -5,22 +5,24 @@
 
 import json
 import os
-import sys
 import unittest
 
+from extensions_paths import SERVER2
 from fake_url_fetcher import FakeUrlFetcher
 from file_system import FileSystemError, StatInfo
 from subversion_file_system import SubversionFileSystem
-import test_util
+from test_util import ReadFile, Server2Path
 
-_SHARED_FILE_SYSTEM_TEST_DATA = os.path.join(
-    sys.path[0], 'test_data', 'file_system')
-_SUBVERSION_FILE_SYSTEM_TEST_DATA = os.path.join(
-    sys.path[0], 'test_data', 'subversion_file_system')
+
+_SHARED_FILE_SYSTEM_TEST_DATA = Server2Path('test_data', 'file_system')
+_SUBVERSION_FILE_SYSTEM_TEST_DATA = Server2Path(
+    'test_data', 'subversion_file_system')
+
 
 def _CreateSubversionFileSystem(path):
   fetcher = FakeUrlFetcher(path)
   return SubversionFileSystem(fetcher, fetcher, path), fetcher
+
 
 class SubversionFileSystemTest(unittest.TestCase):
   def testReadFiles(self):
@@ -61,8 +63,8 @@ class SubversionFileSystemTest(unittest.TestCase):
     self.assertTrue(*fetcher.CheckAndReset(sync_count=1))
     expected = StatInfo(
       '151113',
-      child_versions=json.loads(test_util.ReadFile('%s/stat_result.json' %
-          _SHARED_FILE_SYSTEM_TEST_DATA)))
+      child_versions=json.loads(ReadFile(
+          SERVER2, 'test_data', 'file_system', 'stat_result.json')))
     self.assertEqual(expected, stat_info)
 
   def testFileStat(self):

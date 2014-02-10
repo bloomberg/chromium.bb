@@ -25,8 +25,10 @@ from handler import Handler
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
+from path_util import AssertIsValid
 from servlet import Request
-from test_util import ChromiumPath, DisableLogging, EnableLogging, ReadFile
+from test_util import (
+    ChromiumPath, DisableLogging, EnableLogging, ReadFile, Server2Path)
 
 
 # Arguments set up if __main__ specifies them.
@@ -92,8 +94,11 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       response = Handler(Request.ForTest('/_cron')).Get()
-      self.assertEqual(200, response.status)
-      self.assertEqual('Success', response.content.ToString())
+      if response:
+        self.assertEqual(200, response.status)
+        self.assertEqual('Success', response.content.ToString())
+      else:
+        self.fail('No response for _cron')
     finally:
       print('Took %s seconds' % (time.time() - start_time))
 
@@ -120,7 +125,7 @@ class IntegrationTest(unittest.TestCase):
     #broken_links_set = set(broken_links)
 
     #known_broken_links_path = os.path.join(
-    #    sys.path[0], 'known_broken_links.json')
+    #    Server2Path('known_broken_links.json'))
     #try:
     #  with open(known_broken_links_path, 'r') as f:
     #    # The JSON file converts tuples and sets into lists, and for this
@@ -150,7 +155,7 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       for path, content in public_files.iteritems():
-        assert not path.startswith('/')
+        AssertIsValid(path)
         if path.endswith('redirects.json'):
           continue
 

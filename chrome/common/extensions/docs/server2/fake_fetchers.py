@@ -11,6 +11,7 @@ import re
 
 import appengine_wrappers
 from extensions_paths import SERVER2
+from path_util import IsDirectory
 from test_util import ReadFile, ChromiumPath
 import url_constants
 
@@ -53,14 +54,14 @@ def _ExtractPathFromSvnUrl(url):
 
 class _FakeSubversionServer(_FakeFetcher):
   def fetch(self, url):
-    path = ChromiumPath(_ExtractPathFromSvnUrl(url))
-    if self._IsDir(path):
+    path = _ExtractPathFromSvnUrl(url)
+    if IsDirectory(path):
       html = ['<html>Revision 000000']
       try:
-        for f in self._ListDir(path):
+        for f in self._ListDir(ChromiumPath(path)):
           if f.startswith('.'):
             continue
-          if self._IsDir(os.path.join(path, f)):
+          if self._IsDir(ChromiumPath(path, f)):
             html.append('<a>' + f + '/</a>')
           else:
             html.append('<a>' + f + '</a>')

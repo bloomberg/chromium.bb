@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 import os
+import posixpath
 
 from future import Gettable, Future
+from path_util import AssertIsDirectory, IsDirectory
 
 
 class _Response(object):
@@ -58,7 +60,7 @@ class FakeUrlFetcher(object):
   def _DoFetch(self, url):
     url = url.rsplit('?', 1)[0]
     result = _Response()
-    if url.endswith('/'):
+    if IsDirectory(url):
       result.content = self._ListDir(url)
     else:
       result.content = self._ReadFile(url)
@@ -93,6 +95,7 @@ class FakeURLFSFetcher(object):
   '''
 
   def __init__(self, file_system, base_path):
+    AssertIsDirectory(base_path)
     self._base_path = base_path
     self._file_system = file_system
 
@@ -101,7 +104,7 @@ class FakeURLFSFetcher(object):
 
   def Fetch(self, url, **kwargs):
     return _Response(self._file_system.ReadSingle(
-        self._base_path + '/' + url).Get())
+        posixpath.join(self._base_path, url)).Get())
 
 
 class MockURLFetcher(object):

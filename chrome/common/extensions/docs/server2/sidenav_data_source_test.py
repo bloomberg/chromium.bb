@@ -153,7 +153,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     # access will fail.
     # TODO(jshumway): Make a non hack version of this check.
     sidenav_data_source._cache._file_object_store.Get(
-        '%s/chrome_sidenav.json' % JSON_TEMPLATES).Get()._cache_data
+        '%schrome_sidenav.json' % JSON_TEMPLATES).Get()._cache_data
 
 
 if __name__ == '__main__':

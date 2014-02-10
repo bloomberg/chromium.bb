@@ -63,8 +63,8 @@ class PermissionsDataSource(DataSource):
         if not 'anchor' in permission:
           permission['anchor'] = permission['name']
         if 'partial' in permission:
-          permission['description'] = self._template_cache.GetFromFile('%s/%s' %
-              (PRIVATE_TEMPLATES, permission['partial'])).Get()
+          permission['description'] = self._template_cache.GetFromFile(
+              PRIVATE_TEMPLATES + permission['partial']).Get()
           del permission['partial']
 
       def filter_for_platform(permissions, platform):

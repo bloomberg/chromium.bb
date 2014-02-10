@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import posixpath
+
 from compiled_file_system import Unicode
 from extensions_paths import (
     API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
@@ -72,12 +74,12 @@ class FeaturesBundle(object):
         file_system,
         compiled_fs_factory,
         MANIFEST_FEATURES,
-        '%s/manifest.json' % JSON_TEMPLATES)
+        posixpath.join(JSON_TEMPLATES, 'manifest.json'))
     self._permission_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
         PERMISSION_FEATURES,
-        '%s/permissions.json' % JSON_TEMPLATES)
+        posixpath.join(JSON_TEMPLATES, 'permissions.json'))
     self._object_store = object_store_creator.Create(_FeaturesCache, 'features')
 
   def GetPermissionFeatures(self):

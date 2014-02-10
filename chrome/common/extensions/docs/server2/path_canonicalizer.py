@@ -82,9 +82,9 @@ class PathCanonicalizer(object):
 
     try:
       apps_public = self._public_apis.GetFromFileListing(
-          '%s/apps' % PUBLIC_TEMPLATES).Get()
+          '%sapps/' % PUBLIC_TEMPLATES).Get()
       extensions_public = self._public_apis.GetFromFileListing(
-          '%s/extensions' % PUBLIC_TEMPLATES).Get()
+          '%sextensions/' % PUBLIC_TEMPLATES).Get()
     except FileNotFoundError:
       # Probably offline.
       logging.warning(traceback.format_exc())

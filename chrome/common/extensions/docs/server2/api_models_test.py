@@ -83,25 +83,25 @@ class APIModelsTest(unittest.TestCase):
     self.assertEqual('devtools.inspectedWindow',
                      get_model_name('devtools/inspected_window.json'))
     self.assertEqual('devtools.inspectedWindow',
-                     get_model_name('%s/devtools/inspected_window.json' % API))
+                     get_model_name(API + 'devtools/inspected_window.json'))
     self.assertEqual('alarms', get_model_name('alarms'))
     self.assertEqual('alarms', get_model_name('alarms.idl'))
-    self.assertEqual('alarms', get_model_name('%s/alarms.idl' % API))
+    self.assertEqual('alarms', get_model_name(API + 'alarms.idl'))
     self.assertEqual('declarativeWebRequest',
                      get_model_name('declarativeWebRequest'))
     self.assertEqual('declarativeWebRequest',
                      get_model_name('declarative_web_request.json'))
     self.assertEqual('declarativeWebRequest',
-                     get_model_name('%s/declarative_web_request.json' % API))
+                     get_model_name(API + 'declarative_web_request.json'))
     self.assertEqual('experimental.accessibility',
                      get_model_name('experimental.accessibility'))
     self.assertEqual('experimental.accessibility',
                      get_model_name('experimental_accessibility.json'))
     self.assertEqual('experimental.accessibility',
-                     get_model_name('%s/experimental_accessibility.json' % API))
+                     get_model_name(API + 'experimental_accessibility.json'))
     self.assertEqual('pageAction', get_model_name('pageAction'))
     self.assertEqual('pageAction', get_model_name('page_action.json'))
-    self.assertEqual('pageAction', get_model_name('%s/page_action.json' % API))
+    self.assertEqual('pageAction', get_model_name(API + 'page_action.json'))
 
   def testGetNonexistentModel(self):
     self.assertRaises(FileNotFoundError,
@@ -109,15 +109,15 @@ class APIModelsTest(unittest.TestCase):
     self.assertRaises(FileNotFoundError,
                       self._api_models.GetModel('notfound.json').Get)
     self.assertRaises(FileNotFoundError,
-                      self._api_models.GetModel('%s/notfound.json' % API).Get)
+                      self._api_models.GetModel(API + 'notfound.json').Get)
     self.assertRaises(FileNotFoundError,
-                      self._api_models.GetModel('%s/alarms.json' % API).Get)
+                      self._api_models.GetModel(API + 'alarms.json').Get)
     self.assertRaises(FileNotFoundError,
                       self._api_models.GetModel('storage').Get)
     self.assertRaises(FileNotFoundError,
-                      self._api_models.GetModel('%s/storage.json' % API).Get)
+                      self._api_models.GetModel(API + 'storage.json').Get)
     self.assertRaises(FileNotFoundError,
-                      self._api_models.GetModel('%s/storage.idl' % API).Get)
+                      self._api_models.GetModel(API + 'storage.idl').Get)
 
   def testSingleFile(self):
     # 2 stats (1 for JSON and 1 for IDL), 1 read (for IDL file which existed).

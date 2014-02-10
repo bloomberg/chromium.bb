@@ -11,6 +11,7 @@ import unittest
 from file_system import FileNotFoundError
 from reference_resolver import ReferenceResolver
 from test_object_store import TestObjectStore
+from test_util import Server2Path
 
 
 class FakeAPIDataSource(object):
@@ -34,7 +35,7 @@ class FakeAPIModels(object):
 
 class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
+    self._base_path = Server2Path('test_data', 'test_json')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

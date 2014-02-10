@@ -32,7 +32,7 @@ class DirectoryZipperTest(unittest.TestCase):
         TestFileSystem(_TEST_DATA))
 
   def testTopZip(self):
-    top_zip = ZipFile(StringIO(self._directory_zipper.Zip('top').Get()))
+    top_zip = ZipFile(StringIO(self._directory_zipper.Zip('top/').Get()))
     self.assertEqual(['top/one.txt', 'top/two/four.txt', 'top/two/three.txt'],
                      sorted(top_zip.namelist()))
     self.assertEqual('one.txt contents', top_zip.read('top/one.txt'))
@@ -40,7 +40,7 @@ class DirectoryZipperTest(unittest.TestCase):
     self.assertEqual('four.txt contents', top_zip.read('top/two/four.txt'))
 
   def testTwoZip(self):
-    two_zip = ZipFile(StringIO(self._directory_zipper.Zip('top/two').Get()))
+    two_zip = ZipFile(StringIO(self._directory_zipper.Zip('top/two/').Get()))
     self.assertEqual(['two/four.txt', 'two/three.txt'],
                      sorted(two_zip.namelist()))
     self.assertEqual('three.txt contents', two_zip.read('two/three.txt'))
@@ -48,7 +48,7 @@ class DirectoryZipperTest(unittest.TestCase):
 
   def testNotFound(self):
     self.assertRaises(FileNotFoundError,
-                      self._directory_zipper.Zip('notfound').Get)
+                      self._directory_zipper.Zip('notfound/').Get)
 
 
 if __name__ == '__main__':

@@ -125,7 +125,7 @@ class CompiledFileSystemTest(unittest.TestCase):
     self.assertEqual('404.html contents',
                      compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual(set(('file.html',)),
-                     set(compiled_fs.GetFromFileListing('apps/fakedir').Get()))
+                     set(compiled_fs.GetFromFileListing('apps/fakedir/').Get()))
 
     compiled_fs._file_system._path_values['404.html'] = 'boom'
     compiled_fs._file_system._path_values['apps/fakedir/'] = [
@@ -133,25 +133,25 @@ class CompiledFileSystemTest(unittest.TestCase):
     self.assertEqual('404.html contents',
                      compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual(set(('file.html',)),
-                     set(compiled_fs.GetFromFileListing('apps/fakedir').Get()))
+                     set(compiled_fs.GetFromFileListing('apps/fakedir/').Get()))
 
     compiled_fs._file_system.IncrementStat()
     self.assertEqual('boom', compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual(set(('file.html', 'boom.html')),
-                     set(compiled_fs.GetFromFileListing('apps/fakedir').Get()))
+                     set(compiled_fs.GetFromFileListing('apps/fakedir/').Get()))
 
   def testFailures(self):
     compiled_fs = _GetTestCompiledFsCreator()(identity, CompiledFileSystemTest)
     self.assertRaises(FileNotFoundError,
                       compiled_fs.GetFromFile('405.html').Get)
     # TODO(kalman): would be nice to test this fails since apps/ is a dir.
-    compiled_fs.GetFromFile('apps/')
+    compiled_fs.GetFromFile('apps')
     #self.assertRaises(SomeError, compiled_fs.GetFromFile, 'apps/')
     self.assertRaises(FileNotFoundError,
                       compiled_fs.GetFromFileListing('nodir/').Get)
     # TODO(kalman): likewise, not a FileNotFoundError.
     self.assertRaises(FileNotFoundError,
-                      compiled_fs.GetFromFileListing('404.html').Get)
+                      compiled_fs.GetFromFileListing('404.html/').Get)
 
   def testCorrectFutureBehaviour(self):
     # Tests that the underlying FileSystem's Read Future has had Get() called

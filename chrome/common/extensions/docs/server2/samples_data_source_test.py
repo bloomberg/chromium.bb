@@ -10,12 +10,12 @@ import unittest
 
 from samples_data_source import SamplesDataSource
 from servlet import Request
+from test_util import Server2Path
+
 
 class SamplesDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join(sys.path[0],
-                                   'test_data',
-                                   'samples_data_source')
+    self._base_path = Server2Path('test_data', 'samples_data_source')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

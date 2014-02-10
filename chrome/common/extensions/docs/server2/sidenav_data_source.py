@@ -4,6 +4,7 @@
 
 import copy
 import logging
+import posixpath
 
 from compiled_file_system import SingleFile, Unicode
 from data_source import DataSource
@@ -91,13 +92,14 @@ class SidenavDataSource(DataSource):
         item['href'] = self._server_instance.base_path + href
 
   def Cron(self):
-    return self._cache.GetFromFile('%s/chrome_sidenav.json' % (JSON_TEMPLATES))
+    return self._cache.GetFromFile(
+        posixpath.join(JSON_TEMPLATES, 'chrome_sidenav.json'))
 
   def get(self, key):
     # TODO(mangini/kalman): Use |key| to decide which sidenav to use,
     # which will require a more complex Cron method.
     sidenav = self._cache.GetFromFile(
-        '%s/chrome_sidenav.json' % JSON_TEMPLATES).Get()
+        posixpath.join(JSON_TEMPLATES, 'chrome_sidenav.json')).Get()
     sidenav = copy.deepcopy(sidenav)
     _AddAnnotations(sidenav,
                     self._server_instance.base_path + self._request.path)

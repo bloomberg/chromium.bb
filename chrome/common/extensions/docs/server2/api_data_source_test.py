@@ -21,6 +21,7 @@ from server_instance import ServerInstance
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.api_data_source.canned_trunk_fs import CANNED_TRUNK_FS_DATA
 from test_file_system import TestFileSystem
+from test_util import Server2Path
 from third_party.json_schema_compiler.memoize import memoize
 
 
@@ -92,7 +93,7 @@ class _FakeTemplateCache(object):
 class APIDataSourceTest(unittest.TestCase):
 
   def setUp(self):
-    self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
+    self._base_path = Server2Path('test_data', 'test_json')
 
     server_instance = ServerInstance.ForTest(
         TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=EXTENSIONS))

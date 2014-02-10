@@ -5,6 +5,7 @@
 import json
 import logging
 from StringIO import StringIO
+import posixpath
 
 from appengine_blobstore import AppEngineBlobstore, BLOBSTORE_GITHUB
 from appengine_url_fetcher import AppEngineUrlFetcher
@@ -12,6 +13,7 @@ from appengine_wrappers import urlfetch, blobstore
 from docs_server_utils import StringIdentity
 from file_system import FileSystem, StatInfo
 from future import Future
+from path_util import IsDirectory
 import url_constants
 from zipfile import ZipFile, BadZipfile
 
@@ -143,7 +145,7 @@ class GithubFileSystem(FileSystem):
       return []
     filenames = zip_file.namelist()
     # Take out parent directory name (GoogleChrome-chrome-app-samples-c78a30f)
-    filenames = [f[len(filenames[0]) - 1:] for f in filenames]
+    filenames = [f[len(filenames[0]):] for f in filenames]
     # Remove the path of the directory we're listing from the filenames.
     filenames = [f[len(path):] for f in filenames
                  if f != path and f.startswith(path)]
@@ -156,7 +158,7 @@ class GithubFileSystem(FileSystem):
       self._GetZip(version)
     result = {}
     for path in paths:
-      if path.endswith('/'):
+      if IsDirectory(path):
         result[path] = self._ListDir(path)
       else:
         result[path] = self._ReadFile(path)
