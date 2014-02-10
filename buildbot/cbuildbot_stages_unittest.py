@@ -863,7 +863,7 @@ class VMTestStageTest(AbstractStageTest):
   def setUp(self):
     for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
                 'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile',
-                'RunDevModeTest'):
+                'RunDevModeTest', 'RunCrosVMTest'):
       self.PatchObject(commands, cmd, autospec=True)
 
     self.StartPatcher(BuilderRunMock())

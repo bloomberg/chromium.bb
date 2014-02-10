@@ -2777,6 +2777,8 @@ class VMTestStage(ArchivingStage):
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self.bot_archive_root)
 
+      commands.RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
+
       if self._run.config.build_type == constants.CANARY_TYPE:
         commands.RunDevModeTest(
             self._build_root, self._current_board, self.GetImageDirSymlink())
