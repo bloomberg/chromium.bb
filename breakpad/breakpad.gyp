@@ -855,5 +855,20 @@
         }
       ],
     }],
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'breakpad_unittests_stripped',
+          'type': 'none',
+          'dependencies': [ 'breakpad_unittests' ],
+          'actions': [{
+            'action_name': 'strip breakpad_unittests',
+            'inputs': [ '<(PRODUCT_DIR)/breakpad_unittests' ],
+            'outputs': [ '<(PRODUCT_DIR)/breakpad_unittests_stripped' ],
+            'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
+          }],
+        }
+      ],
+    }],
   ],
 }

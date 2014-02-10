@@ -253,6 +253,21 @@
     },
   ],
   'conditions': [
+    [ 'OS=="android"', {
+      'targets': [
+        {
+        'target_name': 'sandbox_linux_unittests_stripped',
+        'type': 'none',
+        'dependencies': [ 'sandbox_linux_unittests' ],
+        'actions': [{
+          'action_name': 'strip sandbox_linux_unittests',
+          'inputs': [ '<(PRODUCT_DIR)/sandbox_linux_unittests' ],
+          'outputs': [ '<(PRODUCT_DIR)/sandbox_linux_unittests_stripped' ],
+          'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
+          }],
+        }
+      ],
+    }],
     # Strategy copied from base_unittests_apk in base/base.gyp.
     [ 'OS=="android" and gtest_target_type == "shared_library"', {
       'targets': [
