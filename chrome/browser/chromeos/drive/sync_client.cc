@@ -38,7 +38,7 @@ namespace {
 //
 // TODO(satorux): We should find a way to handle the upload case more nicely,
 // and shorten the delay. crbug.com/134774
-const int kDelaySeconds = 5;
+const int kDelaySeconds = 1;
 
 // The delay constant is used to delay retrying a sync task on server errors.
 const int kLongDelaySeconds = 600;
