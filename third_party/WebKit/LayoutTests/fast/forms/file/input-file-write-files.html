@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="resources/file-drag-common.js"></script>
 </head>
 <body>
 <input type="file" name="file1" id="file1">
@@ -29,18 +30,6 @@ if (window.testRunner) {
     file1.files = file2.files;
     shouldBe("file1.files.length", "1");
     shouldBeEqualToString("file1.files.item(0).name", "bar.txt");
-}
-
-function moveMouseToCenterOfElement(element) {
-    var centerX = element.offsetLeft + element.offsetWidth / 2;
-    var centerY = element.offsetTop + element.offsetHeight / 2;
-    eventSender.mouseMoveTo(centerX, centerY);
-}
-
-function dragFilesOntoInput(input, files) {
-    eventSender.beginDragWithFiles(files);
-    moveMouseToCenterOfElement(input);
-    eventSender.mouseUp();
 }
 </script>
 </body>

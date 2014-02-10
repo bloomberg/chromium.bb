@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="resources/file-drag-common.js"></script>
 <html>
 <head>
 </head>
@@ -28,14 +29,6 @@ function click(x, y) {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseMoveTo(x, y);
-    eventSender.mouseUp();
-}
-
-function dragFilesOntoElement(element, files) {
-    eventSender.beginDragWithFiles(files);
-    var centerX = element.offsetLeft + element.offsetWidth / 2;
-    var centerY = element.offsetTop + element.offsetHeight / 2;
-    eventSender.mouseMoveTo(centerX, centerY);
     eventSender.mouseUp();
 }
 </script>

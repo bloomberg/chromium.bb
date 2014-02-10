@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="resources/file-drag-common.js"></script>
 </head>
 <body>
 <input type="file" id="singleFile" name="upfile" onchange="singleFileSelected()" />
@@ -17,72 +18,72 @@ if (window.testRunner) {
     var multipleFilesInput = document.getElementById("multipleFiles");
 
     debug("Test that the 'change' event is triggered on a single file form when a selected file is changed:");
-    dragFilesOntoInput(singleFileInput, ["foo.txt"]);
+    dragFilesOntoFileInput(singleFileInput, ["foo.txt"]);
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(singleFileInput, ["bar.txt"]);
+    dragFilesOntoFileInput(singleFileInput, ["bar.txt"]);
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(singleFileInput, ["bar.txt"]);
+    dragFilesOntoFileInput(singleFileInput, ["bar.txt"]);
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "false");
+    shouldBeFalse("changeDispatched");
 
-    dragFilesOntoInput(singleFileInput, ["foo.txt"]);
+    dragFilesOntoFileInput(singleFileInput, ["foo.txt"]);
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
     dragFilesOntoButtonInsideFileInput(singleFileInput, ["baz.png"]);
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\baz.png");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
     debug("");
     debug("Test that the 'change' event is triggered on a multiple file form when a selected file is changed:");
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["bar.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["bar.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["bar.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["bar.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "false");
+    shouldBeFalse("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
     debug("Test that the 'change' event is triggered on a multiple file form when selected files are changed:");
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt", "bar.txt", "baz.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt", "bar.txt", "baz.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["foo.txt", "bar.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["bar.txt", "foo.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["bar.txt", "foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "true");
+    shouldBeTrue("changeDispatched");
 
-    dragFilesOntoInput(multipleFilesInput, ["bar.txt", "foo.txt"]);
+    dragFilesOntoFileInput(multipleFilesInput, ["bar.txt", "foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\bar.txt");
-    shouldBe("changeDispatched", "false");
+    shouldBeFalse("changeDispatched");
 }
 
 function singleFileSelected() {
@@ -93,17 +94,9 @@ function multipleFilesSelected() {
     changeDispatched = true;
 }
 
-function moveMouseToCenterOfElement(element) {
-    var centerX = element.offsetLeft + element.offsetWidth / 2;
-    var centerY = element.offsetTop + element.offsetHeight / 2;
-    eventSender.mouseMoveTo(centerX, centerY);
-}
-
-function dragFilesOntoInput(input, files) {
+function dragFilesOntoFileInput(input, files) {
     changeDispatched = false;
-    eventSender.beginDragWithFiles(files);
-    moveMouseToCenterOfElement(input);
-    eventSender.mouseUp();
+    dragFilesOntoInput(input, files);
 }
 
 function dragFilesOntoButtonInsideFileInput(input, files) {

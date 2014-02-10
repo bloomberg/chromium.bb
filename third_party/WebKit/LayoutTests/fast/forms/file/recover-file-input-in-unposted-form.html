@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="resources/file-drag-common.js"></script>
 </head>
 <body onload="test()">
 <form id="form" method="post" enctype="multipart/form-data">
@@ -83,18 +84,6 @@ function expectFileContents(file, contents) {
     var reader = new FileReader();
     reader.readAsText(file, "UTF-8");
     reader.onload = checkFileContents.bind(undefined, contents);
-}
-
-function moveMouseToCenterOfElement(element) {
-    var centerX = element.offsetLeft + element.offsetWidth / 2;
-    var centerY = element.offsetTop + element.offsetHeight / 2;
-    eventSender.mouseMoveTo(centerX, centerY);
-}
-
-function dragFilesOntoInput(input, files) {
-    eventSender.beginDragWithFiles(files);
-    moveMouseToCenterOfElement(input);
-    eventSender.mouseUp();
 }
 </script>
 </body>
