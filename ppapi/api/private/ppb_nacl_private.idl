@@ -165,7 +165,7 @@ interface PPB_NaCl_Private {
    */
   void DispatchEvent([in] PP_Instance instance,
                      [in] PP_NaClEventType event_type,
-                     [in] PP_Var resource_url,
+                     [in] str_t resource_url,
                      [in] PP_Bool length_is_computable,
                      [in] uint64_t loaded_bytes,
                      [in] uint64_t total_bytes);

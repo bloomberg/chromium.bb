@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Nov 29 09:11:40 2013. */
+/* From private/ppb_nacl_private.idl modified Fri Feb  7 16:10:35 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -176,7 +176,7 @@ struct PPB_NaCl_Private_1_0 {
    */
   void (*DispatchEvent)(PP_Instance instance,
                         PP_NaClEventType event_type,
-                        struct PP_Var resource_url,
+                        const char* resource_url,
                         PP_Bool length_is_computable,
                         uint64_t loaded_bytes,
                         uint64_t total_bytes);

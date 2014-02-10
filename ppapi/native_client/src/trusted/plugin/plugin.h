@@ -52,7 +52,6 @@ namespace plugin {
 
 class ErrorInfo;
 class Manifest;
-class ProgressEvent;
 class ScriptablePlugin;
 
 class Plugin : public pp::InstancePrivate {
@@ -447,9 +446,6 @@ class Plugin : public pp::InstancePrivate {
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
   std::map<nacl::string, NaClFileInfoAutoCloser*> url_file_info_map_;
-
-  // Pending progress events.
-  std::queue<ProgressEvent*> progress_events_;
 
   // Used for NexeFileDidOpenContinuation
   int64_t load_start_;

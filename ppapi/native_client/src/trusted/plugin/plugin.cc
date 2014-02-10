@@ -494,34 +494,6 @@ char* Plugin::LookupArgument(const char* key) {
   return NULL;
 }
 
-class ProgressEvent {
- public:
-  ProgressEvent(PP_NaClEventType event_type,
-                const nacl::string& url,
-                Plugin::LengthComputable length_computable,
-                uint64_t loaded_bytes,
-                uint64_t total_bytes) :
-    event_type_(event_type),
-    url_(url),
-    length_computable_(length_computable),
-    loaded_bytes_(loaded_bytes),
-    total_bytes_(total_bytes) { }
-  PP_NaClEventType event_type() const { return event_type_; }
-  const char* url() const { return url_.c_str(); }
-  Plugin::LengthComputable length_computable() const {
-    return length_computable_;
-  }
-  uint64_t loaded_bytes() const { return loaded_bytes_; }
-  uint64_t total_bytes() const { return total_bytes_; }
-
- private:
-  PP_NaClEventType event_type_;
-  nacl::string url_;
-  Plugin::LengthComputable length_computable_;
-  uint64_t loaded_bytes_;
-  uint64_t total_bytes_;
-};
-
 const char* const Plugin::kNaClMIMEType = "application/x-nacl";
 const char* const Plugin::kPnaclMIMEType = "application/x-pnacl";
 
@@ -1398,6 +1370,11 @@ const FileDownloader* Plugin::FindFileDownloader(
   return file_downloader;
 }
 
+void Plugin::ReportSelLdrLoadStatus(int status) {
+  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status),
+                                     is_installed_);
+}
+
 void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type) {
   EnqueueProgressEvent(event_type,
                        NACL_NO_URL,
@@ -1420,53 +1397,13 @@ void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
                  loaded_bytes,
                  total_bytes));
 
-  progress_events_.push(new ProgressEvent(event_type,
-                                          url,
-                                          length_computable,
-                                          loaded_bytes,
-                                          total_bytes));
-  // Note that using callback_factory_ in this way is not thread safe.
-  // If/when EnqueueProgressEvent is callable from another thread, this
-  // will need to change.
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&Plugin::DispatchProgressEvent);
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, callback, 0);
-}
-
-void Plugin::ReportSelLdrLoadStatus(int status) {
-  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status),
-                                     is_installed_);
-}
-
-void Plugin::DispatchProgressEvent(int32_t result) {
-  PLUGIN_PRINTF(("Plugin::DispatchProgressEvent (result=%"
-                 NACL_PRId32 ")\n", result));
-  if (result < 0) {
-    return;
-  }
-  if (progress_events_.empty()) {
-    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent: no pending events\n"));
-    return;
-  }
-  nacl::scoped_ptr<ProgressEvent> event(progress_events_.front());
-  progress_events_.pop();
-  PLUGIN_PRINTF(("Plugin::DispatchProgressEvent ("
-                 "event_type='%d', url='%s', length_computable=%d, "
-                 "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
-                 static_cast<int>(event->event_type()),
-                 event->url(),
-                 static_cast<int>(event->length_computable()),
-                 event->loaded_bytes(),
-                 event->total_bytes()));
-
   nacl_interface_->DispatchEvent(
       pp_instance(),
-      event->event_type(),
-      pp::Var(event->url()).pp_var(),
-      event->length_computable() == LENGTH_IS_COMPUTABLE ? PP_TRUE : PP_FALSE,
-      event->loaded_bytes(),
-      event->total_bytes());
+      event_type,
+      url.c_str(),
+      length_computable == LENGTH_IS_COMPUTABLE ? PP_TRUE : PP_FALSE,
+      loaded_bytes,
+      total_bytes);
 }
 
 bool Plugin::OpenURLFast(const nacl::string& url,

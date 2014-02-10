@@ -23,6 +23,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
@@ -353,18 +354,49 @@ blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   return blink::WebString();
 }
 
+struct ProgressEvent {
+  PP_Instance instance;
+  PP_NaClEventType event_type;
+  std::string resource_url;
+  bool length_is_computable;
+  uint64_t loaded_bytes;
+  uint64_t total_bytes;
+};
+
+void DispatchEventOnMainThread(const ProgressEvent &event);
+
 void DispatchEvent(PP_Instance instance,
                    PP_NaClEventType event_type,
-                   struct PP_Var resource_url,
+                   const char *resource_url,
                    PP_Bool length_is_computable,
                    uint64_t loaded_bytes,
                    uint64_t total_bytes) {
+  ProgressEvent p;
+  p.instance = instance;
+  p.event_type = event_type;
+  p.length_is_computable = PP_ToBool(length_is_computable);
+  p.loaded_bytes = loaded_bytes;
+  p.total_bytes = total_bytes;
+
+  // We have to copy resource_url into our struct manually since we don't have
+  // guarantees about the PP_Var lifetime.
+  p.resource_url = std::string();
+  if (resource_url)
+    p.resource_url = std::string(resource_url);
+
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&DispatchEventOnMainThread, p));
+}
+
+void DispatchEventOnMainThread(const ProgressEvent &event) {
   content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  if (!plugin_instance) {
-    NOTREACHED();
+      content::PepperPluginInstance::Get(event.instance);
+  // The instance may have been destroyed after we were scheduled, so just
+  // return if it's gone.
+  if (!plugin_instance)
     return;
-  }
+
   blink::WebPluginContainer* container = plugin_instance->GetContainer();
   // It's possible that container() is NULL if the plugin has been removed from
   // the DOM (but the PluginInstance is not destroyed yet).
@@ -382,22 +414,22 @@ void DispatchEvent(PP_Instance instance,
   }
   v8::Context::Scope context_scope(context);
 
-  ppapi::StringVar* url_var = ppapi::StringVar::FromPPVar(resource_url);
-  if (url_var) {
+  if (!event.resource_url.empty()) {
     blink::WebString url_string = blink::WebString::fromUTF8(
-        url_var->value().data(), url_var->value().size());
-    blink::WebDOMResourceProgressEvent event(EventTypeToString(event_type),
-                                              PP_ToBool(length_is_computable),
-                                              loaded_bytes,
-                                              total_bytes,
-                                              url_string);
-    container->element().dispatchEvent(event);
+        event.resource_url.data(), event.resource_url.size());
+    blink::WebDOMResourceProgressEvent blink_event(
+        EventTypeToString(event.event_type),
+        event.length_is_computable,
+        event.loaded_bytes,
+        event.total_bytes,
+        url_string);
+    container->element().dispatchEvent(blink_event);
   } else {
-    blink::WebDOMProgressEvent event(EventTypeToString(event_type),
-                                      PP_ToBool(length_is_computable),
-                                      loaded_bytes,
-                                      total_bytes);
-    container->element().dispatchEvent(event);
+    blink::WebDOMProgressEvent blink_event(EventTypeToString(event.event_type),
+                                           event.length_is_computable,
+                                           event.loaded_bytes,
+                                           event.total_bytes);
+    container->element().dispatchEvent(blink_event);
   }
 }
 
