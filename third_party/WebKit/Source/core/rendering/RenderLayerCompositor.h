@@ -324,6 +324,8 @@ private:
 #endif
 
 private:
+    DocumentLifecycle& lifecycle() const;
+
     RenderView* m_renderView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
 

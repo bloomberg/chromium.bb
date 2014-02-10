@@ -53,6 +53,9 @@ public:
         AfterPerformLayout,
         LayoutClean,
 
+        InCompositingUpdate,
+        CompositingClean,
+
         // Once the document starts shuting down, we cannot return
         // to the style/layout/rendering states.
         Stopping,

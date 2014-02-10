@@ -34,17 +34,18 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
+#include "core/frame/DeprecatedScheduleStyleRecalcDuringCompositingUpdate.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/CompositedLayerMapping.h"
@@ -396,8 +397,12 @@ void RenderLayerCompositor::updateCompositingLayers()
     // necessary updates.
 
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
+    // FIXME: Can we assert that we never return here?
     if (m_renderView->needsLayout())
         return;
+
+    lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
+    DocumentLifecycle::Scope lifecycleScope(lifecycle(), DocumentLifecycle::CompositingClean);
 
     if (isMainFrame() && m_renderView->frameView())
         finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
@@ -2416,10 +2421,12 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             break;
         }
         case RootLayerAttachedViaEnclosingFrame: {
+            HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement();
+            ASSERT(ownerElement);
+            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
             // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
             // for the frame's renderer in the parent document.
-            DocumentLifecycle::DeprecatedTransition marker(DocumentLifecycle::AfterPerformLayout, DocumentLifecycle::StyleRecalcPending);
-            m_renderView->document().ownerElement()->scheduleLayerUpdate();
+            ownerElement->scheduleLayerUpdate();
             break;
         }
     }
@@ -2441,8 +2448,10 @@ void RenderLayerCompositor::detachRootLayer()
         else
             m_rootContentLayer->removeFromParent();
 
-        if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement())
+        if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
+            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
             ownerElement->scheduleLayerUpdate();
+        }
         break;
     }
     case RootLayerAttachedViaChromeClient: {
@@ -2480,17 +2489,21 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
         return;
     Frame& frame = m_renderView->frameView()->frame();
 
-    DocumentLifecycle::DeprecatedTransition marker(DocumentLifecycle::AfterPerformLayout, DocumentLifecycle::StyleRecalcPending);
-
     for (Frame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
-        if (child->document() && child->document()->ownerElement())
-            child->document()->ownerElement()->scheduleLayerUpdate();
+        if (!child->document())
+            continue; // FIXME: Can this happen?
+        if (HTMLFrameOwnerElement* ownerElement = child->document()->ownerElement()) {
+            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
+            ownerElement->scheduleLayerUpdate();
+        }
     }
 
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
-    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement())
+    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
+        DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
         ownerElement->scheduleLayerUpdate();
+    }
 }
 
 bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
@@ -2619,6 +2632,11 @@ GraphicsLayerFactory* RenderLayerCompositor::graphicsLayerFactory() const
 Page* RenderLayerCompositor::page() const
 {
     return m_renderView->frameView()->frame().page();
+}
+
+DocumentLifecycle& RenderLayerCompositor::lifecycle() const
+{
+    return m_renderView->document().lifecycle();
 }
 
 String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)

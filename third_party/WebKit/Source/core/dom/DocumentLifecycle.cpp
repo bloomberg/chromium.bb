@@ -137,6 +137,17 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
             return true;
         return false;
     }
+    if (m_state == CompositingClean) {
+        if (state == StyleRecalcPending)
+            return true;
+        if (state == InStyleRecalc)
+            return true;
+        if (state == InPreLayout)
+            return true;
+        if (state == InCompositingUpdate)
+            return true;
+        return false;
+    }
     return false;
 }
 
