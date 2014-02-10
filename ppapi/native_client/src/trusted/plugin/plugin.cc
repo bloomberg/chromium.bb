@@ -985,7 +985,6 @@ void Plugin::NaClManifestBufferReady(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestBufferReady (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
   ErrorInfo error_info;
-  set_manifest_url(nexe_downloader_.url());
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
@@ -1029,9 +1028,6 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
           "NaCl.HttpStatusCodeClass.Manifest.NotInstalledApp",
       nexe_downloader_.status_code());
   ErrorInfo error_info;
-  // The manifest file was successfully opened.  Set the src property on the
-  // plugin now, so that the full url is available to error handlers.
-  set_manifest_url(nexe_downloader_.url());
   NaClFileInfo tmp_info(nexe_downloader_.GetFileInfo());
   NaClFileInfoAutoCloser info(&tmp_info);
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (file_desc=%"
@@ -1160,7 +1156,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   is_installed_ = GetUrlScheme(nmf_resolved_url.AsString()) ==
       SCHEME_CHROME_EXTENSION;
   set_manifest_base_url(nmf_resolved_url.AsString());
-  set_manifest_url(url);
   // Inform JavaScript that a load is starting.
   set_nacl_ready_state(OPENED);
   EnqueueProgressEvent(PP_NACL_EVENT_LOADSTART);

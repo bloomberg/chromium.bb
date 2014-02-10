@@ -172,13 +172,6 @@ class Plugin : public pp::InstancePrivate {
     manifest_base_url_ = url;
   }
 
-  // The URL of the manifest file as set by the "src" attribute.
-  // It is not the fully resolved URL if it was set as relative.
-  const nacl::string& manifest_url() const { return manifest_url_; }
-  void set_manifest_url(const nacl::string& manifest_url) {
-    manifest_url_ = manifest_url;
-  }
-
   // The state of readiness of the plugin.
   enum ReadyState {
     // The trusted plugin begins in this ready state.
