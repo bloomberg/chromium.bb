@@ -117,7 +117,6 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
             || attrName == HTMLNames::formAttr || attrName == HTMLNames::typeAttr;
     case InvalidateOnHRefAttrChange:
         return attrName == HTMLNames::hrefAttr;
-    case InvalidateOnItemAttrChange:
     case DoNotInvalidateOnAttributeChanges:
         return false;
     case InvalidateOnAnyAttrChange:
