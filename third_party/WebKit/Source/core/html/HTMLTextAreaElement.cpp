@@ -364,6 +364,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue)
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
     setFormControlValueMatchesRenderer(true);
+    m_suggestedValue = String();
 
     // Set the caret to the end of the text value.
     if (document().focusedElement() == this) {
