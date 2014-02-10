@@ -36,6 +36,7 @@ class PageCyclerIntlHiRu(test.Test):
   options = {'pageset_repeat_iters': 10}
 
 
+@test.Disabled('win')  # crbug.com/330909
 class PageCyclerIntlJaZh(test.Test):
   test = page_cycler.PageCycler
   page_set = 'page_sets/intl_ja_zh.json'
