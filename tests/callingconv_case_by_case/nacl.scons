@@ -128,14 +128,6 @@ for test_source in ['return_structs.cc',
                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
     node = env.CommandSelLdrTestNacl(test_full_name + '.out',
                                      prog)
-    is_broken = False
-    if (env.Bit('target_x86_32') and env.Bit('bitcode') and
-        test_suffix != '_self'):
-      # Alignment and padding may be off:
-      # https://code.google.com/p/nativeclient/issues/detail?id=3650
-      is_broken = True
-
     env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests',
                                   'nonpexe_tests'],
-                           'run_' + test_full_name + '_test',
-                           is_broken=is_broken)
+                           'run_' + test_full_name + '_test')
