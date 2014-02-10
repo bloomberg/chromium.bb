@@ -793,12 +793,6 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
-# Failing (crashing, timing out) for Mac and Linux debug builds.
-crbug.com/341479 [ Mac Linux Debug ] storage/quota/storageinfo-no-callbacks.html [ Crash Timeout ]
-crbug.com/341479 [ Mac Linux Debug ] storage/quota/storageinfo-request-quota.html [ Crash Timeout ]
-crbug.com/341479 [ Mac Linux Debug ] storage/quota/storagequota-request-persistent-quota.html [ Crash Timeout ]
-crbug.com/341479 [ Mac Linux Debug ] storage/quota/storagequota-request-quota.html [ Crash Timeout ]
-
 crbug.com/311804 [ Mac Win Linux ] storage/quota/storagequota-query-usage.html [ Failure Pass ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
