@@ -50,15 +50,12 @@ def ReadSymsHeader(sym_file):
   Raises:
     ValueError if the first line of |sym_file| is invalid
   """
-  read_it = lambda x: x.readline().split()
-  if isinstance(sym_file, basestring):
-    with open(sym_file, 'r') as f:
-      header = read_it(f)
-  else:
-    header = read_it(sym_file)
+  with cros_build_lib.Open(sym_file) as f:
+    header = f.readline().split()
 
   if header[0] != 'MODULE' or len(header) != 5:
     raise ValueError('header of sym file is invalid')
+
   return SymbolHeader(os=header[1], cpu=header[2], id=header[3], name=header[4])
 
 
