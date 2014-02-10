@@ -32,9 +32,16 @@
 #include "DatabaseClient.h"
 
 #include "core/dom/Document.h"
+#include "core/inspector/InspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 
 namespace WebCore {
+
+DatabaseClient::DatabaseClient()
+    : m_inspectorAgent(0)
+{ }
 
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)
 {
@@ -50,9 +57,25 @@ const char* DatabaseClient::supplementName()
     return "DatabaseClient";
 }
 
+void DatabaseClient::didOpenDatabase(PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
+{
+    if (m_inspectorAgent)
+        m_inspectorAgent->didOpenDatabase(database, domain, name, version);
+}
+
+void DatabaseClient::createInspectorAgentFor(Page* page)
+{
+    ASSERT(!m_inspectorAgent);
+    OwnPtr<InspectorDatabaseAgent> inspectorAgent = InspectorDatabaseAgent::create();
+    m_inspectorAgent = inspectorAgent.get();
+    page->inspectorController().registerModuleAgent(inspectorAgent.release());
+}
+
 void provideDatabaseClientTo(Page* page, PassOwnPtr<DatabaseClient> client)
 {
+    DatabaseClient* clientPtr = client.get();
     page->provideSupplement(DatabaseClient::supplementName(), client);
+    clientPtr->createInspectorAgentFor(page);
 }
 
 void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtr<DatabaseClient> client)

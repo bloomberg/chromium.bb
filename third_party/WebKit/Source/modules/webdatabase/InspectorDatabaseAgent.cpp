@@ -27,17 +27,16 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorDatabaseAgent.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/inspector/InspectorDatabaseResource.h"
-#include "core/inspector/InspectorState.h"
-#include "core/inspector/InstrumentingAgents.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/frame/Frame.h"
 #include "core/html/VoidCallback.h"
+#include "core/inspector/InspectorState.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/InspectorDatabaseResource.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
@@ -224,14 +223,8 @@ InspectorDatabaseAgent::InspectorDatabaseAgent()
 {
 }
 
-void InspectorDatabaseAgent::init()
-{
-    m_instrumentingAgents->setInspectorDatabaseAgent(this);
-}
-
 InspectorDatabaseAgent::~InspectorDatabaseAgent()
 {
-    m_instrumentingAgents->setInspectorDatabaseAgent(0);
 }
 
 void InspectorDatabaseAgent::setFrontend(InspectorFrontend* frontend)

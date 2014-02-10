@@ -363,7 +363,7 @@ interface InspectorInstrumentation {
     [Canvas, Page, CSS]
     void frameDetachedFromParent([Keep] Frame*);
 
-    [Console, Resource, CSS, Database, DOM, Inspector, Canvas, Page, PageDebugger]
+    [Console, Resource, CSS, DOM, Inspector, Canvas, Page, PageDebugger]
     void didCommitLoad([Keep] Frame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
@@ -515,14 +515,6 @@ interface InspectorConsoleInstrumentation {
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title);
-}
-
-interface InspectorDatabaseInstrumentation {
-
-#include "modules/webdatabase/Database.h"
-
-    [Database]
-    void didOpenDatabase(ExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
 }
 
 interface InspectorOverrides {

@@ -37,19 +37,28 @@
 
 namespace WebCore {
 
+class Database;
 class ExecutionContext;
+class InspectorDatabaseAgent;
 class WorkerClients;
 
 class DatabaseClient : public Supplement<Page>, public Supplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
-    DatabaseClient() { }
+    DatabaseClient();
     virtual ~DatabaseClient() { }
 
     virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
 
+    void didOpenDatabase(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
+
     static DatabaseClient* from(ExecutionContext*);
     static const char* supplementName();
+
+    void createInspectorAgentFor(Page*);
+
+private:
+    InspectorDatabaseAgent* m_inspectorAgent;
 };
 
 void provideDatabaseClientTo(Page*, PassOwnPtr<DatabaseClient>);

@@ -506,8 +506,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
 void Page::didCommitLoad(Frame* frame)
 {
     lifecycleNotifier().notifyDidCommitLoad(frame);
-    if (m_mainFrame == frame)
+    if (m_mainFrame == frame) {
         useCounter().didCommitLoad();
+        m_inspectorController->didCommitLoadForMainFrame();
+    }
 }
 
 PageLifecycleNotifier& Page::lifecycleNotifier()

@@ -35,6 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,6 +45,7 @@ class Frame;
 class GraphicsContext;
 class InjectedScriptManager;
 class InspectorBackendDispatcher;
+class InspectorAgent;
 class InspectorClient;
 class InspectorDOMAgent;
 class InspectorFrontend;
@@ -116,6 +118,7 @@ public:
     void willProcessTask();
     void didProcessTask();
 
+    void didCommitLoadForMainFrame();
     void didBeginFrame(int frameId);
     void didCancelFrame();
     void willComposite();
@@ -145,6 +148,7 @@ private:
     Page* m_page;
     InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;
+    Vector<InspectorAgent*> m_moduleAgents;
     bool m_isUnderTest;
     bool m_deferredAgentsInitialized;
 };

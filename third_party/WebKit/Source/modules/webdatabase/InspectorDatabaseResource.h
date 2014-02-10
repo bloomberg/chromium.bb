@@ -28,38 +28,38 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef InspectorDatabaseResource_h
+#define InspectorDatabaseResource_h
 
-#include "core/inspector/InspectorDatabaseResource.h"
-
-#include "modules/webdatabase/Database.h"
+#include "InspectorFrontend.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
+class Database;
+class InspectorFrontend;
 
-static int nextUnusedId = 1;
+class InspectorDatabaseResource : public RefCounted<InspectorDatabaseResource> {
+public:
+    static PassRefPtr<InspectorDatabaseResource> create(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
 
-PassRefPtr<InspectorDatabaseResource> InspectorDatabaseResource::create(PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
-{
-    return adoptRef(new InspectorDatabaseResource(database, domain, name, version));
-}
+    void bind(InspectorFrontend::Database*);
+    Database* database() { return m_database.get(); }
+    void setDatabase(PassRefPtr<Database> database) { m_database = database; }
+    String id() const { return m_id; }
 
-InspectorDatabaseResource::InspectorDatabaseResource(PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
-    : m_database(database)
-    , m_id(String::number(nextUnusedId++))
-    , m_domain(domain)
-    , m_name(name)
-    , m_version(version)
-{
-}
+private:
+    InspectorDatabaseResource(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
 
-void InspectorDatabaseResource::bind(InspectorFrontend::Database* frontend)
-{
-    RefPtr<TypeBuilder::Database::Database> jsonObject = TypeBuilder::Database::Database::create()
-        .setId(m_id)
-        .setDomain(m_domain)
-        .setName(m_name)
-        .setVersion(m_version);
-    frontend->addDatabase(jsonObject);
-}
+    RefPtr<Database> m_database;
+    String m_id;
+    String m_domain;
+    String m_name;
+    String m_version;
+};
 
 } // namespace WebCore
+
+#endif // InspectorDatabaseResource_h

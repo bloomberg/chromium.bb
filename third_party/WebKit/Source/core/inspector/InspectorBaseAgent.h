@@ -54,6 +54,7 @@ public:
     virtual void restore() { }
     virtual void registerInDispatcher(InspectorBackendDispatcher*) = 0;
     virtual void discardAgent() { }
+    virtual void didCommitLoadForMainFrame() { }
 
     String name() { return m_name; }
     void appended(InstrumentingAgents*, InspectorState*);

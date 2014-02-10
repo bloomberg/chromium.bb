@@ -44,7 +44,6 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
-#include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
@@ -92,8 +91,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     OwnPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
-
-    m_agents.append(InspectorDatabaseAgent::create());
 
     OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_domAgent, overlay,
         InspectorTimelineAgent::PageInspector, inspectorClient));
@@ -174,6 +171,7 @@ void InspectorController::inspectedPageDestroyed()
 
 void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)
 {
+    m_moduleAgents.append(agent.get());
     m_agents.append(agent);
 }
 
@@ -413,6 +411,13 @@ void InspectorController::didProcessTask()
         profilerAgent->didProcessTask();
     if (InspectorDOMDebuggerAgent* domDebuggerAgent = m_instrumentingAgents->inspectorDOMDebuggerAgent())
         domDebuggerAgent->didProcessTask();
+}
+
+void InspectorController::didCommitLoadForMainFrame()
+{
+    Vector<InspectorAgent*> agents = m_moduleAgents;
+    for (size_t i = 0; i < agents.size(); i++)
+        agents[i]->didCommitLoadForMainFrame();
 }
 
 void InspectorController::didBeginFrame(int frameId)

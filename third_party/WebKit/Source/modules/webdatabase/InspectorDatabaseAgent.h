@@ -54,7 +54,6 @@ public:
     }
     virtual ~InspectorDatabaseAgent();
 
-    virtual void init() OVERRIDE;
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
