@@ -596,7 +596,12 @@ V8_SET_RETURN_VALUE = {
 
 
 def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False):
-    """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
+    """Returns a statement that converts a C++ value to a V8 value and sets it as a return value.
+
+    release: for union types, can be either False (False for all member types)
+             or a sequence (list or tuple) of booleans (if specified
+             individually).
+    """
     def dom_wrapper_conversion_type():
         if not script_wrappable:
             return 'DOMWrapperDefault'
@@ -610,7 +615,7 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
                                 cpp_value + str(i),
                                 extended_attributes,
                                 script_wrappable,
-                                release[i])
+                                release and release[i])
                 for i, union_member_type in
                 enumerate(idl_type.union_member_types)]
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)

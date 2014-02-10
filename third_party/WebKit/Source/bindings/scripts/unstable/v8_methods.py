@@ -128,6 +128,7 @@ def generate_method(interface, method):
         'property_attributes': property_attributes(method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
+        'union_arguments': union_arguments(idl_type),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
@@ -159,6 +160,10 @@ def generate_argument(interface, method, argument, index):
     }
 
 
+################################################################################
+# Value handling
+################################################################################
+
 def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
@@ -175,6 +180,10 @@ def cpp_value(interface, method, number_of_arguments):
         not method.is_static):
         cpp_arguments.append('imp')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
+    this_union_arguments = union_arguments(method.idl_type)
+    if this_union_arguments:
+        cpp_arguments.extend(this_union_arguments)
+
     if 'RaisesException' in method.extended_attributes:
         cpp_arguments.append('exceptionState')
 
@@ -187,31 +196,24 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     extended_attributes = method.extended_attributes
     if idl_type == 'void':
         return None
+    is_union_type = v8_types.is_union_type(idl_type)
 
     release = False
     # [CallWith=ScriptState], [RaisesException]
     if (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
-        'RaisesException' in extended_attributes):
+        'RaisesException' in extended_attributes or
+        is_union_type):
         # use local variable for value
         cpp_value = 'result'
-        if v8_types.is_interface_type(idl_type):
-            release = True
+
+        if is_union_type:
+            release = [v8_types.is_interface_type(union_member_type)
+                       for union_member_type in idl_type.union_member_types]
+        else:
+            release = v8_types.is_interface_type(idl_type)
 
     script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
     return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
-
-
-# [NotEnumerable]
-def property_attributes(method):
-    extended_attributes = method.extended_attributes
-    property_attributes_list = []
-    if 'NotEnumerable' in extended_attributes:
-        property_attributes_list.append('v8::DontEnum')
-    if 'ReadOnly' in extended_attributes:
-        property_attributes_list.append('v8::ReadOnly')
-    if property_attributes_list:
-        property_attributes_list.insert(0, 'v8::DontDelete')
-    return property_attributes_list
 
 
 def v8_value_to_local_cpp_value(argument, index):
@@ -229,3 +231,29 @@ def v8_value_to_local_cpp_value(argument, index):
         v8_value = 'info[%s]' % index
     return v8_types.v8_value_to_local_cpp_value(
         idl_type, argument.extended_attributes, v8_value, name, index=index)
+
+
+################################################################################
+# Auxiliary functions
+################################################################################
+
+# [NotEnumerable]
+def property_attributes(method):
+    extended_attributes = method.extended_attributes
+    property_attributes_list = []
+    if 'NotEnumerable' in extended_attributes:
+        property_attributes_list.append('v8::DontEnum')
+    if 'ReadOnly' in extended_attributes:
+        property_attributes_list.append('v8::ReadOnly')
+    if property_attributes_list:
+        property_attributes_list.insert(0, 'v8::DontDelete')
+    return property_attributes_list
+
+
+def union_arguments(idl_type):
+    """Return list of ['result0Enabled', 'result0', 'result1Enabled', ...] for union types, for use in setting return value"""
+    if not v8_types.is_union_type(idl_type):
+        return None
+    return [arg
+            for i in range(len(idl_type.union_member_types))
+            for arg in ['result%sEnabled' % i, 'result%s' % i]]

@@ -112,11 +112,11 @@ static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
-    RefPtr<Node> element = collection->item(index);
-    if (!element)
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
+    RefPtr<Node> result = imp->item(index);
+    if (!result)
         return;
-    v8SetReturnValueFast(info, element.release(), collection);
+    v8SetReturnValueFast(info, result.release(), imp);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -128,14 +128,14 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, propertyValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     if (!isUndefinedOrNull(jsValue) && !V8Node::hasInstance(jsValue, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    bool result = collection->anonymousIndexedSetter(index, propertyValue);
+    bool result = imp->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -150,9 +150,9 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    DeleteResult result = collection->anonymousIndexedDeleter(index, exceptionState);
+    DeleteResult result = imp->anonymousIndexedDeleter(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (result != DeleteUnknownProperty)
@@ -173,12 +173,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    RefPtr<Node> element = collection->namedItem(propertyName);
-    if (!element)
+    RefPtr<Node> result = imp->namedItem(propertyName);
+    if (!result)
         return;
-    v8SetReturnValueFast(info, element.release(), collection);
+    v8SetReturnValueFast(info, result.release(), imp);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -195,10 +195,10 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
-    bool result = collection->anonymousNamedSetter(propertyName, propertyValue);
+    bool result = imp->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -213,10 +213,10 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -233,9 +233,9 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
+    DeleteResult result = imp->anonymousNamedDeleter(propertyName);
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
@@ -249,10 +249,10 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

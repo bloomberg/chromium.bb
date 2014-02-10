@@ -5211,11 +5211,11 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObj* collection = V8TestObject::toNative(info.Holder());
-    RefPtr<Node> element = collection->anonymousIndexedGetter(index);
-    if (!element)
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    RefPtr<Node> result = imp->anonymousIndexedGetter(index);
+    if (!result)
         return;
-    v8SetReturnValueFast(info, element.release(), collection);
+    v8SetReturnValueFast(info, result.release(), imp);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -5232,12 +5232,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestObj* collection = V8TestObject::toNative(info.Holder());
+    TestObj* imp = V8TestObject::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String element = collection->anonymousNamedGetter(propertyName);
-    if (element.isNull())
+    String result = imp->anonymousNamedGetter(propertyName);
+    if (result.isNull())
         return;
-    v8SetReturnValueString(info, element, info.GetIsolate());
+    v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -5249,10 +5249,10 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestObj* collection = V8TestObject::toNative(info.Holder());
+    TestObj* imp = V8TestObject::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -5269,10 +5269,10 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestObj* collection = V8TestObject::toNative(info.Holder());
+    TestObj* imp = V8TestObject::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

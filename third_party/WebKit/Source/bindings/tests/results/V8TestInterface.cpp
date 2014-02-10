@@ -455,12 +455,10 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         v8SetReturnValue(info, result0.release());
         return;
     }
-
     if (result1Enabled) {
         v8SetReturnValue(info, result1.release());
         return;
     }
-
     v8SetReturnValueNull(info);
 }
 
@@ -626,25 +624,23 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    bool element0Enabled = false;
-    RefPtr<Node> element0;
-    bool element1Enabled = false;
-    RefPtr<NodeList> element1;
-    collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
-    if (!element0Enabled && !element1Enabled)
+    bool result0Enabled = false;
+    RefPtr<Node> result0;
+    bool result1Enabled = false;
+    RefPtr<NodeList> result1;
+    imp->getItem(propertyName, result0Enabled, result0, result1Enabled, result1);
+    if (!result0Enabled && !result1Enabled)
         return;
-    if (element0Enabled) {
-        v8SetReturnValueFast(info, element0.release(), collection);
-        return;
-    }
-
-    if (element1Enabled) {
-        v8SetReturnValueFast(info, element1.release(), collection);
+    if (result0Enabled) {
+        v8SetReturnValueFast(info, result0.release(), imp);
         return;
     }
-
+    if (result1Enabled) {
+        v8SetReturnValueFast(info, result1.release(), imp);
+        return;
+    }
     v8SetReturnValueNull(info);
 }
 
@@ -664,10 +660,10 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -684,10 +680,10 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

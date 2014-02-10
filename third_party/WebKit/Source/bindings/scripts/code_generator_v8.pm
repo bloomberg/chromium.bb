@@ -3704,15 +3704,15 @@ sub GenerateImplementationIndexedPropertyGetter
 
     my $returnType = $indexedGetterFunction->type;
     my $nativeType = GetNativeType($returnType);
-    my $nativeValue = "element";
+    my $nativeValue = "result";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-    my $isNull = GenerateIsNullExpression($returnType, "element");
-    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "collection", "", "return");
+    my $isNull = GenerateIsNullExpression($returnType, "result");
+    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "imp", "", "return");
     my $raisesExceptions = $indexedGetterFunction->extendedAttributes->{"RaisesException"};
-    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
+    my $methodCallCode = GenerateMethodCall($returnType, "result", "imp->${methodName}", "index", $raisesExceptions);
     my $getterCode = "static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $getterCode .= "{\n";
-    $getterCode .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $getterCode .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
         $getterCode .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
     }
@@ -3811,7 +3811,7 @@ sub GenerateImplementationIndexedPropertySetter
     $code .= "{\n";
 
     my $asSetterValue = 0;
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
     my $extraArguments = "";
@@ -3832,7 +3832,7 @@ sub GenerateImplementationIndexedPropertySetter
 END
     }
 
-    $code .= "    bool result = collection->${methodName}(index, propertyValue$extraArguments);\n";
+    $code .= "    bool result = imp->${methodName}(index, propertyValue$extraArguments);\n";
 
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
@@ -4058,7 +4058,7 @@ sub GenerateMethodCall
         return $code;
     } else {
         my $nativeType = GetNativeType($returnType);
-        return "    ${nativeType} element = ${functionExpression}(" . (join ", ", @arguments) . ");"
+        return "    ${nativeType} result = ${functionExpression}(" . (join ", ", @arguments) . ");"
     }
 }
 
@@ -4071,12 +4071,12 @@ sub GenerateImplementationNamedPropertyGetter
     my $methodName = GetImplName($namedGetterFunction) || "anonymousNamedGetter";
 
     my $returnType = $namedGetterFunction->type;
-    my $isNull = GenerateIsNullExpression($returnType, "element");
-    my $nativeValue = "element";
+    my $isNull = GenerateIsNullExpression($returnType, "result");
+    my $nativeValue = "result";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "collection", "", "return");
+    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "imp", "", "return");
     my $raisesExceptions = $namedGetterFunction->extendedAttributes->{"RaisesException"};
-    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
+    my $methodCallCode = GenerateMethodCall($returnType, "result", "imp->${methodName}", "propertyName", $raisesExceptions);
 
     my $code = "static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
@@ -4087,7 +4087,7 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "        return;\n";
         $code .= "\n";
     }
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
@@ -4129,7 +4129,7 @@ sub GenerateImplementationNamedPropertySetter
     }
 
     my $asSetterValue = 0;
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
@@ -4141,7 +4141,7 @@ sub GenerateImplementationNamedPropertySetter
         }
     }
 
-    $code .= "    bool result = collection->$methodName(propertyName, propertyValue$extraArguments);\n";
+    $code .= "    bool result = imp->$methodName(propertyName, propertyValue$extraArguments);\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
@@ -4165,13 +4165,13 @@ sub GenerateImplementationIndexedPropertyDeleter
 
     my $code = "static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
         $extraArguments = ", exceptionState";
     }
-    $code .= "    DeleteResult result = collection->${methodName}(index$extraArguments);\n";
+    $code .= "    DeleteResult result = imp->${methodName}(index$extraArguments);\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
@@ -4194,14 +4194,14 @@ sub GenerateImplementationNamedPropertyDeleter
 
     my $code = "static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
         $extraArguments .= ", exceptionState";
     }
-    $code .= "    DeleteResult result = collection->${methodName}(propertyName$extraArguments);\n";
+    $code .= "    DeleteResult result = imp->${methodName}(propertyName$extraArguments);\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
@@ -4221,10 +4221,10 @@ sub GenerateImplementationNamedPropertyEnumerator
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
+    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
@@ -4245,10 +4245,10 @@ sub GenerateImplementationNamedPropertyQuery
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
+    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -5730,7 +5730,7 @@ sub NativeToJSValue
               $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";
               $code .= "${returnJSValueCode}\n";
               $code .= "${indent}    return;\n";
-              $code .= "${indent}}\n";
+              $code .= "${indent}}";
             } else {
               $code .= "${indent}if (${unionMemberEnabledVariable})\n";
               $code .= "${returnJSValueCode}";

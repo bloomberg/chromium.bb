@@ -524,32 +524,42 @@ def interface_length(interface, constructors):
 # http://heycam.github.io/webidl/#idl-special-operations
 ################################################################################
 
-def property_getter(getter):
+def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
+        if v8_types.is_union_type(idl_type):
+            return ' && '.join('!result%sEnabled' % i
+                               for i, _ in
+                               enumerate(idl_type.union_member_types))
         if idl_type == 'DOMString':
-            return 'element.isNull()'
+            return 'result.isNull()'
         if is_interface_type(idl_type):
-            return '!element'
+            return '!result'
         return ''
-
-    def union_arguments(idl_type):
-        """Return list of ['element0Enabled', 'element0', 'element1Enabled', ...]"""
-        return [arg
-                for i in range(len(idl_type.union_member_types))
-                for arg in ['element%sEnabled' % i, 'element%s' % i]]
 
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
+    is_raises_exception = 'RaisesException' in extended_attributes
 
-    is_union_type = v8_types.is_union_type(idl_type)
-    if is_union_type:
+    if v8_types.is_union_type(idl_type):
         release = [v8_types.is_interface_type(union_member_type)
                    for union_member_type in idl_type.union_member_types]
     else:
         release = v8_types.is_interface_type(idl_type)
 
+    # FIXME: make more generic, so can use v8_methods.cpp_value
+    cpp_method_name = 'imp->%s' % cpp_name(getter)
+
+    if is_raises_exception:
+        cpp_arguments.append('exceptionState')
+    this_union_arguments = v8_methods.union_arguments(idl_type)
+    if this_union_arguments:
+        cpp_arguments.extend(this_union_arguments)
+
+    cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
+
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_value': cpp_value,
         'is_custom':
             'Custom' in extended_attributes and
             (not extended_attributes['Custom'] or
@@ -560,10 +570,10 @@ def property_getter(getter):
             getter, 'Custom', 'PropertyQuery'),
         'is_enumerable': 'NotEnumerable' not in extended_attributes,
         'is_null_expression': is_null_expression(idl_type),
-        'is_raises_exception': 'RaisesException' in extended_attributes,
+        'is_raises_exception': is_raises_exception,
         'name': cpp_name(getter),
-        'union_arguments': union_arguments(idl_type) if is_union_type else None,
-        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection', release=release),
+        'union_arguments': v8_methods.union_arguments(idl_type),
+        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'result', extended_attributes=extended_attributes, script_wrappable='imp', release=release),
     }
 
 
@@ -618,7 +628,7 @@ def indexed_property_getter(interface):
     except StopIteration:
         return None
 
-    return property_getter(getter)
+    return property_getter(getter, ['index'])
 
 
 def indexed_property_setter(interface):
@@ -671,7 +681,8 @@ def named_property_getter(interface):
     except StopIteration:
         return None
 
-    return property_getter(getter)
+    getter.name = getter.name or 'anonymousNamedGetter'
+    return property_getter(getter, ['propertyName'])
 
 
 def named_property_setter(interface):

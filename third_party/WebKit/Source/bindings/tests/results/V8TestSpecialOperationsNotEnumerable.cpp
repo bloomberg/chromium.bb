@@ -73,11 +73,11 @@ template <typename T> void V8_USE(T) { }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsNotEnumerable* collection = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
-    String element = collection->anonymousIndexedGetter(index);
-    if (element.isNull())
+    TestSpecialOperationsNotEnumerable* imp = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    String result = imp->anonymousIndexedGetter(index);
+    if (result.isNull())
         return;
-    v8SetReturnValueString(info, element, info.GetIsolate());
+    v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -94,12 +94,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsNotEnumerable* collection = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    TestSpecialOperationsNotEnumerable* imp = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String element = collection->anonymousNamedGetter(propertyName);
-    if (element.isNull())
+    String result = imp->anonymousNamedGetter(propertyName);
+    if (result.isNull())
         return;
-    v8SetReturnValueString(info, element, info.GetIsolate());
+    v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

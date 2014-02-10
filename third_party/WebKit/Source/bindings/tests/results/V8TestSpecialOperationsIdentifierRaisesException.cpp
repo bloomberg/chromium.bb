@@ -214,14 +214,14 @@ static void deleteNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> element = collection->item(index, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = imp->item(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (!element)
+    if (!result)
         return;
-    v8SetReturnValueFast(info, element.release(), collection);
+    v8SetReturnValueFast(info, result.release(), imp);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -233,10 +233,10 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->setItem(index, propertyValue, exceptionState);
+    bool result = imp->setItem(index, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -253,9 +253,9 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    DeleteResult result = collection->deleteItem(index, exceptionState);
+    DeleteResult result = imp->deleteItem(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (result != DeleteUnknownProperty)
@@ -276,15 +276,15 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> element = collection->namedItem(propertyName, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = imp->namedItem(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (!element)
+    if (!result)
         return;
-    v8SetReturnValueFast(info, element.release(), collection);
+    v8SetReturnValueFast(info, result.release(), imp);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -301,11 +301,11 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->setNamedItem(propertyName, propertyValue, exceptionState);
+    bool result = imp->setNamedItem(propertyName, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -322,10 +322,10 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -342,10 +342,10 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    DeleteResult result = collection->deleteNamedItem(propertyName, exceptionState);
+    DeleteResult result = imp->deleteNamedItem(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (result != DeleteUnknownProperty)
@@ -361,10 +361,10 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
+    TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

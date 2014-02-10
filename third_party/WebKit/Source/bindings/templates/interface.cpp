@@ -128,14 +128,14 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% set getter = indexed_property_getter %}
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index', 'exceptionState']
            if getter.is_raises_exception else ['index'] %}
-    {{getter.cpp_type}} element = collection->{{getter_name}}({{getter_arguments|join(', ')}});
+    {{getter.cpp_type}} result = imp->{{getter_name}}({{getter_arguments|join(', ')}});
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -174,7 +174,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
@@ -191,7 +191,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
     {% set setter_arguments = ['index', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else ['index', 'propertyValue'] %}
-    bool result = collection->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = imp->{{setter_name}}({{setter_arguments|join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -230,14 +230,14 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
     {% set deleter_arguments = ['index', 'exceptionState']
            if deleter.is_raises_exception else ['index'] %}
-    DeleteResult result = collection->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = imp->{{deleter_name}}({{deleter_arguments|join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -270,6 +270,7 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 
 {##############################################################################}
+{% from 'methods.cpp' import union_type_method_call %}
 {% block named_property_getter %}
 {% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
@@ -284,31 +285,15 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
         return;
 
     {% endif %}
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
-    {% set getter_name = getter.name or 'anonymousNamedGetter' %}
-    {% set getter_arguments = ['propertyName', 'exceptionState']
-           if getter.is_raises_exception else ['propertyName'] %}
     {% if getter.union_arguments %}
-    {% for cpp_type in getter.cpp_type %}
-    bool element{{loop.index0}}Enabled = false;
-    {{cpp_type}} element{{loop.index0}};
-    {% endfor %}
-    {% set getter_arguments = getter_arguments + getter.union_arguments %}
-    collection->{{getter_name}}({{getter_arguments|join(', ')}});
-    {% for v8_set_return_value in getter.v8_set_return_value %}
-    if (element{{loop.index0}}Enabled) {
-        {{v8_set_return_value}};
-        return;
-    }
-
-    {% endfor %}
-    return;
+    {{union_type_method_call(getter) | indent}}
     {% else %}
-    {{getter.cpp_type}} element = collection->{{getter_name}}({{getter_arguments|join(', ')}});
+    {{getter.cpp_type}} result = {{getter.cpp_value}};
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -357,7 +342,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     {% endif %}
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
@@ -369,7 +354,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
            ['propertyName', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else
            ['propertyName', 'propertyValue'] %}
-    bool result = collection->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = imp->{{setter_name}}({{setter_arguments|join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -410,10 +395,10 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -450,7 +435,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
@@ -458,7 +443,7 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
     {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
     {% set deleter_arguments = ['propertyName', 'exceptionState']
            if deleter.is_raises_exception else ['propertyName'] %}
-    DeleteResult result = collection->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = imp->{{deleter_name}}({{deleter_arguments|join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -496,10 +481,10 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
       not named_property_getter.is_custom_property_enumerator %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    collection->namedPropertyEnumerator(names, exceptionState);
+    imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
