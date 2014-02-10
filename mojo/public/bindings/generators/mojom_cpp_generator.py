@@ -32,7 +32,7 @@ _kind_to_cpp_type = {
 
 def GetCppType(kind):
   if isinstance(kind, mojom.Struct):
-    return "%s_Data*" % kind.name
+    return "%s_Data*" % kind.GetFullNameInternal("::")
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -43,7 +43,7 @@ def GetCppType(kind):
 
 def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, mojom.Struct):
-    return kind.name
+    return kind.GetFullName("::")
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -54,7 +54,7 @@ def GetCppArrayArgWrapperType(kind):
 
 def GetCppWrapperType(kind):
   if isinstance(kind, mojom.Struct):
-    return kind.name
+    return kind.GetFullName("::")
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -67,7 +67,7 @@ def GetCppWrapperType(kind):
 
 def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Struct):
-    return "const %s&" % kind.name
+    return "const %s&" % kind.GetFullName("::")
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -86,7 +86,8 @@ def GetCppConstWrapperType(kind):
 
 def GetCppFieldType(kind):
   if isinstance(kind, mojom.Struct):
-    return "mojo::internal::StructPointer<%s_Data>" % kind.name
+    return ("mojo::internal::StructPointer<%s_Data>" %
+        kind.GetFullNameInternal("::"))
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -102,6 +103,12 @@ def IsStructWithHandles(struct):
     if mojom_generator.IsHandleKind(pf.field.kind):
       return True
   return False
+
+def SubstituteNamespace(value, imports):
+  for import_item in imports:
+    value = value.replace(import_item['namespace'] + ".",
+        import_item['namespace'] + "::")
+  return value
 
 _HEADER_SIZE = 8
 
@@ -121,8 +128,8 @@ class Generator(mojom_generator.Generator):
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": mojom_generator.GetStructFromMethod,
-    "struct_by_name": mojom_generator.GetStructByName,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
+    "substitute_namespace": SubstituteNamespace,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
@@ -131,6 +138,8 @@ class Generator(mojom_generator.Generator):
     return {
       "module_name": self.module.name,
       "namespace": self.module.namespace,
+      "imports": self.module.imports,
+      "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
@@ -142,6 +151,8 @@ class Generator(mojom_generator.Generator):
     return {
       "module_name": self.module.name,
       "namespace": self.module.namespace,
+      "imports": self.module.imports,
+      "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
@@ -153,6 +164,8 @@ class Generator(mojom_generator.Generator):
     return {
       "module_name": self.module.name,
       "namespace": self.module.namespace,
+      "imports": self.module.imports,
+      "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,

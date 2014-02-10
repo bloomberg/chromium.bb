@@ -25,12 +25,6 @@ def GetStructInfo(exported, struct):
   struct.exported = exported
   return struct
 
-def GetStructByName(structs, name):
-  for struct in structs:
-    if struct.name == name:
-      return struct
-  return None
-
 def IsStringKind(kind):
   return kind.spec == 's'
 

@@ -64,6 +64,7 @@ class Lexer(object):
     'DATA_PIPE_PRODUCER',
     'MESSAGE_PIPE',
 
+    'IMPORT',
     'MODULE',
     'STRUCT',
     'INTERFACE',
@@ -110,7 +111,7 @@ class Lexer(object):
     'LBRACKET', 'RBRACKET',     # [ ]
     'LBRACE', 'RBRACE',         # { }
     'SEMI', 'COLON',            # ; :
-    'COMMA',                    # .
+    'COMMA', 'DOT'              # , .
   )
 
   ##
@@ -221,6 +222,7 @@ class Lexer(object):
   t_LBRACE            = r'\{'
   t_RBRACE            = r'\}'
   t_COMMA             = r','
+  t_DOT               = r'.'
   t_SEMI              = r';'
   t_COLON             = r':'
 

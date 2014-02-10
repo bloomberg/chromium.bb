@@ -6,8 +6,9 @@ define([
     "console",
     "mojo/apps/js/test/hexdump",
     "gin/test/expect",
-    "mojom/sample_service"
-  ], function(console, hexdump, expect, sample) {
+    "mojom/sample_service",
+    "mojom/sample_import",
+  ], function(console, hexdump, expect, sample, imported) {
 
   var global = this;
 
@@ -111,6 +112,12 @@ define([
     expect(full.people[0].names[0]).toBe("Bob");
     expect(full.people[0].names[1]).toBe("Bobby");
     expect(full.people[0].height).toBe(6*12);
+
+    expect(full.point.x).toBe(7);
+    expect(full.point.y).toBe(15);
+
+    expect(full.shape_masks.length).toBe(1);
+    expect(full.shape_masks[0]).toBe(1 << imported.SHAPE_RECTANGLE);
   }
 
   function ServiceImpl() {

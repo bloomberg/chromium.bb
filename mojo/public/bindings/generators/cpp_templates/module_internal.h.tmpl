@@ -9,6 +9,9 @@
 #define {{header_guard}}
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
+{%- for import in imports %}
+#include "{{include_prefix}}{{import.module_name|camel_to_underscores}}_internal.h"
+{%- endfor %}
 
 namespace {{namespace}} {
 

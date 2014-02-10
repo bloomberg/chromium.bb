@@ -54,20 +54,30 @@ def KindFromData(kinds, data):
   kinds[data] = kind
   return kind
 
+def ImportFromData(data):
+  import_module = data['module']
+
+  import_item = {}
+  import_item['module_name'] = import_module.name
+  import_item['namespace'] = import_module.namespace
+  return import_item
+
 def StructToData(struct):
   return {
     istr(0, 'name'): struct.name,
     istr(1, 'fields'): map(FieldToData, struct.fields)
   }
 
-def StructFromData(kinds, data):
+def StructFromData(module, data):
   struct = mojom.Struct()
   struct.name = data['name']
-  struct.spec = 'x:' + struct.name
-  kinds[struct.spec] = struct
-  struct.fields = map(lambda field: FieldFromData(kinds, field), data['fields'])
+  struct.spec = 'x:' + module.namespace + '.' + struct.name
+  module.kinds[struct.spec] = struct
+  struct.fields = map(lambda field:
+      FieldFromData(module.kinds, field), data['fields'])
   if data.has_key('enums'):
-    struct.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
+    struct.enums = map(lambda enum:
+        EnumFromData(module.kinds, enum), data['enums'])
   return struct
 
 def FieldToData(field):
@@ -133,16 +143,17 @@ def InterfaceToData(interface):
     istr(2, 'methods'): map(MethodToData, interface.methods)
   }
 
-def InterfaceFromData(kinds, data):
+def InterfaceFromData(module, data):
   interface = mojom.Interface()
   interface.name = data['name']
-  interface.spec = 'x:' + interface.name
+  interface.spec = 'x:' + module.namespace + '.' + interface.name
   interface.peer = data['peer'] if data.has_key('peer') else None
-  kinds[interface.spec] = interface
+  module.kinds[interface.spec] = interface
   interface.methods = map(
-      lambda method: MethodFromData(kinds, method), data['methods'])
+      lambda method: MethodFromData(module.kinds, method), data['methods'])
   if data.has_key('enums'):
-    interface.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
+    interface.enums = map(lambda enum:
+        EnumFromData(module.kinds, enum), data['enums'])
   return interface
 
 def EnumFieldFromData(kinds, data):
@@ -167,20 +178,32 @@ def ModuleToData(module):
   }
 
 def ModuleFromData(data):
-  kinds = {}
-  for kind in mojom.PRIMITIVES:
-    kinds[kind.spec] = kind
-
   module = mojom.Module()
+  module.kinds = {}
+  for kind in mojom.PRIMITIVES:
+    module.kinds[kind.spec] = kind
+  # Copy the struct kinds from our imports into the current module.
+  for import_data in data['imports']:
+    import_module = import_data['module']
+    for kind in import_module.kinds.itervalues():
+      # TODO(mpcomplete): Handle enums
+      if isinstance(kind, mojom.Struct):
+        kind = mojom.Struct.CreateFromImport(
+            kind, import_module.namespace)
+        module.kinds[kind.spec] = kind
+
   module.name = data['name']
   module.namespace = data['namespace']
+  module.imports = map(
+      lambda import_data: ImportFromData(import_data), data['imports'])
   module.structs = map(
-      lambda struct: StructFromData(kinds, struct), data['structs'])
+      lambda struct: StructFromData(module, struct), data['structs'])
   module.interfaces = map(
-      lambda interface: InterfaceFromData(kinds, interface), data['interfaces'])
+      lambda interface:
+          InterfaceFromData(module, interface), data['interfaces'])
   if data.has_key('enums'):
     module.enums = map(
-        lambda enum: EnumFromData(kinds, enum), data['enums'])
+        lambda enum: EnumFromData(module.kinds, enum), data['enums'])
   return module
 
 def OrderedModuleFromData(data):

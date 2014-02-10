@@ -20,8 +20,8 @@ tmp{{depth}}[{{loop.index0}}] = {{result}};
 {%-   elif kind|is_object_kind %}
 {%-     set _ = value|verify_token_type("OBJECT") %}
 {
-  var tmp{{depth}} = new {{kind.name}}();
-{%-   set struct = structs|struct_by_name(kind.name) %}
+  var tmp{{depth}} = new {{kind|js_type}}();
+{%-   set struct = kinds[kind.spec] %}
 {%-   for element in value[1] %}
 {#-     Use struct.packed_fields to order struct values by ordinal number #}
 {%-     set subfield = struct.fields[loop.index0] %}

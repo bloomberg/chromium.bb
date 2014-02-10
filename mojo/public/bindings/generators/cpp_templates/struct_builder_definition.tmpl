@@ -29,7 +29,7 @@ tmp{{depth}}[{{loop.index0}}] = {{result}};
 {%-     set _ = value|verify_token_type("OBJECT") %}
 {
   {{kind|cpp_wrapper_type}}::Builder tmp{{depth}};
-{%-   set struct = structs|struct_by_name(kind.name) %}
+{%-   set struct = kinds[kind.spec] %}
 {%-   for element in value[1] %}
 {#-     Use struct.packed_fields to order struct values by ordinal number #}
 {%-     set subfield = struct.fields[loop.index0] %}
@@ -43,7 +43,7 @@ tmp{{depth}}.set_{{subfield.name}}({{result}});
 }
 {#--- POD types ---#}
 {%-   else -%}
-{{caller(value)}}
+{{caller(value|substitute_namespace(imports))}}
 {%-   endif %}
 {%- endmacro %}
 

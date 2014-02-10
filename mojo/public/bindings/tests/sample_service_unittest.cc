@@ -339,6 +339,12 @@ TEST(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ("Bob", full.people()[0].names()[0].To<std::string>());
   EXPECT_EQ("Bobby", full.people()[0].names()[1].To<std::string>());
   EXPECT_EQ(6*12, full.people()[0].height());
+
+  EXPECT_EQ(7, full.point().x());
+  EXPECT_EQ(15, full.point().y());
+
+  EXPECT_EQ(1u, full.shape_masks().size());
+  EXPECT_EQ(1 << imported::SHAPE_RECTANGLE, full.shape_masks()[0]);
 }
 
 }  // namespace sample

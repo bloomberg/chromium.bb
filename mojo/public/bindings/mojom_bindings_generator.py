@@ -44,6 +44,34 @@ def LoadGenerators(generators_string):
     generators.append(generator_module)
   return generators
 
+def ProcessFile(args, generator_modules, filename, processed_files):
+  # Ensure we only visit each file once.
+  processed_files.append(filename)
+
+  dirname, name = os.path.split(filename)
+  name = os.path.splitext(name)[0]
+  # TODO(darin): There's clearly too many layers of translation here!  We can
+  # at least avoid generating the serialized Mojom IR.
+  tree = mojo_parser.Parse(filename)
+  mojom = mojo_translate.Translate(tree, name)
+  if args.debug_print_intermediate:
+    pprint.PrettyPrinter().pprint(mojom)
+
+  # Process all our imports first and collect the module object for each.
+  # We use these to generate proper type info.
+  for import_data in mojom['imports']:
+    import_filename = os.path.join(dirname, import_data['filename'])
+    if import_filename not in processed_files:
+      import_data['module'] = ProcessFile(
+          args, generator_modules, import_filename, processed_files)
+
+  module = mojom_data.OrderedModuleFromData(mojom)
+  for generator_module in generator_modules:
+    generator = generator_module.Generator(module, args.include_dir,
+                                           args.output_dir)
+    generator.GenerateFiles()
+
+  return module
 
 def Main():
   parser = argparse.ArgumentParser(
@@ -67,18 +95,7 @@ def Main():
     os.makedirs(args.output_dir)
 
   for filename in args.filename:
-    name = os.path.splitext(os.path.basename(filename))[0]
-    # TODO(darin): There's clearly too many layers of translation here!  We can
-    # at least avoid generating the serialized Mojom IR.
-    tree = mojo_parser.Parse(filename)
-    mojom = mojo_translate.Translate(tree, name)
-    if args.debug_print_intermediate:
-      pprint.PrettyPrinter().pprint(mojom)
-    module = mojom_data.OrderedModuleFromData(mojom)
-    for generator_module in generator_modules:
-      generator = generator_module.Generator(module, args.include_dir,
-                                             args.output_dir)
-      generator.GenerateFiles()
+    ProcessFile(args, generator_modules, filename, [])
 
   return 0
 

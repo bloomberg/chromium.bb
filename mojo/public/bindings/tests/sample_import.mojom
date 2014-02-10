@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module imported {
+
+// This sample just defines some types that are imported into
+// sample_service.mojom, to show how import works.
+
+enum Shape {
+  SHAPE_RECTANGLE,
+  SHAPE_CIRCLE,
+  SHAPE_TRIANGLE,
+};
+
+struct Point {
+  int32 x;
+  int32 y;
+};
+
+}  // module imported

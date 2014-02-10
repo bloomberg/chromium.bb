@@ -5,7 +5,14 @@
 define([
     "mojo/apps/js/bindings/core",
     "mojo/apps/js/bindings/codec",
-  ], function(core, codec) {
+{%- for import in imports %}
+    "mojom/{{include_prefix}}{{import.module_name|camel_to_underscores}}",
+{%- endfor %}
+  ], function(core, codec
+{%- for import in imports -%}
+    , {{import.namespace}}
+{%- endfor -%}
+) {
 
 {#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def -%}

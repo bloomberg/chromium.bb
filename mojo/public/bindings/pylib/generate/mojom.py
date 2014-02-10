@@ -11,6 +11,8 @@
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
 #
+import copy
+
 class Kind(object):
   def __init__(self, spec = None):
     self.spec = spec
@@ -67,6 +69,7 @@ class Field(object):
 class Struct(Kind):
   def __init__(self, name = None):
     self.name = name
+    self.imported_from_namespace = None
     if name != None:
       spec = 'x:' + name
     else:
@@ -74,10 +77,32 @@ class Struct(Kind):
     Kind.__init__(self, spec)
     self.fields = []
 
+  @classmethod
+  def CreateFromImport(cls, kind, import_namespace):
+    """Used with 'import module' - clones the kind imported from the
+    given module's namespace."""
+    kind = copy.deepcopy(kind)
+    kind.imported_from_namespace = import_namespace
+    return kind
+
   def AddField(self, name, kind, ordinal = None, default = None):
     field = Field(name, kind, ordinal, default)
     self.fields.append(field)
     return field
+
+  def GetFullName(self, separator):
+    """Returns the fully qualified type name, including namespace prefix."""
+    if self.imported_from_namespace:
+      return separator.join([self.imported_from_namespace, self.name])
+    return self.name
+
+  def GetFullNameInternal(self, separator):
+    """Returns the fully qualified type name for an internal data structure,
+    including namespace prefix."""
+    if self.imported_from_namespace:
+      return separator.join(
+          [self.imported_from_namespace, "internal", self.name])
+    return self.name
 
 
 class Array(Kind):

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "sample_import.mojom"
+
 module sample {
 
 enum BarType {
@@ -41,8 +43,10 @@ struct DefaultsTestInner {
 };
 
 struct DefaultsTest {
-  DefaultsTestInner[] people = [{32, ["Bob", "Bobby"]}] @1;
+  sample.DefaultsTestInner[] people = [{32, ["Bob", "Bobby"]}] @1;
   uint8[] data = [1, 2, 3] @2;
+  imported.Point point = {7, 15} @3;
+  int32[] shape_masks = [1 << imported.SHAPE_RECTANGLE] @4;
 };
 
 interface Port {

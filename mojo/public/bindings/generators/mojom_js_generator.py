@@ -151,6 +151,7 @@ def JavaScriptEncodeSnippet(kind):
 class Generator(mojom_generator.Generator):
 
   js_filters = {
+    "camel_to_underscores": mojom_generator.CamelToUnderscores,
     "default_value": JavaScriptDefaultValue,
     "payload_size": JavaScriptPayloadSize,
     "decode_snippet": JavaScriptDecodeSnippet,
@@ -158,7 +159,7 @@ class Generator(mojom_generator.Generator):
     "is_object_kind": mojom_generator.IsObjectKind,
     "is_string_kind": mojom_generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
-    "struct_by_name": mojom_generator.GetStructByName,
+    "js_type": lambda kind: kind.GetFullName("."),
     "stylize_method": mojom_generator.StudlyCapsToCamel,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
@@ -166,6 +167,8 @@ class Generator(mojom_generator.Generator):
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)
   def GenerateJsModule(self):
     return {
+      "imports": self.module.imports,
+      "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,

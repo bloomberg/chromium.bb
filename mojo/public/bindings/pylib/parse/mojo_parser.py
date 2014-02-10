@@ -47,6 +47,19 @@ class Parser(object):
   def __init__(self, lexer):
     self.tokens = lexer.tokens
 
+  def p_root(self, p):
+    """root : import root
+            | module"""
+    if len(p) > 2:
+      p[0] = ListFromConcat(p[1], p[2])
+    else:
+      p[0] = [p[1]]
+
+  def p_import(self, p):
+    """import : IMPORT STRING_LITERAL"""
+    # 'eval' the literal to strip the quotes.
+    p[0] = ('IMPORT', eval(p[2]))
+
   def p_module(self, p):
     """module : MODULE NAME LBRACE definitions RBRACE"""
     p[0] = ('MODULE', p[2], p[4])
@@ -144,8 +157,12 @@ class Parser(object):
   def p_basictypename(self, p):
     """basictypename : NAME
                      | HANDLE
+                     | NAME DOT NAME
                      | specializedhandle"""
-    p[0] = p[1]
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      p[0] = p[1] + '.' + p[3]
 
   def p_specializedhandle(self, p):
     """specializedhandle : HANDLE LT specializedhandlename GT"""
@@ -200,8 +217,8 @@ class Parser(object):
 
   def p_expression_object_elements(self, p):
     """expression_object_elements : expression_object
-                                 | expression_object COMMA expression_object_elements
-                                 | """
+                                  | expression_object COMMA expression_object_elements
+                                  | """
     if len(p) == 2:
       p[0] = ListFromConcat(p[1])
     elif len(p) > 3:
@@ -280,6 +297,7 @@ class Parser(object):
   def p_primary_expression(self, p):
     """primary_expression : constant
                           | NAME
+                          | NAME DOT NAME
                           | LPAREN expression RPAREN"""
     p[0] = ''.join(p[1:])
 

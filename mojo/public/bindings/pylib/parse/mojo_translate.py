@@ -10,116 +10,117 @@ import os
 import sys
 
 
-def MapKind(kind):
-  map_to_kind = { 'bool': 'b',
-                  'int8': 'i8',
-                  'int16': 'i16',
-                  'int32': 'i32',
-                  'int64': 'i64',
-                  'uint8': 'u8',
-                  'uint16': 'u16',
-                  'uint32': 'u32',
-                  'uint64': 'u64',
-                  'float': 'f',
-                  'double': 'd',
-                  'string': 's',
-                  'handle': 'h',
-                  'handle<data_pipe_consumer>': 'h:d:c',
-                  'handle<data_pipe_producer>': 'h:d:p',
-                  'handle<message_pipe>': 'h:m'}
-  if kind.endswith('[]'):
-    return 'a:' + MapKind(kind[0:len(kind)-2])
-  if kind in map_to_kind:
-    return map_to_kind[kind]
-  return 'x:' + kind
-
-
-def MapOrdinal(ordinal):
-  if ordinal == None:
-    return None;
-  return int(ordinal[1:])  # Strip leading '@'
-
-
-def GetAttribute(attributes, name):
-  out = None
-  if attributes:
-    for attribute in attributes:
-      if attribute[0] == 'ATTRIBUTE' and attribute[1] == name:
-        out = attribute[2]
-  return out
-
-
-def MapFields(fields):
-  out = []
-  for field in fields:
-    if field[0] == 'FIELD':
-      out.append({'name': field[2],
-                  'kind': MapKind(field[1]),
-                  'ordinal': MapOrdinal(field[3]),
-                  'default': field[4]})
-  return out
-
-
-def MapParameters(parameters):
-  out = []
-  for parameter in parameters:
-    if parameter[0] == 'PARAM':
-      out.append({'name': parameter[2],
-                  'kind': MapKind(parameter[1]),
-                  'ordinal': MapOrdinal(parameter[3])})
-  return out
-
-
-def MapMethods(methods):
-  out = []
-  if methods:
-    for method in methods:
-      if method[0] == 'METHOD':
-        out.append({'name': method[1],
-                    'parameters': MapParameters(method[2]),
-                    'ordinal': MapOrdinal(method[3])})
-  return out
-
-
-def MapEnumFields(fields):
-  out = []
-  for field in fields:
-    if field[0] == 'ENUM_FIELD':
-      out.append({'name': field[1],
-                  'value': field[2]})
-  return out
-
-
-def MapEnums(enums):
-  out = []
-  if enums:
-    for enum in enums:
-      if enum[0] == 'ENUM':
-        out.append({'name': enum[1],
-                    'fields': MapEnumFields(enum[2])})
-  return out
-
-
 class MojomBuilder():
-
   def __init__(self):
     self.mojom = {}
+
+  def MapKind(self, kind):
+    map_to_kind = { 'bool': 'b',
+                    'int8': 'i8',
+                    'int16': 'i16',
+                    'int32': 'i32',
+                    'int64': 'i64',
+                    'uint8': 'u8',
+                    'uint16': 'u16',
+                    'uint32': 'u32',
+                    'uint64': 'u64',
+                    'float': 'f',
+                    'double': 'd',
+                    'string': 's',
+                    'handle': 'h',
+                    'handle<data_pipe_consumer>': 'h:d:c',
+                    'handle<data_pipe_producer>': 'h:d:p',
+                    'handle<message_pipe>': 'h:m'}
+    if kind.endswith('[]'):
+      return 'a:' + self.MapKind(kind[0:len(kind)-2])
+    if kind in map_to_kind:
+      return map_to_kind[kind]
+    if kind.find('.') == -1:
+      return 'x:' + self.mojom['namespace'] + '.' + kind
+    return 'x:' + kind
+
+
+  def MapOrdinal(self, ordinal):
+    if ordinal == None:
+      return None;
+    return int(ordinal[1:])  # Strip leading '@'
+
+
+  def GetAttribute(self, attributes, name):
+    out = None
+    if attributes:
+      for attribute in attributes:
+        if attribute[0] == 'ATTRIBUTE' and attribute[1] == name:
+          out = attribute[2]
+    return out
+
+
+  def MapFields(self, fields):
+    out = []
+    for field in fields:
+      if field[0] == 'FIELD':
+        out.append({'name': field[2],
+                    'kind': self.MapKind(field[1]),
+                    'ordinal': self.MapOrdinal(field[3]),
+                    'default': field[4]})
+    return out
+
+
+  def MapParameters(self, parameters):
+    out = []
+    for parameter in parameters:
+      if parameter[0] == 'PARAM':
+        out.append({'name': parameter[2],
+                    'kind': self.MapKind(parameter[1]),
+                    'ordinal': self.MapOrdinal(parameter[3])})
+    return out
+
+
+  def MapMethods(self, methods):
+    out = []
+    if methods:
+      for method in methods:
+        if method[0] == 'METHOD':
+          out.append({'name': method[1],
+                      'parameters': self.MapParameters(method[2]),
+                      'ordinal': self.MapOrdinal(method[3])})
+    return out
+
+
+  def MapEnumFields(self, fields):
+    out = []
+    for field in fields:
+      if field[0] == 'ENUM_FIELD':
+        out.append({'name': field[1],
+                    'value': field[2]})
+    return out
+
+
+  def MapEnums(self, enums):
+    out = []
+    if enums:
+      for enum in enums:
+        if enum[0] == 'ENUM':
+          out.append({'name': enum[1],
+                      'fields': self.MapEnumFields(enum[2])})
+    return out
+
 
   def AddStruct(self, name, attributes, body):
     struct = {}
     struct['name'] = name
     # TODO(darin): Add support for |attributes|
     #struct['attributes'] = MapAttributes(attributes)
-    struct['fields'] = MapFields(body)
-    struct['enums'] = MapEnums(body)
+    struct['fields'] = self.MapFields(body)
+    struct['enums'] = self.MapEnums(body)
     self.mojom['structs'].append(struct)
 
   def AddInterface(self, name, attributes, body):
     interface = {}
     interface['name'] = name
-    interface['peer'] = GetAttribute(attributes, 'Peer')
-    interface['methods'] = MapMethods(body)
-    interface['enums'] = MapEnums(body)
+    interface['peer'] = self.GetAttribute(attributes, 'Peer')
+    interface['methods'] = self.MapMethods(body)
+    interface['enums'] = self.MapEnums(body)
     self.mojom['interfaces'].append(interface)
 
   def AddEnum(self, name, fields):
@@ -127,7 +128,7 @@ class MojomBuilder():
     # we just use int32.
     enum = {}
     enum['name'] = name
-    enum['fields'] = MapEnumFields(fields)
+    enum['fields'] = self.MapEnumFields(fields)
     self.mojom['enums'].append(enum)
 
   def AddModule(self, name, namespace, contents):
@@ -144,9 +145,18 @@ class MojomBuilder():
       elif item[0] == 'ENUM':
         self.AddEnum(name=item[1], fields=item[2])
 
+  def AddImport(self, filename):
+    import_item = {}
+    import_item['filename'] = filename
+    self.mojom['imports'].append(import_item)
+
   def Build(self, tree, name):
-    if tree[0] == 'MODULE':
-      self.AddModule(name=name, namespace=tree[1], contents=tree[2])
+    self.mojom['imports'] = []
+    for item in tree:
+      if item[0] == 'MODULE':
+        self.AddModule(name=name, namespace=item[1], contents=item[2])
+      elif item[0] == 'IMPORT':
+        self.AddImport(filename=item[1])
     return self.mojom
 
 
