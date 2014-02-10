@@ -118,8 +118,12 @@ bool ProfileHelper::IsSigninProfile(Profile* profile) {
 
 // static
 bool ProfileHelper::IsOwnerProfile(Profile* profile) {
+  if (!profile)
+    return false;
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   chromeos::User* user = manager->GetUserByProfile(profile);
+  if (!user)
+    return false;
   return user->email() == manager->GetOwnerEmail();
 }
 
