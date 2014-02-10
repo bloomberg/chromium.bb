@@ -18,7 +18,7 @@
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    fprintf(stderr, "Usage: %s <interface_name>", argv[0]);
+    fprintf(stderr, "Usage: %s <interface_name>\n", argv[0]);
     return 1;
   }
   uint32 data = base::Hash(argv[1], strlen(argv[1]));
