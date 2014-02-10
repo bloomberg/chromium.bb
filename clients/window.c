@@ -395,22 +395,6 @@ enum {
 	CURSOR_UNSET
 };
 
-enum window_location {
-	WINDOW_INTERIOR = 0,
-	WINDOW_RESIZING_TOP = 1,
-	WINDOW_RESIZING_BOTTOM = 2,
-	WINDOW_RESIZING_LEFT = 4,
-	WINDOW_RESIZING_TOP_LEFT = 5,
-	WINDOW_RESIZING_BOTTOM_LEFT = 6,
-	WINDOW_RESIZING_RIGHT = 8,
-	WINDOW_RESIZING_TOP_RIGHT = 9,
-	WINDOW_RESIZING_BOTTOM_RIGHT = 10,
-	WINDOW_RESIZING_MASK = 15,
-	WINDOW_EXTERIOR = 16,
-	WINDOW_TITLEBAR = 17,
-	WINDOW_CLIENT_AREA = 18,
-};
-
 static const cairo_user_data_key_t shm_surface_data_key;
 
 /* #define DEBUG */
@@ -1418,11 +1402,11 @@ window_create_main_surface(struct window *window)
 	if (window->preferred_format == WINDOW_PREFERRED_FORMAT_RGB565)
 		flags |= SURFACE_HINT_RGB565;
 
-	if (window->resize_edges & WINDOW_RESIZING_LEFT)
+	if (window->resize_edges & THEME_LOCATION_RESIZING_LEFT)
 		dx = surface->server_allocation.width -
 			surface->allocation.width;
 
-	if (window->resize_edges & WINDOW_RESIZING_TOP)
+	if (window->resize_edges & THEME_LOCATION_RESIZING_TOP)
 		dy = surface->server_allocation.height -
 			surface->allocation.height;
 
