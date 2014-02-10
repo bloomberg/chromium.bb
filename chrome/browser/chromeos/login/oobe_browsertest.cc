@@ -79,7 +79,8 @@ class OobeTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OobeTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
+// crbug.com/342478
+IN_PROC_BROWSER_TEST_F(OobeTest, DISABLED_NewUser) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
