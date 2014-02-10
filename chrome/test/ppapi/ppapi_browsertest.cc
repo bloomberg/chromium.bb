@@ -1111,6 +1111,9 @@ TEST_PPAPI_NACL(MAYBE_FileSystem)
 #elif defined(OS_LINUX)
 // http://crbug.com/146008
 #define MAYBE_Fullscreen DISABLED_Fullscreen
+#elif defined(OS_WIN)
+// http://crbug.com/342269
+#define MAYBE_Fullscreen DISABLED_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen
 #endif
