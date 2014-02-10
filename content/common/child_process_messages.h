@@ -15,7 +15,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-IPC_ENUM_TRAITS(tracked_objects::ThreadData::Status)
+IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
+                          tracked_objects::ThreadData::STATUS_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::LocationSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(file_name)
@@ -55,7 +56,8 @@ IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(process_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(gfx::GpuMemoryBufferType)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBufferType,
+                          gfx::GPU_MEMORY_BUFFER_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(type)

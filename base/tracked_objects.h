@@ -362,6 +362,7 @@ class BASE_EXPORT ThreadData {
     DEACTIVATED,                // No longer recording profling.
     PROFILING_ACTIVE,           // Recording profiles (no parent-child links).
     PROFILING_CHILDREN_ACTIVE,  // Fully active, recording parent-child links.
+    STATUS_LAST = PROFILING_CHILDREN_ACTIVE
   };
 
   typedef std::map<Location, Births*> BirthMap;
