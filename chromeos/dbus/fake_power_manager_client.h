@@ -31,6 +31,12 @@ class FakePowerManagerClient : public PowerManagerClient {
   int num_set_policy_calls() const {
     return num_set_policy_calls_;
   }
+  int num_set_is_projecting_calls() const {
+    return num_set_is_projecting_calls_;
+  }
+  bool is_projecting() const {
+    return is_projecting_;
+  }
 
   // PowerManagerClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
@@ -80,6 +86,12 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   // Number of times that SetPolicy() has been called.
   int num_set_policy_calls_;
+
+  // Count the number of times SetIsProjecting() has been called.
+  int num_set_is_projecting_calls_;
+
+  // Last projecting state set in SetIsProjecting().
+  bool is_projecting_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };

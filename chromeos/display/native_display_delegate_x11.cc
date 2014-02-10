@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/display/real_output_configurator_delegate.h"
+#include "chromeos/display/native_display_delegate_x11.h"
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -15,8 +15,6 @@
 #include "base/message_loop/message_pump_x11.h"
 #include "base/x11/edid_parser_x11.h"
 #include "base/x11/x11_error_tracker.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/output_util.h"
 
 namespace chromeos {
@@ -49,44 +47,40 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
 
 }  // namespace
 
-RealOutputConfiguratorDelegate::RealOutputConfiguratorDelegate()
+NativeDisplayDelegateX11::NativeDisplayDelegateX11()
     : display_(base::MessagePumpX11::GetDefaultXDisplay()),
       window_(DefaultRootWindow(display_)),
-      screen_(NULL) {
-}
+      screen_(NULL) {}
 
-RealOutputConfiguratorDelegate::~RealOutputConfiguratorDelegate() {
-}
+NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {}
 
-void RealOutputConfiguratorDelegate::InitXRandRExtension(int* event_base) {
+void NativeDisplayDelegateX11::InitXRandRExtension(int* event_base) {
   int error_base_ignored = 0;
   XRRQueryExtension(display_, event_base, &error_base_ignored);
 }
 
-void RealOutputConfiguratorDelegate::UpdateXRandRConfiguration(
+void NativeDisplayDelegateX11::UpdateXRandRConfiguration(
     const base::NativeEvent& event) {
   XRRUpdateConfiguration(event);
 }
 
-void RealOutputConfiguratorDelegate::GrabServer() {
+void NativeDisplayDelegateX11::GrabServer() {
   CHECK(!screen_) << "Server already grabbed";
   XGrabServer(display_);
   screen_ = XRRGetScreenResources(display_, window_);
   CHECK(screen_);
 }
 
-void RealOutputConfiguratorDelegate::UngrabServer() {
+void NativeDisplayDelegateX11::UngrabServer() {
   CHECK(screen_) << "Server not grabbed";
   XRRFreeScreenResources(screen_);
   screen_ = NULL;
   XUngrabServer(display_);
 }
 
-void RealOutputConfiguratorDelegate::SyncWithServer() {
-  XSync(display_, 0);
-}
+void NativeDisplayDelegateX11::SyncWithServer() { XSync(display_, 0); }
 
-void RealOutputConfiguratorDelegate::SetBackgroundColor(uint32 color_argb) {
+void NativeDisplayDelegateX11::SetBackgroundColor(uint32 color_argb) {
   // Configuring CRTCs/Framebuffer clears the boot screen image.  Set the
   // same background color while configuring the display to minimize the
   // duration of black screen at boot time. The background is filled with
@@ -105,13 +99,13 @@ void RealOutputConfiguratorDelegate::SetBackgroundColor(uint32 color_argb) {
   XFreeColors(display_, colormap, &color.pixel, 1, 0);
 }
 
-void RealOutputConfiguratorDelegate::ForceDPMSOn() {
+void NativeDisplayDelegateX11::ForceDPMSOn() {
   CHECK(DPMSEnable(display_));
   CHECK(DPMSForceLevel(display_, DPMSModeOn));
 }
 
 std::vector<OutputConfigurator::OutputSnapshot>
-RealOutputConfiguratorDelegate::GetOutputs() {
+NativeDisplayDelegateX11::GetOutputs() {
   CHECK(screen_) << "Server not grabbed";
 
   std::vector<OutputConfigurator::OutputSnapshot> outputs;
@@ -121,11 +115,10 @@ RealOutputConfiguratorDelegate::GetOutputs() {
     RROutput output_id = screen_->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
     if (output_info->connection == RR_Connected) {
-      OutputConfigurator::OutputSnapshot output = InitOutputSnapshot(
-          output_id, output_info, &last_used_crtc, i);
+      OutputConfigurator::OutputSnapshot output =
+          InitOutputSnapshot(output_id, output_info, &last_used_crtc, i);
       VLOG(2) << "Found display " << outputs.size() << ":"
-              << " output=" << output.output
-              << " crtc=" << output.crtc
+              << " output=" << output.output << " crtc=" << output.crtc
               << " current_mode=" << output.current_mode;
       outputs.push_back(output);
     }
@@ -135,25 +128,20 @@ RealOutputConfiguratorDelegate::GetOutputs() {
   return outputs;
 }
 
-void RealOutputConfiguratorDelegate::AddOutputMode(RROutput output,
-                                                   RRMode mode) {
+void NativeDisplayDelegateX11::AddOutputMode(RROutput output, RRMode mode) {
   CHECK(screen_) << "Server not grabbed";
   VLOG(1) << "AddOutputMode: output=" << output << " mode=" << mode;
   XRRAddOutputMode(display_, output, mode);
 }
 
-bool RealOutputConfiguratorDelegate::ConfigureCrtc(
-    RRCrtc crtc,
-    RRMode mode,
-    RROutput output,
-    int x,
-    int y) {
+bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
+                                             RRMode mode,
+                                             RROutput output,
+                                             int x,
+                                             int y) {
   CHECK(screen_) << "Server not grabbed";
-  VLOG(1) << "ConfigureCrtc: crtc=" << crtc
-          << " mode=" << mode
-          << " output=" << output
-          << " x=" << x
-          << " y=" << y;
+  VLOG(1) << "ConfigureCrtc: crtc=" << crtc << " mode=" << mode
+          << " output=" << output << " x=" << x << " y=" << y;
   // Xrandr.h is full of lies. XRRSetCrtcConfig() is defined as returning a
   // Status, which is typically 0 for failure and 1 for success. In
   // actuality it returns a RRCONFIGSTATUS, which uses 0 for success.
@@ -169,7 +157,7 @@ bool RealOutputConfiguratorDelegate::ConfigureCrtc(
                           (output && mode) ? 1 : 0) == RRSetConfigSuccess;
 }
 
-void RealOutputConfiguratorDelegate::CreateFrameBuffer(
+void NativeDisplayDelegateX11::CreateFrameBuffer(
     int width,
     int height,
     const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
@@ -178,7 +166,7 @@ void RealOutputConfiguratorDelegate::CreateFrameBuffer(
   int current_height = DisplayHeight(display_, DefaultScreen(display_));
   VLOG(1) << "CreateFrameBuffer: new=" << width << "x" << height
           << " current=" << current_width << "x" << current_height;
-  if (width ==  current_width && height == current_height)
+  if (width == current_width && height == current_height)
     return;
 
   DestroyUnusedCrtcs(outputs);
@@ -187,13 +175,7 @@ void RealOutputConfiguratorDelegate::CreateFrameBuffer(
   XRRSetScreenSize(display_, window_, width, height, mm_width, mm_height);
 }
 
-void RealOutputConfiguratorDelegate::SendProjectingStateToPowerManager(
-    bool projecting) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      SetIsProjecting(projecting);
-}
-
-bool RealOutputConfiguratorDelegate::InitModeInfo(
+bool NativeDisplayDelegateX11::InitModeInfo(
     RRMode mode,
     OutputConfigurator::ModeInfo* mode_info) {
   DCHECK(mode_info);
@@ -209,9 +191,9 @@ bool RealOutputConfiguratorDelegate::InitModeInfo(
       mode_info->height = info.height;
       mode_info->interlaced = info.modeFlags & RR_Interlace;
       if (info.hTotal && info.vTotal) {
-        mode_info->refresh_rate = static_cast<float>(info.dotClock) /
-            (static_cast<float>(info.hTotal) *
-             static_cast<float>(info.vTotal));
+        mode_info->refresh_rate =
+            static_cast<float>(info.dotClock) /
+            (static_cast<float>(info.hTotal) * static_cast<float>(info.vTotal));
       } else {
         mode_info->refresh_rate = 0.0f;
       }
@@ -221,8 +203,7 @@ bool RealOutputConfiguratorDelegate::InitModeInfo(
   return false;
 }
 
-OutputConfigurator::OutputSnapshot
-RealOutputConfiguratorDelegate::InitOutputSnapshot(
+OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
     RROutput id,
     XRROutputInfo* info,
     RRCrtc* last_used_crtc,
@@ -290,8 +271,7 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   return output;
 }
 
-bool RealOutputConfiguratorDelegate::GetHDCPState(RROutput id,
-                                                  HDCPState* state) {
+bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, HDCPState* state) {
   unsigned char* values = NULL;
   int actual_format = 0;
   unsigned long nitems = 0;
@@ -304,9 +284,18 @@ bool RealOutputConfiguratorDelegate::GetHDCPState(RROutput id,
   bool ok = true;
   // TODO(kcwu): Move this to x11_util (similar method calls in this file and
   // output_util.cc)
-  success = XRRGetOutputProperty(display_, id, prop, 0, 100, False,
-                                 False, AnyPropertyType, &actual_type,
-                                 &actual_format, &nitems, &bytes_after,
+  success = XRRGetOutputProperty(display_,
+                                 id,
+                                 prop,
+                                 0,
+                                 100,
+                                 False,
+                                 False,
+                                 AnyPropertyType,
+                                 &actual_type,
+                                 &actual_format,
+                                 &nitems,
+                                 &bytes_after,
                                  &values);
   if (actual_type == None) {
     LOG(ERROR) << "Property '" << kContentProtectionAtomName
@@ -317,15 +306,15 @@ bool RealOutputConfiguratorDelegate::GetHDCPState(RROutput id,
     Atom value = reinterpret_cast<Atom*>(values)[0];
     if (value == XInternAtom(display_, kProtectionUndesiredAtomName, False)) {
       *state = HDCP_STATE_UNDESIRED;
-    } else if (value == XInternAtom(display_, kProtectionDesiredAtomName,
-                                    False)) {
+    } else if (value ==
+               XInternAtom(display_, kProtectionDesiredAtomName, False)) {
       *state = HDCP_STATE_DESIRED;
-    } else if (value == XInternAtom(display_, kProtectionEnabledAtomName,
-                                    False)) {
+    } else if (value ==
+               XInternAtom(display_, kProtectionEnabledAtomName, False)) {
       *state = HDCP_STATE_ENABLED;
     } else {
-      LOG(ERROR) << "Unknown " << kContentProtectionAtomName << " value: "
-                 << value;
+      LOG(ERROR) << "Unknown " << kContentProtectionAtomName
+                 << " value: " << value;
       ok = false;
     }
   } else {
@@ -339,8 +328,7 @@ bool RealOutputConfiguratorDelegate::GetHDCPState(RROutput id,
   return ok;
 }
 
-bool RealOutputConfiguratorDelegate::SetHDCPState(RROutput id,
-                                                  HDCPState state) {
+bool NativeDisplayDelegateX11::SetHDCPState(RROutput id, HDCPState state) {
   Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
   Atom value = None;
   switch (state) {
@@ -356,8 +344,8 @@ bool RealOutputConfiguratorDelegate::SetHDCPState(RROutput id,
   }
   base::X11ErrorTracker err_tracker;
   unsigned char* data = reinterpret_cast<unsigned char*>(&value);
-  XRRChangeOutputProperty(display_, id, name, XA_ATOM, 32,
-                          PropModeReplace, data, 1);
+  XRRChangeOutputProperty(
+      display_, id, name, XA_ATOM, 32, PropModeReplace, data, 1);
   if (err_tracker.FoundNewError()) {
     LOG(ERROR) << "XRRChangeOutputProperty failed";
     return false;
@@ -366,7 +354,7 @@ bool RealOutputConfiguratorDelegate::SetHDCPState(RROutput id,
   }
 }
 
-void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
+void NativeDisplayDelegateX11::DestroyUnusedCrtcs(
     const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
@@ -387,7 +375,9 @@ void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
     RROutput output = None;
     const OutputConfigurator::ModeInfo* mode_info = NULL;
     for (std::vector<OutputConfigurator::OutputSnapshot>::const_iterator it =
-         outputs.begin(); it != outputs.end(); ++it) {
+             outputs.begin();
+         it != outputs.end();
+         ++it) {
       if (crtc == it->crtc) {
         mode = it->current_mode;
         output = it->output;
@@ -414,8 +404,7 @@ void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
   }
 }
 
-bool RealOutputConfiguratorDelegate::IsOutputAspectPreservingScaling(
-    RROutput id) {
+bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
   bool ret = false;
 
   Atom scaling_prop = XInternAtom(display_, "scaling mode", False);
@@ -435,11 +424,21 @@ bool RealOutputConfiguratorDelegate::IsOutputAspectPreservingScaling(
       Atom actual_type;
       int success;
 
-      success = XRRGetOutputProperty(display_, id, prop, 0, 100, False, False,
-          AnyPropertyType, &actual_type, &actual_format, &nitems,
-          &bytes_after, &values);
-      if (success == Success && actual_type == XA_ATOM &&
-          actual_format == 32 && nitems == 1) {
+      success = XRRGetOutputProperty(display_,
+                                     id,
+                                     prop,
+                                     0,
+                                     100,
+                                     False,
+                                     False,
+                                     AnyPropertyType,
+                                     &actual_type,
+                                     &actual_format,
+                                     &nitems,
+                                     &bytes_after,
+                                     &values);
+      if (success == Success && actual_type == XA_ATOM && actual_format == 32 &&
+          nitems == 1) {
         Atom value = reinterpret_cast<Atom*>(values)[0];
         if (full_aspect_atom == value)
           ret = true;

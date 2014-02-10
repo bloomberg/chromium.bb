@@ -124,6 +124,8 @@
         'display/mouse_cursor_event_filter.h',
         'display/output_configurator_animation.cc',
         'display/output_configurator_animation.h',
+        'display/projecting_observer_chromeos.cc',
+        'display/projecting_observer_chromeos.h',
         'display/resolution_notification_controller.cc',
         'display/resolution_notification_controller.h',
         'display/root_window_transformers.cc',
@@ -838,6 +840,7 @@
         'display/mirror_window_controller_unittest.cc',
         'display/virtual_keyboard_window_controller_unittest.cc',
         'display/mouse_cursor_event_filter_unittest.cc',
+        'display/projecting_observer_chromeos_unittest.cc',
         'display/resolution_notification_controller_unittest.cc',
         'display/root_window_transformers_unittest.cc',
         'display/screen_position_controller_unittest.cc',
@@ -980,7 +983,7 @@
           'sources/': [
             ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
             ['exclude', 'display/display_error_observer_chromeos_unittest.cc'],
-	    ['exclude', 'magnifier/magnifier_key_scroller_unittest.cc'],
+            ['exclude', 'magnifier/magnifier_key_scroller_unittest.cc'],
           ],
         }],
         ['chromeos==1', {

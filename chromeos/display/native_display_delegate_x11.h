@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_REAL_OUTPUT_CONFIGURATOR_DELEGATE_H_
-#define CHROMEOS_DISPLAY_REAL_OUTPUT_CONFIGURATOR_DELEGATE_H_
+#ifndef CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_
+#define CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_
 
 #include <vector>
 
@@ -22,15 +22,16 @@ typedef _XRRScreenResources XRRScreenResources;
 
 namespace chromeos {
 
-class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
+class NativeDisplayDelegateX11
+    : public OutputConfigurator::NativeDisplayDelegate {
  public:
-  RealOutputConfiguratorDelegate();
-  virtual ~RealOutputConfiguratorDelegate();
+  NativeDisplayDelegateX11();
+  virtual ~NativeDisplayDelegateX11();
 
   // OutputConfigurator::Delegate overrides:
   virtual void InitXRandRExtension(int* event_base) OVERRIDE;
-  virtual void UpdateXRandRConfiguration(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
+      OVERRIDE;
   virtual void GrabServer() OVERRIDE;
   virtual void UngrabServer() OVERRIDE;
   virtual void SyncWithServer() OVERRIDE;
@@ -38,17 +39,15 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void ForceDPMSOn() OVERRIDE;
   virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs() OVERRIDE;
   virtual void AddOutputMode(RROutput output, RRMode mode) OVERRIDE;
-  virtual bool ConfigureCrtc(
-      RRCrtc crtc,
-      RRMode mode,
-      RROutput output,
-      int x,
-      int y) OVERRIDE;
+  virtual bool ConfigureCrtc(RRCrtc crtc,
+                             RRMode mode,
+                             RROutput output,
+                             int x,
+                             int y) OVERRIDE;
   virtual void CreateFrameBuffer(
       int width,
       int height,
       const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
-  virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
   virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE;
   virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE;
 
@@ -60,11 +59,10 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   // Helper method for GetOutputs() that returns an OutputSnapshot struct based
   // on the passed-in information. Further initialization is required (e.g.
   // |selected_mode|, |mirror_mode|, and |touch_device_id|).
-  OutputConfigurator::OutputSnapshot InitOutputSnapshot(
-      RROutput id,
-      XRROutputInfo* info,
-      RRCrtc* last_used_crtc,
-      int index);
+  OutputConfigurator::OutputSnapshot InitOutputSnapshot(RROutput id,
+                                                        XRROutputInfo* info,
+                                                        RRCrtc* last_used_crtc,
+                                                        int index);
 
   // Destroys unused CRTCs and parks used CRTCs in a way which allows a
   // framebuffer resize. This is faster than turning them off, resizing,
@@ -81,9 +79,9 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   // Initialized when the server is grabbed and freed when it's ungrabbed.
   XRRScreenResources* screen_;
 
-  DISALLOW_COPY_AND_ASSIGN(RealOutputConfiguratorDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateX11);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DISPLAY_REAL_OUTPUT_CONFIGURATOR_DELEGATE_H_
+#endif  // CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_

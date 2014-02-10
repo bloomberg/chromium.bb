@@ -120,6 +120,7 @@
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
+#include "ash/display/projecting_observer_chromeos.h"
 #include "ash/magnifier/magnifier_key_scroller.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
@@ -375,8 +376,8 @@ void Shell::OnLockStateChanged(bool locked) {
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  if (output_configurator_)
-    output_configurator_->OnCastingSessionStartedOrStopped(started);
+  if (projecting_observer_)
+    projecting_observer_->OnCastingSessionStartedOrStopped(started);
 #endif
 }
 
@@ -732,6 +733,8 @@ Shell::~Shell() {
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
   if (display_error_observer_)
     output_configurator_->RemoveObserver(display_error_observer_.get());
+  if (projecting_observer_)
+    output_configurator_->RemoveObserver(projecting_observer_.get());
   base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
   base::MessagePumpX11::Current()->RemoveObserver(output_configurator());
@@ -759,6 +762,9 @@ void Shell::Init() {
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());
+
+  projecting_observer_.reset(new internal::ProjectingObserver());
+  output_configurator_->AddObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserver);

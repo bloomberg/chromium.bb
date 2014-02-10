@@ -189,10 +189,11 @@ class CHROMEOS_EXPORT OutputConfigurator
     virtual void SetSoftwareMirroring(bool enabled) = 0;
   };
 
-  // Interface for classes that perform actions on behalf of OutputController.
-  class Delegate {
+  // Interface for classes that perform display configuration actions on behalf
+  // of OutputConfigurator.
+  class NativeDisplayDelegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~NativeDisplayDelegate() {}
 
     // Initializes the XRandR extension, saving the base event ID to
     // |event_base|.
@@ -242,10 +243,6 @@ class CHROMEOS_EXPORT OutputConfigurator
         int width,
         int height,
         const std::vector<OutputConfigurator::OutputSnapshot>& outputs) = 0;
-
-    // Sends a D-Bus message to the power manager telling it that the
-    // machine is or is not projecting.
-    virtual void SendProjectingStateToPowerManager(bool projecting) = 0;
 
     // Gets HDCP state of output.
     virtual bool GetHDCPState(RROutput id, HDCPState* state) = 0;
@@ -349,9 +346,10 @@ class CHROMEOS_EXPORT OutputConfigurator
     mirroring_controller_ = controller;
   }
 
-  // Replaces |delegate_| with |delegate| and sets |configure_display_| to
-  // true.  Should be called before Init().
-  void SetDelegateForTesting(scoped_ptr<Delegate> delegate);
+  // Replaces |native_display_delegate_| with |delegate| and sets
+  // |configure_display_| to true.  Should be called before Init().
+  void SetNativeDisplayDelegateForTesting(
+      scoped_ptr<NativeDisplayDelegate> delegate);
 
   void SetTouchscreenDelegateForTesting(
       scoped_ptr<TouchscreenDelegate> delegate);
@@ -394,9 +392,6 @@ class CHROMEOS_EXPORT OutputConfigurator
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-
-  // Called when a casting session is started or stopped.
-  void OnCastingSessionStartedOrStopped(bool started);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -522,12 +517,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Applies output protections according to requests.
   bool ApplyProtections(const DisplayProtections& requests);
 
-  // Sends the current projecting state to power manager.
-  void SendProjectingStateToPowerManager();
-
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
-  scoped_ptr<Delegate> delegate_;
+  scoped_ptr<NativeDisplayDelegate> native_display_delegate_;
   scoped_ptr<TouchscreenDelegate> touchscreen_delegate_;
 
   // Used to enable modes which rely on panel fitting.
@@ -573,9 +565,6 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   // Output protection requests of each client.
   ProtectionRequests client_protection_requests_;
-
-  // Number of outstanding casting sessions.
-  int casting_session_count_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };

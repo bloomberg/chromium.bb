@@ -134,6 +134,7 @@ class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
 class PowerEventObserver;
+class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
@@ -700,6 +701,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::OutputConfiguratorAnimation>
       output_configurator_animation_;
   scoped_ptr<internal::DisplayErrorObserver> display_error_observer_;
+  scoped_ptr<internal::ProjectingObserver> projecting_observer_;
 
   // Listens for output changes and updates the display manager.
   scoped_ptr<internal::DisplayChangeObserver> display_change_observer_;

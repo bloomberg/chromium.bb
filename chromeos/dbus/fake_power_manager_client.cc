@@ -9,7 +9,9 @@ namespace chromeos {
 
 FakePowerManagerClient::FakePowerManagerClient()
     : num_request_restart_calls_(0),
-      num_set_policy_calls_(0) {
+      num_set_policy_calls_(0),
+      num_set_is_projecting_calls_(0),
+      is_projecting_(false) {
 }
 
 FakePowerManagerClient::~FakePowerManagerClient() {
@@ -78,6 +80,8 @@ void FakePowerManagerClient::DecreaseKeyboardBrightness() {
 }
 
 void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
+  ++num_set_is_projecting_calls_;
+  is_projecting_ = is_projecting;
 }
 
 void FakePowerManagerClient::NotifyUserActivity(

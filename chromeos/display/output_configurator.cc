@@ -14,8 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "chromeos/display/native_display_delegate_x11.h"
 #include "chromeos/display/output_util.h"
-#include "chromeos/display/real_output_configurator_delegate.h"
 #include "chromeos/display/touchscreen_delegate_x11.h"
 
 namespace chromeos {
@@ -239,14 +239,13 @@ OutputConfigurator::OutputConfigurator()
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON),
-      next_output_protection_client_id_(1),
-      casting_session_count_(0) {
-}
+      next_output_protection_client_id_(1) {}
 
 OutputConfigurator::~OutputConfigurator() {}
 
-void OutputConfigurator::SetDelegateForTesting(scoped_ptr<Delegate> delegate) {
-  delegate_ = delegate.Pass();
+void OutputConfigurator::SetNativeDisplayDelegateForTesting(
+    scoped_ptr<NativeDisplayDelegate> delegate) {
+  native_display_delegate_ = delegate.Pass();
   configure_display_ = true;
 }
 
@@ -265,8 +264,8 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
-  if (!delegate_)
-    delegate_.reset(new RealOutputConfiguratorDelegate());
+  if (!native_display_delegate_)
+    native_display_delegate_.reset(new NativeDisplayDelegateX11());
 
   if (!touchscreen_delegate_)
     touchscreen_delegate_.reset(new TouchscreenDelegateX11());
@@ -276,21 +275,20 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   if (!configure_display_)
     return;
 
-  delegate_->GrabServer();
-  delegate_->InitXRandRExtension(&xrandr_event_base_);
+  native_display_delegate_->GrabServer();
+  native_display_delegate_->InitXRandRExtension(&xrandr_event_base_);
 
   UpdateCachedOutputs();
   if (cached_outputs_.size() > 1 && background_color_argb)
-    delegate_->SetBackgroundColor(background_color_argb);
+    native_display_delegate_->SetBackgroundColor(background_color_argb);
   const OutputState new_state = ChooseOutputState(power_state_);
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_);
 
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
-  delegate_->ForceDPMSOn();
-  delegate_->UngrabServer();
-  SendProjectingStateToPowerManager();
+  native_display_delegate_->ForceDPMSOn();
+  native_display_delegate_->UngrabServer();
   NotifyObservers(success, new_state);
 }
 
@@ -313,7 +311,7 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
         HDCPState new_desired_state =
             (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
             HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-        if (!delegate_->SetHDCPState(this_id, new_desired_state))
+        if (!native_display_delegate_->SetHDCPState(this_id, new_desired_state))
           return false;
         break;
       }
@@ -329,22 +327,6 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
   }
 
   return true;
-}
-
-void OutputConfigurator::SendProjectingStateToPowerManager() {
-  bool has_internal_output = false;
-  int connected_output_count = cached_outputs_.size() + casting_session_count_;
-  for (size_t i = 0; i < cached_outputs_.size(); ++i) {
-    if (cached_outputs_[i].type == OUTPUT_TYPE_INTERNAL) {
-      has_internal_output = true;
-      break;
-    }
-  }
-
-  // "Projecting" is defined as having more than 1 output connected while at
-  // least one of them is an internal output.
-  bool is_projecting = has_internal_output && (connected_output_count > 1);
-  delegate_->SendProjectingStateToPowerManager(is_projecting);
 }
 
 OutputConfigurator::OutputProtectionClientId
@@ -398,7 +380,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
       case OUTPUT_TYPE_DVI:
       case OUTPUT_TYPE_HDMI: {
         HDCPState state;
-        if (!delegate_->GetHDCPState(this_id, &state))
+        if (!native_display_delegate_->GetHDCPState(this_id, &state))
           return false;
         if (state == HDCP_STATE_ENABLED)
           enabled |= OUTPUT_PROTECTION_METHOD_HDCP;
@@ -485,7 +467,7 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
     return true;
 
-  delegate_->GrabServer();
+  native_display_delegate_->GrabServer();
   UpdateCachedOutputs();
 
   const OutputState new_state = ChooseOutputState(power_state);
@@ -504,10 +486,10 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
     // Force the DPMS on since the driver doesn't always detect that it
     // should turn on. This is needed when coming back from idle suspend.
     if (success && power_state != DISPLAY_POWER_ALL_OFF)
-      delegate_->ForceDPMSOn();
+      native_display_delegate_->ForceDPMSOn();
   }
 
-  delegate_->UngrabServer();
+  native_display_delegate_->UngrabServer();
   if (attempted_change)
     NotifyObservers(success, new_state);
   return true;
@@ -527,11 +509,11 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
     return true;
   }
 
-  delegate_->GrabServer();
+  native_display_delegate_->GrabServer();
   UpdateCachedOutputs();
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_);
-  delegate_->UngrabServer();
+  native_display_delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
   return success;
@@ -543,7 +525,7 @@ uint32_t OutputConfigurator::Dispatch(const base::NativeEvent& event) {
 
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     VLOG(1) << "Received RRScreenChangeNotify event";
-    delegate_->UpdateXRandRConfiguration(event);
+    native_display_delegate_->UpdateXRandRConfiguration(event);
     return POST_DISPATCH_PERFORM_DEFAULT;
   }
 
@@ -611,18 +593,6 @@ base::EventStatus OutputConfigurator::WillProcessEvent(
 void OutputConfigurator::DidProcessEvent(const base::NativeEvent& event) {
 }
 
-void OutputConfigurator::OnCastingSessionStartedOrStopped(bool started) {
-  if (started) {
-    ++casting_session_count_;
-  } else {
-    DCHECK_GT(casting_session_count_, 0);
-    --casting_session_count_;
-    if (casting_session_count_ < 0)
-      casting_session_count_ = 0;
-  }
-  SendProjectingStateToPowerManager();
-}
-
 void OutputConfigurator::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -644,7 +614,7 @@ void OutputConfigurator::SuspendDisplays() {
     // We need to make sure that the monitor configuration we just did actually
     // completes before we return, because otherwise the X message could be
     // racing with the HandleSuspendReadiness message.
-    delegate_->SyncWithServer();
+    native_display_delegate_->SyncWithServer();
   }
 }
 
@@ -668,7 +638,7 @@ void OutputConfigurator::ScheduleConfigureOutputs() {
 }
 
 void OutputConfigurator::UpdateCachedOutputs() {
-  cached_outputs_ = delegate_->GetOutputs();
+  cached_outputs_ = native_display_delegate_->GetOutputs();
   touchscreen_delegate_->AssociateTouchscreens(&cached_outputs_);
 
   // Set |selected_mode| fields.
@@ -779,7 +749,7 @@ bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
           !external_info.interlaced;
       if (can_fit) {
         RRMode mode = external_it->first;
-        delegate_->AddOutputMode(internal_output->output, mode);
+        native_display_delegate_->AddOutputMode(internal_output->output, mode);
         internal_output->mode_infos.insert(std::make_pair(mode, external_info));
         internal_output->mirror_mode = mode;
         external_output->mirror_mode = mode;
@@ -794,15 +764,14 @@ bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
 void OutputConfigurator::ConfigureOutputs() {
   configure_timer_.reset();
 
-  delegate_->GrabServer();
+  native_display_delegate_->GrabServer();
   UpdateCachedOutputs();
   const OutputState new_state = ChooseOutputState(power_state_);
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_);
-  delegate_->UngrabServer();
+  native_display_delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
-  SendProjectingStateToPowerManager();
 }
 
 void OutputConfigurator::NotifyObservers(bool success,
@@ -968,14 +937,17 @@ bool OutputConfigurator::EnterState(
   DCHECK_EQ(cached_outputs_.size(), updated_outputs.size());
   bool all_succeeded = true;
   if (!updated_outputs.empty()) {
-    delegate_->CreateFrameBuffer(width, height, updated_outputs);
+    native_display_delegate_->CreateFrameBuffer(width, height, updated_outputs);
     for (size_t i = 0; i < updated_outputs.size(); ++i) {
       const OutputSnapshot& output = updated_outputs[i];
       bool configure_succeeded =false;
 
       while (true) {
-        if (delegate_->ConfigureCrtc(output.crtc, output.current_mode,
-                                       output.output, output.x, output.y)) {
+        if (native_display_delegate_->ConfigureCrtc(output.crtc,
+                                                    output.current_mode,
+                                                    output.output,
+                                                    output.x,
+                                                    output.y)) {
           configure_succeeded = true;
           break;
         }
