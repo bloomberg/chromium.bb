@@ -239,7 +239,11 @@ void RenderLayerCompositor::enableCompositingMode(bool enable /* = true */)
 
         if (m_compositing) {
             ensureRootLayer();
-            notifyIFramesOfCompositingChange();
+            // IFrames are special, because we hook compositing layers together across iframe boundaries
+            // when both parent and iframe content are composited. So when this frame becomes composited,
+            // we have to reconsider requirements for owners.
+            if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement())
+                ownerElement->document().renderView()->compositor()->setNeedsToRecomputeCompositingRequirements();
         } else
             destroyRootLayer();
     }
@@ -2478,33 +2482,6 @@ bool RenderLayerCompositor::isMainFrame() const
 {
     // FIXME: Frame::isMainFrame() is probably better.
     return !m_renderView->document().ownerElement();
-}
-
-// IFrames are special, because we hook compositing layers together across iframe boundaries
-// when both parent and iframe content are composited. So when this frame becomes composited, we have
-// to use a synthetic style change to get the iframes into RenderLayers in order to allow them to composite.
-void RenderLayerCompositor::notifyIFramesOfCompositingChange()
-{
-    if (!m_renderView->frameView())
-        return;
-    Frame& frame = m_renderView->frameView()->frame();
-
-    for (Frame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
-        if (!child->document())
-            continue; // FIXME: Can this happen?
-        if (HTMLFrameOwnerElement* ownerElement = child->document()->ownerElement()) {
-            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
-            ownerElement->scheduleLayerUpdate();
-        }
-    }
-
-    // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
-    // we need to schedule a style recalc in our parent document.
-    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
-        ownerElement->document().renderView()->compositor()->setNeedsToRecomputeCompositingRequirements();
-        DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
-        ownerElement->scheduleLayerUpdate();
-    }
 }
 
 bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
