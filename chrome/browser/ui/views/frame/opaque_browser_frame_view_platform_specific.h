@@ -7,16 +7,26 @@
 
 class OpaqueBrowserFrameView;
 class OpaqueBrowserFrameViewLayout;
+class Profile;
 
 // Handles platform specific configuration concepts.
 class OpaqueBrowserFrameViewPlatformSpecific {
  public:
   virtual ~OpaqueBrowserFrameViewPlatformSpecific() {}
 
+  // Returns whether we're using native system like rendering for theme
+  // elements.
+  //
+  // Why not just ask ThemeService::UsingNativeTheme()? Because on Windows, the
+  // default theme is UsingNativeTheme(). Therefore, the default implementation
+  // always returns false and we specifically override this on Linux.
+  virtual bool IsUsingNativeTheme();
+
   // Builds an observer for |view| and |layout|.
   static OpaqueBrowserFrameViewPlatformSpecific* Create(
       OpaqueBrowserFrameView* view,
-      OpaqueBrowserFrameViewLayout* layout);
+      OpaqueBrowserFrameViewLayout* layout,
+      Profile* profile);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_PLATFORM_SPECIFIC_H_

@@ -120,6 +120,8 @@ const int kThemeImages[] = {
   IDR_THEME_TOOLBAR,
   IDR_THEME_TAB_BACKGROUND,
   IDR_THEME_TAB_BACKGROUND_INCOGNITO,
+  IDR_FRAME,
+  IDR_FRAME_INACTIVE,
   IDR_THEME_FRAME,
   IDR_THEME_FRAME_INACTIVE,
   IDR_THEME_FRAME_INCOGNITO,
@@ -999,9 +1001,11 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
       return GenerateTabImage(IDR_THEME_FRAME);
     case IDR_THEME_TAB_BACKGROUND_INCOGNITO:
       return GenerateTabImage(IDR_THEME_FRAME_INCOGNITO);
+    case IDR_FRAME:
     case IDR_THEME_FRAME:
       return GenerateFrameImage(ThemeProperties::COLOR_FRAME,
                                 "frame-gradient-color");
+    case IDR_FRAME_INACTIVE:
     case IDR_THEME_FRAME_INACTIVE:
       return GenerateFrameImage(ThemeProperties::COLOR_FRAME_INACTIVE,
                                 "inactive-frame-gradient-color");

@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 
+class ThemeService;
+
 // Plumbs button change events from views::LinuxUI to
 // OpaqueBrowserFrameViewLayout.
 class OpaqueBrowserFrameViewLinux
@@ -18,8 +20,12 @@ class OpaqueBrowserFrameViewLinux
  public:
   OpaqueBrowserFrameViewLinux(
       OpaqueBrowserFrameView* view,
-      OpaqueBrowserFrameViewLayout* layout);
+      OpaqueBrowserFrameViewLayout* layout,
+      Profile* profile);
   virtual ~OpaqueBrowserFrameViewLinux();
+
+  // Overridden from OpaqueBrowserFrameViewPlatformSpecific:
+  virtual bool IsUsingNativeTheme() OVERRIDE;
 
   // Overridden from views::WindowButtonOrderObserver:
   virtual void OnWindowButtonOrderingChange(
@@ -29,6 +35,8 @@ class OpaqueBrowserFrameViewLinux
  private:
   OpaqueBrowserFrameView* view_;
   OpaqueBrowserFrameViewLayout* layout_;
+
+  ThemeService* theme_service_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLinux);
 };

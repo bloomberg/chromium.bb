@@ -6,13 +6,18 @@
 
 #include "build/build_config.h"
 
+bool OpaqueBrowserFrameViewPlatformSpecific::IsUsingNativeTheme() {
+  return false;
+}
+
 #if defined(OS_WIN)
 
 // static
 OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
-    OpaqueBrowserFrameViewLayout* layout) {
+    OpaqueBrowserFrameViewLayout* layout,
+    Profile* profile) {
   return new OpaqueBrowserFrameViewPlatformSpecific();
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_linux.h"
 
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -13,9 +15,11 @@
 
 OpaqueBrowserFrameViewLinux::OpaqueBrowserFrameViewLinux(
     OpaqueBrowserFrameView* view,
-    OpaqueBrowserFrameViewLayout* layout)
+    OpaqueBrowserFrameViewLayout* layout,
+    Profile* profile)
     : view_(view),
-      layout_(layout) {
+      layout_(layout),
+      theme_service_(ThemeServiceFactory::GetForProfile(profile)) {
   views::LinuxUI* ui = views::LinuxUI::instance();
   if (ui)
     ui->AddWindowButtonOrderObserver(this);
@@ -25,6 +29,12 @@ OpaqueBrowserFrameViewLinux::~OpaqueBrowserFrameViewLinux() {
   views::LinuxUI* ui = views::LinuxUI::instance();
   if (ui)
     ui->RemoveWindowButtonOrderObserver(this);
+}
+
+bool OpaqueBrowserFrameViewLinux::IsUsingNativeTheme() {
+  // On X11, this does the correct thing. On Windows, UsingNativeTheme() will
+  // return true when using the default blue theme too.
+  return theme_service_->UsingNativeTheme();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,6 +62,7 @@ void OpaqueBrowserFrameViewLinux::OnWindowButtonOrderingChange(
 OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
       OpaqueBrowserFrameView* view,
-      OpaqueBrowserFrameViewLayout* layout) {
-  return new OpaqueBrowserFrameViewLinux(view, layout);
+      OpaqueBrowserFrameViewLayout* layout,
+      Profile* profile) {
+  return new OpaqueBrowserFrameViewLinux(view, layout, profile);
 }

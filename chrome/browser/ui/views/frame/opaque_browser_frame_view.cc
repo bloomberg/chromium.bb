@@ -159,8 +159,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                    content::NotificationService::AllSources());
   }
 
-  platform_observer_.reset(
-      OpaqueBrowserFrameViewPlatformSpecific::Create(this, layout_));
+  platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
+      this, layout_, browser_view->browser()->profile()));
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
@@ -856,24 +856,25 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 
 SkColor OpaqueBrowserFrameView::GetFrameColor() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
-  if (browser_view()->IsBrowserTypeNormal()) {
-    if (ShouldPaintAsActive()) {
-      return GetThemeProvider()->GetColor(is_incognito ?
-          ThemeProperties::COLOR_FRAME_INCOGNITO :
-          ThemeProperties::COLOR_FRAME);
-    }
-    return GetThemeProvider()->GetColor(is_incognito ?
-        ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE :
-        ThemeProperties::COLOR_FRAME_INACTIVE);
-  }
-  // Never theme app and popup windows.
+  ThemeProperties::OverwritableByUserThemeProperty color_id;
   if (ShouldPaintAsActive()) {
-    return ThemeProperties::GetDefaultColor(is_incognito ?
-        ThemeProperties::COLOR_FRAME_INCOGNITO : ThemeProperties::COLOR_FRAME);
+    color_id = is_incognito ?
+               ThemeProperties::COLOR_FRAME_INCOGNITO :
+               ThemeProperties::COLOR_FRAME;
+  } else {
+    color_id = is_incognito ?
+               ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE :
+               ThemeProperties::COLOR_FRAME_INACTIVE;
   }
-  return ThemeProperties::GetDefaultColor(is_incognito ?
-      ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE :
-      ThemeProperties::COLOR_FRAME_INACTIVE);
+
+  if (browser_view()->IsBrowserTypeNormal() ||
+      platform_observer_->IsUsingNativeTheme()) {
+    return GetThemeProvider()->GetColor(color_id);
+  }
+
+  // Never theme app and popup windows unless the |platform_observer_|
+  // requested an override.
+  return ThemeProperties::GetDefaultColor(color_id);
 }
 
 gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
@@ -889,8 +890,6 @@ gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
     }
     return GetThemeProvider()->GetImageSkiaNamed(resource_id);
   }
-  // Never theme app and popup windows.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
     resource_id = is_incognito ?
         IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
@@ -898,6 +897,15 @@ gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
     resource_id = is_incognito ?
         IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
+
+  if (platform_observer_->IsUsingNativeTheme()) {
+    // We want to use theme images provided by the platform theme when enabled,
+    // even if we are an app or popup window.
+    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
+  }
+
+  // Otherwise, never theme app and popup windows.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetImageSkiaNamed(resource_id);
 }
 
