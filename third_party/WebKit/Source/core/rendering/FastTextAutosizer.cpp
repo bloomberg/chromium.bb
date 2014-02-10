@@ -106,6 +106,7 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 {
     if (!enabled())
         return;
+    ASSERT(listItem && listItemMarker);
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(listItem);
 #endif
@@ -405,6 +406,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
 
 void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier)
 {
+    ASSERT(renderer);
     RenderStyle* currentStyle = renderer->style();
     if (currentStyle->textAutosizingMultiplier() == multiplier)
         return;

@@ -319,9 +319,11 @@ void RenderListItem::layout()
 
     // The marker must be autosized before calling updateMarkerLocation.
     // It cannot be done in the parent's beginLayout because it is not yet in the render tree.
-    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
-    if (textAutosizer)
-        textAutosizer->inflateListItem(this, m_marker);
+    if (m_marker) {
+        FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
+        if (textAutosizer)
+            textAutosizer->inflateListItem(this, m_marker);
+    }
 
     LayoutRectRecorder recorder(*this);
     updateMarkerLocation();
