@@ -86,6 +86,7 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_LAYOUTS_SYSTEM_QWERTY);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer_loader.js", IDR_KEYBOARD_POLYMER_LOADER);
+  source->AddResourcePath("roboto_bold.ttf", IDR_KEYBOARD_ROBOTO_BOLD_TTF);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);
 
   // These files are specific to the WebUI version
