@@ -16,11 +16,11 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.common.ProcessInitException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

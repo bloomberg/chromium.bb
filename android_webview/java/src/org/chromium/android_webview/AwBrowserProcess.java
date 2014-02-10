@@ -8,9 +8,9 @@ import android.content.Context;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.app.LibraryLoader;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.common.ProcessInitException;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.

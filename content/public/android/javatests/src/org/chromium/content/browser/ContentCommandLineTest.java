@@ -8,12 +8,15 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellApplication;
 
+/**
+ * Test class for command lines.
+ */
 public class ContentCommandLineTest extends InstrumentationTestCase {
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
     // and switch4 is [a "quoted" 'food'!]

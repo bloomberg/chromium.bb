@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.MessageQueue;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.content.browser.TracingControllerAndroid;
 
 /**

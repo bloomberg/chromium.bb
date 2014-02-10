@@ -1,22 +1,25 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content_linker_test_apk;
+package org.chromium.chromium_linker_test_apk;
 
 import android.util.Log;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.Linker;
+import org.chromium.base.library_loader.Linker;
 
-// A class that is only used in linker test APK to perform runtime checks
-// in the current process.
+/**
+ *  A class that is only used in linker test APK to perform runtime checks
+ * in the current process.
+ */
 @JNINamespace("content")
 public class LinkerTests implements Linker.TestRunner {
     private static final String TAG = "LinkerTests";
 
     public LinkerTests() {}
 
+    @Override
     public boolean runChecks(int memoryDeviceConfig,
                              boolean isBrowserProcess) {
         boolean checkSharedRelro;

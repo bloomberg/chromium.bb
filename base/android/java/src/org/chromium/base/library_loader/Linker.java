@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.app;
+package org.chromium.base.library_loader;
 
 import android.os.Bundle;
 import android.os.Parcel;
@@ -104,7 +104,7 @@ import java.util.Map;
  *  - A service process shall call either initServiceProcess() or
  *    disableSharedRelros() early (i.e. before any loadLibrary() call).
  *    Otherwise, the linker considers that it is running inside the browser
- *    process. This is because various content-based projects have vastly
+ *    process. This is because various Chromium projects have vastly
  *    different initialization paths.
  *
  *    disableSharedRelros() completely disables shared RELROs, and loadLibrary()
@@ -115,7 +115,7 @@ import java.util.Map;
  *
  *  - The browser is in charge of deciding where in memory each library should
  *    be loaded. This address must be passed to each service process (see
- *    LinkerParams.java for a helper class to do so).
+ *    ChromiumLinkerParams.java in content for a helper class to do so).
  *
  *  - The browser will also generate shared RELROs for each library it loads.
  *    More specifically, by default when in the browser process, the linker
@@ -151,7 +151,7 @@ import java.util.Map;
 public class Linker {
 
     // Log tag for this class. This must match the name of the linker's native library.
-    private static final String TAG = "content_android_linker";
+    private static final String TAG = "chromium_android_linker";
 
     // Set to true to enable debug logs.
     private static final boolean DEBUG = false;
@@ -350,12 +350,12 @@ public class Linker {
     }
 
     /**
-     * Call this method to determine if this content-based project must
+     * Call this method to determine if this chromium project must
      * use this linker. If not, System.loadLibrary() should be used to load
      * libraries instead.
      */
     public static boolean isUsed() {
-        // Only GYP targets that are APKs and have the 'use_content_linker' variable
+        // Only GYP targets that are APKs and have the 'use_chromium_linker' variable
         // defined as 1 will use this linker. For all others (the default), the
         // auto-generated NativeLibraries.USE_LINKER variable will be false.
         if (!NativeLibraries.USE_LINKER)
@@ -904,7 +904,7 @@ public class Linker {
                 try {
                     ParcelFileDescriptor.adoptFd(mRelroFd).close();
                 } catch (java.io.IOException e) {
-                  if (DEBUG) Log.e(TAG, "Failed to close fd: " + mRelroFd);
+                    if (DEBUG) Log.e(TAG, "Failed to close fd: " + mRelroFd);
                 }
                 mRelroFd = -1;
             }
@@ -1009,5 +1009,5 @@ public class Linker {
 
     // Used to pass the shared RELRO Bundle through Binder.
     public static final String EXTRA_LINKER_SHARED_RELROS =
-        "org.chromium.content.common.linker.shared_relros";
+        "org.chromium.base.android.linker.shared_relros";
 }

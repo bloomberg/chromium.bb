@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content_linker_test_apk;
+package org.chromium.chromium_linker_test_apk;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,12 +14,12 @@ import android.view.View;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.app.Linker;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.Linker;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -28,11 +28,11 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Test activity used for verifying the different configuration options for the ContentLinker.
  */
-public class ContentLinkerTestActivity extends Activity {
+public class ChromiumLinkerTestActivity extends Activity {
     public static final String COMMAND_LINE_FILE =
-            "/data/local/tmp/content-linker-test-command-line";
+            "/data/local/tmp/chromium-linker-test-command-line";
 
-    private static final String TAG = "ContentLinkerTestActivity";
+    private static final String TAG = "ChromiumLinkerTestActivity";
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
@@ -87,7 +87,7 @@ public class ContentLinkerTestActivity extends Activity {
         try {
             LibraryLoader.ensureInitialized();
         } catch (ProcessInitException e) {
-            Log.i(TAG, "Cannot load content_linker_test:" +  e);
+            Log.i(TAG, "Cannot load chromium_linker_test:" +  e);
         }
 
         // Now, start a new renderer process by creating a new view.
@@ -171,10 +171,6 @@ public class ContentLinkerTestActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mWindowAndroid.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private static String getUrlFromIntent(Intent intent) {
-        return intent != null ? intent.getDataString() : null;
     }
 
     private static String[] getCommandLineParamsFromIntent(Intent intent) {

@@ -18,11 +18,13 @@ import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.Linker;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
-import org.chromium.content.common.ProcessInitException;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,7 +55,7 @@ public class ChildProcessService extends Service {
     private ArrayList<Integer> mFileIds;
     private ArrayList<ParcelFileDescriptor> mFileFds;
     // Linker-specific parameters for this child process service.
-    private LinkerParams mLinkerParams;
+    private ChromiumLinkerParams mLinkerParams;
 
     private static AtomicReference<Context> sContext = new AtomicReference<Context>(null);
     private boolean mLibraryInitialized = false;
@@ -196,6 +198,7 @@ public class ChildProcessService extends Service {
                     mMainThread.wait();
                 }
             } catch (InterruptedException e) {
+                // Ignore
             }
         }
         // Try to shutdown the MainThread gracefully, but it might not
@@ -216,7 +219,7 @@ public class ChildProcessService extends Service {
                     ChildProcessConnection.EXTRA_COMMAND_LINE);
             mLinkerParams = null;
             if (Linker.isUsed())
-                mLinkerParams = new LinkerParams(intent);
+                mLinkerParams = new ChromiumLinkerParams(intent);
             mIsBound = true;
             mMainThread.notifyAll();
         }

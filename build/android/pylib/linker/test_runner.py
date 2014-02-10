@@ -17,7 +17,7 @@ from pylib.utils import apk_helper
 
 
 # Name of the Android package to install for this to work.
-_PACKAGE_NAME = 'ContentLinkerTest'
+_PACKAGE_NAME = 'ChromiumLinkerTest'
 
 
 class LinkerExceptionTestResult(base_test_result.BaseTestResult):

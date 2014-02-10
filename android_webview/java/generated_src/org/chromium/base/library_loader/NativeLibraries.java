@@ -1,15 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.app;
+package org.chromium.base.library_loader;
 
+/**
+ * This class defines the native libraries and loader options required by webview
+ */
 public class NativeLibraries {
-    // Set to true to use the content linker. Only useful to save memory
+    // Set to true to use the chromium linker. Only useful to save memory
     // on multi-process content-based projects. Always disabled for the Android Webview.
     public static boolean USE_LINKER = false;
 
-    // Set to true to enable content linker test support. NEVER enable this for the
+    // Set to true to enable chromium linker test support. NEVER enable this for the
     // Android webview.
     public static boolean ENABLE_LINKER_TESTS = false;
 

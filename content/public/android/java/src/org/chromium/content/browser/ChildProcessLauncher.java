@@ -13,9 +13,9 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
-import org.chromium.content.app.Linker;
-import org.chromium.content.app.LinkerParams;
+import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
@@ -86,7 +86,7 @@ public class ChildProcessLauncher {
 
         public ChildProcessConnection allocate(
                 Context context, ChildProcessConnection.DeathCallback deathCallback,
-                LinkerParams linkerParams) {
+                ChromiumLinkerParams chromiumLinkerParams) {
             synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
                     Log.w(TAG, "Ran out of service.");
@@ -95,7 +95,7 @@ public class ChildProcessLauncher {
                 int slot = mFreeConnectionIndices.remove(0);
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
-                        mInSandbox, deathCallback, mChildClass, linkerParams);
+                        mInSandbox, deathCallback, mChildClass, chromiumLinkerParams);
                 return mChildProcessConnections[slot];
             }
         }
@@ -145,7 +145,7 @@ public class ChildProcessLauncher {
     }
 
     private static ChildProcessConnection allocateConnection(Context context,
-            boolean inSandbox, LinkerParams linkerParams) {
+            boolean inSandbox, ChromiumLinkerParams chromiumLinkerParams) {
         ChildProcessConnection.DeathCallback deathCallback =
             new ChildProcessConnection.DeathCallback() {
                 @Override
@@ -154,13 +154,14 @@ public class ChildProcessLauncher {
                 }
             };
         sConnectionAllocated = true;
-        return getConnectionAllocator(inSandbox).allocate(context, deathCallback, linkerParams);
+        return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
+                chromiumLinkerParams);
     }
 
     private static boolean sLinkerInitialized = false;
     private static long sLinkerLoadAddress = 0;
 
-    private static LinkerParams getLinkerParamsForNewConnection() {
+    private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
         if (!sLinkerInitialized) {
             if (Linker.isUsed()) {
                 sLinkerLoadAddress = Linker.getBaseLoadAddress();
@@ -176,15 +177,16 @@ public class ChildProcessLauncher {
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;
-        return new LinkerParams(sLinkerLoadAddress,
+        return new ChromiumLinkerParams(sLinkerLoadAddress,
                                 waitForSharedRelros,
                                 Linker.getTestRunnerClassName());
     }
 
     private static ChildProcessConnection allocateBoundConnection(Context context,
             String[] commandLine, boolean inSandbox) {
-        LinkerParams linkerParams = getLinkerParamsForNewConnection();
-        ChildProcessConnection connection = allocateConnection(context, inSandbox, linkerParams);
+        ChromiumLinkerParams chromiumLinkerParams = getLinkerParamsForNewConnection();
+        ChildProcessConnection connection =
+                allocateConnection(context, inSandbox, chromiumLinkerParams);
         if (connection != null) {
             connection.start(commandLine);
         }

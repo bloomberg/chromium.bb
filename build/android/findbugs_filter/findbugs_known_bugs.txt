@@ -1,3 +1,5 @@
+H B Nm: The class name org.chromium.base.library_loader.ProcessInitException shadows the simple name of the superclass org.chromium.content.common.ProcessInitException  At ProcessInitException.java
+H B Nm: The class name org.chromium.content.app.LibraryLoader shadows the simple name of the superclass org.chromium.base.library_loader.LibraryLoader  At LibraryLoader.java
 H C EC: Using pointer equality to compare a JavaBridgeCoercionTest$CustomType with a JavaBridgeCoercionTest$CustomType2 in org.chromium.content.browser.JavaBridgeCoercionTest.testPassJavaObject()  At JavaBridgeCoercionTest.java
 H P Bx: Boxing/unboxing to parse a primitive org.chromium.content.browser.ViewportTest.evaluateIntegerValue(String)  At ViewportTest.java
 M B RV: Exceptional return value of java.io.File.delete() ignored in org.chromium.base.test.util.TestFileUtil.deleteFile(String)  At TestFileUtil.java

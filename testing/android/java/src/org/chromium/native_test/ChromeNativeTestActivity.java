@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,13 @@ import android.util.Log;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
-// TODO(cjhopman): This should not refer to content. NativeLibraries should be moved to base.
-import org.chromium.content.app.NativeLibraries;
+import org.chromium.base.library_loader.NativeLibraries;
 
-// Android's NativeActivity is mostly useful for pure-native code.
-// Our tests need to go up to our own java classes, which is not possible using
-// the native activity class loader.
+/**
+ *  Android's NativeActivity is mostly useful for pure-native code.
+ *  Our tests need to go up to our own java classes, which is not possible using
+ *  the native activity class loader.
+ */
 public class ChromeNativeTestActivity extends Activity {
     private static final String TAG = "ChromeNativeTestActivity";
     private static final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
@@ -68,7 +69,7 @@ public class ChromeNativeTestActivity extends Activity {
     }
 
     private void loadLibraries() {
-        for (String library: NativeLibraries.LIBRARIES) {
+        for (String library : NativeLibraries.LIBRARIES) {
             Log.i(TAG, "loading: " + library);
             System.loadLibrary(library);
             Log.i(TAG, "loaded: " + library);

@@ -29,7 +29,7 @@
 
    To build and run the linker tests, do the following:
 
-     ninja -C out/Debug content_linker_test_apk
+     ninja -C out/Debug chromium_linker_test_apk
      build/android/test_runner.py linker
 
 """
@@ -47,13 +47,13 @@ from pylib.base import base_test_result
 
 ResultType = base_test_result.ResultType
 
-_PACKAGE_NAME = 'org.chromium.content_linker_test_apk'
-_ACTIVITY_NAME = '.ContentLinkerTestActivity'
-_COMMAND_LINE_FILE = '/data/local/tmp/content-linker-test-command-line'
+_PACKAGE_NAME = 'org.chromium.chromium_linker_test_apk'
+_ACTIVITY_NAME = '.ChromiumLinkerTestActivity'
+_COMMAND_LINE_FILE = '/data/local/tmp/chromium-linker-test-command-line'
 
 # Path to the Linker.java source file.
 _LINKER_JAVA_SOURCE_PATH = (
-    'content/public/android/java/src/org/chromium/content/app/Linker.java')
+  'base/android/java/src/org/chromium/base/library_loader/Linker.java')
 
 # A regular expression used to extract the browser shared RELRO configuration
 # from the Java source file above.
@@ -64,9 +64,9 @@ _RE_LINKER_BROWSER_CONFIG = re.compile(
 
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
-# it is handy to have the 'content_android_linker' ones as well when
+# it is handy to have the 'chromium_android_linker' ones as well when
 # troubleshooting.
-_LOGCAT_FILTERS = [ '*:s', 'chromium:v', 'content_android_linker:v' ]
+_LOGCAT_FILTERS = [ '*:s', 'chromium:v', 'chromium_android_linker:v' ]
 #_LOGCAT_FILTERS = [ '*:v' ]  ## DEBUG
 
 # Regular expression used to match status lines in logcat.

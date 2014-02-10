@@ -9,10 +9,13 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LoaderErrors;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.AdvancedMockContext;
-import org.chromium.content.common.ProcessInitException;
-import org.chromium.content.common.ResultCodes;
 
+/**
+ * Test of BrowserStartupController
+ */
 public class BrowserStartupControllerTest extends InstrumentationTestCase {
 
     private TestBrowserStartupController mController;
@@ -26,7 +29,8 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
         @Override
         void prepareToStartBrowserProcess(int numRenderers) throws ProcessInitException {
             if (!mLibraryLoadSucceeds) {
-                throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_LIBRARY_LOAD_FAILED);
+                throw new ProcessInitException(
+                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
             }
         }
 

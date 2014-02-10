@@ -371,21 +371,6 @@
           'includes': [ '../build/java_aidl.gypi' ],
         },
         {
-          'target_name': 'content_native_libraries_gen',
-          'type': 'none',
-          'sources': [
-            'public/android/java/templates/NativeLibraries.template',
-          ],
-          'variables': {
-            'package_name': 'org/chromium/content/app',
-            'include_path': 'public/android/java/templates',
-            'template_deps': [
-              'public/android/java/templates/native_libraries_array.h'
-            ],
-          },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
-        },
-        {
           'target_name': 'content_java',
           'type': 'none',
           'dependencies': [
@@ -400,11 +385,9 @@
             'result_codes_java',
             'speech_recognition_error_java',
             'top_controls_state_java',
-            'content_native_libraries_gen',
           ],
           'variables': {
             'java_in_dir': '../content/public/android/java',
-            'jar_excluded_classes': [ '*/NativeLibraries.class' ],
             'has_java_resources': 1,
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',
@@ -508,24 +491,6 @@
           ],
           'includes': [ 'content_jni.gypi' ],
         },
-        {
-          'target_name': 'content_android_linker',
-          'type': 'shared_library',
-          'conditions': [
-            ['android_webview_build == 0', {
-              # Avoid breaking the webview build because it doesn't have
-              # <(android_ndk_root)/crazy_linker.gyp. Note that it never uses
-              # the linker anyway.
-              'sources': [
-                'common/android/linker/linker_jni.cc',
-              ],
-              'dependencies': [
-                '<(android_ndk_root)/crazy_linker.gyp:crazy_linker',
-              ],
-            }],
-          ],
-        },
-
       ],
     }],  # OS == "android"
   ],

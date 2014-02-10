@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is the Android-specific content linker, a tiny shared library
+// This is the Android-specific Chromium linker, a tiny shared library
 // implementing a custom dynamic linker that can be used to load the
-// real content-based libraries (e.g. libcontentshell.so).
+// real Chromium libraries (e.g. libcontentshell.so).
 
 // The main point of this linker is to be able to share the RELRO
 // section of libcontentshell.so (or equivalent) between the browser and
@@ -24,7 +24,7 @@
 // in base/ which hasn't been loaded yet.
 #define DEBUG 0
 
-#define TAG "content_android_linker"
+#define TAG "chromium_android_linker"
 
 #if DEBUG
 #define LOG_INFO(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
@@ -154,7 +154,7 @@ struct LibInfo_class {
   bool Init(JNIEnv* env) {
     jclass clazz;
     if (!InitClassReference(
-             env, "org/chromium/content/app/Linker$LibInfo", &clazz)) {
+             env, "org/chromium/base/library_loader/Linker$LibInfo", &clazz)) {
       return false;
     }
 
@@ -221,7 +221,7 @@ crazy_context_t* GetCrazyContext() {
   return s_crazy_context;
 }
 
-// Load a library with the content linker. This will also call its
+// Load a library with the chromium linker. This will also call its
 // JNI_OnLoad() method, which shall register its methods. Note that
 // lazy native method resolution will _not_ work after this, because
 // Dalvik uses the system's dlsym() which won't see the new library,
@@ -387,7 +387,7 @@ const JNINativeMethod kNativeMethods[] = {
      "("
      "Ljava/lang/String;"
      "J"
-     "Lorg/chromium/content/app/Linker$LibInfo;"
+     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
      ")"
      "Z",
      reinterpret_cast<void*>(&LoadLibrary)},
@@ -395,14 +395,14 @@ const JNINativeMethod kNativeMethods[] = {
      "("
      "Ljava/lang/String;"
      "J"
-     "Lorg/chromium/content/app/Linker$LibInfo;"
+     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
      ")"
      "Z",
      reinterpret_cast<void*>(&CreateSharedRelro)},
     {"nativeUseSharedRelro",
      "("
      "Ljava/lang/String;"
-     "Lorg/chromium/content/app/Linker$LibInfo;"
+     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
      ")"
      "Z",
      reinterpret_cast<void*>(&UseSharedRelro)},
@@ -434,7 +434,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // Register native methods.
   jclass linker_class;
   if (!InitClassReference(
-           env, "org/chromium/content/app/Linker", &linker_class))
+           env, "org/chromium/base/library_loader/Linker", &linker_class))
     return -1;
 
   LOG_INFO("%s: Registering native methods", __FUNCTION__);

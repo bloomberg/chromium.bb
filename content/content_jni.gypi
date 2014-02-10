@@ -10,7 +10,6 @@
   'sources': [
     'public/android/java/src/org/chromium/content/app/ChildProcessService.java',
     'public/android/java/src/org/chromium/content/app/ContentMain.java',
-    'public/android/java/src/org/chromium/content/app/LibraryLoader.java',
     'public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java',
     'public/android/java/src/org/chromium/content/browser/BrowserStartupController.java',
     'public/android/java/src/org/chromium/content/browser/ChildProcessLauncher.java',

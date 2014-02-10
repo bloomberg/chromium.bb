@@ -16,9 +16,9 @@ import android.util.Log;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
-import org.chromium.content.app.Linker;
-import org.chromium.content.app.LinkerParams;
+import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
@@ -64,7 +64,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     private int mStrongBindingCount = 0;
 
     // Linker-related parameters.
-    private LinkerParams mLinkerParams = null;
+    private ChromiumLinkerParams mLinkerParams = null;
 
     private static final String TAG = "ChildProcessConnection";
 
@@ -183,13 +183,13 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     ChildProcessConnectionImpl(Context context, int number, boolean inSandbox,
             ChildProcessConnection.DeathCallback deathCallback,
             Class<? extends ChildProcessService> serviceClass,
-            LinkerParams linkerParams) {
+            ChromiumLinkerParams chromiumLinkerParams) {
         mContext = context;
         mServiceNumber = number;
         mInSandbox = inSandbox;
         mDeathCallback = deathCallback;
         mServiceClass = serviceClass;
-        mLinkerParams = linkerParams;
+        mLinkerParams = chromiumLinkerParams;
         mInitialBinding = new ChildServiceConnection(Context.BIND_AUTO_CREATE);
         mStrongBinding = new ChildServiceConnection(
                 Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT);

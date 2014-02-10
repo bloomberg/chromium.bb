@@ -12,10 +12,10 @@ import android.content.Intent;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**

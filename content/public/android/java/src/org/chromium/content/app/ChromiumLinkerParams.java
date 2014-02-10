@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@ import android.content.Intent;
 
 /**
  * A class to hold information passed from the browser process to each
- * service one when using the content linker. For more information, read the
+ * service one when using the chromium linker. For more information, read the
  * technical notes in Linker.java.
  */
-public class LinkerParams {
+public class ChromiumLinkerParams {
     // Use this base address to load native shared libraries. If 0, ignore other members.
     public final long mBaseLoadAddress;
 
@@ -31,7 +31,7 @@ public class LinkerParams {
     private static final String EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME =
         "org.chromium.content.common.linker_params.test_runner_class_name";
 
-    public LinkerParams(long baseLoadAddress,
+    public ChromiumLinkerParams(long baseLoadAddress,
                         boolean waitForSharedRelro,
                         String testRunnerClassName) {
         mBaseLoadAddress = baseLoadAddress;
@@ -44,7 +44,7 @@ public class LinkerParams {
      * @param intent An Intent, its content must have been populated by a previous
      * call to addIntentExtras().
      */
-    public LinkerParams(Intent intent) {
+    public ChromiumLinkerParams(Intent intent) {
         mBaseLoadAddress = intent.getLongExtra(EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS, 0);
         mWaitForSharedRelro = intent.getBooleanExtra(
                 EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, false);

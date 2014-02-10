@@ -538,7 +538,7 @@ def _RunLinkerTests(options, devices):
   report_results.LogFull(
       results=results,
       test_type='Linker test',
-      test_package='ContentLinkerTest')
+      test_package='ChromiumLinkerTest')
 
   return exit_code
 

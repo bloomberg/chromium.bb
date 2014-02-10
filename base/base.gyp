@@ -1258,6 +1258,7 @@
             'android/java/src/org/chromium/base/ContentUriUtils.java',
             'android/java/src/org/chromium/base/CpuFeatures.java',
             'android/java/src/org/chromium/base/ImportantFileWriterAndroid.java',
+            'android/java/src/org/chromium/base/library_loader/LibraryLoader.java',
             'android/java/src/org/chromium/base/MemoryPressureListener.java',
             'android/java/src/org/chromium/base/JavaHandlerThread.java',
             'android/java/src/org/chromium/base/PathService.java',
@@ -1287,14 +1288,31 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          'target_name': 'base_native_libraries_gen',
+          'type': 'none',
+          'sources': [
+            'android/java/templates/NativeLibraries.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/base/library_loader',
+            'include_path': 'android/java/templates',
+            'template_deps': [
+              'android/java/templates/native_libraries_array.h'
+            ],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
           'target_name': 'base_java',
           'type': 'none',
           'variables': {
             'java_in_dir': '../base/android/java',
+            'jar_excluded_classes': [ '*/NativeLibraries.class' ],
           },
           'dependencies': [
             'base_java_activity_state',
             'base_java_memory_pressure_level_list',
+            'base_native_libraries_gen',
           ],
           'includes': [ '../build/java.gypi' ],
           'conditions': [
@@ -1367,6 +1385,24 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
+        {
+          'target_name': 'chromium_android_linker',
+          'type': 'shared_library',
+          'conditions': [
+            ['android_webview_build == 0', {
+              # Avoid breaking the webview build because it doesn't have
+              # <(android_ndk_root)/crazy_linker.gyp. Note that it never uses
+              # the linker anyway.
+              'sources': [
+                'android/linker/linker_jni.cc',
+              ],
+              'dependencies': [
+                '<(android_ndk_root)/crazy_linker.gyp:crazy_linker',
+              ],
+            }],
+          ],
+        },
+
       ],
     }],
     ['OS == "win"', {

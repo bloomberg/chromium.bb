@@ -12,13 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.LibraryLoader;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
+/**
+ * Android activity for running content browser tests
+ */
 @JNINamespace("content")
 public class ContentBrowserTestsActivity extends Activity {
     private static final String TAG = "ChromeBrowserTestsActivity";
