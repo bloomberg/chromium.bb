@@ -64,17 +64,6 @@ public:
     SK_DECLARE_UNFLATTENABLE_OBJECT()
 
 protected:
-    // SkPixelRef implementation.
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-    virtual void* onLockPixels(SkColorTable**)
-    {
-        if (discarded)
-            return 0;
-        m_lockedMemory = &discarded;
-        return m_lockedMemory;
-    }
-#endif
-
     virtual bool onNewLockPixels(LockRec* rec)
     {
         if (discarded)

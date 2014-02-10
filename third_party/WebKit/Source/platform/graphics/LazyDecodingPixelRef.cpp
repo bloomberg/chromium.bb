@@ -60,33 +60,6 @@ SkData* LazyDecodingPixelRef::onRefEncodedData()
     return 0;
 }
 
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-void* LazyDecodingPixelRef::onLockPixels(SkColorTable**)
-{
-    TRACE_EVENT_ASYNC_BEGIN0("webkit", "LazyDecodingPixelRef::lockPixels", this);
-
-    ASSERT(!m_lockedImageResource);
-
-    SkISize size = m_frameGenerator->getFullSize();
-    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), size, m_frameIndex, &m_lockedImageResource))
-        m_lockedImageResource = 0;
-
-    // Use ImageFrameGenerator to generate the image. It will lock the cache
-    // entry for us.
-    if (!m_lockedImageResource) {
-        PlatformInstrumentation::willDecodeLazyPixelRef(getGenerationID());
-        m_lockedImageResource = m_frameGenerator->decodeAndScale(size, m_frameIndex);
-        PlatformInstrumentation::didDecodeLazyPixelRef(getGenerationID());
-    }
-    if (!m_lockedImageResource)
-        return 0;
-
-    ASSERT(!m_lockedImageResource->bitmap().isNull());
-    ASSERT(m_lockedImageResource->scaledSize() == size);
-    return m_lockedImageResource->bitmap().getAddr(0, 0);
-}
-#endif
-
 bool LazyDecodingPixelRef::onNewLockPixels(LockRec* rec)
 {
     TRACE_EVENT_ASYNC_BEGIN0("webkit", "LazyDecodingPixelRef::onNewLockPixels", this);

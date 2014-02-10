@@ -90,17 +90,6 @@ bool DiscardablePixelRef::allocAndLockDiscardableMemory(size_t bytes)
     return false;
 }
 
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-void* DiscardablePixelRef::onLockPixels(SkColorTable** ctable)
-{
-    if (!m_lockedMemory && m_discardable->lock())
-        m_lockedMemory = m_discardable->data();
-
-    *ctable = 0;
-    return m_lockedMemory;
-}
-#endif
-
 bool DiscardablePixelRef::onNewLockPixels(LockRec* rec)
 {
     if (!m_lockedMemory && m_discardable->lock())

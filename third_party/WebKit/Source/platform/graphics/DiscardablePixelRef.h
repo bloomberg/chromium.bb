@@ -57,9 +57,6 @@ public:
 
 protected:
     // SkPixelRef implementation.
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-    virtual void* onLockPixels(SkColorTable**) OVERRIDE;
-#endif
     virtual bool onNewLockPixels(LockRec*) OVERRIDE;
     virtual void onUnlockPixels() OVERRIDE;
 
