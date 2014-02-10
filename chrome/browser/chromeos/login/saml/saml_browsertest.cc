@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -43,7 +42,6 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -66,8 +64,7 @@ const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
 
 const char kFirstSAMLUserEmail[] = "bob@example.com";
 const char kSecondSAMLUserEmail[] = "alice@example.com";
-const char kHTTPSAMLUserEmail[] = "carol@example.com";
-const char kNonSAMLUserEmail[] = "dan@example.com";
+const char kNonSAMLUserEmail[] = "carol@example.com";
 
 const char kRelayState[] = "RelayState";
 
@@ -197,19 +194,9 @@ class SamlTest : public InProcessBrowserTest {
   virtual ~SamlTest() {}
 
   virtual void SetUp() OVERRIDE {
+    // Start embedded test server here so that we can get server base url
+    // and override Gaia urls in SetupCommandLine.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-    // Start the GAIA https wrapper here so that the GAIA URLs can be pointed at
-    // it in SetUpCommandLine().
-    gaia_https_forwarder_.reset(
-        new HTTPSForwarder(embedded_test_server()->base_url()));
-    ASSERT_TRUE(gaia_https_forwarder_->Start());
-
-    // Start the SAML IdP https wrapper here so that GAIA can be pointed at it
-    // in SetUpCommandLine().
-    saml_https_forwarder_.reset(
-        new HTTPSForwarder(embedded_test_server()->base_url()));
-    ASSERT_TRUE(saml_https_forwarder_->Start());
 
     // Stop IO thread here because no threads are allowed while
     // spawning sandbox host process. See crbug.com/322732.
@@ -228,21 +215,28 @@ class SamlTest : public InProcessBrowserTest {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
-    const GURL gaia_url = gaia_https_forwarder_->GetURL("");
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                    gaia_url.spec());
+    const GURL& server_url = embedded_test_server()->base_url();
 
-    const GURL saml_idp_url = saml_https_forwarder_->GetURL("SAML");
-    fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url);
+    std::string gaia_host("gaia");
+    GURL::Replacements replace_gaia_host;
+    replace_gaia_host.SetHostStr(gaia_host);
+    gaia_url_ = server_url.ReplaceComponents(replace_gaia_host);
+
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url_.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url_.spec());
+    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
+                                    gaia_url_.spec());
+    fake_gaia_.Initialize();
+
+    std::string saml_idp_host("saml.idp");
+    GURL::Replacements replace_saml_idp_host;
+    replace_saml_idp_host.SetHostStr(saml_idp_host);
+    GURL saml_idp_url = server_url.ReplaceComponents(replace_saml_idp_host);
+    saml_idp_url = saml_idp_url.Resolve("/SAML/SSO");
+
+    fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url_);
     fake_gaia_.RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
     fake_gaia_.RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
-    fake_gaia_.RegisterSamlUser(
-        kHTTPSAMLUserEmail,
-        embedded_test_server()->base_url().Resolve("/SAML"));
-
-    fake_gaia_.Initialize();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -370,10 +364,9 @@ class SamlTest : public InProcessBrowserTest {
   scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
 
  private:
+  GURL gaia_url_;
   FakeGaia fake_gaia_;
   FakeSamlIdp fake_saml_idp_;
-  scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
-  scoped_ptr<HTTPSForwarder> saml_https_forwarder_;
 
   bool saml_load_injected_;
 
@@ -530,17 +523,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   // Enter an unknown password 2nd time should go back to confirm password
   // screen.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
-}
-
-// Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
-// not https, the redirect is blocked by CSP and an error message is shown.
-IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
-  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-
-  WaitForSigninScreen();
-  GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
-
   OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
 }
 
