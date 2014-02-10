@@ -68,6 +68,8 @@ TEST(ThreadHelpers, MAYBE_IsSingleThreadedBasic) {
   base::Thread thread("sandbox_tests");
   ASSERT_TRUE(thread.Start());
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  // Explicitly stop the thread here to not pollute the next test.
+  ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
 }
 
 TEST(ThreadHelpers, MAYBE_IsSingleThreadedIterated) {
@@ -79,6 +81,8 @@ TEST(ThreadHelpers, MAYBE_IsSingleThreadedIterated) {
     base::Thread thread("sandbox_tests");
     ASSERT_TRUE(thread.Start());
     ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+    // Explicitly stop the thread here to not pollute the next test.
+    ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
   }
 }
 
