@@ -5211,6 +5211,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionSettings.ShouldDoVerificationCheck" enum="Boolean">
+  <summary>
+    When loading the chrome://extensions page, this records whether we decided
+    to do a verification check against the server (because the user had one or
+    more extensions disabled due to verification failure).
+  </summary>
+</histogram>
+
 <histogram name="ExtensionToolbarModel.BrowserActionsCount">
   <summary>
     The number of icons the Browser Actions Container knows about (visible or
