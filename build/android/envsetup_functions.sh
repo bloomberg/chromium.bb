@@ -65,10 +65,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
 
-  # TODO(beverloo): Remove these once all consumers updated to --strip-binary.
-  # http://crbug.com/142642
-  export STRIP=$(echo ${ANDROID_TOOLCHAIN}/*-strip)
-
   # The set of GYP_DEFINES to pass to gyp.
   DEFINES="OS=android"
   DEFINES+=" host_os=${host_os}"
