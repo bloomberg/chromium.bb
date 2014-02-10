@@ -910,27 +910,6 @@ crbug.com/332024 [ Win Linux ] virtual/softwarecompositing/iframes/iframe-copy-o
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-crbug.com/341448 css3/filters/effect-brightness-clamping-hw.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/effect-drop-shadow-hw.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/effect-reference-subregion.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/filter-change-repaint-composited.html [ NeedsRebaseline ]
-crbug.com/341448 css3/filters/filter-change-repaint.html [ NeedsRebaseline ]
-crbug.com/341448 svg/W3C-SVG-1.1/filters-gauss-01-b.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/W3C-SVG-1.1/filters-morph-01-f.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-in-attr.html [ NeedsRebaseline ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-stdDeviation-attr.html [ NeedsRebaseline ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-stdDeviation-call.html [ NeedsRebaseline ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-svgdom-in-prop.html [ NeedsRebaseline ]
-crbug.com/341448 svg/filters/feDropShadow-zero-deviation.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/filters/feGaussianBlur.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/filters/filterRes.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/filters/shadow-on-filter.svg [ NeedsRebaseline ]
-
 # Flaky on all platforms
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
