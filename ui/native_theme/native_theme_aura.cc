@@ -7,15 +7,41 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "ui/base/layout.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/nine_image_painter_factory.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/nine_image_painter.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/native_theme/common_theme.h"
 
+using gfx::NineImagePainter;
+
+#define EMPTY_IMAGE_GRID { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
 namespace ui {
+
+namespace {
+
+const int kScrollbarThumbImages[NativeTheme::kMaxState][9] = {
+  EMPTY_IMAGE_GRID,
+  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_HOVER),
+  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_NORMAL),
+  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_PRESSED)
+};
+
+const int kScrollbarArrowButtonImages[NativeTheme::kMaxState][9] = {
+  EMPTY_IMAGE_GRID,
+  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER),
+  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL),
+  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED)
+};
+
+const int kScrollbarTrackImages[9] = IMAGE_GRID(IDR_SCROLLBAR_BASE);
+
+}  // namespace
 
 #if !defined(OS_WIN)
 // static
@@ -32,7 +58,16 @@ NativeThemeAura* NativeThemeAura::instance() {
 
 NativeThemeAura::NativeThemeAura() {
   // We don't draw scrollbar buttons.
+#if defined(OS_CHROMEOS)
   set_scrollbar_button_length(0);
+#endif
+
+  // Image declarations assume the following order.
+  COMPILE_ASSERT(kDisabled == 0, states_unexepctedly_changed);
+  COMPILE_ASSERT(kHovered == 1, states_unexepctedly_changed);
+  COMPILE_ASSERT(kNormal == 2, states_unexepctedly_changed);
+  COMPILE_ASSERT(kPressed == 3, states_unexepctedly_changed);
+  COMPILE_ASSERT(kMaxState == 4, states_unexepctedly_changed);
 }
 
 NativeThemeAura::~NativeThemeAura() {
@@ -71,156 +106,90 @@ void NativeThemeAura::PaintMenuItemBackground(
   CommonThemePaintMenuItemBackground(canvas, state, rect);
 }
 
+void NativeThemeAura::PaintArrowButton(
+      SkCanvas* gc,
+      const gfx::Rect& rect,
+      Part direction,
+      State state) const {
+  if (direction == kInnerSpinButton) {
+    FallbackTheme::PaintArrowButton(gc, rect, direction, state);
+    return;
+  }
+  PaintPainter(GetOrCreatePainter(
+                   kScrollbarArrowButtonImages, state,
+                   scrollbar_arrow_button_painters_),
+               gc, rect);
+
+  // Aura-win uses slightly different arrow colors.
+  SkColor arrow_color = GetArrowColor(state);
+  switch (state) {
+    case kHovered:
+    case kNormal:
+      arrow_color = SkColorSetRGB(0x50, 0x50, 0x50);
+      break;
+    case kPressed:
+      arrow_color = SK_ColorWHITE;
+    default:
+      break;
+  }
+  PaintArrow(gc, rect, direction, arrow_color);
+}
+
 void NativeThemeAura::PaintScrollbarTrack(
-    SkCanvas* canvas,
+    SkCanvas* sk_canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (part == kScrollbarVerticalTrack) {
-    int center_offset = 0;
-    int center_height = rect.height();
-
-    if (rect.y() == extra_params.track_y) {
-      // TODO(derat): Honor |state| instead of only using the highlighted images
-      // after updating WebKit so we can draw the entire track in one go instead
-      // of as two separate pieces: otherwise, only the portion of the scrollbar
-      // that the mouse is over gets the highlighted state.
-      gfx::ImageSkia* top = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_VERTICAL_TOP_H);
-      DrawTiledImage(canvas, *top,
-                     0, 0, 1.0, 1.0,
-                     rect.x(), rect.y(), top->width(), top->height());
-      center_offset += top->height();
-      center_height -= top->height();
-    }
-
-    if (rect.y() + rect.height() ==
-        extra_params.track_y + extra_params.track_height) {
-      gfx::ImageSkia* bottom = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_VERTICAL_BOTTOM_H);
-      DrawTiledImage(canvas, *bottom,
-                     0, 0, 1.0, 1.0,
-                     rect.x(), rect.y() + rect.height() - bottom->height(),
-                     bottom->width(), bottom->height());
-      center_height -= bottom->height();
-    }
-
-    if (center_height > 0) {
-      gfx::ImageSkia* center = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_VERTICAL_CENTER_H);
-      DrawTiledImage(canvas, *center,
-                     0, 0, 1.0, 1.0,
-                     rect.x(), rect.y() + center_offset,
-                     center->width(), center_height);
-    }
-  } else {
-    int center_offset = 0;
-    int center_width = rect.width();
-
-    if (rect.x() == extra_params.track_x) {
-      gfx::ImageSkia* left = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_HORIZONTAL_LEFT_H);
-      DrawTiledImage(canvas, *left,
-                     0, 0, 1.0, 1.0,
-                     rect.x(), rect.y(), left->width(), left->height());
-      center_offset += left->width();
-      center_width -= left->width();
-    }
-
-    if (rect.x() + rect.width() ==
-        extra_params.track_x + extra_params.track_width) {
-      gfx::ImageSkia* right = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H);
-      DrawTiledImage(canvas, *right,
-                     0, 0, 1.0, 1.0,
-                     rect.x() + rect.width() - right->width(), rect.y(),
-                     right->width(), right->height());
-      center_width -= right->width();
-    }
-
-    if (center_width > 0) {
-      gfx::ImageSkia* center = rb.GetImageSkiaNamed(
-          IDR_SCROLL_BASE_HORIZONTAL_CENTER_H);
-      DrawTiledImage(canvas, *center,
-                     0, 0, 1.0, 1.0,
-                     rect.x() + center_offset, rect.y(),
-                     center_width, center->height());
-    }
-  }
+  if (!scrollbar_track_painter_)
+    scrollbar_track_painter_ = CreateNineImagePainter(kScrollbarTrackImages);
+  PaintPainter(scrollbar_track_painter_.get(), sk_canvas, rect);
 }
 
-void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
+void NativeThemeAura::PaintScrollbarThumb(SkCanvas* sk_canvas,
                                           Part part,
                                           State state,
                                           const gfx::Rect& rect) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (part == kScrollbarVerticalThumb) {
-    int top_resource_id =
-        state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_TOP_H :
-        state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_TOP_P :
-        IDR_SCROLL_THUMB_VERTICAL_TOP;
-    gfx::ImageSkia* top = rb.GetImageSkiaNamed(top_resource_id);
-    DrawTiledImage(canvas, *top,
-                   0, 0, 1.0, 1.0,
-                   rect.x(), rect.y(), top->width(), top->height());
+  gfx::Rect thumb_rect(rect);
+  // If there are no scrollbuttons then provide some padding so that thumb
+  // doesn't touch the top of the track.
+  const int extra_padding = (scrollbar_button_length() == 0) ? 2 : 0;
+  if (part == NativeTheme::kScrollbarVerticalThumb)
+    thumb_rect.Inset(2, extra_padding, 2, extra_padding);
+  else
+    thumb_rect.Inset(extra_padding, 2, extra_padding, 2);
+  PaintPainter(GetOrCreatePainter(
+                   kScrollbarThumbImages, state, scrollbar_thumb_painters_),
+               sk_canvas, thumb_rect);
+}
 
-    int bottom_resource_id =
-        state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H :
-        state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P :
-        IDR_SCROLL_THUMB_VERTICAL_BOTTOM;
-    gfx::ImageSkia* bottom = rb.GetImageSkiaNamed(bottom_resource_id);
-    DrawTiledImage(canvas, *bottom,
-                   0, 0, 1.0, 1.0,
-                   rect.x(), rect.y() + rect.height() - bottom->height(),
-                   bottom->width(), bottom->height());
+void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
+                                           State state,
+                                           const gfx::Rect& rect) const {
+  canvas->drawColor(SkColorSetRGB(0xF1, 0xF1, 0xF1), SkXfermode::kSrc_Mode);
+}
 
-    if (rect.height() > top->height() + bottom->height()) {
-      int center_resource_id =
-          state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_CENTER_H :
-          state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_CENTER_P :
-          IDR_SCROLL_THUMB_VERTICAL_CENTER;
-      gfx::ImageSkia* center = rb.GetImageSkiaNamed(center_resource_id);
-      DrawTiledImage(canvas, *center,
-                     0, 0, 1.0, 1.0,
-                     rect.x(), rect.y() + top->height(),
-                     center->width(),
-                     rect.height() - top->height() - bottom->height());
-    }
-  } else {
-    int left_resource_id =
-        state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H :
-        state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P :
-        IDR_SCROLL_THUMB_HORIZONTAL_LEFT;
-    gfx::ImageSkia* left = rb.GetImageSkiaNamed(left_resource_id);
-    DrawTiledImage(canvas, *left,
-                   0, 0, 1.0, 1.0,
-                   rect.x(), rect.y(), left->width(), left->height());
-
-    int right_resource_id =
-        state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H :
-        state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P :
-        IDR_SCROLL_THUMB_HORIZONTAL_RIGHT;
-    gfx::ImageSkia* right = rb.GetImageSkiaNamed(right_resource_id);
-    DrawTiledImage(canvas, *right,
-                   0, 0, 1.0, 1.0,
-                   rect.x() + rect.width() - right->width(), rect.y(),
-                   right->width(), right->height());
-
-    if (rect.width() > left->width() + right->width()) {
-      int center_resource_id =
-          state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H :
-          state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P :
-          IDR_SCROLL_THUMB_HORIZONTAL_CENTER;
-      gfx::ImageSkia* center = rb.GetImageSkiaNamed(center_resource_id);
-      DrawTiledImage(canvas, *center,
-                     0, 0, 1.0, 1.0,
-                     rect.x() + left->width(), rect.y(),
-                     rect.width() - left->width() - right->width(),
-                     center->height());
-    }
+NineImagePainter* NativeThemeAura::GetOrCreatePainter(
+    const int images[kMaxState][9],
+    State state,
+    scoped_ptr<NineImagePainter> painters[kMaxState]) const {
+  if (painters[state])
+    return painters[state].get();
+  if (images[state][0] == 0) {
+    // Must always provide normal state images.
+    DCHECK_NE(kNormal, state);
+    return GetOrCreatePainter(images, kNormal, painters);
   }
+  painters[state] = CreateNineImagePainter(images[state]);
+  return painters[state].get();
+}
+
+void NativeThemeAura::PaintPainter(NineImagePainter* painter,
+                                   SkCanvas* sk_canvas,
+                                   const gfx::Rect& rect) const {
+  DCHECK(painter);
+  scoped_ptr<gfx::Canvas> canvas(CreateCanvas(sk_canvas));
+  painter->Paint(canvas.get(), rect);
 }
 
 }  // namespace ui

@@ -133,6 +133,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   void set_scrollbar_button_length(unsigned int length) {
     scrollbar_button_length_ = length;
   }
+  int scrollbar_button_length() const { return scrollbar_button_length_; }
 
   bool IntersectsClipRectInt(SkCanvas* canvas,
                              int x, int y, int w, int h) const;
