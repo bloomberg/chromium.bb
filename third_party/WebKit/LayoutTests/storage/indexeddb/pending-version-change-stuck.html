@@ -27,7 +27,7 @@ function test()
 
 function startTheWorker()
 {
-    var worker = startWorker("resources/pending-version-change-stuck.js?" + encodeURI(dbname));
+    worker = startWorker("resources/pending-version-change-stuck.js?" + encodeURI(dbname));
     worker.onerror = function(e) {
         testFailed(e.message);
         finishJSTest();

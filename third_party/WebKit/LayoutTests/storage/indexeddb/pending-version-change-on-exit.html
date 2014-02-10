@@ -27,7 +27,7 @@ function prepareDatabase()
 
 function startTheWorker()
 {
-  var worker = startWorker("resources/pending-version-change-on-exit.js?" + encodeURIComponent(dbname));
+  worker = startWorker("resources/pending-version-change-on-exit.js?" + encodeURIComponent(dbname));
   realFinishJSTest = finishJSTest;
   worker.onerror = function(e) {
     testFailed(e.message);

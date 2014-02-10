@@ -44,7 +44,7 @@ function secondOpen() {
 
 function startTheWorker()
 {
-    var worker = startWorker("resources/pending-version-change-stuck.js?" + encodeURIComponent(dbname));
+    worker = startWorker("resources/pending-version-change-stuck.js?" + encodeURIComponent(dbname));
     worker.onerror = function(e) {
         testFailed(e.message);
         finishJSTest();
