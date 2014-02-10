@@ -4,6 +4,7 @@
 
 """Common python commands used by various build scripts."""
 
+import collections
 import contextlib
 from datetime import datetime
 from email.utils import formatdate
@@ -1649,3 +1650,50 @@ def Collection(classname, **kwargs):
   new_class.__repr__ = sn_repr
 
   return new_class
+
+
+def GetImageDiskPartitionInfo(image_path, unit='MB'):
+  """Returns the disk partition table of an image.
+
+  Args:
+    image_path: Path to the image file.
+    unit: The unit to display (e.g., 'B', 'KiB', 'KB', 'MB').
+      See `parted` documentation for more info.
+
+  Returns:
+    A dictionary of ParitionInfo items with parition names as keys.
+  """
+  lines = RunCommand(
+      ['parted', '-m', image_path, 'unit', unit, 'print'],
+      capture_output=True).output.splitlines()
+
+  # Sample output (partition #, start, end, size, file system, name, flags):
+  #   /foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
+  #   11:0.03MB:8.42MB:8.39MB::RWFW:;
+  #   6:8.42MB:8.42MB:0.00MB::KERN-C:;
+  #   7:8.42MB:8.42MB:0.00MB::ROOT-C:;
+  #   9:8.42MB:8.42MB:0.00MB::reserved:;
+  #   10:8.42MB:8.42MB:0.00MB::reserved:;
+  #   2:10.5MB:27.3MB:16.8MB::KERN-A:;
+  #   4:27.3MB:44.0MB:16.8MB::KERN-B:;
+  #   8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
+  #   12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
+  #   5:145MB:2292MB:2147MB::ROOT-B:;
+  #   3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
+  #   1:4440MB:7661MB:3221MB:ext4:STATE:;
+  keys = ['number', 'start', 'end', 'size', 'file_system', 'name', 'flags']
+  PartitionInfo = collections.namedtuple('PartitionInfo', keys)
+
+  table = {}
+  for line in lines:
+    match = re.match(r'(.*:.*:.*:.*:.*:.*:.*);', line)
+    if match:
+      d = dict(zip(keys, match.group(1).split(':')))
+      # Disregard any non-numeric partition number (e.g. the file path).
+      if d['number'].isdigit():
+        for key in ['start', 'end', 'size']:
+          d[key] = float(d[key][:-len(unit)])
+
+        table[d['name']] = PartitionInfo(**d)
+
+  return table

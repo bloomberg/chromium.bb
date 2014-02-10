@@ -23,21 +23,19 @@ class VMCreationError(VMError):
   """Raised when failed to create a VM image."""
 
 
-# TODO(yjhong): This function was adapted from crostestutils.lib.test_helper.
-# We want to migrate most of the callers to use this function instead.
-def CreateVMImage(image=None, board=None, full=True):
+def CreateVMImage(image=None, board=None, updatable=True):
   """Returns the path of the image built to run in a VM.
 
   By default, the returned VM is a test image that can run full update
-  testing on it.  This method does not return a new image if one
-  already existed.
+  testing on it. If there exists a VM image with the matching
+  |updatable| setting, this method does not return a new image.
 
   Args:
     image: Path to the image. Defaults to None to use the latest image
       for the board.
     board: Board that the image was built with. If None, attempts to use the
            configured default board.
-    full: If the vm image doesn't exist, create a "full" one which supports AU.
+    updatable: Create a VM image that supports AU.
   """
   if not image and not board:
     raise VMCreationError(
@@ -45,8 +43,17 @@ def CreateVMImage(image=None, board=None, full=True):
 
   image_dir = os.path.dirname(image)
   vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
+  # Do not create a new VM image if it already exists.
   if os.path.exists(vm_image_path):
-    return vm_image_path
+    if updatable:
+      # Check if the existing VM image is updatable.
+      table = cros_build_lib.GetImageDiskPartitionInfo(vm_image_path, unit='MB')
+      if table['ROOT-B'].size == table['ROOT-A'].size:
+        # Assume if size of the two root partitions match, the image
+        # is updatable.
+        return vm_image_path
+    else:
+      return vm_image_path
 
   logging.info('Creating %s', vm_image_path)
   cmd = ['./image_to_vm.sh', '--test_image']
@@ -55,7 +62,7 @@ def CreateVMImage(image=None, board=None, full=True):
     cmd.append(
         '--from=%s' % git.ReinterpretPathForChroot(image_dir))
 
-  if full:
+  if updatable:
     cmd.extend(['--disk_layout', '2gb-rootfs-updatable'])
 
   if board:
