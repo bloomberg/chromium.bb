@@ -2508,7 +2508,7 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
 bool RenderBox::autoWidthShouldFitContent() const
 {
     return node() && (node()->hasTagName(inputTag) || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag)
-        || node()->hasTagName(textareaTag) || node()->hasTagName(legendTag));
+        || node()->hasTagName(textareaTag) || (node()->hasTagName(legendTag) && !style()->hasOutOfFlowPosition()));
 }
 
 void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const
