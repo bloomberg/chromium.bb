@@ -49,6 +49,9 @@ const int kFilesAppHelpNumber = 1056323;
 // Location of the help page about connecting to Google Drive.
 const int kGoogleDriveErrorHelpNumber = 2649458;
 
+// Location of the help page about no-action-available files.
+const int kNoActionForFileHelpNumber = 1700055;
+
 }  // namespace
 
 namespace extensions {
@@ -498,6 +501,9 @@ bool FileBrowserPrivateGetStringsFunction::RunImpl() {
   dict->SetString(
       "GOOGLE_DRIVE_ERROR_HELP_URL",
       base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
+  dict->SetString(
+      "NO_ACTION_FOR_FILE_URL",
+      base::StringPrintf(kHelpURLFormat, kNoActionForFileHelpNumber));
   return true;
 }
 

@@ -798,7 +798,7 @@ DriveProvider.isAvailableOffline = function(data, entry) {
     return false;
 
   // What's available offline? See the 'Web' column at:
-  // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
+  // http://support.google.com/drive/answer/1628467
   var subtype = FileType.getType(entry).subtype;
   return (subtype === 'doc' ||
           subtype === 'draw' ||

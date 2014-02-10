@@ -324,7 +324,7 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
     if (logger) {
       logger->Log(logging::LOG_ERROR,
                   "CWS OAuth token fetch failed. OAuth2TokenService can't "
-                  "be retrived.");
+                  "be retrieved.");
     }
     SetResult(base::Value::CreateNullValue());
     return false;
@@ -426,7 +426,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
     return false;
   }
 
-  // Observe owner changes of widnows.
+  // Observe owner changes of windows.
   file_manager::EventRouter* const event_router =
       file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
   event_router->RegisterMultiUserWindowManagerObserver();

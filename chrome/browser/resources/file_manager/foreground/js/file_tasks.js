@@ -28,15 +28,6 @@ function FileTasks(fileManager, opt_params) {
 }
 
 /**
- * Location of the FAQ about the file actions.
- *
- * @const
- * @type {string}
- */
-FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
-    'answer.py?answer=1700055&topic=29026&ctx=topic';
-
-/**
  * Location of the Chrome Web Store.
  *
  * @const
@@ -350,9 +341,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     }
 
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-    var text = strf(textMessageId,
-                    webStoreUrl,
-                    FileTasks.NO_ACTION_FOR_FILE_URL);
+    var text = strf(textMessageId, webStoreUrl, str('NO_ACTION_FOR_FILE_URL'));
     var title = titleMessageId ? str(titleMessageId) : filename;
     this.fileManager_.alert.showHtml(title, text, function() {});
     callback(false, urls);
