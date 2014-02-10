@@ -14,6 +14,8 @@ InspectorTest.findNode = function(matchFunction, callback)
             var children = (node.children() || []).concat(node.shadowRoots()).concat(Object.values(node.pseudoElements() || {}));
             if (node.templateContent())
                 children.push(node.templateContent());
+            else if (node.importedDocument())
+                children.push(node.importedDocument());
 
             for (var i = 0; i < children.length; ++i) {
                 var childNode = children[i];
@@ -480,6 +482,8 @@ InspectorTest.dumpDOMAgentTree = function(node)
 
         if (node.templateContent())
             dump(node.templateContent(), prefix);
+        if (node.importedDocument())
+            dump(node.importedDocument(), prefix);
         var shadowRoots = node.shadowRoots();
         for (var i = 0; i < shadowRoots.length; ++i)
             dump(shadowRoots[i], prefix);

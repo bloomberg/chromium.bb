@@ -55,7 +55,9 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLImportChild.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/DOMPatchSupport.h"
@@ -360,6 +362,12 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
             unbind(element->pseudoElement(BEFORE), nodesMap);
         if (element->pseudoElement(AFTER))
             unbind(element->pseudoElement(AFTER), nodesMap);
+
+        if (element->hasTagName(HTMLNames::linkTag)) {
+            HTMLLinkElement* linkElement = toHTMLLinkElement(element);
+            if (linkElement->isImport() && linkElement->import())
+                unbind(linkElement->import(), nodesMap);
+        }
     }
 
     nodesMap->remove(node);
@@ -1485,6 +1493,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     if (node->isElementNode()) {
         Element* element = toElement(node);
         value->setAttributes(buildArrayForElementAttributes(element));
+
         if (node->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
             if (Frame* frame = frameOwner->contentFrame())
@@ -1499,6 +1508,13 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
             value->setShadowRoots(shadowRoots);
+            forcePushChildren = true;
+        }
+
+        if (element->hasTagName(linkTag)) {
+            HTMLLinkElement* linkElement = toHTMLLinkElement(element);
+            if (linkElement->isImport() && linkElement->import() && innerParentNode(linkElement->import()) == linkElement)
+                value->setImportedDocument(buildObjectForNode(linkElement->import(), 0, nodesMap));
             forcePushChildren = true;
         }
 
@@ -1687,6 +1703,9 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
 {
     if (node->isDocumentNode()) {
         Document* document = toDocument(node);
+        HTMLImportChild* importChild = toHTMLImportChild(document->import());
+        if (importChild)
+            return importChild->link();
         return document->ownerElement();
     }
     return node->parentOrShadowHostNode();
