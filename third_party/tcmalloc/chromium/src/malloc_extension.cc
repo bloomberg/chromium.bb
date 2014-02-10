@@ -50,7 +50,12 @@
 #include "gperftools/malloc_extension.h"
 #include "gperftools/malloc_extension_c.h"
 #include "maybe_threads.h"
+
+#ifdef USE_TCMALLOC
+// Note that malloc_extension can be used without tcmalloc if gperftools'
+// heap-profiler is enabled without the tcmalloc memory allocator.
 #include "thread_cache.h"
+#endif
 
 using STL_NAMESPACE::string;
 using STL_NAMESPACE::vector;
@@ -222,7 +227,14 @@ void MallocExtension::Register(MallocExtension* implementation) {
 }
 
 unsigned int MallocExtension::GetBytesAllocatedOnCurrentThread() {
+  // This function is added in Chromium for profiling.
+#ifdef USE_TCMALLOC
+  // Note that malloc_extension can be used without tcmalloc if gperftools'
+  // heap-profiler is enabled without the tcmalloc memory allocator.
   return tcmalloc::ThreadCache::GetBytesAllocatedOnCurrentThread();
+#else
+  return 0;
+#endif
 }
 
 // -----------------------------------------------------------------------

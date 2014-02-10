@@ -588,7 +588,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           MallocExtension::GetBytesAllocatedOnCurrentThread,
           tracked_objects::TIME_SOURCE_TYPE_TCMALLOC);
     }
-#endif
+#endif  // !OS_MACOSX && USE_TCMALLOC
 
     // On Android,
     // - setlocale() is not supported.

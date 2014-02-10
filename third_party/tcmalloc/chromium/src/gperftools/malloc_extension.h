@@ -308,7 +308,10 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   static void Register(MallocExtension* implementation);
 
   // On the current thread, return the total number of bytes allocated.
-  // (Currently only implemented in tcmalloc.)
+  // This function is added in Chromium for profiling.
+  // Currently only implemented in tcmalloc. Returns 0 if tcmalloc is not used.
+  // Note that malloc_extension can be used without tcmalloc if gperftools'
+  // heap-profiler is enabled without the tcmalloc memory allocator.
   static unsigned int GetBytesAllocatedOnCurrentThread();
 
   // Returns detailed information about malloc's freelists. For each list,
