@@ -2504,7 +2504,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             // Show error dialog.
             var message;
             if (error.name == util.FileError.PATH_EXISTS_ERR ||
-                error.name == util.FileError.TYPE_MISMACH_ERR) {
+                error.name == util.FileError.TYPE_MISMATCH_ERR) {
               // Check the existing entry is file or not.
               // 1) If the entry is a file:
               //   a) If we get PATH_EXISTS_ERR, a file exists.
@@ -2516,7 +2516,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                   (entry.isFile && error.name ==
                       util.FileError.PATH_EXISTS_ERR) ||
                   (!entry.isFile && error.name ==
-                      util.FileError.TYPE_MISMACH_ERR) ?
+                      util.FileError.TYPE_MISMATCH_ERR) ?
                       'FILE_ALREADY_EXISTS' :
                       'DIRECTORY_ALREADY_EXISTS',
                   newName);
@@ -3218,7 +3218,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                 selectFileAndClose();
                 return;
               }
-              if (error.name == util.FileError.TYPE_MISMACH_ERR) {
+              if (error.name == util.FileError.TYPE_MISMATCH_ERR) {
                 // An directory is found.
                 // Do not allow to overwrite directory.
                 this.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
