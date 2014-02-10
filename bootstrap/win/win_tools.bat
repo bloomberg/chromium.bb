@@ -26,8 +26,8 @@ if "%1" == "force" (
 
 
 :GIT_CHECK
-if "%DEPOT_TOOLS_GIT_1852%" == "1" goto :GIT_1852_CHECK
-goto :GIT_180_CHECK
+if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_180_CHECK
+goto :GIT_1852_CHECK
 
 
 :GIT_1852_CHECK
