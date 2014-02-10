@@ -393,7 +393,7 @@ class RemoteDevice(object):
   DEFAULT_WORK_DIR = '/tmp/remote-access'
 
   def __init__(self, hostname, port=None, work_dir=None,
-               debug_level=logging.DEBUG):
+               connect_settings=None, debug_level=logging.DEBUG):
     """Initializes a RemoteDevice object.
 
     Args:
@@ -401,11 +401,14 @@ class RemoteDevice(object):
       port: The ssh port of the device.
       debug_level: Setting debug level for logging.
       work_dir: The default working directory on the device.
+      connect_settings: Default SSH connection settings.
     """
     self.hostname = hostname
     self.port = port
     # The tempdir is for storing the rsa key and/or some temp files.
     self.tempdir = osutils.TempDir(prefix='ssh-tmp')
+    self.connect_settings = (connect_settings if connect_settings else
+                             CompileSSHConnectSettings())
     self.agent = self._SetupSSH()
     self.debug_level = debug_level
     # Setup a working directory on the device.
@@ -476,6 +479,7 @@ class RemoteDevice(object):
         RemoteAccess.RemoteSh documentation.
     """
     kwargs.setdefault('debug_level', self.debug_level)
+    kwargs.setdefault('connect_settings', self.connect_settings)
 
     # Handle setting environment variables on the device by copying
     # and sourcing a temporary environment file.
