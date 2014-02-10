@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/quic_fec_group.h"
+
 #include <algorithm>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/quic/quic_fec_group.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;

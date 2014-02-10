@@ -2996,7 +2996,7 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   // Now test framing boundaries
   for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
-    DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,
@@ -3102,7 +3102,7 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
   // Now test framing boundaries
   for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
-    DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,
