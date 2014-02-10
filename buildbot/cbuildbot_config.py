@@ -866,6 +866,7 @@ sonic = _config(
   vm_tests=None,
   signer_tests=False,
   sync_chrome=False,
+  chrome_sdk=False,
   hw_tests=[],
 )
 
