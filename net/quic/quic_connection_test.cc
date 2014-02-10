@@ -454,6 +454,12 @@ class TestConnection : public QuicConnection {
     return SendStreamDataWithString(kStreamId5, "food2", 0, !kFin, NULL);
   }
 
+  // Ensures the connection can write stream data before writing.
+  QuicConsumedData EnsureWritableAndSendStreamData5() {
+    EXPECT_TRUE(CanWriteStreamData());
+    return SendStreamData5();
+  }
+
   // The crypto stream has special semantics so that it is not blocked by a
   // congestion window limitation, and also so that it gets put into a separate
   // packet (so that it is easier to reason about a crypto frame not being
@@ -2711,6 +2717,56 @@ TEST_F(QuicConnectionTest, DontSendDelayedAckOnOutgoingCryptoPacket) {
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_FALSE(writer_->ack());
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_F(QuicConnectionTest, BundleAckWithDataOnIncomingAck) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  connection_.SendStreamDataWithString(kStreamId3, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(kStreamId3, "foo", 3, !kFin, NULL);
+  // Ack the second packet, which will retransmit the first packet.
+  QuicAckFrame ack = InitAckFrame(2, 0);
+  NackPacket(1, &ack);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
+  ProcessAckPacket(&ack);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->stream_frames()->size());
+  writer_->Reset();
+
+  // Now ack the retransmission, which will both raise the high water mark
+  // and see if there is more data to send.
+  ack = InitAckFrame(3, 0);
+  NackPacket(1, &ack);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _)).Times(1);
+  ProcessAckPacket(&ack);
+  // TODO(ianswett): This extra ack should not be necessary, because the above
+  // ack raises the high water mark.
+  ProcessAckPacket(&ack);
+
+  // Check that ack alarm is set, but no packet is sent.
+  EXPECT_EQ(0u, writer_->frame_count());
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  writer_->Reset();
+
+  // Send the same ack, but send both data and an ack together.
+  ack = InitAckFrame(3, 0);
+  NackPacket(1, &ack);
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
+      IgnoreResult(InvokeWithoutArgs(
+          &connection_,
+          &TestConnection::EnsureWritableAndSendStreamData5)),
+      Return(true)));
+  ProcessAckPacket(&ack);
+
+  // Check that ack is bundled with outgoing data and the delayed ack
+  // alarm is reset.
+  EXPECT_EQ(2u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  EXPECT_EQ(1u, writer_->stream_frames()->size());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
 TEST_F(QuicConnectionTest, NoAckForClose) {

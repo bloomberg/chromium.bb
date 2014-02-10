@@ -21,6 +21,9 @@ class ReliableQuicStreamPeer {
                                     ReliableQuicStream* stream);
   static void CloseReadSide(ReliableQuicStream* stream);
 
+  static bool FinSent(ReliableQuicStream* stream);
+  static bool RstSent(ReliableQuicStream* stream);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);
 };

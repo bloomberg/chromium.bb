@@ -88,6 +88,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   QuicVersion version();
 
+  void set_fin_sent(bool fin_sent) { fin_sent_ = fin_sent; }
+  void set_rst_sent(bool rst_sent) { rst_sent_ = rst_sent; }
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
@@ -148,6 +151,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   bool fin_buffered_;
   bool fin_sent_;
+
+  // In combination with fin_sent_, used to ensure that a FIN and/or a RST is
+  // always sent before stream termination.
+  bool rst_sent_;
 
   // True if the session this stream is running under is a server session.
   bool is_server_;

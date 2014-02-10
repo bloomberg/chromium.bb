@@ -39,6 +39,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       write_side_closed_(false),
       fin_buffered_(false),
       fin_sent_(false),
+      rst_sent_(false),
       is_server_(session_->is_server()) {
 }
 
@@ -102,6 +103,7 @@ void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
   stream_error_ = error;
   // Sending a RstStream results in calling CloseStream.
   session()->SendRstStream(id(), error, stream_bytes_written_);
+  rst_sent_ = true;
 }
 
 void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
@@ -228,6 +230,16 @@ bool ReliableQuicStream::HasBufferedData() {
 void ReliableQuicStream::OnClose() {
   CloseReadSide();
   CloseWriteSide();
+
+  if (version() > QUIC_VERSION_13 &&
+      !fin_sent_ && !rst_sent_) {
+    // For flow control accounting, we must tell the peer how many bytes we have
+    // written on this stream before termination. Done here if needed, using a
+    // RST frame.
+    DVLOG(1) << ENDPOINT << "Sending RST in OnClose: " << id();
+    session_->SendRstStream(id(), QUIC_STREAM_NO_ERROR, stream_bytes_written_);
+    rst_sent_ = true;
+  }
 }
 
 }  // namespace net

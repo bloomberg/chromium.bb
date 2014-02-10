@@ -138,6 +138,11 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     return port;
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructRstPacket() {
+    QuicStreamId stream_id = GetParam() > QUIC_VERSION_12 ? 5 : 3;
+    return maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_NO_ERROR);
+  }
+
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
@@ -675,7 +680,13 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::vector<MockWrite> writes;
+  if (GetParam() > QUIC_VERSION_13)
+    writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -733,7 +744,13 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::vector<MockWrite> writes;
+  if (GetParam() > QUIC_VERSION_13)
+    writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -792,7 +809,13 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::vector<MockWrite> writes;
+  if (GetParam() > QUIC_VERSION_13)
+    writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -851,7 +874,13 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::vector<MockWrite> writes;
+  if (GetParam() > QUIC_VERSION_13)
+    writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 

@@ -69,8 +69,10 @@ QuicDataStream::~QuicDataStream() {
 
 size_t QuicDataStream::WriteHeaders(const SpdyHeaderBlock& header_block,
                                     bool fin) {
-  size_t bytes_written =  session()->WriteHeaders(id(), header_block, fin);
+  size_t bytes_written = session()->WriteHeaders(id(), header_block, fin);
   if (fin) {
+    // TODO(rch): Add test to ensure fin_sent_ is set whenever a fin is sent.
+    set_fin_sent(true);
     CloseWriteSide();
   }
   return bytes_written;

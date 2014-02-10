@@ -349,6 +349,12 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
     return;
   }
   QuicDataStream* stream = it->second;
+
+  // Tell the stream that a RST has been sent.
+  if (locally_reset) {
+    stream->set_rst_sent(true);
+  }
+
   if (connection_->version() <= QUIC_VERSION_12 &&
       connection_->connected() && !stream->headers_decompressed()) {
     // If the stream is being closed locally (for example a client cancelling

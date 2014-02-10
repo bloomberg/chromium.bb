@@ -347,6 +347,9 @@ class MockSession : public QuicSession {
   MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
                                              bool fin,
                                              size_t frame_len));
+  MOCK_METHOD3(SendRstStream, void(QuicStreamId stream_id,
+                                   QuicRstStreamErrorCode error,
+                                   QuicStreamOffset bytes_written));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
   using QuicSession::ActivateStream;

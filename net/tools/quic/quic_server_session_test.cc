@@ -137,8 +137,12 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   // compression context' state.
   MarkHeadersReadForStream(stream_id);
 
-  // Send a reset.
+  // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  if (version() > QUIC_VERSION_13) {
+    EXPECT_CALL(*connection_,
+                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+  }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -151,8 +155,13 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
 
 TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   QuicStreamId stream_id = (version() == QUIC_VERSION_12 ? 3 : 5);
-  // Send a reset.
+
+  // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  if (version() > QUIC_VERSION_13) {
+    EXPECT_CALL(*connection_,
+                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+  }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -209,8 +218,12 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   // compression context' state.
   MarkHeadersReadForStream(stream_id);
 
-  // Send a reset.
+  // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  if (version() > QUIC_VERSION_13) {
+    EXPECT_CALL(*connection_,
+                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+  }
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data

@@ -260,7 +260,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
       QuicPacketSequenceNumber sequence_number) {
     return maker_.MakeRstPacket(
-        sequence_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED);
+        sequence_number, true, stream_id_, QUIC_STREAM_NO_ERROR);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
@@ -702,6 +702,11 @@ TEST_P(QuicHttpStreamTest, Priority) {
 TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   SetRequest("GET", "/", MEDIUM);
   use_closing_stream_ = true;
+
+  if (GetParam() > QUIC_VERSION_13) {
+    AddWrite(ConstructRstStreamPacket(1));
+  }
+
   Initialize();
 
   request_.method = "GET";

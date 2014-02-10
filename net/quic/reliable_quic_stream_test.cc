@@ -13,6 +13,7 @@
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -58,6 +59,7 @@ class TestStream : public ReliableQuicStream {
   using ReliableQuicStream::WriteOrBufferData;
   using ReliableQuicStream::CloseReadSide;
   using ReliableQuicStream::CloseWriteSide;
+  using ReliableQuicStream::OnClose;
 
   const string& data() const { return data_; }
 
@@ -110,6 +112,9 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
     write_blocked_list_ =
         QuicSessionPeer::GetWriteblockedStreams(session_.get());
   }
+
+  bool fin_sent() { return ReliableQuicStreamPeer::FinSent(stream_.get()); }
+  bool rst_sent() { return ReliableQuicStreamPeer::RstSent(stream_.get()); }
 
  protected:
   MockConnection* connection_;
@@ -220,6 +225,75 @@ TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
   stream_->OnConnectionClosed(QUIC_INTERNAL_ERROR, false);
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
+}
+
+TEST_F(ReliableQuicStreamTest, RstAlwaysSentIfNoFinSent) {
+  // For flow control accounting, a stream must send either a FIN or a RST frame
+  // before termination.
+  // Test that if no FIN has been sent, we send a RST.
+
+  Initialize(kShouldProcessData);
+  EXPECT_FALSE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+
+  // Write some data, with no FIN.
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
+      Return(QuicConsumedData(1, false)));
+  stream_->WriteOrBufferData(StringPiece(kData1, 1), false);
+  EXPECT_FALSE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+
+  // Now close the stream, and expect that we send a RST.
+  EXPECT_CALL(*session_, SendRstStream(_, _, _));
+  stream_->OnClose();
+  EXPECT_FALSE(fin_sent());
+  EXPECT_TRUE(rst_sent());
+}
+
+TEST_F(ReliableQuicStreamTest, RstNotSentIfFinSent) {
+  // For flow control accounting, a stream must send either a FIN or a RST frame
+  // before termination.
+  // Test that if a FIN has been sent, we don't also send a RST.
+
+  Initialize(kShouldProcessData);
+  EXPECT_FALSE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+
+  // Write some data, with FIN.
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
+      Return(QuicConsumedData(1, true)));
+  stream_->WriteOrBufferData(StringPiece(kData1, 1), true);
+  EXPECT_TRUE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+
+  // Now close the stream, and expect that we do not send a RST.
+  stream_->OnClose();
+  EXPECT_TRUE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+}
+
+TEST_F(ReliableQuicStreamTest, OnlySendOneRst) {
+  // For flow control accounting, a stream must send either a FIN or a RST frame
+  // before termination.
+  // Test that if a stream sends a RST, it doesn't send an additional RST during
+  // OnClose() (this shouldn't be harmful, but we shouldn't do it anyway...)
+
+  Initialize(kShouldProcessData);
+  EXPECT_FALSE(fin_sent());
+  EXPECT_FALSE(rst_sent());
+
+  // Reset the stream.
+  const int expected_resets = 1;
+  EXPECT_CALL(*session_, SendRstStream(_, _, _)).Times(expected_resets);
+  stream_->Reset(QUIC_STREAM_CANCELLED);
+  EXPECT_FALSE(fin_sent());
+  EXPECT_TRUE(rst_sent());
+
+  // Now close the stream (any further resets being sent would break the
+  // expectation above).
+  stream_->OnClose();
+  EXPECT_FALSE(fin_sent());
+  EXPECT_TRUE(rst_sent());
 }
 
 }  // namespace

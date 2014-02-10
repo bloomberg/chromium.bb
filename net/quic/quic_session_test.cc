@@ -558,6 +558,11 @@ TEST_P(QuicSessionTest, ZombieStreamConnectionClose) {
 
   EXPECT_EQ(1u, session.GetNumOpenStreams());
 
+  if (GetParam() > QUIC_VERSION_13) {
+    // Stream 2 will send a RST during normal termination.
+    EXPECT_CALL(*connection,
+                SendRstStream(stream_id2, QUIC_STREAM_NO_ERROR, 0));
+  }
   connection->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
 
   EXPECT_EQ(0u, session.GetNumOpenStreams());

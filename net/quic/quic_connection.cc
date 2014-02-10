@@ -1582,7 +1582,9 @@ bool QuicConnection::HasQueuedData() const {
 }
 
 bool QuicConnection::CanWriteStreamData() {
-  if (HasQueuedData()) {
+  // Don't write stream data if there are negotiation or queued data packets
+  // to send. Otherwise, continue and bundle as many frames as possible.
+  if (pending_version_negotiation_packet_ || !queued_packets_.empty()) {
     return false;
   }
 

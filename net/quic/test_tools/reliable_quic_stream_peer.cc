@@ -27,5 +27,15 @@ void ReliableQuicStreamPeer::CloseReadSide(ReliableQuicStream* stream) {
   stream->CloseReadSide();
 }
 
+// static
+bool ReliableQuicStreamPeer::FinSent(ReliableQuicStream* stream) {
+  return stream->fin_sent_;
+}
+
+// static
+bool ReliableQuicStreamPeer::RstSent(ReliableQuicStream* stream) {
+  return stream->rst_sent_;
+}
+
 }  // namespace test
 }  // namespace net
