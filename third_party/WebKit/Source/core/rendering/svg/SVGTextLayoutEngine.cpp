@@ -47,6 +47,7 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_dy(0)
     , m_isVerticalText(false)
     , m_inPathLayout(false)
+    , m_textPathCalculator(0)
     , m_textPathLength(0)
     , m_textPathCurrentOffset(0)
     , m_textPathSpacing(0)
@@ -169,11 +170,12 @@ void SVGTextLayoutEngine::beginTextPathLayout(RenderObject* object, SVGTextLayou
     m_inPathLayout = true;
     RenderSVGTextPath* textPath = toRenderSVGTextPath(object);
 
-    m_textPath = textPath->layoutPath();
-    if (m_textPath.isEmpty())
+    Path path = textPath->layoutPath();
+    if (path.isEmpty())
         return;
+    m_textPathCalculator = new Path::PositionCalculator(path);
     m_textPathStartOffset = textPath->startOffset();
-    m_textPathLength = m_textPath.length();
+    m_textPathLength = path.length();
     if (m_textPathStartOffset > 0 && m_textPathStartOffset <= 1)
         m_textPathStartOffset *= m_textPathLength;
 
@@ -225,7 +227,8 @@ void SVGTextLayoutEngine::beginTextPathLayout(RenderObject* object, SVGTextLayou
 void SVGTextLayoutEngine::endTextPathLayout()
 {
     m_inPathLayout = false;
-    m_textPath = Path();
+    delete m_textPathCalculator;
+    m_textPathCalculator = 0;
     m_textPathLength = 0;
     m_textPathStartOffset = 0;
     m_textPathCurrentOffset = 0;
@@ -424,7 +427,7 @@ void SVGTextLayoutEngine::advanceToNextVisualCharacter(const SVGTextMetrics& vis
 
 void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, RenderSVGInlineText* text, const RenderStyle* style)
 {
-    if (m_inPathLayout && m_textPath.isEmpty())
+    if (m_inPathLayout && !m_textPathCalculator)
         return;
 
     SVGElement* lengthContext = toSVGElement(text->parent()->node());
@@ -556,7 +559,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
                 break;
 
             FloatPoint point;
-            bool ok = m_textPath.pointAndNormalAtLength(textPathOffset, point, angle);
+            bool ok = m_textPathCalculator->pointAndNormalAtLength(textPathOffset, point, angle);
             ASSERT_UNUSED(ok, ok);
             x = point.x();
             y = point.y();
