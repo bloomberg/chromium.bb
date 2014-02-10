@@ -18,12 +18,15 @@ class GFX_EXPORT Tween {
   enum Type {
     LINEAR,           // Linear.
     EASE_OUT,         // Fast in, slow out (default).
-    EASE_OUT_BEZIER,  // Variant of EASE_OUT that starts and ends slower.
+    EASE_OUT_2,       // Variant of EASE_OUT that ends slower than EASE_OUT.
+                      // Should be used for fading in or entering a scene.
     EASE_IN,          // Slow in, fast out.
-    EASE_IN_2,        // Variant of EASE_IN that starts out slower.
-    EASE_IN_BEZIER,   // Variant of EASE_IN that starts slower than EASE_IN and
-                      // ends faster than both EASE_IN and EASE_IN_2
+    EASE_IN_2,        // Variant of EASE_IN that starts out slower than EASE_IN.
+    EASE_IN_3,        // Variant of EASE_IN that starts out faster than EASE_IN.
+                      // Should be used for fading out or exiting a scene.
     EASE_IN_OUT,      // Slow in and out, fast in the middle.
+    EASE_IN_OUT_2,    // Variant of EASE_IN_OUT which starts out faster than
+                      // EASE_IN_OUT but ends slower than EASE_IN_OUT.
     FAST_IN_OUT,      // Fast in and out, slow in the middle.
     EASE_OUT_SNAP,    // Fast in, slow out, snap to final value.
     SMOOTH_IN_OUT,    // Smooth, consistent speeds in and out (sine wave).
