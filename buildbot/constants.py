@@ -47,6 +47,8 @@ REEXEC_API_MAJOR = 0
 REEXEC_API_MINOR = 2
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
+ISOLATESERVER = 'https://isolateserver.appspot.com'
+
 GOOGLE_EMAIL = '@google.com'
 CHROMIUM_EMAIL = '@chromium.org'
 

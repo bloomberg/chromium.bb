@@ -22,7 +22,8 @@ if os.path.basename(_containing_dir) == 'third_party':
 
 # List of third_party packages that might need subpaths added to search.
 _paths = [
-   'pyelftools',
+    'pyelftools',
+    'swarming.client',
 ]
 
 for _path in _paths:

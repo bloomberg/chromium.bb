@@ -14,6 +14,7 @@ from __future__ import print_function
 import ctypes
 import datetime
 import functools
+import hashlib
 import httplib
 import multiprocessing
 import os
@@ -25,11 +26,23 @@ import tempfile
 import time
 import urllib2
 
+from chromite.buildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.lib import retry_util
+from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
+
+# Needs to be after chromite imports.
+# TODO(build): When doing the initial buildbot bootstrap, we won't have any
+# other repos available.  So ignore isolateserver imports.  But buildbot will
+# re-exec itself once it has done a full repo sync and then the module will
+# be available -- it isn't needed that early.  http://crbug.com/341152
+try:
+  import isolateserver
+except ImportError:
+  isolateserver = None
 
 
 # URLs used for uploading symbols.
@@ -41,6 +54,26 @@ STAGING_UPLOAD_URL = 'http://clients2.google.com/cr/staging_symbol'
 CRASH_SERVER_FILE_LIMIT = 350 * 1024 * 1024
 # Give ourselves a little breathing room from what the server expects.
 DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
+
+
+# The batch limit when talking to the dedup server.  We avoid sending one at a
+# time as the round trip overhead will dominate.  Conversely, we avoid sending
+# all at once so we can start uploading symbols asap -- the symbol server is a
+# bit slow and will take longer than anything else.
+# TODO: A better algorithm would be adaptive.  If we have more than one symbol
+# in the upload queue waiting, we could send more symbols to the dedupe server
+# at a time.
+DEDUPE_LIMIT = 100
+
+# How long to wait for the server to respond with the results.  Note that the
+# larger the limit above, the larger this will need to be.  So we give it ~1
+# second per item max.
+DEDUPE_TIMEOUT = DEDUPE_LIMIT
+
+# The unique namespace in the dedupe server that only we use.  Helps avoid
+# collisions with all the hashed values and unrelated content.
+OFFICIAL_DEDUPE_NAMESPACE = 'chromium-os-upload-symbols'
+STAGING_DEDUPE_NAMESPACE = '%s-staging' % OFFICIAL_DEDUPE_NAMESPACE
 
 
 # How long to wait (in seconds) for a single upload to complete.  This has
@@ -88,7 +121,7 @@ ERROR_ADJUST_FAIL = 1.0
 ERROR_ADJUST_PASS = -0.5
 
 
-def SymUpload(sym_file, upload_url):
+def SymUpload(upload_url, sym_item):
   """Upload a symbol file to a HTTP server
 
   The upload is a multipart/form-data POST with the following parameters:
@@ -105,10 +138,11 @@ def SymUpload(sym_file, upload_url):
     symbol_file: the contents of the breakpad-format symbol file
 
   Args:
-    sym_file: The symbol file to upload
     upload_url: The crash URL to POST the |sym_file| to
+    sym_item: A SymbolItem containing the path to the breakpad symbol to upload
   """
-  sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
+  sym_header = sym_item.sym_header
+  sym_file = sym_item.sym_file
 
   fields = (
       ('code_file', sym_header.name),
@@ -130,9 +164,9 @@ def SymUpload(sym_file, upload_url):
   urllib2.urlopen(request, timeout=UPLOAD_TIMEOUT)
 
 
-def TestingSymUpload(sym_file, upload_url):
+def TestingSymUpload(upload_url, sym_item):
   """A stub version of SymUpload for --testing usage"""
-  cmd = ['sym_upload', sym_file, upload_url]
+  cmd = ['sym_upload', sym_item.sym_file, upload_url]
   # Randomly fail 80% of the time (the retry logic makes this 80%/3 per file).
   returncode = random.randint(1, 100) <= 80
   cros_build_lib.Debug('would run (and return %i): %s', returncode,
@@ -193,23 +227,27 @@ def _UpdateCounter(counter, adj):
     _Update()
 
 
-def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
+def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
                  sleep=0, num_errors=None, watermark_errors=None,
-                 failed_queue=None):
-  """Upload |sym_file| to |upload_url|
+                 failed_queue=None, passed_queue=None):
+  """Upload |sym_item| to |upload_url|
 
   Args:
-    sym_file: The full path to the breakpad symbol to upload
     upload_url: The crash server to upload things to
+    sym_item: A SymbolItem containing the path to the breakpad symbol to upload
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: Number of seconds to sleep before running
     num_errors: An object to update with the error count (needs a .value member)
     watermark_errors: An object to track current error behavior (needs a .value)
     failed_queue: When a symbol fails, add it to this queue
+    passed_queue: When a symbol passes, add it to this queue
 
   Returns:
     The number of errors that were encountered.
   """
+  sym_file = sym_item.sym_file
+  upload_item = sym_item
+
   if num_errors is None:
     num_errors = ctypes.c_int()
   if ErrorLimitHit(num_errors, watermark_errors):
@@ -217,8 +255,6 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     if failed_queue:
       failed_queue.put(sym_file)
     return 0
-
-  upload_file = sym_file
 
   if sleep:
     # Keeps us from DoS-ing the symbol server.
@@ -240,11 +276,13 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
                                sym_file, file_size, file_limit)
         temp_sym_file.writelines([x for x in open(sym_file, 'rb').readlines()
                                   if not x.startswith('STACK CFI')])
-        upload_file = temp_sym_file.name
+
+        upload_item = FakeItem(sym_file=temp_sym_file.name,
+                                 sym_header=sym_item.sym_header)
 
     # Hopefully the crash server will let it through.  But it probably won't.
     # Not sure what the best answer is in this case.
-    file_size = os.path.getsize(upload_file)
+    file_size = os.path.getsize(upload_item.sym_file)
     if file_size > CRASH_SERVER_FILE_LIMIT:
       cros_build_lib.PrintBuildbotStepWarnings()
       cros_build_lib.Warning('upload file %s is awfully large, risking '
@@ -257,10 +295,13 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
       cros_build_lib.TimedCommand(
           retry_util.RetryException,
           (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
-          upload_file, upload_url, sleep=INITIAL_RETRY_DELAY,
+          upload_url, upload_item, sleep=INITIAL_RETRY_DELAY,
           timed_log_msg='upload of %10i bytes took %%s: %s' %
                         (file_size, os.path.basename(sym_file)))
       success = True
+
+      if passed_queue:
+        passed_queue.put(sym_item)
     except urllib2.HTTPError as e:
       cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
                              os.path.basename(sym_file), e.code, e.reason)
@@ -277,6 +318,88 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
           failed_queue.put(sym_file)
 
   return num_errors.value
+
+
+# A dummy class that allows for stubbing in tests and SymUpload.
+FakeItem = cros_build_lib.Collection(
+    'FakeItem', sym_file=None, sym_header=None, content=lambda x: '')
+
+
+# TODO(build): Delete this if check. http://crbug.com/341152
+if isolateserver:
+  class SymbolItem(isolateserver.BufferItem):
+    """Turn a sym_file into an isolateserver.Item"""
+
+    ALGO = hashlib.sha1
+
+    def __init__(self, sym_file):
+      sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
+      super(SymbolItem, self).__init__(str(sym_header), self.ALGO)
+      self.sym_header = sym_header
+      self.sym_file = sym_file
+
+
+def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
+  """Send a symbol file to the swarming service
+
+  Notify the swarming service of a successful upload.  If the notification fails
+  for any reason, we ignore it.  We don't care as it just means we'll upload it
+  again later on, and the symbol server will handle that graciously.
+
+  This func runs in a different process from the main one, so we cannot share
+  the storage object.  Instead, we create our own.  This func stays alive for
+  the life of the process, so we only create one here overall.
+
+  Args:
+    dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
+    dedupe_queue: The queue to read SymbolItems from
+  """
+  if dedupe_queue is None:
+    return
+
+  item = None
+  try:
+    storage = isolateserver.get_storage_api(constants.ISOLATESERVER,
+                                            dedupe_namespace)
+    for item in iter(dedupe_queue.get, None):
+      with timeout_util.Timeout(DEDUPE_TIMEOUT):
+        storage.push(item, item.content(0))
+  except Exception:
+    sym_file = item.sym_file if (item and item.sym_file) else ''
+    cros_build_lib.Warning('posting %s to dedupe server failed',
+                           os.path.basename(sym_file), exc_info=True)
+
+
+def SymbolDeduplicator(storage, sym_paths):
+  """Filter out symbol files that we've already uploaded
+
+  Using the swarming service, ask it to tell us which symbol files we've already
+  uploaded in previous runs and/or by other bots.  If the query fails for any
+  reason, we'll just upload all symbols.  This is fine as the symbol server will
+  do the right thing and this phase is purely an optimization.
+
+  This code runs in the main thread which is why we can re-use the existing
+  storage object.  Saves us from having to recreate one all the time.
+
+  Args:
+    storage: An isolateserver.StorageApi object
+    sym_paths: List of symbol files to check against the dedupe server
+
+  Returns:
+    List of symbol files that have not been uploaded before
+  """
+  if not sym_paths:
+    return sym_paths
+
+  items = [SymbolItem(x) for x in sym_paths]
+  if storage:
+    try:
+      with timeout_util.Timeout(DEDUPE_TIMEOUT):
+        items = storage.contains(items)
+    except Exception:
+      cros_build_lib.Warning('talking to dedupe server failed', exc_info=True)
+
+  return items
 
 
 def SymbolFinder(paths):
@@ -299,10 +422,29 @@ def SymbolFinder(paths):
       yield p
 
 
+def WriteQueueToFile(listing, queue, relpath=None):
+  """Write all the items in |queue| to the |listing|.
+
+  Args:
+    listing: Where to write out the list of files.
+    queue: The queue of paths to drain.
+    relpath: If set, write out paths relative to this one.
+  """
+  if not listing:
+    return
+
+  with cros_build_lib.Open(listing, 'wb+') as f:
+    while not queue.empty():
+      path = queue.get()
+      if relpath:
+        path = os.path.relpath(path, relpath)
+      f.write('%s\n' % path)
+
+
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
                   upload_limit=None, sym_paths=None, failed_list=None,
-                  root=None, retry=True):
+                  root=None, retry=True, dedupe_namespace=None):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
@@ -323,10 +465,14 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       filename or file-like object.
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
     retry: Whether we should retry failures.
+    dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
 
   Returns:
     The number of errors that were encountered.
   """
+  # TODO(build): Delete this assert.
+  assert isolateserver, 'Missing isolateserver import http://crbug.com/341152'
+
   if official:
     upload_url = OFFICIAL_UPLOAD_URL
   else:
@@ -344,18 +490,55 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
                         breakpad_dir)
     sym_paths = [breakpad_dir]
 
+  # We use storage_query to ask the server about existing symbols.  The
+  # storage_notify_proc process is used to post updates to the server.  We
+  # cannot safely share the storage object between threads/processes, but
+  # we also want to minimize creating new ones as each object has to init
+  # new state (like server connections).
+  if dedupe_namespace:
+    dedupe_limit = DEDUPE_LIMIT
+    dedupe_queue = multiprocessing.Queue()
+    storage_query = isolateserver.get_storage_api(constants.ISOLATESERVER,
+                                                  dedupe_namespace)
+  else:
+    dedupe_limit = 1
+    dedupe_queue = storage_query = None
+  # Can't use parallel.BackgroundTaskRunner because that'll create multiple
+  # processes and we want only one the whole time (see comment above).
+  storage_notify_proc = multiprocessing.Process(
+      target=SymbolDeduplicatorNotify, args=(dedupe_namespace, dedupe_queue))
+
   bg_errors = multiprocessing.Value('i')
   watermark_errors = multiprocessing.Value('f')
   failed_queue = multiprocessing.Queue()
   uploader = functools.partial(
-      UploadSymbol, file_limit=file_limit, sleep=sleep, num_errors=bg_errors,
-      watermark_errors=watermark_errors, failed_queue=failed_queue)
+      UploadSymbol, upload_url, file_limit=file_limit, sleep=sleep,
+      num_errors=bg_errors, watermark_errors=watermark_errors,
+      failed_queue=failed_queue, passed_queue=dedupe_queue)
 
   start_time = datetime.datetime.now()
   Counters = cros_build_lib.Collection(
-      'Counters', upload_limit=upload_limit, uploaded_count=0)
+      'Counters', upload_limit=upload_limit, uploaded_count=0, deduped_count=0)
   counters = Counters()
 
+  def _Upload(queue, counters, files):
+    if not files:
+      return
+
+    missing_count = 0
+    for item in SymbolDeduplicator(storage_query, files):
+      if counters.upload_limit == 0:
+        break
+
+      missing_count += 1
+      queue.put((item,))
+      counters.uploaded_count += 1
+      if counters.upload_limit is not None:
+        counters.upload_limit -= 1
+
+    counters.deduped_count += (len(files) - missing_count)
+
+  storage_notify_proc.start()
   # For the first run, we collect the symbols that failed.  If the
   # overall failure rate was low, we'll retry them on the second run.
   for retry in (retry, False):
@@ -364,17 +547,20 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     # http://crbug.com/209442
     # http://crbug.com/212496
     with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
+      dedupe_list = []
       for sym_file in SymbolFinder(sym_paths):
-        if counters.upload_limit == 0:
-          break
+        dedupe_list.append(sym_file)
+        dedupe_len = len(dedupe_list)
+        if dedupe_len < dedupe_limit:
+          if (counters.upload_limit is None or
+              dedupe_len < counters.upload_limit):
+            continue
 
-        queue.put([sym_file, upload_url])
-        counters.uploaded_count += 1
+        _Upload(queue, counters, dedupe_list)
+        dedupe_list = []
+      _Upload(queue, counters, dedupe_list)
 
-        if counters.upload_limit is not None:
-          counters.upload_limit -= 1
-
-    # See if we need to retry, and if we haven't failed too many times already.
+    # See if we need to retry, and if we haven't failed too many times yet.
     if not retry or ErrorLimitHit(bg_errors, watermark_errors):
       break
 
@@ -386,30 +572,33 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       if counters.upload_limit is not None:
         counters.upload_limit += len(sym_paths)
       # Decrement the error count in case we recover in the second pass.
-      assert bg_errors.value >= len(sym_paths), 'more failed files than errors?'
+      assert bg_errors.value >= len(sym_paths), \
+             'more failed files than errors?'
       bg_errors.value -= len(sym_paths)
     else:
       # No failed symbols, so just return now.
       break
 
   # If the user has requested it, save all the symbol files that we failed to
-  # upload to a listing file.  This should help with recovery efforts later on.
-  if failed_list:
-    with cros_build_lib.Open(failed_list, 'wb+') as f:
-      while not failed_queue.empty():
-        path = failed_queue.get()
-        if breakpad_dir:
-          path = os.path.relpath(path, breakpad_dir)
-        f.write('%s\n' % path)
+  # upload to a listing file.  This should help with recovery efforts later.
+  WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
 
-  cros_build_lib.Info('uploaded %i symbols which took: %s',
-                      counters.uploaded_count,
+  if dedupe_queue:
+    dedupe_queue.put(None)
+    dedupe_queue.close()
+  storage_notify_proc.join()
+
+  cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
+                      counters.uploaded_count, counters.deduped_count,
                       datetime.datetime.now() - start_time)
 
   return bg_errors.value
 
 
 def main(argv):
+  # TODO(build): Delete this assert.
+  assert isolateserver, 'Missing isolateserver import http://crbug.com/341152'
+
   parser = commandline.ArgumentParser(description=__doc__)
 
   parser.add_argument('sym_paths', type='path', nargs='*', default=None)
@@ -428,6 +617,8 @@ def main(argv):
                       help='strip CFI data for files above this size')
   parser.add_argument('--failed-list', type='path',
                       help='where to save a list of failed symbols')
+  parser.add_argument('--dedupe', action='store_true', default=False,
+                      help='use the swarming service to avoid re-uploading')
   parser.add_argument('--testing', action='store_true', default=False,
                       help='run in testing mode')
   parser.add_argument('--yes', action='store_true', default=False,
@@ -454,6 +645,13 @@ def main(argv):
     INITIAL_RETRY_DELAY = DEFAULT_SLEEP_DELAY = 0
     SymUpload = TestingSymUpload
 
+  dedupe_namespace = None
+  if opts.dedupe:
+    if opts.official_build and not opts.testing:
+      dedupe_namespace = OFFICIAL_DEDUPE_NAMESPACE
+    else:
+      dedupe_namespace = STAGING_DEDUPE_NAMESPACE
+
   if not opts.yes:
     prolog = '\n'.join(textwrap.wrap(textwrap.dedent("""
         Uploading symbols for an entire Chromium OS build is really only
@@ -476,7 +674,8 @@ def main(argv):
                        breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
                        upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
-                       failed_list=opts.failed_list)
+                       failed_list=opts.failed_list,
+                       dedupe_namespace=dedupe_namespace)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
