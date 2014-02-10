@@ -179,7 +179,6 @@ void PrintToStderr(const char* output) {
   ignore_result(HANDLE_EINTR(write(STDERR_FILENO, output, strlen(output))));
 }
 
-#if !defined(OS_IOS)
 void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   // NOTE: This code MUST be async-signal safe.
   // NO malloc or stdio is allowed here.
@@ -330,7 +329,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   PrintToStderr("\n");
 #endif
 #elif defined(OS_MACOSX)
-  // TODO(shess): Port to 64-bit.
+  // TODO(shess): Port to 64-bit, and ARM architecture (32 and 64-bit).
 #if ARCH_CPU_X86_FAMILY && ARCH_CPU_32_BITS
   ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
   size_t len;
@@ -372,7 +371,6 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif  // defined(OS_MACOSX)
   _exit(1);
 }
-#endif  // !defined(OS_IOS)
 
 class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
  public:
@@ -403,7 +401,6 @@ class StreamBacktraceOutputHandler : public BacktraceOutputHandler {
   DISALLOW_COPY_AND_ASSIGN(StreamBacktraceOutputHandler);
 };
 
-#if !defined(OS_IOS)
 void WarmUpBacktrace() {
   // Warm up stack trace infrastructure. It turns out that on the first
   // call glibc initializes some internal data structures using pthread_once,
@@ -436,11 +433,9 @@ void WarmUpBacktrace() {
   // #22 <signal handler called>
   StackTrace stack_trace;
 }
-#endif  // !defined(OS_IOS)
 
 }  // namespace
 
-#if !defined(OS_IOS)
 bool EnableInProcessStackDumping() {
   // When running in an application, our code typically expects SIGPIPE
   // to be ignored.  Therefore, when testing that same code, it should run
@@ -469,7 +464,6 @@ bool EnableInProcessStackDumping() {
 
   return success;
 }
-#endif  // !defined(OS_IOS)
 
 StackTrace::StackTrace() {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
