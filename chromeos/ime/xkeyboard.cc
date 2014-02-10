@@ -10,9 +10,11 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
@@ -23,7 +25,6 @@
 // These includes conflict with base/tracked_objects.h so must come last.
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
-#include <glib.h>
 
 namespace chromeos {
 namespace input_method {
@@ -32,6 +33,10 @@ namespace {
 Display* GetXDisplay() {
   return base::MessagePumpForUI::GetDefaultXDisplay();
 }
+
+// The delay in milliseconds that we'll wait between checking if
+// setxkbmap command finished.
+const int kSetLayoutCommandCheckDelayMs = 100;
 
 // The command we use to set the current XKB layout and modifier key mapping.
 // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
@@ -90,8 +95,11 @@ class XKeyboardImpl : public XKeyboard {
   // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
   void MaybeExecuteSetLayoutCommand();
 
+  // Polls to see setxkbmap process exits.
+  void PollUntilChildFinish(const base::ProcessHandle handle);
+
   // Called when execve'd setxkbmap process exits.
-  static void OnSetLayoutFinish(pid_t pid, int status, XKeyboardImpl* self);
+  void OnSetLayoutFinish();
 
   const bool is_running_on_chrome_os_;
   unsigned int num_lock_mask_;
@@ -107,11 +115,14 @@ class XKeyboardImpl : public XKeyboard {
 
   base::ThreadChecker thread_checker_;
 
+  base::WeakPtrFactory<XKeyboardImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
 };
 
 XKeyboardImpl::XKeyboardImpl()
-    : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()) {
+    : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()),
+      weak_factory_(this) {
   // X must be already initialized.
   CHECK(GetXDisplay());
 
@@ -182,13 +193,41 @@ void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
     return;
   }
 
-  // g_child_watch_add is necessary to prevent the process from becoming a
-  // zombie.
-  const base::ProcessId pid = base::GetProcId(handle);
-  g_child_watch_add(pid,
-                    reinterpret_cast<GChildWatchFunc>(OnSetLayoutFinish),
-                    this);
-  DVLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set << ": pid=" << pid;
+  PollUntilChildFinish(handle);
+
+  DVLOG(1) << "ExecuteSetLayoutCommand: "
+           << layout_to_set << ": pid=" << base::GetProcId(handle);
+}
+
+// Delay and loop until child process finishes and call the callback.
+void XKeyboardImpl::PollUntilChildFinish(const base::ProcessHandle handle) {
+  int exit_code;
+  DVLOG(1) << "PollUntilChildFinish: poll for pid=" << base::GetProcId(handle);
+  switch (base::GetTerminationStatus(handle, &exit_code)) {
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      DVLOG(1) << "PollUntilChildFinish: Try waiting again";
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&XKeyboardImpl::PollUntilChildFinish,
+                 weak_factory_.GetWeakPtr(), handle),
+          base::TimeDelta::FromMilliseconds(kSetLayoutCommandCheckDelayMs));
+      return;
+
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      DVLOG(1) << "PollUntilChildFinish: Child process finished";
+      OnSetLayoutFinish();
+      return;
+
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      DVLOG(1) << "PollUntilChildFinish: Abnormal exit code: " << exit_code;
+      OnSetLayoutFinish();
+      return;
+
+    default:
+      NOTIMPLEMENTED();
+      OnSetLayoutFinish();
+      return;
+  }
 }
 
 bool XKeyboardImpl::NumLockIsEnabled() {
@@ -315,18 +354,14 @@ void XKeyboardImpl::ReapplyCurrentModifierLockStatus() {
                      current_num_lock_status_ ? kEnableLock : kDisableLock);
 }
 
-// static
-void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
-                                      int status,
-                                      XKeyboardImpl* self) {
-  DVLOG(1) << "OnSetLayoutFinish: pid=" << pid;
-  if (self->execute_queue_.empty()) {
+void XKeyboardImpl::OnSetLayoutFinish() {
+  if (execute_queue_.empty()) {
     DVLOG(1) << "OnSetLayoutFinish: execute_queue_ is empty. "
-             << "base::LaunchProcess failed? pid=" << pid;
+             << "base::LaunchProcess failed?";
     return;
   }
-  self->execute_queue_.pop();
-  self->MaybeExecuteSetLayoutCommand();
+  execute_queue_.pop();
+  MaybeExecuteSetLayoutCommand();
 }
 
 }  // namespace
