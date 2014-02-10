@@ -3857,7 +3857,6 @@ handle_surface_focused_set(void *data, struct xdg_surface *xdg_surface)
 {
 	struct window *window = data;
 	window->focused = 1;
-	window_schedule_redraw(window);
 }
 
 static void
@@ -3865,7 +3864,6 @@ handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
 {
 	struct window *window = data;
 	window->focused = 0;
-	window_schedule_redraw(window);
 }
 
 static void
