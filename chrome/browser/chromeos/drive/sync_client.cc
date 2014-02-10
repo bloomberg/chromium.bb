@@ -212,7 +212,8 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
       tasks_.erase(it);
       break;
     case RUNNING:
-      // TODO(kinaba): Cancel tasks in JobScheduler as well. crbug.com/248856
+      if (!task->cancel_closure.is_null())
+        task->cancel_closure.Run();
       break;
   }
 }
@@ -233,7 +234,8 @@ void SyncClient::AddFetchTaskInternal(const std::string& local_id,
       base::Unretained(download_operation_.get()),
       local_id,
       ClientContext(BACKGROUND),
-      GetFileContentInitializedCallback(),
+      base::Bind(&SyncClient::OnGetFileContentInitialized,
+                 weak_ptr_factory_.GetWeakPtr()),
       google_apis::GetContentCallback(),
       base::Bind(&SyncClient::OnFetchFileComplete,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -325,6 +327,23 @@ void SyncClient::AddFetchTasks(const std::vector<std::string>* local_ids) {
 
   for (size_t i = 0; i < local_ids->size(); ++i)
     AddFetchTask((*local_ids)[i]);
+}
+
+void SyncClient::OnGetFileContentInitialized(
+    FileError error,
+    scoped_ptr<ResourceEntry> entry,
+    const base::FilePath& local_cache_file_path,
+    const base::Closure& cancel_download_closure) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != FILE_ERROR_OK)
+    return;
+
+  const SyncTasks::key_type key(FETCH, entry->local_id());
+  SyncTasks::iterator it = tasks_.find(key);
+  DCHECK(it != tasks_.end());
+
+  it->second.cancel_closure = cancel_download_closure;
 }
 
 bool SyncClient::OnTaskComplete(SyncType type, const std::string& local_id) {
