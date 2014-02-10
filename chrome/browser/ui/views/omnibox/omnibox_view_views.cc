@@ -183,6 +183,14 @@ void OmniboxViewViews::Init() {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::Textfield implementation:
 
+void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  if (chrome::GetOriginChipV2HideTrigger() ==
+      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+    controller()->OnChanged();
+  }
+}
+
 const char* OmniboxViewViews::GetClassName() const {
   return kViewClassName;
 }
@@ -246,15 +254,27 @@ bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 
 void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   views::Textfield::OnMouseReleased(event);
-  // When the user has clicked and released to give us focus, select all unless
-  // we're omitting the URL (in which case refining an existing query is common
-  // enough that we do click-to-place-cursor).
-  if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
-      select_all_on_mouse_release_ &&
-      !controller()->GetToolbarModel()->WouldReplaceURL()) {
-    // Select all in the reverse direction so as not to scroll the caret
-    // into view and shift the contents jarringly.
-    SelectAll(true);
+  if (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) {
+    // When the user has clicked and released to give us focus, select all
+    // unless we're omitting the URL (in which case refining an existing query
+    // is common enough that we do click-to-place-cursor).
+    if (select_all_on_mouse_release_ &&
+        !controller()->GetToolbarModel()->WouldReplaceURL()) {
+      // Select all in the reverse direction so as not to scroll the caret
+      // into view and shift the contents jarringly.
+      SelectAll(true);
+    }
+
+    // If we should hide the origin chip in response to mouse release, check
+    // first that only the left or only the right button was pressed prior to
+    // the release.  If multiple buttons were pressed, we don't want to hide the
+    // chip yet.  If only the middle mouse button was pressed, the Omnibox won't
+    // receive focus so we don't want to hide the chip in this case.
+    if (chrome::GetOriginChipV2HideTrigger() ==
+        chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
+      controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+      controller()->OnChanged();
+    }
   }
   select_all_on_mouse_release_ = false;
 }
@@ -372,11 +392,6 @@ void OmniboxViewViews::OnFocus() {
   if (saved_selection_for_focus_change_.IsValid()) {
     SelectRange(saved_selection_for_focus_change_);
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
-  }
-
-  if (chrome::ShouldDisplayOriginChipV2()) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
-    controller()->OnChanged();
   }
 }
 

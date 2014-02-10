@@ -53,6 +53,7 @@ class OmniboxViewViews
   void Init();
 
   // views::Textfield:
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

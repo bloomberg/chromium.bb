@@ -509,6 +509,10 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   }
 
+  if (chrome::GetOriginChipV2HideTrigger() ==
+      chrome::ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT)
+    controller()->GetToolbarModel()->set_origin_chip_enabled(!in_progress);
+
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
   controller_->Update(NULL);
 
