@@ -98,8 +98,9 @@ def AbsolutePath(_option, _opt, value):
 
 
 def NormalizeGSPath(value):
-  """Expand paths and make them absolute."""
-  return gs.CanonicalizeURL(value, strict=True).rstrip('/')
+  """Normalize GS paths."""
+  url = gs.CanonicalizeURL(value, strict=True)
+  return '%s%s' % (gs.BASE_GS_URL, os.path.normpath(url[len(gs.BASE_GS_URL):]))
 
 
 def NormalizeLocalOrGSPath(value):

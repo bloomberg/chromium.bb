@@ -55,9 +55,21 @@ class GSPathTest(cros_test_lib.TestCase):
     self._RunGSPathTestCase(gs_path, gs_path)
 
   def testTrailingSlashRemoval(self):
-    """Test case where GS path correction is not needed."""
+    """Test case where GS path ends with /."""
     gs_path = '%s/%s/' % (gs.BASE_GS_URL, self.GS_REL_PATH)
     self._RunGSPathTestCase(gs_path, gs_path.rstrip('/'))
+
+  def testDuplicateSlashesRemoved(self):
+    """Test case where GS path contains many / in a row."""
+    self._RunGSPathTestCase(
+        '%s/a/dir/with//////////slashes' % gs.BASE_GS_URL,
+        '%s/a/dir/with/slashes' % gs.BASE_GS_URL)
+
+  def testRelativePathsRemoved(self):
+    """Test case where GS path contain /../ logic."""
+    self._RunGSPathTestCase(
+        '%s/a/dir/up/here/.././../now/down/there' % gs.BASE_GS_URL,
+        '%s/a/dir/now/down/there' % gs.BASE_GS_URL)
 
   def testCorrectionNeeded(self):
     """Test case where GS path correction is needed."""
