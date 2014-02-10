@@ -59,6 +59,8 @@ public:
     ~UseCounter();
 
     enum Feature {
+        // Do not change assigned numbers of existing items: add new features
+        // to the end of the list.
         PageDestruction,
         LegacyNotifications,
         MultipartMainResource,
@@ -195,8 +197,6 @@ public:
         PrefixedAndUnprefixedAnimationStartEvent,
         PrefixedAnimationIterationEvent,
         UnprefixedAnimationIterationEvent,
-        PrefixedImageSmoothingEnabled,
-        UnprefixedImageSmoothingEnabled,
         PrefixedAndUnprefixedAnimationIterationEvent,
         EventReturnValue, // Legacy IE extension.
         SVGSVGElement,
@@ -217,8 +217,6 @@ public:
         HTMLObjectElementLegacyCall,
         BeforeLoadEvent,
         GetMatchedCSSRules,
-        PrefixedGetImageDataHD,
-        PrefixedPutImageDataHD,
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,
@@ -328,6 +326,10 @@ public:
         DeprecatedWebKitRepeatingLinearGradient,
         DeprecatedWebKitRadialGradient,
         DeprecatedWebKitRepeatingRadialGradient,
+        PrefixedGetImageDataHD,
+        PrefixedPutImageDataHD,
+        PrefixedImageSmoothingEnabled,
+        UnprefixedImageSmoothingEnabled,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
