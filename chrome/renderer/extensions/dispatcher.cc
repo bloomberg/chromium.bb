@@ -1393,7 +1393,6 @@ void Dispatcher::AddOrRemoveOriginPermissions(
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
-  blink::WebRuntimeFeatures::enableEmbedderCustomElements(true);
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
   // TODO(fsamuel): Add <adview> to the whitelist once it has been converted
   // into a custom element.
