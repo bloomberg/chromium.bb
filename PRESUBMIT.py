@@ -167,6 +167,13 @@ def GetPreferredTrySlaves(_, change):
 
   for file in change.AffectedFiles(include_dirs=True):
     if IsFileInDirectories(file.AbsoluteLocalPath(),
+                           [os.path.join(NaClTopDir(), 'pynacl')]):
+      # The pynacl/ infrastructure code affects everybody's Python bits.
+      has_pnacl = True
+      has_toolchain_build = True
+      has_others = True
+      break
+    if IsFileInDirectories(file.AbsoluteLocalPath(),
                            [os.path.join(NaClTopDir(), 'pnacl')]):
       has_pnacl = True
     elif IsFileInDirectories(file.AbsoluteLocalPath(),
