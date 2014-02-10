@@ -17,6 +17,7 @@
         '../../../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../../../skia/skia.gyp:skia',
         '../../../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
+        '../../../ui/accessibility/accessibility.gyp:ax_gen',
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
@@ -38,6 +39,7 @@
         '../../../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../../../skia/skia.gyp:skia',
         '../../../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
+        '../../../ui/accessibility/accessibility.gyp:ax_gen',
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
