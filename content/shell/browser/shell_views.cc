@@ -560,6 +560,8 @@ bool Shell::PlatformHandleContextMenu(
 }
 
 void Shell::PlatformWebContentsFocused(WebContents* contents) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->OnWebContentsFocused(contents);
