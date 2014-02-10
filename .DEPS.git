@@ -308,7 +308,7 @@ deps_os = {
         'src/third_party/cros_dbus_cplusplus/source':
             Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@e4120532bbf3ca9f743b0be1f539381a54d16867',
         'src/third_party/cros_system_api':
-            Var('git_url') + '/chromiumos/platform/system_api.git@dd3f77a57a0b44197b07b36580f994700bed08a7',
+            Var('git_url') + '/chromiumos/platform/system_api.git@874a39664f1538b1855391f98bf14026a5dd2c24',
         'src/third_party/fontconfig/src':
             Var('git_url') + '/external/fontconfig.git@f16c3118e25546c1b749f9823c51827a60aeb5c1',
         'src/third_party/freetype2/src':
