@@ -40,6 +40,14 @@ class AudioManagerAndroid {
     // NOTE: always check in as false.
     private static final boolean DEBUG = false;
 
+    private static boolean runningOnJellyBeanOrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+    }
+
+    private static boolean runningOnJellyBeanMR1OrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
+    }
+
     /** Simple container for device information. */
     private static class AudioDeviceName {
         private final int mId;
@@ -190,10 +198,20 @@ class AudioManagerAndroid {
         // removing a wired headset (Intent.ACTION_HEADSET_PLUG).
         registerForWiredHeadsetIntentBroadcast();
 
-        mSettingsObserverThread = new HandlerThread("SettingsObserver");
-        mSettingsObserverThread.start();
-        mSettingsObserver = new SettingsObserver(
-            new Handler(mSettingsObserverThread.getLooper()));
+        // Start observer for volume changes.
+        // TODO(henrika): try-catch parts below are added as a test to see if
+        // it avoids the crash in init() reported in http://crbug.com/336600.
+        // Should be removed if possible when we understand the reason better.
+        try {
+            mSettingsObserverThread = new HandlerThread("SettingsObserver");
+            mSettingsObserverThread.start();
+            mSettingsObserver = new SettingsObserver(
+                new Handler(mSettingsObserverThread.getLooper()));
+        } catch (Exception e) {
+            // It is fine to rely on code below here to detect failure by
+            // observing mSettingsObserver==null.
+            Log.wtf(TAG, "SettingsObserver exception: ", e);
+        }
 
         mIsInitialized = true;
         if (DEBUG) reportUpdate();
@@ -209,15 +227,19 @@ class AudioManagerAndroid {
         if (!mIsInitialized)
             return;
 
-        mSettingsObserverThread.quit();
-        try {
-            mSettingsObserverThread.join();
-        } catch (InterruptedException e) {
-            logwtf("HandlerThread.join() exception: " + e.getMessage());
+        if (mSettingsObserverThread != null) {
+            mSettingsObserverThread.quit();
+            try {
+                mSettingsObserverThread.join();
+            } catch (Exception e) {
+                Log.wtf(TAG, "HandlerThread.join() exception: ", e);
+            }
+            mSettingsObserverThread = null;
         }
-        mSettingsObserverThread = null;
-        mContentResolver.unregisterContentObserver(mSettingsObserver);
-        mSettingsObserver = null;
+        if (mContentResolver != null) {
+            mContentResolver.unregisterContentObserver(mSettingsObserver);
+            mSettingsObserver = null;
+        }
 
         unregisterForWiredHeadsetIntentBroadcast();
         unregisterBluetoothIntentsIfNeeded();
@@ -236,7 +258,7 @@ class AudioManagerAndroid {
 
         if (on) {
             if (mSavedAudioMode != AudioManager.MODE_INVALID) {
-                logwtf("Audio mode has already been set!");
+                Log.wtf(TAG, "Audio mode has already been set!");
                 return;
             }
 
@@ -245,7 +267,7 @@ class AudioManagerAndroid {
             try {
                 mSavedAudioMode = mAudioManager.getMode();
             } catch (SecurityException e) {
-                logwtf("getMode exception: " + e.getMessage());
+                Log.wtf(TAG, "getMode exception: ", e);
                 logDeviceInfo();
             }
 
@@ -257,12 +279,12 @@ class AudioManagerAndroid {
             try {
                 mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             } catch (SecurityException e) {
-                logwtf("setMode exception: " + e.getMessage());
+                Log.wtf(TAG, "setMode exception: ", e);
                 logDeviceInfo();
             }
         } else {
             if (mSavedAudioMode == AudioManager.MODE_INVALID) {
-                logwtf("Audio mode has not yet been set!");
+                Log.wtf(TAG, "Audio mode has not yet been set!");
                 return;
             }
 
@@ -275,7 +297,7 @@ class AudioManagerAndroid {
             try {
                 mAudioManager.setMode(mSavedAudioMode);
             } catch (SecurityException e) {
-                logwtf("setMode exception: " + e.getMessage());
+                Log.wtf(TAG, "setMode exception: ", e);
                 logDeviceInfo();
             }
             mSavedAudioMode = AudioManager.MODE_INVALID;
@@ -292,6 +314,8 @@ class AudioManagerAndroid {
     @CalledByNative
     private boolean setDevice(String deviceId) {
         if (DEBUG) logd("setDevice: " + deviceId);
+        if (!mIsInitialized)
+            return false;
         int intDeviceId = deviceId.isEmpty() ?
             DEVICE_DEFAULT : Integer.parseInt(deviceId);
 
@@ -326,6 +350,8 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     private AudioDeviceName[] getAudioInputDeviceNames() {
+        if (!mIsInitialized)
+            return null;
         boolean devices[] = null;
         synchronized (mLock) {
             devices = mAudioDevices.clone();
@@ -347,7 +373,7 @@ class AudioManagerAndroid {
 
     @CalledByNative
     private int getNativeOutputSampleRate() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (runningOnJellyBeanMR1OrHigher()) {
             String sampleRateString = mAudioManager.getProperty(
                     AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
             return (sampleRateString == null ?
@@ -414,18 +440,26 @@ class AudioManagerAndroid {
     @CalledByNative
     public static boolean shouldUseAcousticEchoCanceler() {
         // AcousticEchoCanceler was added in API level 16 (Jelly Bean).
+        if (!runningOnJellyBeanOrHigher()) {
+            return false;
+        }
+
         // Next is a list of device models which have been vetted for good
         // quality platform echo cancellation.
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
-               AcousticEchoCanceler.isAvailable() &&
-               (Build.MODEL.equals("SM-T310R") ||  // Galaxy Tab 3 7.0
-                Build.MODEL.equals("GT-I9300") ||  // Galaxy S3
-                Build.MODEL.equals("GT-I9500") ||  // Galaxy S4
-                Build.MODEL.equals("GT-N7105") ||  // Galaxy Note 2
-                Build.MODEL.equals("Nexus 4") ||
-                Build.MODEL.equals("Nexus 5") ||
-                Build.MODEL.equals("Nexus 7") ||
-                Build.MODEL.equals("SM-N9005"));  // Galaxy Note 3
+        if (!Build.MODEL.equals("SM-T310R") &&  // Galaxy Tab 3 7.0
+            !Build.MODEL.equals("GT-I9300") &&  // Galaxy S3
+            !Build.MODEL.equals("GT-I9500") &&  // Galaxy S4
+            !Build.MODEL.equals("GT-N7105") &&  // Galaxy Note 2
+            !Build.MODEL.equals("SM-N9005") &&  // Galaxy Note 3
+            !Build.MODEL.equals("Nexus 4") &&
+            !Build.MODEL.equals("Nexus 5") &&
+            !Build.MODEL.equals("Nexus 7")) {
+            return false;
+        }
+
+        // As a final check, verify that the device supports acoustic echo
+        // cancellation.
+        return AcousticEchoCanceler.isAvailable();
     }
 
     /**
@@ -512,7 +546,7 @@ class AudioManagerAndroid {
      */
     private boolean hasBluetoothHeadset() {
         if (!mHasBluetoothPermission) {
-            logwtf("hasBluetoothHeadset() requires BLUETOOTH permission!");
+            Log.wtf(TAG, "hasBluetoothHeadset() requires BLUETOOTH permission!");
             return false;
         }
 
@@ -522,24 +556,45 @@ class AudioManagerAndroid {
         // higher, retrieve it through getSystemService(String) with
         // BLUETOOTH_SERVICE.
         BluetoothAdapter btAdapter = null;
-        if (android.os.Build.VERSION.SDK_INT <=
-            android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // Use static method for Android 4.2 and below to get the
-            // BluetoothAdapter.
-            btAdapter = BluetoothAdapter.getDefaultAdapter();
-        } else {
+        if (runningOnJellyBeanMR1OrHigher()) {
             // Use BluetoothManager to get the BluetoothAdapter for
             // Android 4.3 and above.
-            BluetoothManager btManager =
-                (BluetoothManager)mContext.getSystemService(
-                    Context.BLUETOOTH_SERVICE);
-            btAdapter = btManager.getAdapter();
+            try {
+                BluetoothManager btManager =
+                        (BluetoothManager)mContext.getSystemService(
+                                Context.BLUETOOTH_SERVICE);
+                btAdapter = btManager.getAdapter();
+            } catch (Exception e) {
+                Log.wtf(TAG, "BluetoothManager.getAdapter exception", e);
+                return false;
+            }
+        } else {
+            // Use static method for Android 4.2 and below to get the
+            // BluetoothAdapter.
+            try {
+                btAdapter = BluetoothAdapter.getDefaultAdapter();
+            } catch (Exception e) {
+                Log.wtf(TAG, "BluetoothAdapter.getDefaultAdapter exception", e);
+                return false;
+            }
         }
 
-        return (btAdapter != null &&
-            android.bluetooth.BluetoothProfile.STATE_CONNECTED ==
-                btAdapter.getProfileConnectionState(
-                    android.bluetooth.BluetoothProfile.HEADSET));
+        int profileConnectionState;
+        try {
+            profileConnectionState = btAdapter.getProfileConnectionState(
+                android.bluetooth.BluetoothProfile.HEADSET);
+        } catch (Exception e) {
+            Log.wtf(TAG, "BluetoothAdapter.getProfileConnectionState exception", e);
+            profileConnectionState =
+                android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
+        }
+
+        // Ensure that Bluetooth is enabled and that a device which supports the
+        // headset and handsfree profile is connected.
+        // TODO(henrika): it is possible that btAdapter.isEnabled() is
+        // redundant. It might be sufficient to only check the profile state.
+        return btAdapter.isEnabled() && profileConnectionState ==
+            android.bluetooth.BluetoothProfile.STATE_CONNECTED;
     }
 
     /**
@@ -909,11 +964,6 @@ class AudioManagerAndroid {
     /** Trivial helper method for error logging */
     private static void loge(String msg) {
         Log.e(TAG, msg);
-    }
-
-    /** What a Terrible Failure: Reports a condition that should never happen */
-    private void logwtf(String msg) {
-        Log.wtf(TAG, msg);
     }
 
     private class SettingsObserver extends ContentObserver {
