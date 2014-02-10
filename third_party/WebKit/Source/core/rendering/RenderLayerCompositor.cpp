@@ -2501,6 +2501,7 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
     if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
+        ownerElement->document().renderView()->compositor()->setNeedsToRecomputeCompositingRequirements();
         DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
         ownerElement->scheduleLayerUpdate();
     }

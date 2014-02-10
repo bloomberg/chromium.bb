@@ -58,10 +58,7 @@ LayerType RenderIFrame::layerTypeRequired() const
     if (type != NoLayer)
         return type;
 
-    if (style()->resize() != RESIZE_NONE)
-        return NormalLayer;
-
-    return NoLayer;
+    return NormalLayer;
 }
 
 RenderView* RenderIFrame::contentRootRenderer() const

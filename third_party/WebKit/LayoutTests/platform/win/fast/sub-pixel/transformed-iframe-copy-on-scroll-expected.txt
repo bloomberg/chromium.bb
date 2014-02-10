@@ -18,13 +18,14 @@ layer at (88,62) size 154x209
   RenderBlock (relative positioned) zI: 1 {DIV} at (0,0) size 154x209
 layer at (88,63) size 154x209
   RenderBlock (relative positioned) zI: 1 {DIV} at (0,0) size 154x209
-    RenderPartObject {IFRAME} at (0,0) size 154x204 [border: (2px inset #EEEEEE)]
-      layer at (0,0) size 135x1016
-        RenderView at (0,0) size 135x200
-      layer at (0,0) size 135x1016
-        RenderBlock {HTML} at (0,0) size 135x1016
-          RenderBody {BODY} at (8,8) size 119x1000 [bgcolor=#C0C0C0]
     RenderText zI: 1 {#text} at (0,0) size 0x0
+layer at (88,63) size 154x204
+  RenderPartObject {IFRAME} at (0,0) size 154x204 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 135x1016
+      RenderView at (0,0) size 135x200
+    layer at (0,0) size 135x1016
+      RenderBlock {HTML} at (0,0) size 135x1016
+        RenderBody {BODY} at (8,8) size 119x1000 [bgcolor=#C0C0C0]
 layer at (326,62) size 154x209
   RenderBlock (relative positioned) zI: 1 {DIV} at (80,10) size 154x209
 layer at (326,63) size 154x209
@@ -43,10 +44,11 @@ layer at (326,64) size 154x209
   RenderBlock {DIV} at (0,0) size 154x209
 layer at (326,65) size 154x209
   RenderBlock (relative positioned) zI: 1 {DIV} at (0,0) size 154x209
-    RenderPartObject {IFRAME} at (0,0) size 154x204 [border: (2px inset #EEEEEE)]
-      layer at (0,0) size 135x1016
-        RenderView at (0,0) size 135x200
-      layer at (0,0) size 135x1016
-        RenderBlock {HTML} at (0,0) size 135x1016
-          RenderBody {BODY} at (8,8) size 119x1000 [bgcolor=#C0C0C0]
     RenderText zI: 1 {#text} at (0,0) size 0x0
+layer at (326,65) size 154x204
+  RenderPartObject {IFRAME} at (0,0) size 154x204 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 135x1016
+      RenderView at (0,0) size 135x200
+    layer at (0,0) size 135x1016
+      RenderBlock {HTML} at (0,0) size 135x1016
+        RenderBody {BODY} at (8,8) size 119x1000 [bgcolor=#C0C0C0]

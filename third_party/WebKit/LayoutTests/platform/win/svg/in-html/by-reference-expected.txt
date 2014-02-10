@@ -18,11 +18,6 @@ layer at (0,0) size 800x400
             RenderSVGRoot {svg} at (0,0) size 0x0
         RenderText {#text} at (104,85) size 4x19
           text run at (104,85) width 4: " "
-        RenderPartObject {IFRAME} at (108,0) size 100x100
-          layer at (0,0) size 100x100
-            RenderView at (0,0) size 100x100
-          layer at (0,0) size 100x100
-            RenderSVGRoot {svg} at (0,0) size 0x0
         RenderText {#text} at (208,85) size 4x19
           text run at (208,85) width 4: " "
         RenderEmbeddedObject {OBJECT} at (212,50) size 50x50
@@ -37,3 +32,9 @@ layer at (0,0) size 800x400
             RenderView at (0,0) size 50x50
           layer at (0,0) size 50x50
             RenderSVGRoot {svg} at (0,0) size 0x0
+layer at (108,0) size 100x100
+  RenderPartObject {IFRAME} at (108,0) size 100x100
+    layer at (0,0) size 100x100
+      RenderView at (0,0) size 100x100
+    layer at (0,0) size 100x100
+      RenderSVGRoot {svg} at (0,0) size 0x0
