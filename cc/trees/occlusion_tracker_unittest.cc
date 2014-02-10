@@ -1962,10 +1962,7 @@ class OcclusionTrackerTestUnsorted3dLayers
                                  gfx::PointF(50.f, 50.f),
                                  gfx::Size(100, 100),
                                  true);
-    parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
-    child1->SetIs3dSorted(true);
-    child2->SetIs3dSorted(true);
+    parent->SetPreserves3d(true);
 
     this->CalcDrawEtc(parent);
 
@@ -2009,11 +2006,8 @@ class OcclusionTrackerTestPerspectiveTransform
                                  gfx::PointF(100.f, 100.f),
                                  gfx::Size(200, 200),
                                  true);
-    container->SetShouldFlattenTransform(false);
-    container->SetIs3dSorted(true);
-    layer->SetIs3dSorted(true);
-    layer->SetShouldFlattenTransform(false);
-
+    container->SetPreserves3d(true);
+    layer->SetPreserves3d(true);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType,
@@ -2031,6 +2025,7 @@ class OcclusionTrackerTestPerspectiveTransform
 // the occlusion tracker on the main thread. So this test should run on the impl
 // thread.
 IMPL_THREAD_TEST(OcclusionTrackerTestPerspectiveTransform);
+
 template <class Types>
 class OcclusionTrackerTestPerspectiveTransformBehindCamera
     : public OcclusionTrackerTest<Types> {
@@ -2055,10 +2050,8 @@ class OcclusionTrackerTestPerspectiveTransformBehindCamera
         parent, this->identity_matrix, gfx::PointF(), gfx::Size(500, 500));
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         container, transform, gfx::PointF(), gfx::Size(500, 500), true);
-    container->SetShouldFlattenTransform(false);
-    container->SetIs3dSorted(true);
-    layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    container->SetPreserves3d(true);
+    layer->SetPreserves3d(true);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType,
@@ -2099,10 +2092,8 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
         this->identity_matrix, gfx::PointF(), gfx::Size(100, 100));
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
-    parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
-    layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    parent->SetPreserves3d(true);
+    layer->SetPreserves3d(true);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType,
@@ -2141,10 +2132,8 @@ class OcclusionTrackerTestLargePixelsOccludeInsideClipRect
     parent->SetMasksToBounds(true);
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
-    parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
-    layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    parent->SetPreserves3d(true);
+    layer->SetPreserves3d(true);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType,

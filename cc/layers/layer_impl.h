@@ -68,8 +68,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   typedef LayerImplList LayerListType;
   typedef RenderSurfaceImpl RenderSurfaceType;
 
-  enum RenderingContextConstants { NO_RENDERING_CONTEXT = 0 };
-
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
   }
@@ -262,11 +260,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return position_constraint_;
   }
 
-  void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const { return should_flatten_transform_; }
-
-  void SetIs3dSorted(bool sorted);
-  bool is_3d_sorted() const { return is_3d_sorted_; }
+  void SetPreserves3d(bool preserves_3d);
+  bool preserves_3d() const { return preserves_3d_; }
 
   void SetUseParentBackfaceVisibility(bool use) {
     use_parent_backface_visibility_ = use;
@@ -591,7 +586,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool stacking_order_changed_ : 1;
   // Whether the "back" of this layer should draw.
   bool double_sided_ : 1;
-  bool should_flatten_transform_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_ : 1;
@@ -599,6 +593,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;
   bool is_root_for_isolated_group_ : 1;
+  bool preserves_3d_ : 1;
   bool use_parent_backface_visibility_ : 1;
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool draws_content_ : 1;
@@ -607,7 +602,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Set for the layer that other layers are fixed to.
   bool is_container_for_fixed_position_layers_ : 1;
-  bool is_3d_sorted_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   SkColor background_color_;

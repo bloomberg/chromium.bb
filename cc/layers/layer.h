@@ -318,11 +318,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }
 
-  void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const { return should_flatten_transform_; }
-
-  void SetIs3dSorted(bool sorted);
-  bool is_3d_sorted() const { return is_3d_sorted_; }
+  void SetPreserves3d(bool preserves_3d) { preserves_3d_ = preserves_3d; }
+  bool preserves_3d() const { return preserves_3d_; }
 
   void set_use_parent_backface_visibility(bool use) {
     use_parent_backface_visibility_ = use;
@@ -582,11 +579,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;
   bool double_sided_ : 1;
-  bool should_flatten_transform_ : 1;
+  bool preserves_3d_ : 1;
   bool use_parent_backface_visibility_ : 1;
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool force_render_surface_ : 1;
-  bool is_3d_sorted_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;
