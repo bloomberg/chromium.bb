@@ -27,10 +27,43 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace {
+
+// Registers |path| as the "Downloads" folder to the FileSystem API backend.
+// If another folder is already mounted. It revokes and overrides the old one.
+bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
+  // Although we show only profile's own "Downloads" folder in Files.app,
+  // in the backend we need to mount all profile's download directory globally.
+  // Otherwise, Files.app cannot support cross-profile file copies, etc.
+  // For this reason, we need to register to the global GetSystemInstance().
+  const std::string mount_point_name =
+      file_manager::util::GetDownloadsMountPointName(profile);
+  fileapi::ExternalMountPoints* const mount_points =
+      fileapi::ExternalMountPoints::GetSystemInstance();
+
+  // In some tests we want to override existing Downloads mount point, so we
+  // first revoke the existing mount point (if any).
+  mount_points->RevokeFileSystem(mount_point_name);
+  return mount_points->RegisterFileSystem(
+      mount_point_name, fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(), path);
+}
+
+// Finds the path register as the "Downloads" folder to FileSystem API backend.
+// Returns false if it is not registered.
+bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path) {
+  const std::string mount_point_name =
+      util::GetDownloadsMountPointName(profile);
+  fileapi::ExternalMountPoints* const mount_points =
+      fileapi::ExternalMountPoints::GetSystemInstance();
+
+  return mount_points->GetRegisteredPath(mount_point_name, path);
+}
 
 // Called on completion of MarkCacheFileAsUnmounted.
 void OnMarkCacheFileAsUnmounted(drive::FileError error) {
@@ -196,7 +229,7 @@ void VolumeManager::Initialize() {
 
   // Register 'Downloads' folder for the profile to the file system.
   if (!chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    bool success = util::RegisterDownloadsMountPoint(
+    bool success = RegisterDownloadsMountPoint(
         profile_,
         file_manager::util::GetDownloadsFolderForProfile(profile_));
     DCHECK(success);
@@ -260,7 +293,7 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
   // but in tests, the mount point may be overridden. To take it into account,
   // here we explicitly retrieves the path from the file API mount points.
   base::FilePath downloads;
-  if (util::FindDownloadsMountPointPath(profile_, &downloads))
+  if (FindDownloadsMountPointPath(profile_, &downloads))
     result.push_back(CreateDownloadsVolumeInfo(downloads));
 
   // Adds disks (both removable disks and zip archives).
@@ -300,6 +333,12 @@ bool VolumeManager::FindVolumeInfoById(const std::string& volume_id,
   }
 
   return false;
+}
+
+bool VolumeManager::RegisterDownloadsDirectoryForTesting(
+    const base::FilePath& path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return RegisterDownloadsMountPoint(profile_, path);
 }
 
 void VolumeManager::OnFileSystemMounted() {

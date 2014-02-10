@@ -13,9 +13,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_context.h"
 #include "net/base/escape.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace util {
@@ -97,31 +95,6 @@ std::string GetDownloadsMountPointName(Profile* profile) {
               profile->GetOriginalProfile()) : NULL;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapePath(kDownloadsFolderName + id);
-}
-
-bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
-  // Although we show only profile's own "Downloads" folder in Files.app,
-  // in the backend we need to mount all profile's download directory globally.
-  // Otherwise, Files.app cannot support cross-profile file copies, etc.
-  // For this reason, we need to register to the global GetSystemInstance().
-  const std::string mount_point_name = GetDownloadsMountPointName(profile);
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
-
-  // In some tests we want to override existing Downloads mount point, so we
-  // first revoke the existing mount point (if any).
-  mount_points->RevokeFileSystem(mount_point_name);
-  return mount_points->RegisterFileSystem(
-      mount_point_name, fileapi::kFileSystemTypeNativeLocal,
-      fileapi::FileSystemMountOption(), path);
-}
-
-bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path) {
-  const std::string mount_point_name = GetDownloadsMountPointName(profile);
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
-
-  return mount_points->GetRegisteredPath(mount_point_name, path);
 }
 
 }  // namespace util

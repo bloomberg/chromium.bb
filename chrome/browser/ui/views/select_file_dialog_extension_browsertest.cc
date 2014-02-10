@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -115,8 +115,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   // Creates a file system mount point for a directory.
   void AddMountPoint(const base::FilePath& path) {
-    EXPECT_TRUE(file_manager::util::RegisterDownloadsMountPoint(
-        browser()->profile(), path));
+    EXPECT_TRUE(file_manager::VolumeManager::Get(
+        browser()->profile())->RegisterDownloadsDirectoryForTesting(path));
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory, downloads_dir_);
   }

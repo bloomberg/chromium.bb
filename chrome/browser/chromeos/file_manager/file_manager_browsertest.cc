@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -201,8 +202,8 @@ class LocalTestVolume {
       local_path_ = tmp_dir_.path().Append("Downloads");
     }
 
-    return util::RegisterDownloadsMountPoint(profile, local_path_) &&
-        base::CreateDirectory(local_path_);
+    return VolumeManager::Get(profile)->RegisterDownloadsDirectoryForTesting(
+        local_path_) && base::CreateDirectory(local_path_);
   }
 
   void CreateEntry(const TestEntryInfo& entry) {

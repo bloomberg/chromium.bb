@@ -130,6 +130,9 @@ class VolumeManager : public BrowserContextKeyedService,
   bool FindVolumeInfoById(const std::string& volume_id,
                           VolumeInfo* result) const;
 
+  // For testing purpose, adds the custom |path| as the "Downloads" folder.
+  bool RegisterDownloadsDirectoryForTesting(const base::FilePath& path);
+
   // drive::DriveIntegrationServiceObserver overrides.
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
