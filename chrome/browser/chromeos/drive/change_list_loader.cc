@@ -342,18 +342,80 @@ void LoaderController::Unlock() {
     tasks[i].Run();
 }
 
+AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler)
+    : scheduler_(scheduler),
+      weak_ptr_factory_(this) {
+}
+
+AboutResourceLoader::~AboutResourceLoader() {}
+
+void AboutResourceLoader::GetAboutResource(
+    const google_apis::AboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (cached_about_resource_) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback,
+            google_apis::HTTP_NO_CONTENT,
+            base::Passed(scoped_ptr<google_apis::AboutResource>(
+                new google_apis::AboutResource(*cached_about_resource_)))));
+  } else {
+    UpdateAboutResource(callback);
+  }
+}
+
+void AboutResourceLoader::UpdateAboutResource(
+    const google_apis::AboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scheduler_->GetAboutResource(
+      base::Bind(&AboutResourceLoader::UpdateAboutResourceAfterGetAbout,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
+    const google_apis::AboutResourceCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  FileError error = GDataToFileError(status);
+
+  if (error == FILE_ERROR_OK) {
+    if (cached_about_resource_ &&
+        cached_about_resource_->largest_change_id() >
+        about_resource->largest_change_id()) {
+      LOG(WARNING) << "Local cached about resource is fresher than server, "
+                   << "local = " << cached_about_resource_->largest_change_id()
+                   << ", server = " << about_resource->largest_change_id();
+    }
+
+    cached_about_resource_.reset(
+        new google_apis::AboutResource(*about_resource));
+  }
+
+  callback.Run(status, about_resource.Pass());
+}
+
 ChangeListLoader::ChangeListLoader(
     EventLogger* logger,
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     DriveServiceInterface* drive_service,
+    AboutResourceLoader* about_resource_loader,
     LoaderController* loader_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       drive_service_(drive_service),
+      about_resource_loader_(about_resource_loader),
       loader_controller_(loader_controller),
       loaded_(false),
       weak_ptr_factory_(this) {
@@ -433,24 +495,6 @@ void ChangeListLoader::LoadForTesting(const FileOperationCallback& callback) {
   DCHECK(!callback.is_null());
 
   Load(DirectoryFetchInfo(), callback);
-}
-
-void ChangeListLoader::GetAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (cached_about_resource_) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback,
-            google_apis::HTTP_NO_CONTENT,
-            base::Passed(scoped_ptr<google_apis::AboutResource>(
-                new google_apis::AboutResource(*cached_about_resource_)))));
-  } else {
-    UpdateAboutResource(callback);
-  }
 }
 
 void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
@@ -589,11 +633,12 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
   }
 
   if (directory_fetch_info.empty()) {
-    UpdateAboutResource(base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   directory_fetch_info,
-                                   is_initial_load,
-                                   local_changestamp));
+    about_resource_loader_->UpdateAboutResource(
+        base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   directory_fetch_info,
+                   is_initial_load,
+                   local_changestamp));
   } else {
     // Note: To be precise, we need to call UpdateAboutResource() here. However,
     // - It is costly to do GetAboutResource HTTP request every time.
@@ -602,11 +647,12 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
     //   of a change list fetching.
     // - Even if the value is old, it just marks the directory as older. It may
     //   trigger one future unnecessary re-fetch, but it'll never lose data.
-    GetAboutResource(base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                directory_fetch_info,
-                                is_initial_load,
-                                local_changestamp));
+    about_resource_loader_->GetAboutResource(
+        base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   directory_fetch_info,
+                   is_initial_load,
+                   local_changestamp));
   }
 }
 
@@ -754,7 +800,7 @@ void ChangeListLoader::OnDirectoryLoadComplete(
 void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!change_feed_fetcher_);
-  DCHECK(cached_about_resource_);
+  DCHECK(about_resource_loader_->cached_about_resource());
 
   bool is_delta_update = start_changestamp != 0;
 
@@ -771,8 +817,8 @@ void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
   change_feed_fetcher_->Run(
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(make_scoped_ptr(
-                     new google_apis::AboutResource(*cached_about_resource_))),
+                 base::Passed(make_scoped_ptr(new google_apis::AboutResource(
+                     *about_resource_loader_->cached_about_resource()))),
                  is_delta_update));
 }
 
@@ -853,7 +899,7 @@ void ChangeListLoader::LoadDirectoryFromServer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
-  DCHECK(cached_about_resource_);
+  DCHECK(about_resource_loader_->cached_about_resource());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
   if (directory_fetch_info.local_id() == util::kDriveGrandRootLocalId) {
@@ -865,7 +911,8 @@ void ChangeListLoader::LoadDirectoryFromServer(
         FROM_HERE,
         base::Bind(&RefreshMyDriveIfNeeded,
                    resource_metadata_,
-                   google_apis::AboutResource(*cached_about_resource_)),
+                   google_apis::AboutResource(
+                       *about_resource_loader_->cached_about_resource())),
         base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    directory_fetch_info,
@@ -878,7 +925,7 @@ void ChangeListLoader::LoadDirectoryFromServer(
       scheduler_,
       drive_service_,
       directory_fetch_info.resource_id(),
-      cached_about_resource_->root_folder_id());
+      about_resource_loader_->cached_about_resource()->root_folder_id());
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
       base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterLoad,
@@ -943,41 +990,6 @@ void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(*directory_path));
   }
-}
-
-void ChangeListLoader::UpdateAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scheduler_->GetAboutResource(
-      base::Bind(&ChangeListLoader::UpdateAboutResourceAfterGetAbout,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void ChangeListLoader::UpdateAboutResourceAfterGetAbout(
-    const google_apis::AboutResourceCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  FileError error = GDataToFileError(status);
-
-  if (error == FILE_ERROR_OK) {
-    if (cached_about_resource_ &&
-        cached_about_resource_->largest_change_id() >
-        about_resource->largest_change_id()) {
-      LOG(WARNING) << "Local cached about resource is fresher than server, "
-                   << "local = " << cached_about_resource_->largest_change_id()
-                   << ", server = " << about_resource->largest_change_id();
-    }
-
-    cached_about_resource_.reset(
-        new google_apis::AboutResource(*about_resource));
-  }
-
-  callback.Run(status, about_resource.Pass());
 }
 
 }  // namespace internal

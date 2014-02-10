@@ -76,6 +76,45 @@ class LoaderController {
   DISALLOW_COPY_AND_ASSIGN(LoaderController);
 };
 
+// This class is responsible to load AboutResource from the server and cache it.
+class AboutResourceLoader {
+ public:
+  explicit AboutResourceLoader(JobScheduler* scheduler);
+  ~AboutResourceLoader();
+
+  // Returns the cached about resource.
+  // NULL is returned if the cache is not available.
+  const google_apis::AboutResource* cached_about_resource() const {
+    return cached_about_resource_.get();
+  }
+
+  // Gets the about resource from the cache or the server. If the cache is
+  // availlavle, just runs |callback| with the cached about resource. If not,
+  // calls |UpdateAboutResource| passing |callback|.
+  void GetAboutResource(const google_apis::AboutResourceCallback& callback);
+
+  // Gets the about resource from the server, and caches it if successful. This
+  // function calls JobScheduler::GetAboutResource internally. The cache will be
+  // used in |GetAboutResource|.
+  void UpdateAboutResource(
+      const google_apis::AboutResourceCallback& callback);
+
+ private:
+  // Part of UpdateAboutResource().
+  // This function should be called when the latest about resource is being
+  // fetched from the server. The retrieved about resoure is cloned, and one is
+  // cached and the other is passed to |callback|.
+  void UpdateAboutResourceAfterGetAbout(
+      const google_apis::AboutResourceCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  JobScheduler* scheduler_;
+  scoped_ptr<google_apis::AboutResource> cached_about_resource_;
+  base::WeakPtrFactory<AboutResourceLoader> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(AboutResourceLoader);
+};
+
 // ChangeListLoader is used to load the change list, the full resource list,
 // and directory contents, from WAPI (codename for Documents List API)
 // or Google Drive API.  The class also updates the resource metadata with
@@ -96,6 +135,7 @@ class ChangeListLoader {
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveServiceInterface* drive_service,
+                   AboutResourceLoader* about_resource_loader,
                    LoaderController* apply_task_controller);
   ~ChangeListLoader();
 
@@ -130,11 +170,6 @@ class ChangeListLoader {
 
   // Calls Load() with an empty DirectoryFetchInfo(). Only for testing purposes.
   void LoadForTesting(const FileOperationCallback& callback);
-
-  // Gets the about resource from the cache or the server. If the cache is
-  // availlavle, just runs |callback| with the cached about resource. If not,
-  // calls |UpdateAboutResource| passing |callback|.
-  void GetAboutResource(const google_apis::AboutResourceCallback& callback);
 
  private:
   // Part of LoadDirectoryIfNeeded().
@@ -224,27 +259,12 @@ class ChangeListLoader {
       const base::FilePath* directory_path,
       FileError error);
 
-  // ================= Implementation for other stuff =================
-
-  // Gets the about resource from the server, and caches it if successful. This
-  // function calls JobScheduler::GetAboutResource internally. The cache will be
-  // used in |GetAboutResource|.
-  void UpdateAboutResource(
-      const google_apis::AboutResourceCallback& callback);
-  // Part of UpdateAboutResource().
-  // This function should be called when the latest about resource is being
-  // fetched from the server. The retrieved about resoure is cloned, and one is
-  // cached and the other is passed to |callback|.
-  void UpdateAboutResourceAfterGetAbout(
-      const google_apis::AboutResourceCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveServiceInterface* drive_service_;  // Not owned.
+  AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >
@@ -257,9 +277,6 @@ class ChangeListLoader {
 
   // Set of the running feed fetcher for the fast fetch.
   std::set<FeedFetcher*> fast_fetch_feed_fetcher_set_;
-
-  // The cache of the about resource.
-  scoped_ptr<google_apis::AboutResource> cached_about_resource_;
 
   // True if the full resource list is loaded (i.e. the resource metadata is
   // stored locally).

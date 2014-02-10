@@ -104,6 +104,7 @@ class ChangeListLoaderTest : public testing::Test {
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
+    about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
     loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(
         new ChangeListLoader(logger_.get(),
@@ -111,6 +112,7 @@ class ChangeListLoaderTest : public testing::Test {
                              metadata_.get(),
                              scheduler_.get(),
                              drive_service_.get(),
+                             about_resource_loader_.get(),
                              loader_controller_.get()));
   }
 
@@ -140,6 +142,7 @@ class ChangeListLoaderTest : public testing::Test {
              test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<AboutResourceLoader> about_resource_loader_;
   scoped_ptr<LoaderController> loader_controller_;
   scoped_ptr<ChangeListLoader> change_list_loader_;
 };
@@ -204,6 +207,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
                            metadata_.get(),
                            scheduler_.get(),
                            drive_service_.get(),
+                           about_resource_loader_.get(),
                            loader_controller_.get()));
 
   // Add a file to the service.

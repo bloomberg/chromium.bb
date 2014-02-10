@@ -29,6 +29,7 @@ class FakeFreeDiskSpaceGetter;
 class JobScheduler;
 
 namespace internal {
+class AboutResourceLoader;
 class ChangeListLoader;
 class FileCache;
 class LoaderController;
@@ -143,6 +144,7 @@ class OperationTestBase : public testing::Test {
       metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::AboutResourceLoader> about_resource_loader_;
   scoped_ptr<internal::LoaderController> loader_controller_;
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;
 };

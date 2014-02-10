@@ -251,6 +251,7 @@ void FileSystem::Reset(const FileOperationCallback& callback) {
 void FileSystem::ResetComponents() {
   file_system::OperationObserver* observer = this;
 
+  about_resource_loader_.reset(new internal::AboutResourceLoader(scheduler_));
   loader_controller_.reset(new internal::LoaderController);
   change_list_loader_.reset(new internal::ChangeListLoader(
       logger_,
@@ -258,6 +259,7 @@ void FileSystem::ResetComponents() {
       resource_metadata_,
       scheduler_,
       drive_service_,
+      about_resource_loader_.get(),
       loader_controller_.get()));
   change_list_loader_->AddObserver(this);
 
@@ -660,7 +662,7 @@ void FileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  change_list_loader_->GetAboutResource(
+  about_resource_loader_->GetAboutResource(
       base::Bind(&FileSystem::OnGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

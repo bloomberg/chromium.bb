@@ -36,6 +36,7 @@ class FileSystemObserver;
 class JobScheduler;
 
 namespace internal {
+class AboutResourceLoader;
 class ChangeListLoader;
 class FileCache;
 class LoaderController;
@@ -258,6 +259,9 @@ class FileSystem : public FileSystemInterface,
 
   // Error of the last update check.
   FileError last_update_check_error_;
+
+  // Used to load about resource.
+  scoped_ptr<internal::AboutResourceLoader> about_resource_loader_;
 
   // Used to control ChangeListLoader.
   scoped_ptr<internal::LoaderController> loader_controller_;
