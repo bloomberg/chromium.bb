@@ -999,7 +999,7 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   WriteToDatabase(batch.Pass(), callback);
 }
 
-MetadataDatabase::ActivationStatus MetadataDatabase::TryNoSideEffectActivation(
+MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
     int64 parent_tracker_id,
     const std::string& file_id,
     const SyncStatusCallback& callback) {
@@ -1018,6 +1018,9 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryNoSideEffectActivation(
   TrackerSet same_file_id;
   FindTrackersByFileID(file_id, &same_file_id);
 
+  // Pick up the tracker to be activated, that has:
+  //  - |parent_tarcker_id| as the parent, and
+  //  - |file_id| as the tracker's |file_id|.
   FileTracker* tracker = NULL;
   for (TrackerSet::iterator itr = same_file_id.begin();
        itr != same_file_id.end(); ++itr) {
@@ -1033,17 +1036,27 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryNoSideEffectActivation(
 
   DCHECK(tracker);
 
-  if (!tracker->active()) {
-    if (same_file_id.has_active())
-      return ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER;
-
-    TrackerSet same_title;
-    FindTrackersByParentAndTitle(parent_tracker_id, title, &same_title);
-    if (same_title.has_active())
-      return ACTIVATION_FAILED_SAME_PATH_TRACKER;
-  }
+  // Check if there is another active tracker that tracks |file_id|.
+  // This can happen when the tracked file has multiple parents.
+  // If this case, report the failure to the caller.
+  if (!tracker->active() && same_file_id.has_active())
+    return ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER;
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  if (!tracker->active()) {
+    // Check if there is another active tracker that has the same path to
+    // the tracker to be activated.
+    // Assuming the caller already overrides local file with newly added file,
+    // inactivate existing active tracker.
+    TrackerSet same_title;
+    FindTrackersByParentAndTitle(parent_tracker_id, title, &same_title);
+    if (same_title.has_active()) {
+      MakeTrackerInactive(same_title.active_tracker()->tracker_id(),
+                          batch.get());
+    }
+  }
+
   if (!tracker->has_synced_details() ||
       tracker->synced_details().title() != title) {
     trackers_by_parent_and_title_[parent_tracker_id]

@@ -972,5 +972,77 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFolder) {
   EXPECT_EQ(3u, CountTracker());
 }
 
+TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFile) {
+  std::string app_id = "example";
+
+  RegisterApp(app_id);
+  std::string app_root_folder_id = GetFileIDByPath(app_id, FPL(""));
+
+  AddLocalFolder(app_id, FPL("conflict_to_pending_remote"));
+  AddLocalFolder(app_id, FPL("conflict_to_existing_remote"));
+
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddFile(
+                app_root_folder_id, "conflict_to_pending_remote", "foo", NULL));
+
+  FetchRemoteChanges();
+
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddFile(
+                app_root_folder_id, "conflict_to_existing_remote", "foo",
+                NULL));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(3u, CountLocalFile(app_id));
+  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
+  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
+
+  EXPECT_EQ(4u, CountMetadata());
+  EXPECT_EQ(4u, CountTracker());
+}
+
+TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFile) {
+  std::string app_id = "example";
+
+  RegisterApp(app_id);
+  std::string app_root_folder_id = GetFileIDByPath(app_id, FPL(""));
+
+  AddOrUpdateLocalFile(app_id, FPL("conflict_to_pending_remote"), "foo");
+  AddOrUpdateLocalFile(app_id, FPL("conflict_to_existing_remote"), "bar");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  RemoveLocal(app_id, FPL("conflict_to_pending_remote"));
+  AddLocalFolder(app_id, FPL("conflict_to_pending_remote"));
+
+  RemoveLocal(app_id, FPL("conflict_to_existing_remote"));
+  AddLocalFolder(app_id, FPL("conflict_to_existing_remote"));
+
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->DeleteResource(
+                GetFileIDByPath(app_id, FPL("conflict_to_pending_remote"))));
+
+  FetchRemoteChanges();
+
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->DeleteResource(
+                GetFileIDByPath(app_id, FPL("conflict_to_existing_remote"))));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(3u, CountLocalFile(app_id));
+  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_pending_remote")));
+  VerifyLocalFolder(app_id, base::FilePath(FPL("conflict_to_existing_remote")));
+
+  EXPECT_EQ(4u, CountMetadata());
+  EXPECT_EQ(4u, CountTracker());
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

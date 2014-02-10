@@ -125,7 +125,6 @@ class MetadataDatabase {
   enum ActivationStatus {
     ACTIVATION_PENDING,
     ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER,
-    ACTIVATION_FAILED_SAME_PATH_TRACKER,
   };
 
   enum UpdateOption {
@@ -304,18 +303,22 @@ class MetadataDatabase {
                      const FileDetails& updated_details,
                      const SyncStatusCallback& callback);
 
-  // Returns ACTIVATION_PENDING if a tracker of the file can be safely activated
-  // without deactivating any other trackers.  In this case, tries to activate
-  // the tracker, and invokes |callback| upon completion.
-  // Returns ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER if there's another active
-  // tracker that tracks |file_id|.
-  // Returns ACTIVATION_FAILED_SAME_PATH_TRACKER if there's another active
-  // tracker that has the same parent tracker and title to |file_id|.
-  // In these FAILED cases, |callback| is not invoked.
-  ActivationStatus TryNoSideEffectActivation(
-      int64 parent_tracker_id,
-      const std::string& file_id,
-      const SyncStatusCallback& callback);
+  // Activates a tracker identified by |parent_tracker_id| and |file_id| if the
+  // tracker can be activated without inactivating other trackers that have the
+  // same |file_id| but different paths.
+  // If |file_id| has another active tracker, the function returns
+  // ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER and does not invoke |callback|.
+  // If there is another active tracker that has the same path but different
+  // |file_id|, inactivates the tracker.
+  // In success case, returns ACTIVATION_PENDING and invokes |callback| upon
+  // completion.
+  //
+  // The tracker to be activated must:
+  //  - have a tracked metadata in the database,
+  //  - have |synced_details| with valid |title|.
+  ActivationStatus TryActivateTracker(int64 parent_tracker_id,
+                                      const std::string& file_id,
+                                      const SyncStatusCallback& callback);
 
   // Changes the priority of the tracker to low.
   void LowerTrackerPriority(int64 tracker_id);

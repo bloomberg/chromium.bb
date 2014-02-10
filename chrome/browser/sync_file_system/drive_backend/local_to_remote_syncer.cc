@@ -629,7 +629,7 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
   }
 
   MetadataDatabase::ActivationStatus activation_status =
-      metadata_database()->TryNoSideEffectActivation(
+      metadata_database()->TryActivateTracker(
           remote_parent_folder_tracker_->tracker_id(),
           file_id, callback);
   switch (activation_status) {
@@ -645,9 +645,6 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
           base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
                      weak_ptr_factory_.GetWeakPtr(),
                      callback));
-      return;
-    case MetadataDatabase::ACTIVATION_FAILED_SAME_PATH_TRACKER:
-      callback.Run(SYNC_STATUS_FILE_BUSY);
       return;
   }
 
