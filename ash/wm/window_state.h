@@ -80,9 +80,17 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsMaximized() const;
   bool IsFullscreen() const;
   bool IsMaximizedOrFullscreen() const;
+
+  // DEPRECATED. TODO(pkotwicz): Remove (crbug.com/326392)
   // True if the window's show state is SHOW_STATE_NORMAL or
   // SHOW_STATE_DEFAULT.
   bool IsNormalShowState() const;
+
+  // True if the window's show type is SHOW_TYPE_NORMAL or SHOW_TYPE_DEFAULT.
+  // Unlike IsNormalShowState(), returns false if the window's show type is
+  // SHOW_TYPE_LEFT_SNAPPED or SHOW_TYPE_RIGHT_SNAPPED.
+  bool IsNormalShowType() const;
+
   bool IsActive() const;
   bool IsDocked() const;
   bool IsSnapped() const;

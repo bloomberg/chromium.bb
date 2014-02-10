@@ -92,6 +92,11 @@ bool WindowState::IsNormalShowState() const {
   return state == ui::SHOW_STATE_NORMAL || state == ui::SHOW_STATE_DEFAULT;
 }
 
+bool WindowState::IsNormalShowType() const {
+  return window_show_type_ == SHOW_TYPE_NORMAL ||
+      window_show_type_ == SHOW_TYPE_DEFAULT;
+}
+
 bool WindowState::IsActive() const {
   return IsActiveWindow(window_);
 }

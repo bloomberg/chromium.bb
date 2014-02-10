@@ -87,7 +87,7 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     wm::WindowState* target_state,
     ui::MouseEvent* event) {
   aura::Window* target = target_state->window();
-  if (event->flags() & ui::EF_IS_DOUBLE_CLICK && !target_state->IsMaximized()) {
+  if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
     int component =
         target->delegate()->GetNonClientComponent(event->location());
     if (component == HTBOTTOM || component == HTTOP) {
