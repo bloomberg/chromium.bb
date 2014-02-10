@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/password_generation_bubble_gtk.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -131,7 +131,7 @@ void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
   render_view_host->Send(new AutofillMsg_GeneratedPasswordAccepted(
       render_view_host->GetRoutingID(),
       base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(text_field_)))));
-  PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents_)
+  ChromePasswordManagerClient::GetManagerFromWebContents(web_contents_)
       ->SetFormHasGeneratedPassword(form_);
   bubble_->Close();
 }

@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/password_autofill_util.h"
@@ -67,13 +67,12 @@ void PasswordManager::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-PasswordManager::PasswordManager(PasswordManagerDelegate* delegate)
-    : delegate_(delegate),
-      driver_(delegate->GetDriver()) {
-  DCHECK(delegate_);
+PasswordManager::PasswordManager(PasswordManagerClient* client)
+    : client_(client), driver_(client->GetDriver()) {
+  DCHECK(client_);
   DCHECK(driver_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
-                                 delegate_->GetPrefs());
+                                 client_->GetPrefs());
 
   ReportMetrics(*password_manager_enabled_);
 }
@@ -98,7 +97,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
                     !driver_->DidLastPageLoadEncounterSSLErrors());
   PasswordFormManager* manager = new PasswordFormManager(
-      delegate_->GetProfile(), this, driver_, form, ssl_valid);
+      client_->GetProfile(), this, driver_, form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -205,7 +204,7 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
 
   std::string group_name = password_manager_metrics_util::GroupIdToString(
       password_manager_metrics_util::MonitoredDomainGroupId(
-          form_origin, delegate_->GetPrefs()));
+          form_origin, client_->GetPrefs()));
   if (!group_name.empty()) {
     password_manager_metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.ProvisionalSaveFailure_" + group_name, failure,
@@ -257,7 +256,7 @@ void PasswordManager::OnPasswordFormsParsed(
 
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
     PasswordFormManager* manager = new PasswordFormManager(
-        delegate_->GetProfile(), this, driver_, *iter, ssl_valid);
+        client_->GetProfile(), this, driver_, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     // Avoid prompting the user for access to a password if they don't have
@@ -306,7 +305,7 @@ void PasswordManager::OnPasswordFormsRendered(
     UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
 
   if (ShouldPromptUserToSavePassword()) {
-    delegate_->PromptUserToSavePassword(provisional_save_manager_.release());
+    client_->PromptUserToSavePassword(provisional_save_manager_.release());
   } else {
     provisional_save_manager_->Save();
     provisional_save_manager_.reset();
@@ -340,7 +339,7 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
           base::FieldTrial::ONE_TIME_RANDOMIZED,
           NULL));
   base::FieldTrial::Probability enabled_probability =
-      delegate_->GetProbabilityForExperiment(kOtherPossibleUsernamesExperiment);
+      client_->GetProbabilityForExperiment(kOtherPossibleUsernamesExperiment);
   trial->AppendGroup("Enabled", enabled_probability);
 }
 
@@ -378,5 +377,5 @@ void PasswordManager::Autofill(
       break;
   }
 
-  delegate_->PasswordWasAutofilled(best_matches);
+  client_->PasswordWasAutofilled(best_matches);
 }

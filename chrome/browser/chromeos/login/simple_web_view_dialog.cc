@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
@@ -151,7 +151,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
   DCHECK(web_contents);
 
   // Create the password manager that is needed for the proxy.
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
+  ChromePasswordManagerClient::CreateForWebContents(web_contents);
 }
 
 void SimpleWebViewDialog::Init() {

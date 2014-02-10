@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_
 
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
@@ -16,10 +16,10 @@ class Profile;
 // An abstraction of operations in the external environment (WebContents)
 // that the PasswordManager depends on.  This allows for more targeted
 // unit testing.
-class PasswordManagerDelegate {
+class PasswordManagerClient {
  public:
-  PasswordManagerDelegate() {}
-  virtual ~PasswordManagerDelegate() {}
+  PasswordManagerClient() {}
+  virtual ~PasswordManagerClient() {}
 
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
@@ -50,8 +50,7 @@ class PasswordManagerDelegate {
   virtual bool IsPasswordSyncEnabled();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };
 
-
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_

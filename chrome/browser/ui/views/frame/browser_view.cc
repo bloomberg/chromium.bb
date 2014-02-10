@@ -22,8 +22,8 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -2454,7 +2454,7 @@ void BrowserView::ShowPasswordGenerationBubble(
       bounds,
       this,
       web_contents->GetRenderViewHost(),
-      PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents),
+      ChromePasswordManagerClient::GetManagerFromWebContents(web_contents),
       password_generator,
       browser_.get(),
       GetWidget()->GetThemeProvider());

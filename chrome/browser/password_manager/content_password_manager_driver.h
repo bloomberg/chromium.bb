@@ -25,7 +25,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
                                      public content::WebContentsObserver {
  public:
   explicit ContentPasswordManagerDriver(content::WebContents* web_contents,
-                                        PasswordManagerDelegate* delegate);
+                                        PasswordManagerClient* client);
   virtual ~ContentPasswordManagerDriver();
 
   // PasswordManagerDriver implementation.
@@ -47,7 +47,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
 
  private:
   // Must outlive this instance.
-  PasswordManagerDelegate* delegate_;
+  PasswordManagerClient* client_;
 
   PasswordManager password_manager_;
   PasswordGenerationManager password_generation_manager_;

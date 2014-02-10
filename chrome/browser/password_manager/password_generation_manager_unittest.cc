@@ -6,9 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -43,7 +43,7 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
   explicit TestPasswordGenerationManager(content::WebContents* contents)
       : PasswordGenerationManager(
             contents,
-            PasswordManagerDelegateImpl::FromWebContents(contents)) {}
+            ChromePasswordManagerClient::FromWebContents(contents)) {}
   virtual ~TestPasswordGenerationManager() {}
 
   virtual void SendAccountCreationFormsToRenderer(
@@ -73,7 +73,7 @@ class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
 
-    PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
+    ChromePasswordManagerClient::CreateForWebContents(web_contents());
     password_generation_manager_.reset(
         new TestPasswordGenerationManager(web_contents()));
   }

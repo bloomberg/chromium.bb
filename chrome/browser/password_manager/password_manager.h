@@ -18,7 +18,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 
-class PasswordManagerDelegate;
+class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordManagerTest;
 class PasswordFormManager;
@@ -44,7 +44,7 @@ class PasswordManager : public LoginModel {
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
 #endif
-  explicit PasswordManager(PasswordManagerDelegate* delegate);
+  explicit PasswordManager(PasswordManagerClient* client);
   virtual ~PasswordManager();
 
   typedef base::Callback<void(const autofill::PasswordForm&)>
@@ -157,7 +157,7 @@ class PasswordManager : public LoginModel {
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
 
   // The embedder-level client. Must outlive this class.
-  PasswordManagerDelegate* const delegate_;
+  PasswordManagerClient* const client_;
 
   // The platform-level driver. Must outlive this class.
   PasswordManagerDriver* const driver_;

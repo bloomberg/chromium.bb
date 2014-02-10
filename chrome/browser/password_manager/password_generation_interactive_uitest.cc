@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_observer.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,7 +62,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 
     // Set observer for popup.
     PasswordGenerationManager* generation_manager =
-        PasswordManagerDelegateImpl::GetGenerationManagerFromWebContents(
+        ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
             GetWebContents());
     generation_manager->SetTestObserver(&observer_);
 
@@ -74,7 +74,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
   virtual void CleanUpOnMainThread() OVERRIDE {
     // Cleanup UI.
     PasswordGenerationManager* generation_manager =
-        PasswordManagerDelegateImpl::GetGenerationManagerFromWebContents(
+        ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
             GetWebContents());
     generation_manager->HidePopup();
   }

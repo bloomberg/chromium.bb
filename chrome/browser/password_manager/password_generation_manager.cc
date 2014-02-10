@@ -5,7 +5,7 @@
 #include "chrome/browser/password_manager/password_generation_manager.h"
 
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,11 +26,11 @@
 
 PasswordGenerationManager::PasswordGenerationManager(
     content::WebContents* contents,
-    PasswordManagerDelegate* delegate)
+    PasswordManagerClient* client)
     : web_contents_(contents),
       observer_(NULL),
-      delegate_(delegate),
-      driver_(delegate->GetDriver()) {}
+      client_(client),
+      driver_(client->GetDriver()) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
@@ -69,7 +69,7 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
     return false;
   }
 
-  if (!delegate_->IsPasswordSyncEnabled()) {
+  if (!client_->IsPasswordSyncEnabled()) {
     DVLOG(2) << "Generation disabled because passwords are not being synced";
     return false;
   }

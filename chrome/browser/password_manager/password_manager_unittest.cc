@@ -10,7 +10,7 @@
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/pref_names.h"
@@ -38,7 +38,7 @@ class AutofillManager;
 
 namespace {
 
-class MockPasswordManagerDelegate : public PasswordManagerDelegate {
+class MockPasswordManagerClient : public PasswordManagerClient {
  public:
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
@@ -70,8 +70,8 @@ ACTION_P(SaveToScopedPtr, scoped) {
 
 class TestPasswordManager : public PasswordManager {
  public:
-  explicit TestPasswordManager(PasswordManagerDelegate* delegate)
-      : PasswordManager(delegate) {}
+  explicit TestPasswordManager(PasswordManagerClient* client)
+      : PasswordManager(client) {}
   virtual ~TestPasswordManager() {}
 
   virtual void OnPasswordFormSubmitted(const PasswordForm& form) OVERRIDE {
@@ -94,12 +94,12 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
         factory->GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
     store_ = static_cast<MockPasswordStore*>(store_temp.get());
 
-    EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
-    EXPECT_CALL(delegate_, GetPrefs()).
-        WillRepeatedly(Return(profile()->GetTestingPrefService()));
-    EXPECT_CALL(delegate_, GetDriver()).WillRepeatedly(Return(&driver_));
+    EXPECT_CALL(client_, GetProfile()).WillRepeatedly(Return(profile()));
+    EXPECT_CALL(client_, GetPrefs())
+        .WillRepeatedly(Return(profile()->GetTestingPrefService()));
+    EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
 
-    manager_.reset(new TestPasswordManager(&delegate_));
+    manager_.reset(new TestPasswordManager(&client_));
 
     EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
@@ -203,7 +203,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   scoped_refptr<MockPasswordStore> store_;
-  MockPasswordManagerDelegate delegate_;
+  MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_ptr<TestPasswordManager> manager_;
   PasswordForm submitted_form_;
@@ -236,7 +236,7 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   manager()->ProvisionallySavePassword(form);
 
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
+  EXPECT_CALL(client_, PromptUserToSavePassword(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // Now the password manager waits for the navigation to complete.
@@ -271,7 +271,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // The user should not be presented with an infobar as they have already given
   // consent by using the generated password. The form should be saved once
   // navigation occurs.
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_)).Times(Exactly(0));
+  EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
 
   // Now the password manager waits for the navigation to complete.
@@ -301,7 +301,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
 
   // We still expect an add, since we didn't have a good match.
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
+  EXPECT_CALL(client_, PromptUserToSavePassword(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // Now the password manager waits for the navigation to complete.
@@ -329,7 +329,7 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
 
   // No message from the renderer that a password was submitted. No
   // expected calls.
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(0);
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
   manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
@@ -356,7 +356,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
 
   // Now the password manager waits for the navigation to complete.
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
+  EXPECT_CALL(client_, PromptUserToSavePassword(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   observed.clear();
@@ -406,7 +406,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
 
   // Navigation after form submit.
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
+  EXPECT_CALL(client_, PromptUserToSavePassword(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);
@@ -456,7 +456,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
 
   // Expect info bar to appear:
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
+  EXPECT_CALL(client_, PromptUserToSavePassword(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // The form reappears, but is not visible in the layout:
@@ -540,9 +540,8 @@ TEST_F(PasswordManagerTest, FormSavedWithAutocompleteOff) {
 
   // Password form should be saved.
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_))
-      .Times(Exactly(1))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+  EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(Exactly(1)).WillOnce(
+      WithArg<0>(SaveToScopedPtr(&form_to_save)));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form))).Times(Exactly(0));
 
   // Now the password manager waits for the navigation to complete.
@@ -574,7 +573,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   // The user should not be presented with an infobar as they have already given
   // consent by using the generated password. The form should be saved once
   // navigation occurs.
-  EXPECT_CALL(delegate_, PromptUserToSavePassword(_)).Times(Exactly(0));
+  EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
 
   // Now the password manager waits for the navigation to complete.

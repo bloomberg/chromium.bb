@@ -12,8 +12,8 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -135,12 +135,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
+  ChromePasswordManagerClient::CreateForWebContents(web_contents);
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
       web_contents,
-      PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents));
+      ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
   SSLTabHelper::CreateForWebContents(web_contents);
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
@@ -209,7 +209,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                                      NULL)) {
     OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
         web_contents,
-        PasswordManagerDelegateImpl::GetManagerFromWebContents(web_contents));
+        ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
   }
 #endif
 }

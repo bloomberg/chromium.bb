@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -33,12 +33,11 @@ void ReportOsPassword() {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
-PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
+ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      driver_(web_contents, this) {
+    : web_contents_(web_contents), driver_(web_contents, this) {
   // Avoid checking OS password until later on in browser startup
   // since it calls a few Windows APIs.
   base::MessageLoopProxy::current()->PostDelayedTask(
@@ -47,10 +46,9 @@ PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
       base::TimeDelta::FromSeconds(10));
 }
 
-PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
-}
+ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
-void PasswordManagerDelegateImpl::PromptUserToSavePassword(
+void ChromePasswordManagerClient::PromptUserToSavePassword(
     PasswordFormManager* form_to_save) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
@@ -71,7 +69,7 @@ void PasswordManagerDelegateImpl::PromptUserToSavePassword(
   }
 }
 
-void PasswordManagerDelegateImpl::PasswordWasAutofilled(
+void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches) const {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
@@ -82,20 +80,20 @@ void PasswordManagerDelegateImpl::PasswordWasAutofilled(
   }
 }
 
-Profile* PasswordManagerDelegateImpl::GetProfile() {
+Profile* ChromePasswordManagerClient::GetProfile() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
-PrefService* PasswordManagerDelegateImpl::GetPrefs() {
+PrefService* ChromePasswordManagerClient::GetPrefs() {
   return GetProfile()->GetPrefs();
 }
 
-PasswordManagerDriver* PasswordManagerDelegateImpl::GetDriver() {
+PasswordManagerDriver* ChromePasswordManagerClient::GetDriver() {
   return &driver_;
 }
 
 base::FieldTrial::Probability
-PasswordManagerDelegateImpl::GetProbabilityForExperiment(
+ChromePasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {
   base::FieldTrial::Probability enabled_probability = 0;
   if (experiment_name == PasswordManager::kOtherPossibleUsernamesExperiment) {
@@ -111,7 +109,7 @@ PasswordManagerDelegateImpl::GetProbabilityForExperiment(
   return enabled_probability;
 }
 
-bool PasswordManagerDelegateImpl::IsPasswordSyncEnabled() {
+bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   if (sync_service && sync_service->HasSyncSetupCompleted())
@@ -121,21 +119,21 @@ bool PasswordManagerDelegateImpl::IsPasswordSyncEnabled() {
 
 // static
 PasswordGenerationManager*
-PasswordManagerDelegateImpl::GetGenerationManagerFromWebContents(
+ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
     content::WebContents* contents) {
-  PasswordManagerDelegateImpl* delegate =
-      PasswordManagerDelegateImpl::FromWebContents(contents);
-  if (!delegate)
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(contents);
+  if (!client)
     return NULL;
-  return delegate->GetDriver()->GetPasswordGenerationManager();
+  return client->GetDriver()->GetPasswordGenerationManager();
 }
 
 // static
-PasswordManager* PasswordManagerDelegateImpl::GetManagerFromWebContents(
+PasswordManager* ChromePasswordManagerClient::GetManagerFromWebContents(
     content::WebContents* contents) {
-  PasswordManagerDelegateImpl* delegate =
-      PasswordManagerDelegateImpl::FromWebContents(contents);
-  if (!delegate)
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(contents);
+  if (!client)
     return NULL;
-  return delegate->GetDriver()->GetPasswordManager();
+  return client->GetDriver()->GetPasswordManager();
 }

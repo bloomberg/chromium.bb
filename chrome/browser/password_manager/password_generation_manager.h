@@ -13,7 +13,7 @@
 #include "ui/gfx/rect.h"
 
 class PasswordManager;
-class PasswordManagerDelegate;
+class PasswordManagerClient;
 class PasswordManagerDriver;
 
 namespace autofill {
@@ -50,7 +50,7 @@ class PrefRegistrySyncable;
 class PasswordGenerationManager {
  public:
   PasswordGenerationManager(content::WebContents* contents,
-                            PasswordManagerDelegate* delegate);
+                            PasswordManagerClient* client);
   virtual ~PasswordGenerationManager();
 
   // Detect account creation forms from forms with autofill type annotated.
@@ -96,7 +96,7 @@ class PasswordGenerationManager {
 
   // The WebContents instance associated with this instance. Scoped to the
   // lifetime of this class, as this class is indirectly a WCUD via
-  // PasswordManagerDelegateImpl.
+  // ChromePasswordManagerClient.
   // TODO(blundell): Eliminate this ivar. crbug.com/340675
   content::WebContents* web_contents_;
 
@@ -110,9 +110,9 @@ class PasswordGenerationManager {
   base::WeakPtr<
     autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
 
-  // The PasswordManagerDelegate instance associated with this instance. Must
+  // The PasswordManagerClient instance associated with this instance. Must
   // outlive this instance.
-  PasswordManagerDelegate* delegate_;
+  PasswordManagerClient* client_;
 
   // The PasswordManagerDriver instance associated with this instance. Must
   // outlive this instance.
