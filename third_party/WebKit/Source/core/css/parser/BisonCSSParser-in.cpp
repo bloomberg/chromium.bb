@@ -8305,29 +8305,48 @@ bool BisonCSSParser::parseGeneratedImage(CSSParserValueList* valueList, RefPtr<C
     if (val->unit != CSSParserValue::Function)
         return false;
 
-    if (equalIgnoringCase(val->function->name, "-webkit-gradient("))
+    if (equalIgnoringCase(val->function->name, "-webkit-gradient(")) {
+        // FIXME: This should send a deprecation message.
+        if (m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::DeprecatedWebKitGradient);
         return parseDeprecatedGradient(valueList, value);
+    }
 
-    if (equalIgnoringCase(val->function->name, "-webkit-linear-gradient("))
+    if (equalIgnoringCase(val->function->name, "-webkit-linear-gradient(")) {
+        // FIXME: This should send a deprecation message.
+        if (m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
         return parseDeprecatedLinearGradient(valueList, value, NonRepeating);
+    }
 
     if (equalIgnoringCase(val->function->name, "linear-gradient("))
         return parseLinearGradient(valueList, value, NonRepeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient("))
+    if (equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient(")) {
+        // FIXME: This should send a deprecation message.
+        if (m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingLinearGradient);
         return parseDeprecatedLinearGradient(valueList, value, Repeating);
+    }
 
     if (equalIgnoringCase(val->function->name, "repeating-linear-gradient("))
         return parseLinearGradient(valueList, value, Repeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-radial-gradient("))
+    if (equalIgnoringCase(val->function->name, "-webkit-radial-gradient(")) {
+        // FIXME: This should send a deprecation message.
+        if (m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
         return parseDeprecatedRadialGradient(valueList, value, NonRepeating);
+    }
 
     if (equalIgnoringCase(val->function->name, "radial-gradient("))
         return parseRadialGradient(valueList, value, NonRepeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient("))
+    if (equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient(")) {
+        if (m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingRadialGradient);
         return parseDeprecatedRadialGradient(valueList, value, Repeating);
+    }
 
     if (equalIgnoringCase(val->function->name, "repeating-radial-gradient("))
         return parseRadialGradient(valueList, value, Repeating);
