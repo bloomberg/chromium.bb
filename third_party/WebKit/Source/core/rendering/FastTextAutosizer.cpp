@@ -75,6 +75,8 @@ void FastTextAutosizer::record(const RenderBlock* block)
 
 void FastTextAutosizer::destroy(const RenderBlock* block)
 {
+    if (!enabled())
+        return;
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
 
     m_fingerprintMapper.remove(block);
@@ -82,6 +84,7 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
+    ASSERT(enabled());
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -121,6 +124,7 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
 {
+    ASSERT(enabled());
 #ifndef NDEBUG
     if (block->isRenderView())
         m_blocksThatHaveBegunLayout.clear();

@@ -71,6 +71,10 @@ public:
         {
             m_textAutosizer = document.fastTextAutosizer();
             if (m_textAutosizer) {
+                if (!m_textAutosizer->enabled()) {
+                    m_textAutosizer = 0;
+                    return;
+                }
                 m_block = block;
                 m_textAutosizer->beginLayout(m_block);
             }
