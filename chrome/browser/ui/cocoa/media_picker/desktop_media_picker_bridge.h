@@ -12,6 +12,7 @@
 @protocol DesktopMediaPickerObserver
 - (void)sourceAddedAtIndex:(int)index;
 - (void)sourceRemovedAtIndex:(int)index;
+- (void)sourceMovedFrom:(int)oldIndex to:(int)newIndex;
 - (void)sourceNameChangedAtIndex:(int)index;
 - (void)sourceThumbnailChangedAtIndex:(int)index;
 @end
@@ -27,6 +28,7 @@ class DesktopMediaPickerBridge : public DesktopMediaListObserver {
   // DesktopMediaListObserver overrides.
   virtual void OnSourceAdded(int index) OVERRIDE;
   virtual void OnSourceRemoved(int index) OVERRIDE;
+  virtual void OnSourceMoved(int old_index, int new_index) OVERRIDE;
   virtual void OnSourceNameChanged(int index) OVERRIDE;
   virtual void OnSourceThumbnailChanged(int index) OVERRIDE;
 

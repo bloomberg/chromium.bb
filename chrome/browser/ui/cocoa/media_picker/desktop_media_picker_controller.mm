@@ -283,6 +283,14 @@ const int kExcessButtonPadding = 6;
   [sourceBrowser_ reloadData];
 }
 
+- (void)sourceMovedFrom:(int)oldIndex to:(int)newIndex {
+  base::scoped_nsobject<DesktopMediaPickerItem> item(
+      [[items_ objectAtIndex:oldIndex] retain]);
+  [items_ removeObjectAtIndex:oldIndex];
+  [items_ insertObject:item atIndex:newIndex];
+  [sourceBrowser_ reloadData];
+}
+
 - (void)sourceNameChangedAtIndex:(int)index {
   DesktopMediaPickerItem* item = [items_ objectAtIndex:index];
   const DesktopMediaList::Source& source = media_list_->GetSource(index);

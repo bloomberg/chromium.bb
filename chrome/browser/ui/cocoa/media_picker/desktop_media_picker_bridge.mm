@@ -20,6 +20,10 @@ void DesktopMediaPickerBridge::OnSourceRemoved(int index) {
   [observer_ sourceRemovedAtIndex:index];
 }
 
+void DesktopMediaPickerBridge::OnSourceMoved(int old_index, int new_index) {
+  [observer_ sourceMovedFrom:old_index to:new_index];
+}
+
 void DesktopMediaPickerBridge::OnSourceNameChanged(int index) {
   [observer_ sourceNameChangedAtIndex:index];
 }

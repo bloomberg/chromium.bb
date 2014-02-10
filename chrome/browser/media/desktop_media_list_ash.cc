@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/desktop_media_list_ash.h"
 
-#include <map>
+#include <set>
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -81,46 +81,68 @@ const DesktopMediaList::Source& DesktopMediaListAsh::GetSource(
   return sources_[index];
 }
 
-// static
-bool DesktopMediaListAsh::CompareSources(const SourceDescription& a,
-                                         const SourceDescription& b) {
-  return a.id < b.id;
-}
-
 void DesktopMediaListAsh::Refresh() {
   std::vector<SourceDescription> new_sources;
   EnumerateSources(&new_sources);
 
-  // Sort the list of sources so that they appear in a predictable order.
-  std::sort(new_sources.begin(), new_sources.end(), CompareSources);
-
-  // Step through |new_sources| adding and removing entries from |sources_|, and
-  // notifying the |observer_|, until two match. Requires that |sources| and
-  // |sources_| have the same ordering.
-  size_t pos = 0;
-  while (pos < sources_.size() || pos < new_sources.size()) {
-    // If |sources_[pos]| is not in |new_sources| then remove it.
-    if (pos < sources_.size() &&
-        (pos == new_sources.size() || sources_[pos].id < new_sources[pos].id)) {
-      sources_.erase(sources_.begin() + pos);
-      observer_->OnSourceRemoved(pos);
-      continue;
+  typedef std::set<content::DesktopMediaID> SourceSet;
+  SourceSet new_source_set;
+  for (size_t i = 0; i < new_sources.size(); ++i) {
+    new_source_set.insert(new_sources[i].id);
+  }
+  // Iterate through the old sources to find the removed sources.
+  for (size_t i = 0; i < sources_.size(); ++i) {
+    if (new_source_set.find(sources_[i].id) == new_source_set.end()) {
+      sources_.erase(sources_.begin() + i);
+      observer_->OnSourceRemoved(i);
+      --i;
+    }
+  }
+  // Iterate through the new sources to find the added sources.
+  if (new_sources.size() > sources_.size()) {
+    SourceSet old_source_set;
+    for (size_t i = 0; i < sources_.size(); ++i) {
+      old_source_set.insert(sources_[i].id);
     }
 
-    if (pos == sources_.size() || !(sources_[pos].id == new_sources[pos].id)) {
-      sources_.insert(sources_.begin() + pos, Source());
-      sources_[pos].id = new_sources[pos].id;
-      sources_[pos].name = new_sources[pos].name;
-      observer_->OnSourceAdded(pos);
-    } else if (sources_[pos].name != new_sources[pos].name) {
+    for (size_t i = 0; i < new_sources.size(); ++i) {
+      if (old_source_set.find(new_sources[i].id) == old_source_set.end()) {
+        sources_.insert(sources_.begin() + i, Source());
+        sources_[i].id = new_sources[i].id;
+        sources_[i].name = new_sources[i].name;
+        observer_->OnSourceAdded(i);
+      }
+    }
+  }
+  DCHECK_EQ(new_sources.size(), sources_.size());
+
+  // Find the moved/changed sources.
+  size_t pos = 0;
+  while (pos < sources_.size()) {
+    if (!(sources_[pos].id == new_sources[pos].id)) {
+      // Find the source that should be moved to |pos|, starting from |pos + 1|
+      // of |sources_|, because entries before |pos| should have been sorted.
+      size_t old_pos = pos + 1;
+      for (; old_pos < sources_.size(); ++old_pos) {
+        if (sources_[old_pos].id == new_sources[pos].id)
+          break;
+      }
+      DCHECK(sources_[old_pos].id == new_sources[pos].id);
+
+      // Move the source from |old_pos| to |pos|.
+      Source temp = sources_[old_pos];
+      sources_.erase(sources_.begin() + old_pos);
+      sources_.insert(sources_.begin() + pos, temp);
+
+      observer_->OnSourceMoved(old_pos, pos);
+    }
+
+    if (sources_[pos].name != new_sources[pos].name) {
       sources_[pos].name = new_sources[pos].name;
       observer_->OnSourceNameChanged(pos);
     }
-
     ++pos;
   }
-
-  DCHECK_EQ(new_sources.size(), sources_.size());
 }
 
 void DesktopMediaListAsh::EnumerateWindowsForRoot(

@@ -137,6 +137,7 @@ class DesktopMediaListView : public views::View,
   // DesktopMediaList::Observer interface
   virtual void OnSourceAdded(int index) OVERRIDE;
   virtual void OnSourceRemoved(int index) OVERRIDE;
+  virtual void OnSourceMoved(int old_index, int new_index) OVERRIDE;
   virtual void OnSourceNameChanged(int index) OVERRIDE;
   virtual void OnSourceThumbnailChanged(int index) OVERRIDE;
 
@@ -458,6 +459,13 @@ void DesktopMediaListView::OnSourceRemoved(int index) {
   if (was_selected)
     OnSelectionChanged();
 
+  PreferredSizeChanged();
+}
+
+void DesktopMediaListView::OnSourceMoved(int old_index, int new_index) {
+  DesktopMediaSourceView* view =
+      static_cast<DesktopMediaSourceView*>(child_at(old_index));
+  ReorderChildView(view, new_index);
   PreferredSizeChanged();
 }
 

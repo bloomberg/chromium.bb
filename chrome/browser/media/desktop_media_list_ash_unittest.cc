@@ -21,6 +21,7 @@ class MockDesktopMediaListObserver : public DesktopMediaListObserver {
  public:
   MOCK_METHOD1(OnSourceAdded, void(int index));
   MOCK_METHOD1(OnSourceRemoved, void(int index));
+  MOCK_METHOD2(OnSourceMoved, void(int old_index, int new_index));
   MOCK_METHOD1(OnSourceNameChanged, void(int index));
   MOCK_METHOD1(OnSourceThumbnailChanged, void(int index));
 };

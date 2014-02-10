@@ -24,6 +24,7 @@ class MockObserver : public DesktopMediaListObserver {
  public:
   MOCK_METHOD1(OnSourceAdded, void(int index));
   MOCK_METHOD1(OnSourceRemoved, void(int index));
+  MOCK_METHOD2(OnSourceMoved, void(int old_index, int new_index));
   MOCK_METHOD1(OnSourceNameChanged, void(int index));
   MOCK_METHOD1(OnSourceThumbnailChanged, void(int index));
 };
@@ -132,6 +133,14 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   DISALLOW_COPY_AND_ASSIGN(FakeWindowCapturer);
 };
 
+ACTION_P2(CheckListSize, model, expected_list_size) {
+  EXPECT_EQ(expected_list_size, model->GetSourceCount());
+}
+
+ACTION_P(QuitMessageLoop, message_loop) {
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+}
+
 class DesktopMediaListTest : public testing::Test {
  public:
   DesktopMediaListTest()
@@ -150,6 +159,45 @@ class DesktopMediaListTest : public testing::Test {
     model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(0));
   }
 
+  webrtc::WindowCapturer::WindowList AddWindowsAndVerify(
+      size_t count, bool window_only) {
+    webrtc::WindowCapturer::WindowList list;
+    for (size_t i = 0; i < count; ++i) {
+      webrtc::WindowCapturer::Window window;
+      window.id = i + 1;
+      window.title = "Test window";
+      list.push_back(window);
+    }
+    window_capturer_->SetWindowList(list);
+
+    {
+      testing::InSequence dummy;
+      size_t source_count = window_only ? count : count + 1;
+      for (size_t i = 0; i < source_count; ++i) {
+        EXPECT_CALL(observer_, OnSourceAdded(i))
+          .WillOnce(CheckListSize(model_.get(), static_cast<int>(i + 1)));
+      }
+      for (size_t i = 0; i < source_count - 1; ++i) {
+        EXPECT_CALL(observer_, OnSourceThumbnailChanged(i));
+      }
+      EXPECT_CALL(observer_, OnSourceThumbnailChanged(source_count - 1))
+        .WillOnce(QuitMessageLoop(&message_loop_));
+    }
+    model_->StartUpdating(&observer_);
+    message_loop_.Run();
+
+    for (size_t i = 0; i < count; ++i) {
+      size_t source_index = window_only ? i : i + 1;
+      EXPECT_EQ(model_->GetSource(source_index).id.type,
+                                  content::DesktopMediaID::TYPE_WINDOW);
+      EXPECT_EQ(model_->GetSource(source_index).id.id, static_cast<int>(i + 1));
+      EXPECT_EQ(model_->GetSource(source_index).name,
+                                  base::UTF8ToUTF16("Test window"));
+    }
+    testing::Mock::VerifyAndClearExpectations(&observer_);
+    return list;
+  }
+
  protected:
   // Must be listed before |model_|, so it's destroyed last.
   MockObserver observer_;
@@ -165,83 +213,22 @@ class DesktopMediaListTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListTest);
 };
 
-ACTION_P2(CheckListSize, model, expected_list_size) {
-  EXPECT_EQ(expected_list_size, model->GetSourceCount());
-}
-
-ACTION_P(QuitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-}
-
 TEST_F(DesktopMediaListTest, InitialSourceList) {
   CreateWithDefaultCapturers();
-
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(1, false);
 
   EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
-  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->GetSource(1).id.id, 0);
-  EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(window.title));
 }
 
 // Verifies that the window specified with SetViewDialogWindowId() is filtered
 // from the results.
 TEST_F(DesktopMediaListTest, Filtering) {
   CreateWithDefaultCapturers();
-
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-
-  window.id = 0;
-  window.title = "Test window";
-  list.push_back(window);
-
-  window.id = 1;
-  list.push_back(window);
-
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-
-  model_->SetViewDialogWindowId(0);
-
-  model_->StartUpdating(&observer_);
-  message_loop_.Run();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(2, false);
 
   EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
-  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->GetSource(1).id.id, 1);
-  EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(window.title));
 }
 
 TEST_F(DesktopMediaListTest, WindowsOnly) {
@@ -249,26 +236,7 @@ TEST_F(DesktopMediaListTest, WindowsOnly) {
   model_.reset(new NativeDesktopMediaList(
       scoped_ptr<webrtc::ScreenCapturer>(),
       scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
-
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
-
-  EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  AddWindowsAndVerify(1, true);
 }
 
 TEST_F(DesktopMediaListTest, ScreenOnly) {
@@ -292,34 +260,13 @@ TEST_F(DesktopMediaListTest, ScreenOnly) {
 
 TEST_F(DesktopMediaListTest, AddWindow) {
   CreateWithDefaultCapturers();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(1, false);
 
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 1;
-  window.title = "Test window 1";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&observer_);
-
-  EXPECT_CALL(observer_, OnSourceAdded(1))
+  EXPECT_CALL(observer_, OnSourceAdded(2))
     .WillOnce(DoAll(CheckListSize(model_.get(), 3),
                     QuitMessageLoop(&message_loop_)));
 
+  webrtc::WindowCapturer::Window window;
   window.id = 0;
   window.title = "Test window 0";
   list.push_back(window);
@@ -327,47 +274,36 @@ TEST_F(DesktopMediaListTest, AddWindow) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->GetSource(1).id.id, 0);
+  EXPECT_EQ(model_->GetSource(2).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(2).id.id, 0);
 }
 
 TEST_F(DesktopMediaListTest, RemoveWindow) {
   CreateWithDefaultCapturers();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(2, false);
 
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window 0";
-  list.push_back(window);
-  window.id = 1;
-  window.title = "Test window 1";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceAdded(2))
-      .WillOnce(CheckListSize(model_.get(), 3));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(2))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&observer_);
-
-  EXPECT_CALL(observer_, OnSourceRemoved(1))
+  EXPECT_CALL(observer_, OnSourceRemoved(2))
     .WillOnce(DoAll(CheckListSize(model_.get(), 2),
                     QuitMessageLoop(&message_loop_)));
 
-  list.erase(list.begin());
+  list.erase(list.begin() + 1);
+  window_capturer_->SetWindowList(list);
+
+  message_loop_.Run();
+}
+
+TEST_F(DesktopMediaListTest, RemoveAllWindows) {
+  CreateWithDefaultCapturers();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(2, false);
+
+  testing::InSequence seq;
+  EXPECT_CALL(observer_, OnSourceRemoved(1))
+    .WillOnce(CheckListSize(model_.get(), 2));
+  EXPECT_CALL(observer_, OnSourceRemoved(1))
+    .WillOnce(DoAll(CheckListSize(model_.get(), 1),
+                    QuitMessageLoop(&message_loop_)));
+
+  list.erase(list.begin(), list.end());
   window_capturer_->SetWindowList(list);
 
   message_loop_.Run();
@@ -375,29 +311,7 @@ TEST_F(DesktopMediaListTest, RemoveWindow) {
 
 TEST_F(DesktopMediaListTest, UpdateTitle) {
   CreateWithDefaultCapturers();
-
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&observer_);
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(1, false);
 
   EXPECT_CALL(observer_, OnSourceNameChanged(1))
     .WillOnce(QuitMessageLoop(&message_loop_));
@@ -414,41 +328,29 @@ TEST_F(DesktopMediaListTest, UpdateTitle) {
 
 TEST_F(DesktopMediaListTest, UpdateThumbnail) {
   CreateWithDefaultCapturers();
-
-  webrtc::WindowCapturer::WindowList list;
-  webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window 1";
-  list.push_back(window);
-  window.id = 1;
-  window.title = "Test window 2";
-  list.push_back(window);
-  window_capturer_->SetWindowList(list);
-
-  {
-    testing::InSequence dummy;
-    EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(model_.get(), 1));
-    EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(model_.get(), 2));
-    EXPECT_CALL(observer_, OnSourceAdded(2))
-      .WillOnce(CheckListSize(model_.get(), 3));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1));
-    EXPECT_CALL(observer_, OnSourceThumbnailChanged(2))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-  }
-  model_->StartUpdating(&observer_);
-
-  message_loop_.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&observer_);
+  AddWindowsAndVerify(2, false);
 
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
     .WillOnce(QuitMessageLoop(&message_loop_));
-
   // Update frame for the window and verify that we get notification about it.
-  window_capturer_->SetNextFrameValue(0, 1);
+  window_capturer_->SetNextFrameValue(1, 1);
+
+  message_loop_.Run();
+}
+
+TEST_F(DesktopMediaListTest, MoveWindow) {
+  CreateWithDefaultCapturers();
+  webrtc::WindowCapturer::WindowList list = AddWindowsAndVerify(2, false);
+
+  EXPECT_CALL(observer_, OnSourceMoved(2, 1))
+    .WillOnce(DoAll(CheckListSize(model_.get(), 3),
+                    QuitMessageLoop(&message_loop_)));
+
+  // Swap the two windows.
+  webrtc::WindowCapturer::Window temp = list[0];
+  list[0] = list[1];
+  list[1] = temp;
+  window_capturer_->SetWindowList(list);
 
   message_loop_.Run();
 }

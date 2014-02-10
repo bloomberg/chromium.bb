@@ -11,6 +11,7 @@ class DesktopMediaListObserver {
  public:
   virtual void OnSourceAdded(int index) = 0;
   virtual void OnSourceRemoved(int index) = 0;
+  virtual void OnSourceMoved(int old_index, int new_index) = 0;
   virtual void OnSourceNameChanged(int index) = 0;
   virtual void OnSourceThumbnailChanged(int index) = 0;
 

@@ -24,6 +24,13 @@ void FakeDesktopMediaList::RemoveSource(int index) {
   observer_->OnSourceRemoved(sources_.size() - 1);
 }
 
+void FakeDesktopMediaList::MoveSource(int old_index, int new_index) {
+  Source source = sources_[old_index];
+  sources_.erase(sources_.begin() + old_index);
+  sources_.insert(sources_.begin() + new_index, source);
+  observer_->OnSourceMoved(old_index, new_index);
+}
+
 void FakeDesktopMediaList::SetSourceThumbnail(int index) {
   sources_[index].thumbnail = thumbnail_;
   observer_->OnSourceThumbnailChanged(index);
