@@ -25,6 +25,7 @@ class PrefRegistrySyncable;
 class ManagedUserSettingsService;
 class PrefHashStore;
 class PrefRegistry;
+class PrefRegistrySimple;
 class PrefService;
 class PrefServiceSyncable;
 class PrefStore;
@@ -80,6 +81,9 @@ void ResetPrefHashStore(const base::FilePath& profile_path);
 bool InitializePrefsFromMasterPrefs(
     const base::FilePath& profile_path,
     const base::DictionaryValue& master_prefs);
+
+// Register local state prefs used by chrome preference system.
+void RegisterPrefs(PrefRegistrySimple* registry);
 
 }  // namespace chrome_prefs
 

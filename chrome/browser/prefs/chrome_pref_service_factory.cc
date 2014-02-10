@@ -17,6 +17,7 @@
 #include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_registry.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_store.h"
 #include "base/prefs/pref_value_store.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -264,13 +266,20 @@ scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
 #endif
 }
 
+void HandleResetEvent() {
+  g_browser_process->local_state()->SetInt64(
+      prefs::kProfilePreferenceResetTime,
+      base::Time::Now().ToInternalValue());
+}
+
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store) {
   return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
                                             kTrackedPrefs,
                                             arraysize(kTrackedPrefs),
                                             kTrackedPrefsReportingIDsCount,
-                                            GetSettingsEnforcementLevel()));
+                                            GetSettingsEnforcementLevel(),
+                                            base::Bind(&HandleResetEvent)));
 }
 
 void PrepareBuilder(
@@ -491,6 +500,11 @@ bool InitializePrefsFromMasterPrefs(
 
   UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
   return success;
+}
+
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kProfilePreferenceResetTime, 0L);
+  PrefHashStoreImpl::RegisterPrefs(registry);
 }
 
 }  // namespace chrome_prefs

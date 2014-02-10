@@ -20,8 +20,10 @@ PrefHashFilter::PrefHashFilter(
     const TrackedPreferenceMetadata tracked_preferences[],
     size_t tracked_preferences_size,
     size_t reporting_ids_count,
-    EnforcementLevel enforcement_level) :
-        pref_hash_store_(pref_hash_store.Pass()) {
+    EnforcementLevel enforcement_level,
+    const base::Closure& reset_callback)
+        : pref_hash_store_(pref_hash_store.Pass()),
+          reset_callback_(reset_callback) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences_size);
 
@@ -78,15 +80,23 @@ void PrefHashFilter::Initialize(const PrefStore& pref_store) {
 void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
   DCHECK(pref_store_contents);
   base::TimeTicks checkpoint = base::TimeTicks::Now();
+
+  bool did_reset = false;
   {
     scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
         pref_hash_store_->BeginTransaction());
     for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
          it != tracked_paths_.end(); ++it) {
-      it->second->EnforceAndReport(pref_store_contents,
-                                   hash_store_transaction.get());
+      if (it->second->EnforceAndReport(pref_store_contents,
+                                       hash_store_transaction.get())) {
+        did_reset = true;
+      }
     }
   }
+
+  if (did_reset)
+    reset_callback_.Run();
+
   // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
   // data has been gathered from the wild to be confident this doesn't
   // significantly affect startup.

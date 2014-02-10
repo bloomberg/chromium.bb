@@ -557,15 +557,23 @@ def AddKeySystemSupportActions(actions):
   actions.add('KeySystemSupport.WidevineWithType.Supported')
 
 def AddAutomaticResetBannerActions(actions):
-  """Add actions that are used for the automatic profile settings reset banner
+  """Add actions that are used for the automatic profile settings reset banners
   in chrome://settings.
 
   Arguments
     actions: set of actions to add to.
   """
+  # These actions relate to the the automatic settings reset banner shown as
+  # a result of the reset prompt.
   actions.add('AutomaticReset_WebUIBanner_BannerShown')
   actions.add('AutomaticReset_WebUIBanner_ManuallyClosed')
   actions.add('AutomaticReset_WebUIBanner_ResetClicked')
+
+  # These actions relate to the the automatic settings reset banner shown as
+  # a result of settings hardening.
+  actions.add('AutomaticSettingsReset_WebUIBanner_BannerShown')
+  actions.add('AutomaticSettingsReset_WebUIBanner_ManuallyClosed')
+  actions.add('AutomaticSettingsReset_WebUIBanner_LearnMoreClicked')
 
 def main(argv):
   if '--hash' in argv:

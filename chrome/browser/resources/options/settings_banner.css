@@ -1,8 +1,11 @@
-/* Copyright 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#reset-profile-settings-banner {
+/* These styles are used bby both reset_profile_settings_banner.html and
+ * automatic_settings_reset_banner.html. */
+
+.settings-banner {
   background-color: #f5f5f5;
   border-color: #c8c8c8;
   border-radius: 3px;
@@ -14,7 +17,7 @@
   width: 716px;
 }
 
-#reset-profile-settings-banner > .close-button {
+.settings-banner > .close-button {
   background-image: url('chrome://theme/IDR_CLOSE_DIALOG');
   background-position: center;
   background-repeat: no-repeat;
@@ -26,26 +29,26 @@
   width: 14px;
 }
 
-html[dir='rtl'] #reset-profile-settings-banner > .close-button {
+html[dir='rtl'] .settings-banner > .close-button {
   left: 4px;
   right: auto;
 }
 
-#reset-profile-settings-banner > .close-button:hover {
+.settings-banner > .close-button:hover {
   background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
 }
 
-#reset-profile-settings-banner > .close-button:active {
+.settings-banner > .close-button:active {
   background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
 }
 
-#reset-profile-settings-banner .content-area {
+.settings-banner .content-area {
   -webkit-box-align: center;
   display: -webkit-box;
   padding: 17px;
 }
 
-#reset-profile-settings-banner .content-area .badge {
+.settings-banner .content-area .badge {
   background-image: url(yellow_gear.png);
   background-position: center;
   background-repeat: no-repeat;
@@ -53,25 +56,25 @@ html[dir='rtl'] #reset-profile-settings-banner > .close-button {
   width: 58px;
 }
 
-#reset-profile-settings-banner .content-area .text {
+.settings-banner .content-area .text {
   -webkit-box-flex: 1.0;
   -webkit-margin-start: 18px;
 }
 
-#reset-profile-settings-banner .content-area .text p {
+.settings-banner .content-area .text p {
   -webkit-margin-after: 0;
   -webkit-margin-before: 0;
 }
 
-#reset-profile-settings-banner .content-area .button-area  {
+.settings-banner .content-area .button-area  {
   -webkit-margin-start: 54px;
 }
 
-#reset-profile-settings-banner .nowrap  {
+.settings-banner .nowrap  {
   white-space: nowrap;
 }
 
-#reset-profile-settings-banner button {
+.settings-banner button {
   margin-bottom: 1px;
   margin-right: 0;
 }

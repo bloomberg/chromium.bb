@@ -52,8 +52,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -224,6 +224,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   AppListService::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
+  chrome_prefs::RegisterPrefs(registry);
   chrome_variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterPrefsForRecoveryComponent(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
@@ -237,7 +238,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
   metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
-  PrefHashStoreImpl::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);

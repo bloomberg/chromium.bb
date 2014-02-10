@@ -352,6 +352,9 @@ extern const char kChromeEnterpriseSignInLearnMoreURL[];
 // "Learn more" URL for resetting profile preferences.
 extern const char kResetProfileSettingsLearnMoreURL[];
 
+// "Learn more" URL for when profile settings are automatically reset.
+extern const char kAutomaticSettingsResetLearnMoreURL[];
+
 // Management URL for the supervised users.
 extern const char kSupervisedUserManagementURL[];
 

@@ -22,7 +22,7 @@ void TrackedAtomicPreference::OnNewValue(
   transaction->StoreHash(pref_path_, value);
 }
 
-void TrackedAtomicPreference::EnforceAndReport(
+bool TrackedAtomicPreference::EnforceAndReport(
     base::DictionaryValue* pref_store_contents,
     PrefHashStoreTransaction* transaction) const {
   const base::Value* value = NULL;
@@ -36,8 +36,11 @@ void TrackedAtomicPreference::EnforceAndReport(
       helper_.GetAction(value_state);
   helper_.ReportAction(reset_action);
 
-  if (reset_action == TrackedPreferenceHelper::DO_RESET)
+  bool was_reset = false;
+  if (reset_action == TrackedPreferenceHelper::DO_RESET) {
     pref_store_contents->RemovePath(pref_path_, NULL);
+    was_reset = true;
+  }
 
   if (value_state != PrefHashStoreTransaction::UNCHANGED) {
     // Store the hash for the new value (whether it was reset or not).
@@ -45,4 +48,6 @@ void TrackedAtomicPreference::EnforceAndReport(
     pref_store_contents->Get(pref_path_, &new_value);
     transaction->StoreHash(pref_path_, new_value);
   }
+
+  return was_reset;
 }

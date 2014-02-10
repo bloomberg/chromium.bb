@@ -30,7 +30,7 @@ void TrackedSplitPreference::OnNewValue(
   transaction->StoreSplitHash(pref_path_, dict_value);
 }
 
-void TrackedSplitPreference::EnforceAndReport(
+bool TrackedSplitPreference::EnforceAndReport(
     base::DictionaryValue* pref_store_contents,
     PrefHashStoreTransaction* transaction) const {
   base::DictionaryValue* dict_value = NULL;
@@ -38,7 +38,7 @@ void TrackedSplitPreference::EnforceAndReport(
       pref_store_contents->Get(pref_path_, NULL)) {
     // There should be a dictionary or nothing at |pref_path_|.
     NOTREACHED();
-    return;
+    return false;
   }
 
   std::vector<std::string> invalid_keys;
@@ -54,6 +54,7 @@ void TrackedSplitPreference::EnforceAndReport(
       helper_.GetAction(value_state);
   helper_.ReportAction(reset_action);
 
+  bool was_reset = false;
   if (reset_action == TrackedPreferenceHelper::DO_RESET) {
     if (value_state == PrefHashStoreTransaction::CHANGED) {
       DCHECK(!invalid_keys.empty());
@@ -65,6 +66,7 @@ void TrackedSplitPreference::EnforceAndReport(
     } else {
       pref_store_contents->RemovePath(pref_path_, NULL);
     }
+    was_reset = true;
   }
 
   if (value_state != PrefHashStoreTransaction::UNCHANGED) {
@@ -73,4 +75,6 @@ void TrackedSplitPreference::EnforceAndReport(
     pref_store_contents->GetDictionary(pref_path_, &new_dict_value);
     transaction->StoreSplitHash(pref_path_, new_dict_value);
   }
+
+  return was_reset;
 }

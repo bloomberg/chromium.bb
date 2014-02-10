@@ -2618,6 +2618,10 @@ const char kWatchdogExtensionActiveOld[] =
 // of Chrome.
 const char kProfilePreferenceHashes[] = "profile.preference_hashes";
 
+// A timestamp (stored in base::Time::ToInternalValue format) of the last time
+// a preference was reset.
+const char kProfilePreferenceResetTime[] = "profile.preference_reset_time";
+
 // Stores a pair of local time and corresponding network time to bootstrap
 // network time tracker when browser starts.
 const char kNetworkTimeMapping[] = "profile.network_time_mapping";

@@ -28,7 +28,7 @@ class TrackedPreference {
   // preference-specific and browser-wide policy and reports results to via UMA.
   // May use |transaction| to check/modify hashes in the corresponding hash
   // store.
-  virtual void EnforceAndReport(
+  virtual bool EnforceAndReport(
       base::DictionaryValue* pref_store_contents,
       PrefHashStoreTransaction* transaction) const = 0;
 };

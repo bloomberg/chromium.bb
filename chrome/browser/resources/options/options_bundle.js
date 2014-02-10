@@ -13,6 +13,7 @@
 <include src="options_page.js"></include>
 <include src="pref_ui.js"></include>
 <include src="settings_dialog.js"></include>
+<include src="settings_banner.js"></include>
 <if expr="pp_ifdef('chromeos')">
 <include src="../chromeos/user_images_grid.js"></include>
 // DO NOT BREAK THE FOLLOWING INCLUDE LINE INTO SEPARATE LINES!
@@ -65,6 +66,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="autofill_edit_creditcard_overlay.js"></include>
 <include src="autofill_options_list.js"></include>
 <include src="autofill_options.js"></include>
+<include src="automatic_settings_reset_banner.js"></include>
 <include src="browser_options.js"></include>
 <include src="browser_options_profile_list.js"></include>
 <include src="browser_options_startup_page_list.js"></include>

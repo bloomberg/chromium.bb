@@ -395,6 +395,9 @@ const char kChromeEnterpriseSignInLearnMoreURL[] =
 const char kResetProfileSettingsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
 
+const char kAutomaticSettingsResetLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
+
 const char kSupervisedUserManagementURL[] = "https://www.chrome.com/manage";
 
 const char kSupervisedUserManagementDisplayURL[] = "www.chrome.com/manage";

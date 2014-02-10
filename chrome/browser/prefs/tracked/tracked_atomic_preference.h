@@ -26,7 +26,7 @@ class TrackedAtomicPreference : public TrackedPreference {
   // TrackedPreference implementation.
   virtual void OnNewValue(const base::Value* value,
                           PrefHashStoreTransaction* transaction) const OVERRIDE;
-  virtual void EnforceAndReport(
+  virtual bool EnforceAndReport(
       base::DictionaryValue* pref_store_contents,
       PrefHashStoreTransaction* transaction) const OVERRIDE;
 

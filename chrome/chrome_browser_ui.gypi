@@ -2451,6 +2451,8 @@
         'browser/ui/webui/options/advanced_options_utils_win.cc',
         'browser/ui/webui/options/autofill_options_handler.cc',
         'browser/ui/webui/options/autofill_options_handler.h',
+        'browser/ui/webui/options/automatic_settings_reset_handler.cc',
+        'browser/ui/webui/options/automatic_settings_reset_handler.h',
         'browser/ui/webui/options/browser_options_handler.cc',
         'browser/ui/webui/options/browser_options_handler.h',
         'browser/ui/webui/options/certificate_manager_handler.cc',

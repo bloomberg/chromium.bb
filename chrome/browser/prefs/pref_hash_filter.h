@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -65,12 +66,13 @@ class PrefHashFilter : public PrefFilter {
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
   // than |tracked_preferences_size|). |enforcement_level| determines when this
   // filter will enforce factory defaults upon detecting an untrusted preference
-  // value.
+  // value. |reset_callback| is called when a reset event occurs.
   PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store,
                  const TrackedPreferenceMetadata tracked_preferences[],
                  size_t tracked_preferences_size,
                  size_t reporting_ids_count,
-                 EnforcementLevel enforcement_level);
+                 EnforcementLevel enforcement_level,
+                 const base::Closure& reset_callback);
 
   virtual ~PrefHashFilter();
 
@@ -101,6 +103,8 @@ class PrefHashFilter : public PrefFilter {
   // The set of all paths whose value has changed since the last call to
   // FilterSerializeData.
   ChangedPathsMap changed_paths_;
+
+  base::Closure reset_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/options/autofill_options_handler.h"
+#include "chrome/browser/ui/webui/options/automatic_settings_reset_handler.h"
 #include "chrome/browser/ui/webui/options/browser_options_handler.h"
 #include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -256,6 +257,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, core_handler);
 
   AddOptionsPageUIHandler(localized_strings, new AutofillOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new AutomaticSettingsResetHandler());
 
   BrowserOptionsHandler* browser_options_handler = new BrowserOptionsHandler();
   AddOptionsPageUIHandler(localized_strings, browser_options_handler);

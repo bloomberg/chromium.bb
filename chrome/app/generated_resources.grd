@@ -10615,6 +10615,11 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_RESET_PROFILE_SETTINGS_PROCESSING_SHORTCUTS" desc="A placeholder for the actual shortcuts in the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
           Processing shortcuts...
         </message>
+
+        <!-- Automatic Settings Reset strings -->
+        <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that its settings have been tampered with and then resets them to factory defaults.">
+          Chrome detected that some of your browser settings were changed by another program and reset them to their original defaults.
+        </message>
       </if>
 
       <!-- chrome://settings strings that are used by all platforms including Android -->

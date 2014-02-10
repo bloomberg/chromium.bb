@@ -926,6 +926,7 @@ extern const char kWatchdogExtensionActive[];
 extern const char kWatchdogExtensionActiveOld[];
 
 extern const char kProfilePreferenceHashes[];
+extern const char kProfilePreferenceResetTime[];
 
 extern const char kNetworkTimeMapping[];
 
