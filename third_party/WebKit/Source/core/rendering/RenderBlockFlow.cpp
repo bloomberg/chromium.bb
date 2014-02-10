@@ -913,7 +913,7 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
 {
     RenderStyle* blockStyle = blockFlow->style();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
-    m_canCollapseWithChildren = !blockFlow->createsBlockFormattingContext() && !blockFlow->isRenderFlowThread() && !blockStyle->columnSpan() && !blockFlow->isRenderView();
+    m_canCollapseWithChildren = !blockFlow->createsBlockFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
 
     m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle->marginBeforeCollapse() != MSEPARATE;
 
