@@ -322,7 +322,6 @@ private:
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtr<InternalRuntimeFlags> m_runtimeFlags;
-    RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
     RefPtr<InternalProfilers> m_profilers;
 };
 

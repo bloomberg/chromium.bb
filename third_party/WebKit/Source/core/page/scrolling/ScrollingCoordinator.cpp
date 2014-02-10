@@ -89,9 +89,9 @@ WebLayer* ScrollingCoordinator::containerWebLayerForScrollableArea(ScrollableAre
     return graphicsLayer ? graphicsLayer->platformLayer() : 0;
 }
 
-PassRefPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
+PassOwnPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 {
-    return adoptRef(new ScrollingCoordinator(page));
+    return adoptPtr(new ScrollingCoordinator(page));
 }
 
 ScrollingCoordinator::ScrollingCoordinator(Page* page)

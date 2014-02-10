@@ -50,9 +50,9 @@ class Region;
 class ScrollableArea;
 class ViewportConstraints;
 
-class ScrollingCoordinator : public RefCounted<ScrollingCoordinator> {
+class ScrollingCoordinator {
 public:
-    static PassRefPtr<ScrollingCoordinator> create(Page*);
+    static PassOwnPtr<ScrollingCoordinator> create(Page*);
     ~ScrollingCoordinator();
 
     void pageDestroyed();

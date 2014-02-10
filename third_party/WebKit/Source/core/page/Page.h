@@ -250,7 +250,7 @@ private:
     const OwnPtr<ContextMenuController> m_contextMenuController;
     const OwnPtr<InspectorController> m_inspectorController;
     const OwnPtr<PointerLockController> m_pointerLockController;
-    RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
+    OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     const OwnPtr<HistoryController> m_historyController;
     const OwnPtr<ProgressTracker> m_progress;
