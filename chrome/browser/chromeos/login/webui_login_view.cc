@@ -420,9 +420,9 @@ void WebUILoginView::DidFailProvisionalLoad(
   if (frame_unique_name != base::UTF8ToUTF16("gaia-frame"))
     return;
 
-  base::FundamentalValue error_value(-error_code);
   GetWebUI()->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",
-                                     error_value);
+                                     base::FundamentalValue(-error_code),
+                                     base::StringValue(validated_url.spec()));
 }
 
 void WebUILoginView::OnLoginPromptVisible() {

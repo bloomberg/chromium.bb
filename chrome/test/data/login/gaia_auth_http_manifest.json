@@ -16,7 +16,7 @@
       "all_frames": true
     }
   ],
-  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src https:; style-src 'self' 'unsafe-inline'",
+  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src *; style-src 'self' 'unsafe-inline'",
   "description": "GAIA Component Extension",
   "web_accessible_resources": [
     "main.css",
