@@ -59,7 +59,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    RefPtrWillBeRawPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, eventID);
+    RefPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, eventID);
     observer->willDispatchEvent();
     m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
     observer->didDispatchEvent();

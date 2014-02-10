@@ -31,7 +31,6 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
-#include "heap/Handle.h"
 #include "public/platform/WebServiceWorker.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -44,24 +43,21 @@ class WebServiceWorker;
 
 namespace WebCore {
 
-class ServiceWorker : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorker> {
-    DECLARE_GC_INFO;
+class ServiceWorker : public RefCounted<ServiceWorker> {
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorker> create(PassOwnPtr<blink::WebServiceWorker> worker)
+    static PassRefPtr<ServiceWorker> create(PassOwnPtr<blink::WebServiceWorker> worker)
     {
-        return adoptRefWillBeNoop(new ServiceWorker(worker));
+        return adoptRef(new ServiceWorker(worker));
     }
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorker> from(WebType* worker)
+    static PassRefPtr<ServiceWorker> from(WebType* worker)
     {
         return create(adoptPtr(worker));
     }
 
     ~ServiceWorker() { }
-
-    void trace(Visitor*) { }
 
 private:
     explicit ServiceWorker(PassOwnPtr<blink::WebServiceWorker>);

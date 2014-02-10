@@ -6,7 +6,6 @@
 #define WaitUntilObserver_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "heap/Handle.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -18,11 +17,10 @@ class ScriptValue;
 
 // Created for each InstallPhaseEvent instance.
 class WaitUntilObserver FINAL :
-    public RefCountedWillBeGarbageCollectedFinalized<WaitUntilObserver>,
-    public ContextLifecycleObserver {
-    DECLARE_GC_INFO;
+    public ContextLifecycleObserver,
+    public RefCounted<WaitUntilObserver> {
 public:
-    static PassRefPtrWillBeRawPtr<WaitUntilObserver> create(ExecutionContext*, int eventID);
+    static PassRefPtr<WaitUntilObserver> create(ExecutionContext*, int eventID);
 
     ~WaitUntilObserver();
 
@@ -33,8 +31,6 @@ public:
     // Observes the promise and delays calling didHandleInstallEvent() until
     // the given promise is resolved or rejected.
     void waitUntil(const ScriptValue&);
-
-    void trace(Visitor*) { }
 
 private:
     class ThenFunction;

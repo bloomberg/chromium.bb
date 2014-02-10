@@ -54,7 +54,7 @@ InstallPhaseEvent::InstallPhaseEvent()
 {
 }
 
-InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, PassRefPtrWillBeRawPtr<WaitUntilObserver> observer)
+InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
     : Event(type, initializer)
     , m_observer(observer)
 {
