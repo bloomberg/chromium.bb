@@ -85,7 +85,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
 // Lookup the current system settings for font smoothing.
 // We cache these values for performance, but if the browser has a way to be
 // notified when these change, we could re-query them at that time.
-static uint32_t getSystemTextFlags()
+static uint32_t getDefaultGDITextFlags()
 {
     static bool gInited;
     static uint32_t gFlags;
@@ -106,29 +106,52 @@ static uint32_t getSystemTextFlags()
     return gFlags;
 }
 
-static bool isWebFont(const String& familyName)
+static bool isWebFont(const LOGFONT& lf)
 {
-    // Web-fonts have artifical names constructed to always be:
+    // web-fonts have artifical names constructed to always be
     // 1. 24 characters, followed by a '\0'
     // 2. the last two characters are '=='
-    return familyName.length() == 24
-        && '=' == familyName[22] && '=' == familyName[23];
+    return '=' == lf.lfFaceName[22] && '=' == lf.lfFaceName[23] && '\0' == lf.lfFaceName[24];
 }
 
-int FontPlatformData::paintTextFlags() const
+static int computePaintTextFlags(const LOGFONT& lf)
 {
-    int textFlags = getSystemTextFlags();
+    int textFlags = 0;
+    switch (lf.lfQuality) {
+    case NONANTIALIASED_QUALITY:
+        textFlags = 0;
+        break;
+    case ANTIALIASED_QUALITY:
+        textFlags = SkPaint::kAntiAlias_Flag;
+        break;
+    case CLEARTYPE_QUALITY:
+        textFlags = (SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag);
+        break;
+    default:
+        textFlags = getDefaultGDITextFlags();
+        break;
+    }
 
-    // Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
-    // In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,
-    // even when the System (getSystemTextFlags) tells us to draw only in BW.
-    if (isWebFont(fontFamilyName()) && !isRunningLayoutTest())
+    // only allow features that SystemParametersInfo allows
+    textFlags &= getDefaultGDITextFlags();
+
+    /*
+     *  FontPlatformData(...) will read our logfont, and try to honor the the lfQuality
+     *  setting (computing the corresponding SkPaint flags for AA and LCD). However, it
+     *  will limit the quality based on its query of SPI_GETFONTSMOOTHING. This could mean
+     *  we end up drawing the text in BW, even though our lfQuality requested antialiasing.
+     *
+     *  Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
+     *  In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,
+     *  even when the System (getDefaultGDITextFlags) tells us to draw only in BW.
+     */
+    if (isWebFont(lf) && !isRunningLayoutTest())
         textFlags |= SkPaint::kAntiAlias_Flag;
     return textFlags;
 }
 
 #if !USE(HARFBUZZ)
-PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size)
+PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
 {
     LOGFONT info;
     GetObject(hfont, sizeof(info), &info);
@@ -138,6 +161,8 @@ PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size)
             height = -height;
         *size = height;
     }
+    if (paintTextFlags)
+        *paintTextFlags = computePaintTextFlags(info);
     return adoptRef(SkCreateTypefaceFromLOGFONT(info));
 }
 #endif
@@ -148,6 +173,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(true)
     , m_useSubpixelPositioning(false)
 {
@@ -163,6 +189,7 @@ FontPlatformData::FontPlatformData()
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
 {
@@ -180,7 +207,7 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
     , m_syntheticItalic(false)
     , m_orientation(orientation)
     , m_scriptCache(0)
-    , m_typeface(CreateTypefaceFromHFont(font, 0))
+    , m_typeface(CreateTypefaceFromHFont(font, 0, &m_paintTextFlags))
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
 {
@@ -194,6 +221,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
 {
@@ -209,6 +237,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_syntheticItalic(data.m_syntheticItalic)
     , m_orientation(data.m_orientation)
     , m_typeface(data.m_typeface)
+    , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
@@ -224,6 +253,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_syntheticItalic(data.m_syntheticItalic)
     , m_orientation(data.m_orientation)
     , m_typeface(data.m_typeface)
+    , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
@@ -249,6 +279,7 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     LOGFONT logFont;
     SkLOGFONTFromTypeface(m_typeface.get(), &logFont);
     logFont.lfHeight = -textSize;
+    m_paintTextFlags = computePaintTextFlags(logFont);
 
 #if !USE(HARFBUZZ)
     HFONT hFont = CreateFontIndirect(&logFont);
@@ -265,6 +296,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_syntheticItalic = data.m_syntheticItalic;
         m_orientation = data.m_orientation;
         m_typeface = data.m_typeface;
+        m_paintTextFlags = data.m_paintTextFlags;
 
 #if !USE(HARFBUZZ)
         m_font = data.m_font;

@@ -175,7 +175,7 @@ void paintSkiaText(GraphicsContext* context,
     if (context->isPrintingDevice())
         FontPlatformData::ensureFontLoaded(hfont);
 
-    RefPtr<SkTypeface> face = CreateTypefaceFromHFont(hfont, &size);
+    RefPtr<SkTypeface> face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
     paintSkiaText(context, data, face.get(), size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 #endif
