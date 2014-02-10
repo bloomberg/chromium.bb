@@ -116,7 +116,7 @@ function documentadoptnode04() {
 
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
-      newAttr = doc.createAttributeNS(xmlNS,"xml:lang");
+      newAttr = doc.createAttribute("xml:lang");
       adoptedAttr = newDoc.adoptNode(newAttr);
       
 	if(
@@ -135,7 +135,6 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       isSpecified = adoptedAttr.specified;
 
       assertEquals("documentadoptnode04_nodeName","xml:lang",nodeName);
-       assertEquals("documentadoptnode04_namespaceURI",xmlNS,nodeNamespaceURI);
        assertEquals("documentadoptnode04_prefix","xml",nodePrefix);
        assertNull("documentadoptnode04_ownerDoc",attrOwnerElem);
     assertTrue("documentadoptnode04_specified",isSpecified);

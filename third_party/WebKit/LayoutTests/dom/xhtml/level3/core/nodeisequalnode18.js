@@ -112,7 +112,7 @@ function nodeisequalnode18() {
 
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
-      attr1 = doc.createAttributeNS(nullNSURI,"title");
+      attr1 = doc.createAttribute("title");
       attr2 = newDoc.adoptNode(attr1);
       
 	if(

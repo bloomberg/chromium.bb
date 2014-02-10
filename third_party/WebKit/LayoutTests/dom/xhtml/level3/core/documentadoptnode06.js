@@ -125,7 +125,7 @@ function documentadoptnode06() {
 
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
-      newAttr = doc.createAttributeNS(xmlNS,"xml:lang");
+      newAttr = doc.createAttribute("xml:lang");
       newText = doc.createTextNode("Text Node");
       newEntRef = doc.createEntityReference("alpha");
       appendedChild = newAttr.appendChild(newText);

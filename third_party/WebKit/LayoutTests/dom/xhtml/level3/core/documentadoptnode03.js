@@ -101,7 +101,7 @@ function documentadoptnode03() {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      newAttr = doc.createAttributeNS(xmlNS,"xml:lang");
+      newAttr = doc.createAttribute("xml:lang");
       adoptedAttr = doc.adoptNode(newAttr);
       
 	if(
@@ -120,7 +120,6 @@ function documentadoptnode03() {
       isSpecified = adoptedAttr.specified;
 
       assertEquals("documentadoptode03_nodeName","xml:lang",nodeName);
-       assertEquals("documentadoptNode03_namespaceURI",xmlNS,nodeNamespaceURI);
        assertEquals("documentadoptnode03_prefix","xml",nodePrefix);
        assertNull("documentadoptnode03_ownerDoc",attrOwnerElem);
     assertTrue("documentadoptnode03_specified",isSpecified);

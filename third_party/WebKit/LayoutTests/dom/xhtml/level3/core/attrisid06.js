@@ -93,7 +93,7 @@ function attrisid06() {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      attr = doc.createAttribute("xml:lang");
       id = attr.isId;
 
       assertFalse("AttrIsIDFalse06",id);

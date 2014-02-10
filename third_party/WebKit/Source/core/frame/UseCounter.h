@@ -171,7 +171,7 @@ public:
         ElementRemoveAttributeNode, // Removed from DOM4.
         ElementGetAttributeNodeNS, // Removed from DOM4.
         DocumentCreateAttribute, // Removed from DOM4.
-        DocumentCreateAttributeNS, // Removed from DOM4.
+        REMOVEDDocumentCreateAttributeNS, // Removed from DOM4.
         DocumentCreateCDATASection, // Removed from DOM4.
         DocumentInputEncoding, // Removed from DOM4.
         DocumentXMLEncoding, // Removed from DOM4.

@@ -97,7 +97,7 @@ function nodeinsertbefore03() {
       doc = load(docRef, "doc", "hc_staff");
       docType = doc.doctype;
 
-      newAttr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      newAttr = doc.createAttribute("xml:lang");
       
 	{
 		success = false;

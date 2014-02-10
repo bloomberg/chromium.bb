@@ -103,7 +103,7 @@ function nodeinsertbefore14() {
       doc = load(docRef, "doc", "hc_staff");
       docType = doc.doctype;
 
-      newAttr = doc.createAttributeNS("http://www.w3.org/DOM/Test","dom3:attr");
+      newAttr = doc.createAttribute("dom3:attr");
       
 	{
 		success = false;

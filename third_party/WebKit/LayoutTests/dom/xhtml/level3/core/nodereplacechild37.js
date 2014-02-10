@@ -112,7 +112,7 @@ function nodereplacechild37() {
         doc2Ref = this.doc2;
       }
       doc2 = load(doc2Ref, "doc2", "hc_staff");
-      parent = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      parent = doc.createAttribute("xml:lang");
       oldChild = doc.createTextNode("Text");
       newChild = doc2.createEntityReference("delta");
       appendedChild = parent.appendChild(oldChild);

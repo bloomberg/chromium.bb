@@ -76,7 +76,7 @@ function loadComplete() {
 /**
 * 
 	Set the strictErrorChecking attribute value on this documentNode to false and then to true.
-	Call the createAttributeNS method on this document with an illegal character in the qualifiedName
+    Call the createAttribute method on this document with an illegal character in the qualifiedName
 	and check if the INVALID_CHARACTER_ERR is thrown.
 
 * @author IBM
@@ -102,7 +102,7 @@ function documentsetstricterrorchecking01() {
 	{
 		success = false;
 		try {
-            newAttr = doc.createAttributeNS("http://www.w3.org/DOM/Test","@");
+            newAttr = doc.createAttribute("@");
         }
 		catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);

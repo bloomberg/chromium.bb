@@ -95,7 +95,7 @@ function documentrenamenode22() {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      attr = doc.createAttribute("xml:lang");
       
 	{
 		success = false;

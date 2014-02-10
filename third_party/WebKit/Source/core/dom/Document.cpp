@@ -4300,21 +4300,11 @@ WeakPtr<Document> Document::contextDocument()
 
 PassRefPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
 {
-    return createAttributeNS(nullAtom, name, exceptionState, true);
-}
-
-PassRefPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
-{
     AtomicString prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
+    if (!parseQualifiedName(name, prefix, localName, exceptionState))
         return 0;
 
-    QualifiedName qName(prefix, localName, namespaceURI);
-
-    if (!shouldIgnoreNamespaceChecks && !hasValidNamespaceForAttributes(qName)) {
-        exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
-        return 0;
-    }
+    QualifiedName qName(prefix, localName, nullAtom);
 
     return Attr::create(*this, qName, emptyAtom);
 }

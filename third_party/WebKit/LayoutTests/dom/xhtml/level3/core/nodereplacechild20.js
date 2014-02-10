@@ -100,7 +100,7 @@ function nodereplacechild20() {
       doc = load(docRef, "doc", "hc_staff");
       docFrag = doc.createDocumentFragment();
       elem = doc.createElementNS("http://www.w3.org/1999/xhtml","dom3:p");
-      attr = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      attr = doc.createAttribute("xml:lang");
       appendedChild = docFrag.appendChild(elem);
       
 	{

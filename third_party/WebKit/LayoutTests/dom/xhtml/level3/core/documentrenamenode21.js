@@ -110,7 +110,7 @@ function documentrenamenode21() {
 
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
-      attr = newDoc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
+      attr = newDoc.createAttribute("xml:lang");
       
 	{
 		success = false;

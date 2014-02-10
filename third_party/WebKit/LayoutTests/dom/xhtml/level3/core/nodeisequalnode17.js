@@ -112,7 +112,7 @@ function nodeisequalnode17() {
 
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
-      attr1 = doc.createAttributeNS(nullNSURI,"root");
+      attr1 = doc.createAttribute("root");
       attr2 = newDoc.importNode(attr1,true);
       isEqual = attr1.isEqualNode(attr2);
       assertTrue("nodeisequalnode17",isEqual);
