@@ -153,6 +153,9 @@ exposay_highlight_surface(struct desktop_shell *shell,
 {
 	struct weston_view *view = esurface->view;
 
+	if (shell->exposay.focus_current == view)
+		return;
+
 	shell->exposay.row_current = esurface->row;
 	shell->exposay.column_current = esurface->column;
 	shell->exposay.cur_output = esurface->eoutput;
