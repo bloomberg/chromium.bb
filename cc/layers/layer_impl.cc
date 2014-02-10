@@ -1249,8 +1249,10 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   // turned on in all builds, remove the next two lines. For now however, the
   // page scale layer may coincide with the clip layer, and so this is
   // necessary.
-  if (page_scale_layer == scrollbar_clip_layer)
+  if (page_scale_layer == scrollbar_clip_layer) {
     scroll_rect.Scale(layer_tree_impl()->total_page_scale_factor());
+    current_offset.Scale(layer_tree_impl()->total_page_scale_factor());
+  }
 
   scrollbar_layer->SetVerticalAdjust(layer_tree_impl()->VerticalAdjust(this));
   if (scrollbar_layer->orientation() == HORIZONTAL) {
