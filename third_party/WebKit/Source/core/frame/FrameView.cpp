@@ -1104,6 +1104,10 @@ void FrameView::repaintTree(RenderObject* root)
     DisableCompositingQueryAsserts disabler;
 
     for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
+        // The repaint rectangles stored on the RenderObjects should all match
+        // the current repaint rectangles for the renderers.
+        ASSERT(renderer->clippedOverflowRectForRepaint(renderer->containerForRepaint()) == renderer->newRepaintRect());
+
         const LayoutRect& oldRepaintRect = renderer->oldRepaintRect();
         const LayoutRect& newRepaintRect = renderer->newRepaintRect();
 
