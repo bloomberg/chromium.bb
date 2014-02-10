@@ -1854,7 +1854,10 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
   if (compositing_iosurface_context_ &&
       compositing_iosurface_context_->display_link()->GetVSyncParameters(
           &timebase, &interval)) {
-    render_widget_host_->UpdateVSyncParameters(timebase, interval);
+    // TODO(ccameron): This is to determine the cause of a performance
+    // regression on Mac, and should be un-commented as soon as possible.
+    // http://crbug.com/341811
+    // render_widget_host_->UpdateVSyncParameters(timebase, interval);
   }
 
   // Update the scale factor of the layer to match the scale factor of the
