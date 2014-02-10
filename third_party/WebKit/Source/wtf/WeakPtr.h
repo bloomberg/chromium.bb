@@ -102,6 +102,16 @@ private:
     RefPtr<WeakReference<T> > m_ref;
 };
 
+template<typename T, typename U> inline bool operator==(const WeakPtr<T>& a, const WeakPtr<U>& b)
+{
+    return a.get() == b.get();
+}
+
+template<typename T, typename U> inline bool operator!=(const WeakPtr<T>& a, const WeakPtr<U>& b)
+{
+    return a.get() != b.get();
+}
+
 template<typename T>
 class WeakPtrFactory {
     WTF_MAKE_NONCOPYABLE(WeakPtrFactory<T>);
