@@ -26,7 +26,7 @@ shouldBe('candidate.sdpMLineIndex', '6');
 shouldThrow('new RTCIceCandidate({});');
 shouldThrow('new RTCIceCandidate(5);');
 shouldThrow('new RTCIceCandidate("foobar");');
-shouldThrow('new RTCIceCandidate(candidate:"");');
+shouldThrow('new RTCIceCandidate({candidate:""});');
 
 shouldNotThrow('new RTCIceCandidate({candidate:"x"});');
 
