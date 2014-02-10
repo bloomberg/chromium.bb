@@ -210,7 +210,7 @@ public:
         DOMNodeRemovedFromDocumentEvent,
         DOMNodeInsertedIntoDocumentEvent,
         DOMCharacterDataModifiedEvent,
-        DocumentAllTags,
+        REMOVEDDocumentAllTags,
         DocumentAllLegacyCall,
         HTMLAppletElementLegacyCall,
         HTMLEmbedElementLegacyCall,
