@@ -151,6 +151,7 @@ INITIAL_ENV = {
   # llvm-as compiles llvm assembly (.ll) to bitcode (.bc/.po)
   'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
   'PNACL_ABICHECK': '${BASE_LLVM_BIN}/pnacl-abicheck${EXEC_EXT}',
+  'PNACL_COMPRESS': '${BASE_LLVM_BIN}/pnacl-bccompress${EXEC_EXT}',
 
   # Native LLVM tools
   'LLVM_PNACL_LLC': '${BASE_LLVM_BIN}/pnacl-llc${EXEC_EXT}',
