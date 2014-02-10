@@ -864,11 +864,8 @@ void Node::invalidateNodeListCachesInAncestors(const QualifiedName* attrName, El
     document().invalidateNodeListCaches(attrName);
 
     for (Node* node = this; node; node = node->parentNode()) {
-        if (!node->hasRareData())
-            continue;
-        NodeRareData* data = node->rareData();
-        if (data->nodeLists())
-            data->nodeLists()->invalidateCaches(attrName);
+        if (NodeListsNodeData* lists = node->nodeLists())
+            lists->invalidateCaches(attrName);
     }
 }
 
