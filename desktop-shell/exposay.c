@@ -33,6 +33,7 @@ struct exposay_surface {
 	struct exposay_output *eoutput;
 	struct weston_surface *surface;
 	struct weston_view *view;
+	struct wl_listener view_destroy_listener;
 	struct wl_list link;
 
 	int x;
@@ -55,6 +56,20 @@ static void exposay_set_state(struct desktop_shell *shell,
                               enum exposay_target_state state,
 			      struct weston_seat *seat);
 static void exposay_check_state(struct desktop_shell *shell);
+
+static void
+exposay_surface_destroy(struct exposay_surface *esurface)
+{
+	wl_list_remove(&esurface->link);
+	wl_list_remove(&esurface->view_destroy_listener.link);
+
+	if (esurface->shell->exposay.focus_current == esurface->view)
+		esurface->shell->exposay.focus_current = NULL;
+	if (esurface->shell->exposay.focus_prev == esurface->view)
+		esurface->shell->exposay.focus_prev = NULL;
+
+	free(esurface);
+}
 
 static void
 exposay_in_flight_inc(struct desktop_shell *shell)
@@ -110,8 +125,7 @@ exposay_animate_out_done(struct weston_view_animation *animation, void *data)
 	struct exposay_surface *esurface = data;
 	struct desktop_shell *shell = esurface->shell;
 
-	wl_list_remove(&esurface->link);
-	free(esurface);
+	exposay_surface_destroy(esurface);
 
 	exposay_in_flight_dec(shell);
 }
@@ -174,6 +188,16 @@ exposay_pick(struct desktop_shell *shell, int x, int y)
 		exposay_highlight_surface(shell, esurface);
 		return;
 	}
+}
+
+static void
+handle_view_destroy(struct wl_listener *listener, void *data)
+{
+	struct exposay_surface *esurface = container_of(listener,
+						 struct exposay_surface,
+						 view_destroy_listener);
+
+	exposay_surface_destroy(esurface);
 }
 
 /* Pretty lame layout for now; just tries to make a square.  Should take
@@ -266,6 +290,9 @@ exposay_layout(struct desktop_shell *shell, struct shell_output *shell_output)
 		esurface->shell = shell;
 		esurface->eoutput = eoutput;
 		esurface->view = view;
+
+		esurface->view_destroy_listener.notify = handle_view_destroy;
+		wl_signal_add(&view->destroy_signal, &esurface->view_destroy_listener);
 
 		esurface->row = i / eoutput->grid_size;
 		esurface->column = i % eoutput->grid_size;
