@@ -151,11 +151,6 @@
       },
       'sources': ['<@(irt_sources)', '<@(irt_browser)'],
       'include_dirs': ['../../../../ppapi'],
-      'conditions': [
-        ['target_arch=="arm"', {
-          'sources': [ 'aeabi_read_tp.S' ],
-        }],
-      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
