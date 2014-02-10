@@ -20,3 +20,8 @@ button {
 #net-export-main {
   margin: 8px;
 }
+
+#export-view-file-path-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
