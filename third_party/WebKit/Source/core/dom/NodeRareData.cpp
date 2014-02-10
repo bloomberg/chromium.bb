@@ -40,4 +40,19 @@ struct SameSizeAsNodeRareData {
 
 COMPILE_ASSERT(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), NodeRareDataShouldStaySmall);
 
+void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
+{
+    NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
+    for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it)
+        it->value->invalidateCache(attrName);
+
+    if (attrName)
+        return;
+
+    TagCollectionCacheNS::iterator tagCacheEnd = m_tagCollectionCacheNS.end();
+    for (TagCollectionCacheNS::iterator it = m_tagCollectionCacheNS.begin(); it != tagCacheEnd; ++it)
+        it->value->invalidateCache();
+}
+
+
 } // namespace WebCore
