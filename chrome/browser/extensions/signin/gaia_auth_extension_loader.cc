@@ -4,7 +4,11 @@
 
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +19,7 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/file_util.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -43,15 +48,24 @@ void LoadGaiaAuthExtension(Profile* profile) {
     return;
   }
 
-  int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
-
 #if defined(OS_CHROMEOS)
+  if (command_line->HasSwitch(chromeos::switches::kGAIAAuthExtensionManifest)) {
+    const base::FilePath manifest_path = command_line->GetSwitchValuePath(
+        chromeos::switches::kGAIAAuthExtensionManifest);
+    std::string manifest;
+    DCHECK(base::ReadFileToString(manifest_path, &manifest));
+    component_loader->Add(manifest,
+                          base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
+    return;
+  }
+
+  int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
   if (chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation())
     manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
   else if (!command_line->HasSwitch(chromeos::switches::kDisableSamlSignin))
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
 #else
-  manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
+  int manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
 #endif
 
   component_loader->Add(manifest_resource_id,

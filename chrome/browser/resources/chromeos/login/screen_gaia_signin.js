@@ -18,6 +18,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
   /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
 
+  /** @const */ var NET_ERROR_ABORTED = 3;
+
+  /** @const */ var NET_ERROR_DISALLOWED_URL_SCHEME = 301;
+
   return {
     EXTERNAL_API: [
       'loadAuthExtension',
@@ -563,10 +567,24 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /**
      * Handler for iframe's error notification coming from the outside.
-     * For more info see C++ class 'SnifferObserver' which calls this method.
+     * For more info see C++ class 'WebUILoginView' which calls this method.
      * @param {number} error Error code.
+     * @param {string} url The URL that failed to load.
      */
-    onFrameError: function(error) {
+    onFrameError: function(error, url) {
+      // Chrome OS requires that the entire authentication flow use https. If
+      // GAIA attempts to redirect to an http URL, the load will be blocked by
+      // CSP. Show a fatal error in this case.
+      // Some tests deviate from the above by disabling the CSP and using a
+      // mock GAIA implementation served over http. If an http URL fails to load
+      // in such a test, it has nothing to do with CSP and should not cause a
+      // fatal error to be shown.
+      if (error == NET_ERROR_ABORTED &&
+          url.indexOf('http://') == 0 &&
+          this.gaiaAuthParams_.gaiaUrl.indexOf('https://') == 0) {
+        error = NET_ERROR_DISALLOWED_URL_SCHEME;
+        this.showFatalAuthError();
+      }
       this.error_ = error;
       chrome.send('frameLoadingCompleted', [this.error_]);
     },
