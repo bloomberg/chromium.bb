@@ -303,6 +303,22 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     }
 }
 
+// Remove below specialized constructors once all callers of CSSPrimitiveValue(...)
+// have been converted to PassRefPtrWillBeRawPtr, ie. when
+//    template<typename T> CSSPrimitiveValue(T* val)
+//    template<typename T> CSSPrimitiveValue(PassRefPtr<T> val)
+// both can be converted to use PassRefPtrWillBeRawPtr.
+CSSPrimitiveValue::CSSPrimitiveValue(CSSCalcValue* value)
+    : CSSValue(PrimitiveClass)
+{
+    init(PassRefPtrWillBeRawPtr<CSSCalcValue>(value));
+}
+CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue> value)
+    : CSSValue(PrimitiveClass)
+{
+    init(value);
+}
+
 void CSSPrimitiveValue::init(const Length& length)
 {
     switch (length.type()) {
@@ -391,7 +407,7 @@ void CSSPrimitiveValue::init(PassRefPtr<Pair> p)
     m_value.pair = p.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<CSSCalcValue> c)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
 {
     m_primitiveUnitType = CSS_CALC;
     m_hasCachedCSSText = false;
@@ -435,7 +451,11 @@ void CSSPrimitiveValue::cleanup()
         m_value.pair->deref();
         break;
     case CSS_CALC:
+        // We should only deref when using refcounting. When oilpan
+        // is enabled it is a raw pointer that is passed into init().
+#if !ENABLE(OILPAN)
         m_value.calc->deref();
+#endif
         break;
     case CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSS_CALC_PERCENTAGE_WITH_LENGTH:
@@ -1282,6 +1302,18 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.shape && other.m_value.shape && m_value.shape->equals(*other.m_value.shape);
     }
     return false;
+}
+
+void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
+{
+    switch (m_primitiveUnitType) {
+    case CSS_CALC:
+        visitor->trace(m_value.calc);
+        break;
+    default:
+        break;
+    }
+    CSSValue::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore

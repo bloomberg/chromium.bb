@@ -1009,6 +1009,16 @@ T* adoptRefCountedGarbageCollected(T* ptr)
     return ptr;
 }
 
+#if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
+#define DISALLOW_ALLOCATION() \
+    private: \
+        void* operator new(size_t) = delete;
+#else
+#define DISALLOW_ALLOCATION() \
+    private: \
+        void* operator new(size_t);
+#endif
+
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {

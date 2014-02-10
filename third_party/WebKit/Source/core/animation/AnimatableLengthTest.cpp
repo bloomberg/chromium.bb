@@ -66,7 +66,7 @@ protected:
         return AnimatableLength::create(createCalc(valueLeft, typeLeft, valueRight, typeRight).get());
     }
 
-    PassRefPtr<CSSCalcValue> createCalc(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
+    PassRefPtrWillBeRawPtr<CSSCalcValue> createCalc(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
     {
         return CSSCalcValue::create(CSSCalcValue::createExpressionNode(
             CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(valueLeft, typeLeft), valueLeft == trunc(valueLeft)),

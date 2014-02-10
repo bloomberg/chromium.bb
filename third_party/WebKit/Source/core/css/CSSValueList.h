@@ -31,21 +31,21 @@ class CSSParserValueList;
 
 class CSSValueList : public CSSValue {
 public:
-    static PassRefPtr<CSSValueList> createCommaSeparated()
+    static PassRefPtrWillBeRawPtr<CSSValueList> createCommaSeparated()
     {
-        return adoptRef(new CSSValueList(CommaSeparator));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(CommaSeparator));
     }
-    static PassRefPtr<CSSValueList> createSpaceSeparated()
+    static PassRefPtrWillBeRawPtr<CSSValueList> createSpaceSeparated()
     {
-        return adoptRef(new CSSValueList(SpaceSeparator));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(SpaceSeparator));
     }
-    static PassRefPtr<CSSValueList> createSlashSeparated()
+    static PassRefPtrWillBeRawPtr<CSSValueList> createSlashSeparated()
     {
-        return adoptRef(new CSSValueList(SlashSeparator));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(SlashSeparator));
     }
-    static PassRefPtr<CSSValueList> createFromParserValueList(CSSParserValueList* list)
+    static PassRefPtrWillBeRawPtr<CSSValueList> createFromParserValueList(CSSParserValueList* list)
     {
-        return adoptRef(new CSSValueList(list));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(list));
     }
 
     size_t length() const { return m_values.size(); }
@@ -57,7 +57,7 @@ public:
     void prepend(PassRefPtr<CSSValue> value) { m_values.prepend(value); }
     bool removeAll(CSSValue*);
     bool hasValue(CSSValue*) const;
-    PassRefPtr<CSSValueList> copy();
+    PassRefPtrWillBeRawPtr<CSSValueList> copy();
 
     String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
     bool equals(const CSSValueList&) const;
@@ -66,7 +66,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    PassRefPtr<CSSValueList> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<CSSValueList> cloneForCSSOM() const;
 
     void traceAfterDispatch(Visitor*);
 

@@ -22,15 +22,15 @@
 
 namespace WebCore {
 
-PassRefPtr<CSSValueList> createBorderImageValue(PassRefPtr<CSSValue> image, PassRefPtr<CSSValue> imageSlice, PassRefPtr<CSSValue> borderSlice,
+PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtr<CSSValue> image, PassRefPtr<CSSValue> imageSlice, PassRefPtr<CSSValue> borderSlice,
                                                 PassRefPtr<CSSValue> outset, PassRefPtr<CSSValue> repeat)
 {
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (image)
         list->append(image);
 
     if (borderSlice || outset) {
-        RefPtr<CSSValueList> listSlash = CSSValueList::createSlashSeparated();
+        RefPtrWillBeRawPtr<CSSValueList> listSlash = CSSValueList::createSlashSeparated();
         if (imageSlice)
             listSlash->append(imageSlice);
 

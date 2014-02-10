@@ -91,7 +91,7 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
-    static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
+    static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     static PassRefPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
     PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
@@ -192,7 +192,7 @@ public:
     PassRefPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);
-    PassRefPtr<CSSValueList> parseFontFamily();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
 
     bool parseCounter(CSSPropertyID, int defaultValue, bool important);
     PassRefPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
@@ -221,7 +221,7 @@ public:
     PassRefPtr<CSSValue> parsePaintOrder() const;
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
-    PassRefPtr<CSSValueList> parseShadow(CSSParserValueList*, CSSPropertyID);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseShadow(CSSParserValueList*, CSSPropertyID);
     bool parseBorderImageShorthand(CSSPropertyID, bool important);
     PassRefPtr<CSSValue> parseBorderImage(CSSPropertyID);
     bool parseBorderImageRepeat(RefPtr<CSSValue>&);
@@ -252,13 +252,13 @@ public:
 
     PassRefPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
-    PassRefPtr<CSSValueList> parseFilter();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
     PassRefPtrWillBeRawPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
 
     static bool isBlendMode(CSSValueID);
     static bool isCompositeOperator(CSSValueID);
 
-    PassRefPtr<CSSValueList> parseTransform();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform();
     PassRefPtr<CSSValue> parseTransformValue(CSSParserValue*);
     bool parseTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtr<CSSValue>&, RefPtr<CSSValue>&, RefPtr<CSSValue>&);
     bool parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,  RefPtr<CSSValue>&, RefPtr<CSSValue>&);
@@ -551,7 +551,7 @@ private:
     Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
     Vector<OwnPtr<CSSParserSelector> > m_reusableRegionSelectorVector;
 
-    RefPtr<CSSCalcValue> m_parsedCalculation;
+    RefPtrWillBePersistent<CSSCalcValue> m_parsedCalculation;
 
     OwnPtr<RuleSourceDataList> m_supportsRuleDataStack;
 

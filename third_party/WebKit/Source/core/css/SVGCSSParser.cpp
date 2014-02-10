@@ -332,7 +332,7 @@ bool BisonCSSParser::parseSVGValue(CSSPropertyID propId, bool important)
 
 PassRefPtr<CSSValue> BisonCSSParser::parseSVGStrokeDasharray()
 {
-    RefPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     CSSParserValue* value = m_valueList->current();
     bool valid_primitive = true;
     while (value) {
@@ -378,7 +378,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parsePaintOrder() const
     if (!value)
         return 0;
 
-    RefPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
     // The default paint-order is: Fill, Stroke, Markers.
     bool seenFill = false,

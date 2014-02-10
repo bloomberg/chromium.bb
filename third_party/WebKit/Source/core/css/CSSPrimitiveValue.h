@@ -320,7 +320,7 @@ public:
 
     bool equals(const CSSPrimitiveValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
     static UnitTypes canonicalUnitTypeForCategory(UnitCategory);
     static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType);
@@ -354,6 +354,11 @@ private:
         init(val);
     }
 
+    // Remove below overloaded constructors once all callers of CSSPrimitiveValue(...)
+    // have been converted to PassRefPtrWillBeRawPtr.
+    explicit CSSPrimitiveValue(CSSCalcValue*);
+    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue>);
+
     static void create(int); // compile-time guard
     static void create(unsigned); // compile-time guard
     template<typename T> operator T*(); // compile-time guard
@@ -365,7 +370,7 @@ private:
     void init(PassRefPtr<Pair>);
     void init(PassRefPtr<Quad>);
     void init(PassRefPtr<CSSBasicShape>);
-    void init(PassRefPtr<CSSCalcValue>);
+    void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
     bool getDoubleValueInternal(UnitTypes targetUnitType, double* result) const;
 
     double computeLengthDouble(const CSSToLengthConversionData&);
@@ -382,6 +387,7 @@ private:
         unsigned rgbcolor;
         Pair* pair;
         CSSBasicShape* shape;
+        // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
         CSSCalcValue* calc;
     } m_value;
 };

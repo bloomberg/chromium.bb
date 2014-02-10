@@ -135,6 +135,9 @@ PassRefPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& s
     if (m_fontFaceValueCache.size() > maximumFontFaceCacheSize)
         m_fontFaceValueCache.clear();
 
+    // FIXME: oilpan: change to RefPtrWillBeRawPtr when m_fontFaceValueCache is changed to
+    // WillBePersistentHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> >.
+    // This includes the return type of this method as well as the callee in HTMLFontElement.cpp.
     RefPtr<CSSValueList>& value = m_fontFaceValueCache.add(string, 0).iterator->value;
     if (!value)
         value = BisonCSSParser::parseFontFaceValue(string);

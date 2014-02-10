@@ -59,9 +59,9 @@ public:
         Matrix3DTransformOperation
     };
 
-    static PassRefPtr<CSSTransformValue> create(TransformOperationType type)
+    static PassRefPtrWillBeRawPtr<CSSTransformValue> create(TransformOperationType type)
     {
-        return adoptRef(new CSSTransformValue(type));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSTransformValue(type));
     }
 
     String customCSSText() const;
@@ -70,7 +70,7 @@ public:
 
     TransformOperationType operationType() const { return m_type; }
 
-    PassRefPtr<CSSTransformValue> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<CSSTransformValue> cloneForCSSOM() const;
 
     void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
 

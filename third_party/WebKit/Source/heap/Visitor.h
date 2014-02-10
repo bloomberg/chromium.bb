@@ -242,6 +242,14 @@ public:
         mark(t.get());
     }
 
+    // Fallback method used only when we need to trace raw pointers of T.
+    // This is the case when a member is a union where we do not support members.
+    template<typename T>
+    void trace(T* t)
+    {
+        mark(t);
+    }
+
     // WeakMember version of the templated trace method. It doesn't keep
     // the traced thing alive, but will write null to the WeakMember later
     // if the pointed-to object is dead.

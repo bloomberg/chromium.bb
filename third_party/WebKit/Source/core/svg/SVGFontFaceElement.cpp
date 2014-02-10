@@ -274,7 +274,7 @@ void SVGFontFaceElement::rebuildFontFace()
     }
 
     bool describesParentFont = parentNode()->hasTagName(SVGNames::fontTag);
-    RefPtr<CSSValueList> list;
+    RefPtrWillBeRawPtr<CSSValueList> list;
 
     if (describesParentFont) {
         m_fontElement = toSVGFontElement(parentNode());

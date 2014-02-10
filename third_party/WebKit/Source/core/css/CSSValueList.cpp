@@ -73,9 +73,9 @@ bool CSSValueList::hasValue(CSSValue* val) const
     return false;
 }
 
-PassRefPtr<CSSValueList> CSSValueList::copy()
+PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::copy()
 {
-    RefPtr<CSSValueList> newList;
+    RefPtrWillBeRawPtr<CSSValueList> newList;
     switch (m_valueListSeparator) {
     case SpaceSeparator:
         newList = createSpaceSeparated();
@@ -186,9 +186,9 @@ CSSValueList::CSSValueList(const CSSValueList& cloneFrom)
         m_values[i] = cloneFrom.m_values[i]->cloneForCSSOM();
 }
 
-PassRefPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
+PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
 {
-    return adoptRef(new CSSValueList(*this));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(*this));
 }
 
 void CSSValueList::traceAfterDispatch(Visitor* visitor)

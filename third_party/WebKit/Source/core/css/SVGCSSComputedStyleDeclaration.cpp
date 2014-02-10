@@ -53,7 +53,7 @@ static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthLi
     if (dashes->isEmpty())
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
-    RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     SVGLengthList::ConstIterator it = dashes->begin();
     SVGLengthList::ConstIterator itEnd = dashes->end();
     for (; it != itEnd; ++it)
@@ -64,7 +64,7 @@ static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthLi
 
 static PassRefPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder paintorder)
 {
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     do {
         EPaintOrderType paintOrderType = (EPaintOrderType)(paintorder & ((1 << kPaintOrderBitwidth) - 1));
         switch (paintOrderType) {

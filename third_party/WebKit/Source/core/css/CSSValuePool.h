@@ -42,6 +42,7 @@ class CSSValueList;
 class CSSValuePool {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    // FIXME: oilpan: Change to PassRefPtrWillBeRawPtr when fixing m_fontFaceValueCache below.
     PassRefPtr<CSSValueList> createFontFaceValue(const AtomicString&);
     PassRefPtr<CSSPrimitiveValue> createFontFamilyValue(const String&);
     PassRefPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
@@ -77,6 +78,10 @@ private:
     RefPtr<CSSPrimitiveValue> m_percentValueCache[maximumCacheableIntegerValue + 1];
     RefPtr<CSSPrimitiveValue> m_numberValueCache[maximumCacheableIntegerValue + 1];
 
+    // FIXME: oilpan: Change to use
+    // WillBePersistentHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> >
+    // once available. Also validate lifecycle of CSSValuePool to see how/where it
+    // is created.
     typedef HashMap<AtomicString, RefPtr<CSSValueList> > FontFaceValueCache;
     FontFaceValueCache m_fontFaceValueCache;
 

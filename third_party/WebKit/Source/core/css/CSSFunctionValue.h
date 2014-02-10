@@ -40,7 +40,7 @@ public:
         return adoptRef(new CSSFunctionValue(function));
     }
 
-    static PassRefPtr<CSSFunctionValue> create(String name, PassRefPtr<CSSValueList> args)
+    static PassRefPtr<CSSFunctionValue> create(String name, PassRefPtrWillBeRawPtr<CSSValueList> args)
     {
         return adoptRef(new CSSFunctionValue(name, args));
     }
@@ -55,10 +55,10 @@ public:
 
 private:
     explicit CSSFunctionValue(CSSParserFunction*);
-    CSSFunctionValue(String, PassRefPtr<CSSValueList>);
+    CSSFunctionValue(String, PassRefPtrWillBeRawPtr<CSSValueList>);
 
     String m_name;
-    RefPtr<CSSValueList> m_args;
+    RefPtrWillBeMember<CSSValueList> m_args;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFunctionValue, isFunctionValue());

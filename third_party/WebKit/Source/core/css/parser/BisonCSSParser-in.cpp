@@ -1007,7 +1007,7 @@ static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsi
 }
 
 template <typename CharType>
-static PassRefPtr<CSSTransformValue> parseTranslateTransformValue(CharType*& pos, CharType* end)
+static PassRefPtrWillBeRawPtr<CSSTransformValue> parseTranslateTransformValue(CharType*& pos, CharType* end)
 {
     static const int shortestValidTransformStringLength = 12;
 
@@ -1047,20 +1047,20 @@ static PassRefPtr<CSSTransformValue> parseTranslateTransformValue(CharType*& pos
     }
     pos += argumentStart;
 
-    RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
+    RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
     if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
         return 0;
     return transformValue.release();
 }
 
 template <typename CharType>
-static PassRefPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, CharType* end)
+static PassRefPtrWillBeRawPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, CharType* end)
 {
-    RefPtr<CSSValueList> transformList;
+    RefPtrWillBeRawPtr<CSSValueList> transformList;
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
-        RefPtr<CSSTransformValue> transformValue = parseTranslateTransformValue(pos, end);
+        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = parseTranslateTransformValue(pos, end);
         if (!transformValue)
             return 0;
         if (!transformList)
@@ -1080,7 +1080,7 @@ static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSProp
         return false;
     if (string.isEmpty())
         return false;
-    RefPtr<CSSValueList> transformList;
+    RefPtrWillBeRawPtr<CSSValueList> transformList;
     if (string.is8Bit()) {
         const LChar* pos = string.characters8();
         const LChar* end = pos + string.length();
@@ -1098,7 +1098,7 @@ static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSProp
     return true;
 }
 
-PassRefPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const AtomicString& string)
+PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const AtomicString& string)
 {
     if (string.isEmpty())
         return 0;
@@ -1866,7 +1866,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         // ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | text | wait | help |
         // vertical-text | cell | context-menu | alias | copy | no-drop | not-allowed | -webkit-zoom-in
         // -webkit-zoom-out | all-scroll | -webkit-grab | -webkit-grabbing ] ] | inherit
-        RefPtr<CSSValueList> list;
+        RefPtrWillBeRawPtr<CSSValueList> list;
         while (value) {
             RefPtr<CSSValue> image = 0;
             if (value->unit == CSSPrimitiveValue::CSS_URI) {
@@ -2260,7 +2260,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNone)
             validPrimitive = true;
         else {
-            RefPtr<CSSValueList> shadowValueList = parseShadow(m_valueList.get(), propId);
+            RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(m_valueList.get(), propId);
             if (shadowValueList) {
                 addProperty(propId, shadowValueList.release(), important);
                 m_valueList->next();
@@ -2896,7 +2896,7 @@ void BisonCSSParser::addFillValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> r
             toCSSValueList(lval.get())->append(rval);
         else {
             PassRefPtr<CSSValue> oldlVal(lval.release());
-            PassRefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+            PassRefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             list->append(oldlVal);
             list->append(rval);
             lval = list;
@@ -3103,7 +3103,7 @@ void BisonCSSParser::addAnimationValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSVal
             toCSSValueList(lval.get())->append(rval);
         else {
             PassRefPtr<CSSValue> oldVal(lval.release());
-            PassRefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+            PassRefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             list->append(oldVal);
             list->append(rval);
             lval = list;
@@ -3457,7 +3457,7 @@ bool BisonCSSParser::parseSize(CSSPropertyID propId, bool important)
     if (!value)
         return false;
 
-    RefPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
     // First parameter.
     SizeParameterType paramType = parseSizeParameter(parsedValues.get(), value, None);
@@ -3522,7 +3522,7 @@ BisonCSSParser::SizeParameterType BisonCSSParser::parseSizeParameter(CSSValueLis
 // inherit and none are handled in parseValue.
 bool BisonCSSParser::parseQuotes(CSSPropertyID propId, bool important)
 {
-    RefPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     while (CSSParserValue* val = m_valueList->current()) {
         RefPtr<CSSValue> parsedValue;
         if (val->unit == CSSPrimitiveValue::CSS_STRING)
@@ -3545,7 +3545,7 @@ bool BisonCSSParser::parseQuotes(CSSPropertyID propId, bool important)
 // [ <string> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
 bool BisonCSSParser::parseContent(CSSPropertyID propId, bool important)
 {
-    RefPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
 
     while (CSSParserValue* val = m_valueList->current()) {
         RefPtr<CSSValue> parsedValue;
@@ -4106,8 +4106,8 @@ PassRefPtr<CSSValue> BisonCSSParser::parseFillSize(CSSPropertyID propId, bool& a
 bool BisonCSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,
                                   RefPtr<CSSValue>& retValue1, RefPtr<CSSValue>& retValue2)
 {
-    RefPtr<CSSValueList> values;
-    RefPtr<CSSValueList> values2;
+    RefPtrWillBeRawPtr<CSSValueList> values;
+    RefPtrWillBeRawPtr<CSSValueList> values2;
     CSSParserValue* val;
     RefPtr<CSSValue> value;
     RefPtr<CSSValue> value2;
@@ -4480,7 +4480,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunction()
 
 bool BisonCSSParser::parseAnimationProperty(CSSPropertyID propId, RefPtr<CSSValue>& result, AnimationParseContext& context)
 {
-    RefPtr<CSSValueList> values;
+    RefPtrWillBeRawPtr<CSSValueList> values;
     CSSParserValue* val;
     RefPtr<CSSValue> value;
     bool allowComma = false;
@@ -4668,7 +4668,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridPosition()
     if (hasSeenSpanKeyword && numericValue && numericValue->getIntValue() < 0)
         return 0;
 
-    RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     if (hasSeenSpanKeyword)
         values->append(cssValuePool().createIdentifierValue(CSSValueSpan));
     if (numericValue)
@@ -4807,7 +4807,7 @@ bool BisonCSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
         return true;
     }
 
-    RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     // Handle leading  <ident>*.
     value = m_valueList->current();
     if (value && value->unit == CSSParserValue::ValueList)
@@ -4848,7 +4848,7 @@ bool BisonCSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
 
     ASSERT_WITH_SECURITY_IMPLICATION(arguments->valueAt(0)->fValue > 0);
     size_t repetitions = arguments->valueAt(0)->fValue;
-    RefPtr<CSSValueList> repeatedValues = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> repeatedValues = CSSValueList::createSpaceSeparated();
     arguments->next(); // Skip the repetition count.
     arguments->next(); // Skip the comma.
 
@@ -4904,7 +4904,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridTrackSize(CSSParserValueList& inpu
         if (!maxTrackBreadth)
             return 0;
 
-        RefPtr<CSSValueList> parsedArguments = CSSValueList::createCommaSeparated();
+        RefPtrWillBeRawPtr<CSSValueList> parsedArguments = CSSValueList::createCommaSeparated();
         parsedArguments->append(minTrackBreadth);
         parsedArguments->append(maxTrackBreadth);
         return CSSFunctionValue::create("minmax(", parsedArguments);
@@ -5898,9 +5898,9 @@ private:
     CSSValueList* m_list;
 };
 
-PassRefPtr<CSSValueList> BisonCSSParser::parseFontFamily()
+PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFamily()
 {
-    RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     CSSParserValue* value = m_valueList->current();
 
     FontFamilyValueBuilder familyBuilder(list.get());
@@ -6004,7 +6004,7 @@ bool BisonCSSParser::parseFontSize(bool important)
 
 bool BisonCSSParser::parseFontVariant(bool important)
 {
-    RefPtr<CSSValueList> values;
+    RefPtrWillBeRawPtr<CSSValueList> values;
     if (m_valueList->size() > 1)
         values = CSSValueList::createCommaSeparated();
     CSSParserValue* val;
@@ -6127,7 +6127,7 @@ bool BisonCSSParser::parseFontFaceSrcLocal(CSSValueList* valueList)
 
 bool BisonCSSParser::parseFontFaceSrc()
 {
-    RefPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
+    RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
 
     while (CSSParserValue* value = m_valueList->current()) {
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
@@ -6149,7 +6149,7 @@ bool BisonCSSParser::parseFontFaceSrc()
 
 bool BisonCSSParser::parseFontFaceUnicodeRange()
 {
-    RefPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     bool failed = false;
     bool operatorExpected = false;
     for (; m_valueList->current(); m_valueList->next(), operatorExpected = !operatorExpected) {
@@ -6730,6 +6730,8 @@ bool BisonCSSParser::parseColorFromValue(CSSParserValue* value, RGBA32& c)
 // This class tracks parsing state for shadow values.  If it goes out of scope (e.g., due to an early return)
 // without the allowBreak bit being set, then it will clean up all of the objects and destroy them.
 struct ShadowParseContext {
+    DISALLOW_ALLOCATION();
+public:
     ShadowParseContext(CSSPropertyID prop, BisonCSSParser* parser)
         : property(prop)
         , m_parser(parser)
@@ -6831,7 +6833,7 @@ struct ShadowParseContext {
     CSSPropertyID property;
     BisonCSSParser* m_parser;
 
-    RefPtr<CSSValueList> values;
+    RefPtrWillBeRawPtr<CSSValueList> values;
     RefPtr<CSSPrimitiveValue> x;
     RefPtr<CSSPrimitiveValue> y;
     RefPtr<CSSPrimitiveValue> blur;
@@ -6848,7 +6850,7 @@ struct ShadowParseContext {
     bool allowBreak;
 };
 
-PassRefPtr<CSSValueList> BisonCSSParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propId)
+PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propId)
 {
     ShadowParseContext context(propId, this);
     CSSParserValue* val;
@@ -7595,7 +7597,7 @@ bool BisonCSSParser::parseCounter(CSSPropertyID propId, int defaultValue, bool i
 {
     enum { ID, VAL } state = ID;
 
-    RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     RefPtr<CSSPrimitiveValue> counterName;
 
     while (true) {
@@ -8599,12 +8601,12 @@ private:
     BisonCSSParser::Units m_unit;
 };
 
-PassRefPtr<CSSValueList> BisonCSSParser::parseTransform()
+PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseTransform()
 {
     if (!m_valueList)
         return 0;
 
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         RefPtr<CSSValue> parsedTransformValue = parseTransformValue(value);
         if (!parsedTransformValue)
@@ -8638,7 +8640,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseTransformValue(CSSParserValue *value)
     // We collect a list of CSSTransformValues, where each value specifies a single operation.
 
     // Create the new CSSTransformValue for this operation and add it to our list.
-    RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(info.type());
+    RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(info.type());
 
     // Snag our values.
     CSSParserValue* a = args->current();
@@ -8799,7 +8801,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> BisonCSSParser::parseBuiltinFilterArgumen
     }
     case CSSFilterValue::DropShadowFilterOperation: {
         // drop-shadow() takes a single shadow.
-        RefPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
+        RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
         if (!shadowValueList || shadowValueList->length() != 1)
             return 0;
 
@@ -8812,13 +8814,13 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> BisonCSSParser::parseBuiltinFilterArgumen
     return filterValue.release();
 }
 
-PassRefPtr<CSSValueList> BisonCSSParser::parseFilter()
+PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFilter()
 {
     if (!m_valueList)
         return 0;
 
     // The filter is a list of functional primitives that specify individual operations.
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         if (value->unit != CSSPrimitiveValue::CSS_URI && (value->unit != CSSParserValue::Function || !value->function))
             return 0;
@@ -9011,7 +9013,7 @@ bool BisonCSSParser::parseTouchAction(bool important)
         return false;
 
     CSSParserValue* value = m_valueList->current();
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone)) {
         list->append(cssValuePool().createIdentifierValue(value->id));
         addProperty(CSSPropertyTouchAction, list.release(), important);
@@ -9073,7 +9075,7 @@ bool BisonCSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
         return true;
     }
 
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     bool isValid = true;
     while (isValid && value) {
         switch (value->id) {
@@ -9157,7 +9159,7 @@ bool BisonCSSParser::parseTextEmphasisStyle(bool important)
     }
 
     if (fill && shape) {
-        RefPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+        RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
         parsedValues->append(fill.release());
         parsedValues->append(shape.release());
         addProperty(CSSPropertyWebkitTextEmphasisStyle, parsedValues.release(), important);
@@ -9177,7 +9179,7 @@ bool BisonCSSParser::parseTextEmphasisStyle(bool important)
 
 PassRefPtr<CSSValue> BisonCSSParser::parseTextIndent()
 {
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
     // <length> | <percentage> | inherit
     if (m_valueList->size() == 1) {
@@ -9306,7 +9308,7 @@ bool BisonCSSParser::parseFontFeatureSettings(bool important)
         return true;
     }
 
-    RefPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         if (!parseFontFeatureTag(settings.get()))
             return false;
@@ -9325,7 +9327,7 @@ bool BisonCSSParser::parseFontFeatureSettings(bool important)
 
 bool BisonCSSParser::parseFontVariantLigatures(bool important)
 {
-    RefPtr<CSSValueList> ligatureValues = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> ligatureValues = CSSValueList::createSpaceSeparated();
     bool sawCommonLigaturesValue = false;
     bool sawDiscretionaryLigaturesValue = false;
     bool sawHistoricalLigaturesValue = false;

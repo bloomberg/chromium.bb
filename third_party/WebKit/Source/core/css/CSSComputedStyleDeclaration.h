@@ -133,10 +133,10 @@ private:
 
     PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;
 
-    PassRefPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand&) const;
-    PassRefPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand&) const;
-    PassRefPtr<CSSValueList> valuesForBackgroundShorthand() const;
-    PassRefPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand&) const;
+    PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand&) const;
+    PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand&) const;
+    PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand() const;
+    PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand&) const;
 
     RefPtr<Node> m_node;
     PseudoId m_pseudoElementSpecifier;
