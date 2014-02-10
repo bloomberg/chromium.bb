@@ -52,6 +52,41 @@ enum exposay_layout_state {
 	EXPOSAY_LAYOUT_ANIMATE_TO_OVERVIEW, /* in transition to all windows */
 };
 
+struct exposay_output {
+	int num_surfaces;
+	int grid_size;
+	int surface_size;
+
+	int hpadding_outer;
+	int vpadding_outer;
+	int padding_inner;
+};
+
+struct exposay {
+	/* XXX: Make these exposay_surfaces. */
+	struct weston_view *focus_prev;
+	struct weston_view *focus_current;
+	struct weston_view *clicked;
+	struct workspace *workspace;
+	struct weston_seat *seat;
+
+	struct wl_list surface_list;
+
+	struct weston_keyboard_grab grab_kbd;
+	struct weston_pointer_grab grab_ptr;
+
+	enum exposay_target_state state_target;
+	enum exposay_layout_state state_cur;
+	int in_flight; /* number of animations still running */
+
+	int row_current;
+	int column_current;
+	struct exposay_output *cur_output;
+
+	bool mod_pressed;
+	bool mod_invalid;
+};
+
 struct focus_surface {
 	struct weston_surface *surface;
 	struct weston_view *view;
@@ -67,6 +102,14 @@ struct workspace {
 	struct focus_surface *fsurf_front;
 	struct focus_surface *fsurf_back;
 	struct weston_view_animation *focus_animation;
+};
+
+struct shell_output {
+	struct desktop_shell  *shell;
+	struct weston_output  *output;
+	struct exposay_output eoutput;
+	struct wl_listener    destroy_listener;
+	struct wl_list        link;
 };
 
 struct desktop_shell {
@@ -146,36 +189,7 @@ struct desktop_shell {
 		struct wl_event_source *startup_timer;
 	} fade;
 
-	struct exposay {
-		/* XXX: Make these exposay_surfaces. */
-		struct weston_view *focus_prev;
-		struct weston_view *focus_current;
-		struct weston_view *clicked;
-		struct workspace *workspace;
-		struct weston_seat *seat;
-		struct wl_list surface_list;
-
-		struct weston_keyboard_grab grab_kbd;
-		struct weston_pointer_grab grab_ptr;
-
-                enum exposay_target_state state_target;
-                enum exposay_layout_state state_cur;
-		int in_flight; /* number of animations still running */
-
-		int num_surfaces;
-		int grid_size;
-		int surface_size;
-
-		int hpadding_outer;
-		int vpadding_outer;
-		int padding_inner;
-
-		int row_current;
-		int column_current;
-
-		bool mod_pressed;
-		bool mod_invalid;
-	} exposay;
+	struct exposay exposay;
 
 	uint32_t binding_modifier;
 	uint32_t exposay_modifier;

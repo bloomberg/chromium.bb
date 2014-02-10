@@ -56,13 +56,6 @@ struct focus_state {
 	struct wl_listener surface_destroy_listener;
 };
 
-struct shell_output {
-	struct desktop_shell  *shell;
-	struct weston_output  *output;
-	struct wl_listener    destroy_listener;
-	struct wl_list        link;
-};
-
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 	SHELL_SURFACE_TOPLEVEL,
