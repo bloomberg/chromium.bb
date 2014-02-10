@@ -11,6 +11,10 @@
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#ifndef IFA_F_HOMEADDRESS
+#define IFA_F_HOMEADDRESS 0x10
+#endif
+
 namespace net {
 namespace internal {
 namespace {

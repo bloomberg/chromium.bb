@@ -2354,6 +2354,17 @@
           ]
         }],
       ],
+      'target_conditions': [
+        # These source files are excluded by default platform rules, but they
+        # are needed in specific cases on other platforms. Re-including them can
+        # only be done in target_conditions as it is evaluated after the
+        # platform rules.
+        ['OS == "android"', {
+          'sources/': [
+            ['include', '^base/address_tracker_linux_unittest\\.cc$'],
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'net_perftests',
