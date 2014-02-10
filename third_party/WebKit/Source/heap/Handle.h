@@ -263,6 +263,38 @@ private:
     T* m_raw;
 };
 
+template<
+    typename KeyArg,
+    typename MappedArg,
+    typename HashArg = typename DefaultHash<KeyArg>::Hash,
+    typename KeyTraitsArg = HashTraits<KeyArg>,
+    typename MappedTraitsArg = HashTraits<MappedArg> >
+class PersistentHeapHashMap : public HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
+public:
+    PersistentHeapHashMap() : m_self(this) { }
+private:
+    Persistent<HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> > m_self;
+};
+
+template<
+    typename ValueArg,
+    typename HashArg = typename DefaultHash<ValueArg>::Hash,
+    typename TraitsArg = HashTraits<ValueArg> >
+class PersistentHeapHashSet : public HeapHashSet<ValueArg, HashArg, TraitsArg> {
+public:
+    PersistentHeapHashSet() : m_self(this) { }
+private:
+    Persistent<HeapHashSet<ValueArg, HashArg, TraitsArg> > m_self;
+};
+
+template<typename T, size_t inlineCapacity = 0>
+class PersistentHeapVector : public HeapVector<T, inlineCapacity> {
+public:
+    PersistentHeapVector() : m_self(this) { }
+private:
+    Persistent<HeapVector<T, inlineCapacity> > m_self;
+};
+
 // Members are used in classes to contain strong pointers to other oilpan heap
 // allocated objects.
 // All Member fields of a class must be traced in the class' trace method.
@@ -491,6 +523,34 @@ template<typename T> using OwnPtrWillBeMember = Member<T>;
 template<typename T> using PassOwnPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = GarbageCollected<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
+template<
+    typename K,
+    typename V,
+    typename H = typename DefaultHash<K>::Hash,
+    typename KT = HashTraits<K>,
+    typename VT = HashTraits<V> >
+using WillBeHeapHashMap = HeapHashMap<K, V, H, KT, VT>;
+template<
+    typename K,
+    typename V,
+    typename H = typename DefaultHash<K>::Hash,
+    typename KT = HashTraits<K>,
+    typename VT = HashTraits<V> >
+using WillBePersistentHeapHashMap = PersistentHeapHashMap<K, V, H, KT, VT>;
+template<
+    typename V,
+    typename H = typename DefaultHash<V>::Hash,
+    typename T = HashTraits<V> >
+using WillBeHeapHashSet = HeapHashSet<V, H, T>;
+template<
+    typename V,
+    typename H = typename DefaultHash<V>::Hash,
+    typename T = HashTraits<V> >
+using WillBePersistentHeapHashSet = PersistentHeapHashSet<V, H, T>;
+template<typename T, size_t inlineCapacity = 0>
+using WillBeHeapVector = HeapVector<T, inlineCapacity>;
+template<typename T, size_t inlineCapacity = 0>
+using WillBePersistentHeapVector = PersistentHeapVector<T, inlineCapacity>;
 #else // !COMPILER(CLANG)
 #define PassRefPtrWillBeRawPtr RawPtr
 #define RefCountedWillBeGarbageCollected GarbageCollected
@@ -505,6 +565,12 @@ template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollec
 #define PassOwnPtrWillBeRawPtr RawPtr
 #define NoBaseWillBeGarbageCollected GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized GarbageCollectedFinalized
+#define WillBeHeapHashMap HeapHashMap
+#define WillBePersistentHeapHashMap PersistentHeapHashMap
+#define WillBeHeapHashSet HeapHashSet
+#define WillBePersistentHeapHashSet PersistentHeapHashSet
+#define WillBeHeapVector HeapVector
+#define WillBePersistentHeapVector PersistentHeapVector
 #endif // COMPILER(CLANG)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBeRawPtr<T>(ptr); }
@@ -539,6 +605,34 @@ template<typename T> using OwnPtrWillBeMember = OwnPtr<T>;
 template<typename T> using PassOwnPtrWillBeRawPtr = PassOwnPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = DummyBase<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
+template<
+    typename K,
+    typename V,
+    typename H = typename DefaultHash<K>::Hash,
+    typename KT = HashTraits<K>,
+    typename VT = HashTraits<V> >
+using WillBeHeapHashMap = HashMap<K, V, H, KT, VT>;
+template<
+    typename K,
+    typename V,
+    typename H = typename DefaultHash<K>::Hash,
+    typename KT = HashTraits<K>,
+    typename VT = HashTraits<V> >
+using WillBePersistentHeapHashMap = HashMap<K, V, H, KT, VT>;
+template<
+    typename V,
+    typename H = typename DefaultHash<V>::Hash,
+    typename T = HashTraits<V> >
+using WillBeHeapHashSet = HashSet<V, H, T>;
+template<
+    typename V,
+    typename H = typename DefaultHash<V>::Hash,
+    typename T = HashTraits<V> >
+using WillBePersistentHeapHashSet = HashSet<V, H, T>;
+template<typename T, size_t inlineCapacity = 0>
+using WillBeHeapVector = Vector<T, inlineCapacity>;
+template<typename T, size_t inlineCapacity = 0>
+using WillBePersistentHeapVector = Vector<T, inlineCapacity>;
 #else // !COMPILER(CLANG)
 #define PassRefPtrWillBeRawPtr PassRefPtr
 #define RefCountedWillBeGarbageCollected RefCounted
@@ -553,6 +647,12 @@ template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
 #define PassOwnPtrWillBeRawPtr PassOwnPtr
 #define NoBaseWillBeGarbageCollected DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized DummyBase
+#define WillBeHeapHashMap HashMap
+#define WillBePersistentHeapHashMap HashMap
+#define WillBeHeapHashSet HashSet
+#define WillBePersistentHeapHashSet HashSet
+#define WillBeHeapVector Vector
+#define WillBePersistentHeapVector Vector
 #endif // COMPILER(CLANG)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }

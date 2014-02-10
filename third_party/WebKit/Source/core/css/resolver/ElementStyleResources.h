@@ -24,6 +24,7 @@
 #define ElementStyleResources_h
 
 #include "CSSPropertyNames.h"
+#include "heap/Handle.h"
 #include "platform/graphics/Color.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -40,7 +41,7 @@ class FilterOperation;
 class StyleImage;
 class TextLinkColors;
 
-typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
+typedef WillBePersistentHeapHashMap<FilterOperation*, RefPtrWillBeMember<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
 
 // Holds information about resources, requested by stylesheets.

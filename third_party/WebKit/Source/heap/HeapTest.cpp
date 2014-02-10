@@ -2240,6 +2240,66 @@ TEST(HeapTest, VisitOffHeapCollections)
     EXPECT_EQ(7, IntWrapper::s_destructorCalls);
 }
 
+TEST(HeapTest, PersistentHeapCollectionTypes)
+{
+    HeapStats initialHeapSize;
+    IntWrapper::s_destructorCalls = 0;
+
+    typedef HeapVector<Member<IntWrapper> > Vec;
+    typedef PersistentHeapVector<Member<IntWrapper> > PVec;
+    typedef PersistentHeapHashSet<Member<IntWrapper> > PSet;
+    typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper> > PMap;
+
+    clearOutOldGarbage(&initialHeapSize);
+    {
+        PVec* pVec = new PVec();
+        PSet* pSet = new PSet();
+        PMap* pMap = new PMap();
+
+        IntWrapper* one(IntWrapper::create(1));
+        IntWrapper* two(IntWrapper::create(2));
+        IntWrapper* three(IntWrapper::create(3));
+        IntWrapper* four(IntWrapper::create(4));
+        IntWrapper* five(IntWrapper::create(5));
+        IntWrapper* six(IntWrapper::create(6));
+
+        pVec->append(one);
+        pVec->append(two);
+
+        Vec* vec = new Vec();
+        vec->swap(*pVec);
+
+        pVec->append(two);
+        pVec->append(three);
+
+        pSet->add(four);
+        pMap->add(five, six);
+
+        // Collect |map| and |two|.
+        vec = 0;
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, IntWrapper::s_destructorCalls);
+
+        EXPECT_EQ(2u, pVec->size());
+        EXPECT_TRUE(pVec->at(0) == two);
+        EXPECT_TRUE(pVec->at(1) == three);
+
+        EXPECT_EQ(1u, pSet->size());
+        EXPECT_TRUE(pSet->contains(four));
+
+        EXPECT_EQ(1u, pMap->size());
+        EXPECT_TRUE(pMap->get(five) == six);
+
+        delete pVec;
+        delete pSet;
+        delete pMap;
+    }
+
+    // Collect previous roots.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(6, IntWrapper::s_destructorCalls);
+}
+
 DEFINE_GC_INFO(Bar);
 DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);
