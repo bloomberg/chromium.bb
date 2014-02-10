@@ -165,7 +165,7 @@ public:
         CSSPseudoElementUserAgentCustomPseudo,
         DocumentTypeEntities, // Removed from DOM4.
         DocumentTypeInternalSubset, // Removed from DOM4.
-        DocumentTypeNotations, // Removed from DOM4.
+        REMOVEDDocumentTypeNotations, // Removed from DOM4.
         ElementGetAttributeNode, // Removed from DOM4.
         ElementSetAttributeNode, // Removed from DOM4.
         ElementRemoveAttributeNode, // Removed from DOM4.

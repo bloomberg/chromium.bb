@@ -23,7 +23,6 @@ interface DocumentType : Node {
 
     readonly attribute DOMString name;
     [MeasureAs=DocumentTypeEntities] readonly attribute NamedNodeMap entities; // Removed from DOM4.
-    [MeasureAs=DocumentTypeNotations] readonly attribute NamedNodeMap notations; // Removed from DOM4.
 
     // DOM Level 2
 

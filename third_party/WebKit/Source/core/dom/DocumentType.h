@@ -40,7 +40,6 @@ public:
     // FIXME: These wre removed from DOM4, we should add a UseCounter and see if
     // we can remove them since they never worked anyway.
     NamedNodeMap* entities() const { return 0; }
-    NamedNodeMap* notations() const { return 0; }
 
     const String& name() const { return m_name; }
     const String& publicId() const { return m_publicId; }
