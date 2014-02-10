@@ -12,7 +12,6 @@ vars = {
   "breakpad_rev": "1271",
 
   "lcov_rev": "149720",
-  "python_26_rev": "53573",
   "tools_rev": "12655",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
@@ -61,9 +60,6 @@ deps_os = {
     "third_party/NSIS":
       (Var("native_client_trunk") + "/deps/third_party/NSIS@" +
        Var("tools_rev")),
-    "third_party/python_26":
-      (Var("chromium_trunk") + "/tools/third_party/python_26@" +
-       Var("python_26_rev")),
   },
   "unix": {
     # Ragel for validator_ragel
