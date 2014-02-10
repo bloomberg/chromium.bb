@@ -50,7 +50,18 @@ class ScopedProcSelfTask {
   DISALLOW_COPY_AND_ASSIGN(ScopedProcSelfTask);
 };
 
-TEST(ThreadHelpers, IsSingleThreadedBasic) {
+#if defined(THREAD_SANITIZER)
+// These tests fail under ThreadSanitizer, see http://crbug.com/342305
+#define MAYBE_IsSingleThreadedBasic DISABLED_IsSingleThreadedBasic
+#define MAYBE_IsSingleThreadedIterated DISABLED_IsSingleThreadedIterated
+#define MAYBE_IsSingleThreadedStartAndStop DISABLED_IsSingleThreadedStartAndStop
+#else
+#define MAYBE_IsSingleThreadedBasic IsSingleThreadedBasic
+#define MAYBE_IsSingleThreadedIterated IsSingleThreadedIterated
+#define MAYBE_IsSingleThreadedStartAndStop IsSingleThreadedStartAndStop
+#endif
+
+TEST(ThreadHelpers, MAYBE_IsSingleThreadedBasic) {
   ScopedProcSelfTask task;
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
 
@@ -59,7 +70,7 @@ TEST(ThreadHelpers, IsSingleThreadedBasic) {
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
 }
 
-TEST(ThreadHelpers, IsSingleThreadedIterated) {
+TEST(ThreadHelpers, MAYBE_IsSingleThreadedIterated) {
   ScopedProcSelfTask task;
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
 
@@ -71,7 +82,7 @@ TEST(ThreadHelpers, IsSingleThreadedIterated) {
   }
 }
 
-TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
+TEST(ThreadHelpers, MAYBE_IsSingleThreadedStartAndStop) {
   ScopedProcSelfTask task;
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
 
