@@ -213,6 +213,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   void CreateMessageFilters(int render_process_id);
 
   void OnWorkerContextClosed(int worker_route_id);
+  void OnWorkerContextDestroyed(int worker_route_id);
   void OnWorkerScriptLoaded(int worker_route_id);
   void OnWorkerScriptLoadFailed(int worker_route_id);
   void OnWorkerConnected(int message_port_id, int worker_route_id);

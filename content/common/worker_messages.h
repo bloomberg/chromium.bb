@@ -101,7 +101,8 @@ IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
 
-IPC_MESSAGE_ROUTED0(WorkerHostMsg_WorkerContextDestroyed)
+IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextDestroyed,
+                     int /* worker_route_id */)
 
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoaded,
                      int /* worker_route_id */)

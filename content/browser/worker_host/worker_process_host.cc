@@ -357,6 +357,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
                         OnWorkerContextClosed)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextDestroyed,
+                        OnWorkerContextDestroyed)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoaded,
                         OnWorkerScriptLoaded)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoadFailed,
@@ -378,24 +380,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
         process_->GetData().handle, RESULT_CODE_KILLED_BAD_MESSAGE, false);
   }
 
-  if (handled)
-    return true;
-
-  if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
-    WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
-        this, message.routing_id());
-  }
-
-  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (i->worker_route_id() == message.routing_id()) {
-      if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
-        instances_.erase(i);
-        UpdateTitle();
-      }
-      return true;
-    }
-  }
-  return false;
+  return handled;
 }
 
 // Sent to notify the browser process when a worker context invokes close(), so
@@ -408,6 +393,18 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
       // for exception reporting, etc).
       i->set_closed(true);
       break;
+    }
+  }
+}
+
+void WorkerProcessHost::OnWorkerContextDestroyed(int worker_route_id) {
+  WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
+      this, worker_route_id);
+  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() == worker_route_id) {
+      instances_.erase(i);
+      UpdateTitle();
+      return;
     }
   }
 }
