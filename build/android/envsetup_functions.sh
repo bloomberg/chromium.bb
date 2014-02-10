@@ -10,51 +10,10 @@
 # prefixed with "common_" that is common for both environment setups.
 
 ################################################################################
-# Check to make sure the toolchain exists for the NDK version.
-################################################################################
-common_check_toolchain() {
-  if [[ ! -d "${ANDROID_TOOLCHAIN}" ]]; then
-    echo "Can not find Android toolchain in ${ANDROID_TOOLCHAIN}." >& 2
-    echo "The NDK version might be wrong." >& 2
-    return 1
-  fi
-}
-
-################################################################################
 # Exports environment variables common to both sdk and non-sdk build (e.g. PATH)
-# based on CHROME_SRC and ANDROID_TOOLCHAIN, along with DEFINES for GYP_DEFINES.
+# based on CHROME_SRC, along with DEFINES for GYP_DEFINES.
 ################################################################################
 common_vars_defines() {
-  # Set toolchain path according to product architecture.
-  case "${TARGET_ARCH}" in
-    "arm")
-      toolchain_arch="arm-linux-androideabi"
-      ;;
-    "x86")
-      toolchain_arch="x86"
-      ;;
-    "mips")
-      toolchain_arch="mipsel-linux-android"
-      ;;
-    *)
-      echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2
-      print_usage
-      return 1
-      ;;
-  esac
-
-  toolchain_version="4.6"
-  toolchain_target=$(basename \
-    ${ANDROID_NDK_ROOT}/toolchains/${toolchain_arch}-${toolchain_version})
-  toolchain_path="${ANDROID_NDK_ROOT}/toolchains/${toolchain_target}"\
-"/prebuilt/${toolchain_dir}/bin/"
-
-  # Set only if not already set.
-  # Don't override ANDROID_TOOLCHAIN if set by Android configuration env.
-  export ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN:-${toolchain_path}}
-
-  common_check_toolchain
-
   # Add Android SDK tools to system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
@@ -172,9 +131,6 @@ sdk_build_init() {
     export ANDROID_SDK_BUILD_TOOLS_VERSION=19.0.0
   fi
 
-  # Unset toolchain. This makes it easy to switch between architectures.
-  unset ANDROID_TOOLCHAIN
-
   common_vars_defines
 
   DEFINES+="${sdk_defines}"
@@ -203,8 +159,7 @@ webview_build_init() {
   # Use the latest API in the AOSP prebuilts directory (change with AOSP roll).
   export ANDROID_SDK_VERSION=18
 
-  # For the WebView build we always use the NDK and SDK in the Android tree,
-  # and we don't touch ANDROID_TOOLCHAIN which is already set by Android.
+  # For the WebView build we always use the NDK and SDK in the Android tree.
   export ANDROID_NDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/ndk/8
   export ANDROID_SDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/sdk/\
 ${ANDROID_SDK_VERSION}
