@@ -33,6 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "heap/Handle.h"
+#include "heap/ThreadState.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -54,6 +56,8 @@ public:
 private:
     WorkerPerformance();
 };
+
+USED_FROM_MULTIPLE_THREADS(WorkerPerformance);
 
 }
 

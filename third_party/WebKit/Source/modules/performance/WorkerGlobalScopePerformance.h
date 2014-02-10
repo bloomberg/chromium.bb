@@ -33,10 +33,9 @@
 
 #include "core/workers/WorkerSupplementable.h"
 #include "heap/Handle.h"
+#include "modules/performance/WorkerPerformance.h"
 
 namespace WebCore {
-
-class WorkerPerformance;
 
 class WorkerGlobalScopePerformance FINAL : public WorkerSupplement {
 public:
