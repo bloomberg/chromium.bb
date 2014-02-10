@@ -40,7 +40,7 @@ LabelsNodeList::LabelsNodeList(ContainerNode* ownerNode)
 
 LabelsNodeList::~LabelsNodeList()
 {
-    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, LabelsNodeListType, starAtom);
+    ownerNode()->nodeLists()->removeCache(this, LabelsNodeListType);
 }
 
 bool LabelsNodeList::nodeMatches(const Element& testNode) const

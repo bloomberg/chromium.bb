@@ -882,7 +882,7 @@ void ContainerNode::setHovered(bool over)
 
 PassRefPtr<HTMLCollection> ContainerNode::children()
 {
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLCollection>(this, NodeChildren);
+    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(this, NodeChildren);
 }
 
 Element* ContainerNode::firstElementChild() const
@@ -1021,8 +1021,8 @@ PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicStrin
         return 0;
 
     if (document().isHTMLDocument())
-        return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLTagCollection>(this, HTMLTagCollectionType, localName);
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<TagCollection>(this, TagCollectionType, localName);
+        return ensureRareData().ensureNodeLists().addCache<HTMLTagCollection>(this, HTMLTagCollectionType, localName);
+    return ensureRareData().ensureNodeLists().addCache<TagCollection>(this, TagCollectionType, localName);
 }
 
 PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
@@ -1033,28 +1033,28 @@ PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(const AtomicStr
     if (namespaceURI == starAtom)
         return getElementsByTagName(localName);
 
-    return ensureRareData().ensureNodeLists().addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
+    return ensureRareData().ensureNodeLists().addCache(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share the same name attribute.
 // Therefore, the NameNodeList factory function expects an AtomicString type.
 PassRefPtr<NodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
 {
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
+    return ensureRareData().ensureNodeLists().addCache<NameNodeList>(this, NameNodeListType, elementName);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share the same set of class names.
 // Therefore, the ClassNodeList factory function expects an AtomicString type.
 PassRefPtr<HTMLCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
 {
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassCollection>(this, ClassCollectionType, classNames);
+    return ensureRareData().ensureNodeLists().addCache<ClassCollection>(this, ClassCollectionType, classNames);
 }
 
 PassRefPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
 {
     ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
     CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, type, name);
+    return ensureRareData().ensureNodeLists().addCache<RadioNodeList>(this, type, name);
 }
 
 #ifndef NDEBUG

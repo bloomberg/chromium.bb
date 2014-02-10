@@ -97,7 +97,7 @@ public:
     typedef HashMap<QualifiedName, TagCollection*> TagCollectionCacheNS;
 
     template<typename T>
-    PassRefPtr<T> addCacheWithAtomicName(ContainerNode* node, CollectionType collectionType, const AtomicString& name)
+    PassRefPtr<T> addCache(ContainerNode* node, CollectionType collectionType, const AtomicString& name)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), 0);
         if (!result.isNewEntry)
@@ -108,9 +108,8 @@ public:
         return list.release();
     }
 
-    // FIXME: This function should be renamed since it doesn't have an atomic name.
     template<typename T>
-    PassRefPtr<T> addCacheWithAtomicName(ContainerNode* node, CollectionType collectionType)
+    PassRefPtr<T> addCache(ContainerNode* node, CollectionType collectionType)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), 0);
         if (!result.isNewEntry)
@@ -122,12 +121,12 @@ public:
     }
 
     template<typename T>
-    T* cacheWithAtomicName(CollectionType collectionType)
+    T* cached(CollectionType collectionType)
     {
         return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
     }
 
-    PassRefPtr<TagCollection> addCacheWithQualifiedName(ContainerNode* node, const AtomicString& namespaceURI, const AtomicString& localName)
+    PassRefPtr<TagCollection> addCache(ContainerNode* node, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
         TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, 0);
@@ -139,7 +138,7 @@ public:
         return list.release();
     }
 
-    void removeCacheWithAtomicName(LiveNodeListBase* list, CollectionType collectionType, const AtomicString& name = starAtom)
+    void removeCache(LiveNodeListBase* list, CollectionType collectionType, const AtomicString& name = starAtom)
     {
         ASSERT(list == m_atomicNameCaches.get(namedNodeListKey(collectionType, name)));
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
@@ -147,7 +146,7 @@ public:
         m_atomicNameCaches.remove(namedNodeListKey(collectionType, name));
     }
 
-    void removeCacheWithQualifiedName(LiveNodeListBase* list, const AtomicString& namespaceURI, const AtomicString& localName)
+    void removeCache(LiveNodeListBase* list, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
         ASSERT(list == m_tagCollectionCacheNS.get(name));

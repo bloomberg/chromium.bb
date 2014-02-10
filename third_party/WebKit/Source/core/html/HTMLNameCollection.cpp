@@ -46,7 +46,7 @@ HTMLNameCollection::~HTMLNameCollection()
     ASSERT(ownerNode()->isDocumentNode());
     ASSERT(type() == WindowNamedItems || type() == DocumentNamedItems);
 
-    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, type(), m_name);
+    ownerNode()->nodeLists()->removeCache(this, type(), m_name);
 }
 
 Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
