@@ -285,9 +285,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& 
         ASSERT_NOT_REACHED();
         break;
     case CSSValueBolder:
+        state.fontBuilder().setWeight(state.parentStyle()->fontDescription().weight());
         state.fontBuilder().setWeightBolder();
         break;
     case CSSValueLighter:
+        state.fontBuilder().setWeight(state.parentStyle()->fontDescription().weight());
         state.fontBuilder().setWeightLighter();
         break;
     default:
