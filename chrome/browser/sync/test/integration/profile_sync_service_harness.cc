@@ -488,8 +488,9 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
     DVLOG(1) << GetClientInfoString("AwaitStatusChange succeeded");
     return true;
   } else {
-    DVLOG(0) << GetClientInfoString(base::StringPrintf(
+    LOG(ERROR) << GetClientInfoString(base::StringPrintf(
         "AwaitStatusChange called from %s timed out", source.c_str()));
+    CHECK(false) << "Ending test because of timeout.";
     return false;
   }
 }
