@@ -32,7 +32,6 @@ HEADER_MAP = {
       'x86_64-nacl/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
       'x86_64-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
-      'x86_64-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
 
       'x86_64-nacl/lib32/crt1.o': 'src/untrusted/stubs/crt1.x',
       'x86_64-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
@@ -49,7 +48,6 @@ HEADER_MAP = {
       'x86_64-nacl/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
       'x86_64-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
-      'x86_64-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   },
   'arm_newlib': {
       'arm-nacl/include/pthread.h': 'src/untrusted/pthread/pthread.h',
@@ -65,7 +63,6 @@ HEADER_MAP = {
       'arm-nacl/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
       'arm-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
-      'arm-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
       'arm-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
   },
   'pnacl': {
@@ -82,7 +79,6 @@ HEADER_MAP = {
       'sdk/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
       'sdk/include/irt.h': 'src/untrusted/irt/irt.h',
-      'sdk/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   }
 }
 

@@ -97,9 +97,8 @@ blob_env.ComponentProgramAlias(irt_core_library)
 
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
-# TODO(mcgrathr): these should be installed, but scons is a mystery
+# TODO(mcgrathr): this should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])
-#env.AddHeaderToSdk(['irt_ppapi.h'])
 
 # Make sure that the linked IRT nexe never uses TLS via the TLS ABI
 # register (e.g., %gs on x86-32).  All IRT code must avoid direct use

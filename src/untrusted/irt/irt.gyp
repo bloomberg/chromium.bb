@@ -46,7 +46,6 @@
     ],
     'irt_browser': [
       'irt_interfaces_ppapi.c',
-      'irt_ppapi.c',
       'irt_manifest.c',
     ],
   },
