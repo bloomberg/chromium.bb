@@ -1023,7 +1023,7 @@ class GerritTestCase(TempDirTestCase):
          '--ssh-port', ssh_port, gerrit_dir], quiet=True)
 
     gerrit_exe = os.path.join(gerrit_dir, 'bin', 'gerrit.sh')
-    cros_build_lib.RunCommand(['bash', gerrit_exe, 'start'], quiet=True)
+    cros_build_lib.RunCommand(['bash', '-x', gerrit_exe, 'start'], quiet=True)
     gerrit_pid = int(osutils.ReadFile(
         os.path.join(gerrit_dir, 'logs', 'gerrit.pid')).rstrip())
     return cls.GerritInstance(
