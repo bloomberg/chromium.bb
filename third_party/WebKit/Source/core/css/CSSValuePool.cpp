@@ -32,10 +32,17 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(CSSValuePool);
+
 CSSValuePool& cssValuePool()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<CSSValuePool>, pool, (new CSSValuePool()));
+    return *pool;
+#else
     DEFINE_STATIC_LOCAL(CSSValuePool, pool, ());
     return pool;
+#endif // ENABLE(OILPAN)
 }
 
 CSSValuePool::CSSValuePool()
@@ -128,20 +135,25 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& 
     return value;
 }
 
-PassRefPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& string)
+PassRefPtrWillBeRawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& string)
 {
     // Just wipe out the cache and start rebuilding if it gets too big.
     const unsigned maximumFontFaceCacheSize = 128;
     if (m_fontFaceValueCache.size() > maximumFontFaceCacheSize)
         m_fontFaceValueCache.clear();
 
-    // FIXME: oilpan: change to RefPtrWillBeRawPtr when m_fontFaceValueCache is changed to
-    // WillBePersistentHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> >.
-    // This includes the return type of this method as well as the callee in HTMLFontElement.cpp.
-    RefPtr<CSSValueList>& value = m_fontFaceValueCache.add(string, 0).iterator->value;
+    RefPtrWillBeMember<CSSValueList>& value = m_fontFaceValueCache.add(string, 0).iterator->value;
     if (!value)
         value = BisonCSSParser::parseFontFaceValue(string);
     return value;
+}
+
+void CSSValuePool::trace(Visitor* visitor)
+{
+    visitor->trace(m_inheritedValue);
+    visitor->trace(m_implicitInitialValue);
+    visitor->trace(m_explicitInitialValue);
+    visitor->trace(m_fontFaceValueCache);
 }
 
 }

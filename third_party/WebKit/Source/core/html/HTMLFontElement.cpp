@@ -193,8 +193,7 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
     } else if (name == colorAttr)
         addHTMLColorToStyle(style, CSSPropertyColor, value);
     else if (name == faceAttr) {
-        // FIXME: oilpan: see CSSValuePool.cpp:createFontFaceValue for what needs to be fixed.
-        if (RefPtr<CSSValueList> fontFaceValue = cssValuePool().createFontFaceValue(value))
+        if (RefPtrWillBeRawPtr<CSSValueList> fontFaceValue = cssValuePool().createFontFaceValue(value))
             style->setProperty(CSSProperty(CSSPropertyFontFamily, fontFaceValue.release()));
     } else
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);

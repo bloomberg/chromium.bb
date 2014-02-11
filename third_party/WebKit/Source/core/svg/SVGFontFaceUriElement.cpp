@@ -51,9 +51,9 @@ SVGFontFaceUriElement::~SVGFontFaceUriElement()
         m_resource->removeClient(this);
 }
 
-PassRefPtr<CSSFontFaceSrcValue> SVGFontFaceUriElement::srcValue() const
+PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> SVGFontFaceUriElement::srcValue() const
 {
-    RefPtr<CSSFontFaceSrcValue> src = CSSFontFaceSrcValue::create(getAttribute(XLinkNames::hrefAttr));
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> src = CSSFontFaceSrcValue::create(getAttribute(XLinkNames::hrefAttr));
     AtomicString value(fastGetAttribute(formatAttr));
     src->setFormat(value.isEmpty() ? "svg" : value); // Default format
     return src.release();

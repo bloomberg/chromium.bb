@@ -28,13 +28,13 @@ namespace WebCore {
 
 class CSSInitialValue : public CSSValue {
 public:
-    static PassRefPtr<CSSInitialValue> createExplicit()
+    static PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicit()
     {
-        return adoptRef(new CSSInitialValue(/* implicit */ false));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSInitialValue(/* implicit */ false));
     }
-    static PassRefPtr<CSSInitialValue> createImplicit()
+    static PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicit()
     {
-        return adoptRef(new CSSInitialValue(/* implicit */ true));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSInitialValue(/* implicit */ true));
     }
 
     String customCSSText() const;

@@ -39,13 +39,13 @@ class SVGFontFaceElement;
 
 class CSSFontFaceSrcValue : public CSSValue {
 public:
-    static PassRefPtr<CSSFontFaceSrcValue> create(const String& resource)
+    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> create(const String& resource)
     {
-        return adoptRef(new CSSFontFaceSrcValue(resource, false));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFontFaceSrcValue(resource, false));
     }
-    static PassRefPtr<CSSFontFaceSrcValue> createLocal(const String& resource)
+    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> createLocal(const String& resource)
     {
-        return adoptRef(new CSSFontFaceSrcValue(resource, true));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFontFaceSrcValue(resource, true));
     }
 
     const String& resource() const { return m_resource; }

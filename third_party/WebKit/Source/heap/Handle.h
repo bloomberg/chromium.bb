@@ -340,6 +340,7 @@ public:
 
     T* operator->() const { return m_raw; }
     T& operator*() const { return *m_raw; }
+    operator RawPtr<T>() const { return m_raw; }
 
     template<typename U>
     Member& operator=(const Persistent<U>& other)
@@ -576,13 +577,13 @@ using WillBePersistentHeapVector = PersistentHeapVector<T, inlineCapacity>;
 #endif // COMPILER(CLANG)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBeRawPtr<T>(ptr); }
-
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr)
 {
     return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
 }
-
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBeRawPtr<T>(ptr); }
+
+#define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED // do nothing when oilpan is enabled.
 
 #else // !ENABLE(OILPAN)
 
@@ -660,6 +661,8 @@ using WillBePersistentHeapVector = Vector<T, inlineCapacity>;
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
+
+#define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED WTF_MAKE_FAST_ALLOCATED
 
 #endif // ENABLE(OILPAN)
 

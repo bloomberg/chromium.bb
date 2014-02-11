@@ -87,7 +87,9 @@ Image* CSSImageGeneratorValue::getImage(RenderObject* renderer, const IntSize& s
         SizeAndCount& sizeCount = it->value;
         IntSize oldSize = sizeCount.size;
         if (oldSize != size) {
+#if !ENABLE_OILPAN
             RefPtr<CSSImageGeneratorValue> protect(this);
+#endif
             removeClient(renderer);
             addClient(renderer, size);
         }

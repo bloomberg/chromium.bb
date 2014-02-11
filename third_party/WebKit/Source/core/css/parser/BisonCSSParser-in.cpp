@@ -2164,7 +2164,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     }
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice: {
-        RefPtr<CSSBorderImageSliceValue> result;
+        RefPtrWillBeRawPtr<CSSBorderImageSliceValue> result;
         if (parseBorderImageSlice(propId, result)) {
             addProperty(propId, result, important);
             return true;
@@ -4717,7 +4717,7 @@ void BisonCSSParser::parseGridLineNames(CSSParserValueList* parserValueList, CSS
         return;
     }
 
-    RefPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
     while (CSSParserValue* identValue = identList->current()) {
         ASSERT(identValue->unit == CSSPrimitiveValue::CSS_IDENT);
         RefPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
@@ -6003,7 +6003,7 @@ bool BisonCSSParser::parseFontWeight(bool important)
 
 bool BisonCSSParser::parseFontFaceSrcURI(CSSValueList* valueList)
 {
-    RefPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(m_valueList->current()->string)));
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(m_valueList->current()->string)));
 
     CSSParserValue* value = m_valueList->next();
     if (!value) {
@@ -6887,7 +6887,7 @@ bool BisonCSSParser::parseReflect(CSSPropertyID propId, bool important)
             return false;
     }
 
-    RefPtr<CSSReflectValue> reflectValue = CSSReflectValue::create(direction.release(), offset.release(), mask.release());
+    RefPtrWillBeRawPtr<CSSReflectValue> reflectValue = CSSReflectValue::create(direction.release(), offset.release(), mask.release());
     addProperty(propId, reflectValue.release(), important);
     m_valueList->next();
     return true;
@@ -6952,6 +6952,8 @@ bool BisonCSSParser::parseObjectPosition(bool important)
 }
 
 struct BorderImageParseContext {
+    DISALLOW_ALLOCATION();
+public:
     BorderImageParseContext()
     : m_canAdvance(false)
     , m_allowCommit(true)
@@ -6984,7 +6986,7 @@ struct BorderImageParseContext {
         m_allowImageSlice = !m_imageSlice;
         m_allowRepeat = !m_repeat;
     }
-    void commitImageSlice(PassRefPtr<CSSBorderImageSliceValue> slice)
+    void commitImageSlice(PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> slice)
     {
         m_imageSlice = slice;
         m_canAdvance = true;
@@ -7076,7 +7078,7 @@ struct BorderImageParseContext {
     bool m_requireOutset;
 
     RefPtr<CSSValue> m_image;
-    RefPtr<CSSBorderImageSliceValue> m_imageSlice;
+    RefPtrWillBeRawPtr<CSSBorderImageSliceValue> m_imageSlice;
     RefPtr<CSSPrimitiveValue> m_borderSlice;
     RefPtr<CSSPrimitiveValue> m_outset;
 
@@ -7112,7 +7114,7 @@ static bool buildBorderImageParseContext(BisonCSSParser& parser, CSSPropertyID p
         }
 
         if (!context.canAdvance() && context.allowImageSlice()) {
-            RefPtr<CSSBorderImageSliceValue> imageSlice;
+            RefPtrWillBeRawPtr<CSSBorderImageSliceValue> imageSlice;
             if (parser.parseBorderImageSlice(propId, imageSlice))
                 context.commitImageSlice(imageSlice.release());
         }
@@ -7244,7 +7246,7 @@ public:
 
     void commitFill() { m_fill = true; m_allowFill = false; m_allowNumber = !m_top; }
 
-    PassRefPtr<CSSBorderImageSliceValue> commitBorderImageSlice()
+    PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> commitBorderImageSlice()
     {
         // We need to clone and repeat values for any omissions.
         ASSERT(m_top);
@@ -7286,7 +7288,7 @@ private:
     bool m_fill;
 };
 
-bool BisonCSSParser::parseBorderImageSlice(CSSPropertyID propId, RefPtr<CSSBorderImageSliceValue>& result)
+bool BisonCSSParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>& result)
 {
     BorderImageSliceParseContext context(this);
     CSSParserValue* val;
@@ -7812,7 +7814,7 @@ static PassRefPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(BisonCSSParser*
 
 bool BisonCSSParser::parseDeprecatedLinearGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
-    RefPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, CSSPrefixedLinearGradient);
+    RefPtrWillBeRawPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, CSSPrefixedLinearGradient);
 
     // Walk the arguments.
     CSSParserValueList* args = valueList->current()->function->args.get();
@@ -7880,7 +7882,7 @@ bool BisonCSSParser::parseDeprecatedLinearGradient(CSSParserValueList* valueList
 
 bool BisonCSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
-    RefPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSPrefixedRadialGradient);
+    RefPtrWillBeRawPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSPrefixedRadialGradient);
 
     // Walk the arguments.
     CSSParserValueList* args = valueList->current()->function->args.get();
@@ -7998,7 +8000,7 @@ bool BisonCSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList
 
 bool BisonCSSParser::parseLinearGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
-    RefPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, CSSLinearGradient);
+    RefPtrWillBeRawPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, CSSLinearGradient);
 
     CSSParserValueList* args = valueList->current()->function->args.get();
     if (!args || !args->size())
@@ -8070,7 +8072,7 @@ bool BisonCSSParser::parseLinearGradient(CSSParserValueList* valueList, RefPtr<C
 
 bool BisonCSSParser::parseRadialGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
-    RefPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSRadialGradient);
+    RefPtrWillBeRawPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSRadialGradient);
 
     CSSParserValueList* args = valueList->current()->function->args.get();
     if (!args || !args->size())
@@ -8293,8 +8295,6 @@ bool BisonCSSParser::parseGeneratedImage(CSSParserValueList* valueList, RefPtr<C
 
 bool BisonCSSParser::parseCrossfade(CSSParserValueList* valueList, RefPtr<CSSValue>& crossfade)
 {
-    RefPtr<CSSCrossfadeValue> result;
-
     // Walk the arguments.
     CSSParserValueList* args = valueList->current()->function->args.get();
     if (!args || args->size() != 5)
@@ -8335,7 +8335,7 @@ bool BisonCSSParser::parseCrossfade(CSSParserValueList* valueList, RefPtr<CSSVal
     else
         return false;
 
-    result = CSSCrossfadeValue::create(fromImageValue, toImageValue);
+    RefPtrWillBeRawPtr<CSSCrossfadeValue> result = CSSCrossfadeValue::create(fromImageValue, toImageValue);
     result->setPercentage(percentage);
 
     crossfade = result;

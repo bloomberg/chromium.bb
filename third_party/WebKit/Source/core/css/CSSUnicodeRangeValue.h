@@ -33,9 +33,9 @@ namespace WebCore {
 
 class CSSUnicodeRangeValue : public CSSValue {
 public:
-    static PassRefPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
+    static PassRefPtrWillBeRawPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
     {
-        return adoptRef(new CSSUnicodeRangeValue(from, to));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSUnicodeRangeValue(from, to));
     }
 
     UChar32 from() const { return m_from; }

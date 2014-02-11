@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-StyleGeneratedImage::StyleGeneratedImage(PassRefPtr<CSSImageGeneratorValue> value)
+StyleGeneratedImage::StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue> value)
     : m_imageGeneratorValue(value)
     , m_fixedSize(m_imageGeneratorValue->isFixedSize())
 {
@@ -39,7 +39,7 @@ StyleGeneratedImage::StyleGeneratedImage(PassRefPtr<CSSImageGeneratorValue> valu
 
 PassRefPtr<CSSValue> StyleGeneratedImage::cssValue() const
 {
-    return m_imageGeneratorValue;
+    return m_imageGeneratorValue.get();
 }
 
 LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float multiplier) const

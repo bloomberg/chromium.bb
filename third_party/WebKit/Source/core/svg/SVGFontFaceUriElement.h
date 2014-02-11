@@ -36,7 +36,7 @@ public:
 
     virtual ~SVGFontFaceUriElement();
 
-    PassRefPtr<CSSFontFaceSrcValue> srcValue() const;
+    PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> srcValue() const;
 
 private:
     explicit SVGFontFaceUriElement(Document&);

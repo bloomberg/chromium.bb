@@ -28,9 +28,9 @@ namespace WebCore {
 
 class CSSInheritedValue : public CSSValue {
 public:
-    static PassRefPtr<CSSInheritedValue> create()
+    static PassRefPtrWillBeRawPtr<CSSInheritedValue> create()
     {
-        return adoptRef(new CSSInheritedValue);
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSInheritedValue);
     }
 
     String customCSSText() const;

@@ -224,7 +224,7 @@ public:
     bool parseBorderImageShorthand(CSSPropertyID, bool important);
     PassRefPtr<CSSValue> parseBorderImage(CSSPropertyID);
     bool parseBorderImageRepeat(RefPtr<CSSValue>&);
-    bool parseBorderImageSlice(CSSPropertyID, RefPtr<CSSBorderImageSliceValue>&);
+    bool parseBorderImageSlice(CSSPropertyID, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>&);
     bool parseBorderImageWidth(RefPtr<CSSPrimitiveValue>&);
     bool parseBorderImageOutset(RefPtr<CSSPrimitiveValue>&);
     bool parseBorderRadius(CSSPropertyID, bool important);

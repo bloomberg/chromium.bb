@@ -32,9 +32,9 @@ class CSSValueList;
 
 class CSSFontValue : public CSSValue {
 public:
-    static PassRefPtr<CSSFontValue> create()
+    static PassRefPtrWillBeRawPtr<CSSFontValue> create()
     {
-        return adoptRef(new CSSFontValue);
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFontValue);
     }
 
     String customCSSText() const;

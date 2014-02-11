@@ -402,7 +402,7 @@ static CSSValueID valueForRepeatRule(int rule)
     }
 }
 
-static PassRefPtr<CSSBorderImageSliceValue> valueForNinePieceImageSlice(const NinePieceImage& image)
+static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSlice(const NinePieceImage& image)
 {
     // Create the slices.
     RefPtr<CSSPrimitiveValue> top;
@@ -531,7 +531,7 @@ static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, 
         imageValue = image.image()->cssValue();
 
     // Create the image slice.
-    RefPtr<CSSBorderImageSliceValue> imageSlices = valueForNinePieceImageSlice(image);
+    RefPtrWillBeRawPtr<CSSBorderImageSliceValue> imageSlices = valueForNinePieceImageSlice(image);
 
     // Create the border area slices.
     RefPtr<CSSValue> borderSlices = valueForNinePieceImageQuad(image.borderSlices(), style);
@@ -885,7 +885,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     if (namedGridLines.isEmpty())
         return;
 
-    RefPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
     for (size_t j = 0; j < namedGridLines.size(); ++j)
         lineNames->append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_STRING));
     list.append(lineNames.release());
@@ -1886,7 +1886,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->floating());
         case CSSPropertyFont: {
-            RefPtr<CSSFontValue> computedFont = CSSFontValue::create();
+            RefPtrWillBeRawPtr<CSSFontValue> computedFont = CSSFontValue::create();
             computedFont->style = valueForFontStyle(*style);
             computedFont->variant = valueForFontVariant(*style);
             computedFont->weight = valueForFontWeight(*style);
@@ -1918,7 +1918,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             for (unsigned i = 0; i < featureSettings->size(); ++i) {
                 const FontFeature& feature = featureSettings->at(i);
-                RefPtr<CSSFontFeatureValue> featureValue = CSSFontFeatureValue::create(feature.tag(), feature.value());
+                RefPtrWillBeRawPtr<CSSFontFeatureValue> featureValue = CSSFontFeatureValue::create(feature.tag(), feature.value());
                 list->append(featureValue.release());
             }
             return list.release();

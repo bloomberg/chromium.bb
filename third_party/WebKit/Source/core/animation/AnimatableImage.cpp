@@ -79,7 +79,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
         ImageResource* resource = static_cast<ImageResource*>(image->m_image->data());
         toValue = CSSImageValue::create(resource->url(), image->m_image.get());
     }
-    RefPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
+    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
     crossfadeValue->setPercentage(CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::CSS_NUMBER));
     return create(StyleGeneratedImage::create(crossfadeValue.get()).get());
 }

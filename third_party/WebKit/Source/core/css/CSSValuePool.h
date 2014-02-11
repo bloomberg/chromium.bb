@@ -39,15 +39,15 @@ namespace WebCore {
 
 class CSSValueList;
 
-class CSSValuePool {
-    WTF_MAKE_FAST_ALLOCATED;
+class CSSValuePool :  public NoBaseWillBeGarbageCollected<CSSValuePool> {
+    DECLARE_GC_INFO;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    // FIXME: oilpan: Change to PassRefPtrWillBeRawPtr when fixing m_fontFaceValueCache below.
-    PassRefPtr<CSSValueList> createFontFaceValue(const AtomicString&);
+    PassRefPtrWillBeRawPtr<CSSValueList> createFontFaceValue(const AtomicString&);
     PassRefPtr<CSSPrimitiveValue> createFontFamilyValue(const String&);
-    PassRefPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
-    PassRefPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
-    PassRefPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
+    PassRefPtrWillBeRawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
+    PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
+    PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
     PassRefPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
     PassRefPtr<CSSPrimitiveValue> createIdentifierValue(CSSPropertyID identifier);
     PassRefPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
@@ -57,12 +57,14 @@ public:
     PassRefPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
     template<typename T> static PassRefPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
 
+    void trace(Visitor*);
+
 private:
     CSSValuePool();
 
-    RefPtr<CSSInheritedValue> m_inheritedValue;
-    RefPtr<CSSInitialValue> m_implicitInitialValue;
-    RefPtr<CSSInitialValue> m_explicitInitialValue;
+    RefPtrWillBeMember<CSSInheritedValue> m_inheritedValue;
+    RefPtrWillBeMember<CSSInitialValue> m_implicitInitialValue;
+    RefPtrWillBeMember<CSSInitialValue> m_explicitInitialValue;
 
     RefPtr<CSSPrimitiveValue> m_identifierValueCache[numCSSValueKeywords];
 
@@ -78,11 +80,7 @@ private:
     RefPtr<CSSPrimitiveValue> m_percentValueCache[maximumCacheableIntegerValue + 1];
     RefPtr<CSSPrimitiveValue> m_numberValueCache[maximumCacheableIntegerValue + 1];
 
-    // FIXME: oilpan: Change to use
-    // WillBePersistentHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> >
-    // once available. Also validate lifecycle of CSSValuePool to see how/where it
-    // is created.
-    typedef HashMap<AtomicString, RefPtr<CSSValueList> > FontFaceValueCache;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> > FontFaceValueCache;
     FontFaceValueCache m_fontFaceValueCache;
 
     typedef HashMap<String, RefPtr<CSSPrimitiveValue> > FontFamilyValueCache;

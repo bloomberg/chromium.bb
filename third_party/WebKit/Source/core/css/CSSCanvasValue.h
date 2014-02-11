@@ -35,7 +35,10 @@ class Document;
 
 class CSSCanvasValue : public CSSImageGeneratorValue {
 public:
-    static PassRefPtr<CSSCanvasValue> create(const String& name) { return adoptRef(new CSSCanvasValue(name)); }
+    static PassRefPtrWillBeRawPtr<CSSCanvasValue> create(const String& name)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCanvasValue(name));
+    }
     ~CSSCanvasValue();
 
     String customCSSText() const;

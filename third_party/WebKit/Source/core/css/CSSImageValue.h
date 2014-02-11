@@ -35,8 +35,14 @@ class RenderObject;
 
 class CSSImageValue : public CSSValue {
 public:
-    static PassRefPtr<CSSImageValue> create(const KURL& url) { return adoptRef(new CSSImageValue(url)); }
-    static PassRefPtr<CSSImageValue> create(const KURL& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(url));
+    }
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleImage* image)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(url, image));
+    }
     ~CSSImageValue();
 
     StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&);

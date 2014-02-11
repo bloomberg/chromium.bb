@@ -54,9 +54,10 @@ public:
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
 
 private:
-    StyleGeneratedImage(PassRefPtr<CSSImageGeneratorValue>);
+    StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue>);
 
-    RefPtr<CSSImageGeneratorValue> m_imageGeneratorValue;
+    // FIXME: oilpan: change to member once StyleImage is moved to the oilpan heap
+    RefPtrWillBePersistent<CSSImageGeneratorValue> m_imageGeneratorValue;
     IntSize m_containerSize;
     bool m_fixedSize;
 };
