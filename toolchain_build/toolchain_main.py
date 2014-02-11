@@ -164,8 +164,14 @@ class PackageBuilder(object):
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
 
+    # Source targets are the only ones to run when doing sync-only.
+    if not is_source_target and self._options.sync_sources_only:
+      logging.debug('Build skipped: not running commands for %s' % package)
+      return
+
     # Source targets do not run when skipping sync.
-    if is_source_target and not self._options.sync_sources:
+    if is_source_target and not (
+        self._options.sync_sources or self._options.sync_sources_only):
       logging.debug('Sync skipped: not running commands for %s' % package)
       return
 
@@ -322,6 +328,10 @@ class PackageBuilder(object):
         '-y', '--sync', dest='sync_sources',
         default=False, action='store_true',
         help='Run source target commands')
+    parser.add_option(
+        '--sync-only', dest='sync_sources_only',
+        default=False, action='store_true',
+        help='Run source target commands only')
     parser.add_option(
         '--emit-signatures', dest='emit_signatures',
         help='Write human readable build signature for each step to FILE.',
