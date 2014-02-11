@@ -11,6 +11,10 @@
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
+namespace content {
+class WebContents;
+}
+
 class PermissionRequestID;
 class Profile;
 
@@ -38,15 +42,6 @@ class ChromeGeolocationPermissionContext
   // Called on the UI thread when the profile is about to be destroyed.
   void ShutdownOnUIThread();
 
- protected:
-  virtual ~ChromeGeolocationPermissionContext();
-
-  Profile* profile() const { return profile_; }
-
-  // Return an instance of the infobar queue controller, creating it
-  // if necessary.
-  PermissionQueueController* QueueController();
-
   // Notifies whether or not the corresponding bridge is allowed to use
   // geolocation via
   // GeolocationPermissionContext::SetGeolocationPermissionResponse().
@@ -56,12 +51,22 @@ class ChromeGeolocationPermissionContext
                            base::Callback<void(bool)> callback,
                            bool allowed);
 
+ protected:
+  virtual ~ChromeGeolocationPermissionContext();
+
+  Profile* profile() const { return profile_; }
+
+  // Return an instance of the infobar queue controller, creating it
+  // if necessary.
+  PermissionQueueController* QueueController();
+
   // ChromeGeolocationPermissionContext implementation:
   // Decide whether the geolocation permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an
   // infobar to the user. Called on the UI thread.
-  virtual void DecidePermission(const PermissionRequestID& id,
+  virtual void DecidePermission(content::WebContents* web_contents,
+                                const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
                                 base::Callback<void(bool)> callback);

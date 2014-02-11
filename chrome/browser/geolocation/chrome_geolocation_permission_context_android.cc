@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 ChromeGeolocationPermissionContextAndroid::
     ChromeGeolocationPermissionContextAndroid(Profile* profile)
@@ -22,6 +23,7 @@ ChromeGeolocationPermissionContextAndroid::
 }
 
 void ChromeGeolocationPermissionContextAndroid::DecidePermission(
+    content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
@@ -36,8 +38,8 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
     return;
   }
 
-  ChromeGeolocationPermissionContext::DecidePermission(id, requesting_frame,
-                                                       embedder, callback);
+  ChromeGeolocationPermissionContext::DecidePermission(
+      web_contents, id, requesting_frame, embedder, callback);
 }
 
 void ChromeGeolocationPermissionContextAndroid::PermissionDecided(

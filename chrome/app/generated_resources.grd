@@ -13380,6 +13380,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </ph> wants to use your device's location.
       </message>
     </if>
+    <message name="IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT" desc="Permission fragment used in the permission bubble, after 'This site would like to:' asking for permission to access the user's physical location.">
+      use your device's location.
+    </message>
     <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
       Allow
     </message>

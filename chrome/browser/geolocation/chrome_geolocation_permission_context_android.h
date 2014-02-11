@@ -7,6 +7,10 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 
+namespace content {
+class WebContents;
+}
+
 class GoogleLocationSettingsHelper;
 
 // Android-specific geolocation permission flow, taking into account the
@@ -22,7 +26,8 @@ class ChromeGeolocationPermissionContextAndroid
   virtual ~ChromeGeolocationPermissionContextAndroid();
 
   // ChromeGeolocationPermissionContext implementation:
-  virtual void DecidePermission(const PermissionRequestID& id,
+  virtual void DecidePermission(content::WebContents* web_contents,
+                                const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
                                 base::Callback<void(bool)> callback) OVERRIDE;
