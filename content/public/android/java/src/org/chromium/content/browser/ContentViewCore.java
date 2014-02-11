@@ -1266,13 +1266,13 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onFlingCancelEventAck() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_FLING_CANCEL);
+        updateGestureStateListener(GestureEventType.FLING_CANCEL);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollBeginEventAck() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_SCROLL_START);
+        updateGestureStateListener(GestureEventType.SCROLL_START);
     }
 
     @SuppressWarnings("unused")
@@ -1287,19 +1287,19 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollEndEventAck() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_SCROLL_END);
+        updateGestureStateListener(GestureEventType.SCROLL_END);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onPinchBeginEventAck() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_PINCH_BEGIN);
+        updateGestureStateListener(GestureEventType.PINCH_BEGIN);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onPinchEndEventAck() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_PINCH_END);
+        updateGestureStateListener(GestureEventType.PINCH_END);
     }
 
     /**
@@ -1314,7 +1314,7 @@ public class ContentViewCore
         updateForTapOrPress(type, x, y);
         updateForDoubleTapUMA(type);
         // TODO(jdduke): Determine if this should be called while a pinch is active.
-        if (type == ContentViewGestureHandler.GESTURE_SCROLL_BY) {
+        if (type == GestureEventType.SCROLL_BY) {
             mZoomControlsDelegate.invokeZoomPicker();
         }
         return false;
@@ -1341,67 +1341,67 @@ public class ContentViewCore
     public boolean onGestureEventCreated(int type, long timeMs, int x, int y, Bundle b) {
         if (mNativeContentViewCore == 0) return false;
         switch (type) {
-            case ContentViewGestureHandler.GESTURE_SHOW_PRESS:
+            case GestureEventType.SHOW_PRESS:
                 nativeShowPress(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_TAP_CANCEL:
+            case GestureEventType.TAP_CANCEL:
                 nativeTapCancel(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_TAP_DOWN:
+            case GestureEventType.TAP_DOWN:
                 nativeTapDown(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_DOUBLE_TAP:
+            case GestureEventType.DOUBLE_TAP:
                 nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_UP:
+            case GestureEventType.SINGLE_TAP_UP:
                 nativeSingleTap(mNativeContentViewCore, timeMs, x, y, false);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_CONFIRMED:
+            case GestureEventType.SINGLE_TAP_CONFIRMED:
                 if (!b.getBoolean(ContentViewGestureHandler.SHOW_PRESS, false)) {
                     nativeShowPress(mNativeContentViewCore, timeMs, x, y);
                 }
                 nativeSingleTap(mNativeContentViewCore, timeMs, x, y, false);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_UNCONFIRMED:
+            case GestureEventType.SINGLE_TAP_UNCONFIRMED:
                 nativeSingleTapUnconfirmed(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_LONG_PRESS:
+            case GestureEventType.LONG_PRESS:
                 nativeLongPress(mNativeContentViewCore, timeMs, x, y, false);
                 return true;
-            case ContentViewGestureHandler.GESTURE_LONG_TAP:
+            case GestureEventType.LONG_TAP:
                 nativeLongTap(mNativeContentViewCore, timeMs, x, y, false);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SCROLL_START: {
+            case GestureEventType.SCROLL_START: {
                 int dx = b.getInt(ContentViewGestureHandler.DELTA_HINT_X);
                 int dy = b.getInt(ContentViewGestureHandler.DELTA_HINT_Y);
                 nativeScrollBegin(mNativeContentViewCore, timeMs, x, y, dx, dy);
                 return true;
             }
-            case ContentViewGestureHandler.GESTURE_SCROLL_BY: {
+            case GestureEventType.SCROLL_BY: {
                 int dx = b.getInt(ContentViewGestureHandler.DISTANCE_X);
                 int dy = b.getInt(ContentViewGestureHandler.DISTANCE_Y);
                 nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy);
                 return true;
             }
-            case ContentViewGestureHandler.GESTURE_SCROLL_END:
+            case GestureEventType.SCROLL_END:
                 nativeScrollEnd(mNativeContentViewCore, timeMs);
                 return true;
-            case ContentViewGestureHandler.GESTURE_FLING_START:
+            case GestureEventType.FLING_START:
                 nativeFlingStart(mNativeContentViewCore, timeMs, x, y,
                         b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
                         b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
                 return true;
-            case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
+            case GestureEventType.FLING_CANCEL:
                 nativeFlingCancel(mNativeContentViewCore, timeMs);
                 return true;
-            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+            case GestureEventType.PINCH_BEGIN:
                 nativePinchBegin(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_PINCH_BY:
+            case GestureEventType.PINCH_BY:
                 nativePinchBy(mNativeContentViewCore, timeMs, x, y,
                         b.getFloat(ContentViewGestureHandler.DELTA, 0));
                 return true;
-            case ContentViewGestureHandler.GESTURE_PINCH_END:
+            case GestureEventType.PINCH_END:
                 nativePinchEnd(mNativeContentViewCore, timeMs);
                 return true;
             default:
@@ -1444,26 +1444,26 @@ public class ContentViewCore
                 mGestureStateListenersIterator.hasNext();) {
             GestureStateListener listener = mGestureStateListenersIterator.next();
             switch (gestureType) {
-                case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+                case GestureEventType.PINCH_BEGIN:
                     listener.onPinchStarted();
                     break;
-                case ContentViewGestureHandler.GESTURE_PINCH_END:
+                case GestureEventType.PINCH_END:
                     listener.onPinchEnded();
                     break;
-                case ContentViewGestureHandler.GESTURE_FLING_END:
+                case GestureEventType.FLING_END:
                     listener.onFlingEndGesture(
                             computeVerticalScrollOffset(),
                             computeVerticalScrollExtent());
                     break;
-                case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
+                case GestureEventType.FLING_CANCEL:
                     listener.onFlingCancelGesture();
                     break;
-                case ContentViewGestureHandler.GESTURE_SCROLL_START:
+                case GestureEventType.SCROLL_START:
                     listener.onScrollStarted(
                             computeVerticalScrollOffset(),
                             computeVerticalScrollExtent());
                     break;
-                case ContentViewGestureHandler.GESTURE_SCROLL_END:
+                case GestureEventType.SCROLL_END:
                     listener.onScrollEnded(
                             computeVerticalScrollOffset(),
                             computeVerticalScrollExtent());
@@ -1997,10 +1997,10 @@ public class ContentViewCore
     }
 
     private void updateForTapOrPress(int type, float xPix, float yPix) {
-        if (type != ContentViewGestureHandler.GESTURE_SINGLE_TAP_CONFIRMED
-                && type != ContentViewGestureHandler.GESTURE_SINGLE_TAP_UP
-                && type != ContentViewGestureHandler.GESTURE_LONG_PRESS
-                && type != ContentViewGestureHandler.GESTURE_LONG_TAP) {
+        if (type != GestureEventType.SINGLE_TAP_CONFIRMED
+                && type != GestureEventType.SINGLE_TAP_UP
+                && type != GestureEventType.LONG_PRESS
+                && type != GestureEventType.LONG_TAP) {
             return;
         }
 
@@ -2011,8 +2011,8 @@ public class ContentViewCore
 
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(xPix, yPix);
 
-        if (type == ContentViewGestureHandler.GESTURE_LONG_PRESS
-                || type == ContentViewGestureHandler.GESTURE_LONG_TAP) {
+        if (type == GestureEventType.LONG_PRESS
+                || type == GestureEventType.LONG_TAP) {
             getInsertionHandleController().allowAutomaticShowing();
             getSelectionHandleController().allowAutomaticShowing();
         } else {
@@ -2056,11 +2056,11 @@ public class ContentViewCore
     private void updateForDoubleTapUMA(int type) {
         updateDoubleTapUmaTimer();
 
-        if (type == ContentViewGestureHandler.GESTURE_SINGLE_TAP_UP
-                || type == ContentViewGestureHandler.GESTURE_SINGLE_TAP_CONFIRMED) {
+        if (type == GestureEventType.SINGLE_TAP_UP
+                || type == GestureEventType.SINGLE_TAP_CONFIRMED) {
             sendSingleTapUMA(mContentViewGestureHandler.isDoubleTapDisabled() ?
                     UMASingleTapType.UNDELAYED_TAP : UMASingleTapType.DELAYED_TAP);
-        } else if (type == ContentViewGestureHandler.GESTURE_DOUBLE_TAP) {
+        } else if (type == GestureEventType.DOUBLE_TAP) {
             // Make sure repeated double taps don't get silently dropped from
             // the statistics.
             if (mLastDoubleTapTimeMs > 0) {
@@ -2410,10 +2410,10 @@ public class ContentViewCore
 
     private void updateTextHandlesForGesture(int type) {
         switch(type) {
-            case ContentViewGestureHandler.GESTURE_DOUBLE_TAP:
-            case ContentViewGestureHandler.GESTURE_SCROLL_START:
-            case ContentViewGestureHandler.GESTURE_FLING_START:
-            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+            case GestureEventType.DOUBLE_TAP:
+            case GestureEventType.SCROLL_START:
+            case GestureEventType.FLING_START:
+            case GestureEventType.PINCH_BEGIN:
                 temporarilyHideTextHandles();
                 break;
 
@@ -3288,7 +3288,7 @@ public class ContentViewCore
      * @return true if the embedder handled the event.
      */
     private boolean offerGestureToEmbedder(int type) {
-        if (type == ContentViewGestureHandler.GESTURE_LONG_PRESS) {
+        if (type == GestureEventType.LONG_PRESS) {
             return mContainerView.performLongClick();
         }
         return false;
@@ -3309,7 +3309,7 @@ public class ContentViewCore
 
     @CalledByNative
     private void onNativeFlingStopped() {
-        updateGestureStateListener(ContentViewGestureHandler.GESTURE_FLING_END);
+        updateGestureStateListener(GestureEventType.FLING_END);
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);

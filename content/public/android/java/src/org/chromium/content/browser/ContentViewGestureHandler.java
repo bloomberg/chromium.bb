@@ -30,35 +30,35 @@ class ContentViewGestureHandler {
 
     private static final String TAG = "ContentViewGestureHandler";
     /**
-     * Used for GESTURE_FLING_START x velocity
+     * Used for FLING_START x velocity
      */
     static final String VELOCITY_X = "Velocity X";
     /**
-     * Used for GESTURE_FLING_START y velocity
+     * Used for FLING_START y velocity
      */
     static final String VELOCITY_Y = "Velocity Y";
     /**
-     * Used for GESTURE_SCROLL_BY x distance (scroll offset of update)
+     * Used for SCROLL_BY x distance (scroll offset of update)
      */
     static final String DISTANCE_X = "Distance X";
     /**
-     * Used for GESTURE_SCROLL_BY y distance (scroll offset of update)
+     * Used for SCROLL_BY y distance (scroll offset of update)
      */
     static final String DISTANCE_Y = "Distance Y";
     /**
-     * Used for GESTURE_SCROLL_START delta X hint (movement triggering scroll)
+     * Used for SCROLL_START delta X hint (movement triggering scroll)
      */
     static final String DELTA_HINT_X = "Delta Hint X";
     /**
-     * Used for GESTURE_SCROLL_START delta Y hint (movement triggering scroll)
+     * Used for SCROLL_START delta Y hint (movement triggering scroll)
      */
     static final String DELTA_HINT_Y = "Delta Hint Y";
     /**
-     * Used in GESTURE_SINGLE_TAP_CONFIRMED to check whether ShowPress has been called before.
+     * Used in SINGLE_TAP_CONFIRMED to check whether ShowPress has been called before.
      */
     static final String SHOW_PRESS = "ShowPress";
     /**
-     * Used for GESTURE_PINCH_BY delta
+     * Used for PINCH_BY delta
      */
     static final String DELTA = "Delta";
 
@@ -80,9 +80,8 @@ class ContentViewGestureHandler {
     // we will first show the press state, then trigger the click.
     private boolean mShowPressIsCalled;
 
-    // Whether a sent GESTURE_TAP_DOWN event has yet to be accompanied by a corresponding
-    // GESTURE_SINGLE_TAP_UP, GESTURE_SINGLE_TAP_CONFIRMED, GESTURE_TAP_CANCEL or
-    // GESTURE_DOUBLE_TAP.
+    // Whether a sent TAP_DOWN event has yet to be accompanied by a corresponding
+    // SINGLE_TAP_UP, SINGLE_TAP_CONFIRMED, TAP_CANCEL or DOUBLE_TAP.
     private boolean mNeedsTapEndingEvent;
 
     // This flag is used for ignoring the remaining touch events, i.e., All the events until the
@@ -138,33 +137,11 @@ class ContentViewGestureHandler {
     private boolean mShouldDisableDoubleTap;
 
     // Keeps track of the last long press event, if we end up opening a context menu, we would need
-    // to potentially use the event to send GESTURE_TAP_CANCEL to remove ::active styling
+    // to potentially use the event to send TAP_CANCEL to remove ::active styling
     private MotionEvent mLastLongPressEvent;
 
     // Whether the click delay should always be disabled by sending clicks for double tap gestures.
     private final boolean mDisableClickDelay;
-
-    // DO NOT change these constants without also changing the corresponding values
-    // found in content_view_core_impl.cc
-    // TODO(jdduke): Initialize these from their corresponding WebInputEvent::Type, crbug/339530.
-    static final int GESTURE_SHOW_PRESS = 0;
-    static final int GESTURE_DOUBLE_TAP = 1;
-    static final int GESTURE_SINGLE_TAP_UP = 2;
-    static final int GESTURE_SINGLE_TAP_CONFIRMED = 3;
-    static final int GESTURE_SINGLE_TAP_UNCONFIRMED = 4;
-    static final int GESTURE_LONG_PRESS = 5;
-    static final int GESTURE_SCROLL_START = 6;
-    static final int GESTURE_SCROLL_BY = 7;
-    static final int GESTURE_SCROLL_END = 8;
-    static final int GESTURE_FLING_START = 9;
-    static final int GESTURE_FLING_CANCEL = 10;
-    static final int GESTURE_FLING_END = 11;
-    static final int GESTURE_PINCH_BEGIN = 12;
-    static final int GESTURE_PINCH_BY = 13;
-    static final int GESTURE_PINCH_END = 14;
-    static final int GESTURE_TAP_CANCEL = 15;
-    static final int GESTURE_LONG_TAP = 16;
-    static final int GESTURE_TAP_DOWN = 17;
 
     private final float mPxToDp;
 
@@ -193,7 +170,7 @@ class ContentViewGestureHandler {
          * Forward a generated event to the client.  This will normally be wrapped by
          * calls to {@link #onTouchEventHandlingBegin(MotionEvent)} and
          * {@link #onTouchEventHandlingEnd()}, unless the gesture is generated from
-         * a touch timeout, e.g., GESTURE_LONG_PRESS.
+         * a touch timeout, e.g., LONG_PRESS.
          * @param type The type of the gesture event.
          * @param timeMs The time the gesture event occurred at.
          * @param x The x location for the gesture event.
@@ -243,7 +220,7 @@ class ContentViewGestureHandler {
                         mAccumulatedScrollErrorY = 0;
                         mLastLongPressEvent = null;
                         mNeedsTapEndingEvent = false;
-                        if (sendMotionEventAsGesture(GESTURE_TAP_DOWN, e, null)) {
+                        if (sendMotionEventAsGesture(GestureEventType.TAP_DOWN, e, null)) {
                             mNeedsTapEndingEvent = true;
                         }
                         // Return true to indicate that we want to handle touch
@@ -287,7 +264,7 @@ class ContentViewGestureHandler {
                             mExtraParamBundleScrollStart.putInt(DELTA_HINT_X, (int) -rawDistanceX);
                             mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y, (int) -rawDistanceY);
                             assert mExtraParamBundleScrollStart.size() == 2;
-                            if (sendGesture(GESTURE_SCROLL_START, e2.getEventTime(),
+                            if (sendGesture(GestureEventType.SCROLL_START, e2.getEventTime(),
                                         (int) e1.getX(), (int) e1.getY(),
                                         mExtraParamBundleScrollStart)) {
                                 mTouchScrolling = true;
@@ -311,7 +288,7 @@ class ContentViewGestureHandler {
                         assert mExtraParamBundleScroll.size() == 2;
 
                         if ((dx | dy) != 0) {
-                            sendGesture(GESTURE_SCROLL_BY,
+                            sendGesture(GestureEventType.SCROLL_BY,
                                     e2.getEventTime(), x, y, mExtraParamBundleScroll);
                         }
 
@@ -338,7 +315,7 @@ class ContentViewGestureHandler {
                     @Override
                     public void onShowPress(MotionEvent e) {
                         mShowPressIsCalled = true;
-                        sendMotionEventAsGesture(GESTURE_SHOW_PRESS, e, null);
+                        sendMotionEventAsGesture(GestureEventType.SHOW_PRESS, e, null);
                     }
 
                     @Override
@@ -356,7 +333,8 @@ class ContentViewGestureHandler {
                         // gets always called before singleTapConfirmed.
                         if (!mIgnoreSingleTap) {
                             if (e.getEventTime() - e.getDownTime() > DOUBLE_TAP_TIMEOUT) {
-                                if (sendTapEndingEventAsGesture(GESTURE_SINGLE_TAP_UP, e, null)) {
+                                if (sendTapEndingEventAsGesture(
+                                            GestureEventType.SINGLE_TAP_UP, e, null)) {
                                     mIgnoreSingleTap = true;
                                 }
                                 return true;
@@ -367,7 +345,8 @@ class ContentViewGestureHandler {
                             } else {
                                 // Notify Blink about this tapUp event anyway,
                                 // when none of the above conditions applied.
-                                sendMotionEventAsGesture(GESTURE_SINGLE_TAP_UNCONFIRMED, e, null);
+                                sendMotionEventAsGesture(
+                                        GestureEventType.SINGLE_TAP_UNCONFIRMED, e, null);
                             }
                         }
 
@@ -384,7 +363,7 @@ class ContentViewGestureHandler {
 
                         mExtraParamBundleSingleTap.putBoolean(SHOW_PRESS, mShowPressIsCalled);
                         assert mExtraParamBundleSingleTap.size() == 1;
-                        if (sendTapEndingEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
+                        if (sendTapEndingEventAsGesture(GestureEventType.SINGLE_TAP_CONFIRMED, e,
                                 mExtraParamBundleSingleTap)) {
                             mIgnoreSingleTap = true;
                         }
@@ -423,7 +402,7 @@ class ContentViewGestureHandler {
                                         mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y,
                                                 (int) -distanceY);
                                         assert mExtraParamBundleScrollStart.size() == 2;
-                                        sendGesture(GESTURE_SCROLL_START, e.getEventTime(),
+                                        sendGesture(GestureEventType.SCROLL_START, e.getEventTime(),
                                                 (int) e.getX(), (int) e.getY(),
                                                 mExtraParamBundleScrollStart);
                                         pinchBegin(e.getEventTime(),
@@ -433,7 +412,7 @@ class ContentViewGestureHandler {
                                     }
                                 } else if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
                                     assert mExtraParamBundleDoubleTapDragZoom.isEmpty();
-                                    sendGesture(GESTURE_SCROLL_BY, e.getEventTime(),
+                                    sendGesture(GestureEventType.SCROLL_BY, e.getEventTime(),
                                             (int) e.getX(), (int) e.getY(),
                                             mExtraParamBundleDoubleTapDragZoom);
 
@@ -450,7 +429,8 @@ class ContentViewGestureHandler {
                             case MotionEvent.ACTION_UP:
                                 if (mDoubleTapMode != DOUBLE_TAP_MODE_DRAG_ZOOM) {
                                     // Normal double tap gesture.
-                                    sendTapEndingEventAsGesture(GESTURE_DOUBLE_TAP, e, null);
+                                    sendTapEndingEventAsGesture(
+                                            GestureEventType.DOUBLE_TAP, e, null);
                                 }
                                 endDoubleTapDragIfNecessary(e);
                                 break;
@@ -471,7 +451,7 @@ class ContentViewGestureHandler {
                         if (isScaleGestureDetectionInProgress()) return false;
                         setIgnoreSingleTap(true);
                         mLastLongPressEvent = e;
-                        sendMotionEventAsGesture(GESTURE_LONG_PRESS, e, null);
+                        sendMotionEventAsGesture(GestureEventType.LONG_PRESS, e, null);
                         // Returning true puts the GestureDetector in "longpress" mode, disabling
                         // further scrolling.  This is undesirable, as it is quite common for a
                         // longpress gesture to fire on content that won't trigger a context menu.
@@ -602,24 +582,24 @@ class ContentViewGestureHandler {
         }
 
         if (!mTouchScrolling) {
-            // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
+            // The native side needs a SCROLL_BEGIN before FLING_START
             // to send the fling to the correct target. Send if it has not sent.
             // The distance traveled in one second is a reasonable scroll start hint.
             mExtraParamBundleScrollStart.putInt(DELTA_HINT_X, velocityX);
             mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y, velocityY);
             assert mExtraParamBundleScrollStart.size() == 2;
-            sendGesture(GESTURE_SCROLL_START, timeMs, x, y, mExtraParamBundleScrollStart);
+            sendGesture(GestureEventType.SCROLL_START, timeMs, x, y, mExtraParamBundleScrollStart);
         }
         endTouchScrollIfNecessary(timeMs, false);
 
         mExtraParamBundleFling.putInt(VELOCITY_X, velocityX);
         mExtraParamBundleFling.putInt(VELOCITY_Y, velocityY);
         assert mExtraParamBundleFling.size() == 2;
-        sendGesture(GESTURE_FLING_START, timeMs, x, y, mExtraParamBundleFling);
+        sendGesture(GestureEventType.FLING_START, timeMs, x, y, mExtraParamBundleFling);
     }
 
-    /**
-     * End DOUBLE_TAP_MODE_DRAG_ZOOM by sending GESTURE_SCROLL_END and GESTURE_PINCH_END events.
+    /**π
+     * End DOUBLE_TAP_MODE_DRAG_ZOOM by sending SCROLL_END and PINCH_END events.
      * @param event A hint event that its x, y, and eventTime will be used for the ending events
      *              to send. This argument is an optional and can be null.
      */
@@ -628,7 +608,7 @@ class ContentViewGestureHandler {
         if (!isDoubleTapActive()) return;
         if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
             pinchEnd(event.getEventTime());
-            sendGesture(GESTURE_SCROLL_END, event.getEventTime(),
+            sendGesture(GestureEventType.SCROLL_END, event.getEventTime(),
                     (int) event.getX(), (int) event.getY(), null);
         }
         mDoubleTapMode = DOUBLE_TAP_MODE_NONE;
@@ -636,15 +616,15 @@ class ContentViewGestureHandler {
     }
 
     /**
-     * Reset touch scroll flag and optionally send a GESTURE_SCROLL_END event if necessary.
+     * Reset touch scroll flag and optionally send a SCROLL_END event if necessary.
      * @param timeMs The time in ms for the event initiating this gesture.
-     * @param sendScrollEndEvent Whether to send GESTURE_SCROLL_END event.
+     * @param sendScrollEndEvent Whether to send SCROLL_END event.
      */
     private void endTouchScrollIfNecessary(long timeMs, boolean sendScrollEndEvent) {
         if (!mTouchScrolling) return;
         mTouchScrolling = false;
         if (sendScrollEndEvent) {
-            sendGesture(GESTURE_SCROLL_END, timeMs, 0, 0, null);
+            sendGesture(GestureEventType.SCROLL_END, timeMs, 0, 0, null);
         }
     }
 
@@ -658,8 +638,7 @@ class ContentViewGestureHandler {
     }
 
     /**
-     * @return Whether native is tracking a pinch (i.e. between sending GESTURE_PINCH_BEGIN and
-     *         GESTURE_PINCH_END).
+     * @return Whether native is tracking a pinch (i.e. between sending PINCH_BEGIN and PINCH_END).
      */
     boolean isNativePinching() {
         return mPinchInProgress;
@@ -672,7 +651,7 @@ class ContentViewGestureHandler {
      * @param y The x coordinate for the event initiating this gesture.
      */
     private void pinchBegin(long timeMs, int x, int y) {
-        sendGesture(GESTURE_PINCH_BEGIN, timeMs, x, y, null);
+        sendGesture(GestureEventType.PINCH_BEGIN, timeMs, x, y, null);
     }
 
     /**
@@ -685,7 +664,7 @@ class ContentViewGestureHandler {
     private void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
         mExtraParamBundlePinchBy.putFloat(DELTA, delta);
         assert mExtraParamBundlePinchBy.size() == 1;
-        sendGesture(GESTURE_PINCH_BY, timeMs, anchorX, anchorY, mExtraParamBundlePinchBy);
+        sendGesture(GestureEventType.PINCH_BY, timeMs, anchorX, anchorY, mExtraParamBundlePinchBy);
         mPinchInProgress = true;
     }
 
@@ -694,7 +673,7 @@ class ContentViewGestureHandler {
      * @param timeMs The time in ms for the event initiating this gesture.
      */
     private void pinchEnd(long timeMs) {
-        sendGesture(GESTURE_PINCH_END, timeMs, 0, 0, null);
+        sendGesture(GestureEventType.PINCH_END, timeMs, 0, 0, null);
         mPinchInProgress = false;
     }
 
@@ -879,8 +858,8 @@ class ContentViewGestureHandler {
         // ended are SHOW_PRESS and SINGLE_TAP_CONFIRMED, potentially triggered
         // after the double-tap delay window times out.
         if (mCurrentDownEvent == null
-                && type != GESTURE_SINGLE_TAP_CONFIRMED
-                && type != GESTURE_SHOW_PRESS) {
+                && type != GestureEventType.SINGLE_TAP_CONFIRMED
+                && type != GestureEventType.SHOW_PRESS) {
             return false;
         }
         return mMotionEventDelegate.onGestureEventCreated(type, timeMs, x, y, extraParams);
@@ -894,7 +873,7 @@ class ContentViewGestureHandler {
 
     private void sendTapCancelIfNecessary(MotionEvent e) {
         if (!mNeedsTapEndingEvent) return;
-        if (!sendTapEndingEventAsGesture(GESTURE_TAP_CANCEL, e, null)) return;
+        if (!sendTapEndingEventAsGesture(GestureEventType.TAP_CANCEL, e, null)) return;
         mLastLongPressEvent = null;
     }
 
@@ -916,7 +895,7 @@ class ContentViewGestureHandler {
                 && ev.getAction() == MotionEvent.ACTION_UP
                 && !isScaleGestureDetectionInProgress()) {
             sendTapCancelIfNecessary(ev);
-            sendMotionEventAsGesture(GESTURE_LONG_TAP, ev, null);
+            sendMotionEventAsGesture(GestureEventType.LONG_TAP, ev, null);
             return true;
         }
         return false;

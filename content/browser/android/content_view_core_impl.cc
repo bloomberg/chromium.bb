@@ -17,6 +17,7 @@
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/android/content_video_view.h"
+#include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -130,59 +131,39 @@ bool PossiblyTriggeredByTouchTimeout(const WebGestureEvent& event) {
 }
 
 int ToContentViewGestureHandlerType(WebInputEvent::Type type) {
-  // These values should match exactly those in ContentViewGestureHandler.
-  enum ContentViewGestureHandlerType {
-    GESTURE_SHOW_PRESS = 0,
-    GESTURE_DOUBLE_TAP = 1,
-    GESTURE_SINGLE_TAP_UP = 2,
-    GESTURE_SINGLE_TAP_CONFIRMED = 3,
-    GESTURE_SINGLE_TAP_UNCONFIRMED = 4,
-    GESTURE_LONG_PRESS = 5,
-    GESTURE_SCROLL_START = 6,
-    GESTURE_SCROLL_BY = 7,
-    GESTURE_SCROLL_END = 8,
-    GESTURE_FLING_START = 9,
-    GESTURE_FLING_CANCEL = 10,
-    GESTURE_PINCH_BEGIN = 11,
-    GESTURE_PINCH_BY = 12,
-    GESTURE_PINCH_END = 13,
-    GESTURE_TAP_CANCEL = 14,
-    GESTURE_LONG_TAP = 15,
-    GESTURE_TAP_DOWN = 16
-  };
   switch (type) {
     case WebInputEvent::GestureScrollBegin:
-      return GESTURE_SCROLL_START;
+      return SCROLL_START;
     case WebInputEvent::GestureScrollEnd:
-      return GESTURE_SCROLL_END;
+      return SCROLL_END;
     case WebInputEvent::GestureScrollUpdate:
-      return GESTURE_SCROLL_BY;
+      return SCROLL_BY;
     case WebInputEvent::GestureFlingStart:
-      return GESTURE_FLING_START;
+      return FLING_START;
     case WebInputEvent::GestureFlingCancel:
-      return GESTURE_FLING_CANCEL;
+      return FLING_CANCEL;
     case WebInputEvent::GestureShowPress:
-      return GESTURE_SHOW_PRESS;
+      return SHOW_PRESS;
     case WebInputEvent::GestureTap:
-      return GESTURE_SINGLE_TAP_CONFIRMED;
+      return SINGLE_TAP_CONFIRMED;
     case WebInputEvent::GestureTapUnconfirmed:
-      return GESTURE_SINGLE_TAP_UNCONFIRMED;
+      return SINGLE_TAP_UNCONFIRMED;
     case WebInputEvent::GestureTapDown:
-      return GESTURE_TAP_DOWN;
+      return TAP_DOWN;
     case WebInputEvent::GestureTapCancel:
-      return GESTURE_TAP_CANCEL;
+      return TAP_CANCEL;
     case WebInputEvent::GestureDoubleTap:
-      return GESTURE_DOUBLE_TAP;
+      return DOUBLE_TAP;
     case WebInputEvent::GestureLongPress:
-      return GESTURE_LONG_PRESS;
+      return LONG_PRESS;
     case WebInputEvent::GestureLongTap:
-      return GESTURE_LONG_TAP;
+      return LONG_TAP;
     case WebInputEvent::GesturePinchBegin:
-      return GESTURE_PINCH_BEGIN;
+      return PINCH_BEGIN;
     case WebInputEvent::GesturePinchEnd:
-      return GESTURE_PINCH_END;
+      return PINCH_END;
     case WebInputEvent::GesturePinchUpdate:
-      return GESTURE_PINCH_BY;
+      return PINCH_BY;
     case WebInputEvent::GestureTwoFingerTap:
     case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     default:
@@ -602,7 +583,7 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
         Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj.obj(),
             event.data.flingStart.velocityX, event.data.flingStart.velocityY);
       } else {
-        // If a scroll ends with a fling, a GESTURE_SCROLL_END is never sent.
+        // If a scroll ends with a fling, a SCROLL_END event is never sent.
         // However, if that fling went unconsumed, we still need to let the
         // listeners know that scrolling has ended.
         Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());

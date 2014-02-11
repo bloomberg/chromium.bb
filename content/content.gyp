@@ -380,6 +380,7 @@
             '../ui/android/ui_android.gyp:ui_java',
             'common_aidl',
             'content_common',
+            'gesture_event_type_java',
             'page_transition_types_java',
             'popup_item_type_java',
             'result_codes_java',
@@ -402,6 +403,18 @@
             }],
           ],
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'gesture_event_type_java',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/browser/GestureEventType.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/browser',
+            'template_deps': ['browser/android/gesture_event_type_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           'target_name': 'page_transition_types_java',
