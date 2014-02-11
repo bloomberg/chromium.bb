@@ -157,9 +157,11 @@ def RunCurl(args, **kwargs):
   # exact specifics of each).
   # Note we allow 22 to deal w/ 500's- they're thrown by google storage
   # occasionally.
+  # Note we allow 35 to deal w/ Unknown SSL Protocol error, thrown by
+  # google storage occasionally.
   # Finally, we do not use curl's --retry option since it generally doesn't
   # actually retry anything; code 18 for example, it will not retry on.
-  retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52, 56])
+  retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 35, 52, 56])
   try:
     return RunCommandWithRetries(5, cmd, sleep=3, retry_on=retriable_exits,
                                  **kwargs)
