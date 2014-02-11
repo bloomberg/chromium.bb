@@ -267,11 +267,8 @@ endif
 if ENABLE_HEADLESS_COMPOSITOR
 module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
-headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
-	libshared.la
-headless_backend_la_CFLAGS =			\
-	$(COMPOSITOR_CFLAGS)			\
-	$(GCC_CFLAGS)
+headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 headless_backend_la_SOURCES = src/compositor-headless.c
 endif
 
@@ -383,25 +380,17 @@ demo_clients +=					\
 weston_simple_shm_SOURCES =			\
 	clients/simple-shm.c			\
 	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h	\
-	shared/os-compatibility.c		\
-	shared/os-compatibility.h
+	protocol/xdg-shell-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
+weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
-weston_simple_touch_SOURCES =			\
-	clients/simple-touch.c			\
-	shared/os-compatibility.c		\
-	shared/os-compatibility.h
+weston_simple_touch_SOURCES = clients/simple-touch.c
 weston_simple_touch_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
+weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
-weston_multi_resource_SOURCES =			\
-	clients/multi-resource.c		\
-	shared/os-compatibility.c		\
-	shared/os-compatibility.h
+weston_multi_resource_SOURCES = clients/multi-resource.c
 weston_multi_resource_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
@@ -444,13 +433,11 @@ weston_flower_LDADD = libtoytoolkit.la
 weston_flower_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_screenshooter_SOURCES =				\
-	clients/screenshot.c				\
-	shared/os-compatibility.c			\
-	shared/os-compatibility.h
+	clients/screenshot.c
 nodist_weston_screenshooter_SOURCES =			\
 	protocol/screenshooter-protocol.c		\
 	protocol/screenshooter-client-protocol.h
-weston_screenshooter_LDADD = $(CLIENT_LIBS)
+weston_screenshooter_LDADD = $(CLIENT_LIBS) libshared.la
 weston_screenshooter_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_terminal_SOURCES = clients/terminal.c
@@ -555,11 +542,8 @@ nodist_weston_simple_im_SOURCES =		\
 weston_simple_im_LDADD = $(CLIENT_LIBS)
 weston_simple_im_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_info_SOURCES =				\
-	clients/weston-info.c			\
-	shared/os-compatibility.c		\
-	shared/os-compatibility.h
-weston_info_LDADD = $(WESTON_INFO_LIBS)
+weston_info_SOURCES = clients/weston-info.c
+weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_desktop_shell_SOURCES = clients/desktop-shell.c
@@ -658,8 +642,7 @@ desktop_shell_la_CPPFLAGS =			\
 	-DIN_WESTON
 
 desktop_shell_la_LDFLAGS = -module -avoid-version
-desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	libshared.la
+desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
