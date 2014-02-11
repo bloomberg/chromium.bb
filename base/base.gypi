@@ -704,8 +704,6 @@
           'win/shortcut.h',
           'win/startup_information.cc',
           'win/startup_information.h',
-          'win/text_services_message_filter.cc',
-          'win/text_services_message_filter.h',
           'win/win_util.cc',
           'win/win_util.h',
           'win/windows_version.cc',

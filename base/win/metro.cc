@@ -66,12 +66,6 @@ bool IsProcessImmersive(HANDLE process) {
   return false;
 }
 
-bool IsTSFAwareRequired() {
-  // Although this function is equal to IsMetroProcess at this moment,
-  // Chrome for Win7 and Vista may support TSF in the future.
-  return IsMetroProcess();
-}
-
 wchar_t* LocalAllocAndCopyString(const string16& src) {
   size_t dest_size = (src.length() + 1) * sizeof(wchar_t);
   wchar_t* dest = reinterpret_cast<wchar_t*>(LocalAlloc(LPTR, dest_size));

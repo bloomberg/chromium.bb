@@ -97,8 +97,7 @@ int MessagePumpWin::GetCurrentDelay() const {
 // MessagePumpForUI public:
 
 MessagePumpForUI::MessagePumpForUI()
-    : atom_(0),
-      message_filter_(new MessageFilter) {
+    : atom_(0) {
   InitMessageWnd();
 }
 
@@ -346,7 +345,7 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     sent_messages_in_queue = true;
 
   MSG msg;
-  if (message_filter_->DoPeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+  if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE)
     return ProcessMessageHelper(msg);
 
   return sent_messages_in_queue;
@@ -372,16 +371,14 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 
   WillProcessMessage(msg);
 
-  if (!message_filter_->ProcessMessage(msg)) {
-    uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
-    if (state_->dispatcher)
-      action = state_->dispatcher->Dispatch(msg);
-    if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
-      state_->should_quit = true;
-    if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
+  uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
+  if (state_->dispatcher)
+    action = state_->dispatcher->Dispatch(msg);
+  if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
+    state_->should_quit = true;
+  if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
   }
 
   DidProcessMessage(msg);
@@ -408,8 +405,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
     have_message = PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE) ||
                    PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE);
   } else {
-    have_message = !!message_filter_->DoPeekMessage(&msg, NULL, 0, 0,
-                                                    PM_REMOVE);
+    have_message = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
   }
 
   DCHECK(!have_message || kMsgHaveWork != msg.message ||
@@ -429,11 +425,6 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // kMsgHaveWork events get (percentage wise) rarer and rarer.
   ScheduleWork();
   return ProcessMessageHelper(msg);
-}
-
-void MessagePumpForUI::SetMessageFilter(
-    scoped_ptr<MessageFilter> message_filter) {
-  message_filter_ = message_filter.Pass();
 }
 
 //-----------------------------------------------------------------------------

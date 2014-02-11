@@ -76,10 +76,6 @@ BASE_EXPORT bool IsMetroProcess();
 // immersive (Metro) process.
 BASE_EXPORT bool IsProcessImmersive(HANDLE process);
 
-// Returns true if this process is running under Text Services Framework (TSF)
-// and browser must be TSF-aware.
-BASE_EXPORT bool IsTSFAwareRequired();
-
 // Allocates and returns the destination string via the LocalAlloc API after
 // copying the src to it.
 BASE_EXPORT wchar_t* LocalAllocAndCopyString(const string16& src);
