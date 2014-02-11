@@ -35,10 +35,22 @@ goto :GIT_180_FORCE
 
 :GIT_1852_CHECK
 set GIT_VERSION=1.8.5.2.chromium.1
+:: This git uses APIs that target WINVER 0x0502, so refuse to install it on
+:: anything older.
+for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
+for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
+if %VERMAJOR% lss 5 goto :GIT_VER_UNSUPPORTED
+if %VERMAJOR% equ 5 if %VERMINOR% lss 2 goto :GIT_VER_UNSUPPORTED
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
 set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
 goto :GIT_COMMON
+
+
+:GIT_VER_UNSUPPORTED
+echo Git %GIT_VERSION% cannot be installed on:
+ver
+goto :GIT_180_CHECK
 
 
 :GIT_180_FORCE
@@ -64,7 +76,6 @@ goto :GIT_COMMON
 :GIT_COMMON
 :: If the batch file exists, skip the git check.
 if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :MSYS_PATH_CHECK
-if "%CHROME_HEADLESS%" == "1" goto :SVN_CHECK
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 call git --version 2>nul 1>nul
 if errorlevel 1 goto :GIT_INSTALL
