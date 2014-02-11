@@ -29555,6 +29555,7 @@ other types of suffix sets.
   <int value="612625164" label="PPB_InputEvent;1.0"/>
   <int value="615811055" label="PPB_Flash_MessageLoop;0.1"/>
   <int value="629092173" label="PPB_VideoCapture(Dev);0.3"/>
+  <int value="630100238" label="PPB_AudioBuffer;0.1"/>
   <int value="631212065" label="PPB_MouseInputEvent;1.0"/>
   <int value="632306545" label="PPB_FileRef;1.0"/>
   <int value="656561383" label="PPB_FlashFullscreen;1.0"/>

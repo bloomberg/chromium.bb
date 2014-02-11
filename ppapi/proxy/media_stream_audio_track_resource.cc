@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/media_stream_audio_track_resource.h"
 
-#include "ppapi/proxy/audio_frame_resource.h"
+#include "ppapi/proxy/audio_buffer_resource.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -18,7 +18,7 @@ MediaStreamAudioTrackResource::MediaStreamAudioTrackResource(
     const std::string& id)
     : MediaStreamTrackResourceBase(
         connection, instance, pending_renderer_id, id),
-      get_frame_output_(NULL) {
+      get_buffer_output_(NULL) {
 }
 
 MediaStreamAudioTrackResource::~MediaStreamAudioTrackResource() {
@@ -52,42 +52,42 @@ int32_t MediaStreamAudioTrackResource::GetAttrib(
   return PP_ERROR_NOTSUPPORTED;
 }
 
-int32_t MediaStreamAudioTrackResource::GetFrame(
-    PP_Resource* frame,
+int32_t MediaStreamAudioTrackResource::GetBuffer(
+    PP_Resource* buffer,
     scoped_refptr<TrackedCallback> callback) {
   if (has_ended())
     return PP_ERROR_FAILED;
 
-  if (TrackedCallback::IsPending(get_frame_callback_))
+  if (TrackedCallback::IsPending(get_buffer_callback_))
     return PP_ERROR_INPROGRESS;
 
-  *frame = GetAudioFrame();
-  if (*frame)
+  *buffer = GetAudioBuffer();
+  if (*buffer)
     return PP_OK;
 
   // TODO(penghuang): Use the callback as hints to determine which thread will
-  // use the resource, so we could deliver frames to the target thread directly
+  // use the resource, so we could deliver buffers to the target thread directly
   // for better performance.
-  get_frame_output_ = frame;
-  get_frame_callback_ = callback;
+  get_buffer_output_ = buffer;
+  get_buffer_callback_ = callback;
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t MediaStreamAudioTrackResource::RecycleFrame(PP_Resource frame) {
-  FrameMap::iterator it = frames_.find(frame);
-  if (it == frames_.end())
+int32_t MediaStreamAudioTrackResource::RecycleBuffer(PP_Resource buffer) {
+  BufferMap::iterator it = buffers_.find(buffer);
+  if (it == buffers_.end())
     return PP_ERROR_BADRESOURCE;
 
-  scoped_refptr<AudioFrameResource> frame_resource = it->second;
-  frames_.erase(it);
+  scoped_refptr<AudioBufferResource> buffer_resource = it->second;
+  buffers_.erase(it);
 
   if (has_ended())
     return PP_OK;
 
-  DCHECK_GE(frame_resource->GetBufferIndex(), 0);
+  DCHECK_GE(buffer_resource->GetBufferIndex(), 0);
 
-  SendEnqueueBufferMessageToHost(frame_resource->GetBufferIndex());
-  frame_resource->Invalidate();
+  SendEnqueueBufferMessageToHost(buffer_resource->GetBufferIndex());
+  buffer_resource->Invalidate();
   return PP_OK;
 }
 
@@ -95,50 +95,50 @@ void MediaStreamAudioTrackResource::Close() {
   if (has_ended())
     return;
 
-  if (TrackedCallback::IsPending(get_frame_callback_)) {
-    *get_frame_output_ = 0;
-    get_frame_callback_->PostAbort();
-    get_frame_callback_ = NULL;
-    get_frame_output_ = 0;
+  if (TrackedCallback::IsPending(get_buffer_callback_)) {
+    *get_buffer_output_ = 0;
+    get_buffer_callback_->PostAbort();
+    get_buffer_callback_ = NULL;
+    get_buffer_output_ = 0;
   }
 
-  ReleaseFrames();
+  ReleaseBuffers();
   MediaStreamTrackResourceBase::CloseInternal();
 }
 
 void MediaStreamAudioTrackResource::OnNewBufferEnqueued() {
-  if (!TrackedCallback::IsPending(get_frame_callback_))
+  if (!TrackedCallback::IsPending(get_buffer_callback_))
     return;
 
-  *get_frame_output_ = GetAudioFrame();
-  int32_t result = *get_frame_output_ ? PP_OK : PP_ERROR_FAILED;
-  get_frame_output_ = NULL;
+  *get_buffer_output_ = GetAudioBuffer();
+  int32_t result = *get_buffer_output_ ? PP_OK : PP_ERROR_FAILED;
+  get_buffer_output_ = NULL;
   scoped_refptr<TrackedCallback> callback;
-  callback.swap(get_frame_callback_);
+  callback.swap(get_buffer_callback_);
   callback->Run(result);
 }
 
-PP_Resource MediaStreamAudioTrackResource::GetAudioFrame() {
+PP_Resource MediaStreamAudioTrackResource::GetAudioBuffer() {
   int32_t index = buffer_manager()->DequeueBuffer();
   if (index < 0)
       return 0;
 
   MediaStreamBuffer* buffer = buffer_manager()->GetBufferPointer(index);
   DCHECK(buffer);
-  scoped_refptr<AudioFrameResource> resource =
-      new AudioFrameResource(pp_instance(), index, buffer);
-  // Add |pp_resource()| and |resource| into |frames_|.
-  // |frames_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
+  scoped_refptr<AudioBufferResource> resource =
+      new AudioBufferResource(pp_instance(), index, buffer);
+  // Add |pp_resource()| and |resource| into |buffers_|.
+  // |buffers_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
   // resource alive.
-  frames_.insert(FrameMap::value_type(resource->pp_resource(), resource));
+  buffers_.insert(BufferMap::value_type(resource->pp_resource(), resource));
   return resource->GetReference();
 }
 
-void MediaStreamAudioTrackResource::ReleaseFrames() {
-  FrameMap::iterator it = frames_.begin();
-  while (it != frames_.end()) {
-    // Just invalidate and release VideoFrameResorce, but keep PP_Resource.
-    // So plugin can still use |RecycleFrame()|.
+void MediaStreamAudioTrackResource::ReleaseBuffers() {
+  BufferMap::iterator it = buffers_.begin();
+  while (it != buffers_.end()) {
+    // Just invalidate and release VideoBufferResorce, but keep PP_Resource.
+    // So plugin can still use |RecycleBuffer()|.
     it->second->Invalidate();
     it->second = NULL;
   }

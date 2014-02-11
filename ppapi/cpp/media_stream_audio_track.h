@@ -13,17 +13,17 @@
 
 /// @file
 /// This file defines the <code>MediaStreamAudioTrack</code> interface for an
-/// audio source resource, which receives audio frames from a MediaStream audio
+/// audio source resource, which receives audio buffers from a MediaStream audio
 /// track in the browser.
 
 namespace pp {
 
-class AudioFrame;
+class AudioBuffer;
 class CompletionCallback;
 template <typename T> class CompletionCallbackWithOutput;
 
 /// The <code>MediaStreamAudioTrack</code> class contains methods for
-/// receiving audio frames from a MediaStream audio track in the browser.
+/// receiving audio buffers from a MediaStream audio track in the browser.
 class MediaStreamAudioTrack : public Resource {
  public:
   /// Default constructor for creating an is_null()
@@ -49,18 +49,18 @@ class MediaStreamAudioTrack : public Resource {
 
   ~MediaStreamAudioTrack();
 
-  /// Configures underlying frame buffers for incoming frames.
-  /// If the application doesn't want to drop frames, then the
-  /// <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be
-  /// chosen such that inter-frame processing time variability won't overrun the
-  /// input buffer. If the buffer is overfilled, then frames will be dropped.
-  /// The application can detect this by examining the timestamp on returned
-  /// frames. If <code>Configure()</code> is not called, default settings will
-  /// be used.
+  /// Configures underlying buffer buffers for incoming audio samples.
+  /// If the application doesn't want to drop samples, then the
+  /// <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</code> should be
+  /// chosen such that inter-buffer processing time variability won't overrun
+  /// all input buffers. If all buffers are filled, then samples will be
+  /// dropped. The application can detect this by examining the timestamp on
+  /// returned buffers. If <code>Configure()</code> is not called, default
+  /// settings will be used.
   /// Example usage from plugin code:
   /// @code
   /// int32_t attribs[] = {
-  ///     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES, 4,
+  ///     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS, 4,
   ///     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION, 10,
   ///     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE};
   /// track.Configure(attribs, callback);
@@ -70,7 +70,7 @@ class MediaStreamAudioTrack : public Resource {
   /// attribute is immediately followed by the corresponding desired value.
   /// The list is terminated by
   /// <code>PP_MEDIASTREAMAUDIOTRACK_AUDIO_NONE</code>.
-  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion of <code>Configure()</code>.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
@@ -91,43 +91,41 @@ class MediaStreamAudioTrack : public Resource {
   std::string GetId() const;
 
   /// Checks whether the underlying MediaStream track has ended.
-  /// Calls to GetFrame while the track has ended are safe to make and will
+  /// Calls to GetBuffer while the track has ended are safe to make and will
   /// complete, but will fail.
   bool HasEnded() const;
 
-  /// Gets the next audio frame from the MediaStream track.
-  /// If internal processing is slower than the incoming frame rate, new frames
-  /// will be dropped from the incoming stream. Once the input buffer is full,
-  /// frames will be dropped until <code>RecycleFrame()</code> is called to free
-  /// a spot for another frame to be buffered.
-  /// If there are no frames in the input buffer,
+  /// Gets the next audio buffer from the MediaStream track.
+  /// If internal processing is slower than the incoming buffer rate,
+  /// new buffers will be dropped from the incoming stream. Once all buffers
+  /// are full, audio samples will be dropped until <code>RecycleBuffer()</code>
+  /// is called to free a spot for another buffer.
+  /// If there are no audio data in the input buffer,
   /// <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the
-  /// <code>callback</code> will be called when a new frame is received or some
-  /// error happens.
+  /// <code>callback</code> will be called when a new buffer of audio samples
+  /// is received or some error happens.
   ///
-  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
-  /// completion of <code>GetFrame()</code>. If success, an AudioFrame will be
-  /// passed into the completion callback function.
+  /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
+  /// called upon completion of <code>GetBuffer()</code>. If success,
+  /// an AudioBuffer will be passed into the completion callback function.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
-  /// Returns PP_ERROR_NOMEMORY if <code>max_buffered_frames</code> frames
-  /// buffer was not allocated successfully.
-  int32_t GetFrame(
-      const CompletionCallbackWithOutput<AudioFrame>& callback);
+  int32_t GetBuffer(
+      const CompletionCallbackWithOutput<AudioBuffer>& callback);
 
-  /// Recycles a frame returned by <code>GetFrame()</code>, so the track can
-  /// reuse the underlying buffer of this frame. And the frame will become
-  /// invalid. The caller should release all references it holds to
-  /// <code>frame</code> and not use it anymore.
+  /// Recycles a buffer returned by <code>GetBuffer()</code>, so the track can
+  /// reuse the buffer. And the buffer will become invalid. The caller should
+  /// release all references it holds to <code>buffer</code> and not use it
+  /// anymore.
   ///
-  /// @param[in] frame A AudioFrame returned by <code>GetFrame()</code>.
+  /// @param[in] buffer A AudioBuffer returned by <code>GetBuffer()</code>.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
-  int32_t RecycleFrame(const AudioFrame& frame);
+  int32_t RecycleBuffer(const AudioBuffer& buffer);
 
   /// Closes the MediaStream audio track, and disconnects it from the audio
   /// source.
-  /// After calling <code>Close()</code>, no new frames will be received.
+  /// After calling <code>Close()</code>, no new buffers will be received.
   void Close();
 
   /// Checks whether a <code>Resource</code> is a MediaStream audio track,

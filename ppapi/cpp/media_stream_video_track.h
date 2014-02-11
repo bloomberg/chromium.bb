@@ -69,7 +69,7 @@ class MediaStreamVideoTrack : public Resource {
   /// attribute is immediately followed by the corresponding desired value.
   /// The list is terminated by
   /// <code>PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE</code>.
-  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion of <code>Configure()</code>.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
@@ -104,9 +104,9 @@ class MediaStreamVideoTrack : public Resource {
   /// <code>callback</code> will be called when a new frame is received or some
   /// error happens.
   ///
-  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
-  /// completion of <code>GetFrame()</code>. If success, a VideoFrame will be
-  /// passed into the completion callback function.
+  /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
+  /// called upon completion of <code>GetFrame()</code>. If success,
+  /// a VideoFrame will be passed into the completion callback function.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
   /// Returns PP_ERROR_NOMEMORY if <code>max_buffered_frames</code> frames

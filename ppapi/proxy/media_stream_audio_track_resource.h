@@ -15,7 +15,7 @@
 namespace ppapi {
 namespace proxy {
 
-class AudioFrameResource;
+class AudioBufferResource;
 
 class PPAPI_PROXY_EXPORT MediaStreamAudioTrackResource
     : public MediaStreamTrackResourceBase,
@@ -39,27 +39,27 @@ class PPAPI_PROXY_EXPORT MediaStreamAudioTrackResource
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t GetAttrib(PP_MediaStreamAudioTrack_Attrib attrib,
                             int32_t* value) OVERRIDE;
-  virtual int32_t GetFrame(
-      PP_Resource* frame,
+  virtual int32_t GetBuffer(
+      PP_Resource* buffer,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t RecycleFrame(PP_Resource frame) OVERRIDE;
+  virtual int32_t RecycleBuffer(PP_Resource buffer) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   // MediaStreamBufferManager::Delegate overrides:
   virtual void OnNewBufferEnqueued() OVERRIDE;
 
  private:
-  PP_Resource GetAudioFrame();
+  PP_Resource GetAudioBuffer();
 
-  void ReleaseFrames();
+  void ReleaseBuffers();
 
-  // Allocated frame resources by |GetFrame()|.
-  typedef std::map<PP_Resource, scoped_refptr<AudioFrameResource> > FrameMap;
-  FrameMap frames_;
+  // Allocated buffer resources by |GetBuffer()|.
+  typedef std::map<PP_Resource, scoped_refptr<AudioBufferResource> > BufferMap;
+  BufferMap buffers_;
 
-  PP_Resource* get_frame_output_;
+  PP_Resource* get_buffer_output_;
 
-  scoped_refptr<TrackedCallback> get_frame_callback_;
+  scoped_refptr<TrackedCallback> get_buffer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioTrackResource);
 };

@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_MEDIA_STREAM_BUFFER_H_
 #define PPAPI_SHARED_IMPL_MEDIA_STREAM_BUFFER_H_
 
-#include "ppapi/c/ppb_audio_frame.h"
+#include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/c/ppb_video_frame.h"
 
 namespace ppapi {
@@ -25,7 +25,7 @@ union MediaStreamBuffer {
   struct Audio {
     Header header;
     PP_TimeDelta timestamp;
-    PP_AudioFrame_SampleRate sample_rate;
+    PP_AudioBuffer_SampleRate sample_rate;
     uint32_t number_of_channels;
     uint32_t number_of_samples;
     uint32_t data_size;

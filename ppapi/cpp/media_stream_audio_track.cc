@@ -6,7 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_audio_track.h"
-#include "ppapi/cpp/audio_frame.h"
+#include "ppapi/cpp/audio_buffer.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
@@ -77,19 +77,19 @@ bool MediaStreamAudioTrack::HasEnded() const {
   return true;
 }
 
-int32_t MediaStreamAudioTrack::GetFrame(
-    const CompletionCallbackWithOutput<AudioFrame>& callback) {
+int32_t MediaStreamAudioTrack::GetBuffer(
+    const CompletionCallbackWithOutput<AudioBuffer>& callback) {
   if (has_interface<PPB_MediaStreamAudioTrack_0_1>()) {
-    return get_interface<PPB_MediaStreamAudioTrack_0_1>()->GetFrame(
+    return get_interface<PPB_MediaStreamAudioTrack_0_1>()->GetBuffer(
         pp_resource(), callback.output(), callback.pp_completion_callback());
   }
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
-int32_t MediaStreamAudioTrack::RecycleFrame(const AudioFrame& frame) {
+int32_t MediaStreamAudioTrack::RecycleBuffer(const AudioBuffer& buffer) {
   if (has_interface<PPB_MediaStreamAudioTrack_0_1>()) {
-    return get_interface<PPB_MediaStreamAudioTrack_0_1>()->RecycleFrame(
-        pp_resource(), frame.pp_resource());
+    return get_interface<PPB_MediaStreamAudioTrack_0_1>()->RecycleBuffer(
+        pp_resource(), buffer.pp_resource());
   }
   return PP_ERROR_NOINTERFACE;
 }

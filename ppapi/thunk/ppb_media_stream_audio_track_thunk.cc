@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_audio_track.idl modified Thu Jan 23 15:04:50 2014.
+// From ppb_media_stream_audio_track.idl modified Thu Feb  6 15:43:37 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -62,24 +62,24 @@ PP_Bool HasEnded(PP_Resource audio_track) {
   return enter.object()->HasEnded();
 }
 
-int32_t GetFrame(PP_Resource audio_track,
-                 PP_Resource* frame,
-                 struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_MediaStreamAudioTrack::GetFrame()";
+int32_t GetBuffer(PP_Resource audio_track,
+                  PP_Resource* buffer,
+                  struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_MediaStreamAudioTrack::GetBuffer()";
   EnterResource<PPB_MediaStreamAudioTrack_API> enter(audio_track,
                                                      callback,
                                                      true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetFrame(frame, enter.callback()));
+  return enter.SetResult(enter.object()->GetBuffer(buffer, enter.callback()));
 }
 
-int32_t RecycleFrame(PP_Resource audio_track, PP_Resource frame) {
-  VLOG(4) << "PPB_MediaStreamAudioTrack::RecycleFrame()";
+int32_t RecycleBuffer(PP_Resource audio_track, PP_Resource buffer) {
+  VLOG(4) << "PPB_MediaStreamAudioTrack::RecycleBuffer()";
   EnterResource<PPB_MediaStreamAudioTrack_API> enter(audio_track, true);
   if (enter.failed())
     return enter.retval();
-  return enter.object()->RecycleFrame(frame);
+  return enter.object()->RecycleBuffer(buffer);
 }
 
 void Close(PP_Resource audio_track) {
@@ -96,8 +96,8 @@ const PPB_MediaStreamAudioTrack_0_1 g_ppb_mediastreamaudiotrack_thunk_0_1 = {
   &GetAttrib,
   &GetId,
   &HasEnded,
-  &GetFrame,
-  &RecycleFrame,
+  &GetBuffer,
+  &RecycleBuffer,
   &Close
 };
 

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_audio_frame.h"
+#include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
 
 using media::AudioParameters;
@@ -93,7 +93,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
     buffer->header.size = host_->buffer_manager()->buffer_size();
     buffer->header.type = ppapi::MediaStreamBuffer::TYPE_AUDIO;
     buffer->timestamp = timestamp_.InMillisecondsF();
-    buffer->sample_rate = static_cast<PP_AudioFrame_SampleRate>(sample_rate);
+    buffer->sample_rate = static_cast<PP_AudioBuffer_SampleRate>(sample_rate);
     buffer->number_of_channels = number_of_channels;
     buffer->number_of_samples = number_of_channels * number_of_frames;
     buffer->data_size = buffer_data_size_;
@@ -116,10 +116,10 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
          (params.sample_rate() == AudioParameters::kAudioCDSampleRate));
 
   COMPILE_ASSERT(AudioParameters::kTelephoneSampleRate ==
-                 static_cast<int32_t>(PP_AUDIOFRAME_SAMPLERATE_8000),
+                 static_cast<int32_t>(PP_AUDIOBUFFER_SAMPLERATE_8000),
                  audio_sample_rate_does_not_match);
   COMPILE_ASSERT(AudioParameters::kAudioCDSampleRate ==
-                 static_cast<int32_t>(PP_AUDIOFRAME_SAMPLERATE_44100),
+                 static_cast<int32_t>(PP_AUDIOBUFFER_SAMPLERATE_44100),
                  audio_sample_rate_does_not_match);
   audio_params_ = params;
 

@@ -19,8 +19,8 @@
           'cpp/completion_callback.h',
           'utility/completion_callback_factory.h',
 
-          'proxy/audio_frame_resource.cc',
-          'proxy/audio_frame_resource.h',
+          'proxy/audio_buffer_resource.cc',
+          'proxy/audio_buffer_resource.h',
           'proxy/audio_input_resource.cc',
           'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',

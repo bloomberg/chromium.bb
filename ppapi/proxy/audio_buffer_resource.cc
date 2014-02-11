@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/audio_frame_resource.h"
+#include "ppapi/proxy/audio_buffer_resource.h"
 
 #include "base/logging.h"
 #include "ppapi/c/pp_bool.h"
@@ -12,7 +12,7 @@
 namespace ppapi {
 namespace proxy {
 
-AudioFrameResource::AudioFrameResource(PP_Instance instance,
+AudioBufferResource::AudioBufferResource(PP_Instance instance,
                                        int32_t index,
                                        MediaStreamBuffer* buffer)
     : Resource(OBJECT_IS_PROXY, instance),
@@ -21,15 +21,15 @@ AudioFrameResource::AudioFrameResource(PP_Instance instance,
   DCHECK_EQ(buffer_->header.type, MediaStreamBuffer::TYPE_AUDIO);
 }
 
-AudioFrameResource::~AudioFrameResource() {
-  CHECK(!buffer_) << "An unused (or unrecycled) frame is destroyed.";
+AudioBufferResource::~AudioBufferResource() {
+  CHECK(!buffer_) << "An unused (or unrecycled) buffer is destroyed.";
 }
 
-thunk::PPB_AudioFrame_API* AudioFrameResource::AsPPB_AudioFrame_API() {
+thunk::PPB_AudioBuffer_API* AudioBufferResource::AsPPB_AudioBuffer_API() {
   return this;
 }
 
-PP_TimeDelta AudioFrameResource::GetTimestamp() {
+PP_TimeDelta AudioBufferResource::GetTimestamp() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return 0.0;
@@ -37,7 +37,7 @@ PP_TimeDelta AudioFrameResource::GetTimestamp() {
   return buffer_->audio.timestamp;
 }
 
-void AudioFrameResource::SetTimestamp(PP_TimeDelta timestamp) {
+void AudioBufferResource::SetTimestamp(PP_TimeDelta timestamp) {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return;
@@ -45,23 +45,23 @@ void AudioFrameResource::SetTimestamp(PP_TimeDelta timestamp) {
   buffer_->audio.timestamp = timestamp;
 }
 
-PP_AudioFrame_SampleRate AudioFrameResource::GetSampleRate() {
+PP_AudioBuffer_SampleRate AudioBufferResource::GetSampleRate() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
-    return PP_AUDIOFRAME_SAMPLERATE_UNKNOWN;
+    return PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN;
   }
   return buffer_->audio.sample_rate;
 }
 
-PP_AudioFrame_SampleSize AudioFrameResource::GetSampleSize() {
+PP_AudioBuffer_SampleSize AudioBufferResource::GetSampleSize() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
-    return PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN;
+    return PP_AUDIOBUFFER_SAMPLESIZE_UNKNOWN;
   }
-  return PP_AUDIOFRAME_SAMPLESIZE_16_BITS;
+  return PP_AUDIOBUFFER_SAMPLESIZE_16_BITS;
 }
 
-uint32_t AudioFrameResource::GetNumberOfChannels() {
+uint32_t AudioBufferResource::GetNumberOfChannels() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return 0;
@@ -69,7 +69,7 @@ uint32_t AudioFrameResource::GetNumberOfChannels() {
   return buffer_->audio.number_of_channels;
 }
 
-uint32_t AudioFrameResource::GetNumberOfSamples() {
+uint32_t AudioBufferResource::GetNumberOfSamples() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return 0;
@@ -77,7 +77,7 @@ uint32_t AudioFrameResource::GetNumberOfSamples() {
   return buffer_->audio.number_of_samples;
 }
 
-void* AudioFrameResource::GetDataBuffer() {
+void* AudioBufferResource::GetDataBuffer() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return NULL;
@@ -85,7 +85,7 @@ void* AudioFrameResource::GetDataBuffer() {
   return buffer_->audio.data;
 }
 
-uint32_t AudioFrameResource::GetDataBufferSize() {
+uint32_t AudioBufferResource::GetDataBufferSize() {
   if (!buffer_) {
     VLOG(1) << "Buffer is invalid";
     return 0;
@@ -93,15 +93,15 @@ uint32_t AudioFrameResource::GetDataBufferSize() {
   return buffer_->audio.data_size;
 }
 
-MediaStreamBuffer* AudioFrameResource::GetBuffer() {
+MediaStreamBuffer* AudioBufferResource::GetBuffer() {
   return buffer_;
 }
 
-int32_t AudioFrameResource::GetBufferIndex() {
+int32_t AudioBufferResource::GetBufferIndex() {
   return index_;
 }
 
-void AudioFrameResource::Invalidate() {
+void AudioBufferResource::Invalidate() {
   DCHECK(buffer_);
   DCHECK_GE(index_, 0);
   buffer_ = NULL;

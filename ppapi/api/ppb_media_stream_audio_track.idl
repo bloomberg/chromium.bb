@@ -5,7 +5,7 @@
 
 /**
  * Defines the <code>PPB_MediaStreamAudioTrack</code> interface. Used for
- * receiving audio frames from a MediaStream audio track in the browser.
+ * receiving audio samples from a MediaStream audio track in the browser.
  * This interface is still in development (Dev API status) and may change.
  */
 
@@ -26,36 +26,36 @@ enum PP_MediaStreamAudioTrack_Attrib {
   PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE = 0,
 
   /**
-   * The maximum number of frames to hold in the input buffer.
+   * The maximum number of buffers to hold audio samples.
    * Note: this is only used as advisory; the browser may allocate more or fewer
-   * based on available resources. How many frames to buffer depends on usage -
-   * request at least 2 to make sure latency doesn't cause lost frames. If
-   * the plugin expects to hold on to more than one frame at a time (e.g. to do
-   * multi-frame processing), it should request that many more.
+   * based on available resources. How many buffers depends on usage -
+   * request at least 2 to make sure latency doesn't cause lost samples. If
+   * the plugin expects to hold on to more than one buffer at a time (e.g. to do
+   * multi-buffer processing), it should request that many more.
    */
-  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES = 1,
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS = 1,
 
   /**
-   * The sample rate of audio frames. The attribute value is a
-   * <code>PP_AudioFrame_SampleRate</code>.
+   * The sample rate of audio data in buffers. The attribute value is a
+   * <code>PP_AudioBuffer_SampleRate</code>.
    */
   PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE = 2,
 
   /**
-   * The sample size of audio frames in bytes. The attribute value is a
-   * <code>PP_AudioFrame_SampleSize</code>.
+   * The sample size of audio data in buffers in bytes. The attribute value is a
+   * <code>PP_AudioBuffer_SampleSize</code>.
    */
   PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE = 3,
 
   /**
-   * The number of channels in audio frames.
+   * The number of channels in audio buffers.
    *
    * Supported values: 1, 2
    */
   PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS = 4,
 
   /**
-   * The duration of audio frames in milliseconds.
+   * The duration of an audio buffer in milliseconds.
    *
    * Valid range: 10 to 10000
    */
@@ -75,18 +75,18 @@ interface PPB_MediaStreamAudioTrack {
   PP_Bool IsMediaStreamAudioTrack([in] PP_Resource resource);
 
   /**
-   * Configures underlying frame buffers for incoming frames.
-   * If the application doesn't want to drop frames, then the
-   * <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be
-   * chosen such that inter-frame processing time variability won't overrun the
-   * input buffer. If the buffer is overfilled, then frames will be dropped.
-   * The application can detect this by examining the timestamp on returned
-   * frames. If <code>Configure()</code> is not called, default settings will be
-   * used.
+   * Configures underlying buffers for incoming audio samples.
+   * If the application doesn't want to drop samples, then the
+   * <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</code> should be
+   * chosen such that inter-buffer processing time variability won't overrun all
+   * the input buffers. If all buffers are filled, then samples will be
+   * dropped. The application can detect this by examining the timestamp on
+   * returned buffers. If <code>Configure()</code> is not called, default
+   * settings will be used.
    * Example usage from plugin code:
    * @code
    * int32_t attribs[] = {
-   *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES, 4,
+   *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS, 4,
    *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION, 10,
    *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE};
    * track_if->Configure(track, attribs, callback);
@@ -135,7 +135,7 @@ interface PPB_MediaStreamAudioTrack {
 
   /**
    * Checks whether the underlying MediaStream track has ended.
-   * Calls to GetFrame while the track has ended are safe to make and will
+   * Calls to GetBuffer while the track has ended are safe to make and will
    * complete, but will fail.
    *
    * @param[in] audio_track The <code>PP_Resource</code> to check.
@@ -147,50 +147,49 @@ interface PPB_MediaStreamAudioTrack {
   PP_Bool HasEnded([in] PP_Resource audio_track);
 
   /**
-   * Gets the next audio frame from the MediaStream track.
-   * If internal processing is slower than the incoming frame rate, new frames
-   * will be dropped from the incoming stream. Once the input buffer is full,
-   * frames will be dropped until <code>RecycleFrame()</code> is called to free
-   * a spot for another frame to be buffered.
-   * If there are no frames in the input buffer,
+   * Gets the next audio buffer from the MediaStream track.
+   * If internal processing is slower than the incoming buffer rate, new buffers
+   * will be dropped from the incoming stream. Once all buffers are full,
+   * audio samples will be dropped until <code>RecycleBuffer()</code> is called
+   * to free a slot for another buffer.
+   * If there are no audio data in the input buffer,
    * <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the
-   * <code>callback</code> will be called, when a new frame is received or an
-   * error happens.
+   * <code>callback</code> will be called, when a new buffer of audio samples
+   * is received or an error happens.
    *
    * @param[in] audio_track A <code>PP_Resource</code> corresponding to an audio
    * resource.
-   * @param[out] frame A <code>PP_Resource</code> corresponding to an AudioFrame
-   * resource.
+   * @param[out] buffer A <code>PP_Resource</code> corresponding to
+   * an AudioBuffer resource.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
-   * completion of GetFrame().
+   * completion of GetBuffer().
    *
    * @return An int32_t containing a result code from <code>pp_errors.h</code>.
-   * Returns PP_ERROR_NOMEMORY if <code>max_buffered_frames</code> frames buffer
-   * was not allocated successfully.
    */
-  int32_t GetFrame([in] PP_Resource audio_track,
-                   [out] PP_Resource frame,
-                   [in] PP_CompletionCallback callback);
+  int32_t GetBuffer([in] PP_Resource audio_track,
+                    [out] PP_Resource buffer,
+                    [in] PP_CompletionCallback callback);
 
   /**
-   * Recycles a frame returned by <code>GetFrame()</code>, so the track can
-   * reuse the underlying buffer of this frame. And the frame will become
-   * invalid. The caller should release all references it holds to
-   * <code>frame</code> and not use it anymore.
+   * Recycles a buffer returned by <code>GetBuffer()</code>, so the track can
+   * reuse the buffer. And the buffer will become invalid. The caller should
+   * release all references it holds to <code>buffer</code> and not use it
+   * anymore.
    *
    * @param[in] audio_track A <code>PP_Resource</code> corresponding to an audio
    * resource.
-   * @param[in] frame A <code>PP_Resource</code> corresponding to an AudioFrame
-   * resource returned by <code>GetFrame()</code>.
+   * @param[in] buffer A <code>PP_Resource</code> corresponding to
+   * an AudioBuffer resource returned by <code>GetBuffer()</code>.
    *
    * @return An int32_t containing a result code from <code>pp_errors.h</code>.
    */
-  int32_t RecycleFrame([in] PP_Resource audio_track,
-                       [in] PP_Resource frame);
+  int32_t RecycleBuffer([in] PP_Resource audio_track,
+                        [in] PP_Resource buffer);
 
   /**
    * Closes the MediaStream audio track and disconnects it from the audio
-   * source. After calling <code>Close()</code>, no new frames will be received.
+   * source. After calling <code>Close()</code>, no new buffers will be
+   * received.
    *
    * @param[in] audio_track A <code>PP_Resource</code> corresponding to a
    * MediaStream audio track resource.

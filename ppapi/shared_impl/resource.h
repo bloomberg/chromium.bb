@@ -21,8 +21,8 @@
 #define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
   F(ExtensionsCommon_API) \
   F(PPB_Audio_API) \
+  F(PPB_AudioBuffer_API) \
   F(PPB_AudioConfig_API) \
-  F(PPB_AudioFrame_API) \
   F(PPB_AudioInput_API) \
   F(PPB_AudioTrusted_API) \
   F(PPB_Broker_API) \

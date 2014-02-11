@@ -18,8 +18,8 @@
         # ppapi/cpp
         'array_output.cc',
         'audio.cc',
+        'audio_buffer.cc',
         'audio_config.cc',
-        'audio_frame.cc',
         'core.cc',
         'directory_entry.cc',
         'file_io.cc',
@@ -112,8 +112,8 @@
     {
       'FILES': [
         'array_output.h',
+        'audio_buffer.h',
         'audio_config.h',
-        'audio_frame.h',
         'audio.h',
         'completion_callback.h',
         'core.h',

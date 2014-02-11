@@ -9,7 +9,7 @@
 #include <limits>
 #include <vector>
 
-#include "ppapi/cpp/audio_frame.h"
+#include "ppapi/cpp/audio_buffer.h"
 #include "ppapi/cpp/dev/var_resource_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -43,7 +43,7 @@ class MediaStreamAudioInstance : public pp::Instance {
   explicit MediaStreamAudioInstance(PP_Instance instance)
       : pp::Instance(instance),
         callback_factory_(this),
-        first_frame_(true),
+        first_buffer_(true),
         sample_count_(0),
         channel_count_(0),
         timer_interval_(0),
@@ -76,8 +76,8 @@ class MediaStreamAudioInstance : public pp::Instance {
 
     pp::Resource resource_track = pp::VarResource_Dev(var_track).AsResource();
     audio_track_ = pp::MediaStreamAudioTrack(resource_track);
-    audio_track_.GetFrame(callback_factory_.NewCallbackWithOutput(
-          &MediaStreamAudioInstance::OnGetFrame));
+    audio_track_.GetBuffer(callback_factory_.NewCallbackWithOutput(
+          &MediaStreamAudioInstance::OnGetBuffer));
   }
 
  private:
@@ -156,25 +156,25 @@ class MediaStreamAudioInstance : public pp::Instance {
     return image;
   }
 
-  // Callback that is invoked when new frames are received.
-  void OnGetFrame(int32_t result, pp::AudioFrame frame) {
+  // Callback that is invoked when new buffers are received.
+  void OnGetBuffer(int32_t result, pp::AudioBuffer buffer) {
     if (result != PP_OK)
       return;
 
-    PP_DCHECK(frame.GetSampleSize() == PP_AUDIOFRAME_SAMPLESIZE_16_BITS);
-    const char* data = static_cast<const char*>(frame.GetDataBuffer());
-    uint32_t channels = frame.GetNumberOfChannels();
-    uint32_t samples = frame.GetNumberOfSamples() / channels;
+    PP_DCHECK(buffer.GetSampleSize() == PP_AUDIOBUFFER_SAMPLESIZE_16_BITS);
+    const char* data = static_cast<const char*>(buffer.GetDataBuffer());
+    uint32_t channels = buffer.GetNumberOfChannels();
+    uint32_t samples = buffer.GetNumberOfSamples() / channels;
 
     if (channel_count_ != channels || sample_count_ != samples) {
       channel_count_ = channels;
       sample_count_ = samples;
 
       samples_.resize(sample_count_ * channel_count_);
-      timer_interval_ = (sample_count_ * 1000) / frame.GetSampleRate() + 5;
-      // Start the timer for the first frame.
-      if (first_frame_) {
-        first_frame_ = false;
+      timer_interval_ = (sample_count_ * 1000) / buffer.GetSampleRate() + 5;
+      // Start the timer for the first buffer.
+      if (first_buffer_) {
+        first_buffer_ = false;
         ScheduleNextTimer();
       }
     }
@@ -182,16 +182,16 @@ class MediaStreamAudioInstance : public pp::Instance {
     memcpy(samples_.data(), data,
         sample_count_ * channel_count_ * sizeof(int16_t));
 
-    audio_track_.RecycleFrame(frame);
-    audio_track_.GetFrame(callback_factory_.NewCallbackWithOutput(
-        &MediaStreamAudioInstance::OnGetFrame));
+    audio_track_.RecycleBuffer(buffer);
+    audio_track_.GetBuffer(callback_factory_.NewCallbackWithOutput(
+        &MediaStreamAudioInstance::OnGetBuffer));
 
   }
 
   pp::MediaStreamAudioTrack audio_track_;
   pp::CompletionCallbackFactory<MediaStreamAudioInstance> callback_factory_;
 
-  bool first_frame_;
+  bool first_buffer_;
   uint32_t sample_count_;
   uint32_t channel_count_;
   std::vector<int16_t> samples_;

@@ -9,8 +9,8 @@
 #define PPAPI_TESTS_ALL_CPP_INCLUDES_H_
 
 #include "ppapi/cpp/audio.h"
+#include "ppapi/cpp/audio_buffer.h"
 #include "ppapi/cpp/audio_config.h"
-#include "ppapi/cpp/audio_frame.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/dev/alarms_dev.h"
