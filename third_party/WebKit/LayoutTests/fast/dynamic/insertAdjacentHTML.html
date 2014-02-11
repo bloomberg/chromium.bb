@@ -20,9 +20,9 @@ if (window.testRunner)
       var testPassed = false;
       try {
          func();
-         document.getElementById("error-log").innerHTML += "Expected exception missing.\n";
+         document.getElementById("error-log").textContent += "Expected exception missing.\n";
       } catch (e) {
-         document.getElementById("error-log").innerHTML += "Caught expected exception: " + e + "\n";
+         document.getElementById("error-log").textContent += "Caught expected exception: " + e + "\n";
          testPassed = true;
       }
       return testPassed;
@@ -31,21 +31,20 @@ if (window.testRunner)
    // check that exceptions are thrown as required
    var passes = true;
    passes = assertThrows(function() {
-      // should throw TYPE_MISMATCH_ERR
+      // should throw SyntaxError
       document.getElementById("container").insertAdjacentHTML("blah", "<span>html</span>");
    }) && passes;
-
    passes = assertThrows(function() {
-      // Should throw NoModificationAllowedError.
+      // Should throw NoModificationAllowedError
       document.createElement('div').insertAdjacentHTML("afterEnd", "<span>html</span>");
    }) && passes;
-
    passes = assertThrows(function() {
-       document.getElementById("container").insertAdjacentHTML();
+      // Should throw TypeError
+      document.getElementById("container").insertAdjacentHTML();
    }) && passes;
-
    passes = assertThrows(function() {
-       document.getElementById("container").insertAdjacentHTML("beforeBegin");
+      // Should throw TypeError
+      document.getElementById("container").insertAdjacentHTML("beforeBegin");
    }) && passes;
 
    if (passes) {

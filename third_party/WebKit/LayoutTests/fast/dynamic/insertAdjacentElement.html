@@ -34,8 +34,9 @@
       var testPassed = false;
       try {
          func();
+         document.getElementById("error-log").textContent += "Expected exception missing.\n";
       } catch (e) {
-         document.getElementById("error-log").innerHTML += "Caught expected exception: " + e + "\n";
+         document.getElementById("error-log").textContent += "Caught expected exception: " + e + "\n";
          testPassed = true;
       }
       return testPassed;
@@ -43,17 +44,25 @@
 
    // check that exceptions are thrown as required
    var passes = true;
-   passes = passes & assertThrows(function() {
-      // should throw TYPE_MISMATCH_ERR
+   passes = assertThrows(function() {
+      // should throw SyntaxError
       document.getElementById("container").insertAdjacentElement("blah", document.getElementById("1"));
-   });
-   passes = passes & assertThrows(function() {
-      // should throw NOT_SUPPORTED_ERR
+   }) && passes;
+   passes = assertThrows(function() {
+      // should throw TypeError
       document.getElementById("container").insertAdjacentElement("beforeEnd", null);
-   });
+   }) && passes;
+   passes = assertThrows(function() {
+      // should throw TypeError
+      document.getElementById("container").insertAdjacentElement("beforeEnd");
+   }) && passes;
+   passes = assertThrows(function() {
+      // should throw TypeError
+      document.getElementById("container").insertAdjacentElement();
+   }) && passes;
 
    var elt = document.createElement("div");
-   passes = passes & (elt.insertAdjacentElement("beforeBegin", document.createElement("p")) == null);
+   passes = passes && (elt.insertAdjacentElement("beforeBegin", document.createElement("p")) == null);
    if (passes) {
       document.getElementById("status").style.color = "green";
       document.getElementById("status").innerHTML = "<br><br>PASS";

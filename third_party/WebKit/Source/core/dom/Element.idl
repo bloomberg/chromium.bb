@@ -94,10 +94,8 @@
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
-                                  [Default=Undefined] optional Element element);
-    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
-                            [Default=Undefined] optional DOMString text);
+    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);
+    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText(DOMString where, DOMString text);
     [CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString where, DOMString html);
 
     [Reflect=class, PerWorldBindings] attribute DOMString className;
