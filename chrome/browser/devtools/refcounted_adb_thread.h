@@ -9,13 +9,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 
-class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
+class RefCountedAdbThread
+    : public base::RefCountedThreadSafe<RefCountedAdbThread> {
  public:
   static scoped_refptr<RefCountedAdbThread> GetInstance();
   base::MessageLoop* message_loop();
 
  private:
-  friend class base::RefCounted<RefCountedAdbThread>;
+  friend class base::RefCountedThreadSafe<RefCountedAdbThread>;
   static RefCountedAdbThread* instance_;
   static void StopThread(base::Thread* thread);
 

@@ -170,9 +170,6 @@ race:extensions::InfoMap::AddExtension
 # http://crbug.com/330528
 race:v8::internal::MarkCompactCollector::SweepInParallel
 
-# http://crbug.com/330603
-race:DevToolsAdbBridge::RequestRemoteDevices
-
 # http://crbug.com/333244
 race:content::VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl
 

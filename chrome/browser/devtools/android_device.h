@@ -15,7 +15,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/socket/stream_socket.h"
 
-class AndroidDevice : public base::RefCounted<AndroidDevice> {
+class AndroidDevice : public base::RefCountedThreadSafe<AndroidDevice> {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
@@ -40,7 +40,7 @@ class AndroidDevice : public base::RefCounted<AndroidDevice> {
   void set_model(const std::string& model) { model_ = model; }
 
  protected:
-  friend class base::RefCounted<AndroidDevice>;
+  friend class base::RefCountedThreadSafe<AndroidDevice>;
   virtual ~AndroidDevice();
 
  private:
