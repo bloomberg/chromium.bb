@@ -46,6 +46,7 @@
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
 #include "WebSettings.h"
+#include "WebSettingsImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWidget.h"
@@ -62,9 +63,11 @@
 #include "platform/Timer.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebDragData.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebDragOperation.h"
 #include "public/web/WebWidgetClient.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
@@ -878,6 +881,48 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
+static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
+{
+    blink::WebDragData dragData;
+    dragData.initialize();
+
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeString;
+    item.stringType = "text/uri-list";
+    item.stringData = WebString::fromUTF8(url);
+    dragData.addItem(item);
+
+    const WebPoint clientPoint(0, 0);
+    const WebPoint screenPoint(0, 0);
+    webView->dragTargetDragEnter(dragData, clientPoint, screenPoint, blink::WebDragOperationCopy, 0);
+    webView->dragTargetDrop(clientPoint, screenPoint, 0);
+    FrameTestHelpers::runPendingTasks();
+}
+
+TEST_F(WebViewTest, DragDropURL)
+{
+    const std::string fooUrl = "data:text/html,foo";
+    const std::string barUrl = "data:text/html,bar";
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(fooUrl);
+
+    ASSERT_TRUE(webView);
+
+    // Drag and drop barUrl and verify that we've navigated to it.
+    DragAndDropURL(webView, barUrl);
+    EXPECT_EQ(barUrl, webView->mainFrame()->document().url().string().utf8());
+
+    // Drag and drop fooUrl and verify that we've navigated back to it.
+    DragAndDropURL(webView, fooUrl);
+    EXPECT_EQ(fooUrl, webView->mainFrame()->document().url().string().utf8());
+
+    // Disable navigation on drag-and-drop.
+    webView->settingsImpl()->setNavigateOnDragDrop(false);
+
+    // Attempt to drag and drop to barUrl and verify that no navigation has occurred.
+    DragAndDropURL(webView, barUrl);
+    EXPECT_EQ(fooUrl, webView->mainFrame()->document().url().string().utf8());
 }
 
 class ContentDetectorClient : public WebViewClient {
