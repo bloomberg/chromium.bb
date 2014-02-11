@@ -36,6 +36,10 @@ class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
   // views::BubbleDelegateView override:
   virtual void Init() OVERRIDE;
 
+  // views::WidgetDelegateView overrides:
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
+
  private:
   // Hide the window with fading animation.  This is called from
   // ShowAndFadeOut.

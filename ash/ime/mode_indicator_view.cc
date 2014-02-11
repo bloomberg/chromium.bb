@@ -5,7 +5,10 @@
 #include "ash/ime/mode_indicator_view.h"
 
 #include "base/logging.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/layout/fill_layout.h"
@@ -20,6 +23,23 @@ const int kMinSize = 31;
 
 // After this duration in msec, the mode inicator will be fading out.
 const int kShowingDuration = 500;
+
+class ModeIndicatorFrameView : public views::BubbleFrameView {
+ public:
+  explicit ModeIndicatorFrameView(const gfx::Insets& content_margins)
+      : views::BubbleFrameView(content_margins) {}
+  virtual ~ModeIndicatorFrameView() {}
+
+ private:
+  // views::BubbleFrameView overrides:
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+    return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
+        rect.CenterPoint()).bounds();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ModeIndicatorFrameView);
+};
+
 }  // namespace
 
 
@@ -63,6 +83,16 @@ void ModeIndicatorView::Init() {
   AddChildView(label_view_);
 
   SetAnchorRect(cursor_bounds_);
+}
+
+views::NonClientFrameView* ModeIndicatorView::CreateNonClientFrameView(
+    views::Widget* widget) {
+  views::BubbleFrameView* frame = new ModeIndicatorFrameView(margins());
+  // arrow adjustment in BubbleDelegateView is unnecessary because arrow
+  // of this bubble is always center.
+  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+      new views::BubbleBorder(arrow(), shadow(), color())));
+  return frame;
 }
 
 }  // namespace ime
