@@ -27,12 +27,18 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS(content::ConsoleMessageLevel)
-IPC_ENUM_TRAITS(content::PageTransition)
-IPC_ENUM_TRAITS(content::SecurityStyle)
-IPC_ENUM_TRAITS(blink::WebReferrerPolicy)
-IPC_ENUM_TRAITS(WindowOpenDisposition)
-IPC_ENUM_TRAITS(webkit_glue::EditingBehavior)
+IPC_ENUM_TRAITS(content::PageTransition)  // Bitmask.
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
+                          content::CONSOLE_MESSAGE_LEVEL_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::SecurityStyle,
+                          content::SECURITY_STYLE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
+                          blink::WebReferrerPolicyLast)
+IPC_ENUM_TRAITS_MAX_VALUE(webkit_glue::EditingBehavior,
+                          webkit_glue::EDITING_BEHAVIOR_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
+                          WINDOW_OPEN_DISPOSITION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(net::RequestPriority, net::MAXIMUM_PRIORITY)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)

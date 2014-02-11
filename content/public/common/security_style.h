@@ -31,6 +31,7 @@ enum SecurityStyle {
   // SECURITY_STYLE_AUTHENTICATED indicates that we successfully retrieved this
   // object over an authenticated protocol, such as HTTPS.
   SECURITY_STYLE_AUTHENTICATED,
+  SECURITY_STYLE_LAST = SECURITY_STYLE_AUTHENTICATED
 };
 
 }  // namespace content
