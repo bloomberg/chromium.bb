@@ -131,6 +131,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 void BrowserChildProcessHostImpl::Launch(
 #if defined(OS_WIN)
     SandboxedProcessLauncherDelegate* delegate,
+    bool launch_elevated,
 #elif defined(OS_POSIX)
     bool use_zygote,
     const base::EnvironmentMap& environ,
@@ -163,6 +164,7 @@ void BrowserChildProcessHostImpl::Launch(
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
       delegate,
+      launch_elevated,
 #elif defined(OS_POSIX)
       use_zygote,
       environ,
@@ -316,6 +318,11 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
 
 bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
   return child_process_host_->Send(message);
+}
+
+void BrowserChildProcessHostImpl::OnProcessLaunchFailed() {
+  delegate_->OnProcessLaunchFailed();
+  delete delegate_;  // Will delete us
 }
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {

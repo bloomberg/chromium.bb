@@ -159,6 +159,16 @@ BASE_EXPORT bool LaunchProcess(const string16& cmdline,
                                const LaunchOptions& options,
                                win::ScopedHandle* process_handle);
 
+// Launches a process with elevated privileges.  This does not behave exactly
+// like LaunchProcess as it uses ShellExecuteEx instead of CreateProcess to
+// create the process.  This means the process will have elevated privileges
+// and thus some common operations like OpenProcess will fail. The process will
+// be available through the |process_handle| argument.  Currently the only
+// supported LaunchOptions are |start_hidden| and |wait|.
+BASE_EXPORT bool LaunchElevatedProcess(const CommandLine& cmdline,
+                                       const LaunchOptions& options,
+                                       ProcessHandle* process_handle);
+
 #elif defined(OS_POSIX)
 // A POSIX-specific version of LaunchProcess that takes an argv array
 // instead of a CommandLine.  Useful for situations where you need to

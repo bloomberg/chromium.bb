@@ -46,6 +46,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual void Launch(
 #if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
+      bool run_elevated,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentMap& environ,

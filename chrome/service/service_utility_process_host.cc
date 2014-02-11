@@ -268,6 +268,10 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
+  return handle_;
+}
+
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
     int highest_rendered_page_number,
     double scale_factor) {

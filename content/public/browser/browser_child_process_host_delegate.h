@@ -24,6 +24,10 @@ class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
   // Called when the process has been started.
   virtual void OnProcessLaunched() {}
 
+  // Called if the process failed to launch.  In this case the process never
+  // started so there is no available exit code.
+  virtual void OnProcessLaunchFailed() {}
+
   // Called if the process crashed. |exit_code| is the status returned when the
   // process crashed (for posix, as returned from waitpid(), for Windows, as
   // returned from GetExitCodeProcess()).

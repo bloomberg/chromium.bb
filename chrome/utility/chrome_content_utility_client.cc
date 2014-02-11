@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "chrome/utility/extensions/unpacker.h"
@@ -27,6 +28,7 @@
 #include "chrome/utility/web_resource_unpacker.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/utility/utility_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -72,7 +74,6 @@
 
 #if defined(ENABLE_MDNS)
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
-#include "content/public/common/content_switches.h"
 #endif  // ENABLE_MDNS
 
 namespace chrome {
@@ -305,7 +306,8 @@ static base::LazyInstance<PdfFunctions> g_pdf_lib = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-ChromeContentUtilityClient::ChromeContentUtilityClient() {
+ChromeContentUtilityClient::ChromeContentUtilityClient()
+    : filter_messages_(false) {
 #if !defined(OS_ANDROID)
   handlers_.push_back(new ProfileImportHandler());
 #endif  // OS_ANDROID
@@ -326,10 +328,22 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   std::string lang = command_line->GetSwitchValueASCII(switches::kLang);
   if (!lang.empty())
     extension_l10n_util::SetProcessLocale(lang);
+
+  if (command_line->HasSwitch(switches::kUtilityProcessRunningElevated)) {
+    message_id_whitelist_.insert(kMessageWhitelist,
+                                 kMessageWhitelist + kMessageWhitelistSize);
+    filter_messages_ = true;
+  }
 }
 
 bool ChromeContentUtilityClient::OnMessageReceived(
     const IPC::Message& message) {
+  if (filter_messages_ &&
+      (message_id_whitelist_.find(message.type()) ==
+       message_id_whitelist_.end())) {
+    return false;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)

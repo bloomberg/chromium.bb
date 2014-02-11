@@ -40,6 +40,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual void SetExposedDir(const base::FilePath& dir) OVERRIDE;
   virtual void EnableMDns() OVERRIDE;
   virtual void DisableSandbox() OVERRIDE;
+#if defined(OS_WIN)
+  virtual void ElevatePrivileges() OVERRIDE;
+#endif
   virtual const ChildProcessData& GetData() OVERRIDE;
 #if defined(OS_POSIX)
   virtual void SetEnv(const base::EnvironmentMap& env) OVERRIDE;
@@ -54,6 +57,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // BrowserChildProcessHost:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessLaunchFailed() OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // A pointer to our client interface, who will be informed of progress.
@@ -71,6 +75,11 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Whether to pass switches::kNoSandbox to the child.
   bool no_sandbox_;
+
+#if defined(OS_WIN)
+  // Whether to launch the process with elevated privileges.
+  bool run_elevated_;
+#endif
 
   // Flags defined in ChildProcessHost with which to start the process.
   int child_flags_;

@@ -567,6 +567,7 @@ bool RenderProcessHostImpl::Init() {
     child_process_launcher_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         new RendererSandboxedProcessLauncherDelegate,
+        false,
 #elif defined(OS_POSIX)
         renderer_prefix.empty(),
         base::EnvironmentMap(),

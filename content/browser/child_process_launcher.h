@@ -27,6 +27,8 @@ class CONTENT_EXPORT ChildProcessLauncher {
     // constructed on.
     virtual void OnProcessLaunched() = 0;
 
+    virtual void OnProcessLaunchFailed() {};
+
    protected:
     virtual ~Client() {}
   };
@@ -39,6 +41,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   ChildProcessLauncher(
 #if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
+      bool launch_elevated,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentMap& environ,

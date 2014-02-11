@@ -223,6 +223,7 @@ bool WorkerProcessHost::Init(int render_process_id, int render_frame_id) {
   process_->Launch(
 #if defined(OS_WIN)
       new WorkerSandboxedProcessLauncherDelegate,
+      false,
 #elif defined(OS_POSIX)
       use_zygote,
       base::EnvironmentMap(),

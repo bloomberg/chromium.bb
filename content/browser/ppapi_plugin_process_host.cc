@@ -340,6 +340,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   process_->Launch(
 #if defined(OS_WIN)
       new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_),
+      false,
 #elif defined(OS_POSIX)
       use_zygote,
       base::EnvironmentMap(),

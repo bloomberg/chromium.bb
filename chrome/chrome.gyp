@@ -257,6 +257,8 @@
           'sources': [
             'utility/chrome_content_utility_client.cc',
             'utility/chrome_content_utility_client.h',
+            'utility/chrome_content_utility_ipc_whitelist.cc',
+            'utility/chrome_content_utility_ipc_whitelist.h',
             'utility/cloud_print/bitmap_image.cc',
             'utility/cloud_print/bitmap_image.h',
             'utility/cloud_print/pwg_encoder.cc',

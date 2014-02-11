@@ -45,6 +45,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   virtual void Launch(
 #if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
+      bool launch_elevated,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentMap& environ,
@@ -58,9 +59,13 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   virtual void SetName(const base::string16& name) OVERRIDE;
   virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
 
-  // Returns the handle of the child process. This can be called only after
-  // OnProcessLaunched is called or it will be invalid and may crash.
-  base::ProcessHandle GetHandle() const;
+  // ChildProcessHostDelegate implementation:
+  virtual bool CanShutdown() OVERRIDE;
+  virtual void OnChildDisconnected() OVERRIDE;
+  virtual base::ProcessHandle GetHandle() const OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
@@ -90,15 +95,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   static void AddObserver(BrowserChildProcessObserver* observer);
   static void RemoveObserver(BrowserChildProcessObserver* observer);
 
-  // ChildProcessHostDelegate implementation:
-  virtual bool CanShutdown() OVERRIDE;
-  virtual void OnChildDisconnected() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
-
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
+  virtual void OnProcessLaunchFailed() OVERRIDE;
 
 #if defined(OS_WIN)
   void DeleteProcessWaitableEvent(base::WaitableEvent* event);

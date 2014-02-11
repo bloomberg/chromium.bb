@@ -73,6 +73,7 @@ class ChildProcessLauncher::Context
   void Launch(
 #if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
+      bool launch_elevated,
 #elif defined(OS_ANDROID)
       int ipcfd,
 #elif defined(OS_POSIX)
@@ -102,6 +103,7 @@ class ChildProcessLauncher::Context
             child_process_id,
 #if defined(OS_WIN)
             delegate,
+            launch_elevated,
 #elif defined(OS_ANDROID)
             ipcfd,
 #elif defined(OS_POSIX)
@@ -185,6 +187,7 @@ class ChildProcessLauncher::Context
       int child_process_id,
 #if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
+      bool launch_elevated,
 #elif defined(OS_ANDROID)
       int ipcfd,
 #elif defined(OS_POSIX)
@@ -197,8 +200,15 @@ class ChildProcessLauncher::Context
     base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
-    scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
-    base::ProcessHandle handle = StartSandboxedProcess(delegate, cmd_line);
+    base::ProcessHandle handle = base::kNullProcessHandle;
+    if (launch_elevated) {
+      base::LaunchOptions options;
+      options.start_hidden = true;
+      base::LaunchElevatedProcess(*cmd_line, options, &handle);
+    } else {
+      scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
+      handle = StartSandboxedProcess(delegate, cmd_line);
+    }
 #elif defined(OS_POSIX)
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -335,7 +345,11 @@ class ChildProcessLauncher::Context
     zygote_ = zygote;
 #endif
     if (client_) {
-      client_->OnProcessLaunched();
+      if (handle) {
+        client_->OnProcessLaunched();
+      } else {
+        client_->OnProcessLaunchFailed();
+      }
     } else {
       Terminate();
     }
@@ -418,6 +432,7 @@ class ChildProcessLauncher::Context
 ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_WIN)
     SandboxedProcessLauncherDelegate* delegate,
+    bool launch_elevated,
 #elif defined(OS_POSIX)
     bool use_zygote,
     const base::EnvironmentMap& environ,
@@ -430,6 +445,7 @@ ChildProcessLauncher::ChildProcessLauncher(
   context_->Launch(
 #if defined(OS_WIN)
       delegate,
+      launch_elevated,
 #elif defined(OS_ANDROID)
       ipcfd,
 #elif defined(OS_POSIX)

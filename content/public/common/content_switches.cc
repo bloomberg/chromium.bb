@@ -957,6 +957,8 @@ const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 // Allows MDns to access network in sandboxed process.
 const char kUtilityProcessEnableMDns[]      = "utility-enable-mdns";
 
+const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
+
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.

@@ -245,6 +245,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   process_->Launch(
 #if defined(OS_WIN)
       new PluginSandboxedProcessLauncherDelegate,
+      false,
 #elif defined(OS_POSIX)
       false,
       env,

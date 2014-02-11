@@ -537,6 +537,7 @@ bool NaClProcessHost::LaunchSelLdr() {
     }
   } else {
     process_->Launch(new NaClSandboxedProcessLauncherDelegate,
+                     false,
                      cmd_line.release());
   }
 #elif defined(OS_POSIX)

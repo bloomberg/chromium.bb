@@ -61,6 +61,11 @@ class UtilityProcessHost : public IPC::Sender,
   // Make the process run without a sandbox.
   virtual void DisableSandbox() = 0;
 
+#if defined(OS_WIN)
+  // Make the process run elevated.
+  virtual void ElevatePrivileges() = 0;
+#endif
+
   // Returns information about the utility child process.
   virtual const ChildProcessData& GetData() = 0;
 

@@ -121,6 +121,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // ChildProcessHostDelegate implementation:
   virtual void OnChildDisconnected() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual base::ProcessHandle GetHandle() const OVERRIDE;
 
  private:
   // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
