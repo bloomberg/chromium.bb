@@ -95,6 +95,19 @@ def Checkout(name, url, dir):
               url + '@' + LLVM_WINDOWS_REVISION, dir], tries=2)
 
 
+vs_version = None
+def GetVSVersion():
+  global vs_version
+  if not vs_version:
+    # TODO(hans): Find a less hacky way to find the MSVS installation.
+    sys.path.append(os.path.join(CHROMIUM_DIR, 'tools', 'gyp', 'pylib'))
+    import gyp.MSVSVersion
+    # We request VS 2013 because Clang won't build with 2010, and 2013 will be
+    # the default for Chromium soon anyway.
+    vs_version = gyp.MSVSVersion.SelectVisualStudioVersion('2013')
+  return vs_version
+
+
 def UpdateClang():
   print 'Updating Clang to %s...' % (LLVM_WINDOWS_REVISION)
   if ReadStampFile() == LLVM_WINDOWS_REVISION:
@@ -114,10 +127,11 @@ def UpdateClang():
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
 
-  RunCommand(['cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
+  RunCommand(GetVSVersion().SetupScript('x64') +
+             ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
 
-  RunCommand(['ninja', 'all'])
+  RunCommand(GetVSVersion().SetupScript('x64') + ['&&', 'ninja', 'all'])
 
   WriteStampFile(LLVM_WINDOWS_REVISION)
   print 'Clang update was successful.'
