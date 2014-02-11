@@ -55,6 +55,7 @@ class UdpTransport : public PacketSender {
   net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
   scoped_ptr<net::UDPServerSocket> udp_socket_;
+  bool send_pending_;
   scoped_refptr<net::IOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;

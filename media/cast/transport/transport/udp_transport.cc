@@ -49,6 +49,7 @@ UdpTransport::UdpTransport(
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
+      send_pending_(false),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
       status_callback_(status_callback),
       weak_factory_(this) {
@@ -117,6 +118,11 @@ void UdpTransport::OnReceived(int result) {
 bool UdpTransport::SendPacket(const Packet& packet) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
+  if (send_pending_) {
+    VLOG(1) << "Cannot send because of pending IO.";
+    return false;
+  }
+
   // TODO(hclam): This interface should take a net::IOBuffer to minimize
   // memcpy.
   scoped_refptr<net::IOBuffer> buf = new net::IOBuffer(
@@ -127,6 +133,8 @@ bool UdpTransport::SendPacket(const Packet& packet) {
       static_cast<int>(packet.size()),
       remote_addr_,
       base::Bind(&UdpTransport::OnSent, weak_factory_.GetWeakPtr(), buf));
+  if (ret == net::ERR_IO_PENDING)
+    send_pending_ = true;
   return ret == net::OK;
 }
 
@@ -134,6 +142,7 @@ void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
                           int result) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
+  send_pending_ = false;
   if (result < 0) {
     LOG(ERROR) << "Failed to send packet: " << result << ".";
     status_callback_.Run(TRANSPORT_SOCKET_ERROR);
