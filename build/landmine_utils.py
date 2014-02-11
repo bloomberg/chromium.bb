@@ -33,7 +33,7 @@ def IsWindows():
 
 @memoize()
 def IsLinux():
-  return sys.platform.startswith('linux')
+  return sys.platform.startswith(('linux', 'freebsd'))
 
 
 @memoize()
