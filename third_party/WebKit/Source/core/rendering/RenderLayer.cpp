@@ -177,8 +177,10 @@ RenderLayer::~RenderLayer()
 
 String RenderLayer::debugName() const
 {
-    if (isReflection())
+    if (isReflection()) {
+        ASSERT(m_reflectionInfo);
         return m_reflectionInfo->debugName();
+    }
     return renderer()->debugName();
 }
 
@@ -192,8 +194,8 @@ RenderLayerCompositor* RenderLayer::compositor() const
 void RenderLayer::contentChanged(ContentChangeType changeType)
 {
     // This can get called when video becomes accelerated, so the layers may change.
-    if ((changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged) && compositor()->updateLayerCompositingState(this))
-        compositor()->setCompositingLayersNeedRebuild();
+    if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
+        compositor()->updateLayerCompositingState(this);
 
     if (m_compositedLayerMapping)
         m_compositedLayerMapping->contentChanged(changeType);
@@ -3843,23 +3845,14 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     DisableCompositingQueryAsserts disabler;
 
     const RenderStyle* newStyle = renderer()->style();
-    if (compositor()->updateLayerCompositingState(this)
-        || needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
+
+    compositor()->updateLayerCompositingState(this);
+    // FIXME: this compositing logic should be pushed into the compositing code, not here.
+    if (needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters)
         || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle)) {
         compositor()->setCompositingLayersNeedRebuild();
-    } else if (compositingState() == PaintsIntoOwnBacking || compositingState() == HasOwnBackingButPaintsIntoAncestor) {
-        ASSERT(hasCompositedLayerMapping());
-        compositedLayerMapping()->updateGraphicsLayerGeometry();
-    } else if (compositingState() == PaintsIntoGroupedBacking) {
-        ASSERT(compositor()->layerSquashingEnabled());
-        ASSERT(groupedMapping());
-        // updateGraphicsLayerGeometry() is called to update the squashingLayer in case its size/position has changed.
-        // FIXME: Make sure to create a layout test that covers this scenario.
-        // FIXME: It is not expected that any other layers on the compositedLayerMapping would change. we should
-        // be able to just update the squashing layer only and save a lot of computation.
-        groupedMapping()->updateGraphicsLayerGeometry();
     }
 }
 
