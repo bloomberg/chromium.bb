@@ -12,7 +12,7 @@
 #include "base/message_loop/message_pump_ozone.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/ozone/evdev/device_manager_evdev.h"
-#include "ui/events/ozone/evdev/event_factory.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/scoped_udev.h"
 
 namespace ui {

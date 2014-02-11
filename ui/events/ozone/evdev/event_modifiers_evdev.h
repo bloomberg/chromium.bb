@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_H_
-#define UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_
+#define UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_
 
 #include "base/basictypes.h"
 #include "ui/events/events_export.h"
@@ -71,4 +71,4 @@ class EVENTS_EXPORT EventModifiersEvdev {
 
 }  // namspace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_

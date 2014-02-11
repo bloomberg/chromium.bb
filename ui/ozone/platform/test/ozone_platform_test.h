@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_TEST_OZONE_PLATFORM_TEST_H_
 
 #include "base/files/file_path.h"
-#include "ui/events/ozone/evdev/event_factory.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/gfx/ozone/impl/file_surface_factory.h"
 #include "ui/ozone/ozone_platform.h"
 

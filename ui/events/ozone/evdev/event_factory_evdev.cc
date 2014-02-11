@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/event_factory.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -12,8 +12,8 @@
 #include "base/task_runner.h"
 #include "ui/events/ozone/evdev/device_manager_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/key_event_converter.h"
-#include "ui/events/ozone/evdev/touch_event_converter.h"
+#include "ui/events/ozone/evdev/key_event_converter_evdev.h"
+#include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
 #if defined(USE_UDEV)
 #include "ui/events/ozone/evdev/device_manager_udev.h"

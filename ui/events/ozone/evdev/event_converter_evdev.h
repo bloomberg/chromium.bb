@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_H_
-#define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
+#define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,4 +38,4 @@ class EVENTS_EXPORT EventConverterEvdev {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_

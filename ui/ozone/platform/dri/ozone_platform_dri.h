@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_OZONE_PLATFORM_DRI_H_
 #define UI_OZONE_PLATFORM_DRI_OZONE_PLATFORM_DRI_H_
 
-#include "ui/events/ozone/evdev/event_factory.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/gfx/ozone/dri/dri_surface_factory.h"
 #include "ui/ozone/ozone_platform.h"
 

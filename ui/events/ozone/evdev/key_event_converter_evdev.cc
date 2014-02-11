@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/key_event_converter.h"
+#include "ui/events/ozone/evdev/key_event_converter_evdev.h"
 
 #include <errno.h>
 #include <linux/input.h>
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/ozone/evdev/event_modifiers.h"
+#include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {

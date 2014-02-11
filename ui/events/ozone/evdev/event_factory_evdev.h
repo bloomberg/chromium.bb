@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
-#define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
+#define UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "ui/events/events_export.h"
-#include "ui/events/ozone/evdev/event_converter.h"
-#include "ui/events/ozone/evdev/event_modifiers.h"
+#include "ui/events/ozone/evdev/event_converter_evdev.h"
+#include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
@@ -68,4 +68,4 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
