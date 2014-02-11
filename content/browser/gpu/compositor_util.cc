@@ -24,12 +24,7 @@ struct GpuFeatureInfo {
   bool fallback_to_software;
 };
 
-#if defined(OS_CHROMEOS)
-const size_t kNumFeatures = 14;
-#else
-const size_t kNumFeatures = 13;
-#endif
-const GpuFeatureInfo GetGpuFeatureInfo(size_t index) {
+const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
 
@@ -169,6 +164,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index) {
           false
       },
   };
+  DCHECK(index < arraysize(kGpuFeatureInfo));
+  *eof = (index == arraysize(kGpuFeatureInfo) - 1);
   return kGpuFeatureInfo[index];
 }
 
@@ -302,8 +299,9 @@ base::Value* GetFeatureStatus() {
 
   base::DictionaryValue* feature_status_dict = new base::DictionaryValue();
 
-  for (size_t i = 0; i < kNumFeatures; ++i) {
-    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i);
+  bool eof = false;
+  for (size_t i = 0; !eof; ++i) {
+    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
     // force_compositing_mode status is part of the compositing status.
     if (gpu_feature_info.name == "force_compositing_mode")
       continue;
@@ -384,8 +382,9 @@ base::Value* GetProblems() {
     problem_list->Insert(0, problem);
   }
 
-  for (size_t i = 0; i < kNumFeatures; ++i) {
-    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i);
+  bool eof = false;
+  for (size_t i = 0; !eof; ++i) {
+    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
     if (gpu_feature_info.disabled) {
       base::DictionaryValue* problem = new base::DictionaryValue();
       problem->SetString(
