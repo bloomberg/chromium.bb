@@ -466,8 +466,14 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnHMACCalculated(
     const std::string& associated_sink_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  results_.reset(
-      wap::GetAssociatedSink::Results::Create(associated_sink_id).release());
+  if (associated_sink_id == media::AudioManagerBase::kDefaultDeviceId) {
+    DVLOG(2) << "Got default ID, replacing with empty ID.";
+    results_.reset(wap::GetAssociatedSink::Results::Create("").release());
+  } else {
+    results_.reset(
+        wap::GetAssociatedSink::Results::Create(associated_sink_id).release());
+  }
+
   SendResponse(true);
 }
 
