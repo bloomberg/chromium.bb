@@ -253,7 +253,7 @@ bool BrowserDesktopWindowTreeHostWin::IsUsingCustomFrame() const {
   return !GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
 }
 
-bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() {
+bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
   if (!views::DesktopWindowTreeHostWin::ShouldUseNativeFrame())
     return false;
   // This function can get called when the Browser window is closed i.e. in the

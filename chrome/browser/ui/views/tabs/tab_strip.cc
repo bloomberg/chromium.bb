@@ -69,10 +69,10 @@ namespace {
 
 static const int kTabStripAnimationVSlop = 40;
 // Inactive tabs in a native frame are slightly transparent.
-static const int kNativeFrameInactiveTabAlpha = 200;
+static const int kGlassFrameInactiveTabAlpha = 200;
 // If there are multiple tabs selected then make non-selected inactive tabs
 // even more transparent.
-static const int kNativeFrameInactiveTabAlphaMultiSelection = 150;
+static const int kGlassFrameInactiveTabAlphaMultiSelection = 150;
 
 // Alpha applied to all elements save the selected tabs.
 static const int kInactiveTabAndNewTabButtonAlphaAsh = 230;
@@ -333,7 +333,7 @@ class NewTabButton : public views::ImageButton {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  bool ShouldUseNativeFrame() const;
+  bool ShouldWindowContentsBeTransparent() const;
   gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
                                     ui::ScaleFactor scale_factor) const;
   gfx::ImageSkia GetImageForState(views::CustomButton::ButtonState state,
@@ -427,16 +427,16 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-bool NewTabButton::ShouldUseNativeFrame() const {
+bool NewTabButton::ShouldWindowContentsBeTransparent() const {
   return GetWidget() &&
-    GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame();
+         GetWidget()->GetTopLevelWidget()->ShouldWindowContentsBeTransparent();
 }
 
 gfx::ImageSkia NewTabButton::GetBackgroundImage(
     views::CustomButton::ButtonState state,
     ui::ScaleFactor scale_factor) const {
   int background_id = 0;
-  if (ShouldUseNativeFrame()) {
+  if (ShouldWindowContentsBeTransparent()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
   } else if (tab_strip_->controller()->IsIncognito()) {
     background_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
@@ -452,7 +452,8 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
   switch (state) {
     case views::CustomButton::STATE_NORMAL:
     case views::CustomButton::STATE_HOVERED:
-      alpha = ShouldUseNativeFrame() ? kNativeFrameInactiveTabAlpha : 255;
+      alpha = ShouldWindowContentsBeTransparent() ? kGlassFrameInactiveTabAlpha
+                                                  : 255;
       break;
     case views::CustomButton::STATE_PRESSED:
       alpha = 145;
@@ -523,10 +524,10 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   canvas.DrawImageInt(GetBackgroundImage(state, scale_factor), 0, 0);
 
   // Draw the button border with a slight alpha.
-  const int kNativeFrameOverlayAlpha = 178;
+  const int kGlassFrameOverlayAlpha = 178;
   const int kOpaqueFrameOverlayAlpha = 230;
-  uint8 alpha = ShouldUseNativeFrame() ?
-      kNativeFrameOverlayAlpha : kOpaqueFrameOverlayAlpha;
+  uint8 alpha = ShouldWindowContentsBeTransparent() ?
+      kGlassFrameOverlayAlpha : kOpaqueFrameOverlayAlpha;
   canvas.DrawImageInt(*overlay, 0, 0, alpha);
 
   return gfx::ImageSkia(canvas.ExtractImageRep());
@@ -1324,14 +1325,14 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   if (inactive_tab_alpha < 255)
     canvas->Restore();
 
-  if (GetWidget()->ShouldUseNativeFrame()) {
+  if (GetWidget()->ShouldWindowContentsBeTransparent()) {
     // Make sure non-active tabs are somewhat transparent.
     SkPaint paint;
     // If there are multiple tabs selected, fade non-selected tabs more to make
     // the selected tabs more noticable.
     int alpha = selected_tab_count > 1 ?
-        kNativeFrameInactiveTabAlphaMultiSelection :
-        kNativeFrameInactiveTabAlpha;
+        kGlassFrameInactiveTabAlphaMultiSelection :
+        kGlassFrameInactiveTabAlpha;
     paint.setColor(SkColorSetARGB(alpha, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
     paint.setStyle(SkPaint::kFill_Style);

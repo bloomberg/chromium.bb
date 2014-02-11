@@ -198,6 +198,10 @@ bool NativeWidgetAura::ShouldUseNativeFrame() const {
   return false;
 }
 
+bool NativeWidgetAura::ShouldWindowContentsBeTransparent() const {
+  return false;
+}
+
 void NativeWidgetAura::FrameTypeChanged() {
   // This is called when the Theme has changed; forward the event to the root
   // widget.

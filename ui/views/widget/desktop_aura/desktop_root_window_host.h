@@ -125,7 +125,11 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
 
-  virtual bool ShouldUseNativeFrame() = 0;
+  // Determines whether the window should use native title bar and borders.
+  virtual bool ShouldUseNativeFrame() const = 0;
+  // Determines whether the window contents should be rendered transparently
+  // (for example, so that they can overhang onto the window title bar).
+  virtual bool ShouldWindowContentsBeTransparent() const = 0;
   virtual void FrameTypeChanged() = 0;
   virtual NonClientFrameView* CreateNonClientFrameView() = 0;
 

@@ -52,7 +52,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
-  virtual bool ShouldUseNativeFrame() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
 
   void UpdateDWMFrame();

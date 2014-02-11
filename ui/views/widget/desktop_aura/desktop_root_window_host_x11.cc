@@ -131,6 +131,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_mapped_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
+      use_native_frame_(false),
       root_window_(NULL),
       drag_drop_client_(NULL),
       current_cursor_(ui::kCursorNull),
@@ -252,9 +253,8 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_, this));
-  x11_window_event_filter_->SetUseHostWindowBorders(
-      params.type == Widget::InitParams::TYPE_WINDOW &&
-      !params.remove_standard_frame);
+  SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
+                    !params.remove_standard_frame);
   desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
       x11_window_event_filter_.get());
 
@@ -597,7 +597,11 @@ void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
 }
 
-bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() {
+bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
+  return use_native_frame_;
+}
+
+bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
   return false;
 }
 
@@ -1108,6 +1112,11 @@ void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
 bool DesktopWindowTreeHostX11::HasWMSpecProperty(const char* property) const {
   return window_properties_.find(atom_cache_.GetAtom(property)) !=
       window_properties_.end();
+}
+
+void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
+  use_native_frame_ = use_native_frame;
+  x11_window_event_filter_->SetUseHostWindowBorders(use_native_frame);
 }
 
 void DesktopWindowTreeHostX11::OnCaptureReleased() {

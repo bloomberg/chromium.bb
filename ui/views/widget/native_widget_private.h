@@ -80,6 +80,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual NonClientFrameView* CreateNonClientFrameView() = 0;
 
   virtual bool ShouldUseNativeFrame() const = 0;
+  virtual bool ShouldWindowContentsBeTransparent() const = 0;
   virtual void FrameTypeChanged() = 0;
 
   // Returns the Widget associated with this NativeWidget. This function is

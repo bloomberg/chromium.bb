@@ -872,6 +872,10 @@ bool Widget::ShouldUseNativeFrame() const {
   return native_widget_->ShouldUseNativeFrame();
 }
 
+bool Widget::ShouldWindowContentsBeTransparent() const {
+  return native_widget_->ShouldWindowContentsBeTransparent();
+}
+
 void Widget::DebugToggleFrameType() {
   if (frame_type_ == FRAME_TYPE_DEFAULT) {
     frame_type_ = ShouldUseNativeFrame() ? FRAME_TYPE_FORCE_CUSTOM :

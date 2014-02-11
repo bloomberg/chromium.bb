@@ -1674,7 +1674,8 @@ gfx::Rect Tab::GetImmersiveBarRect() const {
 void Tab::GetTabIdAndFrameId(views::Widget* widget,
                              int* tab_id,
                              int* frame_id) const {
-  if (widget && widget->GetTopLevelWidget()->ShouldUseNativeFrame()) {
+  if (widget &&
+      widget->GetTopLevelWidget()->ShouldWindowContentsBeTransparent()) {
     *tab_id = IDR_THEME_TAB_BACKGROUND_V;
     *frame_id = 0;
   } else if (data().incognito) {

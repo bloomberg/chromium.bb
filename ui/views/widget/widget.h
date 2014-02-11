@@ -591,6 +591,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Whether we should be using a native frame.
   bool ShouldUseNativeFrame() const;
 
+  // Determines whether the window contents should be rendered transparently
+  // (for example, so that they can overhang onto the window title bar).
+  bool ShouldWindowContentsBeTransparent() const;
+
   // Forces the frame into the alternate frame type (custom or native) depending
   // on its current state.
   void DebugToggleFrameType();

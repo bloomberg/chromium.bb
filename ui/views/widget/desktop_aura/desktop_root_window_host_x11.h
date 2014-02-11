@@ -116,7 +116,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
       Widget::MoveLoopEscapeBehavior escape_behavior) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
-  virtual bool ShouldUseNativeFrame() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual bool ShouldWindowContentsBeTransparent() const OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
@@ -177,6 +178,9 @@ private:
 
   // Checks if the window manager has set a specific state.
   bool HasWMSpecProperty(const char* property) const;
+
+  // Sets whether the window's borders are provided by the window manager.
+  void SetUseNativeFrame(bool use_native_frame);
 
   // Called when another DRWHL takes capture, or when capture is released
   // entirely.
@@ -246,6 +250,9 @@ private:
 
   // True if the window should stay on top of most other windows.
   bool is_always_on_top_;
+
+  // True if the window has title-bar / borders provided by the window manager.
+  bool use_native_frame_;
 
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;

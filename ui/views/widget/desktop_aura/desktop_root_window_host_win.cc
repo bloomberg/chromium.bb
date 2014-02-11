@@ -373,8 +373,16 @@ void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
   content_window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
 }
 
-bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() {
+bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
   return ui::win::IsAeroGlassEnabled();
+}
+
+bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
+  // If the window has a native frame, we assume it is an Aero Glass window, and
+  // is therefore transparent. Note: This is not equivalent to calling
+  // IsAeroGlassEnabled, because ShouldUseNativeFrame is overridden in a
+  // subclass.
+  return ShouldUseNativeFrame();
 }
 
 void DesktopWindowTreeHostWin::FrameTypeChanged() {

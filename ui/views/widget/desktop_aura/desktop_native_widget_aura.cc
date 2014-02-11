@@ -58,6 +58,7 @@
 #include "ui/views/widget/window_reorderer.h"
 
 #if defined(OS_WIN)
+#include "ui/base/win/shell.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -526,6 +527,10 @@ NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
 
 bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
   return desktop_root_window_host_->ShouldUseNativeFrame();
+}
+
+bool DesktopNativeWidgetAura::ShouldWindowContentsBeTransparent() const {
+  return desktop_root_window_host_->ShouldWindowContentsBeTransparent();
 }
 
 void DesktopNativeWidgetAura::FrameTypeChanged() {
@@ -1157,7 +1162,8 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
 }
 
 void DesktopNativeWidgetAura::UpdateWindowTransparency() {
-  content_window_->SetTransparent(ShouldUseNativeFrame());
+  content_window_->SetTransparent(
+      desktop_root_window_host_->ShouldWindowContentsBeTransparent());
 }
 
 }  // namespace views
