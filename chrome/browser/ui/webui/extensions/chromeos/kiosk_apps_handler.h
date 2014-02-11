@@ -56,12 +56,13 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   void HandleSetDisableBailoutShortcut(const base::ListValue* args);
 
   // Callback for KioskAppManager::GetConsumerKioskModeStatus().
-  void OnGetConsumerKioskModeStatus(
-      chromeos::KioskAppManager::ConsumerKioskModeStatus status);
+  void OnGetConsumerKioskAutoLaunchStatus(
+      chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   KioskAppManager* kiosk_app_manager_;  // not owned.
   bool initialized_;
   bool is_kiosk_enabled_;
+  bool is_auto_launch_enabled_;
   base::WeakPtrFactory<KioskAppsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsHandler);

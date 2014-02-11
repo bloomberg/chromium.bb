@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -24,8 +23,7 @@
 namespace chromeos {
 
 KioskAppMenuHandler::KioskAppMenuHandler()
-    : initialized_(false),
-      weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this) {
   KioskAppManager::Get()->AddObserver(this);
 }
 
@@ -62,9 +60,6 @@ void KioskAppMenuHandler::RegisterMessages() {
 }
 
 void KioskAppMenuHandler::SendKioskApps() {
-  if (!initialized_)
-    return;
-
   KioskAppManager::Apps apps;
   KioskAppManager::Get()->GetApps(&apps);
 
@@ -91,24 +86,6 @@ void KioskAppMenuHandler::SendKioskApps() {
 
 void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!base::SysInfo::IsRunningOnChromeOS() ||
-      connector->IsEnterpriseManaged()) {
-    initialized_ = true;
-    SendKioskApps();
-    return;
-  }
-
-  KioskAppManager::Get()->GetConsumerKioskModeStatus(
-      base::Bind(&KioskAppMenuHandler::OnGetConsumerKioskModeStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void KioskAppMenuHandler::OnGetConsumerKioskModeStatus(
-    KioskAppManager::ConsumerKioskModeStatus status) {
-  initialized_ =
-      status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED;
   SendKioskApps();
 }
 

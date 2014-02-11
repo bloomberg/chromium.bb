@@ -107,7 +107,9 @@ enum DeviceMode {
   DEVICE_MODE_ENTERPRISE,      // The device is enrolled as an enterprise
                                // device.
   DEVICE_MODE_RETAIL_KIOSK,    // The device is enrolled as retail kiosk device.
-  DEVICE_MODE_CONSUMER_KIOSK,  // The device is locally owned as consumer kiosk.
+  DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,  // The device is locally owned as
+                                          // consumer kiosk with ability to auto
+                                          // launch a kiosk webapp.
 };
 
 // A pair that combines a policy fetch type and entity ID.

@@ -129,8 +129,9 @@ cr.define('extensions', function() {
    * Enables consumer kiosk.
    * @param {!boolean} enable True if consumer kiosk feature is enabled.
    */
-  KioskAppsOverlay.enableKiosk = function(enable) {
-    $('add-kiosk-app').hidden = !enable;
+  KioskAppsOverlay.enableKiosk = function(params) {
+    $('add-kiosk-app').hidden = !params.kioskEnabled;
+    $('kiosk-app-list').setAutoLaunchEnabled(params.autoLaunchEnabled);
   };
 
   // Export

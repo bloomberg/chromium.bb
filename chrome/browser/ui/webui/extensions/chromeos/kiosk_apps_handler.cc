@@ -94,6 +94,7 @@ KioskAppsHandler::KioskAppsHandler()
     : kiosk_app_manager_(KioskAppManager::Get()),
       initialized_(false),
       is_kiosk_enabled_(false),
+      is_auto_launch_enabled_(false),
       weak_ptr_factory_(this) {
   kiosk_app_manager_->AddObserver(this);
 }
@@ -195,18 +196,23 @@ void KioskAppsHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
 }
 
 
-void KioskAppsHandler::OnGetConsumerKioskModeStatus(
-    chromeos::KioskAppManager::ConsumerKioskModeStatus status) {
+void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
+    chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   initialized_ = true;
   is_kiosk_enabled_ =
-      ((status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED) &&
-          chromeos::UserManager::Get()->IsCurrentUserOwner()) ||
+      chromeos::UserManager::Get()->IsCurrentUserOwner() ||
+      !base::SysInfo::IsRunningOnChromeOS();
+
+  is_auto_launch_enabled_ =
+      status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED ||
       !base::SysInfo::IsRunningOnChromeOS();
 
   if (is_kiosk_enabled_) {
-    base::FundamentalValue enabled(is_kiosk_enabled_);
+    base::DictionaryValue kiosk_params;
+    kiosk_params.SetBoolean("kioskEnabled", is_kiosk_enabled_);
+    kiosk_params.SetBoolean("autoLaunchEnabled", is_auto_launch_enabled_);
     web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.enableKiosk",
-                                     enabled);
+                                     kiosk_params);
   }
 }
 
@@ -248,8 +254,8 @@ void KioskAppsHandler::SendKioskAppSettings() {
 
 void KioskAppsHandler::HandleInitializeKioskAppSettings(
     const base::ListValue* args) {
-  KioskAppManager::Get()->GetConsumerKioskModeStatus(
-      base::Bind(&KioskAppsHandler::OnGetConsumerKioskModeStatus,
+  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
+      base::Bind(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -286,7 +292,7 @@ void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
 
 void KioskAppsHandler::HandleEnableKioskAutoLaunch(
     const base::ListValue* args) {
-  if (!initialized_ || !is_kiosk_enabled_)
+  if (!initialized_ || !is_kiosk_enabled_ || !is_auto_launch_enabled_)
     return;
 
   std::string app_id;
@@ -297,7 +303,7 @@ void KioskAppsHandler::HandleEnableKioskAutoLaunch(
 
 void KioskAppsHandler::HandleDisableKioskAutoLaunch(
     const base::ListValue* args) {
-  if (!initialized_ || !is_kiosk_enabled_)
+  if (!initialized_ || !is_kiosk_enabled_ || !is_auto_launch_enabled_)
     return;
 
   std::string app_id;

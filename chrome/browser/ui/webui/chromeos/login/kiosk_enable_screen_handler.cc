@@ -44,17 +44,18 @@ void KioskEnableScreenHandler::Show() {
     return;
   }
 
-  KioskAppManager::Get()->GetConsumerKioskModeStatus(
-      base::Bind(&KioskEnableScreenHandler::OnGetConsumerKioskModeStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
+  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
+      base::Bind(
+          &KioskEnableScreenHandler::OnGetConsumerKioskAutoLaunchStatus,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void KioskEnableScreenHandler::OnGetConsumerKioskModeStatus(
-    KioskAppManager::ConsumerKioskModeStatus status) {
+void KioskEnableScreenHandler::OnGetConsumerKioskAutoLaunchStatus(
+    KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   is_configurable_ =
-      (status == KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE);
+      (status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
   if (!is_configurable_) {
-    LOG(WARNING) << "Consumer kiosk feature is not configurable anymore!";
+    LOG(WARNING) << "Consumer kiosk auto launch feature is not configurable!";
     return;
   }
 
@@ -124,12 +125,13 @@ void KioskEnableScreenHandler::HandleOnEnable() {
     return;
   }
 
-  KioskAppManager::Get()->EnableConsumerModeKiosk(
-      base::Bind(&KioskEnableScreenHandler::OnEnableConsumerModeKiosk,
+  KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
+      base::Bind(&KioskEnableScreenHandler::OnEnableConsumerKioskAutoLaunch,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void KioskEnableScreenHandler::OnEnableConsumerModeKiosk(bool success) {
+void KioskEnableScreenHandler::OnEnableConsumerKioskAutoLaunch(
+    bool success) {
   if (!success)
     LOG(WARNING) << "Consumer kiosk mode can't be enabled!";
 

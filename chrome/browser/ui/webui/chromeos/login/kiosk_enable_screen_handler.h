@@ -37,11 +37,11 @@ class KioskEnableScreenHandler : public KioskEnableScreenActor,
   void HandleOnEnable();
 
   // Callback for KioskAppManager::EnableConsumerModeKiosk().
-  void OnEnableConsumerModeKiosk(bool success);
+  void OnEnableConsumerKioskAutoLaunch(bool success);
 
   // Callback for KioskAppManager::GetConsumerKioskModeStatus().
-  void OnGetConsumerKioskModeStatus(
-      KioskAppManager::ConsumerKioskModeStatus status);
+  void OnGetConsumerKioskAutoLaunchStatus(
+      KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   Delegate* delegate_;
 

@@ -71,18 +71,18 @@ const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] =
     "https://www.googleapis.com/auth/userinfo.profile";
 
-// Helper function for GetConsumerKioskModeStatusCallback.
-void ConsumerKioskModeStatusCheck(
-    KioskAppManager::ConsumerKioskModeStatus* out_status,
+// Helper function for GetConsumerKioskAutoLaunchStatusCallback.
+void ConsumerKioskAutoLaunchStatusCheck(
+    KioskAppManager::ConsumerKioskAutoLaunchStatus* out_status,
     const base::Closure& runner_quit_task,
-    KioskAppManager::ConsumerKioskModeStatus in_status) {
+    KioskAppManager::ConsumerKioskAutoLaunchStatus in_status) {
   LOG(INFO) << "KioskAppManager::ConsumerKioskModeStatus = " << in_status;
   *out_status = in_status;
   runner_quit_task.Run();
 }
 
 // Helper KioskAppManager::EnableKioskModeCallback implementation.
-void ConsumerKioskModeLockCheck(
+void ConsumerKioskModeAutoStartLockCheck(
     bool* out_locked,
     const base::Closure& runner_quit_task,
     bool in_locked) {
@@ -396,25 +396,27 @@ class KioskTest : public OobeBaseTest {
     scoped_ptr<bool> locked(new bool(false));
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    KioskAppManager::Get()->EnableConsumerModeKiosk(
-        base::Bind(&ConsumerKioskModeLockCheck,
+    KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
+        base::Bind(&ConsumerKioskModeAutoStartLockCheck,
                    locked.get(),
                    runner->QuitClosure()));
     runner->Run();
     EXPECT_TRUE(*locked.get());
   }
 
-  KioskAppManager::ConsumerKioskModeStatus GetConsumerKioskModeStatus() {
-    KioskAppManager::ConsumerKioskModeStatus status =
-        static_cast<KioskAppManager::ConsumerKioskModeStatus>(-1);
+  KioskAppManager::ConsumerKioskAutoLaunchStatus
+  GetConsumerKioskModeStatus() {
+    KioskAppManager::ConsumerKioskAutoLaunchStatus status =
+        static_cast<KioskAppManager::ConsumerKioskAutoLaunchStatus>(-1);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    KioskAppManager::Get()->GetConsumerKioskModeStatus(
-        base::Bind(&ConsumerKioskModeStatusCheck,
+    KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
+        base::Bind(&ConsumerKioskAutoLaunchStatusCheck,
                    &status,
                    runner->QuitClosure()));
     runner->Run();
-    CHECK_NE(status, static_cast<KioskAppManager::ConsumerKioskModeStatus>(-1));
+    CHECK_NE(status,
+             static_cast<KioskAppManager::ConsumerKioskAutoLaunchStatus>(-1));
     return status;
   }
 
@@ -612,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
   CHECK(wizard_controller);
 
   // Check Kiosk mode status.
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
@@ -637,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
       content::NotificationService::AllSources()).Wait();
 
   // Check that the status still says configurable.
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
             GetConsumerKioskModeStatus());
 }
 
@@ -649,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   CHECK(wizard_controller);
 
   // Check Kiosk mode status.
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
             GetConsumerKioskModeStatus());
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
@@ -673,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_KIOSK_ENABLED,
       content::NotificationService::AllSources()).Wait();
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED,
             GetConsumerKioskModeStatus());
 }
 
@@ -694,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
   CHECK(wizard_controller);
 
   // Check Kiosk mode status.
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
             GetConsumerKioskModeStatus());
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
@@ -730,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   CHECK(wizard_controller);
 
   // Check Kiosk mode status.
-  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.

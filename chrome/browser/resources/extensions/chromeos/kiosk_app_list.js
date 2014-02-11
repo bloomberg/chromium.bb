@@ -17,11 +17,26 @@ cr.define('extensions', function() {
   KioskAppList.prototype = {
     __proto__: List.prototype,
 
+    /**
+     * True if auto launch feature can be configured.
+     * @type {?boolean}
+     */
+    autoLaunchEnabled_: false,
+
     /** @override */
     createItem: function(app) {
       var item = new KioskAppListItem();
       item.data = app;
+      item.autoLaunchEnabled = this.autoLaunchEnabled_;
       return item;
+    },
+
+    /**
+     * Sets auto launch enabled flag.
+     * @param {boolean} enabled True if auto launch should be enabled.
+     */
+    setAutoLaunchEnabled: function(enabled) {
+      this.autoLaunchEnabled_ = enabled;
     },
 
     /**
@@ -67,13 +82,20 @@ cr.define('extensions', function() {
      * @private
      */
     data_: null,
+
     get data() {
       assert(this.data_);
       return this.data_;
     },
+
     set data(data) {
       this.data_ = data;
       this.redraw();
+    },
+
+    set autoLaunchEnabled(enabled) {
+      this.querySelector('.enable-auto-launch-button').hidden = !enabled;
+      this.querySelector('.disable-auto-launch-button').hidden = !enabled;
     },
 
     /**
@@ -111,9 +133,9 @@ cr.define('extensions', function() {
       }.bind(this);
 
       this.querySelector('.enable-auto-launch-button').onclick =
-          sendMessageWithId('enableKioskAutoLaunch');
+        sendMessageWithId('enableKioskAutoLaunch');
       this.querySelector('.disable-auto-launch-button').onclick =
-          sendMessageWithId('disableKioskAutoLaunch');
+        sendMessageWithId('disableKioskAutoLaunch');
       this.querySelector('.row-delete-button').onclick =
           sendMessageWithId('removeKioskApp');
     },

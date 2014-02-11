@@ -197,12 +197,13 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerKioskDevice) {
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
                 std::string(),
-                DEVICE_MODE_CONSUMER_KIOSK,
+                DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
                 std::string()));
 
   ASSERT_FALSE(cryptohome_util::InstallAttributesIsFirstInstall());
-  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK, install_attributes_.GetMode());
-  ASSERT_TRUE(install_attributes_.IsConsumerKioskDevice());
+  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
+            install_attributes_.GetMode());
+  ASSERT_TRUE(install_attributes_.IsConsumerKioskDeviceWithAutoLaunch());
 }
 
 TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
@@ -249,7 +250,8 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFileForConsumerKiosk) {
   ASSERT_EQ(static_cast<int>(blob.size()),
             file_util::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
   install_attributes_.ReadCacheFile(GetTempPath());
-  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK, install_attributes_.GetMode());
+  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
+            install_attributes_.GetMode());
   EXPECT_EQ("", install_attributes_.GetDomain());
   EXPECT_EQ("", install_attributes_.GetRegistrationUser());
   EXPECT_EQ("", install_attributes_.GetDeviceId());

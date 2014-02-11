@@ -173,8 +173,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Handles result of consumer kiosk configurability check and starts
   // enable kiosk screen if applicable.
-  void OnConsumerKioskModeCheckCompleted(
-      KioskAppManager::ConsumerKioskModeStatus status);
+  void OnConsumerKioskAutoLaunchCheckCompleted(
+      KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   // Enters the enterprise enrollment screen. |forced| is true if this is the
   // result of an auto-enrollment check, and the user shouldn't be able to

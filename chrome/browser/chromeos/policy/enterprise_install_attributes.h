@@ -78,7 +78,7 @@ class EnterpriseInstallAttributes {
   bool IsEnterpriseDevice();
 
   // Checks whether this is a consumer kiosk enabled device.
-  bool IsConsumerKioskDevice();
+  bool IsConsumerKioskDeviceWithAutoLaunch();
 
   // Gets the domain this device belongs to or an empty string if the device is
   // not an enterprise device.

@@ -580,9 +580,10 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
 }
 
 void ExistingUserController::OnStartKioskEnableScreen() {
-  KioskAppManager::Get()->GetConsumerKioskModeStatus(
-      base::Bind(&ExistingUserController::OnConsumerKioskModeCheckCompleted,
-                 weak_factory_.GetWeakPtr()));
+  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
+      base::Bind(
+          &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
+          weak_factory_.GetWeakPtr()));
 }
 
 void ExistingUserController::OnStartDeviceReset() {
@@ -613,9 +614,9 @@ void ExistingUserController::Signout() {
   NOTREACHED();
 }
 
-void ExistingUserController::OnConsumerKioskModeCheckCompleted(
-    KioskAppManager::ConsumerKioskModeStatus status) {
-  if (status == KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE)
+void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
+    KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
+  if (status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE)
     ShowKioskEnableScreen();
 }
 
