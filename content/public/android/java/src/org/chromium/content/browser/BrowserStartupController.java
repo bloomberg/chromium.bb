@@ -271,13 +271,7 @@ public class BrowserStartupController {
 
         // Normally Main.java will have already loaded the library asynchronously, we only need
         // to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
-        // TODO(aberent): This try/catch is temporary code to ease landing the change. It can
-        // be removed once the downstream changes have landed
-        try {
-            LibraryLoader.ensureInitialized();
-        } catch (org.chromium.base.library_loader.ProcessInitException e) {
-            throw new ProcessInitException(e.getErrorCode());
-        }
+        LibraryLoader.ensureInitialized();
 
         // TODO(yfriedman): Remove dependency on a command line flag for this.
         DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);

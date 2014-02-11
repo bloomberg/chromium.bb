@@ -6,16 +6,15 @@ package org.chromium.base.library_loader;
 
 /**
  * The exception that is thrown when the intialization of a process was failed.
- * TODO (aberent) the real code of this has to stay in
- * org.chromium.content.common.ProcessInitException until the downstream Android
- * code has switched to using this class.
  */
-public class ProcessInitException extends org.chromium.content.common.ProcessInitException {
+public class ProcessInitException extends Exception {
+    private int mErrorCode = LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
+
     /**
      * @param errorCode This will be one of the LoaderErrors error codes.
      */
     public ProcessInitException(int errorCode) {
-        super(errorCode);
+        mErrorCode = errorCode;
     }
 
     /**
@@ -23,6 +22,14 @@ public class ProcessInitException extends org.chromium.content.common.ProcessIni
      * @param throwable The wrapped throwable obj.
      */
     public ProcessInitException(int errorCode, Throwable throwable) {
-        super(errorCode, throwable);
+        super(null, throwable);
+        mErrorCode = errorCode;
+    }
+
+    /**
+     * Return the error code.
+     */
+    public int getErrorCode() {
+        return mErrorCode;
     }
 }

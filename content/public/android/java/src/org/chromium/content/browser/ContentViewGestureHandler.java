@@ -16,11 +16,11 @@ import android.view.ScaleGestureDetector;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.third_party.GestureDetector;
 import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListener;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.TraceEvent;
 
 /**
  * This class handles all MotionEvent handling done in ContentViewCore including the gesture

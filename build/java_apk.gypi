@@ -123,9 +123,6 @@
       'variables': {
         'native_lib_target%': '',
         'native_lib_version_name%': '',
-        # TODO (aberent) remove use_content_linker once downstream Android has
-        # been switched to use_chromium_linker.
-        'use_content_linker%': 0,
         'use_chromium_linker%' : 0,
         'enable_chromium_linker_tests%': 0,
         'is_test_apk%': 0,
@@ -150,7 +147,6 @@
     },
     'native_lib_target%': '',
     'native_lib_version_name%': '',
-    'use_content_linker%': 0,
     'use_chromium_linker%' : 0,
     'enable_chromium_linker_tests%': 0,
     'emma_instrument': '<(emma_instrument)',
@@ -186,7 +182,7 @@
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
       ],
     }],
-    ['use_content_linker == 1 or use_chromium_linker == 1', {
+    ['use_chromium_linker == 1', {
       'dependencies': [
         '<(DEPTH)/base/base.gyp:chromium_android_linker',
       ],
@@ -218,7 +214,7 @@
         {
           'variables': {
             'conditions': [
-              ['use_content_linker == 1 or use_chromium_linker == 1', {
+              ['use_chromium_linker == 1', {
                 'variables': {
                   'linker_input_libraries': [
                     '<(SHARED_LIB_DIR)/libchromium_android_linker.>(android_product_extension)',
@@ -262,7 +258,7 @@
           'action_name': 'native_libraries_<(_target_name)',
           'variables': {
             'conditions': [
-              ['use_content_linker == 1 or use_chromium_linker == 1', {
+              ['use_chromium_linker == 1', {
                 'variables': {
                   'linker_gcc_preprocess_defines': [
                     '--defines', 'ENABLE_CHROMIUM_LINKER',

@@ -28,17 +28,3 @@ RESULT_CODE(HUNG, 2)
 
 // A bad message caused the process termination.
 RESULT_CODE(KILLED_BAD_MESSAGE, 3)
-
-#if defined(OS_ANDROID)
-// Failed to register JNI methods.
-RESULT_CODE(FAILED_TO_REGISTER_JNI, 4)
-
-// Failed to find and load the native library.
-RESULT_CODE(NATIVE_LIBRARY_LOAD_FAILED, 5)
-
-// Wrong version of library loaded
-RESULT_CODE(NATIVE_LIBRARY_WRONG_VERSION, 6)
-
-// Native library startup failed
-RESULT_CODE(NATIVE_STARTUP_FAILED, 7)
-#endif
