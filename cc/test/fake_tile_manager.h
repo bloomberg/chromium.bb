@@ -19,7 +19,11 @@ class FakeTileManager : public TileManager {
                   ResourceProvider* resource_provider);
   FakeTileManager(TileManagerClient* client,
                   ResourceProvider* resource_provider,
+                  bool allow_on_demand_raster);
+  FakeTileManager(TileManagerClient* client,
+                  ResourceProvider* resource_provider,
                   size_t raster_task_limit_bytes);
+  virtual ~FakeTileManager();
 
   bool HasBeenAssignedMemory(Tile* tile);
   void AssignMemoryToTiles(
@@ -27,7 +31,7 @@ class FakeTileManager : public TileManager {
 
   void CheckForCompletedTasks();
 
-  virtual ~FakeTileManager();
+  void DidFinishRunningTasksForTesting();
 
   virtual void Release(Tile* tile) OVERRIDE;
 

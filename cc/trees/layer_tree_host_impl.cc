@@ -1744,7 +1744,8 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
 void LayerTreeHostImpl::CreateAndSetTileManager(
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
-    bool using_map_image) {
+    bool using_map_image,
+    bool allow_rasterize_on_demand) {
   DCHECK(settings_.impl_side_painting);
   DCHECK(resource_provider);
   tile_manager_ =
@@ -1753,6 +1754,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
                           context_provider,
                           rendering_stats_instrumentation_,
                           using_map_image,
+                          allow_rasterize_on_demand,
                           GetMaxTransferBufferUsageBytes(context_provider),
                           GetMaxRasterTasksUsageBytes(context_provider),
                           GetMapImageTextureTarget(context_provider));
@@ -1805,9 +1807,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   if (settings_.impl_side_painting) {
-    CreateAndSetTileManager(resource_provider.get(),
-                            output_surface->context_provider().get(),
-                            GetRendererCapabilities().using_map_image);
+    CreateAndSetTileManager(
+        resource_provider.get(),
+        output_surface->context_provider().get(),
+        GetRendererCapabilities().using_map_image,
+        GetRendererCapabilities().allow_rasterize_on_demand);
   }
 
   // Setup BeginImplFrameEmulation if it's not supported natively
@@ -1912,7 +1916,8 @@ void LayerTreeHostImpl::ReleaseGL() {
   EnforceZeroBudget(true);
   CreateAndSetTileManager(resource_provider_.get(),
                           NULL,
-                          GetRendererCapabilities().using_map_image);
+                          GetRendererCapabilities().using_map_image,
+                          GetRendererCapabilities().allow_rasterize_on_demand);
   DCHECK(tile_manager_);
 
   SetOffscreenContextProvider(NULL);

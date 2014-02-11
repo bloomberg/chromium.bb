@@ -8,27 +8,33 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
-#include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/test_tile_priorities.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-class TileManagerTest : public testing::TestWithParam<bool> {
+class TileManagerTest : public testing::TestWithParam<bool>,
+                        public TileManagerClient {
  public:
   typedef std::vector<scoped_refptr<Tile> > TileVector;
 
+  TileManagerTest()
+      : memory_limit_policy_(ALLOW_ANYTHING),
+        max_memory_tiles_(0),
+        ready_to_activate_(false) {}
+
   void Initialize(int max_tiles,
                   TileMemoryLimitPolicy memory_limit_policy,
-                  TreePriority tree_priority) {
+                  TreePriority tree_priority,
+                  bool allow_on_demand_raster = true) {
     output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ =
         ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
-    tile_manager_ = make_scoped_ptr(
-        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
+    tile_manager_ = make_scoped_ptr(new FakeTileManager(
+        this, resource_provider_.get(), allow_on_demand_raster));
 
     memory_limit_policy_ = memory_limit_policy;
     max_memory_tiles_ = max_tiles;
@@ -72,6 +78,9 @@ class TileManagerTest : public testing::TestWithParam<bool> {
 
     testing::Test::TearDown();
   }
+
+  // TileManagerClient implementation.
+  virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
 
   TileVector CreateTilesWithSize(int count,
                                  TilePriority active_priority,
@@ -123,11 +132,12 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     return has_lcd_count;
   }
 
+  bool ready_to_activate() const { return ready_to_activate_; }
+
  protected:
   GlobalStateThatImpactsTilePriority global_state_;
 
  private:
-  FakeTileManagerClient tile_manager_client_;
   LayerTreeSettings settings_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;
@@ -136,6 +146,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
   scoped_ptr<ResourceProvider> resource_provider_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_memory_tiles_;
+  bool ready_to_activate_;
 };
 
 TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
@@ -509,6 +520,40 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
                                  &memory_used_bytes);
   // Allocated bytes should never be more than the memory limit.
   EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
+}
+
+TEST_P(TileManagerTest, AllowRasterizeOnDemand) {
+  // Not enough memory to initialize tiles required for activation.
+  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES);
+  TileVector tiles =
+      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
+
+  tile_manager()->AssignMemoryToTiles(global_state_);
+
+  // This should make required tiles ready to draw by marking them as
+  // required tiles for on-demand raster.
+  tile_manager()->DidFinishRunningTasksForTesting();
+
+  EXPECT_TRUE(ready_to_activate());
+  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
+    EXPECT_TRUE((*it)->IsReadyToDraw());
+}
+
+TEST_P(TileManagerTest, PreventRasterizeOnDemand) {
+  // Not enough memory to initialize tiles required for activation.
+  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES, false);
+  TileVector tiles =
+      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
+
+  tile_manager()->AssignMemoryToTiles(global_state_);
+
+  // This should make required tiles ready to draw by marking them as
+  // required tiles for on-demand raster.
+  tile_manager()->DidFinishRunningTasksForTesting();
+
+  EXPECT_TRUE(ready_to_activate());
+  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
+    EXPECT_FALSE((*it)->IsReadyToDraw());
 }
 
 // If true, the max tile limit should be applied as bytes; if false,

@@ -170,6 +170,7 @@ scoped_ptr<TileManager> TileManager::Create(
     ContextProvider* context_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_map_image,
+    bool use_rasterize_on_demand,
     size_t max_transfer_buffer_usage_bytes,
     size_t max_raster_usage_bytes,
     unsigned map_image_texture_target) {
@@ -184,7 +185,8 @@ scoped_ptr<TileManager> TileManager::Create(
                 context_provider,
                 max_transfer_buffer_usage_bytes),
       max_raster_usage_bytes,
-      rendering_stats_instrumentation));
+      rendering_stats_instrumentation,
+      use_rasterize_on_demand));
 }
 
 TileManager::TileManager(
@@ -192,7 +194,8 @@ TileManager::TileManager(
     ResourceProvider* resource_provider,
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t max_raster_usage_bytes,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    bool use_rasterize_on_demand)
     : client_(client),
       resource_pool_(
           ResourcePool::Create(resource_provider,
@@ -210,7 +213,8 @@ TileManager::TileManager(
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
-      did_check_for_completed_tasks_since_last_schedule_tasks_(true) {
+      did_check_for_completed_tasks_since_last_schedule_tasks_(true),
+      use_rasterize_on_demand_(use_rasterize_on_demand) {
   raster_worker_pool_->SetClient(this);
 }
 
@@ -324,7 +328,8 @@ void TileManager::DidFinishRunningTasks() {
       // If we can't raster on demand, give up early (and don't activate).
       if (!allow_rasterize_on_demand)
         return;
-      tile_version.set_rasterize_on_demand();
+      if (use_rasterize_on_demand_)
+        tile_version.set_rasterize_on_demand();
     }
   }
 
@@ -697,7 +702,7 @@ void TileManager::AssignGpuMemoryToTiles(
       // This tile was already on screen and now its resources have been
       // released. In order to prevent checkerboarding, set this tile as
       // rasterize on demand immediately.
-      if (mts.visible_and_ready_to_draw)
+      if (mts.visible_and_ready_to_draw && use_rasterize_on_demand_)
         tile_version.set_rasterize_on_demand();
 
       oomed = true;

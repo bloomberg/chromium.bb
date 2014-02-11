@@ -55,6 +55,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       ContextProvider* context_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool use_map_image,
+      bool use_rasterize_on_demand,
       size_t max_transfer_buffer_usage_bytes,
       size_t max_raster_usage_bytes,
       unsigned map_image_texture_target);
@@ -120,7 +121,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
               ResourceProvider* resource_provider,
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
               size_t max_raster_usage_bytes,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation);
+              RenderingStatsInstrumentation* rendering_stats_instrumentation,
+              bool use_rasterize_on_demand);
 
   // Methods called by Tile
   friend class Tile;
@@ -211,6 +213,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   RasterTaskCompletionStats update_visible_tiles_stats_;
 
   std::vector<Tile*> released_tiles_;
+
+  bool use_rasterize_on_demand_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

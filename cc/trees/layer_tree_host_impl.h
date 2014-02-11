@@ -463,7 +463,8 @@ class CC_EXPORT LayerTreeHostImpl
       bool skip_gl_renderer);
   void CreateAndSetTileManager(ResourceProvider* resource_provider,
                                ContextProvider* context_provider,
-                               bool using_map_image);
+                               bool using_map_image,
+                               bool allow_rasterize_on_demand);
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 

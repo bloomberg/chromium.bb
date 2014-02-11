@@ -84,7 +84,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   std::numeric_limits<unsigned>::max(),
-                  NULL) {}
+                  NULL,
+                  true) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
@@ -92,7 +93,18 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   std::numeric_limits<unsigned>::max(),
-                  NULL) {}
+                  NULL,
+                  true) {}
+
+FakeTileManager::FakeTileManager(TileManagerClient* client,
+                                 ResourceProvider* resource_provider,
+                                 bool allow_on_demand_raster)
+    : TileManager(client,
+                  resource_provider,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  std::numeric_limits<unsigned>::max(),
+                  NULL,
+                  allow_on_demand_raster) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
@@ -101,7 +113,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   raster_task_limit_bytes,
-                  NULL) {}
+                  NULL,
+                  true) {}
 
 FakeTileManager::~FakeTileManager() {}
 
@@ -123,6 +136,10 @@ bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
 
 void FakeTileManager::CheckForCompletedTasks() {
   RasterWorkerPoolForTesting()->CheckForCompletedTasks();
+}
+
+void FakeTileManager::DidFinishRunningTasksForTesting() {
+  DidFinishRunningTasks();
 }
 
 void FakeTileManager::Release(Tile* tile) {

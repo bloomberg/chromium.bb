@@ -4319,6 +4319,14 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
   DrawFrameAndTestDamage(no_damage);
 }
 
+// TODO(reveman): Remove this test and the ability to prevent on demand raster
+// when delegating renderer supports PictureDrawQuads. crbug.com/342121
+TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, PreventRasterizeOnDemand) {
+  LayerTreeSettings settings;
+  CreateHostImpl(settings, CreateOutputSurface());
+  EXPECT_FALSE(host_impl_->GetRendererCapabilities().allow_rasterize_on_demand);
+}
+
 class FakeMaskLayerImpl : public LayerImpl {
  public:
   static scoped_ptr<FakeMaskLayerImpl> Create(LayerTreeImpl* tree_impl,

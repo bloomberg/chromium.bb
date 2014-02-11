@@ -75,6 +75,8 @@ bool DelegatingRenderer::Initialize() {
   capabilities_.using_map_image =
       settings_->use_map_image && caps.gpu.map_image;
 
+  capabilities_.allow_rasterize_on_demand = false;
+
   return true;
 }
 

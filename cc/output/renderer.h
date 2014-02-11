@@ -33,6 +33,7 @@ struct RendererCapabilitiesImpl {
   bool avoid_pow2_textures;
   bool using_map_image;
   bool using_discard_framebuffer;
+  bool allow_rasterize_on_demand;
 
   RendererCapabilities MainThreadCapabilities() const;
 };
