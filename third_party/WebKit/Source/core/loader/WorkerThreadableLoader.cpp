@@ -49,8 +49,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-using namespace std;
-
 namespace WebCore {
 
 WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope* workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options)

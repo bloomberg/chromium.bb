@@ -39,8 +39,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-using namespace std;
-
 namespace WebCore {
 
 ImageResource::ImageResource(const ResourceRequest& resourceRequest)
