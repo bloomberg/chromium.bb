@@ -402,10 +402,12 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
   // If we found setup 'B7' resource, handle it.
   if (setup_path->length() > 0) {
     CommandString cmd_line;
+    PathString exe_path;
     // Get the path to setup.exe first.
     bool success = true;
-    if (!GetSetupExePathFromRegistry(configuration, cmd_line.get(),
-                                     cmd_line.capacity()) ||
+    if (!GetSetupExePathFromRegistry(configuration, exe_path.get(),
+                                     exe_path.capacity()) ||
+        !cmd_line.assign(exe_path.get()) ||
         !cmd_line.append(kCmdUpdateSetupExe) ||
         !cmd_line.append(L"=\"") ||
         !cmd_line.append(setup_path->get()) ||
@@ -425,7 +427,7 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
 
     int exit_code = 0;
     if (success &&
-        (!RunProcessAndWait(NULL, cmd_line.get(), &exit_code) ||
+        (!RunProcessAndWait(exe_path.get(), cmd_line.get(), &exit_code) ||
          exit_code != ERROR_SUCCESS)) {
       success = false;
     }
