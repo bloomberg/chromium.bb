@@ -97,7 +97,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
  private:
   friend class MessageCenterViewTest;
 
-  void AddMessageViewAt(MessageView* view, int index);
   void AddNotificationAt(const Notification& notification, int index);
   void NotificationsChanged();
   void SetNotificationViewForTest(MessageView* view);
