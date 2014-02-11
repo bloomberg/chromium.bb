@@ -24,7 +24,7 @@ def reorder_imports(input_dir, output_dir, architecture):
     '..\\..\\..\\third_party\\syzygy\\binaries\\exe\\swapimport.exe')
 
   args = [swap_exe, '--input-image=%s' % input_image,
-      '--output-image=%s' % output_image, '--overwrite']
+      '--output-image=%s' % output_image, '--overwrite', '--no-logo']
 
   if architecture == 'x64':
     args.append('--x64');
