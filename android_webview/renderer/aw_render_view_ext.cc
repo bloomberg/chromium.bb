@@ -23,11 +23,11 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/url_canon.h"
@@ -54,11 +54,11 @@ GURL GetAbsoluteSrcUrl(const blink::WebElement& element) {
   return GetAbsoluteUrl(element, element.getAttribute("src"));
 }
 
-blink::WebNode GetImgChild(const blink::WebNode& node) {
+blink::WebElement GetImgChild(const blink::WebElement& element) {
   // This implementation is incomplete (for example if is an area tag) but
   // matches the original WebViewClassic implementation.
 
-  blink::WebNodeCollection collection = node.getElementsByTagName("img");
+  blink::WebElementCollection collection = element.getElementsByTagName("img");
   DCHECK(!collection.isNull());
   return collection.firstItem();
 }
@@ -261,10 +261,10 @@ void AwRenderViewExt::FocusedNodeChanged(const blink::WebNode& node) {
     absolute_link_url = GetAbsoluteUrl(node, data.href);
 
   GURL absolute_image_url;
-  const blink::WebNode child_img = GetImgChild(node);
-  if (!child_img.isNull() && child_img.isElementNode()) {
+  const blink::WebElement child_img = GetImgChild(element);
+  if (!child_img.isNull()) {
     absolute_image_url =
-        GetAbsoluteSrcUrl(child_img.toConst<blink::WebElement>());
+        GetAbsoluteSrcUrl(child_img);
   }
 
   PopulateHitTestData(absolute_link_url,
