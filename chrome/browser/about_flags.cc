@@ -2010,6 +2010,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kDisableAppBanners)
   },
+  {
+    "enable-fast-text-autosizing",
+    IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_NAME,
+    IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableFastTextAutosizing)
+  },
 #endif
 };
 
