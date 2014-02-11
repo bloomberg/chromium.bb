@@ -2,14 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
+from collections import defaultdict
 import posixpath
-import traceback
 
-from branch_utility import BranchUtility
-from compiled_file_system import SingleFile
-from extensions_paths import PUBLIC_TEMPLATES
-from file_system import FileNotFoundError
+from path_util import SplitParent
 
 
 def _SimplifyFileName(file_name):
@@ -26,85 +22,47 @@ class PathCanonicalizer(object):
   paths lying around the webs. We try to redirect those to where they are now.
   '''
   def __init__(self, compiled_fs_factory, file_system):
-    # Map of simplified API names (for typo detection) to their real paths.
-    @SingleFile
-    def make_public_apis(_, file_names):
-      return dict((_SimplifyFileName(name), name) for name in file_names)
-    self._public_apis = compiled_fs_factory.Create(file_system,
-                                                   make_public_apis,
-                                                   PathCanonicalizer)
+    self._file_system = file_system
+    # A lazily populated mapping of file names to a list of full paths that
+    # contain them.  For example,
+    #  - browserAction.html: [extensions/browserAction.html]
+    #  - storage.html: [apps/storage.html, extensions/storage.html]
+    self._files_to_paths = None
+
+  def _GetPotentialPaths(self, filename):
+    '''Returns the paths to any file called |filename|.
+    '''
+    if self._files_to_paths is None:
+      self._files_to_paths = defaultdict(lambda: [])
+      for base, dirs, files in self._file_system.Walk(''):
+        for f in dirs + files:
+          self._files_to_paths[_SimplifyFileName(f)].append(
+              posixpath.join(base, f))
+    return self._files_to_paths.get(_SimplifyFileName(filename))
 
   def Canonicalize(self, path):
-    '''Returns the canonical path for |path|, and whether that path is a
-    permanent canonicalisation (e.g. when we redirect from a channel to a
-    channel-less URL) or temporary (e.g. when we redirect from an apps-only API
-    to an extensions one - we may at some point enable it for extensions).
+    '''Returns the canonical path for |path|.
     '''
-    class ReturnType(object):
-      def __init__(self, path, permanent):
-        self.path = path
-        self.permanent = permanent
+    # Path may already be the canonical path.
+    if self._file_system.Exists(path).Get():
+      return path
 
-      # Catch incorrect comparisons by disabling ==/!=.
-      def __eq__(self, _): raise NotImplementedError()
-      def __ne__(self, _): raise NotImplementedError()
+    # Path not found. Our single heuristic: find |basename| in the directory
+    # structure with the longest common prefix of |path|.
+    _, base = SplitParent(path)
+    potential_paths = self._GetPotentialPaths(base)
+    if not potential_paths:
+      # There is no file with that name.
+      return path
 
-    # Strip any channel info off it. There are no channels anymore.
-    for channel_name in BranchUtility.GetAllChannelNames():
-      channel_prefix = channel_name + '/'
-      if path.startswith(channel_prefix):
-        # Redirect now so that we can set the permanent-redirect bit.  Channel
-        # redirects are the only things that should be permanent redirects;
-        # anything else *could* change, so is temporary.
-        return ReturnType(path[len(channel_prefix):], True)
+    # The most likely canonical file is the one with the longest common prefix.
+    # This is slightly weaker than it could be; |path| is compared, not the
+    # simplified form of |path|, which may matter.
+    max_prefix = potential_paths[0]
+    max_prefix_length = len(posixpath.commonprefix((max_prefix, path)))
+    for path_for_file in potential_paths[1:]:
+      prefix_length = len(posixpath.commonprefix((path_for_file, path)))
+      if prefix_length > max_prefix_length:
+        max_prefix, max_prefix_length = path_for_file, prefix_length
 
-    # No further work needed for static.
-    if path.startswith('static/'):
-      return ReturnType(path, False)
-
-    # People go to just "extensions" or "apps". Redirect to the directory.
-    if path in ('extensions', 'apps'):
-      return ReturnType(path + '/', False)
-
-    # The rest of this function deals with trying to figure out what API page
-    # for extensions/apps to redirect to, if any. We see a few different cases
-    # here:
-    #  - Unqualified names ("browserAction.html"). These are easy to resolve;
-    #    figure out whether it's an extension or app API and redirect.
-    #     - but what if it's both? Well, assume extensions. Maybe later we can
-    #       check analytics and see which is more popular.
-    #  - Wrong names ("apps/browserAction.html"). This really does happen,
-    #    damn it, so do the above logic but record which is the default.
-    if path.startswith(('extensions/', 'apps/')):
-      default_platform, reference_path = path.split('/', 1)
-    else:
-      default_platform, reference_path = ('extensions', path)
-
-    try:
-      apps_public = self._public_apis.GetFromFileListing(
-          '%sapps/' % PUBLIC_TEMPLATES).Get()
-      extensions_public = self._public_apis.GetFromFileListing(
-          '%sextensions/' % PUBLIC_TEMPLATES).Get()
-    except FileNotFoundError:
-      # Probably offline.
-      logging.warning(traceback.format_exc())
-      return ReturnType(path, False)
-
-    simple_reference_path = _SimplifyFileName(reference_path)
-    apps_path = apps_public.get(simple_reference_path)
-    extensions_path = extensions_public.get(simple_reference_path)
-
-    if apps_path is None:
-      if extensions_path is None:
-        # No idea. Just return the original path. It'll probably 404.
-        pass
-      else:
-        path = 'extensions/%s' % extensions_path
-    else:
-      if extensions_path is None:
-        path = 'apps/%s' % apps_path
-      else:
-        assert apps_path == extensions_path
-        path = '%s/%s' % (default_platform, apps_path)
-
-    return ReturnType(path, False)
+    return max_prefix

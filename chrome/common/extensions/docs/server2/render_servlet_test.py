@@ -25,7 +25,7 @@ class RenderServletTest(unittest.TestCase):
 
   def testExtensionAppRedirect(self):
     self.assertEqual(
-        Response.Redirect('/extensions/storage.html', permanent=False),
+        Response.Redirect('/apps/storage.html', permanent=False),
         self._Render('storage.html'))
 
   def testChannelRedirect(self):

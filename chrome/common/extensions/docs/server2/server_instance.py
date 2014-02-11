@@ -17,7 +17,6 @@ from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
 from object_store_creator import ObjectStoreCreator
-from path_canonicalizer import PathCanonicalizer
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 from table_of_contents_renderer import TableOfContentsRenderer
@@ -133,10 +132,6 @@ class ServerInstance(object):
 
     self.api_data_source_factory.SetSamplesDataSourceFactory(
         self.samples_data_source_factory)
-
-    self.path_canonicalizer = PathCanonicalizer(
-        self.compiled_fs_factory,
-        host_fs_at_trunk)
 
     self.content_providers = ContentProviders(
         self.compiled_fs_factory,

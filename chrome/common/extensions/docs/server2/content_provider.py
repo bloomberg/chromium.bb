@@ -10,6 +10,7 @@ from directory_zipper import DirectoryZipper
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Gettable, Future
+from path_canonicalizer import PathCanonicalizer
 from path_util import AssertIsValid, ToDirectory
 from third_party.handlebar import Handlebar
 from third_party.markdown import markdown
@@ -54,6 +55,8 @@ class ContentProvider(object):
     self._content_cache = compiled_fs_factory.Create(file_system,
                                                      self._CompileContent,
                                                      ContentProvider)
+    self._path_canonicalizer = PathCanonicalizer(compiled_fs_factory,
+                                                 file_system)
     self._supports_templates = supports_templates
     if supports_zip:
       self._directory_zipper = DirectoryZipper(compiled_fs_factory, file_system)
@@ -98,9 +101,24 @@ class ContentProvider(object):
       return as_md
     return path
 
-  def GetContentAndType(self, path):
+  def GetCanonicalPath(self, path):
+    '''Gets the canonical location of |path|. This class is tolerant of
+    spelling errors and missing files that are in other directories, and this
+    returns the correct/canonical path for those.
+
+    For example, the canonical path of "browseraction" is probably
+    "extensions/browserAction.html".
+    '''
     AssertIsValid(path)
-    path = path.lstrip('/')
+    _, ext = posixpath.splitext(path)
+    if not ext or ext == '.html':
+      return self._path_canonicalizer.Canonicalize(path)
+    return path
+
+  def GetContentAndType(self, path):
+    '''Returns the ContentAndType of the file at |path|.
+    '''
+    AssertIsValid(path)
     base, ext = posixpath.splitext(path)
 
     # Check for a zip file first, if zip is enabled.

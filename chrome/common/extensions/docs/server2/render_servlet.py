@@ -6,6 +6,7 @@ import logging
 import posixpath
 import traceback
 
+from branch_utility import BranchUtility
 from environment import IsPreviewServer
 from file_system import FileNotFoundError
 from redirector import Redirector
@@ -37,24 +38,20 @@ class RenderServlet(Servlet):
     ''' Render the page for a request.
     '''
     path = self._request.path.lstrip('/')
+
+    # The server used to be partitioned based on Chrome channel, but it isn't
+    # anymore. Redirect from the old state.
+    channel_name, path = BranchUtility.SplitChannelNameFromPath(path)
+    if channel_name is not None:
+      return Response.Redirect('/' + path, permanent=True)
+
     server_instance = self._delegate.CreateServerInstance()
 
     try:
       return self._GetSuccessResponse(path, server_instance)
     except FileNotFoundError:
-      if IsPreviewServer():
-        logging.error(traceback.format_exc())
-      # Maybe it didn't find the file because its canonical location is
-      # somewhere else; this is distinct from "redirects", which are typically
-      # explicit. This is implicit.
-      canonical_result = server_instance.path_canonicalizer.Canonicalize(path)
-      redirect = canonical_result.path.lstrip('/')
-      if path != redirect:
-        return Response.Redirect('/' + redirect,
-                                 permanent=canonical_result.permanent)
-
-      # Not found for reals. Find the closest 404.html file and serve that;
-      # e.g. if the path is extensions/manifest/typo.html then first look for
+      # Find the closest 404.html file and serve that, e.g. if the path is
+      # extensions/manifest/typo.html then first look for
       # extensions/manifest/404.html, then extensions/404.html, then 404.html.
       #
       # Failing that just print 'Not Found' but that should preferrably never
@@ -64,6 +61,8 @@ class RenderServlet(Servlet):
         try:
           path_404 = posixpath.join(*(path_components[0:i] + ['404.html']))
           response = self._GetSuccessResponse(path_404, server_instance)
+          if response.status != 200:
+            continue
           return Response.NotFound(response.content.ToString(),
                                    headers=response.headers)
         except FileNotFoundError: continue
@@ -85,6 +84,10 @@ class RenderServlet(Servlet):
         content_provider.file_system).Redirect(self._request.host, path)
     if redirect is not None:
       return Response.Redirect(redirect, permanent=False)
+
+    canonical_path = content_provider.GetCanonicalPath(path)
+    if canonical_path != path:
+      return Response.Redirect('/' + canonical_path, permanent=False)
 
     content_and_type = content_provider.GetContentAndType(path).Get()
     if not content_and_type.content:
