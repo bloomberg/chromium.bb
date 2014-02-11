@@ -24,21 +24,21 @@
  */
 
 #include "config.h"
-#include "core/html/shadow/MediaControlsChromiumAndroid.h"
+#include "core/html/shadow/MediaControlsAndroid.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 
 namespace WebCore {
 
-MediaControlsChromiumAndroid::MediaControlsChromiumAndroid(Document& document)
+MediaControlsAndroid::MediaControlsAndroid(Document& document)
     : MediaControls(document)
     , m_overlayPlayButton(0)
     , m_overlayEnclosure(0)
 {
 }
 
-bool MediaControlsChromiumAndroid::initializeControls(Document& document)
+bool MediaControlsAndroid::initializeControls(Document& document)
 {
     TrackExceptionState exceptionState;
 
@@ -57,7 +57,7 @@ bool MediaControlsChromiumAndroid::initializeControls(Document& document)
     return MediaControls::initializeControls(document);
 }
 
-void MediaControlsChromiumAndroid::setMediaController(MediaControllerInterface* controller)
+void MediaControlsAndroid::setMediaController(MediaControllerInterface* controller)
 {
     if (m_overlayPlayButton)
         m_overlayPlayButton->setMediaController(controller);
@@ -66,19 +66,19 @@ void MediaControlsChromiumAndroid::setMediaController(MediaControllerInterface* 
     MediaControls::setMediaController(controller);
 }
 
-void MediaControlsChromiumAndroid::playbackStarted()
+void MediaControlsAndroid::playbackStarted()
 {
     m_overlayPlayButton->updateDisplayType();
     MediaControls::playbackStarted();
 }
 
-void MediaControlsChromiumAndroid::playbackStopped()
+void MediaControlsAndroid::playbackStopped()
 {
     m_overlayPlayButton->updateDisplayType();
     MediaControls::playbackStopped();
 }
 
-void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
+void MediaControlsAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
 {
     // Insert it before the overlay play button so it always displays behind it.
     m_overlayEnclosure->insertBefore(textTrackContainer, m_overlayPlayButton);

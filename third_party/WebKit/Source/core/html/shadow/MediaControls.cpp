@@ -29,7 +29,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #if OS(ANDROID)
-#include "core/html/shadow/MediaControlsChromiumAndroid.h"
+#include "core/html/shadow/MediaControlsAndroid.h"
 #endif
 
 namespace WebCore {
@@ -63,7 +63,7 @@ PassRefPtr<MediaControls> MediaControls::create(Document& document)
 
     RefPtr<MediaControls> controls;
 #if OS(ANDROID)
-    controls = adoptRef(new MediaControlsChromiumAndroid(document));
+    controls = adoptRef(new MediaControlsAndroid(document));
 #else
     controls = adoptRef(new MediaControls(document));
 #endif

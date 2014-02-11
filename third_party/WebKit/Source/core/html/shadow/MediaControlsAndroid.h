@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaControlsChromiumAndroid_h
-#define MediaControlsChromiumAndroid_h
+#ifndef MediaControlsAndroid_h
+#define MediaControlsAndroid_h
 
 #include "core/html/shadow/MediaControls.h"
 
 namespace WebCore {
 
-class MediaControlsChromiumAndroid FINAL : public MediaControls {
+class MediaControlsAndroid FINAL : public MediaControls {
 public:
-    explicit MediaControlsChromiumAndroid(Document&);
+    explicit MediaControlsAndroid(Document&);
 
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
     virtual void playbackStarted() OVERRIDE;
