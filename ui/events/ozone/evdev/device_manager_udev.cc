@@ -6,10 +6,12 @@
 
 #include <libudev.h>
 
+#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_ozone.h"
 #include "base/strings/stringprintf.h"
+#include "ui/events/ozone/evdev/device_manager_evdev.h"
 #include "ui/events/ozone/evdev/event_factory.h"
 #include "ui/events/ozone/evdev/scoped_udev.h"
 
@@ -120,7 +122,7 @@ class DeviceManagerUdev : public DeviceManagerEvdev,
                           base::MessagePumpLibevent::Watcher {
  public:
   DeviceManagerUdev() {}
-  virtual ~DeviceManagerUdev() {}
+  virtual ~DeviceManagerUdev() { Stop(); }
 
   // Enumerate existing devices & start watching for device changes.
   virtual void ScanAndStartMonitoring(const EvdevDeviceCallback& device_added,
@@ -139,9 +141,16 @@ class DeviceManagerUdev : public DeviceManagerEvdev,
       LOG(ERROR) << "failed to enumerate input devices via udev";
   }
 
+  virtual void Stop() OVERRIDE {
+    controller_.StopWatchingFileDescriptor();
+    device_added_.Reset();
+    device_removed_.Reset();
+  }
+
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
     // The netlink socket should never become disconnected. There's no need
     // to handle broken connections here.
+    TRACE_EVENT1("ozone", "UdevDeviceChange", "socket", fd);
 
     scoped_udev_device device(udev_monitor_receive_device(udev_monitor_.get()));
     if (!device)
@@ -177,9 +186,8 @@ class DeviceManagerUdev : public DeviceManagerEvdev,
     device_removed_ = device_removed;
 
     // Watch for incoming events on monitor socket.
-    // TODO(spang): Hotplug may need to be offloaded from the UI thread.
     return base::MessagePumpOzone::Current()->WatchFileDescriptor(
-        fd, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+        fd, true, base::MessagePumpOzone::WATCH_READ, &controller_, this);
   }
 
   // Udev daemon connection.
@@ -201,7 +209,7 @@ class DeviceManagerUdev : public DeviceManagerEvdev,
 }  // namespace
 
 scoped_ptr<DeviceManagerEvdev> CreateDeviceManagerUdev() {
-  return scoped_ptr<DeviceManagerEvdev>(new DeviceManagerUdev);
+  return make_scoped_ptr<DeviceManagerEvdev>(new DeviceManagerUdev());
 }
 
 }  // namespace ui

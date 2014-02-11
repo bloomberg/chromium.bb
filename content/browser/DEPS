@@ -62,6 +62,7 @@ include_rules = [
   # These should be burned down. http://crbug.com/237267
   "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
 
+  "+ui/ozone/ozone_platform.h",
   "+ui/ozone/ozone_switches.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!

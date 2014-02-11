@@ -12,12 +12,19 @@
 namespace ui {
 
 class Event;
+class EventModifiersEvdev;
 
 // Base class for device-specific evdev event conversion.
 class EVENTS_EXPORT EventConverterEvdev {
  public:
   EventConverterEvdev();
   virtual ~EventConverterEvdev();
+
+  // Start converting events.
+  virtual void Start() = 0;
+
+  // Stop converting events.
+  virtual void Stop() = 0;
 
  protected:
   // Subclasses should use this method to post a task that will dispatch

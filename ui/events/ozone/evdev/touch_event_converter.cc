@@ -48,7 +48,6 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(int fd,
       fd_(fd),
       path_(path) {
   Init();
-  Start();
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {

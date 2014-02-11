@@ -38,6 +38,9 @@ void EventFactoryOzone::SetInstance(EventFactoryOzone* impl) { impl_ = impl; }
 
 void EventFactoryOzone::StartProcessingEvents() {}
 
+void EventFactoryOzone::SetFileTaskRunner(
+    scoped_refptr<base::TaskRunner> task_runner) {}
+
 // static
 void EventFactoryOzone::DispatchEvent(scoped_ptr<ui::Event> event) {
   base::MessageLoop::current()->PostTask(

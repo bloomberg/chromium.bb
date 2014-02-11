@@ -192,7 +192,6 @@ KeyEventConverterEvdev::KeyEventConverterEvdev(int fd,
                                                EventModifiersEvdev* modifiers)
     : fd_(fd), path_(path), modifiers_(modifiers) {
   // TODO(spang): Initialize modifiers using EVIOCGKEY.
-  Start();
 }
 
 KeyEventConverterEvdev::~KeyEventConverterEvdev() {

@@ -25,6 +25,10 @@ class EVENTS_EXPORT KeyEventConverterEvdev
                          EventModifiersEvdev* modifiers);
   virtual ~KeyEventConverterEvdev();
 
+  // Start & stop watching for events.
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
+
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
@@ -32,10 +36,6 @@ class EVENTS_EXPORT KeyEventConverterEvdev
   void ProcessEvents(const struct input_event* inputs, int count);
 
  private:
-  // Start & stop watching for events.
-  void Start();
-  void Stop();
-
   // File descriptor for the /dev/input/event* instance.
   int fd_;
 

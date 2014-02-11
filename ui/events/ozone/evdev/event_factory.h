@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
@@ -15,19 +17,7 @@
 
 namespace ui {
 
-typedef base::Callback<void(const base::FilePath& file_path)>
-    EvdevDeviceCallback;
-
-// Interface for scanning & monitoring input devices.
-class DeviceManagerEvdev {
- public:
-  virtual ~DeviceManagerEvdev();
-
-  // Enumerate devices & start watching for changes.
-  virtual void ScanAndStartMonitoring(
-      const EvdevDeviceCallback& device_added,
-      const EvdevDeviceCallback& device_removed) = 0;
-};
+class DeviceManagerEvdev;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
 class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
@@ -37,12 +27,23 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
 
   virtual void StartProcessingEvents() OVERRIDE;
 
- private:
-  // Open device at path & starting processing events.
-  void AttachInputDevice(const base::FilePath& file_path);
+  // Set task runner to use for device polling & initialization.
+  virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner)
+      OVERRIDE;
 
-  // Close device at path.
+ private:
+  // Open device at path & starting processing events (on UI thread).
+  void AttachInputDevice(const base::FilePath& file_path,
+                         scoped_ptr<EventConverterEvdev> converter);
+
+  // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
+
+  // Callback for device add (on UI thread).
+  void OnDeviceAdded(const base::FilePath& path);
+
+  // Callback for device remove (on UI thread).
+  void OnDeviceRemoved(const base::FilePath& path);
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
@@ -50,7 +51,17 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   // Interface for scanning & monitoring input devices.
   scoped_ptr<DeviceManagerEvdev> device_manager_;
 
+  // Task runner for event dispatch.
+  scoped_refptr<base::TaskRunner> ui_task_runner_;
+
+  // Task runner for file I/O.
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+
+  // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;
+
+  // Support weak pointers for attach & detach callbacks.
+  base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);
 };

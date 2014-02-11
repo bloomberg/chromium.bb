@@ -31,15 +31,15 @@ class EVENTS_EXPORT TouchEventConverterEvdev
                            const EventDeviceInfo& info);
   virtual ~TouchEventConverterEvdev();
 
+  // Start & stop watching for events.
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
+
  private:
   friend class MockTouchEventConverterEvdev;
 
   // Unsafe part of initialization.
   void Init();
-
-  // Start & stop watching for events.
-  void Start();
-  void Stop();
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;

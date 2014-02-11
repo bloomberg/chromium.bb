@@ -6,9 +6,10 @@
 #define UI_EVENTS_OZONE_EVDEV_DEVICE_MANAGER_UDEV_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/events/ozone/evdev/event_factory.h"
 
 namespace ui {
+
+class DeviceManagerEvdev;
 
 // Constructor for DeviceManagerUdev.
 scoped_ptr<DeviceManagerEvdev> CreateDeviceManagerUdev();

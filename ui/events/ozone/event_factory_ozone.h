@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "base/task_runner.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
@@ -32,6 +33,11 @@ class EVENTS_EXPORT EventFactoryOzone {
   // an EventFactoryOzone but not all of them should process events. In chrome,
   // events are dispatched in the browser process on the UI thread.
   virtual void StartProcessingEvents();
+
+  // Sets the TaskRunner to use for file I/O. The thread that calls
+  // StartProcessingEvents() should only be used for I/O that is critical
+  // to event dispatching.
+  virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner);
 
   // Returns the static instance last set using SetInstance().
   static EventFactoryOzone* GetInstance();

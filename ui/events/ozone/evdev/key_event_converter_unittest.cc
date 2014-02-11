@@ -20,6 +20,7 @@ class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
   MockKeyEventConverterEvdev(int fd, EventModifiersEvdev* modifiers)
       : KeyEventConverterEvdev(fd, base::FilePath(kTestDevicePath), modifiers) {
+    Start();
   }
   virtual ~MockKeyEventConverterEvdev() {};
 

@@ -112,6 +112,8 @@
         'gestures/gesture_types.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
+        'ozone/evdev/device_manager_evdev.cc',
+        'ozone/evdev/device_manager_evdev.h',
         'ozone/evdev/device_manager_udev.cc',
         'ozone/evdev/device_manager_udev.h',
         'ozone/evdev/event_converter.cc',

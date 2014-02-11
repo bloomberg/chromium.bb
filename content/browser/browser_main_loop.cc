@@ -117,6 +117,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/ozone_platform.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -970,6 +974,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_linux_.reset(new DeviceMonitorLinux());
 #elif defined(OS_MACOSX)
   device_monitor_mac_.reset(new DeviceMonitorMac());
+#endif
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::Initialize();
+  ui::EventFactoryOzone::GetInstance()->SetFileTaskRunner(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 #endif
 
   // RDH needs the IO thread to be created
