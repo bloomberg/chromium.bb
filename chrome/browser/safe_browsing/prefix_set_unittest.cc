@@ -511,7 +511,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   ASSERT_EQ(sizeof(delta), fwrite(&delta, 1, sizeof(delta), file.get()));
 
   // Leave space for the digest at the end, and regenerate it.
-  base::MD5Digest dummy;
+  base::MD5Digest dummy = { { 0 } };
   ASSERT_EQ(sizeof(dummy), fwrite(&dummy, 1, sizeof(dummy), file.get()));
   ASSERT_TRUE(base::TruncateFile(file.get()));
   CleanChecksum(file.get());

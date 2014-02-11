@@ -6352,17 +6352,3 @@
    fun:_ZN7content12_GLOBAL__N_123CreateWebFrameTestProxyEPNS_14RenderViewImplEi
    fun:_ZN7content15RenderFrameImpl6CreateEPNS_14RenderViewImplEi
 }
-{
-   bug_341957
-   Memcheck:Param
-   write(buf)
-   obj:/lib/x86_64-linux-gnu/libc-2.15.so
-   fun:_IO_file_write@@GLIBC_2.2.5
-   fun:new_do_write
-   fun:_IO_do_write@@GLIBC_2.2.5
-   fun:_IO_switch_to_get_mode
-   fun:_IO_file_seekoff@@GLIBC_2.2.5
-   fun:ftell
-   fun:_ZN4base12TruncateFileEP8_IO_FILE
-   fun:_ZN12_GLOBAL__N_132PrefixSetTest_SizeTRecovery_Test8TestBodyEv
-}
