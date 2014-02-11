@@ -47,7 +47,6 @@
             android:layout_marginBottom="@dimen/app_banner_logo_margin_bottom" />
     <ImageView
             android:id="@+id/app_rating"
-            android:src="@drawable/app_banner_rating"
             android:adjustViewBounds="true"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_star_height" />

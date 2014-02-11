@@ -8,15 +8,17 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
-import android.graphics.Rect;
+import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentView;
 import org.chromium.ui.base.LocalizationUtils;
@@ -61,13 +63,20 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     private ImageView mIconView;
     private TextView mTitleView;
     private Button mButtonView;
-    private ImageView mStarsView;
+    private ImageView mRatingView;
     private ImageView mLogoView;
+    private ClipDrawable mRatingClipperDrawable;
 
     // Information about the package.
     private String mUrl;
     private String mPackageName;
     private float mAppRating;
+
+    // Variables used during layout calculations and saved to avoid reallocations.
+    private final Point mSpaceMain;
+    private final Point mSpaceForLogo;
+    private final Point mSpaceForRating;
+    private final Point mSpaceForTitle;
 
     /**
      * Creates a BannerView and adds it to the given ContentView.
@@ -94,6 +103,10 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     public AppBannerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mIsLayoutLTR = !LocalizationUtils.isSystemLayoutDirectionRtl();
+        mSpaceMain = new Point();
+        mSpaceForLogo = new Point();
+        mSpaceForRating = new Point();
+        mSpaceForTitle = new Point();
     }
 
     /**
@@ -114,13 +127,13 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mIconView = (ImageView) findViewById(R.id.app_icon);
         mTitleView = (TextView) findViewById(R.id.app_title);
         mButtonView = (Button) findViewById(R.id.app_install_button);
-        mStarsView = (ImageView) findViewById(R.id.app_rating);
+        mRatingView = (ImageView) findViewById(R.id.app_rating);
         mLogoView = (ImageView) findViewById(R.id.store_logo);
         assert mIconView != null;
         assert mTitleView != null;
         assert mButtonView != null;
         assert mLogoView != null;
-        assert mStarsView != null;
+        assert mRatingView != null;
 
         // Set up the button to fire an event.
         mButtonView.setOnClickListener(this);
@@ -130,6 +143,22 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mIconView.setImageDrawable(icon);
         mAppRating = rating;
         mButtonView.setText(buttonText);
+        initializeRatingView();
+    }
+
+    private void initializeRatingView() {
+        // Set up the stars Drawable.
+        Drawable ratingDrawable = getResources().getDrawable(R.drawable.app_banner_rating);
+        mRatingClipperDrawable =
+                new ClipDrawable(ratingDrawable, Gravity.START, ClipDrawable.HORIZONTAL);
+        mRatingView.setImageDrawable(mRatingClipperDrawable);
+
+        // Clips the ImageView for the ratings so that it shows an appropriate number of stars.
+        // Ratings are rounded to the nearest 0.5 increment, like in the Play Store.
+        float roundedRating = Math.round(mAppRating * 2) / 2.0f;
+        float percentageRating = roundedRating / NUM_STARS;
+        int clipLevel = (int) (percentageRating * 10000);
+        mRatingClipperDrawable.setLevel(clipLevel);
     }
 
     @Override
@@ -218,7 +247,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Enforce a maximum width on the banner.
-        Resources res = getContext().getResources();
+        Resources res = getResources();
         float density = res.getDisplayMetrics().density;
         int screenSmallestWidth = (int) (res.getConfiguration().smallestScreenWidthDp * density);
         int definedMaxWidth = (int) res.getDimension(R.dimen.app_banner_max_width);
@@ -227,46 +256,45 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         int maxHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         // Track how much space is available for the banner content.
-        Point mainSpace = new Point(maxWidth, maxHeight);
-        mainSpace.x -= (getPaddingStart() + getPaddingEnd());
-        mainSpace.y -= (getPaddingTop() + getPaddingBottom());
+        mSpaceMain.x = maxWidth - ApiCompatibilityUtils.getPaddingStart(this)
+                - ApiCompatibilityUtils.getPaddingEnd(this);
+        mSpaceMain.y = maxHeight - getPaddingTop() - getPaddingBottom();
 
         // Measure the icon, which hugs the banner's starting edge and defines the banner's height.
-        measureChildForSpace(mIconView, mainSpace);
-        mainSpace.x -= getChildWidthWithMargins(mIconView);
-        mainSpace.y = getChildHeightWithMargins(mIconView) + getPaddingTop() + getPaddingBottom();
+        measureChildForSpace(mIconView, mSpaceMain);
+        mSpaceMain.x -= getChildWidthWithMargins(mIconView);
+        mSpaceMain.y = getChildHeightWithMargins(mIconView) + getPaddingTop() + getPaddingBottom();
 
         // Measure the install button, which sits in the bottom-right corner.
-        measureChildForSpace(mButtonView, mainSpace);
+        measureChildForSpace(mButtonView, mSpaceMain);
 
         // Measure the logo, which sits in the bottom-left corner next to the icon.
-        Point spaceForLogo = new Point(mainSpace);
-        spaceForLogo.x -= getChildWidthWithMargins(mButtonView);
-        measureChildForSpace(mLogoView, spaceForLogo);
+        mSpaceForLogo.x = mSpaceMain.x - getChildWidthWithMargins(mButtonView);
+        mSpaceForLogo.y = mSpaceMain.y;
+        measureChildForSpace(mLogoView, mSpaceForLogo);
 
         // Measure the star rating, which sits below the title and above the logo.
-        Point spaceForRating = new Point(spaceForLogo);
-        spaceForRating.y -= getChildHeightWithMargins(mLogoView);
-        measureChildForSpace(mStarsView, spaceForRating);
+        mSpaceForRating.x = mSpaceForLogo.x;
+        mSpaceForRating.y = mSpaceForLogo.y - getChildHeightWithMargins(mLogoView);
+        measureChildForSpace(mRatingView, mSpaceForRating);
 
         // The app title spans the top of the banner.
-        Point spaceForTitle = new Point(mainSpace);
-        spaceForTitle.y -= getChildHeightWithMargins(mLogoView);
-        spaceForTitle.y -= getChildHeightWithMargins(mStarsView);
+        mSpaceForTitle.x = mSpaceMain.x;
+        mSpaceForTitle.y = mSpaceMain.y - getChildHeightWithMargins(mLogoView)
+                - getChildHeightWithMargins(mRatingView);
         mTitleView.setMaxLines(2);
-        measureChildForSpace(mTitleView, spaceForTitle);
+        measureChildForSpace(mTitleView, mSpaceForTitle);
 
         // Ensure the text doesn't get cut in half through one of the lines.
         int requiredHeight = mTitleView.getLineHeight() * mTitleView.getLineCount();
         if (getChildHeightWithMargins(mTitleView) < requiredHeight) {
             mTitleView.setMaxLines(1);
-            measureChildForSpace(mTitleView, spaceForTitle);
+            measureChildForSpace(mTitleView, mSpaceForTitle);
         }
 
         // Set the measured dimensions for the banner.
         int measuredHeight = mIconView.getMeasuredHeight() + getPaddingTop() + getPaddingBottom();
         setMeasuredDimension(maxWidth, measuredHeight);
-        configureStarRatingWidth();
     }
 
     /**
@@ -277,8 +305,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int top = getPaddingTop();
         int bottom = getMeasuredHeight() - getPaddingBottom();
-        int start = getPaddingStart();
-        int end = getMeasuredWidth() - getPaddingEnd();
+        int start = ApiCompatibilityUtils.getPaddingStart(this);
+        int end = getMeasuredWidth() - ApiCompatibilityUtils.getPaddingEnd(this);
 
         // Lay out the icon.
         int iconWidth = mIconView.getMeasuredWidth();
@@ -295,11 +323,11 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         top += getChildHeightWithMargins(mTitleView);
 
         // Lay out the app rating below the title.
-        int starWidth = mStarsView.getMeasuredWidth();
-        int starTop = top + ((MarginLayoutParams) mStarsView.getLayoutParams()).topMargin;
-        int starBottom = starTop + mStarsView.getMeasuredHeight();
+        int starWidth = mRatingView.getMeasuredWidth();
+        int starTop = top + ((MarginLayoutParams) mRatingView.getLayoutParams()).topMargin;
+        int starBottom = starTop + mRatingView.getMeasuredHeight();
         int starLeft = mIsLayoutLTR ? start : (getMeasuredWidth() - start - starWidth);
-        mStarsView.layout(starLeft, starTop, starLeft + starWidth, starBottom);
+        mRatingView.layout(starLeft, starTop, starLeft + starWidth, starBottom);
 
         // Lay out the logo in the bottom-left.
         int logoWidth = mLogoView.getMeasuredWidth();
@@ -323,7 +351,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      */
     private int getChildWidthWithMargins(View child) {
         MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-        return child.getMeasuredWidth() + params.getMarginStart() + params.getMarginEnd();
+        return child.getMeasuredWidth() + ApiCompatibilityUtils.getMarginStart(params)
+                + ApiCompatibilityUtils.getMarginEnd(params);
     }
 
     /**
@@ -348,22 +377,5 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         int widthSpec = MeasureSpec.makeMeasureSpec(available.x, MeasureSpec.AT_MOST);
         int heightSpec = MeasureSpec.makeMeasureSpec(maxHeight, MeasureSpec.AT_MOST);
         measureChildWithMargins(child, widthSpec, 0, heightSpec, 0);
-    }
-
-    /**
-     * Clips the ImageView for the ratings so that it shows an appropriate number of stars.
-     * Ratings are rounded to the nearest 0.5 increment, like in the Play Store.
-     */
-    private void configureStarRatingWidth() {
-        int viewWidth = mStarsView.getMeasuredWidth();
-        float widthPerStar = (float) viewWidth / NUM_STARS;
-        float rating = Math.round(mAppRating * 2) / 2.0f;
-        int clipWidth = Math.round(widthPerStar * rating);
-        int clipHeight = mStarsView.getMeasuredHeight();
-        if (mIsLayoutLTR) {
-            mStarsView.setClipBounds(new Rect(0, 0, clipWidth, clipHeight));
-        } else {
-            mStarsView.setClipBounds(new Rect(viewWidth - clipWidth, 0, viewWidth, clipHeight));
-        }
     }
 }
