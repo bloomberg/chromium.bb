@@ -744,7 +744,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
           FROM_HERE,
           base::Bind(&StatusBubbleViews::ExpandBubble,
                      expand_timer_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kExpandHoverDelay));
+          base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
   }
 }

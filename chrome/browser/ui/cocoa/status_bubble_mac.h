@@ -119,10 +119,11 @@ class StatusBubbleMac : public StatusBubble {
   // for the given mouse position if necessary. Protected for use in tests.
   void SetFrameAvoidingMouse(NSRect window_frame, const gfx::Point& mouse_pos);
 
-  // The timer factory used for show and hide delay timers.
+  // The factory used to generate weak pointers for the show and hide delay
+  // timers.
   base::WeakPtrFactory<StatusBubbleMac> timer_factory_;
 
-  // The timer factory used for the expansion delay timer.
+  // The factory used to generate weak pointers for the expansion delay timer.
   base::WeakPtrFactory<StatusBubbleMac> expand_timer_factory_;
 
   // Calculate the appropriate frame for the status bubble window. If

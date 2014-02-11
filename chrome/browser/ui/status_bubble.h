@@ -22,7 +22,7 @@ class Point;
 class StatusBubble {
  public:
   // On hover, expand status bubble to fit long URL after this delay.
-  static const int kExpandHoverDelay = 1600;
+  static const int kExpandHoverDelayMS = 1600;
 
   virtual ~StatusBubble() {}
 
@@ -44,10 +44,8 @@ class StatusBubble {
 
   // Called when the user's mouse has moved over web content. This is used to
   // determine when the status area should move out of the way of the user's
-  // mouse. This may be windows specific pain due to the way messages are
-  // processed for child HWNDs.  |position| is the absolute position of the
-  // pointer, and |left_content| is true if the mouse just left the content
-  // area.
+  // mouse. |position| is the absolute position of the pointer, and
+  // |left_content| is true if the mouse just left the content area.
   virtual void MouseMoved(const gfx::Point& position, bool left_content) = 0;
 
   // Called when the download shelf becomes visible or invisible.

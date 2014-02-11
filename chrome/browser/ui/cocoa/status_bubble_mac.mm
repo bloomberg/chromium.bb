@@ -45,8 +45,8 @@ NSString* const kFadeAnimationKey = @"alphaValue";
 const CGFloat kBubbleOpacity = 1.0;
 
 // Delay before showing or hiding the bubble after a SetStatus or SetURL call.
-const int64 kShowDelayMilliseconds = 80;
-const int64 kHideDelayMilliseconds = 250;
+const int64 kShowDelayMS = 80;
+const int64 kHideDelayMS = 250;
 
 // How long each fade should last.
 const NSTimeInterval kShowFadeInDurationSeconds = 0.120;
@@ -58,8 +58,8 @@ const NSTimeInterval kHideFadeOutDurationSeconds = 0.200;
 const NSTimeInterval kMinimumTimeInterval =
     std::numeric_limits<NSTimeInterval>::min();
 
-// How quickly the status bubble should expand, in seconds.
-const CGFloat kExpansionDuration = 0.125;
+// How quickly the status bubble should expand.
+const CGFloat kExpansionDurationSeconds = 0.125;
 
 }  // namespace
 
@@ -95,7 +95,7 @@ const CGFloat kExpansionDuration = 0.125;
 
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
   if (statusBubble_)
-    statusBubble_->AnimationDidStop(animation, finished ? true : false);
+    statusBubble_->AnimationDidStop(animation, finished);
 }
 
 @end
@@ -177,7 +177,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
     base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&StatusBubbleMac::ExpandBubble,
                    expand_timer_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kExpandHoverDelay));
+        base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
   }
 }
 
@@ -386,7 +386,7 @@ void StatusBubbleMac::Create() {
 
   // TODO(dtseng): Ignore until we provide NSAccessibility support.
   [window_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
-      forAttribute:NSAccessibilityRoleAttribute];
+                            forAttribute:NSAccessibilityRoleAttribute];
 
   // Set a delegate for the fade-in and fade-out transitions to be notified
   // when fades are complete.  The ownership model is for window_ to own
@@ -398,10 +398,10 @@ void StatusBubbleMac::Create() {
       [[StatusBubbleAnimationDelegate alloc] initWithStatusBubble:this];
   [animation_delegate autorelease];
   [animation setDelegate:animation_delegate];
-  NSMutableDictionary* animation_dictionary =
-      [NSMutableDictionary dictionaryWithDictionary:[window_ animations]];
-  [animation_dictionary setObject:animation forKey:kFadeAnimationKey];
-  [window_ setAnimations:animation_dictionary];
+  base::scoped_nsobject<NSMutableDictionary> animation_dictionary(
+      [[window_ animations] mutableCopy]);
+  [animation_dictionary.get() setObject:animation forKey:kFadeAnimationKey];
+  [window_ setAnimations:animation_dictionary.get()];
 
   [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved(gfx::Point(), false);
@@ -419,7 +419,7 @@ void StatusBubbleMac::Attach() {
 void StatusBubbleMac::Detach() {
   DCHECK(is_attached());
 
-  // Magic setFrame: See crbug.com/58506, and codereview.chromium.org/3564021
+  // Magic setFrame: See http://crbug.com/58506 and http://crrev.com/3564021 .
   [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
   [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
   [window_ orderOut:nil];               // ... and crbug.com/29054.
@@ -460,7 +460,7 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
     // Also, doing it this way instead of detaching the window avoids bugs with
     // Spaces and Cmd-`. See http://crbug.com/31821 and http://crbug.com/61629.
     NSRect frame = [window_ frame];
-    frame.size = NSMakeSize(1, 1);
+    frame.size = ui::kWindowSizeDeterminedLater.size;
     [window_ setFrame:frame display:YES];
   }
 
@@ -556,7 +556,7 @@ void StatusBubbleMac::StartShowing() {
   if (state_ == kBubbleHidden) {
     // Arrange to begin fading in after a delay.
     SetState(kBubbleShowingTimer);
-    StartTimer(kShowDelayMilliseconds);
+    StartTimer(kShowDelayMS);
   } else if (state_ == kBubbleHidingFadeOut) {
     // Cancel the fade-out in progress and replace it with a fade in.
     SetState(kBubbleShowingFadeIn);
@@ -571,7 +571,7 @@ void StatusBubbleMac::StartShowing() {
     // this point means that there is a new request to show something.  Start
     // over again by resetting the timer, effectively invalidating the earlier
     // request.
-    StartTimer(kShowDelayMilliseconds);
+    StartTimer(kShowDelayMS);
   }
 
   // If the state is kBubbleShown or kBubbleShowingFadeIn, leave everything
@@ -582,7 +582,7 @@ void StatusBubbleMac::StartHiding() {
   if (state_ == kBubbleShown) {
     // Arrange to begin fading out after a delay.
     SetState(kBubbleHidingTimer);
-    StartTimer(kHideDelayMilliseconds);
+    StartTimer(kHideDelayMS);
   } else if (state_ == kBubbleShowingFadeIn) {
     // Cancel the fade-in in progress and replace it with a fade out.
     SetState(kBubbleHidingFadeOut);
@@ -677,7 +677,7 @@ void StatusBubbleMac::ExpandBubble() {
   }
 
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kExpansionDuration];
+  [[NSAnimationContext currentContext] setDuration:kExpansionDurationSeconds];
   [[window_ animator] setFrame:actual_window_frame display:YES];
   [NSAnimationContext endGrouping];
 }

@@ -34,7 +34,7 @@ const int kInternalLeftRightPadding = 2;
 const int kCornerSize = 3;
 
 // Milliseconds before we hide the status bubble widget when you mouseout.
-const int kHideDelay = 250;
+const int kHideDelayMS = 250;
 
 // How close the mouse can get to the infobubble before it starts sliding
 // off-screen.
@@ -105,9 +105,10 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   int desired_width = allocation.width;
   if (!expanded()) {
     expand_timer_.Stop();
-    expand_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(kExpandHoverDelay),
-                        this, &StatusBubbleGtk::ExpandURL);
+    expand_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS),
+        this, &StatusBubbleGtk::ExpandURL);
     // When not expanded, we limit the size to one third the browser's
     // width.
     desired_width /= 3;
@@ -141,7 +142,8 @@ void StatusBubbleGtk::Hide() {
 void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
   if (status_utf8.empty()) {
     hide_timer_.Stop();
-    hide_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kHideDelay),
+    hide_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kHideDelayMS),
                       this, &StatusBubbleGtk::Hide);
   } else {
     gtk_label_set_text(GTK_LABEL(label_.get()), status_utf8.c_str());
