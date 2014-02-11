@@ -3,6 +3,22 @@
  * found in the LICENSE file.
  */
 
-/*
- * TODO(mferreria): Implement this CSS. See http://crbug.com/263863
- */
+body {
+  font-family: Ubuntu, Arial, sans-serif;
+  font-size: 80%;
+}
+
+#invalidations-info p {
+  color: rgb(74, 142, 230);
+  font-size: 100%;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+#invalidations-info .section {
+  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+

@@ -14,6 +14,7 @@ class InvalidationHandler;
 }  // namespace syncer
 
 namespace invalidation {
+class InvalidationLogger;
 
 // Interface for classes that handle invalidation registrations and send out
 // invalidations to register handlers.
@@ -98,6 +99,9 @@ class InvalidationService : public BrowserContextKeyedService {
   // Returns the ID belonging to this invalidation client.  Can be used to
   // prevent the receipt of notifications of our own changes.
   virtual std::string GetInvalidatorClientId() const = 0;
+
+  // Return the logger used to debug invalidations
+  virtual InvalidationLogger* GetInvalidationLogger() = 0;
 
  protected:
   virtual ~InvalidationService() { }

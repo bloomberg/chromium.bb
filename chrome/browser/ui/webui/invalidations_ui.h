@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_INVALIDATIONS_UI_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The implementation for the chrome://invalidations page.

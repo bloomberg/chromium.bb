@@ -1,17 +1,29 @@
+<!DOCTYPE HTML>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Invalidations</title>
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/parse_html_subset.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://invalidations/about_invalidations.js"></script>
-  <link rel="stylesheet" type="text/css" href="about_invalidations.css">
+  <link rel="stylesheet" href="about_invalidations.css">
 </head>
-
 <body>
-  <h1>Invalidations Debug Information
-    <button id='refresh-invalidation-data'>Refresh</button></h1>
+  <h1>Invalidations Debug Information</h1>
+  <div id="invalidations-info">
+    <div id="states" class="section">
+      <label>
+        <p>Invalidation service state:</p><span id="invalidations-state"></span>
+      </label>
+    </div>
+    <div class="section">
+      <label>
+        <p>Invalidations Log:</p>
+        <textarea
+            id="invalidations-log" rows="10" cols="120" readonly></textarea>
+      </label>
+    </div>
+  </div>
 </body>
-
-
 </html>

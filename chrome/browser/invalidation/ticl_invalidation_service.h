@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -56,6 +57,7 @@ class TiclInvalidationService
       syncer::InvalidationHandler* handler) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
+  virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -125,6 +127,10 @@ class TiclInvalidationService
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
   base::OneShotTimer<TiclInvalidationService> request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
+
+  // The invalidation logger object we use to record state changes
+  // and invalidations.
+  InvalidationLogger logger_;
 
   DISALLOW_COPY_AND_ASSIGN(TiclInvalidationService);
 };

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
@@ -41,6 +42,7 @@ class P2PInvalidationService
       syncer::InvalidationHandler* handler) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
+  virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
 
   void UpdateCredentials(const std::string& username,
                          const std::string& password);

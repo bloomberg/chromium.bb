@@ -70,4 +70,8 @@ std::string P2PInvalidationService::GetInvalidatorClientId() const {
   return invalidator_id_;
 }
 
+InvalidationLogger* P2PInvalidationService::GetInvalidationLogger() {
+  return NULL;
+}
+
 }  // namespace invalidation

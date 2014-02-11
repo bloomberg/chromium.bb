@@ -41,6 +41,10 @@ std::string FakeInvalidationService::GetInvalidatorClientId() const {
   return client_id_;
 }
 
+InvalidationLogger* FakeInvalidationService::GetInvalidationLogger() {
+  return NULL;
+}
+
 void FakeInvalidationService::SetInvalidatorState(
     syncer::InvalidatorState state) {
   invalidator_registrar_.UpdateInvalidatorState(state);

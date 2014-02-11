@@ -950,6 +950,8 @@
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',
         'browser/intranet_redirect_detector.h',
+        'browser/invalidation/invalidation_logger.cc',
+        'browser/invalidation/invalidation_logger.h',
         'browser/invalidation/fake_invalidation_service.cc',
         'browser/invalidation/fake_invalidation_service.h',
         'browser/invalidation/gcm_network_channel_delegate_impl.cc',

@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/gcm_network_channel_delegate_impl.h"
+#include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
@@ -18,9 +19,11 @@
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/non_blocking_invalidator.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 static const char* kOAuth2Scopes[] = {
   GaiaConstants::kGoogleTalkOAuth2Scope
@@ -65,8 +68,8 @@ TiclInvalidationService::TiclInvalidationService(
       signin_manager_(signin),
       oauth2_token_service_(oauth2_token_service),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
-}
+      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
+      logger_() {}
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK(CalledOnValidThread());
@@ -151,6 +154,10 @@ syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
 std::string TiclInvalidationService::GetInvalidatorClientId() const {
   DCHECK(CalledOnValidThread());
   return invalidator_storage_->GetInvalidatorClientId();
+}
+
+InvalidationLogger* TiclInvalidationService::GetInvalidationLogger() {
+  return &logger_;
 }
 
 void TiclInvalidationService::Observe(
@@ -266,11 +273,14 @@ void TiclInvalidationService::OnInvalidatorStateChange(
   } else {
     invalidator_registrar_->UpdateInvalidatorState(state);
   }
+  logger_.OnStateChange(state);
 }
 
 void TiclInvalidationService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   invalidator_registrar_->DispatchInvalidationsToHandlers(invalidation_map);
+
+  logger_.OnInvalidation(invalidation_map);
 }
 
 void TiclInvalidationService::Shutdown() {

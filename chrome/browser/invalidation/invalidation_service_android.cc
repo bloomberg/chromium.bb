@@ -56,6 +56,10 @@ std::string InvalidationServiceAndroid::GetInvalidatorClientId() const {
   return invalidation_controller_->GetInvalidatorClientId();
 }
 
+InvalidationLogger* InvalidationServiceAndroid::GetInvalidationLogger() {
+  return NULL;
+}
+
 void InvalidationServiceAndroid::Observe(
     int type,
     const content::NotificationSource& source,
