@@ -507,9 +507,11 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   // test.
   void StartTest();
 
-  // Overriding point for test parameters.
+  // Overriding point for test configurations.
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
+  virtual std::string OnMessage(const std::string& name,
+                                const base::Value* value);
 
   scoped_ptr<LocalTestVolume> local_volume_;
   scoped_ptr<DriveTestVolume> drive_volume_;
@@ -558,7 +560,6 @@ void FileManagerBrowserTestBase::StartTest() {
   // Handle the messages from JavaScript.
   // The while loop is break when the test is passed or failed.
   FileManagerTestListener listener;
-  base::JSONValueConverter<AddEntriesMessage> add_entries_message_converter;
   while (true) {
     FileManagerTestListener::Message entry = listener.GetNextMessage();
     if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_PASSED) {
@@ -581,63 +582,68 @@ void FileManagerBrowserTestBase::StartTest() {
         !message_dictionary->GetString("name", &name))
       continue;
 
-    if (name == "getTestName") {
-      // Pass the test case name.
-      entry.function->Reply(GetTestCaseNameParam());
-    } else if (name == "getRootPaths") {
-      // Pass the root paths.
-      const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-      res->SetString("downloads",
-          "/" + util::GetDownloadsMountPointName(profile()));
-      res->SetString("drive",
-          "/" + drive::util::GetDriveMountPointPath(profile()
-              ).BaseName().AsUTF8Unsafe() + "/root");
-      std::string jsonString;
-      base::JSONWriter::Write(res.get(), &jsonString);
-      entry.function->Reply(jsonString);
-    } else if (name == "isInGuestMode") {
-      // Obtain whether the test is in guest mode or not.
-      entry.function->Reply(GetGuestModeParam() ? "true" : "false");
-    } else if (name == "getCwsWidgetContainerMockUrl") {
-      // Obtain whether the test is in guest mode or not.
-      const GURL url = embedded_test_server()->GetURL(
-            "/chromeos/file_manager/cws_container_mock/index.html");
-      std::string origin = url.GetOrigin().spec();
-
-      // Removes trailing a slash.
-      if (*origin.rbegin() == '/')
-        origin.resize(origin.length() - 1);
-
-      const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-      res->SetString("url", url.spec());
-      res->SetString("origin", origin);
-      std::string jsonString;
-      base::JSONWriter::Write(res.get(), &jsonString);
-      entry.function->Reply(jsonString);
-    } else if (name == "addEntries") {
-      // Add entries to the specified volume.
-      AddEntriesMessage message;
-      if (!add_entries_message_converter.Convert(*value.get(), &message)) {
-        entry.function->Reply("onError");
-        continue;
-      }
-      for (size_t i = 0; i < message.entries.size(); ++i) {
-        switch (message.volume) {
-          case LOCAL_VOLUME:
-            local_volume_->CreateEntry(*message.entries[i]);
-            break;
-          case DRIVE_VOLUME:
-            if (drive_volume_)
-              drive_volume_->CreateEntry(profile(), *message.entries[i]);
-            break;
-          default:
-            NOTREACHED();
-            break;
-        }
-      }
-      entry.function->Reply("onEntryAdded");
-    }
+    entry.function->Reply(OnMessage(name, value.get()));
   }
+}
+
+std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
+                                                  const base::Value* value) {
+  if (name == "getTestName") {
+    // Pass the test case name.
+    return GetTestCaseNameParam();
+  } else if (name == "getRootPaths") {
+    // Pass the root paths.
+    const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+    res->SetString("downloads",
+        "/" + util::GetDownloadsMountPointName(profile()));
+    res->SetString("drive",
+        "/" + drive::util::GetDriveMountPointPath(profile()
+            ).BaseName().AsUTF8Unsafe() + "/root");
+    std::string jsonString;
+    base::JSONWriter::Write(res.get(), &jsonString);
+    return jsonString;
+  } else if (name == "isInGuestMode") {
+    // Obtain whether the test is in guest mode or not.
+    return GetGuestModeParam() ? "true" : "false";
+  } else if (name == "getCwsWidgetContainerMockUrl") {
+    // Obtain whether the test is in guest mode or not.
+    const GURL url = embedded_test_server()->GetURL(
+          "/chromeos/file_manager/cws_container_mock/index.html");
+    std::string origin = url.GetOrigin().spec();
+
+    // Removes trailing a slash.
+    if (*origin.rbegin() == '/')
+      origin.resize(origin.length() - 1);
+
+    const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+    res->SetString("url", url.spec());
+    res->SetString("origin", origin);
+    std::string jsonString;
+    base::JSONWriter::Write(res.get(), &jsonString);
+    return jsonString;
+  } else if (name == "addEntries") {
+    // Add entries to the specified volume.
+    base::JSONValueConverter<AddEntriesMessage> add_entries_message_converter;
+    AddEntriesMessage message;
+    if (!add_entries_message_converter.Convert(*value, &message))
+      return "onError";
+    for (size_t i = 0; i < message.entries.size(); ++i) {
+      switch (message.volume) {
+        case LOCAL_VOLUME:
+          local_volume_->CreateEntry(*message.entries[i]);
+          break;
+        case DRIVE_VOLUME:
+          if (drive_volume_)
+            drive_volume_->CreateEntry(profile(), *message.entries[i]);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+    return "onEntryAdded";
+  }
+  return "unknownMessage";
 }
 
 // Parameter of FileManagerBrowserTest.
@@ -796,7 +802,6 @@ struct TestAccountInfo {
   const char* const email;
   const char* const hash;
   const char* const display_name;
-  // TODO: profile image.
 };
 
 enum {
@@ -878,6 +883,15 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
+  virtual std::string OnMessage(const std::string& name,
+                                const base::Value* value) OVERRIDE {
+    if (name == "addAllUsers") {
+      AddAllUsers();
+      return "true";
+    }
+    return FileManagerBrowserTestBase::OnMessage(name, value);
+  }
+
   std::string test_case_name_;
 };
 
@@ -905,7 +919,16 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
   StartTest();
 }
 
-// TODO(kinaba) write the actual tests.
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_Badge) {
+  AddAllUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, Badge) {
+  set_test_case_name("multiProfileBadge");
+  StartTest();
+}
+
+// TODO(kinaba) write more tests.
 
 }  // namespace
 }  // namespace file_manager

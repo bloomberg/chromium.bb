@@ -1793,3 +1793,63 @@ testcase.thumbnailsDownloads = function() {
     }
   ]);
 };
+
+testcase.multiProfileBadge = function() {
+  var appId;
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Add all users.
+    function(inAppId) {
+      appId = inAppId;
+      chrome.test.sendMessage(JSON.stringify({name: 'addAllUsers'}),
+                              this.next);
+    },
+    // Get the badge element.
+    function(json) {
+      chrome.test.assertTrue(JSON.parse(json));
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['#profile-badge'],
+                         this.next);
+    },
+    // Verify no badge image is shown yet.  Move to other deskop.
+    function(element) {
+      chrome.test.assertTrue(!element.attributes.src, 'Badge hidden initially');
+      callRemoteTestUtil('visitDesktop',
+                         appId,
+                         ['bob@invalid.domain'],
+                         this.next);
+    },
+    // Get the badge element again.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['#profile-badge[src]'],
+                         this.next);
+    },
+    // Verify an image source is filled. Go back to the original desktop
+    function(element) {
+      chrome.test.assertTrue(element.attributes.src.indexOf('data:image') === 0,
+                             'Badge shown after moving desktop');
+      callRemoteTestUtil('visitDesktop',
+                         appId,
+                         ['alice@invalid.domain'],
+                         this.next);
+    },
+    // Wait for #profile-badge element with .src to disappear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['#profile-badge[src]', null, true],
+                         this.next);
+    },
+    // The image is gone.
+    function(result) {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

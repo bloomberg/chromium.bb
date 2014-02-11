@@ -804,6 +804,19 @@ test.util.async.waitUntilTaskExecutes =
 };
 
 /**
+ * Invoke chrome.fileBrowserPrivate.visitDesktop(profileId) to cause window
+ * teleportation.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} profileId Destination profile's ID.
+ * @return {boolean} Always return true.
+ */
+test.util.sync.visitDesktop = function(contentWindow, profileId) {
+  contentWindow.chrome.fileBrowserPrivate.visitDesktop(profileId);
+  return true;
+};
+
+/**
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {
