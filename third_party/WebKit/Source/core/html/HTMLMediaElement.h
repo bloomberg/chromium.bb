@@ -301,14 +301,14 @@ protected:
     enum BehaviorRestrictionFlags {
         NoRestrictions = 0,
         RequireUserGestureForLoadRestriction = 1 << 0,
-        RequireUserGestureForRateChangeRestriction = 1 << 1,
+        RequireUserGestureForPlayRestriction = 1 << 1,
         RequireUserGestureForFullscreenRestriction = 1 << 2,
         RequirePageConsentToLoadMediaRestriction = 1 << 3,
     };
     typedef unsigned BehaviorRestrictions;
 
     bool userGestureRequiredForLoad() const { return m_restrictions & RequireUserGestureForLoadRestriction; }
-    bool userGestureRequiredForRateChange() const { return m_restrictions & RequireUserGestureForRateChangeRestriction; }
+    bool userGestureRequiredForPlay() const { return m_restrictions & RequireUserGestureForPlayRestriction; }
     bool userGestureRequiredForFullscreen() const { return m_restrictions & RequireUserGestureForFullscreenRestriction; }
     bool pageConsentRequiredForLoad() const { return m_restrictions & RequirePageConsentToLoadMediaRestriction; }
 
@@ -409,7 +409,6 @@ private:
     // These "internal" functions do not check user gesture restrictions.
     void loadInternal();
     void playInternal();
-    void pauseInternal();
 
     void prepareForLoad();
     void allowVideoRendering();

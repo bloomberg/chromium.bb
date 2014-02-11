@@ -317,7 +317,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 
     if (document.settings()) {
         if (document.settings()->mediaPlaybackRequiresUserGesture()) {
-            addBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+            addBehaviorRestriction(RequireUserGestureForPlayRestriction);
             addBehaviorRestriction(RequireUserGestureForLoadRestriction);
         }
         if (document.settings()->mediaFullscreenRequiresUserGesture()) {
@@ -875,7 +875,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (url.protocolIs(mediaSourceBlobProtocol)) {
         if (isMediaStreamURL(url.string())) {
             loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
-            removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+            removeBehaviorRestriction(RequireUserGestureForPlayRestriction);
         } else {
             m_mediaSource = HTMLMediaSource::lookup(url.string());
 
@@ -1630,7 +1630,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         if (isPotentiallyPlaying && oldState <= HAVE_CURRENT_DATA)
             scheduleEvent(EventTypeNames::playing);
 
-        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForRateChange()) {
+        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForPlay()) {
             m_paused = false;
             invalidateCachedTime();
             scheduleEvent(EventTypeNames::play);
@@ -2148,7 +2148,7 @@ void HTMLMediaElement::play()
 {
     WTF_LOG(Media, "HTMLMediaElement::play()");
 
-    if (userGestureRequiredForRateChange() && !UserGestureIndicator::processingUserGesture())
+    if (userGestureRequiredForPlay() && !UserGestureIndicator::processingUserGesture())
         return;
     if (UserGestureIndicator::processingUserGesture())
         removeBehaviorsRestrictionsAfterFirstUserGesture();
@@ -2190,18 +2190,6 @@ void HTMLMediaElement::pause()
 {
     WTF_LOG(Media, "HTMLMediaElement::pause()");
 
-    if (userGestureRequiredForRateChange() && !UserGestureIndicator::processingUserGesture())
-        return;
-
-    pauseInternal();
-}
-
-
-void HTMLMediaElement::pauseInternal()
-{
-    WTF_LOG(Media, "HTMLMediaElement::pauseInternal");
-
-    // 4.8.10.9. Playing the media resource
     if (!m_player || m_networkState == NETWORK_EMPTY)
         scheduleDelayedAction(LoadMediaResource);
 
@@ -2443,7 +2431,7 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
         m_fragmentEndTime = MediaPlayer::invalidTime();
         if (!m_mediaController && !m_paused) {
             // changes paused to true and fires a simple event named pause at the media element.
-            pauseInternal();
+            pause();
         }
     }
 
@@ -3129,7 +3117,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         return;
 
     if (m_player->paused())
-        pauseInternal();
+        pause();
     else
         playInternal();
 }
