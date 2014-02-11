@@ -18,16 +18,11 @@
 // These are messages sent from the renderer to the browser in
 // relation to <link rel=prerender> elements.
 
-IPC_STRUCT_BEGIN(PrerenderAttributes)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(uint32, rel_types)
-IPC_STRUCT_END()
-
 // Notifies of the insertion of a <link rel=prerender> element in the
 // document.
 IPC_MESSAGE_CONTROL5(PrerenderHostMsg_AddLinkRelPrerender,
                      int /* prerender_id, assigned by WebPrerendererClient */,
-                     PrerenderAttributes,
+                     GURL /* url */,
                      content::Referrer,
                      gfx::Size,
                      int /* render_view_route_id of launcher */)

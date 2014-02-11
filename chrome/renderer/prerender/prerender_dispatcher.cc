@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/common/prerender_messages.h"
-#include "chrome/common/prerender_types.h"
 #include "chrome/renderer/prerender/prerender_extra_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
@@ -118,12 +117,8 @@ void PrerenderDispatcher::add(const WebPrerender& prerender) {
 
   prerenders_[extra_data.prerender_id()] = prerender;
 
-  PrerenderAttributes attributes;
-  attributes.url = GURL(prerender.url());
-  attributes.rel_types = prerender.relTypes();
-
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
-      extra_data.prerender_id(), attributes,
+      extra_data.prerender_id(), GURL(prerender.url()),
       content::Referrer(GURL(prerender.referrer()),
                         prerender.referrerPolicy()),
       extra_data.size(), extra_data.render_view_route_id()));
