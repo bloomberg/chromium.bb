@@ -27,11 +27,9 @@ namespace win {
 
 // Generic wrapper for raw handles that takes care of closing handles
 // automatically. The class interface follows the style of
-// the ScopedStdioHandle class with a few additions:
+// the ScopedStdioHandle class with one addition:
 //   - IsValid() method can tolerate multiple invalid handle values such as NULL
 //     and INVALID_HANDLE_VALUE (-1) for Win32 handles.
-//   - Receive() method allows to receive a handle value from a function that
-//     takes a raw handle pointer only.
 template <class Traits, class Verifier>
 class GenericScopedHandle {
   MOVE_ONLY_TYPE_FOR_CPP_03(GenericScopedHandle, RValue)
