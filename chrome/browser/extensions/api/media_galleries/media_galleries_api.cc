@@ -657,7 +657,7 @@ void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
     return;
   }
 
-  media_scan_manager()->StartScan(GetProfile(), GetExtension()->id());
+  media_scan_manager()->StartScan(GetProfile(), GetExtension(), user_gesture());
   SendResponse(true);
 }
 
@@ -678,7 +678,7 @@ bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
 
 void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  media_scan_manager()->CancelScan(GetProfile(), GetExtension()->id());
+  media_scan_manager()->CancelScan(GetProfile(), GetExtension());
   SendResponse(true);
 }
 

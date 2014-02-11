@@ -21,6 +21,10 @@
 class Profile;
 class MediaScanManagerObserver;
 
+namespace extensions {
+class Extension;
+}  // namespace extensions
+
 // The MediaScanManager is owned by MediaFileSystemRegistry, which is global.
 // This class manages multiple 'virtual' media scans, up to one per extension
 // per profile, and also manages the one physical scan backing them.
@@ -41,8 +45,9 @@ class MediaScanManager : public content::NotificationObserver {
   // The results of the scan are reported to the registered
   // MediaScanManagerObserver via OnScanFinished. There must be an observer
   // registered for |profile| before the scan starts.
-  void StartScan(Profile* profile, const std::string& extension_id);
-  void CancelScan(Profile* profile, const std::string& extension_id);
+  void StartScan(Profile* profile, const extensions::Extension* extension,
+                 bool user_gesture);
+  void CancelScan(Profile* profile, const extensions::Extension* extension);
 
  protected:
   friend class MediaGalleriesPlatformAppBrowserTest;

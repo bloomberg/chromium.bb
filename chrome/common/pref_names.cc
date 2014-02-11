@@ -2431,6 +2431,9 @@ const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";
 const char kMediaGalleriesRememberedGalleries[] =
     "media_galleries.remembered_galleries";
 
+// The last time a media scan completed.
+const char kMediaGalleriesLastScanTime[] = "media_galleries.last_scan_time";
+
 #if defined(USE_ASH)
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
 // local variant is not synced and is used if set. If the local variant is not

@@ -1088,6 +1088,18 @@ const MediaGalleriesPrefInfoMap& MediaGalleriesPreferences::known_galleries()
   return known_galleries_;
 }
 
+base::Time MediaGalleriesPreferences::GetLastScanCompletionTime() const {
+  int64 last_scan_time_internal =
+      profile_->GetPrefs()->GetInt64(prefs::kMediaGalleriesLastScanTime);
+  return base::Time::FromInternalValue(last_scan_time_internal);
+}
+
+void MediaGalleriesPreferences::SetLastScanCompletionTime(
+    const base::Time& time) {
+  profile_->GetPrefs()->SetInt64(prefs::kMediaGalleriesLastScanTime,
+                                 time.ToInternalValue());
+}
+
 void MediaGalleriesPreferences::Shutdown() {
   weak_factory_.InvalidateWeakPtrs();
   profile_ = NULL;
@@ -1108,6 +1120,10 @@ void MediaGalleriesPreferences::RegisterProfilePrefs(
   registry->RegisterUint64Pref(
       prefs::kMediaGalleriesUniqueId,
       kInvalidMediaGalleryPrefId + 1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kMediaGalleriesLastScanTime,
+      base::Time().ToInternalValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

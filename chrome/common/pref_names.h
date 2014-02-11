@@ -836,6 +836,7 @@ extern const char kComponentUpdaterState[];
 
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
+extern const char kMediaGalleriesLastScanTime[];
 
 #if defined(USE_ASH)
 extern const char kShelfAlignment[];

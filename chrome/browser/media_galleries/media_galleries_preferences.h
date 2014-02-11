@@ -248,6 +248,11 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
 
   const MediaGalleriesPrefInfoMap& known_galleries() const;
 
+  // These keep track of when we last successfully completed a media scan.
+  // This is used to provide cached results when appropriate.
+  base::Time GetLastScanCompletionTime() const;
+  void SetLastScanCompletionTime(const base::Time& time);
+
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 

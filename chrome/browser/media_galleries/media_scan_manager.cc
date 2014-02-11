@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
@@ -31,6 +32,9 @@ typedef std::set<std::string /*extension id*/> ScanningExtensionIdSet;
 // governs when that happens; kContainerDirectoryMinimumPercent percent of the
 // directories in the parent directory must be scan results.
 const int kContainerDirectoryMinimumPercent = 80;
+
+// How long after a completed media scan can we provide the cached results.
+const int kScanResultsExpiryTimeInHours = 24;
 
 struct LocationInfo {
   LocationInfo()
@@ -307,18 +311,38 @@ void MediaScanManager::CancelScansForProfile(Profile* profile) {
 }
 
 void MediaScanManager::StartScan(Profile* profile,
-                                 const std::string& extension_id) {
+                                 const extensions::Extension* extension,
+                                 bool user_gesture) {
+  DCHECK(extension);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
   // We expect that an MediaScanManagerObserver has already been registered.
   DCHECK(scans_for_profile != observers_.end());
-  bool start_scan = !ScanInProgress();
+  bool scan_in_progress = ScanInProgress();
   // Ignore requests for extensions that are already scanning.
   ScanningExtensionIdSet* scanning_extensions;
   scanning_extensions = &scans_for_profile->second.scanning_extensions;
-  if (!start_scan && ContainsKey(*scanning_extensions, extension_id))
+  if (scan_in_progress && ContainsKey(*scanning_extensions, extension->id()))
     return;
+
+  // Provide cached result if there is not already a scan in progress,
+  // there is no user gesture, and the previous results are unexpired.
+  MediaGalleriesPreferences* preferences =
+      MediaGalleriesPreferencesFactory::GetForProfile(profile);
+  base::TimeDelta time_since_last_scan =
+      base::Time::Now() - preferences->GetLastScanCompletionTime();
+  if (!scan_in_progress && !user_gesture && time_since_last_scan <
+          base::TimeDelta::FromHours(kScanResultsExpiryTimeInHours)) {
+    MediaGalleryScanResult file_counts;
+    int gallery_count =
+        CountScanResultsForExtension(preferences, extension, &file_counts);
+    scans_for_profile->second.observer->OnScanStarted(extension->id());
+    scans_for_profile->second.observer->OnScanFinished(extension->id(),
+                                                       gallery_count,
+                                                       file_counts);
+    return;
+  }
 
   // On first scan for the |profile|, register to listen for extension unload.
   if (scanning_extensions->empty()) {
@@ -328,8 +352,8 @@ void MediaScanManager::StartScan(Profile* profile,
         content::Source<Profile>(profile));
   }
 
-  scanning_extensions->insert(extension_id);
-  scans_for_profile->second.observer->OnScanStarted(extension_id);
+  scanning_extensions->insert(extension->id());
+  scans_for_profile->second.observer->OnScanStarted(extension->id());
 
   if (folder_finder_)
     return;
@@ -346,17 +370,17 @@ void MediaScanManager::StartScan(Profile* profile,
 }
 
 void MediaScanManager::CancelScan(Profile* profile,
-                                  const std::string& extension_id) {
+                                  const extensions::Extension* extension) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Erases the logical scan if found, early exit otherwise.
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
   if (scans_for_profile == observers_.end() ||
-      !scans_for_profile->second.scanning_extensions.erase(extension_id)) {
+      !scans_for_profile->second.scanning_extensions.erase(extension->id())) {
     return;
   }
 
-  scans_for_profile->second.observer->OnScanCancelled(extension_id);
+  scans_for_profile->second.observer->OnScanCancelled(extension->id());
 
   // No more scanning extensions for |profile|, so stop listening for unloads.
   if (scans_for_profile->second.scanning_extensions.empty()) {
@@ -389,7 +413,7 @@ void MediaScanManager::Observe(
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension);
       DCHECK(extension);
-      CancelScan(profile, extension->id());
+      CancelScan(profile, extension);
       break;
     }
     default:
@@ -437,11 +461,11 @@ void MediaScanManager::OnFoundContainerDirectories(
        ++scans_for_profile) {
     if (scans_for_profile->second.scanning_extensions.empty())
       continue;
+    Profile* profile = scans_for_profile->first;
     MediaGalleriesPreferences* preferences =
-        MediaGalleriesPreferencesFactory::GetForProfile(
-            scans_for_profile->first);
-    ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-        scans_for_profile->first)->extension_service();;
+        MediaGalleriesPreferencesFactory::GetForProfile(profile);
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
     if (!extension_service)
       continue;
 
@@ -465,6 +489,7 @@ void MediaScanManager::OnFoundContainerDirectories(
       }
     }
     scanning_extensions->clear();
+    preferences->SetLastScanCompletionTime(base::Time::Now());
   }
   registrar_.RemoveAll();
   folder_finder_.reset();
