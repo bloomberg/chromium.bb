@@ -178,8 +178,6 @@ class WebViewGuest : public GuestView,
                     const GURL& new_url,
                     bool is_top_level);
 
-  static bool AllowChromeExtensionURLs();
-
   void AddWebViewToExtensionRendererState();
   static void RemoveWebViewFromExtensionRendererState(
       content::WebContents* web_contents);

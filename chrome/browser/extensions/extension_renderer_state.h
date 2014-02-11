@@ -28,7 +28,6 @@ class ExtensionRendererState {
     int instance_id;
     std::string partition_id;
     std::string extension_id;
-    bool allow_chrome_extension_urls;
   };
 
   static ExtensionRendererState* GetInstance();

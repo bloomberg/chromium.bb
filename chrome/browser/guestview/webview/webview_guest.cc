@@ -680,12 +680,6 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
   DispatchEvent(new GuestView::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
-// static
-bool WebViewGuest::AllowChromeExtensionURLs() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel <= chrome::VersionInfo::CHANNEL_DEV;
-}
-
 void WebViewGuest::AddWebViewToExtensionRendererState() {
   const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
   std::string partition_domain;
@@ -703,7 +697,6 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   webview_info.instance_id = view_instance_id();
   webview_info.partition_id =  partition_id;
   webview_info.extension_id = extension_id();
-  webview_info.allow_chrome_extension_urls = AllowChromeExtensionURLs();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -732,10 +725,6 @@ GURL WebViewGuest::ResolveURL(const std::string& src) {
     NOTREACHED();
     return GURL(src);
   }
-
-  // Only resolve URL to chrome-extension:// if we support such URLs.
-  if (!AllowChromeExtensionURLs())
-    return GURL(src);
 
   GURL default_url(base::StringPrintf("%s://%s/",
                                       extensions::kExtensionScheme,
