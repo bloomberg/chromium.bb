@@ -208,7 +208,6 @@
       ]
     },
     {
-      "disabled": "Android Chrome freezes; crbug.com/335772",
       "url": "file://key_silk_cases/old_inbox_app.html?slide_drawer",
       "navigate_steps" : [
         { "action": "navigate" },
