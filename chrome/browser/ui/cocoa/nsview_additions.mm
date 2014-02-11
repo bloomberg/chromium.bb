@@ -88,6 +88,10 @@
     [child cr_recursivelySetNeedsDisplay:flag];
 }
 
+- (BOOL)cr_supportsLayerSquashing {
+  return [self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)];
+}
+
 - (void)cr_setWantsLayer:(BOOL)wantsLayer
            withSquashing:(BOOL)squashing {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -98,7 +102,7 @@
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCoreAnimationLayerSquashing))
     return;
-  if ([self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)])
+  if ([self cr_supportsLayerSquashing])
     [self setCanDrawSubviewsIntoLayer:squashing];
 }
 

@@ -262,9 +262,6 @@ enum {
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
-    // Enable core animation if requested.
-    [[[self window] contentView] cr_setWantsLayer:YES withSquashing:NO];
-
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.
     NSSize minSize = [self isTabbedWindow] ?
