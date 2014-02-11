@@ -262,7 +262,7 @@ class Settings(object):
   def __init__(self):
     self.default_server = None
     self.cc = None
-    self.relative_root = None
+    self.root = None
     self.is_git_svn = None
     self.svn_branch = None
     self.tree_status_url = None
@@ -303,13 +303,14 @@ class Settings(object):
             self._GetRietveldConfig('server', error_message=error_message))
     return self.default_server
 
-  def GetRelativeRoot(self):
-    if self.relative_root is None:
-      self.relative_root = RunGit(['rev-parse', '--show-cdup']).strip()
-    return self.relative_root
+  @staticmethod
+  def GetRelativeRoot():
+    return RunGit(['rev-parse', '--show-cdup']).strip()
 
   def GetRoot(self):
-    return os.path.abspath(self.GetRelativeRoot())
+    if self.root is None:
+      self.root = os.path.abspath(self.GetRelativeRoot())
+    return self.root
 
   def GetIsGitSvn(self):
     """Return true if this repo looks like it's using git-svn."""
