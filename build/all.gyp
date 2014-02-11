@@ -354,8 +354,8 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox_linux_unittests',
             '../dbus/dbus.gyp:dbus_unittests',
+            '../sandbox/sandbox.gyp:sandbox_linux_unittests',
           ],
         }],
         ['OS=="mac"', {
@@ -381,6 +381,7 @@
         }],
         ['use_aura==1', {
           'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',
