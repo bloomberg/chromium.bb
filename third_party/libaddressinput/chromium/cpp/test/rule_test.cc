@@ -320,6 +320,31 @@ TEST(RuleTest, EmptyDictionaryIsValid) {
   EXPECT_TRUE(rule.ParseSerializedRule("{}"));
 }
 
+TEST(RuleTest, ParseSubKeyTest) {
+  i18n::addressinput::Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{ \"sub_keys\": \"FOO~BAR~BAZ\","
+      "  \"sub_names\": \"Foolandia~Bartopolis~Bazmonia\","
+      "  \"sub_lnames\": \"Foolandia2~Bartopolis2~Bazmonia2\" }"));
+  EXPECT_EQ(3U, rule.GetSubKeys().size());
+
+  std::string sub_key;
+  EXPECT_TRUE(rule.CanonicalizeSubKey("BAR", &sub_key));
+  EXPECT_EQ("BAR", sub_key);
+  sub_key.clear();
+
+  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis", &sub_key));
+  EXPECT_EQ("BAR", sub_key);
+  sub_key.clear();
+
+  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis2", &sub_key));
+  EXPECT_EQ("BAR", sub_key);
+  sub_key.clear();
+
+  EXPECT_FALSE(rule.CanonicalizeSubKey("Beertopia", &sub_key));
+  EXPECT_EQ("", sub_key);
+}
+
 struct LabelData {
   LabelData(const std::string& data, int name_id, int error_id)
       : data(data), name_id(name_id), error_id(error_id) {}

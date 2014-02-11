@@ -135,10 +135,18 @@ class Rule {
                           std::string* sub_key) const;
 
  private:
+  // Finds |target| in |values| and sets |sub_key| to the associated value from
+  // |sub_keys_|, or returns false if |target| is not in |values|.
+  bool GetMatchingSubKey(const std::string& target,
+                         const std::vector<std::string>& values,
+                         std::string* sub_key) const;
+
   std::vector<std::vector<FormatElement> > format_;
   std::vector<AddressField> required_;
   std::vector<std::string> sub_keys_;
   std::vector<std::string> sub_names_;
+  // The Latin names (when |sub_names_| is not in Latin characters).
+  std::vector<std::string> sub_lnames_;
   std::vector<std::string> languages_;
   std::string language_;
   std::string postal_code_format_;

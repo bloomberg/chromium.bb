@@ -282,6 +282,11 @@ void Rule::ParseJsonRule(const Json& json_rule) {
     assert(sub_names_.size() == sub_keys_.size());
   }
 
+  if (json_rule.GetStringValueForKey("sub_lnames", &value)) {
+    SplitString(value, kSeparator, &sub_lnames_);
+    assert(sub_lnames_.size() == sub_keys_.size());
+  }
+
   if (json_rule.GetStringValueForKey("languages", &value)) {
     SplitString(value, kSeparator, &languages_);
   }
@@ -327,20 +332,20 @@ bool Rule::CanonicalizeSubKey(const std::string& user_input,
     return true;
   }
 
-  for (size_t i = 0; i < sub_keys_.size(); ++i) {
-    if (LooseStringCompare(sub_keys_[i], user_input)) {
+  return GetMatchingSubKey(user_input, sub_keys_, sub_key) ||
+      GetMatchingSubKey(user_input, sub_names_, sub_key) ||
+      GetMatchingSubKey(user_input, sub_lnames_, sub_key);
+}
+
+bool Rule::GetMatchingSubKey(const std::string& target,
+                             const std::vector<std::string>& values,
+                             std::string* sub_key) const {
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (LooseStringCompare(values[i], target)) {
       *sub_key = sub_keys_[i];
       return true;
     }
   }
-
-  for (size_t i = 0; i < sub_names_.size(); ++i) {
-    if (LooseStringCompare(sub_names_[i], user_input)) {
-      *sub_key = sub_keys_[i];
-      return true;
-    }
-  }
-
   return false;
 }
 
