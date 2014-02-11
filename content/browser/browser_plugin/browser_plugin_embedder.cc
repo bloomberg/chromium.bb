@@ -63,12 +63,6 @@ void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
 }
 
-void BrowserPluginEmbedder::StopDrag(BrowserPluginGuest* guest) {
-  if (guest_started_drag_.get() == guest) {
-    guest_started_drag_.reset();
-  }
-}
-
 void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
     int x, int y, const WebContents::GetRenderViewHostCallback& callback) {
   // Store the callback so we can call it later when we have the response.
