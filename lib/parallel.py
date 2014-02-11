@@ -660,7 +660,9 @@ def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
   """
 
   if not processes:
-    processes = min(multiprocessing.cpu_count(), len(inputs))
+    # - Use >=16 processes by default, in case it's a network-bound operation.
+    # - Try to use all of the CPUs, in case it's a CPU-bound operation.
+    processes = min(max(16, multiprocessing.cpu_count()), len(inputs))
 
   with BackgroundTaskRunner(task, processes=processes, onexit=onexit) as queue:
     for x in inputs:
