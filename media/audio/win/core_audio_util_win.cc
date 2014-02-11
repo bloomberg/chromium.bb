@@ -154,7 +154,7 @@ bool CoreAudioUtil::IsSupported() {
   // It is possible to force usage of WaveXxx APIs by using a command line flag.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
-    LOG(WARNING) << "Forcing usage of Windows WaveXxx APIs";
+    DVLOG(1) << "Forcing usage of Windows WaveXxx APIs";
     return false;
   }
 
