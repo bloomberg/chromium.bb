@@ -1298,7 +1298,8 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
-TEST_F(PictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
+// TODO(enne): temporarily disabled: http://crbug.com/335289
+TEST_F(PictureLayerImplTest, DISABLED_NothingRequiredIfAllHighResTilesShared) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
@@ -1316,7 +1317,8 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
-TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
+// TODO(enne): temporarily disabled: http://crbug.com/335289
+TEST_F(PictureLayerImplTest, DISABLED_NothingRequiredIfActiveMissingTiles) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
   scoped_refptr<FakePicturePileImpl> pending_pile =
