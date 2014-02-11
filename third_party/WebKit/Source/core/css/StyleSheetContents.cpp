@@ -38,6 +38,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(StyleSheetContents);
+
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const
 {
@@ -71,8 +73,7 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
 }
 
 StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
-    : RefCounted<StyleSheetContents>()
-    , m_ownerRule(0)
+    : m_ownerRule(0)
     , m_originalURL(o.m_originalURL)
     , m_encodingFromCharsetRule(o.m_encodingFromCharsetRule)
     , m_importRules(o.m_importRules.size())
@@ -573,5 +574,9 @@ void StyleSheetContents::clearRuleSet()
     m_ruleSet.clear();
 }
 
+
+void StyleSheetContents::trace(Visitor*)
+{
+}
 
 }

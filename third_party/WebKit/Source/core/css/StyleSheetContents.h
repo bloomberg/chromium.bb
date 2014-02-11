@@ -43,19 +43,20 @@ class SecurityOrigin;
 class StyleRuleBase;
 class StyleRuleImport;
 
-class StyleSheetContents : public RefCounted<StyleSheetContents> {
+class StyleSheetContents : public RefCountedWillBeRefCountedGarbageCollected<StyleSheetContents> {
+    DECLARE_GC_INFO
 public:
-    static PassRefPtr<StyleSheetContents> create(const CSSParserContext& context)
+    static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const CSSParserContext& context)
     {
-        return adoptRef(new StyleSheetContents(0, String(), context));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(0, String(), context));
     }
-    static PassRefPtr<StyleSheetContents> create(const String& originalURL, const CSSParserContext& context)
+    static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const String& originalURL, const CSSParserContext& context)
     {
-        return adoptRef(new StyleSheetContents(0, originalURL, context));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(0, originalURL, context));
     }
-    static PassRefPtr<StyleSheetContents> create(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
+    static PassRefPtrWillBeRawPtr<StyleSheetContents> create(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
     {
-        return adoptRef(new StyleSheetContents(ownerRule, originalURL, context));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(ownerRule, originalURL, context));
     }
 
     ~StyleSheetContents();
@@ -149,6 +150,8 @@ public:
     RuleSet& ruleSet() { ASSERT(m_ruleSet); return *m_ruleSet.get(); }
     RuleSet& ensureRuleSet(const MediaQueryEvaluator&, AddRuleFlags);
     void clearRuleSet();
+
+    void trace(Visitor*);
 
 private:
     StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext&);
