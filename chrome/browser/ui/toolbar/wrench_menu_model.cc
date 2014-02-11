@@ -214,10 +214,6 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
-#if defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_TAKE_SCREENSHOT, IDS_TAKE_SCREENSHOT);
-#endif
-
   AddSeparator(ui::NORMAL_SEPARATOR);
 
 #if defined(GOOGLE_CHROME_BUILD)
