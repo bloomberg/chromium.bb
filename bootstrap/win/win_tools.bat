@@ -26,10 +26,11 @@ if "%1" == "force" (
 
 
 :GIT_CHECK
-call ver | findstr "XP" 2>nul 1>nul
-if errorlevel 0 goto :GIT_XP_CHECK
-if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_180_CHECK
-goto :GIT_1852_CHECK
+if "%DEPOT_TOOLS_GIT_1852%" == "1" goto :GIT_1852_CHECK
+:: Our new build of git doesn't work on some systems (e.g. uses newer APIs than
+:: available in XP), so force systems back to the old git while the failures
+:: are investigated, unless the new git was explicitly requested above.
+goto :GIT_180_FORCE
 
 
 :GIT_1852_CHECK
@@ -40,10 +41,9 @@ set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_F
 goto :GIT_COMMON
 
 
-:: Our new build of git doesn't work on XP (uses newer APIs).
-:GIT_XP_CHECK
-:: If the new git was installed, remove all old git packages and reinstall the
-:: correct version from scratch.
+:GIT_180_FORCE
+:: If the new git was installed, remove all installed git packages to trigger
+:: reinstallation of the old version.
 if exist "%WIN_TOOLS_ROOT_DIR%\git-1.8.5.2.chromium.1_bin" (
   rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\git-1.8.5.2.chromium.1_bin"
   if exist "%WIN_TOOLS_ROOT_DIR%\git-1.8.0_bin" (
