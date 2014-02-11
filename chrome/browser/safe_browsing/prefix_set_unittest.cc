@@ -499,7 +499,10 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   ASSERT_EQ(sizeof(val), fwrite(&val, 1, sizeof(val), file.get()));
 
   // Write two index values with 64-bit "size_t".
-  std::pair<SBPrefix, uint64> item = std::make_pair(17, 0);
+  std::pair<SBPrefix, uint64> item;
+  memset(&item, 0, sizeof(item));  // Includes any padding.
+  item.first = 17;
+  item.second = 0;
   ASSERT_EQ(sizeof(item), fwrite(&item, 1, sizeof(item), file.get()));
   item.first = 100042;
   item.second = 1;
