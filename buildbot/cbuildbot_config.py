@@ -1476,7 +1476,6 @@ internal_paladin.add_config('lumpy-incremental-paladin',
   build_before_patching=True,
   chroot_replace=False,
   compilecheck=True,
-  important=False,
   unittests=False,
 )
 
