@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/protocol/sync_protocol_error.h"
 
 namespace syncer {
 namespace sessions {
@@ -48,9 +48,6 @@ struct SYNC_EXPORT ModelNeutralState {
   // Overwrites due to conflict resolution counters.
   int num_local_overwrites;
   int num_server_overwrites;
-
-  // Any protocol errors that we received during this sync session.
-  SyncProtocolError sync_protocol_error;
 
   // Records the most recent results of GetKey, PostCommit and GetUpdates
   // commands.

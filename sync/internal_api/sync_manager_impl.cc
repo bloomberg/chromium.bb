@@ -913,7 +913,7 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
                                  nudge_location);
 }
 
-void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
+void SyncManagerImpl::OnSyncCycleEvent(const SyncCycleEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Only send an event if this is due to a cycle ending and this cycle
   // concludes a canonical "sync" process; that is, based on what is known
@@ -922,7 +922,7 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
   //
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
-  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
+  if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_ENDED) {
     if (!initialized_) {
       DVLOG(1) << "OnSyncCycleCompleted not sent because sync api is not "
                << "initialized";
@@ -933,21 +933,17 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnSyncCycleCompleted(event.snapshot));
   }
-
-  if (event.what_happened == SyncEngineEvent::STOP_SYNCING_PERMANENTLY) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnStopSyncingPermanently());
-    return;
-  }
-
-  if (event.what_happened == SyncEngineEvent::ACTIONABLE_ERROR) {
-    FOR_EACH_OBSERVER(
-        SyncManager::Observer, observers_,
-        OnActionableError(
-            event.snapshot.model_neutral_state().sync_protocol_error));
-    return;
-  }
 }
+
+void SyncManagerImpl::OnActionableError(const SyncProtocolError& error) {
+  FOR_EACH_OBSERVER(
+      SyncManager::Observer, observers_,
+      OnActionableError(error));
+}
+
+void SyncManagerImpl::OnRetryTimeChanged(base::Time) {}
+
+void SyncManagerImpl::OnThrottledTypesChanged(ModelTypeSet) {}
 
 void SyncManagerImpl::SetJsEventHandler(
     const WeakHandle<JsEventHandler>& event_handler) {

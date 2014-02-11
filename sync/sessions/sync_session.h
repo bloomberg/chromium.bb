@@ -20,9 +20,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/sync_cycle_event.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/protocol/sync_protocol_error.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session_context.h"
 
@@ -75,7 +77,7 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
     // Called for the syncer to respond to the error sent by the server.
     virtual void OnSyncProtocolError(
-        const sessions::SyncSessionSnapshot& snapshot) = 0;
+        const SyncProtocolError& sync_protocol_error) = 0;
 
     // Called when the server wants to change the number of hints the client
     // will buffer locally.
@@ -103,7 +105,7 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   // Builds and sends a snapshot to the session context's listeners.
   void SendSyncCycleEndEventNotification(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
-  void SendEventNotification(SyncEngineEvent::EventCause cause);
+  void SendEventNotification(SyncCycleEvent::EventCause cause);
 
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }

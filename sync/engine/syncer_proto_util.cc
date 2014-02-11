@@ -398,12 +398,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
         response->error_code());
   }
 
-  // Now set the error into the status so the layers above us could read it.
-  sessions::StatusController* status = session->mutable_status_controller();
-  status->set_sync_protocol_error(sync_protocol_error);
-
   // Inform the delegate of the error we got.
-  session->delegate()->OnSyncProtocolError(session->TakeSnapshot());
+  session->delegate()->OnSyncProtocolError(sync_protocol_error);
 
   // Update our state for any other commands we've received.
   if (response->has_client_command()) {

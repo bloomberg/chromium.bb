@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "sync/engine/net/server_connection_manager.h"
+#include "sync/engine/sync_cycle_event.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
@@ -35,7 +36,7 @@ SyncStatus AllStatus::CreateBlankStatus() const {
   return status;
 }
 
-SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
+SyncStatus AllStatus::CalcSyncing(const SyncCycleEvent &event) const {
   SyncStatus status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
@@ -44,22 +45,20 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   status.committed_count =
       snapshot.model_neutral_state().num_successful_commits;
 
-  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_BEGIN) {
+  if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_BEGIN) {
     status.syncing = true;
-  } else if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
+  } else if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_ENDED) {
     status.syncing = false;
   }
 
   status.updates_available += snapshot.num_server_changes_remaining();
-  status.sync_protocol_error =
-      snapshot.model_neutral_state().sync_protocol_error;
 
   status.num_entries_by_type = snapshot.num_entries_by_type();
   status.num_to_delete_entries_by_type =
       snapshot.num_to_delete_entries_by_type();
 
   // Accumulate update count only once per session to avoid double-counting.
-  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
+  if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_ENDED) {
     status.updates_received +=
         snapshot.model_neutral_state().num_updates_downloaded_total;
     status.tombstone_updates_received +=
@@ -92,31 +91,35 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   return status;
 }
 
-void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
+void AllStatus::OnSyncCycleEvent(const SyncCycleEvent& event) {
   ScopedStatusLock lock(this);
   switch (event.what_happened) {
-    case SyncEngineEvent::SYNC_CYCLE_BEGIN:
-    case SyncEngineEvent::STATUS_CHANGED:
-    case SyncEngineEvent::SYNC_CYCLE_ENDED:
+    case SyncCycleEvent::SYNC_CYCLE_BEGIN:
+    case SyncCycleEvent::STATUS_CHANGED:
+    case SyncCycleEvent::SYNC_CYCLE_ENDED:
       status_ = CalcSyncing(event);
-      break;
-    case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:
-       break;
-    case SyncEngineEvent::ACTIONABLE_ERROR:
-      status_ = CreateBlankStatus();
-      status_.sync_protocol_error =
-          event.snapshot.model_neutral_state().sync_protocol_error;
-      break;
-    case SyncEngineEvent::RETRY_TIME_CHANGED:
-      status_.retry_time = event.retry_time;
-      break;
-    case SyncEngineEvent::THROTTLED_TYPES_CHANGED:
-      status_.throttled_types = event.throttled_types;
       break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       break;
   }
+}
+
+void AllStatus::OnActionableError(
+    const SyncProtocolError& sync_protocol_error) {
+  ScopedStatusLock lock(this);
+  status_ = CreateBlankStatus();
+  status_.sync_protocol_error = sync_protocol_error;
+}
+
+void AllStatus::OnRetryTimeChanged(base::Time retry_time) {
+  ScopedStatusLock lock(this);
+  status_.retry_time = retry_time;
+}
+
+void AllStatus::OnThrottledTypesChanged(ModelTypeSet throttled_types) {
+  ScopedStatusLock lock(this);
+  status_.throttled_types = throttled_types;
 }
 
 SyncStatus AllStatus::status() const {

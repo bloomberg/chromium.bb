@@ -88,7 +88,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const base::TimeDelta& new_delay) OVERRIDE;
   virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
   virtual void OnSyncProtocolError(
-      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+      const SyncProtocolError& sync_protocol_error) OVERRIDE;
   virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE;
 
   // Returns true if the client is currently in exponential backoff.
@@ -187,9 +187,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const base::TimeDelta& delay,
       const tracked_objects::Location& nudge_location);
 
-  // Helper to signal all listeners registered with |session_context_|.
-  void Notify(SyncEngineEvent::EventCause cause);
-
   // Helper to signal listeners about changed retry time.
   void NotifyRetryTime(base::Time retry_time);
 
@@ -239,8 +236,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // and without InvalidationState variants, all NudgeSources, etc) and as such
   // is the most flexible place to do this bookkeeping.
   void UpdateNudgeTimeRecords(ModelTypeSet types);
-
-  virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
   // For certain methods that need to worry about X-thread posting.
   WeakHandle<SyncSchedulerImpl> weak_handle_this_;

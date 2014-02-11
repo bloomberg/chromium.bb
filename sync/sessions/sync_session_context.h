@@ -18,7 +18,7 @@
 #include <string>
 
 #include "sync/base/sync_export.h"
-#include "sync/engine/sync_engine_event.h"
+#include "sync/engine/sync_engine_event_listener.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/model_type_registry.h"
@@ -94,9 +94,8 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   }
   int32 max_commit_batch_size() const { return max_commit_batch_size_; }
 
-  void NotifyListeners(const SyncEngineEvent& event) {
-    FOR_EACH_OBSERVER(SyncEngineEventListener, listeners_,
-                      OnSyncEngineEvent(event));
+  ObserverList<SyncEngineEventListener>* listeners() {
+    return &listeners_;
   }
 
   TrafficRecorder* traffic_recorder() {

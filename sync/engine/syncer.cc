@@ -179,7 +179,7 @@ void Syncer::ApplyUpdates(SyncSession* session,
   session->context()->set_hierarchy_conflict_detected(
       session->status_controller().num_hierarchy_conflicts() > 0);
 
-  session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
+  session->SendEventNotification(SyncCycleEvent::STATUS_CHANGED);
 }
 
 bool Syncer::DownloadUpdates(
@@ -242,7 +242,7 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
 
 void Syncer::HandleCycleBegin(SyncSession* session) {
   session->mutable_status_controller()->UpdateStartTime();
-  session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
+  session->SendEventNotification(SyncCycleEvent::SYNC_CYCLE_BEGIN);
 }
 
 bool Syncer::HandleCycleEnd(

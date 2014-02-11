@@ -69,20 +69,24 @@ SyncSessionSnapshot SyncSession::TakeSnapshotWithSource(
 
 void SyncSession::SendSyncCycleEndEventNotification(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-  SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
+  SyncCycleEvent event(SyncCycleEvent::SYNC_CYCLE_ENDED);
   event.snapshot = TakeSnapshotWithSource(source);
 
   DVLOG(1) << "Sending cycle end event with snapshot: "
       << event.snapshot.ToString();
-  context()->NotifyListeners(event);
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *(context_->listeners()),
+                    OnSyncCycleEvent(event));
 }
 
-void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
-  SyncEngineEvent event(cause);
+void SyncSession::SendEventNotification(SyncCycleEvent::EventCause cause) {
+  SyncCycleEvent event(cause);
   event.snapshot = TakeSnapshot();
 
   DVLOG(1) << "Sending event with snapshot: " << event.snapshot.ToString();
-  context()->NotifyListeners(event);
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *(context_->listeners()),
+                    OnSyncCycleEvent(event));
 }
 
 }  // namespace sessions

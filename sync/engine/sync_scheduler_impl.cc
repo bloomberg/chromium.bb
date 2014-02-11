@@ -254,9 +254,11 @@ ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
   scoped_ptr<SyncSession> dummy(SyncSession::Build(session_context_, this));
-  SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
+  SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
-  session_context_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *session_context_->listeners(),
+                    OnSyncCycleEvent(event));
 }
 
 namespace {
@@ -810,21 +812,16 @@ void SyncSchedulerImpl::ExponentialBackoffRetry() {
   TryCanaryJob();
 }
 
-void SyncSchedulerImpl::Notify(SyncEngineEvent::EventCause cause) {
-  DCHECK(CalledOnValidThread());
-  session_context_->NotifyListeners(SyncEngineEvent(cause));
-}
-
 void SyncSchedulerImpl::NotifyRetryTime(base::Time retry_time) {
-  SyncEngineEvent event(SyncEngineEvent::RETRY_TIME_CHANGED);
-  event.retry_time = retry_time;
-  session_context_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *session_context_->listeners(),
+                    OnRetryTimeChanged(retry_time));
 }
 
 void SyncSchedulerImpl::NotifyThrottledTypesChanged(ModelTypeSet types) {
-  SyncEngineEvent event(SyncEngineEvent::THROTTLED_TYPES_CHANGED);
-  event.throttled_types = types;
-  session_context_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *session_context_->listeners(),
+                    OnThrottledTypesChanged(types));
 }
 
 bool SyncSchedulerImpl::IsBackingOff() const {
@@ -888,25 +885,19 @@ void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
     NOTREACHED() << "Hint buffer size should be > 0.";
 }
 
-void SyncSchedulerImpl::OnActionableError(
-    const sessions::SyncSessionSnapshot& snap) {
-  DCHECK(CalledOnValidThread());
-  SDVLOG(2) << "OnActionableError";
-  SyncEngineEvent event(SyncEngineEvent::ACTIONABLE_ERROR);
-  event.snapshot = snap;
-  session_context_->NotifyListeners(event);
-}
-
 void SyncSchedulerImpl::OnSyncProtocolError(
-    const sessions::SyncSessionSnapshot& snapshot) {
+    const SyncProtocolError& sync_protocol_error) {
   DCHECK(CalledOnValidThread());
-  if (ShouldRequestEarlyExit(
-          snapshot.model_neutral_state().sync_protocol_error)) {
+  if (ShouldRequestEarlyExit(sync_protocol_error)) {
     SDVLOG(2) << "Sync Scheduler requesting early exit.";
     Stop();
   }
-  if (IsActionableError(snapshot.model_neutral_state().sync_protocol_error))
-    OnActionableError(snapshot);
+  if (IsActionableError(sync_protocol_error)) {
+    SDVLOG(2) << "OnActionableError";
+    FOR_EACH_OBSERVER(SyncEngineEventListener,
+                      *session_context_->listeners(),
+                      OnActionableError(sync_protocol_error));
+  }
 }
 
 void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {

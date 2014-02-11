@@ -82,8 +82,7 @@ void FakeSyncScheduler::OnReceivedSessionsCommitDelay(
 void FakeSyncScheduler::OnReceivedClientInvalidationHintBufferSize(int size) {
 }
 
-void FakeSyncScheduler::OnSyncProtocolError(
-     const sessions::SyncSessionSnapshot& snapshot) {
+void FakeSyncScheduler::OnSyncProtocolError(const SyncProtocolError& error) {
 }
 
 void FakeSyncScheduler::OnReceivedGuRetryDelay(

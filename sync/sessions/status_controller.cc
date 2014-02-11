@@ -81,11 +81,6 @@ void StatusController::increment_num_server_overwrites() {
   model_neutral_.num_server_overwrites++;
 }
 
-void StatusController::set_sync_protocol_error(
-    const SyncProtocolError& error) {
-  model_neutral_.sync_protocol_error = error;
-}
-
 void StatusController::set_last_get_key_result(const SyncerError result) {
   model_neutral_.last_get_key_result = result;
 }

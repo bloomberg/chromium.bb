@@ -12,7 +12,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/all_status.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/engine/sync_engine_event.h"
+#include "sync/engine/sync_engine_event_listener.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/debug_info_event_listener.h"
@@ -136,7 +136,10 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   static int GetPreferencesNudgeDelay();
 
   // SyncEngineEventListener implementation.
-  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
+  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) OVERRIDE;
+  virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE;
+  virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE;
+  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE;
 
   // ServerConnectionEventListener implementation.
   virtual void OnServerConnectionEvent(

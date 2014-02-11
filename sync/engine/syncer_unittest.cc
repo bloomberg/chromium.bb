@@ -151,9 +151,7 @@ class SyncerTest : public testing::Test,
     last_client_invalidation_hint_buffer_size_ = size;
   }
   virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE {}
-  virtual void OnSyncProtocolError(
-      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
-  }
+  virtual void OnSyncProtocolError(const SyncProtocolError& error) OVERRIDE {}
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
@@ -164,19 +162,23 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE {
+  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) OVERRIDE {
     DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
-      case SyncEngineEvent::SYNC_CYCLE_BEGIN: // Fall through.
-      case SyncEngineEvent::STATUS_CHANGED:
-      case SyncEngineEvent::SYNC_CYCLE_ENDED:
+      case SyncCycleEvent::SYNC_CYCLE_BEGIN: // Fall through.
+      case SyncCycleEvent::STATUS_CHANGED:
+      case SyncCycleEvent::SYNC_CYCLE_ENDED:
         return;
       default:
         CHECK(false) << "Handling unknown error type in unit tests!!";
     }
     saw_syncer_event_ = true;
   }
+
+  virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE {}
+  virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE {}
+  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE {}
 
   void ResetSession() {
     session_.reset(SyncSession::Build(context_.get(), this));
