@@ -11,7 +11,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_WIN)
@@ -30,6 +32,18 @@ namespace {
 const char kPrefLaunchType[] = "launchType";
 
 }  // namespace
+
+namespace launch_util {
+
+// static
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      pref_names::kBookmarkAppCreationLaunchType,
+      LAUNCH_TYPE_WINDOW,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+}  // namespace launch_util
 
 LaunchType GetLaunchType(const ExtensionPrefs* prefs,
                          const Extension* extension) {

@@ -30,6 +30,8 @@ bool ScopeToPrefName(ExtensionPrefsScope scope, std::string* result) {
 const char kAlertsInitialized[] = "extensions.alerts.initialized";
 const char kAllowedInstallSites[] = "extensions.allowed_install_sites";
 const char kAllowedTypes[] = "extensions.allowed_types";
+const char kBookmarkAppCreationLaunchType[] =
+    "extensions.bookmark_app_creation_launch_type";
 const char kBrowserActionContainerWidth[] =
     "extensions.browseractions.container.width";
 const char kExtensions[] = "extensions.settings";

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -141,6 +142,10 @@ void BookmarkAppBubbleView::Init() {
   layout->StartRow(0, TITLE_COLUMN_SET_ID);
   open_as_tab_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB));
+  open_as_tab_checkbox_->SetChecked(
+      profile_->GetPrefs()->GetInteger(
+          extensions::pref_names::kBookmarkAppCreationLaunchType) ==
+              extensions::LAUNCH_TYPE_REGULAR);
   layout->AddView(open_as_tab_checkbox_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -202,11 +207,14 @@ void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void BookmarkAppBubbleView::ApplyEdits() {
   // Set the launch type based on the checkbox.
+  extensions::LaunchType launch_type = open_as_tab_checkbox_->checked()
+      ? extensions::LAUNCH_TYPE_REGULAR
+      : extensions::LAUNCH_TYPE_WINDOW;
+  profile_->GetPrefs()->SetInteger(
+          extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
   extensions::SetLaunchType(profile_->GetExtensionService(),
                             extension_id_,
-                            open_as_tab_checkbox_->checked()
-                                ? extensions::LAUNCH_TYPE_REGULAR
-                                : extensions::LAUNCH_TYPE_WINDOW);
+                            launch_type);
 
   const extensions::Extension* extension =
       profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
