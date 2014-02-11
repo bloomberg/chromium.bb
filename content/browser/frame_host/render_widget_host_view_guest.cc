@@ -47,7 +47,8 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     BrowserPluginGuest* guest,
     RenderWidgetHostView* platform_view)
     : RenderWidgetHostViewChildFrame(widget_host),
-      guest_(guest),
+      // |guest| is NULL during test.
+      guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
 #if defined(OS_WIN) || defined(USE_AURA)
   gesture_recognizer_.reset(ui::GestureRecognizer::Create());
@@ -115,6 +116,9 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
 #endif
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
+  if (!guest_)
+    return gfx::Rect();
+
   RenderWidgetHostViewPort* rwhv = static_cast<RenderWidgetHostViewPort*>(
       guest_->GetEmbedderRenderWidgetHostView());
   gfx::Rect embedder_bounds;
@@ -158,6 +162,9 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
+  if (!guest_)
+    return;
+
   // If accelerated surface buffers are getting swapped then we're not using
   // the software path.
   guest_->clear_damage_buffer();
@@ -180,6 +187,9 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  if (!guest_)
+    return;
+
   guest_->clear_damage_buffer();
 
   if (!guest_->attached()) {
@@ -237,6 +247,9 @@ void RenderWidgetHostViewGuest::InitAsFullscreen(
 }
 
 gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
+  if (!guest_)
+    return gfx::NativeView();
+
   RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
   if (!rwhv)
     return gfx::NativeView();
@@ -244,6 +257,9 @@ gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
 }
 
 gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
+  if (!guest_)
+    return static_cast<gfx::NativeViewId>(NULL);
+
   RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
   if (!rwhv)
     return static_cast<gfx::NativeViewId>(NULL);
@@ -251,6 +267,9 @@ gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
+  if (!guest_)
+    return gfx::NativeViewAccessible();
+
   RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
   if (!rwhv)
     return gfx::NativeViewAccessible();
@@ -275,6 +294,9 @@ void RenderWidgetHostViewGuest::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
     bool can_compose_inline) {
+  if (!guest_)
+    return;
+
   RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
       guest_->GetEmbedderRenderWidgetHostView());
   if (!rwhv)
@@ -284,6 +306,9 @@ void RenderWidgetHostViewGuest::TextInputTypeChanged(
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
+  if (!guest_)
+    return;
+
   RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
       guest_->GetEmbedderRenderWidgetHostView());
   if (!rwhv)
@@ -296,6 +321,9 @@ void RenderWidgetHostViewGuest::ImeCancelComposition() {
 void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
+  if (!guest_)
+    return;
+
   RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
       guest_->GetEmbedderRenderWidgetHostView());
   if (!rwhv)
@@ -326,6 +354,9 @@ void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
+  if (!guest_)
+    return;
+
   RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
       guest_->GetEmbedderRenderWidgetHostView());
   if (!rwhv)
@@ -369,6 +400,8 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
 }
 
 void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
+  if (!guest_)
+    return;
   RenderWidgetHostViewPort* embedder_view =
       RenderWidgetHostViewPort::FromRWHV(
           guest_->GetEmbedderRenderWidgetHostView());
@@ -394,6 +427,9 @@ void RenderWidgetHostViewGuest::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
+  if (!guest_)
+    return;
+
   gfx::Point origin;
   gfx::Rect guest_bounds = GetViewBounds();
   RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();

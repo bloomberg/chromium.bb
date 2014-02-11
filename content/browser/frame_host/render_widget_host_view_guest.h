@@ -175,7 +175,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // Process all of the given gestures (passes them on to renderer)
   void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
-  BrowserPluginGuest *guest_;
+  // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
+  // to one another, therefore we access |guest_| through WeakPtr.
+  base::WeakPtr<BrowserPluginGuest> guest_;
   gfx::Size size_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
