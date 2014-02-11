@@ -164,9 +164,11 @@ def download_build_install(parsed_arguments):
 
   library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
       parsed_arguments.library)
- 
-  if not os.path.exists(library_directory):
-    os.makedirs(library_directory)
+
+  # A failed build might have left a dirty source tree behind.
+  if os.path.exists(library_directory):
+    shutil.rmtree(library_directory)
+  os.makedirs(library_directory)
 
   with ScopedChangeDirectory(library_directory) as cd_library:
     shell_call('apt-get source %s' % parsed_arguments.library,
@@ -205,6 +207,8 @@ def download_build_install(parsed_arguments):
   open('%s/%s.txt' % (install_prefix, parsed_arguments.library), 'w').close()
 
   # Remove downloaded package and generated temporary build files.
+  # Failed builds intentionally skip this step, in order to aid in tracking down
+  # build failures.
   shutil.rmtree(library_directory)
 
 
