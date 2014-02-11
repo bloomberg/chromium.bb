@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "mojo/public/bindings/interface.h"
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/system/macros.h"
 
@@ -17,12 +18,24 @@ namespace mojo {
 //
 // EXAMPLE:
 //
+// Given foo.mojom containing the following interfaces:
+//
+//   [Peer=FooClient]
+//   interface Foo {
+//     void Ping();
+//   };
+//
+//   [Peer=Foo]
+//   interface FooClient {
+//     void Pong();
+//   };
+//
 // On the client side of a service, RemotePtr might be used like so:
 //
-//   class FooClientImpl : public FooClientStub {
+//   class FooClientImpl : public FooClient {
 //    public:
-//     explicit FooClientImpl(const mojo::MessagePipeHandle& message_pipe)
-//         : foo_(message_pipe, this) {
+//     explicit FooClientImpl(ScopedFooHandle handle)
+//         : foo_(handle.Pass(), this) {
 //       foo_.Ping();
 //     }
 //     virtual void Pong() {
@@ -34,10 +47,10 @@ namespace mojo {
 //
 // On the implementation side of a service, RemotePtr might be used like so:
 //
-//   class FooImpl : public FooStub {
+//   class FooImpl : public Foo {
 //    public:
-//     explicit FooImpl(const mojo::MessagePipeHandle& message_pipe)
-//         : client_(message_pipe, this) {
+//     explicit FooImpl(ScopedFooClientHandle handle)
+//         : client_(handle.Pass(), this) {
 //     }
 //     virtual void Ping() {
 //       client_->Pong();
@@ -62,11 +75,12 @@ class RemotePtr {
 
  public:
   RemotePtr() : state_(NULL) {}
-  explicit RemotePtr(ScopedMessagePipeHandle message_pipe,
+  explicit RemotePtr(typename Interface<S>::ScopedHandle interface_handle,
                      typename S::_Peer* peer = NULL,
                      ErrorHandler* error_handler = NULL,
                      MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter())
-      : state_(new State(message_pipe.Pass(), peer, error_handler, waiter)) {
+      : state_(new State(ScopedMessagePipeHandle(interface_handle.Pass()), peer,
+                         error_handler, waiter)) {
   }
 
   // Move-only constructor and operator=.
@@ -98,12 +112,13 @@ class RemotePtr {
     state_ = NULL;
   }
 
-  void reset(ScopedMessagePipeHandle message_pipe,
+  void reset(typename Interface<S>::ScopedHandle interface_handle,
              typename S::_Peer* peer = NULL,
              ErrorHandler* error_handler = NULL,
              MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     delete state_;
-    state_ = new State(message_pipe.Pass(), peer, error_handler, waiter);
+    state_ = new State(ScopedMessagePipeHandle(interface_handle.Pass()), peer,
+                       error_handler, waiter);
   }
 
   bool encountered_error() const {

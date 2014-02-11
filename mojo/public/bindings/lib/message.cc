@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/message.h"
+#include "mojo/public/bindings/message.h"
 
 #include <stdlib.h>
 
@@ -27,10 +27,6 @@ Message::~Message() {
 void Message::Swap(Message* other) {
   std::swap(data, other->data);
   std::swap(handles, other->handles);
-}
-
-bool NoSuchInterfaceStub::Accept(Message* message) {
-  return false;
 }
 
 }  // namespace mojo

@@ -27,12 +27,12 @@ namespace services {
 
 class CommandBufferImpl : public CommandBuffer {
  public:
-  CommandBufferImpl(ScopedMessagePipeHandle client,
+  CommandBufferImpl(ScopedCommandBufferClientHandle client,
                     gfx::AcceleratedWidget widget,
                     const gfx::Size& size);
   virtual ~CommandBufferImpl();
 
-  virtual void Initialize(ScopedMessagePipeHandle sync_client,
+  virtual void Initialize(ScopedCommandBufferSyncClientHandle sync_client,
                           const ShmHandle& shared_state) OVERRIDE;
   virtual void SetGetBuffer(int32_t buffer) OVERRIDE;
   virtual void Flush(int32_t put_offset) OVERRIDE;

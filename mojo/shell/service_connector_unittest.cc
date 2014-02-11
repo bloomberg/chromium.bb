@@ -48,7 +48,7 @@ class TestServiceImpl :
 
 class TestClientImpl : public TestClient {
  public:
-  explicit TestClientImpl(ScopedMessagePipeHandle service_handle)
+  explicit TestClientImpl(ScopedTestServiceHandle service_handle)
       : service_(service_handle.Pass(), this),
         quit_after_ack_(false) {
   }
@@ -84,9 +84,10 @@ class ServiceConnectorTest : public testing::Test,
     GURL test_url(kTestURLString);
     service_connector_.reset(new ServiceConnector);
     service_connector_->SetLoaderForURL(this, test_url);
-    MessagePipe pipe;
-    test_client_.reset(new TestClientImpl(pipe.handle0.Pass()));
-    service_connector_->Connect(test_url, pipe.handle1.Pass());
+
+    InterfacePipe<TestService, AnyInterface> pipe;
+    test_client_.reset(new TestClientImpl(pipe.handle_to_self.Pass()));
+    service_connector_->Connect(test_url, pipe.handle_to_peer.Pass());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -96,7 +97,7 @@ class ServiceConnectorTest : public testing::Test,
   }
 
   virtual void Load(const GURL& url,
-                    ScopedMessagePipeHandle shell_handle) OVERRIDE {
+                    ScopedShellHandle shell_handle) OVERRIDE {
     test_app_.reset(new ServiceFactory<TestServiceImpl, TestContext>(
         shell_handle.Pass(), &context_));
   }

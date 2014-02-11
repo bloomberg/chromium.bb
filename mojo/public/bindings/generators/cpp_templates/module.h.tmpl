@@ -9,7 +9,7 @@
 #define {{header_guard}}
 
 #include "mojo/public/bindings/array.h"
-#include "mojo/public/bindings/lib/message.h"
+#include "mojo/public/bindings/interface.h"
 #include "{{include_prefix}}{{module_name|camel_to_underscores}}_internal.h"
 {%- for import in imports %}
 #include "{{include_prefix}}{{import.module_name|camel_to_underscores}}.h"

@@ -36,7 +36,7 @@ def GetCppType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetCppType(mojom.MSGPIPE)
+    return "mojo::Interface<%s>::Handle" % kind.name
   if kind.spec == 's':
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
@@ -47,7 +47,7 @@ def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetCppArrayArgWrapperType(mojom.MSGPIPE)
+    return "mojo::Interface<%s>::Handle" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   return _kind_to_cpp_type[kind]
@@ -58,7 +58,7 @@ def GetCppWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetCppWrapperType(mojom.MSGPIPE)
+    return "mojo::Passable<typename mojo::Interface<%s>::Handle>" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   if mojom_generator.IsHandleKind(kind):
@@ -71,7 +71,7 @@ def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetCppConstWrapperType(mojom.MSGPIPE)
+    return "mojo::Interface<%s>::ScopedHandle" % kind.name
   if kind.spec == 's':
     return "const mojo::String&"
   if kind.spec == 'h':
@@ -91,11 +91,9 @@ def GetCppFieldType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetCppFieldType(mojom.MSGPIPE)
+    return "mojo::Interface<%s>::Handle" % kind.name
   if kind.spec == 's':
     return "mojo::internal::StringPointer"
-  if mojom_generator.IsHandleKind(kind):
-    return _kind_to_cpp_type[kind]
   return _kind_to_cpp_type[kind]
 
 def IsStructWithHandles(struct):

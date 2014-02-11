@@ -10,8 +10,9 @@
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
-
 class Message;
+
+namespace internal {
 
 // A queue for Message objects.
 class MessageQueue {
@@ -40,6 +41,7 @@ class MessageQueue {
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };
 
+}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_QUEUE_H_

@@ -35,6 +35,11 @@ class ScopedHandleBase {
   explicit ScopedHandleBase(HandleType handle) : handle_(handle) {}
   ~ScopedHandleBase() { CloseIfNecessary(); }
 
+  template <class CompatibleHandleType>
+  explicit ScopedHandleBase(ScopedHandleBase<CompatibleHandleType> other)
+      : handle_(other.release()) {
+  }
+
   // Move-only constructor and operator=.
   ScopedHandleBase(RValue other) : handle_(other.object->release()) {}
   ScopedHandleBase& operator=(RValue other) {

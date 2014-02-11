@@ -12,6 +12,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/switches.h"
+#include "mojom/shell.h"
 
 typedef MojoResult (*MojoMainFunction)(MojoHandle pipe);
 
@@ -40,7 +41,7 @@ class DynamicServiceLoader::LoadContext
  public:
   LoadContext(DynamicServiceLoader* loader,
               const GURL& url,
-              ScopedMessagePipeHandle service_handle)
+              ScopedShellHandle service_handle)
       : thread_(this, "app_thread"),
         loader_(loader),
         url_(url),
@@ -118,7 +119,7 @@ class DynamicServiceLoader::LoadContext
   GURL url_;
   base::FilePath app_path_;
   scoped_ptr<mojo::shell::Loader::Job> request_;
-  ScopedMessagePipeHandle service_handle_;
+  ScopedShellHandle service_handle_;
   KeepAlive keep_alive_;
 };
 
@@ -131,7 +132,7 @@ DynamicServiceLoader::~DynamicServiceLoader() {
 }
 
 void DynamicServiceLoader::Load(const GURL& url,
-                                ScopedMessagePipeHandle service_handle) {
+                                ScopedShellHandle service_handle) {
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
   url_to_load_context_[url] = new LoadContext(this, url, service_handle.Pass());
 }

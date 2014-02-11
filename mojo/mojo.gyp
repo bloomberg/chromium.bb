@@ -357,6 +357,7 @@
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
         'mojo_environment_chromium',
+        'mojo_shell_bindings',
         'mojo_shell_lib',
         'mojo_system',
         'mojo_system_impl',

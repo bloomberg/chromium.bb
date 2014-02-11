@@ -117,17 +117,18 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 
 class AuraDemo : public ShellClient {
  public:
-  explicit AuraDemo(ScopedMessagePipeHandle shell_handle)
+  explicit AuraDemo(ScopedShellHandle shell_handle)
       : shell_(shell_handle.Pass(), this) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
+    InterfacePipe<NativeViewport, AnyInterface> pipe;
+
     mojo::AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
+    shell_->Connect("mojo:mojo_native_viewport_service",
+                    pipe.handle_to_peer.Pass());
     root_window_host_.reset(new WindowTreeHostMojo(
-        native_viewport_handle.Pass(),
+        pipe.handle_to_self.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
   }
@@ -203,7 +204,7 @@ extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance();
   mojo::examples::AuraDemo app(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
   loop.Run();
 
   return MOJO_RESULT_OK;

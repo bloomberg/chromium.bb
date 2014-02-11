@@ -33,8 +33,8 @@ class MathCalculatorImpl : public math::Calculator {
  public:
   virtual ~MathCalculatorImpl() {}
 
-  explicit MathCalculatorImpl(ScopedMessagePipeHandle pipe)
-      : ui_(pipe.Pass(), this),
+  explicit MathCalculatorImpl(math::ScopedCalculatorUIHandle ui_handle)
+      : ui_(ui_handle.Pass(), this),
         total_(0.0) {
   }
 
@@ -59,9 +59,9 @@ class MathCalculatorImpl : public math::Calculator {
 
 class MathCalculatorUIImpl : public math::CalculatorUI {
  public:
-  explicit MathCalculatorUIImpl(ScopedMessagePipeHandle pipe,
+  explicit MathCalculatorUIImpl(math::ScopedCalculatorHandle calculator_handle,
                                 ErrorHandler* error_handler = NULL)
-      : calculator_(pipe.Pass(), this, error_handler),
+      : calculator_(calculator_handle.Pass(), this, error_handler),
         output_(0.0) {
   }
 
@@ -101,20 +101,12 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
 
 class RemotePtrTest : public testing::Test {
  public:
-  RemotePtrTest() {
-    CreateMessagePipe(&pipe0_, &pipe1_);
-  }
-
-  virtual ~RemotePtrTest() {
-  }
-
   void PumpMessages() {
     loop_.RunUntilIdle();
   }
 
  protected:
-  ScopedMessagePipeHandle pipe0_;
-  ScopedMessagePipeHandle pipe1_;
+  InterfacePipe<math::CalculatorUI> pipe_;
 
  private:
   Environment env_;
@@ -125,10 +117,10 @@ class RemotePtrTest : public testing::Test {
 
 TEST_F(RemotePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe0_.
-  MathCalculatorImpl calculator(pipe0_.Pass());
+  MathCalculatorImpl calculator(pipe_.handle_to_self.Pass());
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUIImpl calculator_ui(pipe1_.Pass());
+  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass());
 
   calculator_ui.Add(2.0);
   calculator_ui.Multiply(5.0);
@@ -140,7 +132,7 @@ TEST_F(RemotePtrTest, EndToEnd) {
 
 TEST_F(RemotePtrTest, Movable) {
   RemotePtr<math::Calculator> a;
-  RemotePtr<math::Calculator> b(pipe0_.Pass(), NULL);
+  RemotePtr<math::Calculator> b(pipe_.handle_to_peer.Pass(), NULL);
 
   EXPECT_TRUE(a.is_null());
   EXPECT_FALSE(b.is_null());
@@ -156,9 +148,9 @@ TEST_F(RemotePtrTest, Resettable) {
 
   EXPECT_TRUE(a.is_null());
 
-  MessagePipeHandle handle = pipe0_.get();
+  math::CalculatorHandle handle = pipe_.handle_to_peer.get();
 
-  a.reset(pipe0_.Pass(), NULL);
+  a.reset(pipe_.handle_to_peer.Pass(), NULL);
 
   EXPECT_FALSE(a.is_null());
 
@@ -171,9 +163,10 @@ TEST_F(RemotePtrTest, Resettable) {
 }
 
 TEST_F(RemotePtrTest, EncounteredError) {
-  MathCalculatorImpl* calculator = new MathCalculatorImpl(pipe0_.Pass());
+  MathCalculatorImpl* calculator =
+      new MathCalculatorImpl(pipe_.handle_to_self.Pass());
 
-  MathCalculatorUIImpl calculator_ui(pipe1_.Pass());
+  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass());
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -196,10 +189,12 @@ TEST_F(RemotePtrTest, EncounteredError) {
 }
 
 TEST_F(RemotePtrTest, EncounteredErrorCallback) {
-  MathCalculatorImpl* calculator = new MathCalculatorImpl(pipe0_.Pass());
+  MathCalculatorImpl* calculator =
+      new MathCalculatorImpl(pipe_.handle_to_self.Pass());
 
   ErrorObserver error_observer;
-  MathCalculatorUIImpl calculator_ui(pipe1_.Pass(), &error_observer);
+  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass(),
+                                     &error_observer);
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -228,7 +223,8 @@ TEST_F(RemotePtrTest, EncounteredErrorCallback) {
 TEST_F(RemotePtrTest, NoPeerAttribute) {
   // This is a test to ensure the following compiles. The sample::Port interface
   // does not have an explicit Peer attribute.
-  RemotePtr<sample::Port> port(pipe0_.Pass());
+  InterfacePipe<sample::Port, NoInterface> pipe;
+  RemotePtr<sample::Port> port(pipe.handle_to_self.Pass());
 }
 
 }  // namespace test

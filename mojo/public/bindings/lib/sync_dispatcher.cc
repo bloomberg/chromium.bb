@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 
-#include "mojo/public/bindings/lib/message.h"
+#include "mojo/public/bindings/message.h"
 
 namespace mojo {
 

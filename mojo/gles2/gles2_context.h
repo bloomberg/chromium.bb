@@ -28,7 +28,7 @@ class GLES2Context : public CommandBufferDelegate,
                      public MojoGLES2ContextPrivate {
  public:
   explicit GLES2Context(MojoAsyncWaiter* async_waiter,
-                        ScopedMessagePipeHandle pipe,
+                        ScopedCommandBufferHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
                         MojoGLES2DrawAnimationFrame animation_callback,
                         void* closure);

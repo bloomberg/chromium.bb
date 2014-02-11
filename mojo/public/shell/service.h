@@ -56,7 +56,7 @@ class ServiceFactoryBase : public ShellClient {
   virtual ~ServiceFactoryBase();
 
  protected:
-  ServiceFactoryBase(ScopedMessagePipeHandle shell_handle);
+  ServiceFactoryBase(ScopedShellHandle shell_handle);
   Shell* shell() { return shell_.get(); }
   // Destroys connection to Shell.
   void DisconnectFromShell();
@@ -68,7 +68,7 @@ class ServiceFactoryBase : public ShellClient {
 template <class ServiceImpl, typename Context=void>
 class ServiceFactory : public ServiceFactoryBase {
  public:
-  ServiceFactory(ScopedMessagePipeHandle shell_handle, Context* context = NULL)
+  ServiceFactory(ScopedShellHandle shell_handle, Context* context = NULL)
       : ServiceFactoryBase(shell_handle.Pass()),
         context_(context) {
   }
@@ -125,7 +125,11 @@ class Service : public ServiceInterface {
   void Initialize(ServiceFactory<ServiceImpl, Context>* service_factory,
                   ScopedMessagePipeHandle client_handle) {
     service_factory_ = service_factory;
-    client_.reset(client_handle.Pass(), this, &reaper_);
+    client_.reset(
+        MakeScopedHandle(
+            InterfaceHandle<typename ServiceInterface::_Peer>(
+                client_handle.release().value())).Pass(),
+        this, &reaper_);
   }
 
   Context* context() const {

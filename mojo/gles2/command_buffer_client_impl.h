@@ -42,9 +42,10 @@ class CommandBufferClientImpl : public CommandBufferClient,
                                 public gpu::CommandBuffer,
                                 public gpu::GpuControl {
  public:
-  explicit CommandBufferClientImpl(CommandBufferDelegate* delegate,
-                                   MojoAsyncWaiter* async_waiter,
-                                   ScopedMessagePipeHandle command_buffer);
+  explicit CommandBufferClientImpl(
+      CommandBufferDelegate* delegate,
+      MojoAsyncWaiter* async_waiter,
+      ScopedCommandBufferHandle command_buffer_handle);
   virtual ~CommandBufferClientImpl();
 
   // CommandBuffer implementation:

@@ -11,7 +11,7 @@ class {{interface.name}} {
 {% if interface.peer %}
   typedef {{interface.peer}} _Peer;
 {% else %}
-  typedef mojo::NoSuchInterface _Peer;
+  typedef mojo::NoInterface _Peer;
 {% endif %}
 
 {#--- Enums #}
@@ -30,3 +30,6 @@ class {{interface.name}} {
   ) = 0;
 {%- endfor %}
 };
+
+typedef mojo::Interface<{{interface.name}}>::Handle {{interface.name}}Handle;
+typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name}}Handle;

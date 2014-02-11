@@ -7,9 +7,10 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "mojo/public/bindings/lib/message.h"
+#include "mojo/public/bindings/message.h"
 
 namespace mojo {
+namespace internal {
 
 MessageQueue::MessageQueue() {
 }
@@ -45,4 +46,5 @@ void MessageQueue::Pop() {
   queue_.pop();
 }
 
+}  // namespace internal
 }  // namespace mojo

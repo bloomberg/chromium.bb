@@ -245,8 +245,7 @@ void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public Service {
  public:
-  virtual void Frobinate(const Foo& foo, int32_t baz,
-                         mojo::ScopedMessagePipeHandle port)
+  virtual void Frobinate(const Foo& foo, int32_t baz, ScopedPortHandle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
@@ -304,10 +303,8 @@ TEST(BindingsSampleTest, Basic) {
   Foo foo = MakeFoo();
   CheckFoo(foo);
 
-  mojo::ScopedMessagePipeHandle port0, port1;
-  mojo::CreateMessagePipe(&port0, &port1);
-
-  service->Frobinate(foo, Service::BAZ_EXTRA, port0.Pass());
+  mojo::InterfacePipe<Port, mojo::AnyInterface> pipe;
+  service->Frobinate(foo, Service::BAZ_EXTRA, pipe.handle_to_self.Pass());
 }
 
 TEST(BindingsSampleTest, DefaultValues) {

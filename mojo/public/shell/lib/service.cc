@@ -6,7 +6,7 @@
 
 namespace mojo {
 
-ServiceFactoryBase::ServiceFactoryBase(ScopedMessagePipeHandle shell_handle)
+ServiceFactoryBase::ServiceFactoryBase(ScopedShellHandle shell_handle)
     : shell_(shell_handle.Pass(), this) {
 }
 

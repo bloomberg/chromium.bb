@@ -27,7 +27,7 @@ ui::ContextFactory* WindowTreeHostMojo::context_factory_ = NULL;
 // WindowTreeHostMojo, public:
 
 WindowTreeHostMojo::WindowTreeHostMojo(
-    ScopedMessagePipeHandle viewport_handle,
+    ScopedNativeViewportHandle viewport_handle,
     const gfx::Rect& bounds,
     const base::Callback<void()>& compositor_created_callback)
     : native_viewport_(viewport_handle.Pass(), this),

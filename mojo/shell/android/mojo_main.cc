@@ -41,7 +41,7 @@ class NativeViewportServiceLoader : public shell::ServiceConnector::Loader {
 
  private:
   virtual void Load(const GURL& url,
-                    ScopedMessagePipeHandle service_handle)
+                    ScopedShellHandle service_handle)
       MOJO_OVERRIDE {
     service_.reset(CreateNativeViewportService(g_context.Get().get(),
                                                service_handle.Pass()));

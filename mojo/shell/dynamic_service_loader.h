@@ -11,6 +11,7 @@
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/service_connector.h"
+#include "mojom/shell.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -30,7 +31,7 @@ class DynamicServiceLoader : public ServiceConnector::Loader {
   // value specified to the --origin command line argument will be used as the
   // host / port.
   virtual void Load(const GURL& url,
-                    ScopedMessagePipeHandle service_handle) MOJO_OVERRIDE;
+                    ScopedShellHandle service_handle) MOJO_OVERRIDE;
 
  private:
   class LoadContext;

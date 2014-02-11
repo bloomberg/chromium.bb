@@ -17,9 +17,9 @@ class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
   ServiceFactory(ServiceConnector* connector, const GURL& url)
       : connector_(connector),
         url_(url) {
-    MessagePipe pipe;
-    shell_client_.reset(pipe.handle0.Pass(), this, this);
-    connector_->GetLoaderForURL(url)->Load(url, pipe.handle1.Pass());
+    InterfacePipe<Shell> pipe;
+    shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
+    connector_->GetLoaderForURL(url)->Load(url, pipe.handle_to_self.Pass());
   }
   virtual ~ServiceFactory() {}
 

@@ -11,6 +11,7 @@
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/native_viewport/native_viewport_export.h"
 #include "mojom/native_viewport.h"
+#include "mojom/shell.h"
 #include "ui/events/event.h"
 
 namespace mojo {
@@ -69,7 +70,13 @@ class NativeViewportImpl
       return;
     }
 
-    command_buffer_handle_ = client_handle.Pass();
+    // TODO(darin):
+    // CreateGLES2Context should accept a ScopedCommandBufferClientHandle once
+    // it is possible to import interface definitions from another module.  For
+    // now, we just kludge it.
+    command_buffer_handle_.reset(
+        InterfaceHandle<CommandBufferClient>(client_handle.release().value()));
+
     CreateCommandBufferIfNeeded();
   }
 
@@ -165,7 +172,7 @@ class NativeViewportImpl
  private:
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
-  ScopedMessagePipeHandle command_buffer_handle_;
+  ScopedCommandBufferClientHandle command_buffer_handle_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
   int64 pending_event_timestamp_;
@@ -180,7 +187,7 @@ class NativeViewportImpl
 // Android will call this.
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::ServiceFactoryBase*
     CreateNativeViewportService(mojo::shell::Context* context,
-                                mojo::ScopedMessagePipeHandle shell_handle) {
+                                mojo::ScopedShellHandle shell_handle) {
   return new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
                                   mojo::shell::Context>(shell_handle.Pass(),
                                                         context);
@@ -193,7 +200,8 @@ extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
   base::MessageLoopForUI loop;
   mojo::ServiceFactory<mojo::services::NativeViewportImpl,
                        mojo::shell::Context> app(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+      mojo::MakeScopedHandle(
+          mojo::InterfaceHandle<mojo::Shell>(shell_handle)).Pass());
 
   base::MessageLoop::current()->Run();
   return MOJO_RESULT_OK;

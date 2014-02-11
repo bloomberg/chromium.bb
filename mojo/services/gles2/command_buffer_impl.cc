@@ -47,16 +47,17 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
 
 }  // anonymous namespace
 
-CommandBufferImpl::CommandBufferImpl(ScopedMessagePipeHandle client,
+CommandBufferImpl::CommandBufferImpl(ScopedCommandBufferClientHandle client,
                                      gfx::AcceleratedWidget widget,
                                      const gfx::Size& size)
     : client_(client.Pass(), this), widget_(widget), size_(size) {}
 
 CommandBufferImpl::~CommandBufferImpl() { client_->DidDestroy(); }
 
-void CommandBufferImpl::Initialize(ScopedMessagePipeHandle sync_client,
-                                   const ShmHandle& shared_state) {
-  sync_client_ = RemotePtr<CommandBufferSyncClient>(sync_client.Pass());
+void CommandBufferImpl::Initialize(
+    ScopedCommandBufferSyncClientHandle sync_client,
+    const ShmHandle& shared_state) {
+  sync_client_.reset(sync_client.Pass());
   sync_client_->DidInitialize(DoInitialize(shared_state));
 }
 

@@ -23,9 +23,9 @@ void CommandBufferDelegate::DrawAnimationFrame() {}
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
     MojoAsyncWaiter* async_waiter,
-    ScopedMessagePipeHandle command_buffer)
+    ScopedCommandBufferHandle command_buffer_handle)
     : delegate_(delegate),
-      command_buffer_(command_buffer.Pass(), this, this, async_waiter),
+      command_buffer_(command_buffer_handle.Pass(), this, this, async_waiter),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
       initialize_result_(false) {}
@@ -45,11 +45,11 @@ bool CommandBufferClientImpl::Initialize() {
 
   shared_state()->Initialize();
 
-  MessagePipe sync_pipe;
+  InterfacePipe<CommandBufferSyncClient, NoInterface> sync_pipe;
   sync_dispatcher_.reset(new SyncDispatcher<CommandBufferSyncClient>(
-      sync_pipe.handle1.Pass(), this));
+      sync_pipe.handle_to_peer.Pass(), this));
   AllocationScope scope;
-  command_buffer_->Initialize(sync_pipe.handle0.Pass(), handle);
+  command_buffer_->Initialize(sync_pipe.handle_to_self.Pass(), handle);
   // Wait for DidInitialize to come on the sync client pipe.
   if (!sync_dispatcher_->WaitAndDispatchOneMessage()) {
     VLOG(1) << "Channel encountered error while creating command buffer";

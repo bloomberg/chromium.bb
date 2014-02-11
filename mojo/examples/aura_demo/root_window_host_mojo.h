@@ -23,7 +23,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
  public:
-  WindowTreeHostMojo(ScopedMessagePipeHandle viewport_handle,
+  WindowTreeHostMojo(ScopedNativeViewportHandle viewport_handle,
                      const gfx::Rect& bounds,
                      const base::Callback<void()>& compositor_created_callback);
   virtual ~WindowTreeHostMojo();

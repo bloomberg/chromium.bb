@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojom/shell.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -23,7 +24,7 @@ class ServiceConnector {
    public:
     virtual ~Loader();
     virtual void Load(const GURL& url,
-                      ScopedMessagePipeHandle service_handle) = 0;
+                      ScopedShellHandle service_handle) = 0;
    protected:
     Loader();
   };

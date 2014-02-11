@@ -34,7 +34,7 @@ class MessageAccumulator : public MessageReceiver {
   }
 
  private:
-  MessageQueue queue_;
+  internal::MessageQueue queue_;
 };
 
 class ConnectorTest : public testing::Test {

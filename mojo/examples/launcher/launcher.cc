@@ -191,26 +191,30 @@ class LauncherImpl : public ShellClient,
                      public Launcher,
                      public URLReceiver {
  public:
-  explicit LauncherImpl(ScopedMessagePipeHandle shell_handle)
+  explicit LauncherImpl(ScopedShellHandle shell_handle)
       : launcher_controller_(this),
         shell_(shell_handle.Pass(), this),
         pending_show_(false) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
+    InterfacePipe<NativeViewport, AnyInterface> pipe;
+
     AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
+    shell_->Connect("mojo:mojo_native_viewport_service",
+                    pipe.handle_to_peer.Pass());
+
     root_window_host_.reset(new WindowTreeHostMojo(
-        native_viewport_handle.Pass(), gfx::Rect(50, 50, 450, 60),
+        pipe.handle_to_self.Pass(), gfx::Rect(50, 50, 450, 60),
         base::Bind(&LauncherImpl::HostContextCreated, base::Unretained(this))));
   }
 
  private:
   // Overridden from ShellClient:
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    launcher_client_.reset(handle.Pass(), this);
+    launcher_client_.reset(
+        MakeScopedHandle(LauncherClientHandle(handle.release().value())).Pass(),
+        this);
   }
 
   // Overridden from Launcher:
@@ -298,7 +302,7 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance();
   mojo::examples::LauncherImpl launcher(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
   loop.Run();
 
   return MOJO_RESULT_OK;

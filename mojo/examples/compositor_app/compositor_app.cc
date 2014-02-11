@@ -32,14 +32,16 @@ namespace examples {
 
 class SampleApp : public ShellClient {
  public:
-  explicit SampleApp(ScopedMessagePipeHandle shell_handle)
+  explicit SampleApp(ScopedShellHandle shell_handle)
       : shell_(shell_handle.Pass(), this) {
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
+    InterfacePipe<NativeViewport, AnyInterface> pipe;
+
     AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
+    shell_->Connect("mojo:mojo_native_viewport_service",
+                    pipe.handle_to_peer.Pass());
+
     native_viewport_client_.reset(
-        new NativeViewportClientImpl(native_viewport_handle.Pass()));
+        new NativeViewportClientImpl(pipe.handle_to_self.Pass()));
   }
 
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
@@ -49,7 +51,8 @@ class SampleApp : public ShellClient {
  private:
   class NativeViewportClientImpl : public NativeViewportClient {
    public:
-    explicit NativeViewportClientImpl(ScopedMessagePipeHandle viewport_handle)
+    explicit NativeViewportClientImpl(
+        ScopedNativeViewportHandle viewport_handle)
         : viewport_(viewport_handle.Pass(), this) {
       AllocationScope allocation;
       viewport_->Create(gfx::Rect(10, 10, 800, 600));
@@ -98,7 +101,8 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
   mojo::GLES2Initializer gles2;
 
   mojo::examples::SampleApp app(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
+
   loop.Run();
 
   return MOJO_RESULT_OK;

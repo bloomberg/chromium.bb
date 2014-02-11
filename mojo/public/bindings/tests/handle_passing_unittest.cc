@@ -19,8 +19,8 @@ const char kText2[] = "world";
 
 class SampleFactoryImpl : public sample::Factory {
  public:
-  explicit SampleFactoryImpl(ScopedMessagePipeHandle pipe)
-      : client_(pipe.Pass(), this) {
+  explicit SampleFactoryImpl(sample::ScopedFactoryClientHandle handle)
+      : client_(handle.Pass(), this) {
   }
 
   virtual void DoStuff(const sample::Request& request,
@@ -57,8 +57,8 @@ class SampleFactoryImpl : public sample::Factory {
 
 class SampleFactoryClientImpl : public sample::FactoryClient {
  public:
-  explicit SampleFactoryClientImpl(ScopedMessagePipeHandle pipe)
-      : factory_(pipe.Pass(), this),
+  explicit SampleFactoryClientImpl(sample::ScopedFactoryHandle handle)
+      : factory_(handle.Pass(), this),
         got_response_(false) {
   }
 
@@ -139,12 +139,10 @@ class HandlePassingTest : public testing::Test {
 };
 
 TEST_F(HandlePassingTest, Basic) {
-  ScopedMessagePipeHandle pipe0;
-  ScopedMessagePipeHandle pipe1;
-  CreateMessagePipe(&pipe0, &pipe1);
+  InterfacePipe<sample::Factory> pipe;
 
-  SampleFactoryImpl factory(pipe0.Pass());
-  SampleFactoryClientImpl factory_client(pipe1.Pass());
+  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
+  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
 
   factory_client.Start();
 
@@ -156,12 +154,10 @@ TEST_F(HandlePassingTest, Basic) {
 }
 
 TEST_F(HandlePassingTest, PassInvalid) {
-  ScopedMessagePipeHandle pipe0;
-  ScopedMessagePipeHandle pipe1;
-  CreateMessagePipe(&pipe0, &pipe1);
+  InterfacePipe<sample::Factory> pipe;
 
-  SampleFactoryImpl factory(pipe0.Pass());
-  SampleFactoryClientImpl factory_client(pipe1.Pass());
+  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
+  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
 
   factory_client.StartNoPipes();
 

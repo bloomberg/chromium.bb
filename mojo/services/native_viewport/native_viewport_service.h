@@ -14,7 +14,7 @@
 #if defined(OS_ANDROID)
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::ServiceFactoryBase*
     CreateNativeViewportService(mojo::shell::Context* context,
-                                mojo::ScopedMessagePipeHandle shell_handle);
+                                mojo::ScopedShellHandle shell_handle);
 #endif
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_SERVICE_H_

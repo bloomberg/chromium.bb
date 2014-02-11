@@ -35,9 +35,9 @@ namespace examples {
 
 class ViewImpl : public View {
  public:
-  explicit ViewImpl(ScopedMessagePipeHandle handle)
+  explicit ViewImpl(ScopedViewClientHandle client_handle)
       : id_(-1),
-        client_(handle.Pass()) {}
+        client_(client_handle.Pass()) {}
   virtual ~ViewImpl() {}
 
  private:
@@ -60,7 +60,7 @@ class ViewManagerImpl : public ViewManager,
                         public NativeViewportClient,
                         public LauncherClient {
  public:
-  explicit ViewManagerImpl(ScopedMessagePipeHandle shell_handle)
+  explicit ViewManagerImpl(ScopedShellHandle shell_handle)
       : shell_(shell_handle.Pass(), this) {
     InitNativeViewport();
   }
@@ -68,15 +68,17 @@ class ViewManagerImpl : public ViewManager,
  private:
   // Overridden from ViewManager:
   virtual void CreateView() MOJO_OVERRIDE {
-    ScopedMessagePipeHandle server_handle, client_handle;
-    CreateMessagePipe(&server_handle, &client_handle);
-    views_.push_back(new ViewImpl(server_handle.Pass()));
-    client_->OnViewCreated(client_handle.Pass());
+    InterfacePipe<View> pipe;
+    views_.push_back(new ViewImpl(pipe.handle_to_peer.Pass()));
+    client_->OnViewCreated(pipe.handle_to_self.Pass());
   }
 
   // Overridden from ShellClient:
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    client_.reset(handle.Pass(), this);
+    client_.reset(
+        MakeScopedHandle(
+            ViewManagerClientHandle(handle.release().value())).Pass(),
+        this);
   }
 
   // Overridden from NativeViewportClient:
@@ -108,13 +110,13 @@ class ViewManagerImpl : public ViewManager,
   }
 
   void InitNativeViewport() {
-    AllocationScope scope;
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
-    shell_->Connect("mojo:mojo_native_viewport_service",
-                    client_handle.Pass());
-    native_viewport_.reset(native_viewport_handle.Pass(), this);
+    InterfacePipe<NativeViewport, AnyInterface> pipe;
 
+    AllocationScope scope;
+    shell_->Connect("mojo:mojo_native_viewport_service",
+                    pipe.handle_to_peer.Pass());
+
+    native_viewport_.reset(pipe.handle_to_self.Pass(), this);
     native_viewport_->Create(gfx::Rect(50, 50, 800, 600));
     native_viewport_->Show();
   }
@@ -122,11 +124,13 @@ class ViewManagerImpl : public ViewManager,
   void InitLauncher() {
     if (!launcher_.is_null())
       return;
+
+    InterfacePipe<Launcher, AnyInterface> pipe;
+
     AllocationScope scope;
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
-    shell_->Connect("mojo:mojo_launcher", client_handle.Pass());
-    launcher_.reset(native_viewport_handle.Pass(), this);
+    shell_->Connect("mojo:mojo_launcher", pipe.handle_to_peer.Pass());
+
+    launcher_.reset(pipe.handle_to_self.Pass(), this);
   }
 
   void DidCreateContext() {
@@ -148,7 +152,7 @@ extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::MessageLoop loop;
   mojo::examples::ViewManagerImpl view_manager(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
   loop.Run();
 
   return MOJO_RESULT_OK;
