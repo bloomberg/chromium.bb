@@ -1845,7 +1845,7 @@ calc_func_expr:
     | calc_func_expr calc_func_operator calc_func_paren_expr {
         $$ = $1;
         $$->addValue(makeOperatorValue($2));
-        $$->extend(*($3));
+        $$->stealValues(*($3));
     }
     | calc_func_paren_expr
   ;
@@ -1855,7 +1855,7 @@ calc_func_expr_list:
     | calc_func_expr_list ',' maybe_space calc_func_expr calc_maybe_space {
         $$ = $1;
         $$->addValue(makeOperatorValue(','));
-        $$->extend(*($4));
+        $$->stealValues(*($4));
     }
   ;
 

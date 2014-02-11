@@ -176,7 +176,7 @@ public:
     void addValue(const CSSParserValue&);
     void insertValueAt(unsigned, const CSSParserValue&);
     void deleteValueAt(unsigned);
-    void extend(CSSParserValueList&);
+    void stealValues(CSSParserValueList&);
 
     unsigned size() const { return m_values.size(); }
     unsigned currentIndex() { return m_current; }

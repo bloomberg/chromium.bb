@@ -75,10 +75,11 @@ void CSSParserValueList::deleteValueAt(unsigned i)
     m_values.remove(i);
 }
 
-void CSSParserValueList::extend(CSSParserValueList& valueList)
+void CSSParserValueList::stealValues(CSSParserValueList& valueList)
 {
     for (unsigned int i = 0; i < valueList.size(); ++i)
         m_values.append(*(valueList.valueAt(i)));
+    valueList.clear();
 }
 
 PassRefPtr<CSSValue> CSSParserValue::createCSSValue()

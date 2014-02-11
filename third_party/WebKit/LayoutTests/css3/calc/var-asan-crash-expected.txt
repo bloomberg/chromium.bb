@@ -1,0 +1,2 @@
+This test checks that a heap-use-after-free crash does not occur on Valgrind when parsing certain calc expressions that use var().
+This test passes if it does not crash under ASAN.
