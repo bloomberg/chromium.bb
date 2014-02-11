@@ -41,22 +41,28 @@ class Node;
 
 class StaticNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes)
-    {
-        RefPtr<StaticNodeList> nodeList = adoptRef(new StaticNodeList);
-        nodeList->m_nodes.swap(nodes);
-        return nodeList.release();
-    }
+    static PassRefPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes);
 
     static PassRefPtr<StaticNodeList> createEmpty()
     {
         return adoptRef(new StaticNodeList);
     }
 
+    virtual ~StaticNodeList();
+
     virtual unsigned length() const OVERRIDE;
     virtual Node* item(unsigned index) const OVERRIDE;
 
 private:
+    // If AllocationSize() is larger than this, we report it as external
+    // allocated memory to V8.
+    const static ptrdiff_t externalMemoryReportSizeLimit = 1024;
+
+    ptrdiff_t AllocationSize()
+    {
+        return m_nodes.capacity() * sizeof(RefPtr<Node>);
+    }
+
     Vector<RefPtr<Node> > m_nodes;
 };
 
