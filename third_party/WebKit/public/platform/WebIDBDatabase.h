@@ -53,9 +53,7 @@ public:
 
     virtual void createObjectStore(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void deleteObjectStore(long long transactionId, long long objectStoreId) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks* callbacks, const WebVector<long long>& scope, TransactionMode mode) { createTransaction(id, callbacks, scope, static_cast<unsigned short>(mode)); }
-    // FIXME: Remove this overload once Chromium is updated.
-    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks* callbacks, const WebVector<long long>&, unsigned short mode) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, TransactionMode) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void close() { BLINK_ASSERT_NOT_REACHED(); }
     virtual void forceClose() { BLINK_ASSERT_NOT_REACHED(); }
 
@@ -87,9 +85,7 @@ public:
     virtual void put(long long transactionId, long long objectStoreId, const WebData& value, const WebIDBKey&, PutMode, WebIDBCallbacks*, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void setIndexKeys(long long transactionId, long long objectStoreId, const WebIDBKey&, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void setIndexesReady(long long transactionId, long long objectStoreId, const WebVector<long long>& indexIds) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void openCursor(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange& range, WebIDBCursor::Direction direction, bool keyOnly, TaskType taskType, WebIDBCallbacks* callbacks) { openCursor(transactionId, objectStoreId, indexId, range, static_cast<unsigned short>(direction), keyOnly, taskType, callbacks); }
-    // FIXME: Remove this overload once Chromium is updated.
-    virtual void openCursor(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, unsigned short direction, bool keyOnly, TaskType, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void openCursor(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, WebIDBCursor::Direction, bool keyOnly, TaskType, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void count(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void deleteRange(long long transactionId, long long objectStoreId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void clear(long long transactionId, long long objectStoreId, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
