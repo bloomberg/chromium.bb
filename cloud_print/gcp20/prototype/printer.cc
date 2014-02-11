@@ -4,6 +4,7 @@
 
 #include "cloud_print/gcp20/prototype/printer.h"
 
+#include <algorithm>
 #include <limits.h>
 #include <stdio.h>
 #include <string>
@@ -844,6 +845,8 @@ bool Printer::StartDnsServer() {
   std::string service_name_prefix =
       command_line_reader::ReadServiceNamePrefix(net::IPAddressToString(ip) +
                                                  kServiceNamePrefixDefault);
+  std::replace(service_name_prefix .begin(), service_name_prefix .end(),
+               '.', '_');
 
   std::string service_domain_name =
       command_line_reader::ReadDomainName(
