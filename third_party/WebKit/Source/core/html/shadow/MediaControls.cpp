@@ -48,11 +48,11 @@ MediaControls::MediaControls(Document& document)
     , m_volumeSlider(0)
     , m_toggleClosedCaptionsButton(0)
     , m_fullScreenButton(0)
+    , m_durationDisplay(0)
+    , m_enclosure(0)
     , m_hideFullscreenControlsTimer(this, &MediaControls::hideFullscreenControlsTimerFired)
     , m_isFullscreen(false)
     , m_isMouseOverControls(false)
-    , m_durationDisplay(0)
-    , m_enclosure(0)
 {
 }
 

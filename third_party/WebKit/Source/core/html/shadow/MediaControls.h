@@ -53,9 +53,6 @@ public:
 
     void show();
     void hide();
-    void makeOpaque();
-    void makeTransparent();
-    virtual bool shouldHideControls();
 
     void bufferingProgressed();
     virtual void playbackStarted();
@@ -75,7 +72,20 @@ public:
     void enteredFullscreen();
     void exitedFullscreen();
 
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
+    void updateTextTrackDisplay();
+
+protected:
+    explicit MediaControls(Document&);
+
+    virtual bool initializeControls(Document&);
+
+    virtual bool shouldHideControls();
+
+    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
+
+private:
+    void makeOpaque();
+    void makeTransparent();
 
     void hideFullscreenControlsTimerFired(Timer<MediaControls>*);
     void startHideFullscreenControlsTimer();
@@ -84,17 +94,15 @@ public:
     void createTextTrackDisplay();
     void showTextTrackDisplay();
     void hideTextTrackDisplay();
-    void updateTextTrackDisplay();
-    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
 
-protected:
-    explicit MediaControls(Document&);
-
-    virtual bool initializeControls(Document&);
-
+    // Node
+    virtual bool isMediaControls() const OVERRIDE FINAL { return true; }
+    virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
     virtual void defaultEventHandler(Event*) OVERRIDE;
-
     bool containsRelatedTarget(Event*);
+
+    // Element
+    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 
     MediaControllerInterface* m_mediaController;
 
@@ -112,18 +120,12 @@ protected:
     MediaControlPanelVolumeSliderElement* m_volumeSlider;
     MediaControlToggleClosedCaptionsButtonElement* m_toggleClosedCaptionsButton;
     MediaControlFullscreenButtonElement* m_fullScreenButton;
+    MediaControlTimeRemainingDisplayElement* m_durationDisplay;
+    MediaControlPanelEnclosureElement* m_enclosure;
 
     Timer<MediaControls> m_hideFullscreenControlsTimer;
     bool m_isFullscreen;
     bool m_isMouseOverControls;
-
-private:
-    virtual bool isMediaControls() const OVERRIDE FINAL { return true; }
-
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-
-    MediaControlTimeRemainingDisplayElement* m_durationDisplay;
-    MediaControlPanelEnclosureElement* m_enclosure;
 };
 
 DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());
