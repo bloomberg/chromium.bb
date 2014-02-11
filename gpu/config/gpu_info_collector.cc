@@ -82,6 +82,7 @@ namespace gpu {
 
 bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
+  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 
   scoped_refptr<gfx::GLSurface> surface(InitializeGLSurface());
   if (!surface.get())

@@ -61,10 +61,15 @@ static bool SupportsCoreAnimationPlugins() {
     return false;
   // We also need to be running with desktop GL and not the software
   // OSMesa renderer in order to share accelerated surfaces between
-  // processes.
-  gfx::GLImplementation implementation = gfx::GetGLImplementation();
+  // processes. Because on MacOS we lazy-initialize GLSurface in the
+  // renderer process here, ensure we're not also initializing GL somewhere
+  // else, and that we only do this once.
+  static gfx::GLImplementation implementation = gfx::kGLImplementationNone;
   if (implementation == gfx::kGLImplementationNone) {
     // Not initialized yet.
+    DCHECK_EQ(implementation, gfx::GetGLImplementation())
+        << "GL already initialized by someone else to: "
+        << gfx::GetGLImplementation();
     if (!gfx::GLSurface::InitializeOneOff()) {
       return false;
     }

@@ -29,9 +29,8 @@ bool AcceleratedSurface::Initialize(
     gfx::GpuPreference gpu_preference) {
   allocate_fbo_ = allocate_fbo;
 
-  // Ensure GL is initialized before trying to create an offscreen GL context.
-  if (!gfx::GLSurface::InitializeOneOff())
-    return false;
+  // GL should be initialized by content::SupportsCoreAnimationPlugins().
+  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 
   // Drawing to IOSurfaces via OpenGL only works with Apple's GL and
   // not with the OSMesa software renderer.
