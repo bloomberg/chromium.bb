@@ -42,8 +42,6 @@ DeviceMotion status=stable
 DeviceOrientation status=stable
 DialogElement status=experimental
 DirectWrite
-// FIXME: Remove this separate feature now that CustomElements are enabled
-EmbedderCustomElements status=stable
 EncodingAPI status=experimental
 EncryptedMedia status=experimental
 EncryptedMediaAnyVersion status=stable

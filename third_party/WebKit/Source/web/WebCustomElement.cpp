@@ -32,7 +32,6 @@
 #include "WebCustomElement.h"
 
 #include "../platform/WebString.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/custom/CustomElement.h"
 
 using namespace WebCore;
@@ -41,7 +40,6 @@ namespace blink {
 
 void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
 {
-    ASSERT(RuntimeEnabledFeatures::embedderCustomElementsEnabled());
     CustomElement::addEmbedderCustomElementName(name);
 }
 

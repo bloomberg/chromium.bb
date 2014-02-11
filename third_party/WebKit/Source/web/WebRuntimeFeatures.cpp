@@ -275,11 +275,6 @@ void WebRuntimeFeatures::enableXSLT(bool enable)
     RuntimeEnabledFeatures::setXSLTEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableEmbedderCustomElements(bool enable)
-{
-    RuntimeEnabledFeatures::setEmbedderCustomElementsEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
 {
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enable);

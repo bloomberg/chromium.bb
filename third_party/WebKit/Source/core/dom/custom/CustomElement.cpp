@@ -62,7 +62,7 @@ void CustomElement::addEmbedderCustomElementName(const AtomicString& name)
 
 static CustomElement::NameSet enabledNameSet()
 {
-    return CustomElement::NameSet((RuntimeEnabledFeatures::customElementsEnabled() ? CustomElement::StandardNames : 0) | (RuntimeEnabledFeatures::embedderCustomElementsEnabled() ? CustomElement::EmbedderNames : 0));
+    return CustomElement::NameSet((RuntimeEnabledFeatures::customElementsEnabled() ? CustomElement::StandardNames : 0) | CustomElement::EmbedderNames);
 }
 
 bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)

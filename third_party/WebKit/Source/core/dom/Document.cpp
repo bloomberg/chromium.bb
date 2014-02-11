@@ -726,7 +726,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (RuntimeEnabledFeatures::customElementsEnabled() && CustomElement::isValidName(localName) && registrationContext()) {
+    if (CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     } else {
         element = createElement(localName, exceptionState);

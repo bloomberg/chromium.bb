@@ -126,8 +126,6 @@ public:
 
     BLINK_EXPORT static void enableXSLT(bool);
 
-    BLINK_EXPORT static void enableEmbedderCustomElements(bool);
-
     BLINK_EXPORT static void enableOverlayScrollbars(bool);
 
     BLINK_EXPORT static void enableInputModeAttribute(bool);
