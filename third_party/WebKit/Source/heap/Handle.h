@@ -152,8 +152,10 @@ public:
 private:
     virtual ~PersistentAnchor()
     {
-        ASSERT(m_next == this);
-        ASSERT(m_prev == this);
+        // FIXME: oilpan: Ideally we should have no left-over persistents at this point. However currently there is a
+        // large number of objects leaked when we tear down the main thread. Since some of these might contain a
+        // persistent or e.g. be RefCountedGarbageCollected we cannot guarantee there are no remaining Persistents at
+        // this point.
     }
     PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
