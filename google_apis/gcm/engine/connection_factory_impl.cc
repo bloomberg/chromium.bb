@@ -102,6 +102,9 @@ void ConnectionFactoryImpl::SignalConnectionReset() {
   if (connecting_)
     return;  // Already attempting to reconnect.
 
+  if (connection_handler_)
+    connection_handler_->Reset();
+
   if (!backoff_reset_time_.is_null() &&
       NowTicks() - backoff_reset_time_ <=
           base::TimeDelta::FromSeconds(kConnectionResetWindowSecs)) {
@@ -140,6 +143,7 @@ void ConnectionFactoryImpl::OnIPAddressChanged() {
 }
 
 void ConnectionFactoryImpl::ConnectImpl() {
+  DCHECK(!connection_handler_->CanSendMessage());
   if (socket_handle_.socket() && socket_handle_.socket()->IsConnected())
     socket_handle_.socket()->Disconnect();
   socket_handle_.Reset();
@@ -210,6 +214,9 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
 
   if (!connecting_)
     UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionDisconnectErrorCode", result);
+
+  if (connection_handler_)
+    connection_handler_->Reset();
 
   // TODO(zea): Consider how to handle errors that may require some sort of
   // user intervention (login page, etc.).

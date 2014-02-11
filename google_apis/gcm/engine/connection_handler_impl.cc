@@ -38,6 +38,7 @@ ConnectionHandlerImpl::ConnectionHandlerImpl(
     const ProtoSentCallback& write_callback,
     const ConnectionChangedCallback& connection_callback)
     : read_timeout_(read_timeout),
+      socket_(NULL),
       handshake_complete_(false),
       message_tag_(0),
       message_size_(0),
@@ -68,6 +69,10 @@ void ConnectionHandlerImpl::Init(
   output_stream_.reset(new SocketOutputStream(socket_));
 
   Login(login_request);
+}
+
+void ConnectionHandlerImpl::Reset() {
+  CloseConnection();
 }
 
 bool ConnectionHandlerImpl::CanSendMessage() const {
@@ -394,7 +399,9 @@ void ConnectionHandlerImpl::OnTimeout() {
 void ConnectionHandlerImpl::CloseConnection() {
   DVLOG(1) << "Closing connection.";
   read_timeout_timer_.Stop();
-  socket_->Disconnect();
+  if (socket_)
+    socket_->Disconnect();
+  socket_ = NULL;
   input_stream_.reset();
   output_stream_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();

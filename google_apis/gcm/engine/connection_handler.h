@@ -50,6 +50,10 @@ class GCM_EXPORT ConnectionHandler {
   virtual void Init(const mcs_proto::LoginRequest& login_request,
                     net::StreamSocket* socket) = 0;
 
+  // Resets the handler and any internal state. Should be called any time
+  // a connection reset happens externally to the handler.
+  virtual void Reset() = 0;
+
   // Checks that a handshake has been completed and a message is not already
   // in flight.
   virtual bool CanSendMessage() const = 0;

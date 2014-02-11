@@ -353,6 +353,7 @@ TEST_F(ConnectionFactoryImplTest, FailViaSignalReset) {
 
   factory()->SignalConnectionReset();
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
+  EXPECT_FALSE(factory()->GetConnectionHandler()->CanSendMessage());
 }
 
 TEST_F(ConnectionFactoryImplTest, IgnoreResetWhileConnecting) {
@@ -395,6 +396,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 
   factory()->SignalConnectionReset();
+  EXPECT_FALSE(factory()->GetConnectionHandler()->CanSendMessage());
   EXPECT_NE(retry_time, factory()->NextRetryAttempt());
   retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());

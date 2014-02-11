@@ -48,6 +48,10 @@ void FakeConnectionHandler::Init(const mcs_proto::LoginRequest& login_request,
   initialized_ = !fail_login_;
 }
 
+void FakeConnectionHandler::Reset() {
+  initialized_ = false;
+}
+
 bool FakeConnectionHandler::CanSendMessage() const {
   return initialized_;
 }
