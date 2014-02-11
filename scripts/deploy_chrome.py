@@ -576,7 +576,7 @@ def _FetchChromePackage(cache_dir, tempdir, gs_path):
     Path to the fetched chrome tarball.
   """
   gs_ctx = gs.GSContext(cache_dir=cache_dir, init_boto=True)
-  files = gs_ctx.LS(gs_path).output.splitlines()
+  files = gs_ctx.LS(gs_path)
   files = [found for found in files if
            _UrlBaseName(found).startswith('%s-' % constants.CHROME_PN)]
   if not files:

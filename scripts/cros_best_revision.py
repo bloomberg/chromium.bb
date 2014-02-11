@@ -70,8 +70,7 @@ class ChromeCommitter(object):
   def _GetLatestCanaryVersions(self):
     """Returns the latest CANDIDATES_TO_CONSIDER canary versions."""
     gs_handle = gs.GSContext()
-    version_paths = gs_handle.LS(
-        manifest_version.BUILD_STATUS_URL).output.splitlines()
+    version_paths = gs_handle.LS(manifest_version.BUILD_STATUS_URL)
 
     # Strip gs://<path> prefix and trailing /'s.
     versions = [os.path.basename(v.rstrip('/')) for v in version_paths]
