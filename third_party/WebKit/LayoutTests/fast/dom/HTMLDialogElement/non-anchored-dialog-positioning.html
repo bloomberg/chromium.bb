@@ -2,8 +2,9 @@
 <html>
 <head>
 <style>
-/* Remove body margin and dialog styles to allow comparing dialog's position with that of plain span elements. */
+/* Remove body margin and dialog styles for easier positioning expected values */
 body {
+    height: 10000px;
     margin: 0;
 }
 
@@ -14,10 +15,18 @@ dialog {
     width: auto;
 }
 
-.filler {
-    height: 20000px;
+#absolute-div {
+    position: absolute;
+    top: 800px;
+    height: 50px;
+    width: 90%;
 }
 
+#relative-div {
+    position: relative;
+    top: 20px;
+    height: 30px;
+}
 </style>
 <script src="../../../resources/js-test.js"></script>
 <script>
@@ -26,17 +35,18 @@ function checkTopOfViewport(dialog) {
 }
 
 function checkCentered(dialog) {
-    expectedTop = (window.innerHeight - dialog.offsetHeight) / 2;
-    shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
+    centeredTop = (window.innerHeight - dialog.offsetHeight) / 2;
+    shouldBe('dialog.getBoundingClientRect().top', 'centeredTop');
 }
 
-// Helper to test both a non-modal and modal dialog.
-function showAndTestDialog(dialog, checker) {
-    dialog.show();
+function testShowModal(dialog, checker) {
+    dialog.showModal();
     checker();
     dialog.close();
+}
 
-    dialog.showModal();
+function testShow(dialog, checker) {
+    dialog.show();
     checker();
     dialog.close();
 }
@@ -44,73 +54,58 @@ function showAndTestDialog(dialog, checker) {
 </head>
 <body>
     <dialog id="mydialog">It is my dialog.</dialog>
-    <div class="filler" id="fillerDiv"></div>
+    <div id="absolute-div">
+        <div id="relative-div"></div>
+    </div>
 </body>
 <script>
 description("Tests positioning of non-anchored dialogs.");
 
 dialog = document.getElementById('mydialog');
+absoluteContainer = document.querySelector('#absolute-div');
+relativeContainer = document.querySelector('#relative-div');
 
-debug('Dialog should be centered in the viewport.');
-showAndTestDialog(dialog, function() { checkCentered(dialog) });
+debug('showModal() should center in the viewport.');
+testShowModal(dialog, function() { checkCentered(dialog) });
 
 debug('<br>The computed top and bottom of a centered dialog should still have position auto');
 shouldBeEqualToString('window.getComputedStyle(dialog).top', 'auto');
 shouldBeEqualToString('window.getComputedStyle(dialog).bottom', 'auto');
 
-debug('<br>Dialog should be recentered if show() is called after close().');
+debug('<br>Dialog should be recentered if showModal() is called after close().');
 window.scroll(0, 500);
-dialog.show();
+dialog.showModal();
 checkCentered(dialog);
 
 debug('<br>Dialog should not be recentered on a relayout.');
 var expectedTop = dialog.getBoundingClientRect().top;
 window.scroll(0, 1000);
-var forceRelayoutDiv = document.createElement('div');
-forceRelayoutDiv.style.width = '100px';
-forceRelayoutDiv.style.height = '100px';
-forceRelayoutDiv.style.border = 'solid';
-document.body.appendChild(forceRelayoutDiv);
+document.body.offsetHeight;
 window.scroll(0, 500);
 shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
-document.body.removeChild(forceRelayoutDiv);
 dialog.close();
 
 debug('<br>A tall dialog should be positioned at the top of the viewport.');
-var dialogInner = document.createElement('div');
-dialogInner.className = 'filler';
-dialog.appendChild(dialogInner);
-showAndTestDialog(dialog, function() { checkTopOfViewport(dialog) });
-dialog.removeChild(dialogInner);
+dialog.style.height = '20000px';
+testShowModal(dialog, function() { checkTopOfViewport(dialog) });
+dialog.style.height = 'auto';
 
 debug('<br>The dialog should be centered regardless of the presence of a horizontal scrollbar.');
-var fillerDiv = document.getElementById('fillerDiv');
-fillerDiv.style.width = '4000px';
-showAndTestDialog(dialog, function() { checkCentered(dialog) });
-fillerDiv.style.width = 'auto';
+document.body.style.width = '4000px';
+testShowModal(dialog, function() { checkCentered(dialog) });
+document.body.style.width = 'auto';
 
 debug('<br>Test that centering works when dialog is inside positioned containers.');
-var absoluteContainer = document.createElement('div');
-absoluteContainer.style.position = 'absolute';
-absoluteContainer.style.top = '800px;'
-absoluteContainer.style.height = '50px;'
-absoluteContainer.style.width = '90%';
 dialog.parentNode.removeChild(dialog);
-document.body.appendChild(absoluteContainer);
 absoluteContainer.appendChild(dialog);
-showAndTestDialog(dialog, function() { checkCentered(dialog) });
-absoluteContainer.removeChild(dialog);
-
-var relativeContainer = document.createElement('div');
-relativeContainer.style.position = 'relative';
-relativeContainer.style.top = '20px';
-relativeContainer.style.height = '30px';
-absoluteContainer.appendChild(relativeContainer);
+testShowModal(dialog, function() { checkCentered(dialog) });
+dialog.parentNode.removeChild(dialog);
 relativeContainer.appendChild(dialog);
-dialog.show();
-checkCentered(dialog);
+testShowModal(dialog, function() { checkCentered(dialog) });
 
 debug("<br>Dialog's position should survive after becoming display:none temporarily.");
+window.scroll(0, 500);
+dialog.showModal();
 expectedTop = dialog.getBoundingClientRect().top;
 window.scroll(0, 1000);
 relativeContainer.style.display = 'none';
@@ -118,98 +113,78 @@ relativeContainer.style.display = 'block';
 window.scroll(0, 500);
 shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
 
-debug("<br>Dialog's position should survive after being re-added to document without another call to show().");
-expectedTop = dialog.getBoundingClientRect().top;
+debug("<br>Dialog loses centering position when removed from document.");
 window.scroll(0, 1000);
-relativeContainer.removeChild(dialog);
+dialog.parentNode.removeChild(dialog);
 relativeContainer.appendChild(dialog);
 window.scroll(0, 500);
-shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
+shouldBe('dialog.getBoundingClientRect().top', 'relativeContainer.getBoundingClientRect().top');
 dialog.close();
 
-debug("<br>Dialog's position should survive after close() and show().");
-dialog.show();
+debug("<br>Dialog's specified position should survive after close() and showModal().");
+dialog.showModal();
 dialog.style.top = '0px';
 expectedTop = dialog.getBoundingClientRect().top;
 dialog.close();
-dialog.show();
+dialog.showModal();
 shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
+
+debug("<br>Dialog is recentered if showModal() is called after removing 'open'");
 dialog.style.top = 'auto';
-
-debug("<br>Dialog's position should survive after close() and manually reopen.");
-dialog.show();
-expectedTop = dialog.getBoundingClientRect().top;
 dialog.close();
-document.body.offsetHeight;
-dialog.open = true;
-shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
-dialog.close();
-
-debug("<br>Dialog is recentered if show() is called after removing 'open'");
-dialog.show();
+dialog.showModal();
 dialog.removeAttribute('open');
 window.scroll(0, 1000);
-dialog.show();
+dialog.showModal();
 checkCentered(dialog);
 dialog.close();
 window.scroll(0, 500);
 
-debug("<br>Dialog should not be centered if show() was called when an ancestor had display 'none'.");
+debug("<br>Dialog should not be centered if showModal() was called when an ancestor had display 'none'.");
 absoluteContainer.style.display = 'none';
-dialog.show();
+dialog.showModal();
 absoluteContainer.style.display = 'block';
 // Since dialog's containing block is the ICB, it's statically positioned after <body>.
 expectedTop = document.body.getBoundingClientRect().bottom;
 shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
 dialog.close();
 
-debug("<br>Test that setting 'top' on dialog results in the same position as for a plain, absolutely positioned span.");
-var plainSpan = document.createElement('span');
-plainSpan.style.position = 'absolute';
-document.body.appendChild(plainSpan);
-plainSpan.style.top = '50px';
-dialog.style.top = '50px';
-expectedTop = plainSpan.getBoundingClientRect().top;
-showAndTestDialog(dialog, function() { shouldBe('dialog.getBoundingClientRect().top', 'expectedTop'); });
-
-debug("<br>Test that setting 'bottom' on dialog results in the same position as for a plain, absolutely positioned span.");
+debug("<br>Test setting 'top' on an abspos modal dialog");
+offset = 50;
+dialog.style.top = offset + 'px';
+testShowModal(dialog, function() { shouldBe('dialog.getBoundingClientRect().top + window.scrollY', 'offset'); });
 dialog.style.top = 'auto';
-plainSpan.style.top = 'auto';
-dialog.style.bottom = '50px';
-plainSpan.style.bottom = '50px';
-showAndTestDialog(dialog, function() { shouldBe('dialog.getBoundingClientRect().bottom', 'plainSpan.getBoundingClientRect().bottom'); });
 
-debug('<br>Test that fixed positioning for dialog has same behavior as for a plain span.');
-plainSpan.style.position = 'fixed';
-plainSpan.style.top = '50px';
+debug("<br>Test setting 'bottom' on an abspos modal dialog");
+dialog.style.top = 'auto';
+dialog.style.bottom = offset + 'px';
+testShowModal(dialog, function() { shouldBe('dialog.getBoundingClientRect().bottom + window.scrollY', 'window.innerHeight - offset'); });
+dialog.style.bottom = 'auto';
+
+debug("<br>Test fixed position for a modal dialog");
 dialog.style.position = 'fixed';
-dialog.style.top = '50px';
-showAndTestDialog(dialog, function() { shouldBe('dialog.getBoundingClientRect().top', 'plainSpan.getBoundingClientRect().top'); });
+dialog.style.top = offset + 'px';
+testShowModal(dialog, function() { shouldBe('dialog.getBoundingClientRect().top', 'offset'); });
 
-debug('<br>Test that static position for a non-modal dialog has the same behavior as for a plain span.');
-plainSpan.parentNode.removeChild(plainSpan);
-relativeContainer.appendChild(plainSpan);
-plainSpan.style.position = 'static';
-expectedTop = plainSpan.getBoundingClientRect().top;
-plainSpan.parentNode.removeChild(plainSpan);
+// Omit testing static/relative for modal dialogs, as they are covered by top layer tests (static/relative don't exist in top layer)
+
+debug('<br>Test absolute position for a non-modal dialog');
+dialog.style.position = 'absolute';
+dialog.style.top = offset + 'px';
+testShow(dialog, function() { shouldBe('dialog.getBoundingClientRect().top', 'relativeContainer.getBoundingClientRect().top + offset'); });
+
+debug('<br>Test static position for a non-modal dialog');
 dialog.style.position = 'static';
-// Just test non-modal since modal is covered by other tests (for modal, static computes to absolute)
-dialog.show();
-shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
-dialog.close();
+testShow(dialog, function() { shouldBe('dialog.getBoundingClientRect().top', 'relativeContainer.getBoundingClientRect().top'); });
 
-debug('<br>Test that relative position for a non-modal dialog has the same behavior as for a plain span.');
-relativeContainer.appendChild(plainSpan);
-plainSpan.style.position = 'relative';
-plainSpan.style.top = '50px';
-expectedTop = plainSpan.getBoundingClientRect().top;
-plainSpan.parentNode.removeChild(plainSpan);
+debug('<br>Test relative position for a non-modal dialog');
 dialog.style.position = 'relative';
-dialog.style.top = '50px';
-// Just test non-modal since modal is covered by other tests (for modal, relative computes to absolute)
-dialog.show();
-shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
-dialog.close();
+dialog.style.top = offset + 'px';
+dialog.style.left = offset + 'px';
+testShow(dialog, function() {
+    shouldBe('dialog.getBoundingClientRect().top', 'relativeContainer.getBoundingClientRect().top + offset');
+    shouldBe('dialog.getBoundingClientRect().left', 'relativeContainer.getBoundingClientRect().left + offset');
+});
 </script>
 </body>
 </html>

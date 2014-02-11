@@ -117,8 +117,9 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
     return child->isBox();
 }
 
-static bool dialogNeedsCentering(const RenderStyle* style)
+static bool canCenterDialog(const RenderStyle* style)
 {
+    // FIXME: We must center for FixedPosition as well.
     return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
 }
 
@@ -128,12 +129,13 @@ void RenderView::positionDialog(RenderBox* box)
     if (dialog->centeringMode() == HTMLDialogElement::NotCentered)
         return;
     if (dialog->centeringMode() == HTMLDialogElement::Centered) {
-        if (dialogNeedsCentering(box->style()))
+        if (canCenterDialog(box->style()))
             box->setY(dialog->centeredPosition());
         return;
     }
 
-    if (!dialogNeedsCentering(box->style())) {
+    ASSERT(dialog->centeringMode() == HTMLDialogElement::NeedsCentering);
+    if (!canCenterDialog(box->style())) {
         dialog->setNotCentered();
         return;
     }

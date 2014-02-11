@@ -49,14 +49,8 @@ RenderObject* RenderTreeBuilder::nextRenderer() const
 
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
 
-    if (element) {
-        if (element->isInTopLayer())
-            return NodeRenderingTraversal::nextInTopLayer(element);
-        // FIXME: Reparented dialogs not in the top layer need to be in DOM tree order.
-        // FIXME: The spec should not require magical behavior for <dialog>.
-        if (element->hasTagName(HTMLNames::dialogTag) && m_style->position() == AbsolutePosition)
-            return 0;
-    }
+    if (element && element->isInTopLayer())
+        return NodeRenderingTraversal::nextInTopLayer(element);
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->nextRendererForNode(m_node);
@@ -75,13 +69,6 @@ RenderObject* RenderTreeBuilder::parentRenderer() const
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
 
     if (element && m_renderingParent->renderer()) {
-        // FIXME: The spec should not require magical behavior for <dialog>. Note that the first
-        // time we enter here the m_style might be null because of a call in shouldCreateRenderer()
-        // which means we return the wrong wrong renderer for that check and then return a totally
-        // different renderer (the RenderView) later when this method is called after setting m_style.
-        if (element->hasTagName(HTMLNames::dialogTag) && m_style && m_style->position() == AbsolutePosition)
-            return m_node->document().renderView();
-
         // FIXME: Guarding this by m_renderingParent->renderer() isn't quite right as the spec for
         // top layer only talks about display: none ancestors so putting a <dialog> inside an
         // <optgroup> seems like it should still work even though this check will prevent it.

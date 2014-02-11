@@ -34,7 +34,7 @@ function expectedTop(dialog) {
 function showAndTest(id) {
     debug('showing ' + id);
     dialog = document.getElementById(id);
-    dialog.show();
+    dialog.showModal();
     shouldBe('dialog.offsetTop', 'expectedTop(dialog)');
 }
 

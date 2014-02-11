@@ -43,8 +43,12 @@ public:
     void closeDialog(const String& returnValue = String());
     void show();
     void showModal(ExceptionState&);
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    enum CenteringMode { Uninitialized, Centered, NotCentered };
+    // NotCentered means do not center the dialog. Centered means the dialog has
+    // been centered and centeredPosition() is set. NeedsCentering means attempt
+    // to center on the next layout, then set to Centered or NotCentered.
+    enum CenteringMode { NotCentered, Centered, NeedsCentering };
     CenteringMode centeringMode() const { return m_centeringMode; }
     LayoutUnit centeredPosition() const
     {

@@ -22,7 +22,7 @@ dialog {
     </dialog>
 </div>
 <script>
-debug("This tests that a dialog's containing block is the initial containing block.");
+debug("This tests that a modal dialog's containing block is the initial containing block.");
 debug('The dialog should be onscreen with a width of 50% of the viewport. It is the child of a ' +
       'narrow element positioned off screen, but its containing block is the initial containing ' +
       'block, so its position and percent lengths are relative to that.');
@@ -43,8 +43,6 @@ dialog = document.getElementById('dialog');
 dialog.showModal();
 checkPosition(dialog);
 dialog.close();
-dialog.show();
-checkPosition(dialog);
 </script>
 </body>
 </html>

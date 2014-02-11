@@ -5,6 +5,10 @@
 body p, span {
     -webkit-user-select: none;
 }
+
+::backdrop {
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -23,7 +27,7 @@ none (crbug.com/147490).</p>
 
 <script>
 dialog = document.querySelector('dialog');
-dialog.show();
+dialog.showModal();
 selectable = document.querySelector('#selectable');
 window.getSelection().selectAllChildren(selectable);
 </script>

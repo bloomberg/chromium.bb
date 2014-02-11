@@ -42,11 +42,7 @@ static bool isRendererReparented(const RenderObject* renderer)
         return false;
     if (renderer->style() && !renderer->style()->flowThread().isEmpty())
         return true;
-    Element& element = toElement(*renderer->node());
-    if (element.isInTopLayer())
-        return true;
-    // FIXME: The spec should not require magical behavior for <dialog>.
-    if (element.hasTagName(HTMLNames::dialogTag) && renderer->style()->position() == AbsolutePosition)
+    if (toElement(renderer->node())->isInTopLayer())
         return true;
     return false;
 }

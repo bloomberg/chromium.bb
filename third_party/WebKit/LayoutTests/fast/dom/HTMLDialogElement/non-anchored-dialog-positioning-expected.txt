@@ -3,68 +3,62 @@ Tests positioning of non-anchored dialogs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Dialog should be centered in the viewport.
-PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.getBoundingClientRect().top is expectedTop
+showModal() should center in the viewport.
+PASS dialog.getBoundingClientRect().top is centeredTop
 
 The computed top and bottom of a centered dialog should still have position auto
 PASS window.getComputedStyle(dialog).top is "auto"
 PASS window.getComputedStyle(dialog).bottom is "auto"
 
-Dialog should be recentered if show() is called after close().
-PASS dialog.getBoundingClientRect().top is expectedTop
+Dialog should be recentered if showModal() is called after close().
+PASS dialog.getBoundingClientRect().top is centeredTop
 
 Dialog should not be recentered on a relayout.
 PASS dialog.getBoundingClientRect().top is expectedTop
 
 A tall dialog should be positioned at the top of the viewport.
 PASS dialog.getBoundingClientRect().top is 0
-PASS dialog.getBoundingClientRect().top is 0
 
 The dialog should be centered regardless of the presence of a horizontal scrollbar.
-PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.getBoundingClientRect().top is expectedTop
+PASS dialog.getBoundingClientRect().top is centeredTop
 
 Test that centering works when dialog is inside positioned containers.
-PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.getBoundingClientRect().top is expectedTop
+PASS dialog.getBoundingClientRect().top is centeredTop
+PASS dialog.getBoundingClientRect().top is centeredTop
 
 Dialog's position should survive after becoming display:none temporarily.
 PASS dialog.getBoundingClientRect().top is expectedTop
 
-Dialog's position should survive after being re-added to document without another call to show().
+Dialog loses centering position when removed from document.
+PASS dialog.getBoundingClientRect().top is relativeContainer.getBoundingClientRect().top
+
+Dialog's specified position should survive after close() and showModal().
 PASS dialog.getBoundingClientRect().top is expectedTop
 
-Dialog's position should survive after close() and show().
+Dialog is recentered if showModal() is called after removing 'open'
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+Dialog should not be centered if showModal() was called when an ancestor had display 'none'.
 PASS dialog.getBoundingClientRect().top is expectedTop
 
-Dialog's position should survive after close() and manually reopen.
-PASS dialog.getBoundingClientRect().top is expectedTop
+Test setting 'top' on an abspos modal dialog
+PASS dialog.getBoundingClientRect().top + window.scrollY is offset
 
-Dialog is recentered if show() is called after removing 'open'
-PASS dialog.getBoundingClientRect().top is expectedTop
+Test setting 'bottom' on an abspos modal dialog
+PASS dialog.getBoundingClientRect().bottom + window.scrollY is window.innerHeight - offset
 
-Dialog should not be centered if show() was called when an ancestor had display 'none'.
-PASS dialog.getBoundingClientRect().top is expectedTop
+Test fixed position for a modal dialog
+PASS dialog.getBoundingClientRect().top is offset
 
-Test that setting 'top' on dialog results in the same position as for a plain, absolutely positioned span.
-PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.getBoundingClientRect().top is expectedTop
+Test absolute position for a non-modal dialog
+PASS dialog.getBoundingClientRect().top is relativeContainer.getBoundingClientRect().top + offset
 
-Test that setting 'bottom' on dialog results in the same position as for a plain, absolutely positioned span.
-PASS dialog.getBoundingClientRect().bottom is plainSpan.getBoundingClientRect().bottom
-PASS dialog.getBoundingClientRect().bottom is plainSpan.getBoundingClientRect().bottom
+Test static position for a non-modal dialog
+PASS dialog.getBoundingClientRect().top is relativeContainer.getBoundingClientRect().top
 
-Test that fixed positioning for dialog has same behavior as for a plain span.
-PASS dialog.getBoundingClientRect().top is plainSpan.getBoundingClientRect().top
-PASS dialog.getBoundingClientRect().top is plainSpan.getBoundingClientRect().top
-
-Test that static position for a non-modal dialog has the same behavior as for a plain span.
-PASS dialog.getBoundingClientRect().top is expectedTop
-
-Test that relative position for a non-modal dialog has the same behavior as for a plain span.
-PASS dialog.getBoundingClientRect().top is expectedTop
+Test relative position for a non-modal dialog
+PASS dialog.getBoundingClientRect().top is relativeContainer.getBoundingClientRect().top + offset
+PASS dialog.getBoundingClientRect().left is relativeContainer.getBoundingClientRect().left + offset
 PASS successfullyParsed is true
 
 TEST COMPLETE
