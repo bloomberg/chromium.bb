@@ -88,7 +88,7 @@ bool WindowState::IsMaximizedOrFullscreen() const {
 }
 
 bool WindowState::IsNormalShowState() const {
-  ui::WindowShowState state = window_->GetProperty(aura::client::kShowStateKey);
+  ui::WindowShowState state = GetShowState();
   return state == ui::SHOW_STATE_NORMAL || state == ui::SHOW_STATE_DEFAULT;
 }
 

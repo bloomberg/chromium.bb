@@ -52,8 +52,7 @@ bool CanActivateWindow(aura::Window* window) {
 }
 
 bool IsWindowMinimized(aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_MINIMIZED;
+  return ash::wm::GetWindowState(window)->IsMinimized();
 }
 
 void CenterWindow(aura::Window* window) {
