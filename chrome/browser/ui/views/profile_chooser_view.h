@@ -137,7 +137,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
       const AvatarMenu::Item& avatar_item);
   void CreateAccountButton(views::GridLayout* layout,
                            const std::string& account,
-                           bool is_primary_account);
+                           bool is_primary_account,
+                           int width);
 
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;

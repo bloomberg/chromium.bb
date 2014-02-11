@@ -49,18 +49,18 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-const int kMinMenuWidth = 250;
+const int kFixedMenuWidth = 250;
 const int kButtonHeight = 29;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
-views::GridLayout* CreateSingleColumnLayout(views::View* view) {
+views::GridLayout* CreateSingleColumnLayout(views::View* view, int width) {
   views::GridLayout* layout = new views::GridLayout(view);
   view->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                     views::GridLayout::FIXED, width, width);
   return layout;
 }
 
@@ -431,8 +431,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
-  views::GridLayout* layout = CreateSingleColumnLayout(this);
-  layout->set_minimum_size(gfx::Size(kMinMenuWidth, 0));
+  views::GridLayout* layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
 
   if (view_to_display == GAIA_SIGNIN_VIEW ||
       view_to_display == GAIA_ADD_ACCOUNT_VIEW) {
@@ -704,7 +703,8 @@ views::View* ProfileChooserView::CreateGuestProfileView() {
 views::View* ProfileChooserView::CreateOtherProfilesView(
     const Indexes& avatars_to_show) {
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view);
+  views::GridLayout* layout = CreateSingleColumnLayout(
+      view, kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
   layout->SetInsets(0, views::kButtonHEdgeMarginNew,
                     views::kButtonVEdgeMarginNew, views::kButtonHEdgeMarginNew);
   int num_avatars_to_show = avatars_to_show.size();
@@ -739,7 +739,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
 
 views::View* ProfileChooserView::CreateOptionsView(bool is_guest_view) {
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view);
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   // The horizontal padding will be set by each button individually, so that
   // in the hovered state the button spans the entire parent view.
   layout->SetInsets(views::kRelatedControlVerticalSpacing, 0,
@@ -787,7 +787,8 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
     const AvatarMenu::Item& avatar_item) {
   DCHECK(avatar_item.signed_in);
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view);
+  int column_width = kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew;
+  views::GridLayout* layout = CreateSingleColumnLayout(view, column_width);
   layout->SetInsets(views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew,
                     views::kButtonVEdgeMarginNew,
@@ -804,10 +805,9 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
-  CreateAccountButton(layout, primary_account, true);
+  CreateAccountButton(layout, primary_account, true, column_width);
   for (size_t i = 0; i < accounts.size(); ++i)
-    CreateAccountButton(layout, accounts[i], false);
-
+    CreateAccountButton(layout, accounts[i], false, column_width);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   add_account_button_ = new views::BlueButton(
@@ -821,8 +821,11 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
 
 void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
                                              const std::string& account,
-                                             bool is_primary_account) {
+                                             bool is_primary_account,
+                                             int width) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* menu_marker =
+      rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia();
   // Use a MenuButtonListener and not a regular ButtonListener to be
   // able to distinguish between the unnamed "other profile" buttons and the
   // unnamed "multiple accounts" buttons.
@@ -830,13 +833,12 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
       NULL,
       gfx::ElideEmail(base::UTF8ToUTF16(account),
                       rb->GetFontList(ui::ResourceBundle::BaseFont),
-                      width()),
+                      width - menu_marker->width()),
       is_primary_account ? NULL : this,  // Cannot delete the primary account.
       !is_primary_account);
   email_button->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
   if (!is_primary_account) {
-    email_button->set_menu_marker(
-        rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia());
+    email_button->set_menu_marker(menu_marker);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   layout->StartRow(1, 0);
