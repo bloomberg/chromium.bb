@@ -138,13 +138,3 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   }
   return widget;
 }
-
-views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
-    views::Widget* widget,
-    content::BrowserContext* browser_context) {
-  bool force_opaque = true;
-#if defined(USE_AURA)
-  force_opaque = false;
-#endif
-  return views::DialogDelegate::CreateDialogFrameView(widget, force_opaque);
-}

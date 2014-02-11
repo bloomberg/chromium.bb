@@ -47,8 +47,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,

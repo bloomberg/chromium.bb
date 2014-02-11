@@ -5,7 +5,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -58,10 +57,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Close() OVERRIDE;
-  // TODO(wittman): Remove this override once we move to the new style frame
-  // view on all dialogs.
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
@@ -79,7 +74,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   void RunDone(Action action);
 
   content::DownloadItem* download_;
-  content::WebContents* web_contents_;
   bool show_context_;
   OnDone done_;
 
@@ -92,7 +86,6 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
     bool show_context,
     const OnDone& done)
     : download_(item),
-      web_contents_(web_contents),
       show_context_(show_context),
       done_(done),
       contents_view_(NULL) {
@@ -210,14 +203,6 @@ bool DownloadDangerPromptViews::Close() {
   return true;
 }
 
-// TODO(wittman): Remove this override once we move to the new style frame
-// view on all dialogs.
-views::NonClientFrameView* DownloadDangerPromptViews::CreateNonClientFrameView(
-    views::Widget* widget) {
-  return CreateConstrainedStyleNonClientFrameView(
-      widget, web_contents_->GetBrowserContext());
-}
-
 views::View* DownloadDangerPromptViews::GetInitiallyFocusedView() {
   return GetDialogClientView()->cancel_button();
 }
@@ -299,7 +284,7 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
             IDS_PROMPT_DANGEROUS_DOWNLOAD,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: // Fall through
+      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:  // Fall through
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
         return l10n_util::GetStringFUTF16(

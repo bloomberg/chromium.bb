@@ -120,8 +120,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual views::View* CreateFootnoteView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
 
   // views::WidgetObserver implementation:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

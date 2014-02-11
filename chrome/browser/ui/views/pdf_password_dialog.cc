@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -38,8 +37,6 @@ class PDFPasswordDialogViews : public views::DialogDelegate {
   // views::WidgetDelegate:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
@@ -50,7 +47,6 @@ class PDFPasswordDialogViews : public views::DialogDelegate {
   views::MessageBoxView* message_box_view_;
 
   views::Widget* dialog_;
-  content::BrowserContext* browser_context_;
 
   PasswordDialogClosedCallback callback_;
 
@@ -63,7 +59,6 @@ PDFPasswordDialogViews::PDFPasswordDialogViews(
     const PasswordDialogClosedCallback& callback)
     : message_box_view_(NULL),
       dialog_(NULL),
-      browser_context_(web_contents->GetBrowserContext()),
       callback_(callback) {
   views::MessageBoxView::InitParams init_params(prompt);
   init_params.options = views::MessageBoxView::HAS_PROMPT_FIELD;
@@ -127,13 +122,6 @@ views::View* PDFPasswordDialogViews::GetInitiallyFocusedView() {
 
 views::View* PDFPasswordDialogViews::GetContentsView() {
   return message_box_view_;
-}
-
-// TODO(wittman): Remove this override once we move to the new style frame view
-// on all dialogs.
-views::NonClientFrameView* PDFPasswordDialogViews::CreateNonClientFrameView(
-    views::Widget* widget) {
-  return CreateConstrainedStyleNonClientFrameView(widget, browser_context_);
 }
 
 views::Widget* PDFPasswordDialogViews::GetWidget() {
