@@ -11,14 +11,15 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "media/base/byte_queue.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/es_parser.h"
 
 namespace media {
-class BitReader;
-class StreamParserBuffer;
+class H264Parser;
+struct H264SPS;
+class OffsetByteQueue;
 }
 
 namespace media {
@@ -50,42 +51,40 @@ class EsParserH264 : public EsParser {
     base::TimeDelta pts;
   };
 
-  // H264 parser.
-  // It resumes parsing from byte position |es_pos_|.
+  // Find the AUD located at or after |*stream_pos|.
+  // Return true if an AUD is found.
+  // If found, |*stream_pos| corresponds to the position of the AUD start code
+  // in the stream. Otherwise, |*stream_pos| corresponds to the last position
+  // of the start code parser.
+  bool FindAUD(int64* stream_pos);
+
+  // Resumes the H264 ES parsing.
+  // Return true if successful.
   bool ParseInternal();
 
-  // Emit a frame if a frame has been started earlier.
+  // Emit a frame whose position in the ES queue starts at |access_unit_pos|.
   // Returns true if successful, false if no PTS is available for the frame.
-  bool EmitFrameIfNeeded(int next_aud_pos);
+  bool EmitFrame(int64 access_unit_pos, int access_unit_size,
+                 bool is_key_frame, int pps_id);
 
-  // Start a new frame.
-  // Note: if aud_pos < 0, clear the current frame.
-  void StartFrame(int aud_pos);
-
-  // Discard |nbytes| of ES from the ES byte queue.
-  void DiscardEs(int nbytes);
-
-  // Parse a NAL / SPS.
-  // Returns true if successful (compliant bitstream).
-  bool NalParser(const uint8* buf, int size);
-  bool ProcessSPS(const uint8* buf, int size);
+  // Update the video decoder config based on an H264 SPS.
+  // Return true if successful.
+  bool UpdateVideoDecoderConfig(const H264SPS* sps);
 
   // Callbacks to pass the stream configuration and the frames.
   NewVideoConfigCB new_video_config_cb_;
   EmitBufferCB emit_buffer_cb_;
 
   // Bytes of the ES stream that have not been emitted yet.
-  ByteQueue es_byte_queue_;
-  std::list<std::pair<int, TimingDesc> > timing_desc_list_;
+  scoped_ptr<media::OffsetByteQueue> es_queue_;
+  std::list<std::pair<int64, TimingDesc> > timing_desc_list_;
 
   // H264 parser state.
-  // Note: |current_access_unit_pos_| is pointing to an annexB syncword
-  // while |current_nal_pos_| is pointing to the NAL unit
-  // (i.e. does not include the annexB syncword).
-  int es_pos_;
-  int current_nal_pos_;
-  int current_access_unit_pos_;
-  bool is_key_frame_;
+  // - |current_access_unit_pos_| is pointing to an annexB syncword
+  // representing the first NALU of an H264 access unit.
+  scoped_ptr<H264Parser> h264_parser_;
+  int64 current_access_unit_pos_;
+  int64 next_access_unit_pos_;
 
   // Last video decoder config.
   VideoDecoderConfig last_video_decoder_config_;

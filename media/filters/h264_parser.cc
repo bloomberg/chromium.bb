@@ -155,14 +155,13 @@ static inline bool IsStartCode(const uint8* data) {
   return data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x01;
 }
 
-// Find offset from start of data to next NALU start code
-// and size of found start code (3 or 4 bytes).
-static bool FindStartCode(const uint8* data, off_t data_size,
-                          off_t* offset,
-                          off_t* start_code_size) {
+// static
+bool H264Parser::FindStartCode(const uint8* data, off_t data_size,
+                               off_t* offset, off_t* start_code_size) {
+  DCHECK_GE(data_size, 0);
   off_t bytes_left = data_size;
 
-  while (bytes_left > 3) {
+  while (bytes_left >= 3) {
     if (IsStartCode(data)) {
       // Found three-byte start code, set pointer at its beginning.
       *offset = data_size - bytes_left;
@@ -182,44 +181,51 @@ static bool FindStartCode(const uint8* data, off_t data_size,
     --bytes_left;
   }
 
-  // End of data.
+  // End of data: offset is pointing to the first byte that was not considered
+  // as a possible start of a start code.
+  // Note: there is no security issue when receiving a negative |data_size|
+  // since in this case, |bytes_left| is equal to |data_size| and thus
+  // |*offset| is equal to 0 (valid offset).
+  *offset = data_size - bytes_left;
+  *start_code_size = 0;
   return false;
 }
 
-// Find the next NALU in stream, returning its start offset without the start
-// code (i.e. at the beginning of NALU data).
-// Size will include trailing zero bits, and will be from start offset to
-// before the start code of the next NALU (or end of stream).
-static bool LocateNALU(const uint8* stream, off_t stream_size,
-                       off_t* nalu_start_off, off_t* nalu_size) {
-  off_t start_code_size;
-
-  // Find start code of the next NALU.
-  if (!FindStartCode(stream, stream_size, nalu_start_off, &start_code_size)) {
+bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
+  // Find the start code of next NALU.
+  off_t nalu_start_off = 0;
+  off_t annexb_start_code_size = 0;
+  if (!FindStartCode(stream_, bytes_left_,
+                     &nalu_start_off, &annexb_start_code_size)) {
     DVLOG(4) << "Could not find start code, end of stream?";
     return false;
   }
 
-  // Discard its start code.
-  *nalu_start_off += start_code_size;
-  // Move the stream to the beginning of it (skip the start code).
-  stream_size -= *nalu_start_off;
-  stream += *nalu_start_off;
+  // Move the stream to the beginning of the NALU (pointing at the start code).
+  stream_ += nalu_start_off;
+  bytes_left_ -= nalu_start_off;
 
-  // Find the start code of next NALU; if successful, NALU size is the number
-  // of bytes from after previous start code to before this one;
-  // if next start code is not found, it is still a valid NALU if there
-  // are still some bytes left after the first start code.
-  // nalu_size is the offset to the next start code
-  if (!FindStartCode(stream, stream_size, nalu_size, &start_code_size)) {
-    // end of stream (no next NALU), but still valid NALU if any bytes left
-    *nalu_size = stream_size;
-    if (*nalu_size < 1) {
-      DVLOG(3) << "End of stream";
-      return false;
-    }
+  const uint8* nalu_data = stream_ + annexb_start_code_size;
+  off_t max_nalu_data_size = bytes_left_ - annexb_start_code_size;
+  if (max_nalu_data_size <= 0) {
+    DVLOG(3) << "End of stream";
+    return false;
   }
 
+  // Find the start code of next NALU;
+  // if successful, |nalu_size_without_start_code| is the number of bytes from
+  // after previous start code to before this one;
+  // if next start code is not found, it is still a valid NALU since there
+  // are some bytes left after the first start code: all the remaining bytes
+  // belong to the current NALU.
+  off_t next_start_code_size = 0;
+  off_t nalu_size_without_start_code = 0;
+  if (!FindStartCode(nalu_data, max_nalu_data_size,
+                     &nalu_size_without_start_code, &next_start_code_size)) {
+    nalu_size_without_start_code = max_nalu_data_size;
+  }
+  *nalu_size = nalu_size_without_start_code + annexb_start_code_size;
+  *start_code_size = annexb_start_code_size;
   return true;
 }
 
@@ -266,32 +272,31 @@ H264Parser::Result H264Parser::ReadSE(int* val) {
 }
 
 H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
-  int data;
-  off_t off_to_nalu_start;
-
-  if (!LocateNALU(stream_, bytes_left_, &off_to_nalu_start, &nalu->size)) {
+  off_t start_code_size;
+  off_t nalu_size_with_start_code;
+  if (!LocateNALU(&nalu_size_with_start_code, &start_code_size)) {
     DVLOG(4) << "Could not find next NALU, bytes left in stream: "
              << bytes_left_;
     return kEOStream;
   }
 
-  nalu->data = stream_ + off_to_nalu_start;
+  nalu->data = stream_ + start_code_size;
+  nalu->size = nalu_size_with_start_code - start_code_size;
+  DVLOG(4) << "NALU found: size=" << nalu_size_with_start_code;
 
   // Initialize bit reader at the start of found NALU.
   if (!br_.Initialize(nalu->data, nalu->size))
     return kEOStream;
 
-  DVLOG(4) << "Looking for NALU, Stream bytes left: " << bytes_left_
-           << " off to next nalu: " << off_to_nalu_start;
-
   // Move parser state to after this NALU, so next time AdvanceToNextNALU
   // is called, we will effectively be skipping it;
   // other parsing functions will use the position saved
   // in bit reader for parsing, so we don't have to remember it here.
-  stream_ += off_to_nalu_start + nalu->size;
-  bytes_left_ -= off_to_nalu_start + nalu->size;
+  stream_ += nalu_size_with_start_code;
+  bytes_left_ -= nalu_size_with_start_code;
 
   // Read NALU header, skip the forbidden_zero_bit, but check for it.
+  int data;
   READ_BITS_OR_RETURN(1, &data);
   TRUE_OR_RETURN(data == 0);
 

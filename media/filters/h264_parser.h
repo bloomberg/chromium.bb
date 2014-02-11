@@ -29,7 +29,8 @@ struct MEDIA_EXPORT H264NALU {
     kSEIMessage = 6,
     kSPS = 7,
     kPPS = 8,
-    kEOSeq = 9,
+    kAUD = 9,
+    kEOSeq = 10,
     kEOStream = 11,
     kCodedSliceExtension = 20,
   };
@@ -256,6 +257,20 @@ class MEDIA_EXPORT H264Parser {
     kEOStream,           // end of stream
   };
 
+  // Find offset from start of data to next NALU start code
+  // and size of found start code (3 or 4 bytes).
+  // If no start code is found, offset is pointing to the first unprocessed byte
+  // (i.e. the first byte that was not considered as a possible start of a start
+  // code) and |*start_code_size| is set to 0.
+  // Preconditions:
+  // - |data_size| >= 0
+  // Postconditions:
+  // - |*offset| is between 0 and |data_size| included.
+  //   It is strictly less than |data_size| if |data_size| > 0.
+  // - |*start_code_size| is either 0, 3 or 4.
+  static bool FindStartCode(const uint8* data, off_t data_size,
+                            off_t* offset, off_t* start_code_size);
+
   H264Parser();
   ~H264Parser();
 
@@ -308,6 +323,15 @@ class MEDIA_EXPORT H264Parser {
   Result ParseSEI(H264SEIMessage* sei_msg);
 
  private:
+  // Move the stream pointer to the beginning of the next NALU,
+  // i.e. pointing at the next start code.
+  // Return true if a NALU has been found.
+  // If a NALU is found:
+  // - its size in bytes is returned in |*nalu_size| and includes
+  //   the start code as well as the trailing zero bits.
+  // - the size in bytes of the start code is returned in |*start_code_size|.
+  bool LocateNALU(off_t* nalu_size, off_t* start_code_size);
+
   // Exp-Golomb code parsing as specified in chapter 9.1 of the spec.
   // Read one unsigned exp-Golomb code from the stream and return in |*val|.
   Result ReadUE(int* val);

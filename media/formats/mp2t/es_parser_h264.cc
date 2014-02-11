@@ -6,104 +6,32 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "media/base/bit_reader.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_frame.h"
+#include "media/filters/h264_parser.h"
+#include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-static const int kExtendedSar = 255;
-
-// ISO 14496 part 10
-// VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
-static const int kSarTableSize = 17;
-static const int kTableSarWidth[kSarTableSize] = {
-  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160, 4, 3, 2
-};
-static const int kTableSarHeight[kSarTableSize] = {
-  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99, 3, 2, 1
-};
-
-// Remove the start code emulation prevention ( 0x000003 )
-// and return the size of the converted buffer.
-// Note: Size of |buf_rbsp| should be at least |size| to accomodate
-// the worst case.
-static int ConvertToRbsp(const uint8* buf, int size, uint8* buf_rbsp) {
-  int rbsp_size = 0;
-  int zero_count = 0;
-  for (int k = 0; k < size; k++) {
-    if (buf[k] == 0x3 && zero_count >= 2) {
-      zero_count = 0;
-      continue;
-    }
-    if (buf[k] == 0)
-      zero_count++;
-    else
-      zero_count = 0;
-    buf_rbsp[rbsp_size++] = buf[k];
-  }
-  return rbsp_size;
-}
-
 namespace media {
 namespace mp2t {
 
-// ISO 14496 - Part 10: Table 7-1 "NAL unit type codes"
-enum NalUnitType {
-  kNalUnitTypeNonIdrSlice = 1,
-  kNalUnitTypeIdrSlice = 5,
-  kNalUnitTypeSPS = 7,
-  kNalUnitTypePPS = 8,
-  kNalUnitTypeAUD = 9,
-};
-
-class BitReaderH264 : public BitReader {
- public:
-  BitReaderH264(const uint8* data, off_t size)
-    : BitReader(data, size) { }
-
-  // Read an unsigned exp-golomb value.
-  // Return true if successful.
-  bool ReadBitsExpGolomb(uint32* exp_golomb_value);
-};
-
-bool BitReaderH264::ReadBitsExpGolomb(uint32* exp_golomb_value) {
-  // Get the number of leading zeros.
-  int zero_count = 0;
-  while (true) {
-    int one_bit;
-    RCHECK(ReadBits(1, &one_bit));
-    if (one_bit != 0)
-      break;
-    zero_count++;
-  }
-
-  // If zero_count is greater than 31, the calculated value will overflow.
-  if (zero_count > 31) {
-    SkipBits(zero_count);
-    return false;
-  }
-
-  // Read the actual value.
-  uint32 base = (1 << zero_count) - 1;
-  uint32 offset;
-  RCHECK(ReadBits(zero_count, &offset));
-  *exp_golomb_value = base + offset;
-
-  return true;
-}
+// An AUD NALU is at least 4 bytes:
+// 3 bytes for the start code + 1 byte for the NALU type.
+const int kMinAUDSize = 4;
 
 EsParserH264::EsParserH264(
     const NewVideoConfigCB& new_video_config_cb,
     const EmitBufferCB& emit_buffer_cb)
   : new_video_config_cb_(new_video_config_cb),
     emit_buffer_cb_(emit_buffer_cb),
-    es_pos_(0),
-    current_nal_pos_(-1),
-    current_access_unit_pos_(-1),
-    is_key_frame_(false) {
+    es_queue_(new media::OffsetByteQueue()),
+    h264_parser_(new H264Parser()),
+    current_access_unit_pos_(0),
+    next_access_unit_pos_(0) {
 }
 
 EsParserH264::~EsParserH264() {
@@ -118,7 +46,6 @@ bool EsParserH264::Parse(const uint8* buf, int size,
   // for each access unit (but this is just a recommendation and some streams
   // do not comply with this recommendation).
 
-  // Link position |raw_es_size| in the ES stream with a timing descriptor.
   // HLS recommendation: "In AVC video, you should have both a DTS and a
   // PTS in each PES header".
   if (dts == kNoTimestamp() && pts == kNoTimestamp()) {
@@ -129,391 +56,254 @@ bool EsParserH264::Parse(const uint8* buf, int size,
   timing_desc.pts = pts;
   timing_desc.dts = (dts != kNoTimestamp()) ? dts : pts;
 
-  int raw_es_size;
-  const uint8* raw_es;
-  es_byte_queue_.Peek(&raw_es, &raw_es_size);
+  // Link the end of the byte queue with the incoming timing descriptor.
   timing_desc_list_.push_back(
-      std::pair<int, TimingDesc>(raw_es_size, timing_desc));
+      std::pair<int64, TimingDesc>(es_queue_->tail(), timing_desc));
 
   // Add the incoming bytes to the ES queue.
-  es_byte_queue_.Push(buf, size);
-
-  // Add NALs from the incoming buffer.
-  if (!ParseInternal())
-    return false;
-
-  // Discard emitted frames
-  // or every byte that was parsed so far if there is no current frame.
-  int skip_count =
-      (current_access_unit_pos_ >= 0) ? current_access_unit_pos_ : es_pos_;
-  DiscardEs(skip_count);
-
-  return true;
+  es_queue_->Push(buf, size);
+  return ParseInternal();
 }
 
 void EsParserH264::Flush() {
-  if (current_access_unit_pos_ < 0)
+  DVLOG(1) << "EsParserH264::Flush";
+  if (!FindAUD(&current_access_unit_pos_))
     return;
 
-  // Force emitting the last access unit.
-  int next_aud_pos;
-  const uint8* raw_es;
-  es_byte_queue_.Peek(&raw_es, &next_aud_pos);
-  EmitFrameIfNeeded(next_aud_pos);
-  current_nal_pos_ = -1;
-  StartFrame(-1);
-
-  // Discard the emitted frame.
-  DiscardEs(next_aud_pos);
+  // Simulate an additional AUD to force emitting the last access unit
+  // which is assumed to be complete at this point.
+  uint8 aud[] = { 0x00, 0x00, 0x01, 0x09 };
+  es_queue_->Push(aud, sizeof(aud));
+  ParseInternal();
 }
 
 void EsParserH264::Reset() {
   DVLOG(1) << "EsParserH264::Reset";
-  es_byte_queue_.Reset();
+  es_queue_.reset(new media::OffsetByteQueue());
+  h264_parser_.reset(new H264Parser());
+  current_access_unit_pos_ = 0;
+  next_access_unit_pos_ = 0;
   timing_desc_list_.clear();
-  es_pos_ = 0;
-  current_nal_pos_ = -1;
-  StartFrame(-1);
   last_video_decoder_config_ = VideoDecoderConfig();
 }
 
-bool EsParserH264::ParseInternal() {
-  int raw_es_size;
-  const uint8* raw_es;
-  es_byte_queue_.Peek(&raw_es, &raw_es_size);
+bool EsParserH264::FindAUD(int64* stream_pos) {
+  while (true) {
+    const uint8* es;
+    int size;
+    es_queue_->PeekAt(*stream_pos, &es, &size);
 
-  DCHECK_GE(es_pos_, 0);
-  DCHECK_LT(es_pos_, raw_es_size);
+    // Find a start code and move the stream to the start code parser position.
+    off_t start_code_offset;
+    off_t start_code_size;
+    bool start_code_found = H264Parser::FindStartCode(
+        es, size, &start_code_offset, &start_code_size);
+    *stream_pos += start_code_offset;
 
-  // Resume h264 es parsing where it was left.
-  for ( ; es_pos_ < raw_es_size - 4; es_pos_++) {
-    // Make sure the syncword is either 00 00 00 01 or 00 00 01
-    if (raw_es[es_pos_ + 0] != 0 || raw_es[es_pos_ + 1] != 0)
-      continue;
-    int syncword_length = 0;
-    if (raw_es[es_pos_ + 2] == 0 && raw_es[es_pos_ + 3] == 1)
-      syncword_length = 4;
-    else if (raw_es[es_pos_ + 2] == 1)
-      syncword_length = 3;
-    else
-      continue;
+    // No H264 start code found or NALU type not available yet.
+    if (!start_code_found || start_code_offset + start_code_size >= size)
+      return false;
 
-    // Parse the current NAL (and the new NAL then becomes the current one).
-    if (current_nal_pos_ >= 0) {
-      int nal_size = es_pos_ - current_nal_pos_;
-      DCHECK_GT(nal_size, 0);
-      RCHECK(NalParser(&raw_es[current_nal_pos_], nal_size));
-    }
-    current_nal_pos_ = es_pos_ + syncword_length;
+    // Exit the parser loop when an AUD is found.
+    // Note: NALU header for an AUD:
+    // - nal_ref_idc must be 0
+    // - nal_unit_type must be H264NALU::kAUD
+    if (es[start_code_offset + start_code_size] == H264NALU::kAUD)
+      break;
 
-    // Retrieve the NAL type.
-    int nal_header = raw_es[current_nal_pos_];
-    int forbidden_zero_bit = (nal_header >> 7) & 0x1;
-    RCHECK(forbidden_zero_bit == 0);
-    NalUnitType nal_unit_type = static_cast<NalUnitType>(nal_header & 0x1f);
-    DVLOG(LOG_LEVEL_ES) << "nal: offset=" << es_pos_
-                        << " type=" << nal_unit_type;
-
-    // Emit a frame if needed.
-    if (nal_unit_type == kNalUnitTypeAUD)
-      RCHECK(EmitFrameIfNeeded(es_pos_));
-
-    // Skip the syncword.
-    es_pos_ += syncword_length;
+    // The current NALU is not an AUD, skip the start code
+    // and continue parsing the stream.
+    *stream_pos += start_code_size;
   }
 
   return true;
 }
 
-bool EsParserH264::EmitFrameIfNeeded(int next_aud_pos) {
-  // There is no current frame: start a new frame.
-  if (current_access_unit_pos_ < 0) {
-    StartFrame(next_aud_pos);
+bool EsParserH264::ParseInternal() {
+  DCHECK_LE(es_queue_->head(), current_access_unit_pos_);
+  DCHECK_LE(current_access_unit_pos_, next_access_unit_pos_);
+  DCHECK_LE(next_access_unit_pos_, es_queue_->tail());
+
+  // Find the next AUD located at or after |current_access_unit_pos_|. This is
+  // needed since initially |current_access_unit_pos_| might not point to
+  // an AUD.
+  // Discard all the data before the updated |current_access_unit_pos_|
+  // since it won't be used again.
+  bool aud_found = FindAUD(&current_access_unit_pos_);
+  es_queue_->Trim(current_access_unit_pos_);
+  if (next_access_unit_pos_ < current_access_unit_pos_)
+    next_access_unit_pos_ = current_access_unit_pos_;
+
+  // Resume parsing later if no AUD was found.
+  if (!aud_found)
     return true;
+
+  // Find the next AUD to make sure we have a complete access unit.
+  if (next_access_unit_pos_ < current_access_unit_pos_ + kMinAUDSize) {
+    next_access_unit_pos_ = current_access_unit_pos_ + kMinAUDSize;
+    DCHECK_LE(next_access_unit_pos_, es_queue_->tail());
+  }
+  if (!FindAUD(&next_access_unit_pos_))
+    return true;
+
+  // At this point, we know we have a full access unit.
+  bool is_key_frame = false;
+  int pps_id_for_access_unit = -1;
+
+  const uint8* es;
+  int size;
+  es_queue_->PeekAt(current_access_unit_pos_, &es, &size);
+  int access_unit_size = base::checked_cast<int, int64>(
+      next_access_unit_pos_ - current_access_unit_pos_);
+  DCHECK_LE(access_unit_size, size);
+  h264_parser_->SetStream(es, access_unit_size);
+
+  while (true) {
+    bool is_eos = false;
+    H264NALU nalu;
+    switch (h264_parser_->AdvanceToNextNALU(&nalu)) {
+      case H264Parser::kOk:
+        break;
+      case H264Parser::kInvalidStream:
+      case H264Parser::kUnsupportedStream:
+        return false;
+      case H264Parser::kEOStream:
+        is_eos = true;
+        break;
+    }
+    if (is_eos)
+      break;
+
+    switch (nalu.nal_unit_type) {
+      case H264NALU::kAUD: {
+        DVLOG(LOG_LEVEL_ES) << "NALU: AUD";
+        break;
+      }
+      case H264NALU::kSPS: {
+        DVLOG(LOG_LEVEL_ES) << "NALU: SPS";
+        int sps_id;
+        if (h264_parser_->ParseSPS(&sps_id) != H264Parser::kOk)
+          return false;
+        break;
+      }
+      case H264NALU::kPPS: {
+        DVLOG(LOG_LEVEL_ES) << "NALU: PPS";
+        int pps_id;
+        if (h264_parser_->ParsePPS(&pps_id) != H264Parser::kOk)
+          return false;
+        break;
+      }
+      case H264NALU::kIDRSlice:
+      case H264NALU::kNonIDRSlice: {
+        is_key_frame = (nalu.nal_unit_type == H264NALU::kIDRSlice);
+        DVLOG(LOG_LEVEL_ES) << "NALU: slice IDR=" << is_key_frame;
+        H264SliceHeader shdr;
+        if (h264_parser_->ParseSliceHeader(nalu, &shdr) != H264Parser::kOk) {
+          // Only accept an invalid SPS/PPS at the beginning when the stream
+          // does not necessarily start with an SPS/PPS/IDR.
+          // TODO(damienv): Should be able to differentiate a missing SPS/PPS
+          // from a slice header parsing error.
+          if (last_video_decoder_config_.IsValidConfig())
+            return false;
+        } else {
+          pps_id_for_access_unit = shdr.pic_parameter_set_id;
+        }
+        break;
+      }
+      default: {
+        DVLOG(LOG_LEVEL_ES) << "NALU: " << nalu.nal_unit_type;
+      }
+    }
   }
 
+  // Emit a frame and move the stream to the next AUD position.
+  RCHECK(EmitFrame(current_access_unit_pos_, access_unit_size,
+                   is_key_frame, pps_id_for_access_unit));
+  current_access_unit_pos_ = next_access_unit_pos_;
+  es_queue_->Trim(current_access_unit_pos_);
+
+  return true;
+}
+
+bool EsParserH264::EmitFrame(int64 access_unit_pos, int access_unit_size,
+                             bool is_key_frame, int pps_id) {
   // Get the access unit timing info.
   TimingDesc current_timing_desc = {kNoTimestamp(), kNoTimestamp()};
   while (!timing_desc_list_.empty() &&
-         timing_desc_list_.front().first <= current_access_unit_pos_) {
+         timing_desc_list_.front().first <= access_unit_pos) {
     current_timing_desc = timing_desc_list_.front().second;
     timing_desc_list_.pop_front();
   }
-
   if (current_timing_desc.pts == kNoTimestamp())
     return false;
 
+  // Update the video decoder configuration if needed.
+  const H264PPS* pps = h264_parser_->GetPPS(pps_id);
+  if (!pps) {
+    // Only accept an invalid PPS at the beginning when the stream
+    // does not necessarily start with an SPS/PPS/IDR.
+    // In this case, the initial frames are conveyed to the upper layer with
+    // an invalid VideoDecoderConfig and it's up to the upper layer
+    // to process this kind of frame accordingly.
+    if (last_video_decoder_config_.IsValidConfig())
+      return false;
+  } else {
+    const H264SPS* sps = h264_parser_->GetSPS(pps->seq_parameter_set_id);
+    if (!sps)
+      return false;
+    RCHECK(UpdateVideoDecoderConfig(sps));
+  }
+
   // Emit a frame.
-  int raw_es_size;
-  const uint8* raw_es;
-  es_byte_queue_.Peek(&raw_es, &raw_es_size);
-  int access_unit_size = next_aud_pos - current_access_unit_pos_;
+  DVLOG(LOG_LEVEL_ES) << "Emit frame: stream_pos=" << current_access_unit_pos_
+                      << " size=" << access_unit_size;
+  int es_size;
+  const uint8* es;
+  es_queue_->PeekAt(current_access_unit_pos_, &es, &es_size);
+  CHECK_GE(es_size, access_unit_size);
 
   // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
   // type and allow multiple video tracks. See https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> stream_parser_buffer =
       StreamParserBuffer::CopyFrom(
-          &raw_es[current_access_unit_pos_],
+          es,
           access_unit_size,
-          is_key_frame_,
+          is_key_frame,
           DemuxerStream::VIDEO,
           0);
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
   emit_buffer_cb_.Run(stream_parser_buffer);
-
-  // Set the current frame position to the next AUD position.
-  StartFrame(next_aud_pos);
   return true;
 }
 
-void EsParserH264::StartFrame(int aud_pos) {
-  // Two cases:
-  // - if aud_pos < 0, clear the current frame and set |is_key_frame| to a
-  // default value (false).
-  // - if aud_pos >= 0, start a new frame and set |is_key_frame| to true
-  // |is_key_frame_| will be updated while parsing the NALs of that frame.
-  // If any NAL is a non IDR NAL, it will be set to false.
-  current_access_unit_pos_ = aud_pos;
-  is_key_frame_ = (aud_pos >= 0);
-}
-
-void EsParserH264::DiscardEs(int nbytes) {
-  DCHECK_GE(nbytes, 0);
-  if (nbytes == 0)
-    return;
-
-  // Update the position of
-  // - the parser,
-  // - the current NAL,
-  // - the current access unit.
-  es_pos_ -= nbytes;
-  if (es_pos_ < 0)
-    es_pos_ = 0;
-
-  if (current_nal_pos_ >= 0) {
-    DCHECK_GE(current_nal_pos_, nbytes);
-    current_nal_pos_ -= nbytes;
-  }
-  if (current_access_unit_pos_ >= 0) {
-    DCHECK_GE(current_access_unit_pos_, nbytes);
-    current_access_unit_pos_ -= nbytes;
-  }
-
-  // Update the timing information accordingly.
-  std::list<std::pair<int, TimingDesc> >::iterator timing_it
-      = timing_desc_list_.begin();
-  for (; timing_it != timing_desc_list_.end(); ++timing_it)
-    timing_it->first -= nbytes;
-
-  // Discard |nbytes| of ES.
-  es_byte_queue_.Pop(nbytes);
-}
-
-bool EsParserH264::NalParser(const uint8* buf, int size) {
-  // Get the NAL header.
-  if (size < 1) {
-    DVLOG(1) << "NalParser: incomplete NAL";
-    return false;
-  }
-  int nal_header = buf[0];
-  buf += 1;
-  size -= 1;
-
-  int forbidden_zero_bit = (nal_header >> 7) & 0x1;
-  if (forbidden_zero_bit != 0)
-    return false;
-  int nal_ref_idc = (nal_header >> 5) & 0x3;
-  int nal_unit_type = nal_header & 0x1f;
-
-  // Process the NAL content.
-  switch (nal_unit_type) {
-    case kNalUnitTypeSPS:
-      DVLOG(LOG_LEVEL_ES) << "NAL: SPS";
-      // |nal_ref_idc| should not be 0 for a SPS.
-      if (nal_ref_idc == 0)
-        return false;
-      return ProcessSPS(buf, size);
-    case kNalUnitTypeIdrSlice:
-      DVLOG(LOG_LEVEL_ES) << "NAL: IDR slice";
-      return true;
-    case kNalUnitTypeNonIdrSlice:
-      DVLOG(LOG_LEVEL_ES) << "NAL: Non IDR slice";
-      is_key_frame_ = false;
-      return true;
-    case kNalUnitTypePPS:
-      DVLOG(LOG_LEVEL_ES) << "NAL: PPS";
-      return true;
-    case  kNalUnitTypeAUD:
-      DVLOG(LOG_LEVEL_ES) << "NAL: AUD";
-      return true;
-    default:
-      DVLOG(LOG_LEVEL_ES) << "NAL: " << nal_unit_type;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
-  if (size <= 0)
-    return false;
-
-  // Removes start code emulation prevention.
-  // TODO(damienv): refactoring in media/base
-  // so as to have a unique H264 bit reader in Chrome.
-  scoped_ptr<uint8[]> buf_rbsp(new uint8[size]);
-  int rbsp_size = ConvertToRbsp(buf, size, buf_rbsp.get());
-
-  BitReaderH264 bit_reader(buf_rbsp.get(), rbsp_size);
-
-  int profile_idc;
-  int constraint_setX_flag;
-  int level_idc;
-  uint32 seq_parameter_set_id;
-  uint32 log2_max_frame_num_minus4;
-  uint32 pic_order_cnt_type;
-  RCHECK(bit_reader.ReadBits(8, &profile_idc));
-  RCHECK(bit_reader.ReadBits(8, &constraint_setX_flag));
-  RCHECK(bit_reader.ReadBits(8, &level_idc));
-  RCHECK(bit_reader.ReadBitsExpGolomb(&seq_parameter_set_id));
-
-  if (profile_idc == 100 || profile_idc == 110 ||
-      profile_idc == 122 || profile_idc == 244 ||
-      profile_idc ==  44 || profile_idc ==  83 ||
-      profile_idc ==  86 || profile_idc == 118 ||
-      profile_idc == 128) {
-    uint32 chroma_format_idc;
-    RCHECK(bit_reader.ReadBitsExpGolomb(&chroma_format_idc));
-    if (chroma_format_idc == 3) {
-      int separate_colour_plane_flag;
-      RCHECK(bit_reader.ReadBits(1, &separate_colour_plane_flag));
-    }
-    uint32 bit_depth_luma_minus8;
-    uint32 bit_depth_chroma_minus8;
-    int qpprime_y_zero_transform_bypass_flag;
-    int seq_scaling_matrix_present_flag;
-    RCHECK(bit_reader.ReadBitsExpGolomb(&bit_depth_luma_minus8));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&bit_depth_chroma_minus8));
-    RCHECK(bit_reader.ReadBits(1, &qpprime_y_zero_transform_bypass_flag));
-    RCHECK(bit_reader.ReadBits(1, &seq_scaling_matrix_present_flag));
-    if (seq_scaling_matrix_present_flag) {
-      int skip_count = (chroma_format_idc != 3) ? 8 : 12;
-      RCHECK(bit_reader.SkipBits(skip_count));
-    }
-  }
-
-  RCHECK(bit_reader.ReadBitsExpGolomb(&log2_max_frame_num_minus4));
-  RCHECK(bit_reader.ReadBitsExpGolomb(&pic_order_cnt_type));
-
-  // |pic_order_cnt_type| shall be in the range of 0 to 2.
-  RCHECK(pic_order_cnt_type <= 2);
-  if (pic_order_cnt_type == 0) {
-    uint32 log2_max_pic_order_cnt_lsb_minus4;
-    RCHECK(bit_reader.ReadBitsExpGolomb(&log2_max_pic_order_cnt_lsb_minus4));
-  } else if (pic_order_cnt_type == 1) {
-    // Note: |offset_for_non_ref_pic| and |offset_for_top_to_bottom_field|
-    // corresponds to their codenum not to their actual value.
-    int delta_pic_order_always_zero_flag;
-    uint32 offset_for_non_ref_pic;
-    uint32 offset_for_top_to_bottom_field;
-    uint32 num_ref_frames_in_pic_order_cnt_cycle;
-    RCHECK(bit_reader.ReadBits(1, &delta_pic_order_always_zero_flag));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&offset_for_non_ref_pic));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&offset_for_top_to_bottom_field));
-    RCHECK(
-        bit_reader.ReadBitsExpGolomb(&num_ref_frames_in_pic_order_cnt_cycle));
-    for (uint32 i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i++) {
-      uint32 offset_for_ref_frame_codenum;
-      RCHECK(bit_reader.ReadBitsExpGolomb(&offset_for_ref_frame_codenum));
-    }
-  }
-
-  uint32 num_ref_frames;
-  int gaps_in_frame_num_value_allowed_flag;
-  uint32 pic_width_in_mbs_minus1;
-  uint32 pic_height_in_map_units_minus1;
-  RCHECK(bit_reader.ReadBitsExpGolomb(&num_ref_frames));
-  RCHECK(bit_reader.ReadBits(1, &gaps_in_frame_num_value_allowed_flag));
-  RCHECK(bit_reader.ReadBitsExpGolomb(&pic_width_in_mbs_minus1));
-  RCHECK(bit_reader.ReadBitsExpGolomb(&pic_height_in_map_units_minus1));
-
-  int frame_mbs_only_flag;
-  RCHECK(bit_reader.ReadBits(1, &frame_mbs_only_flag));
-  if (!frame_mbs_only_flag) {
-    int mb_adaptive_frame_field_flag;
-    RCHECK(bit_reader.ReadBits(1, &mb_adaptive_frame_field_flag));
-  }
-
-  int direct_8x8_inference_flag;
-  RCHECK(bit_reader.ReadBits(1, &direct_8x8_inference_flag));
-
-  int frame_cropping_flag;
-  uint32 frame_crop_left_offset = 0;
-  uint32 frame_crop_right_offset = 0;
-  uint32 frame_crop_top_offset = 0;
-  uint32 frame_crop_bottom_offset = 0;
-  RCHECK(bit_reader.ReadBits(1, &frame_cropping_flag));
-  if (frame_cropping_flag) {
-    RCHECK(bit_reader.ReadBitsExpGolomb(&frame_crop_left_offset));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&frame_crop_right_offset));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&frame_crop_top_offset));
-    RCHECK(bit_reader.ReadBitsExpGolomb(&frame_crop_bottom_offset));
-  }
-
-  int vui_parameters_present_flag;
-  RCHECK(bit_reader.ReadBits(1, &vui_parameters_present_flag));
-  int sar_width = 1;
-  int sar_height = 1;
-  if (vui_parameters_present_flag) {
-    // Read only the aspect ratio information from the VUI section.
-    // TODO(damienv): check whether other VUI info are useful.
-    int aspect_ratio_info_present_flag;
-    RCHECK(bit_reader.ReadBits(1, &aspect_ratio_info_present_flag));
-    if (aspect_ratio_info_present_flag) {
-      int aspect_ratio_idc;
-      RCHECK(bit_reader.ReadBits(8, &aspect_ratio_idc));
-      if (aspect_ratio_idc == kExtendedSar) {
-        RCHECK(bit_reader.ReadBits(16, &sar_width));
-        RCHECK(bit_reader.ReadBits(16, &sar_height));
-      } else if (aspect_ratio_idc < kSarTableSize) {
-        sar_width = kTableSarWidth[aspect_ratio_idc];
-        sar_height = kTableSarHeight[aspect_ratio_idc];
-      }
-    }
-  }
-
-  if (sar_width == 0 || sar_height == 0) {
-    DVLOG(1) << "Unspecified SAR not supported";
-    return false;
-  }
+bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
+  // Set the SAR to 1 when not specified in the H264 stream.
+  int sar_width = (sps->sar_width == 0) ? 1 : sps->sar_width;
+  int sar_height = (sps->sar_height == 0) ? 1 : sps->sar_height;
 
   // TODO(damienv): a MAP unit can be either 16 or 32 pixels.
   // although it's 16 pixels for progressive non MBAFF frames.
-  gfx::Size coded_size((pic_width_in_mbs_minus1 + 1) * 16,
-                       (pic_height_in_map_units_minus1 + 1) * 16);
+  gfx::Size coded_size((sps->pic_width_in_mbs_minus1 + 1) * 16,
+                       (sps->pic_height_in_map_units_minus1 + 1) * 16);
   gfx::Rect visible_rect(
-      frame_crop_left_offset,
-      frame_crop_top_offset,
-      (coded_size.width() - frame_crop_right_offset) - frame_crop_left_offset,
-      (coded_size.height() - frame_crop_bottom_offset) - frame_crop_top_offset);
+      sps->frame_crop_left_offset,
+      sps->frame_crop_top_offset,
+      (coded_size.width() - sps->frame_crop_right_offset) -
+      sps->frame_crop_left_offset,
+      (coded_size.height() - sps->frame_crop_bottom_offset) -
+      sps->frame_crop_top_offset);
   if (visible_rect.width() <= 0 || visible_rect.height() <= 0)
     return false;
-  gfx::Size natural_size((visible_rect.width() * sar_width) / sar_height,
-                         visible_rect.height());
+  gfx::Size natural_size(
+      (visible_rect.width() * sar_width) / sar_height,
+      visible_rect.height());
   if (natural_size.width() == 0)
     return false;
 
-  // TODO(damienv):
-  // Assuming the SPS is used right away by the PPS
-  // and the slice headers is a strong assumption.
-  // In theory, we should process the SPS and PPS
-  // and only when one of the slice header is switching
-  // the PPS id, the video decoder config should be changed.
   VideoDecoderConfig video_decoder_config(
       kCodecH264,
-      VIDEO_CODEC_PROFILE_UNKNOWN,    // TODO(damienv)
+      VIDEO_CODEC_PROFILE_UNKNOWN,
       VideoFrame::YV12,
       coded_size,
       visible_rect,
@@ -522,12 +312,14 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
       false);
 
   if (!video_decoder_config.Matches(last_video_decoder_config_)) {
-    DVLOG(1) << "Profile IDC: " << profile_idc;
-    DVLOG(1) << "Level IDC: " << level_idc;
-    DVLOG(1) << "Pic width: " << (pic_width_in_mbs_minus1 + 1) * 16;
-    DVLOG(1) << "Pic height: " << (pic_height_in_map_units_minus1 + 1) * 16;
-    DVLOG(1) << "log2_max_frame_num_minus4: " << log2_max_frame_num_minus4;
-    DVLOG(1) << "SAR: width=" << sar_width << " height=" << sar_height;
+    DVLOG(1) << "Profile IDC: " << sps->profile_idc;
+    DVLOG(1) << "Level IDC: " << sps->level_idc;
+    DVLOG(1) << "Pic width: " << coded_size.width();
+    DVLOG(1) << "Pic height: " << coded_size.height();
+    DVLOG(1) << "log2_max_frame_num_minus4: "
+             << sps->log2_max_frame_num_minus4;
+    DVLOG(1) << "SAR: width=" << sps->sar_width
+             << " height=" << sps->sar_height;
     last_video_decoder_config_ = video_decoder_config;
     new_video_config_cb_.Run(video_decoder_config);
   }
