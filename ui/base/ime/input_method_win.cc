@@ -157,14 +157,6 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
   return 0;
 }
 
-LRESULT InputMethodWin::OnDeadChar(UINT message,
-                                   WPARAM wparam,
-                                   LPARAM lparam,
-                                   BOOL* handled) {
-  *handled = TRUE;
-  return 0;
-}
-
 LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
   ui::TextInputClient* client = GetTextInputClient();
   if (!client)
