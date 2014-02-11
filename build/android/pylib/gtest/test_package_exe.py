@@ -123,19 +123,17 @@ class TestPackageExecutable(TestPackage):
     else:
       target_name = self.suite_path + '_stripped'
       if not os.path.isfile(target_name):
-        logging.critical('Did not find %s, build target %s',
-                         target_name, self.suite_name + '_stripped')
-        sys.exit(1)
+        raise Exception('Did not find %s, build target %s' %
+                        (target_name, self.suite_name + '_stripped'))
 
       target_mtime = os.stat(target_name).st_mtime
       source_mtime = os.stat(self.suite_path).st_mtime
       if target_mtime < source_mtime:
-        logging.critical(
+        raise Exception(
             'stripped binary (%s, timestamp %d) older than '
-            'source binary (%s, timestamp %d), build target %s',
-            target_name, target_mtime, self.suite_path, source_mtime,
-            self.suite_name + '_stripped')
-        sys.exit(1)
+            'source binary (%s, timestamp %d), build target %s' %
+            (target_name, target_mtime, self.suite_path, source_mtime,
+             self.suite_name + '_stripped'))
 
     test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
     adb.PushIfNeeded(target_name, test_binary)
