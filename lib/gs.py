@@ -270,6 +270,11 @@ class GSContext(object):
         if url.port:
           self.gsutil_flags += ['-o', 'Boto:proxy_port=%d' % url.port]
 
+    # Increase the number of retries. With 10 retries, Boto will try a total of
+    # 11 times and wait up to 2**11 seconds (~30 minutes) in total, not
+    # not including the time spent actually uploading or downloading.
+    self.gsutil_flags += ['-o', 'Boto:num_retries=10']
+
     # Prefer boto_file if specified, else prefer the env then the default.
     default_boto = False
     if boto_file is None:
