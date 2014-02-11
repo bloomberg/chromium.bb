@@ -36,8 +36,10 @@ class SuggestionsService : public BrowserContextKeyedService,
   // Whether this service is enabled.
   static bool IsEnabled();
 
+  const SuggestionsProfile& suggestions() { return suggestions_; }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ParseSuggestionsData);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
 
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
   // the response.
