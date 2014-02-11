@@ -14,13 +14,6 @@ import math
 import multiprocessing
 import os
 import platform
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=F0401
-  import queue as Queue
 import re
 import shutil
 import sys
@@ -130,11 +123,18 @@ class RetryStage(object):
 
 
 class BoardSpecificBuilderStage(bs.BuilderStage):
-  """Builder stage that is specific to a board."""
+  """Builder stage that is specific to a board.
+
+  The following attributes are provided on self:
+    _current_board: The active board for this stage.
+    board_runattrs: BoardRunAttributes object for this stage.
+  """
 
   def __init__(self, builder_run, board, **kwargs):
     super(BoardSpecificBuilderStage, self).__init__(builder_run, **kwargs)
     self._current_board = board
+
+    self.board_runattrs = builder_run.GetBoardRunAttrs(board)
 
     if not isinstance(board, basestring):
       raise TypeError('Expected string, got %r' % (board,))
@@ -143,6 +143,31 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
     # more than one board is built on a single builder.)
     if len(self._boards) > 1 or self._run.config.grouped:
       self.name = '%s [%s]' % (self.name, board)
+
+  def GetParallel(self, board_attr, timeout=None, pretty_name=None):
+    """Wait for given |board_attr| to show up.
+
+    Args:
+      board_attr: A valid board runattribute name.
+      timeout: Timeout in seconds.  None value means wait forever.
+      pretty_name: Optional name to use instead of raw board_attr in
+        log messages.
+
+    Returns:
+      Value of board_attr found.
+
+    Raises:
+      AttrTimeoutError if timeout occurs.
+    """
+    timeout_str = 'forever'
+    if timeout is not None:
+      timeout_str = '%d minutes' % int((timeout / 60) + 0.5)
+
+    if pretty_name is None:
+      pretty_name = board_attr
+
+    cros_build_lib.Info('Waiting up to %s for %s ...', timeout_str, pretty_name)
+    return self.board_runattrs.GetParallel(board_attr, timeout=timeout)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
     """Get the location of the current image."""
@@ -2735,7 +2760,7 @@ class UnitTestStage(BoardSpecificBuilderStage):
                          self.GetImageDirSymlink())
 
 
-class VMTestStage(ArchivingStage):
+class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Run autotests in a virtual machine."""
 
   option_name = 'tests'
@@ -2749,7 +2774,8 @@ class VMTestStage(ArchivingStage):
     # Wait for breakpad symbols.
     got_symbols = False
     if self._run.options.archive:
-      got_symbols = self.archive_stage.WaitForBreakpadSymbols()
+      got_symbols = self.GetParallel('breakpad_symbols_generated',
+                                     pretty_name='breakpad symbols')
     filenames = commands.GenerateStackTraces(
         self._build_root, self._current_board, test_tarball, self.archive_path,
         got_symbols)
@@ -3335,8 +3361,6 @@ class ArchiveStage(ArchivingStage):
     # move to use self._run.attrs.release_tag directly.
     self.release_tag = getattr(self._run.attrs, 'release_tag', None)
 
-    self._debug_tarball_queue = multiprocessing.Queue()
-    self._breakpad_symbols_queue = multiprocessing.Queue()
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
@@ -3369,26 +3393,6 @@ class ArchiveStage(ArchivingStage):
     self._push_image_status_queue.put(urls)
     return urls
 
-  def DebugTarballGenerated(self, success):
-    """Signal that the debug tarball has been generated.
-
-    Args:
-      success: True to indicate the tarball was generated, else False.
-    """
-    self._debug_tarball_queue.put(success)
-
-  def WaitForDebugTarball(self, timeout=None):
-    """Wait for the debug tarball to be generated.
-
-    Returns:
-      True if the tarball was generated.
-    """
-    cros_build_lib.Info('Waiting for debug tarball...')
-    status = self._debug_tarball_queue.get(timeout=timeout)
-    # Put the status back so other processes don't starve.
-    self._debug_tarball_queue.put(status)
-    return status
-
   def AnnounceChannelSigned(self, channel):
     """Announce that image signing has compeleted for a given channel.
 
@@ -3413,26 +3417,6 @@ class ArchiveStage(ArchivingStage):
     """
     cros_build_lib.Info('Waiting for channel images to be signed...')
     return self._wait_for_channel_signing.get()
-
-  def BreakpadSymbolsGenerated(self, success):
-    """Signal that breakpad symbols have been generated.
-
-    Args:
-      success: True to indicate the symbols were generated, else False.
-    """
-    self._breakpad_symbols_queue.put(success)
-
-  def WaitForBreakpadSymbols(self, timeout=None):
-    """Wait for the breakpad symbols to be generated.
-
-    Returns:
-      True if the breakpad symbols were generated.
-    """
-    cros_build_lib.Info('Waiting for breakpad symbols...')
-    status = self._breakpad_symbols_queue.get(timeout=timeout)
-    # Put the status back so other processes don't starve.
-    self._breakpad_symbols_queue.put(status)
-    return status
 
   @staticmethod
   def SingleMatchGlob(path_pattern):
@@ -3644,7 +3628,7 @@ class ArchiveStage(ArchivingStage):
       if not config['internal']:
         return
 
-      self.WaitForDebugTarball()
+      self.GetParallel('debug_tarball_generated', pretty_name='debug tarball')
 
       # Now that all data has been generated, we can upload the final result to
       # the image server.
@@ -3709,7 +3693,7 @@ class ArchiveStage(ArchivingStage):
     return super(ArchiveStage, self)._HandleStageException(exception)
 
 
-class DebugSymbolsStage(ArchivingStage):
+class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Handles generation & upload of debug symbols."""
 
   def PerformStage(self):
@@ -3721,7 +3705,7 @@ class DebugSymbolsStage(ArchivingStage):
     archive_path = self.archive_path
 
     commands.GenerateBreakpadSymbols(buildroot, board, debug)
-    self.archive_stage.BreakpadSymbolsGenerated(True)
+    self.board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
     # Kick off the symbol upload process in the background.
     failed_list = os.path.join(archive_path, 'failed_upload_symbols.list')
@@ -3737,7 +3721,9 @@ class DebugSymbolsStage(ArchivingStage):
           buildroot, board, archive_path,
           config['archive_build_debug'])
       queue.put([filename])
-    self.archive_stage.DebugTarballGenerated(True)
+
+    cros_build_lib.Info('Announcing availability of debug tarball now.')
+    self.board_runattrs.SetParallel('debug_tarball_generated', True)
 
   def UploadSymbols(self, buildroot, board, failed_list):
     """Upload generated debug symbols."""
@@ -3754,15 +3740,8 @@ class DebugSymbolsStage(ArchivingStage):
 
   def _HandleStageException(self, exception):
     """Tell other stages to not wait on us if we die for some reason."""
-    try:
-      self.archive_stage.WaitForBreakpadSymbols(timeout=0)
-    except Queue.Empty:
-      self.archive_stage.BreakpadSymbolsGenerated(False)
-
-    try:
-      self.archive_stage.WaitForDebugTarball(timeout=0)
-    except Queue.Empty:
-      self.archive_stage.DebugTarballGenerated(False)
+    self.board_runattrs.SetParallelDefault('breakpad_symbols_generated', False)
+    self.board_runattrs.SetParallelDefault('debug_tarball_generated', False)
 
     return super(DebugSymbolsStage, self)._HandleStageException(exception)
 

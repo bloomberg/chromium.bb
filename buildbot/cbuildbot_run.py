@@ -150,6 +150,7 @@ class RunAttributes(object):
   # value for consumers of the attribute to use when waiting for it.
   BOARD_ATTRS = frozenset((
       'breakpad_symbols_generated', # Set by DebugSymbolsStage.
+      'debug_tarball_generated',    # Set by DebugSymbolsStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel

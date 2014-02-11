@@ -158,6 +158,9 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
     osutils.SafeMakedirs(os.path.join(self.build_root, '.repo'))
 
+    self._manager = parallel.Manager()
+    self._manager.__enter__()
+
     # These are here to make pylint happy.  Values filled in by _Prepare.
     self.bot_id = None
     self._current_board = None
@@ -229,22 +232,17 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     # Some preliminary sanity checks.
     self.assertEquals(options.buildroot, self.build_root)
 
-    # Make up a fake object with a Queue() method.
-    class _FakeMultiprocessManager(object):
-      """This just needs to not crash when Queue/RLock called."""
-      def Queue(self):
-        return 'SomeQueue'
-      def RLock(self):
-        return 'SomeLock'
-    manager = _FakeMultiprocessManager()
-
     # Construct a real BuilderRun using options and build_config.
-    self.run = cbuildbot_run.BuilderRun(options, build_config, manager)
+    self.run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
     if self.RELEASE_TAG is not None:
       self.run.attrs.release_tag = self.RELEASE_TAG
 
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
+
+  def tearDown(self):
+    # Mimic exiting with statement for self._manager.
+    self._manager.__exit__(None, None, None)
 
   def AutoPatch(self, to_patch):
     """Patch a list of objects with autospec=True.
@@ -878,14 +876,16 @@ class VMTestStageTest(AbstractStageTest):
       self.PatchObject(commands, cmd, autospec=True)
 
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
 
     self._Prepare()
 
+    # Simulate breakpad symbols being ready.
+    board_runattrs = self.run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('breakpad_symbols_generated', True)
+
   def ConstructStage(self):
     self.run.GetArchive().SetupArchivePath()
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.VMTestStage(self.run, self._current_board, archive_stage)
+    return stages.VMTestStage(self.run, self._current_board)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -966,7 +966,6 @@ class HWTestStageTest(AbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
 
     self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
     self.mox.StubOutWithMock(commands, 'HaveCQHWTestsBeenAborted')
@@ -1339,8 +1338,6 @@ class AUTestStageTest(AbstractStageTest,
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.archive_mock = ArchiveStageMock()
-    self.StartPatcher(self.archive_mock)
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
     self.PatchObject(commands, 'HaveCQHWTestsBeenAborted', autospec=True,
@@ -1422,7 +1419,6 @@ class BuildPackagesStageTest(AbstractStageTest):
     self._release_tag = None
 
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
 
   def ConstructStage(self):
     self.run.attrs.release_tag = self._release_tag
@@ -1544,29 +1540,6 @@ class BuildImageStageTest(BuildPackagesStageTest):
     parallel.RunParallelSteps(steps)
 
 
-class ArchiveStageBaseMock(partial_mock.PartialMock):
-  """Partial mock for Archive Stage."""
-
-  VERSION = '3333.1.0'
-
-
-class ArchiveStageMock(ArchiveStageBaseMock):
-  """Partial Archive stage w/debug symbol logic disabled."""
-
-  TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('WaitForBreakpadSymbols', 'WaitForDebugTarball',)
-
-  # We want to fully stub out the same interface, but we don't care about the
-  # actual values for things like |timeout|.
-  # pylint: disable=W0613
-
-  def WaitForBreakpadSymbols(self, _inst, timeout=None):
-    return True
-
-  def WaitForDebugTarball(self, _inst, timeout=None):
-    return True
-
-
 class ArchivingStageTest(AbstractStageTest):
   """Excerise ArchivingStage functionality."""
   RELEASE_TAG = ''
@@ -1574,7 +1547,6 @@ class ArchivingStageTest(AbstractStageTest):
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
     self.StartPatcher(ArchivingMock())
-    self.StartPatcher(ArchiveStageMock())
 
     self._Prepare()
 
@@ -1644,6 +1616,7 @@ class ArchivingStageTest(AbstractStageTest):
 class ArchiveStageTest(AbstractStageTest):
   """Exercise ArchiveStage functionality."""
   RELEASE_TAG = ''
+  VERSION = '3333.1.0'
 
   def _PatchDependencies(self):
     """Patch dependencies of ArchiveStage.PerformStage()."""
@@ -1654,7 +1627,6 @@ class ArchiveStageTest(AbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
     self._PatchDependencies()
 
     self._Prepare()
@@ -1673,7 +1645,7 @@ class ArchiveStageTest(AbstractStageTest):
     # TODO(davidjames): Test the individual archive steps as well.
     self.RunStage()
     filenames = ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
-                 'LATEST-%s' % ArchiveStageMock.VERSION)
+                 'LATEST-%s' % self.VERSION)
     calls = [mock.call(mock.ANY, mock.ANY, filename, False,
                        acl=mock.ANY) for filename in filenames]
     # pylint: disable=E1101
@@ -1728,7 +1700,6 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
     self.archive_stage = None
 
   def _Prepare(self, bot_id=None, **kwargs):
@@ -1879,7 +1850,6 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UploadDevInstallerPrebuilts')
 
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
 
     self._Prepare()
 
@@ -1952,7 +1922,6 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageBaseMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
@@ -1962,14 +1931,17 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult(output='')
 
-    self.archive_stage = None
+    self.stage = None
 
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
     self.run.GetArchive().SetupArchivePath()
-    self.archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.DebugSymbolsStage(self.run, self._current_board,
-                                    self.archive_stage)
+    return stages.DebugSymbolsStage(self.run, self._current_board)
+
+  def assertBoardAttrEqual(self, attr, expected_value):
+    """Assert the value of a board run |attr| against |expected_value|."""
+    value = self.stage.board_runattrs.GetParallel(attr)
+    self.assertEqual(expected_value, value)
 
   def _TestPerformStage(self, extra_config=None):
     """Run PerformStage for the stage with the given extra config."""
@@ -1984,11 +1956,11 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.run.attrs.release_tag = BuilderRunMock.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
-    stage = self.ConstructStage()
+    self.stage = self.ConstructStage()
     try:
-      stage.PerformStage()
+      self.stage.PerformStage()
     except Exception as e:
-      stage._HandleStageException(e)
+      self.stage._HandleStageException(e)
       raise
 
   def testPerformStageWithSymbols(self):
@@ -1999,8 +1971,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.assertEqual(self.upload_mock.call_count, 1)
     self.assertEqual(self.tar_mock.call_count, 1)
 
-    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
-    self.assertEqual(self.archive_stage.WaitForDebugTarball(), True)
+    self.assertBoardAttrEqual('breakpad_symbols_generated', True)
+    self.assertBoardAttrEqual('debug_tarball_generated', True)
 
   def testPerformStageNoSymbols(self):
     """Smoke test for an PerformStage when debugging is disabled"""
@@ -2015,8 +1987,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.assertEqual(self.upload_mock.call_count, 0)
     self.assertEqual(self.tar_mock.call_count, 1)
 
-    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
-    self.assertEqual(self.archive_stage.WaitForDebugTarball(), True)
+    self.assertBoardAttrEqual('breakpad_symbols_generated', True)
+    self.assertBoardAttrEqual('debug_tarball_generated', True)
 
   def testGenerateCrashStillNotifies(self):
     """Crashes in symbol generation should still notify external events."""
@@ -2030,8 +2002,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.assertEqual(self.upload_mock.call_count, 0)
     self.assertEqual(self.tar_mock.call_count, 0)
 
-    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), False)
-    self.assertEqual(self.archive_stage.WaitForDebugTarball(), False)
+    self.assertBoardAttrEqual('breakpad_symbols_generated', False)
+    self.assertBoardAttrEqual('debug_tarball_generated', False)
 
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
@@ -2045,8 +2017,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.assertEqual(self.upload_mock.call_count, 1)
     self.assertEqual(self.tar_mock.call_count, 0)
 
-    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(timeout=9), True)
-    self.assertEqual(self.archive_stage.WaitForDebugTarball(timeout=9), False)
+    self.assertBoardAttrEqual('breakpad_symbols_generated', True)
+    self.assertBoardAttrEqual('debug_tarball_generated', False)
 
 
 class PassStage(bs.BuilderStage):
@@ -2507,7 +2479,6 @@ class ReportStageTest(AbstractStageTest):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
 
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
     self.cq = CLStatusMock()
     self.StartPatcher(self.cq)
     self.sync_stage = None
@@ -2843,7 +2814,6 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     self._Prepare()

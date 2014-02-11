@@ -453,14 +453,14 @@ class SimpleBuilder(Builder):
     if builder_run.options.chrome_sdk and config.chrome_sdk:
       stage_list.append([stages.ChromeSDKStage, board, archive_stage])
     stage_list += [
-        [stages.RetryStage, 1, stages.VMTestStage, board, archive_stage],
+        [stages.RetryStage, 1, stages.VMTestStage, board],
         [stages.SignerTestStage, board, archive_stage],
         [stages.SignerResultsStage, board, archive_stage],
         [stages.PaygenStage, board, archive_stage],
         [stages.UnitTestStage, board],
         [stages.UploadPrebuiltsStage, board, archive_stage],
         [stages.DevInstallerPrebuiltsStage, board, archive_stage],
-        [stages.DebugSymbolsStage, board, archive_stage],
+        [stages.DebugSymbolsStage, board],
     ]
 
     # We can not run hw tests without archiving the payloads.
