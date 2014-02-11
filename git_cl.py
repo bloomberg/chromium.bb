@@ -63,6 +63,12 @@ def DieWithError(message):
   sys.exit(1)
 
 
+def GetNoGitPagerEnv():
+  env = os.environ.copy()
+  # 'cat' is a magical git string that disables pagers on all platforms.
+  env['GIT_PAGER'] = 'cat'
+  return env
+
 def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
     return subprocess2.check_output(args, shell=False, **kwargs)
@@ -83,15 +89,12 @@ def RunGit(args, **kwargs):
 def RunGitWithCode(args, suppress_stderr=False):
   """Returns return code and stdout."""
   try:
-    env = os.environ.copy()
-    # 'cat' is a magical git string that disables pagers on all platforms.
-    env['GIT_PAGER'] = 'cat'
     if suppress_stderr:
       stderr = subprocess2.VOID
     else:
       stderr = sys.stderr
     out, code = subprocess2.communicate(['git'] + args,
-                                        env=env,
+                                        env=GetNoGitPagerEnv(),
                                         stdout=subprocess2.PIPE,
                                         stderr=stderr)
     return code, out[0]
@@ -239,11 +242,9 @@ def print_stats(similarity, find_copies, args):
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
   # git config key "diff.external" is used).
-  env = os.environ.copy()
+  env = GetNoGitPagerEnv()
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
-  # 'cat' is a magical git string that disables pagers on all platforms.
-  env['GIT_PAGER'] = 'cat'
 
   if find_copies:
     similarity_options = ['--find-copies-harder', '-l100000',
@@ -261,7 +262,7 @@ class Settings(object):
   def __init__(self):
     self.default_server = None
     self.cc = None
-    self.root = None
+    self.relative_root = None
     self.is_git_svn = None
     self.svn_branch = None
     self.tree_status_url = None
@@ -292,20 +293,23 @@ class Settings(object):
     if not self.default_server:
       self.LazyUpdateIfNeeded()
       self.default_server = gclient_utils.UpgradeToHttps(
-          self._GetConfig('rietveld.server', error_ok=True))
+          self._GetRietveldConfig('server', error_ok=True))
       if error_ok:
         return self.default_server
       if not self.default_server:
         error_message = ('Could not find settings file. You must configure '
                          'your review setup by running "git cl config".')
         self.default_server = gclient_utils.UpgradeToHttps(
-            self._GetConfig('rietveld.server', error_message=error_message))
+            self._GetRietveldConfig('server', error_message=error_message))
     return self.default_server
 
+  def GetRelativeRoot(self):
+    if self.relative_root is None:
+      self.relative_root = RunGit(['rev-parse', '--show-cdup']).strip()
+    return self.relative_root
+
   def GetRoot(self):
-    if not self.root:
-      self.root = os.path.abspath(RunGit(['rev-parse', '--show-cdup']).strip())
-    return self.root
+    return os.path.abspath(self.GetRelativeRoot())
 
   def GetIsGitSvn(self):
     """Return true if this repo looks like it's using git-svn."""
@@ -328,15 +332,12 @@ class Settings(object):
       # regexp matching the git-svn line that contains the URL.
       git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
 
-      env = os.environ.copy()
-      # 'cat' is a magical git string that disables pagers on all platforms.
-      env['GIT_PAGER'] = 'cat'
-
       # We don't want to go through all of history, so read a line from the
       # pipe at a time.
       # The -100 is an arbitrary limit so we don't search forever.
       cmd = ['git', 'log', '-100', '--pretty=medium']
-      proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE, env=env)
+      proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE,
+                               env=GetNoGitPagerEnv())
       url = None
       for line in proc.stdout:
         match = git_svn_re.match(line)
@@ -391,24 +392,23 @@ class Settings(object):
     if not self.tree_status_url:
       error_message = ('You must configure your tree status URL by running '
                        '"git cl config".')
-      self.tree_status_url = self._GetConfig('rietveld.tree-status-url',
-                                             error_ok=error_ok,
-                                             error_message=error_message)
+      self.tree_status_url = self._GetRietveldConfig(
+          'tree-status-url', error_ok=error_ok, error_message=error_message)
     return self.tree_status_url
 
   def GetViewVCUrl(self):
     if not self.viewvc_url:
-      self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
+      self.viewvc_url = self._GetRietveldConfig('viewvc-url', error_ok=True)
     return self.viewvc_url
 
   def GetBugPrefix(self):
-    return self._GetConfig('rietveld.bug-prefix', error_ok=True)
+    return self._GetRietveldConfig('bug-prefix', error_ok=True)
 
   def GetDefaultCCList(self):
-    return self._GetConfig('rietveld.cc', error_ok=True)
+    return self._GetRietveldConfig('cc', error_ok=True)
 
   def GetDefaultPrivateFlag(self):
-    return self._GetConfig('rietveld.private', error_ok=True)
+    return self._GetRietveldConfig('private', error_ok=True)
 
   def GetIsGerrit(self):
     """Return true if this repo is assosiated with gerrit code review system."""
@@ -421,6 +421,9 @@ class Settings(object):
     if self.git_editor is None:
       self.git_editor = self._GetConfig('core.editor', error_ok=True)
     return self.git_editor or None
+
+  def _GetRietveldConfig(self, param, **kwargs):
+    return self._GetConfig('rietveld.' + param, **kwargs)
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -533,6 +536,9 @@ or verify this branch is set up to track another (via the --track argument to
 "git checkout -b ...").""")
 
     return remote, upstream_branch
+
+  def GetCommonAncestorWithUpstream(self):
+    return RunGit(['merge-base', self.GetUpstreamBranch(), 'HEAD']).strip()
 
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:
@@ -735,17 +741,13 @@ or verify this branch is set up to track another (via the --track argument to
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
-    env = os.environ.copy()
-    # 'cat' is a magical git string that disables pagers on all platforms.
-    env['GIT_PAGER'] = 'cat'
-
-    root = RunCommand(['git', 'rev-parse', '--show-cdup'], env=env).strip()
+    root = settings.GetRelativeRoot()
     if not root:
       root = '.'
     absroot = os.path.abspath(root)
 
     # We use the sha1 of HEAD as a name of this change.
-    name = RunCommand(['git', 'rev-parse', 'HEAD'], env=env).strip()
+    name = RunGitWithCode(['rev-parse', 'HEAD'])[1].strip()
     # Need to pass a relative path for msysgit.
     try:
       files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
@@ -766,10 +768,8 @@ or verify this branch is set up to track another (via the --track argument to
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
       # with these log messages.
-      description = RunCommand(['git',
-                                'log', '--pretty=format:%s%n%n%b',
-                                '%s...' % (upstream_branch)],
-                               env=env).strip()
+      args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
+      description = RunGitWithCode(args)[1].strip()
 
     if not author:
       author = RunGit(['config', 'user.email']).strip() or None
@@ -1012,7 +1012,7 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
   """
   inherit_ok_file = 'inherit-review-settings-ok'
   cwd = os.getcwd()
-  root = os.path.abspath(RunGit(['rev-parse', '--show-cdup']).strip())
+  root = settings.GetRoot()
   if os.path.isfile(os.path.join(root, inherit_ok_file)):
     root = '/'
   while True:
@@ -1382,7 +1382,7 @@ def CMDpresubmit(parser, args):
     base_branch = args[0]
   else:
     # Default to diffing against the common ancestor of the upstream branch.
-    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+    base_branch = cl.GetCommonAncestorWithUpstream()
 
   cl.RunHook(
       committing=not options.upload,
@@ -1618,7 +1618,7 @@ def CMDupload(parser, args):
     base_branch = args[0]
   else:
     # Default to diffing against common ancestor of upstream branch
-    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+    base_branch = cl.GetCommonAncestorWithUpstream()
     args = [base_branch, 'HEAD']
 
   # Apply watchlists on upload.
@@ -1815,7 +1815,7 @@ def SendUpstream(parser, args, cmd):
   # We might be in a directory that's present in this branch but not in the
   # trunk.  Move up to the top of the tree so that git commands that expect a
   # valid CWD won't fail after we check out the merge branch.
-  rel_base_path = RunGit(['rev-parse', '--show-cdup']).strip()
+  rel_base_path = settings.GetRelativeRoot()
   if rel_base_path:
     os.chdir(rel_base_path)
 
@@ -1978,7 +1978,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
 
   # Switch up to the top-level directory, if necessary, in preparation for
   # applying the patch.
-  top = RunGit(['rev-parse', '--show-cdup']).strip()
+  top = settings.GetRelativeRoot()
   if top:
     os.chdir(top)
 
@@ -1992,9 +1992,6 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
   except subprocess2.CalledProcessError:
     DieWithError('Git patch mungling failed.')
   logging.info(patch_data)
-  env = os.environ.copy()
-  # 'cat' is a magical git string that disables pagers on all platforms.
-  env['GIT_PAGER'] = 'cat'
 
   # We use "git apply" to apply the patch instead of "patch" so that we can
   # pick up file adds.
@@ -2007,7 +2004,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
   elif IsGitVersionAtLeast('1.7.12'):
     cmd.append('--3way')
   try:
-    subprocess2.check_call(cmd, env=env,
+    subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
                            stdin=patch_data, stdout=subprocess2.VOID)
   except subprocess2.CalledProcessError:
     DieWithError('Failed to apply the patch')
@@ -2030,11 +2027,8 @@ def CMDrebase(parser, args):
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
   # execution to git-svn.
-  env = os.environ.copy()
-  # 'cat' is a magical git string that disables pagers on all platforms.
-  env['GIT_PAGER'] = 'cat'
 
-  return subprocess2.call(['git', 'svn', 'rebase'] + args, env=env)
+  return RunGitWithCode(['svn', 'rebase'] + args)[1]
 
 
 def GetTreeStatus(url=None):
@@ -2125,9 +2119,7 @@ def CMDtry(parser, args):
   # Process --bot and --testfilter.
   if not options.bot:
     # Get try slaves from PRESUBMIT.py files if not specified.
-    change = cl.GetChange(
-      RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip(),
-      None)
+    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
     options.bot = presubmit_support.DoGetTrySlaves(
         change,
         change.LocalPaths(),
@@ -2254,7 +2246,7 @@ def CMDdiff(parser, args):
   if not issue:
     DieWithError('No issue found for current branch (%s)' % branch)
   TMP_BRANCH = 'git-cl-diff'
-  base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+  base_branch = cl.GetCommonAncestorWithUpstream()
 
   # Create a new branch based on the merge-base
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
@@ -2292,7 +2284,7 @@ def CMDowners(parser, args):
     base_branch = args[0]
   else:
     # Default to diffing against the common ancestor of the upstream branch.
-    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+    base_branch = cl.GetCommonAncestorWithUpstream()
 
   change = cl.GetChange(base_branch, None)
   return owners_finder.OwnersFinder(
@@ -2315,7 +2307,7 @@ def CMDformat(parser, args):
 
   # git diff generates paths against the root of the repository.  Change
   # to that directory so clang-format can find files even within subdirs.
-  rel_base_path = RunGit(['rev-parse', '--show-cdup']).strip()
+  rel_base_path = settings.GetRelativeRoot()
   if rel_base_path:
     os.chdir(rel_base_path)
 

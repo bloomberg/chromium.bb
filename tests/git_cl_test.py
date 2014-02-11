@@ -204,7 +204,6 @@ class TestGitCl(TestCase):
         ((['git',
            'config', '--local', '--get-regexp', '^svn-remote\\.'],),
          (('', None), 0)),
-        ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'svn', 'info'],), ''),
         ((['git',
            'config', 'branch.master.rietveldissue', '1'],), ''),
@@ -319,8 +318,8 @@ class TestGitCl(TestCase):
   ]
 
   @classmethod
-  def _dcommit_calls_3(cls):
-    return [
+  def _dcommit_calls_3(cls, is_first_call):
+    calls = [
       ((['git',
          'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
          '-l100000', '-C50', 'fake_ancestor_sha',
@@ -334,7 +333,12 @@ class TestGitCl(TestCase):
       ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
       ((['git', 'show-ref', '--quiet', '--verify',
          'refs/heads/git-cl-cherry-pick'],), ''),
-      ((['git', 'rev-parse', '--show-cdup'],), '\n'),
+    ]
+    if is_first_call:
+      calls += [
+          ((['git', 'rev-parse', '--show-cdup'],), '\n'),
+      ]
+    calls += [
       ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
@@ -346,7 +350,8 @@ class TestGitCl(TestCase):
        (('', None), 0)),
       ((['git', 'checkout', '-q', 'working'],), ''),
       ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
-  ]
+    ]
+    return calls
 
   @staticmethod
   def _cmd_line(description, args, similarity, find_copies, private):
@@ -509,14 +514,14 @@ class TestGitCl(TestCase):
         self._dcommit_calls_1() +
         self._git_sanity_checks('fake_ancestor_sha', 'working') +
         self._dcommit_calls_normal() +
-        self._dcommit_calls_3())
+        self._dcommit_calls_3(False))
     git_cl.main(['dcommit'])
 
   def test_dcommit_bypass_hooks(self):
     self.calls = (
         self._dcommit_calls_1() +
         self._dcommit_calls_bypassed() +
-        self._dcommit_calls_3())
+        self._dcommit_calls_3(True))
     git_cl.main(['dcommit', '--bypass-hooks'])
 
 
