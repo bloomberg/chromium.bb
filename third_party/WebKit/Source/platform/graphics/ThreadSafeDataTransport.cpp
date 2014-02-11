@@ -33,6 +33,7 @@ namespace WebCore {
 
 ThreadSafeDataTransport::ThreadSafeDataTransport()
     : m_readBuffer(SharedBuffer::create())
+    , m_allDataReceived(false)
     , m_readPosition(0)
 {
 }

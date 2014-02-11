@@ -50,7 +50,7 @@ public:
         ImageDecodingStore::initializeOnce();
         ImageDecodingStore::instance()->setImageCachingEnabled(true);
         m_data = SharedBuffer::create();
-        m_generator = ImageFrameGenerator::create(fullSize(), m_data, true);
+        m_generator = ImageFrameGenerator::create(fullSize(), m_data, false);
         useMockImageDecoderFactory();
         m_decodersDestroyed = 0;
         m_frameBufferRequestCount = 0;
@@ -145,7 +145,7 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithIncompleteDecode)
 {
     setFrameStatus(ImageFrame::FramePartial);
 
-    const ScaledImageFragment* tempImage= m_generator->decodeAndScale(fullSize());
+    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
     EXPECT_FALSE(tempImage->isComplete());
     EXPECT_EQ(1, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);

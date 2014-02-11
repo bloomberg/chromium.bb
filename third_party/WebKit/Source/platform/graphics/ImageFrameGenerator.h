@@ -86,13 +86,14 @@ public:
     bool hasAlpha(size_t);
 
 private:
+    class ExternalMemoryAllocator;
     friend class ImageFrameGeneratorTest;
     friend class DeferredImageDecoderTest;
     // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
     void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
     // For testing.
-    SkBitmap::Allocator* allocator() const { return m_allocator.get(); }
-    void setAllocator(PassOwnPtr<SkBitmap::Allocator> allocator) { m_allocator = allocator; }
+    SkBitmap::Allocator* allocator() const { return m_discardableAllocator.get(); }
+    void setAllocator(PassOwnPtr<SkBitmap::Allocator> allocator) { m_discardableAllocator = allocator; }
 
     // These methods are called while m_decodeMutex is locked.
     const ScaledImageFragment* tryToLockCompleteCache(const SkISize& scaledSize, size_t index);
@@ -112,7 +113,8 @@ private:
     bool m_decodeFailedAndEmpty;
     Vector<bool> m_hasAlpha;
     size_t m_decodeCount;
-    OwnPtr<SkBitmap::Allocator> m_allocator;
+    OwnPtr<SkBitmap::Allocator> m_discardableAllocator;
+    OwnPtr<ExternalMemoryAllocator> m_externalAllocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;
 

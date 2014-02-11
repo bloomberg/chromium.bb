@@ -35,15 +35,48 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkMallocPixelRef.h"
 
 namespace WebCore {
+
+// Creates a SkPixelRef such that the memory for pixels is given by an external body.
+// This is used to write directly to the memory given by Skia during decoding.
+class ImageFrameGenerator::ExternalMemoryAllocator : public SkBitmap::Allocator {
+public:
+    ExternalMemoryAllocator(const SkImageInfo& info, void* pixels, size_t rowBytes)
+        : m_info(info)
+        , m_pixels(pixels)
+        , m_rowBytes(rowBytes)
+    {
+    }
+
+    virtual bool allocPixelRef(SkBitmap* dst, SkColorTable* ctable) OVERRIDE
+    {
+        SkImageInfo info;
+        if (!dst->asImageInfo(&info))
+            return false;
+
+        if (info != m_info || m_rowBytes != dst->rowBytes())
+            return false;
+
+        if (!dst->installPixels(m_info, m_pixels, m_rowBytes, 0, 0))
+            return false;
+        dst->lockPixels();
+        return true;
+    }
+
+private:
+    SkImageInfo m_info;
+    void* m_pixels;
+    size_t m_rowBytes;
+};
 
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame)
     : m_fullSize(fullSize)
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
     , m_decodeCount(ScaledImageFragment::FirstPartialImage)
-    , m_allocator(adoptPtr(new DiscardablePixelRefAllocator()))
+    , m_discardableAllocator(adoptPtr(new DiscardablePixelRefAllocator()))
 {
     setData(data.get(), allDataReceived);
 }
@@ -95,33 +128,50 @@ const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& sc
 bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, void* pixels, size_t rowBytes)
 {
     // This method is called to populate a discardable memory owned by Skia.
-    // Ideally we want the decoder to write directly to |pixels| but this
-    // simple implementation copies from a decoded bitmap.
+
+    // Prevents concurrent decode or scale operations on the same image data.
+    MutexLocker lock(m_decodeMutex);
 
     // This implementation does not support scaling so check the requested size.
-    ASSERT(m_fullSize.width() == info.fWidth);
-    ASSERT(m_fullSize.height() == info.fHeight);
+    SkISize scaledSize = SkISize::Make(info.fWidth, info.fHeight);
+    ASSERT(m_fullSize == scaledSize);
+
+    if (m_decodeFailedAndEmpty)
+        return 0;
+
+    TRACE_EVENT2("webkit", "ImageFrameGenerator::decodeAndScale", "generator", this, "decodeCount", static_cast<int>(m_decodeCount));
 
     // Don't use discardable memory for decoding if Skia is providing output
-    // memory. By clearing the memory allocator decoding will use heap memory.
+    // memory. Instead use ExternalMemoryAllocator such that we can
+    // write directly to the memory given by Skia.
     //
     // TODO:
     // This is not pretty because this class is used in two different code
     // paths: discardable memory decoding on Android and discardable memory
     // in Skia. Once the transition to caching in Skia is complete we can get
     // rid of the logic that handles discardable memory.
-    m_allocator.clear();
+    m_discardableAllocator.clear();
+    m_externalAllocator = adoptPtr(new ExternalMemoryAllocator(info, pixels, rowBytes));
 
-    const ScaledImageFragment* cachedImage = decodeAndScale(SkISize::Make(info.fWidth, info.fHeight), index);
+    const ScaledImageFragment* cachedImage = tryToResumeDecode(scaledSize, index);
     if (!cachedImage)
         return false;
 
-    ASSERT(cachedImage->bitmap().width() == info.fWidth);
-    ASSERT(cachedImage->bitmap().height() == info.fHeight);
+    // Don't keep the allocator because it contains a pointer to memory
+    // that we do not own.
+    m_externalAllocator.clear();
 
-    bool copied = cachedImage->bitmap().copyPixelsTo(pixels, rowBytes * info.fHeight, rowBytes);
+    ASSERT(cachedImage->bitmap().width() == scaledSize.width());
+    ASSERT(cachedImage->bitmap().height() == scaledSize.height());
+
+    // If the image is fully decoded and is not multi-frame then we have
+    // written directly to the memory given by Skia. There is no need to
+    // copy.
+    bool result = true;
+    if (!cachedImage->isComplete() || m_isMultiFrame)
+        result = cachedImage->bitmap().copyPixelsTo(pixels, rowBytes * info.fHeight, rowBytes);
     ImageDecodingStore::instance()->unlockCache(this, cachedImage);
-    return copied;
+    return result;
 }
 
 const ScaledImageFragment* ImageFrameGenerator::tryToLockCompleteCache(const SkISize& scaledSize, size_t index)
@@ -188,10 +238,12 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     ASSERT(decoder);
     SharedBuffer* data = 0;
     bool allDataReceived = false;
+    bool newDecoder = false;
     m_data.data(&data, &allDataReceived);
 
     // Try to create an ImageDecoder if we are not given one.
     if (!*decoder) {
+        newDecoder = true;
         if (m_imageDecoderFactory)
             *decoder = m_imageDecoderFactory->create().leakPtr();
 
@@ -202,10 +254,15 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
             return nullptr;
     }
 
-    // TODO: this is very ugly. We need to refactor the way how we can pass a
-    // memory allocator to image decoders.
-    if (!m_isMultiFrame)
-        (*decoder)->setMemoryAllocator(m_allocator.get());
+    if (!m_isMultiFrame && newDecoder && allDataReceived) {
+        // We are supporting two decoding paths in this code. Use the
+        // external memory allocator in the Skia discardable path to
+        // save one memory copy.
+        if (m_externalAllocator)
+            (*decoder)->setMemoryAllocator(m_externalAllocator.get());
+        else
+            (*decoder)->setMemoryAllocator(m_discardableAllocator.get());
+    }
     (*decoder)->setData(data, allDataReceived);
     // If this call returns a newly allocated DiscardablePixelRef, then
     // ImageFrame::m_bitmap and the contained DiscardablePixelRef are locked.
@@ -215,11 +272,15 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
     (*decoder)->setData(0, false); // Unref SharedBuffer from ImageDecoder.
     (*decoder)->clearCacheExceptFrame(index);
+    (*decoder)->setMemoryAllocator(0);
 
     if (!frame || frame->status() == ImageFrame::FrameEmpty)
         return nullptr;
 
-    const bool isComplete = frame->status() == ImageFrame::FrameComplete;
+    // A cache object is considered complete if we can decode a complete frame.
+    // Or we have received all data. The image might not be fully decoded in
+    // the latter case.
+    const bool isCacheComplete = frame->status() == ImageFrame::FrameComplete || allDataReceived;
     SkBitmap fullSizeBitmap = frame->getSkBitmap();
     if (fullSizeBitmap.isNull())
         return nullptr;
@@ -236,13 +297,18 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     }
     ASSERT(fullSizeBitmap.width() == m_fullSize.width() && fullSizeBitmap.height() == m_fullSize.height());
 
-    if (isComplete)
+    if (isCacheComplete)
         return ScaledImageFragment::createComplete(m_fullSize, index, fullSizeBitmap);
 
     // If the image is partial we need to return a copy. This is to avoid future
     // decode operations writing to the same bitmap.
+    // FIXME: Note that discardable allocator is used. This is because the code
+    // is still used in the Android discardable memory path. When this code is
+    // used in the Skia discardable memory path |m_discardableAllocator| is empty.
+    // This is confusing and should be cleaned up when we can deprecate the use
+    // case for Android discardable memory.
     SkBitmap copyBitmap;
-    return fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_allocator.get()) ?
+    return fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_discardableAllocator.get()) ?
         ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap) : nullptr;
 }
 
