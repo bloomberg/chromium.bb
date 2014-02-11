@@ -359,6 +359,21 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
   return false;
 }
 
+bool AccessibilityManager::ShouldEnableCursorCompositing() {
+#if defined(OS_CHROMEOS)
+  if (!profile_)
+    return false;
+  PrefService* pref_service = profile_->GetPrefs();
+  // Enable cursor compositing when one or more of the listed accessibility
+  // features are turned on.
+  if (pref_service->GetBoolean(prefs::kLargeCursorEnabled) ||
+      pref_service->GetBoolean(prefs::kHighContrastEnabled) ||
+      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled))
+    return true;
+#endif
+  return false;
+}
+
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
   if (!profile_)
     return;
@@ -393,9 +408,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Enable cursor compositing mode when using high contrast or large cursor.
   ash::Shell::GetInstance()->SetCursorCompositingEnabled(
-      large_cursor_enabled_ || high_contrast_enabled_);
+      ShouldEnableCursorCompositing());
 #endif
 }
 
@@ -599,9 +613,8 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Enable cursor compositing mode when using high contrast or large cursor.
   ash::Shell::GetInstance()->SetCursorCompositingEnabled(
-      large_cursor_enabled_ || high_contrast_enabled_);
+      ShouldEnableCursorCompositing());
 #endif
 }
 

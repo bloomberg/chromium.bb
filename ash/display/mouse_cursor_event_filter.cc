@@ -90,8 +90,10 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       return;
   }
 
-  Shell::GetInstance()->display_controller()->
-      cursor_window_controller()->UpdateLocation();
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED)) {
+    Shell::GetInstance()->display_controller()->
+        cursor_window_controller()->UpdateLocation();
+  }
 
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());

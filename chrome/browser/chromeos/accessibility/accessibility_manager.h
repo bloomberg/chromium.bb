@@ -76,6 +76,9 @@ class AccessibilityManager : public content::NotificationObserver,
   // Returns true when the accessibility menu should be shown.
   bool ShouldShowAccessibilityMenu();
 
+  // Returns true when cursor compositing should be enabled.
+  bool ShouldEnableCursorCompositing();
+
   // Enables or disables the large cursor.
   void EnableLargeCursor(bool enabled);
   // Returns true if the large cursor is enabled, or false if not.

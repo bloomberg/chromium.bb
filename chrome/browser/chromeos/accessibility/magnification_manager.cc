@@ -199,6 +199,13 @@ class MagnificationManagerImpl : public MagnificationManager,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
         content::NotificationService::AllSources(),
         content::Details<AccessibilityStatusEventDetails>(&details));
+
+#if defined(OS_CHROMEOS)
+    if (ash::Shell::GetInstance() && AccessibilityManager::Get()) {
+      ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+          AccessibilityManager::Get()->ShouldEnableCursorCompositing());
+    }
+#endif
   }
 
   // content::NotificationObserver implementation:
