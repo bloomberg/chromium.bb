@@ -174,10 +174,8 @@ public class InfoBarContainer extends LinearLayout {
         mTabId = tabId;
         mParentView = parentView;
 
-        if (getParent() != null) {
-            removeFromParentView();
-            addToParentView();
-        }
+        removeFromParentView();
+        addToParentView();
     }
 
     @Override
