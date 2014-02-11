@@ -196,3 +196,6 @@ race:CommandLine::GetSwitchValueASCII
 # http://crbug.com/338675
 race:blink::s_platform
 race:content::RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl
+
+# http://crbug.com/342662
+race:SetWindowList
