@@ -13,8 +13,7 @@
 namespace chromeos {
 
 FakeSessionManagerClient::FakeSessionManagerClient()
-    : emit_login_prompt_ready_call_count_(0),
-      start_device_wipe_call_count_(0),
+    : start_device_wipe_call_count_(0),
       notify_lock_screen_shown_call_count_(0),
       notify_lock_screen_dismissed_call_count_(0) {
 }
@@ -35,10 +34,6 @@ void FakeSessionManagerClient::RemoveObserver(Observer* observer) {
 
 bool FakeSessionManagerClient::HasObserver(Observer* observer) {
   return observers_.HasObserver(observer);
-}
-
-void FakeSessionManagerClient::EmitLoginPromptReady() {
-  emit_login_prompt_ready_call_count_++;
 }
 
 void FakeSessionManagerClient::EmitLoginPromptVisible() {

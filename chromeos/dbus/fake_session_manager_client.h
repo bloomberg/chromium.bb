@@ -27,7 +27,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool HasObserver(Observer* observer) OVERRIDE;
-  virtual void EmitLoginPromptReady() OVERRIDE;
   virtual void EmitLoginPromptVisible() OVERRIDE;
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE;
   virtual void StartSession(const std::string& user_email) OVERRIDE;
@@ -76,11 +75,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
   // Notify observers about a property change completion.
   void OnPropertyChangeComplete(bool success);
 
-  // Returns how many times EmitLoginPromptReady() is called.
-  int emit_login_prompt_ready_call_count() const {
-    return emit_login_prompt_ready_call_count_;
-  }
-
   int start_device_wipe_call_count() const {
     return start_device_wipe_call_count_;
   }
@@ -102,7 +96,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
   ObserverList<Observer> observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;
 
-  int emit_login_prompt_ready_call_count_;
   int start_device_wipe_call_count_;
   int notify_lock_screen_shown_call_count_;
   int notify_lock_screen_dismissed_call_count_;

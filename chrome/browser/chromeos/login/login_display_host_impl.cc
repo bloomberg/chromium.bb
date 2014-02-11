@@ -182,13 +182,10 @@ void ShowLoginWizardFinish(
     const std::string& first_screen_name,
     const chromeos::StartupCustomizationDocument* startup_manifest,
     chromeos::LoginDisplayHost* display_host) {
+  TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
+
   scoped_ptr<base::DictionaryValue> params;
   display_host->StartWizard(first_screen_name, params.Pass());
-
-  chromeos::DBusThreadManager::Get()->
-      GetSessionManagerClient()->
-      EmitLoginPromptReady();
-  TRACE_EVENT0("chromeos", "ShowLoginWizard::EmitLoginPromptReady");
 
   // Set initial timezone if specified by customization.
   const std::string timezone_name = startup_manifest->initial_timezone();

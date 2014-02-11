@@ -107,8 +107,6 @@ bool DeviceSettingsTestHelper::HasObserver(Observer* observer) {
   return false;
 }
 
-void DeviceSettingsTestHelper::EmitLoginPromptReady() {}
-
 void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 
 void DeviceSettingsTestHelper::RestartJob(int pid,

@@ -48,11 +48,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return observers_.HasObserver(observer);
   }
 
-  virtual void EmitLoginPromptReady() OVERRIDE {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerEmitLoginPromptReady);
-  }
-
   virtual void EmitLoginPromptVisible() OVERRIDE {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerEmitLoginPromptVisible);
@@ -528,7 +523,6 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual bool HasObserver(Observer* observer) OVERRIDE {
     return observers_.HasObserver(observer);
   }
-  virtual void EmitLoginPromptReady() OVERRIDE {}
   virtual void EmitLoginPromptVisible() OVERRIDE {}
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}

@@ -179,8 +179,6 @@ void ExistingUserController::Init(const UserList& users) {
   time_init_ = base::Time::Now();
   UpdateLoginDisplay(users);
   ConfigurePublicSessionAutoLogin();
-
-  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
 }
 
 void ExistingUserController::UpdateLoginDisplay(const UserList& users) {

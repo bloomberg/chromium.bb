@@ -129,8 +129,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
 
   // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
-  EXPECT_EQ(
-      1, fake_session_manager_client_->emit_login_prompt_ready_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
@@ -151,8 +149,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
   // actor_->ClearErrors();
-  EXPECT_EQ(
-      1, fake_session_manager_client_->emit_login_prompt_ready_call_count());
 }
 
 }  // namespace chromeos
