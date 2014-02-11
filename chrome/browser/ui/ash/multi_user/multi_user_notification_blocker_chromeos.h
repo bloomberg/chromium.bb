@@ -20,7 +20,8 @@ class MultiUserNotificationBlockerChromeOS
  public:
   MultiUserNotificationBlockerChromeOS(
       message_center::MessageCenter* message_center,
-      chrome::MultiUserWindowManager* multi_user_window_manager);
+      chrome::MultiUserWindowManager* multi_user_window_manager,
+      const std::string& initial_user_id);
   virtual ~MultiUserNotificationBlockerChromeOS();
 
   // Called by MultiUserWindowManager when the active user has changed.

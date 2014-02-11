@@ -21,7 +21,6 @@ class MultiUserNotificationBlockerChromeOSTest
  public:
   MultiUserNotificationBlockerChromeOSTest()
       : state_changed_count_(0),
-        is_logged_in_(false),
         testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         window_id_(0) {}
   virtual ~MultiUserNotificationBlockerChromeOSTest() {}
@@ -30,6 +29,9 @@ class MultiUserNotificationBlockerChromeOSTest
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
+
+    // MultiUserWindowManager is initialized after the log in.
+    testing_profile_manager_.CreateTestingProfile(GetDefaultUserId());
 
     ash::test::TestShellDelegate* shell_delegate =
         static_cast<ash::test::TestShellDelegate*>(
@@ -61,16 +63,16 @@ class MultiUserNotificationBlockerChromeOSTest
         chrome::MultiUserWindowManager::GetInstance());
   }
 
+  const std::string GetDefaultUserId() {
+    return ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0);
+  }
+
   const message_center::NotificationBlocker* blocker() {
     return GetMultiUserWindowManager()->notification_blocker_.get();
   }
 
   void CreateProfile(const std::string& name) {
     testing_profile_manager_.CreateTestingProfile(name);
-    if (!is_logged_in_) {
-      SwitchActiveUser(name);
-      is_logged_in_ = true;
-    }
   }
 
   void SwitchActiveUser(const std::string& name) {
@@ -113,7 +115,6 @@ class MultiUserNotificationBlockerChromeOSTest
 
  private:
   int state_changed_count_;
-  bool is_logged_in_;
   TestingProfileManager testing_profile_manager_;
   int window_id_;
 
@@ -134,45 +135,35 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
   message_center::NotifierId random_system_notifier(
       message_center::NotifierId::SYSTEM_COMPONENT, "random_system_component");
 
-  // Nothing is created, active_user_id_ should be empty.
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
-
-  CreateProfile("test@example.com");
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(notifier_id, GetDefaultUserId()));
   EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
-                                     "test@example.com"));
+                                     GetDefaultUserId()));
 
   CreateProfile("test2@example.com");
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
-                                            "test@example.com"));
+                                            GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
                                              "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(notifier_id, GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, "test2@example.com"));
   EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
-                                     "test@example.com"));
+                                     GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
                                       "test2@example.com"));
 
@@ -180,39 +171,39 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, GetDefaultUserId()));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
-                                             "test@example.com"));
+                                             GetDefaultUserId()));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
                                             "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
-  EXPECT_FALSE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotification(notifier_id, GetDefaultUserId()));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
-                                      "test@example.com"));
+                                      GetDefaultUserId()));
   EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
                                      "test2@example.com"));
 
-  SwitchActiveUser("test@example.com");
+  SwitchActiveUser(GetDefaultUserId());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
-                                            "test@example.com"));
+                                            GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
                                              "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
   EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(notifier_id, GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, "test2@example.com"));
   EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
-                                     "test@example.com"));
+                                     GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
                                       "test2@example.com"));
 }
@@ -221,10 +212,11 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, TeleportedWindows) {
   ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED,
             chrome::MultiUserWindowManager::GetMultiProfileMode());
 
-  std::string u1 = "test@example.com";
-  std::string u2 = "test2@example.com";
-  std::string u3 = "test3@example.com";
-  CreateProfile(u1);
+  std::string u1 = GetDefaultUserId();
+  ash::SessionStateDelegate* delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  std::string u2 = delegate->GetUserID(1);
+  std::string u3 = delegate->GetUserID(2);
   CreateProfile(u2);
   CreateProfile(u3);
 
@@ -235,7 +227,7 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, TeleportedWindows) {
       message_center::NotifierId::APPLICATION, "test-app");
 
   // Initial status: only notifications for u1 should be shown.
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));

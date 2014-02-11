@@ -15,9 +15,11 @@
 
 MultiUserNotificationBlockerChromeOS::MultiUserNotificationBlockerChromeOS(
     message_center::MessageCenter* message_center,
-    chrome::MultiUserWindowManager* multi_user_window_manager)
+    chrome::MultiUserWindowManager* multi_user_window_manager,
+    const std::string& initial_user_id)
     : NotificationBlocker(message_center),
-      multi_user_window_manager_(multi_user_window_manager) {
+      multi_user_window_manager_(multi_user_window_manager),
+      active_user_id_(initial_user_id) {
   UpdateWindowOwners();
   multi_user_window_manager_->AddObserver(this);
 }
