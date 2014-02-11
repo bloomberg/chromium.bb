@@ -75,6 +75,7 @@ enum SSLBlockingPageEvent {
   PROCEED_INTERNAL_HOSTNAME,
   SHOW_NEW_SITE,
   PROCEED_NEW_SITE,
+  PROCEED_MANUAL_NONOVERRIDABLE,
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
@@ -93,6 +94,9 @@ void RecordSSLBlockingPageDetailedStats(
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
   if (!overridable) {
+    if (proceed) {
+      RecordSSLBlockingPageEventStats(PROCEED_MANUAL_NONOVERRIDABLE);
+    }
     // Overridable is false if the user didn't have any option except to turn
     // back. If that's the case, don't record some of the metrics.
     return;
