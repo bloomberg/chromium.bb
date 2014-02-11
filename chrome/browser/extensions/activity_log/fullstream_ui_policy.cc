@@ -161,7 +161,7 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
     where_str += where_next + "time BETWEEN ? AND ?";
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time,action_type,api_name,args,page_url,page_title,"
-      "arg_url,other FROM %s %s %s ORDER BY time DESC LIMIT 300",
+      "arg_url,other,rowid FROM %s %s %s ORDER BY time DESC LIMIT 300",
       kTableName,
       where_str.empty() ? "" : "WHERE",
       where_str.c_str());
@@ -191,7 +191,7 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
         new Action(query.ColumnString(0),
                    base::Time::FromInternalValue(query.ColumnInt64(1)),
                    static_cast<Action::ActionType>(query.ColumnInt(2)),
-                   query.ColumnString(3));
+                   query.ColumnString(3), query.ColumnInt64(9));
 
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<base::Value> parsed_value(

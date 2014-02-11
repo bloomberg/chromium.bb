@@ -108,7 +108,8 @@ static const char kPolicyMiscSetup[] =
     "    x4.value AS page_url,\n"
     "    x5.value AS page_title,\n"
     "    x6.value AS arg_url,\n"
-    "    x7.value AS other\n"
+    "    x7.value AS other,\n"
+    "    activitylog_compressed.rowid AS activity_id\n"
     "FROM activitylog_compressed\n"
     "    LEFT JOIN string_ids AS x1 ON (x1.id = extension_id_x)\n"
     "    LEFT JOIN string_ids AS x2 ON (x2.id = api_name_x)\n"
@@ -456,8 +457,8 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
 
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time, action_type, api_name, args, page_url,"
-      "page_title, arg_url, other, count FROM %s %s %s ORDER BY count DESC,"
-      " time DESC LIMIT 300",
+      "page_title, arg_url, other, count, activity_id FROM %s %s %s ORDER BY "
+      "count DESC, time DESC LIMIT 300",
       kReadViewName,
       where_str.empty() ? "" : "WHERE",
       where_str.c_str());
@@ -487,7 +488,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
         new Action(query.ColumnString(0),
                    base::Time::FromInternalValue(query.ColumnInt64(1)),
                    static_cast<Action::ActionType>(query.ColumnInt(2)),
-                   query.ColumnString(3));
+                   query.ColumnString(3), query.ColumnInt64(10));
 
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<base::Value> parsed_value(

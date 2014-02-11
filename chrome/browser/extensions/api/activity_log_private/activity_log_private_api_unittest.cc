@@ -38,6 +38,7 @@ TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
   ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
   ASSERT_EQ(kApiCall, *(result->api_call.get()));
   ASSERT_EQ(kArgs, *(result->args.get()));
+  ASSERT_EQ(NULL, result->activity_id.get());
 }
 
 TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
@@ -47,7 +48,8 @@ TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
   scoped_refptr<Action> action(new Action(kExtensionId,
                                base::Time::Now(),
                                Action::ACTION_DOM_ACCESS,
-                               kApiCall));
+                               kApiCall,
+                               12345));
   action->set_args(args.Pass());
   action->set_page_url(GURL("http://www.google.com"));
   action->set_page_title("Title");
@@ -64,6 +66,7 @@ TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
   scoped_ptr<ExtensionActivity::Other> other(result->other.Pass());
   ASSERT_EQ(ExtensionActivity::Other::DOM_VERB_INSERTED, other->dom_verb);
   ASSERT_TRUE(other->prerender.get());
+  ASSERT_EQ("12345", *(result->activity_id.get()));
 }
 
 }  // namespace extensions

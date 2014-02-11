@@ -47,7 +47,8 @@ class Action : public base::RefCountedThreadSafe<Action> {
   Action(const std::string& extension_id,
          const base::Time& time,
          const ActionType action_type,
-         const std::string& api_name);
+         const std::string& api_name,
+         int64 action_id = -1);
 
   // Creates and returns a mutable copy of an Action.
   scoped_refptr<Action> Clone() const;
@@ -100,6 +101,11 @@ class Action : public base::RefCountedThreadSafe<Action> {
   void set_other(scoped_ptr<base::DictionaryValue> other);
   base::DictionaryValue* mutable_other();
 
+  // An ID that identifies an action stored in the Activity Log database. If the
+  // action is not retrieved from the database, e.g., live stream, then the ID
+  // is set to -1.
+  int64 action_id() const { return action_id_; }
+
   // Helper methods for serializing and deserializing URLs into strings.  If
   // the URL is marked as incognito, then the string is prefixed with
   // kIncognitoUrl ("<incognito>").
@@ -137,6 +143,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   bool arg_incognito_;
   scoped_ptr<base::DictionaryValue> other_;
   int count_;
+  int64 action_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
 };
@@ -150,8 +157,9 @@ struct ActionComparator {
                   const scoped_refptr<Action>& rhs) const;
 };
 
-// Like ActionComparator, but ignores the time field in comparisons.
-struct ActionComparatorExcludingTime {
+// Like ActionComparator, but ignores the time field and the action ID field in
+// comparisons.
+struct ActionComparatorExcludingTimeAndActionId {
   // Evaluates the comparison lhs < rhs.
   bool operator()(const scoped_refptr<Action>& lhs,
                   const scoped_refptr<Action>& rhs) const;

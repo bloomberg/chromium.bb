@@ -218,6 +218,7 @@ class FullStreamUIPolicyTest : public testing::Test {
     ASSERT_EQ(expected_page_url, action.SerializePageUrl());
     ASSERT_EQ(expected_page_title, action.page_title());
     ASSERT_EQ(expected_arg_url, action.SerializeArgUrl());
+    ASSERT_NE(-1, action.action_id());
   }
 
  protected:

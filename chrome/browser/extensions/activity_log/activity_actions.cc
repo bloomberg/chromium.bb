@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -46,14 +47,16 @@ using api::activity_log_private::ExtensionActivity;
 Action::Action(const std::string& extension_id,
                const base::Time& time,
                const ActionType action_type,
-               const std::string& api_name)
+               const std::string& api_name,
+               int64 action_id)
     : extension_id_(extension_id),
       time_(time),
       action_type_(action_type),
       api_name_(api_name),
       page_incognito_(false),
       arg_incognito_(false),
-      count_(0) {}
+      count_(0),
+      action_id_(action_id) {}
 
 Action::~Action() {}
 
@@ -62,7 +65,8 @@ Action::~Action() {}
 // many cases that will prevent this optimization.
 scoped_refptr<Action> Action::Clone() const {
   scoped_refptr<Action> clone(
-      new Action(extension_id(), time(), action_type(), api_name()));
+      new Action(
+          extension_id(), time(), action_type(), api_name(), action_id()));
   if (args())
     clone->set_args(make_scoped_ptr(args()->DeepCopy()));
   clone->set_page_url(page_url());
@@ -168,6 +172,9 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
   result->count.reset(new double(count()));
   result->api_call.reset(new std::string(api_name()));
   result->args.reset(new std::string(Serialize(args())));
+  if (action_id() != -1)
+    result->activity_id.reset(
+        new std::string(base::StringPrintf("%" PRId64, action_id())));
   if (page_url().is_valid()) {
     if (!page_title().empty())
       result->page_title.reset(new std::string(page_title()));
@@ -231,7 +238,8 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
 }
 
 std::string Action::PrintForDebug() const {
-  std::string result = "ID=" + extension_id() + " CATEGORY=";
+  std::string result = base::StringPrintf("ACTION ID=%" PRId64, action_id());
+  result += " EXTENSION ID=" + extension_id() + " CATEGORY=";
   switch (action_type_) {
     case ACTION_API_CALL:
       result += "api_call";
@@ -292,11 +300,13 @@ bool ActionComparator::operator()(
     const scoped_refptr<Action>& rhs) const {
   if (lhs->time() != rhs->time())
     return lhs->time() < rhs->time();
+  else if (lhs->action_id() != rhs->action_id())
+    return lhs->action_id() < rhs->action_id();
   else
-    return ActionComparatorExcludingTime()(lhs, rhs);
+    return ActionComparatorExcludingTimeAndActionId()(lhs, rhs);
 }
 
-bool ActionComparatorExcludingTime::operator()(
+bool ActionComparatorExcludingTimeAndActionId::operator()(
     const scoped_refptr<Action>& lhs,
     const scoped_refptr<Action>& rhs) const {
   if (lhs->extension_id() != rhs->extension_id())

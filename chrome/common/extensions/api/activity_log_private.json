@@ -12,6 +12,7 @@
         "type": "object",
         "description": "This corresponds to a row from the ActivityLog database. Fields will be blank if they were specified precisely in a lookup filter.",
         "properties": {
+          "activityId": {"type": "string", "optional": true, "description": "An ID of a row in the ActivityLog database that corresponds to the activity. ID is set only on activities retrieved from the database."},
           "extensionId": {"type": "string", "optional": true},
           "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request"]},
           "time": {"type": "number", "optional": true},

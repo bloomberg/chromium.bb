@@ -286,6 +286,7 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_EQ(expected_page_title, action.page_title());
     ASSERT_EQ(expected_arg_url, action.SerializeArgUrl());
     ASSERT_EQ(expected_count, action.count());
+    ASSERT_NE(-1, action.action_id());
   }
 
  protected:

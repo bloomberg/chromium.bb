@@ -71,7 +71,10 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // A type used to track pending writes to the database.  The key is an action
   // to write; the value is the amount by which the count field should be
   // incremented in the database.
-  typedef std::map<scoped_refptr<Action>, int, ActionComparatorExcludingTime>
+  typedef std::map<
+      scoped_refptr<Action>,
+      int,
+      ActionComparatorExcludingTimeAndActionId>
       ActionQueue;
 
   // Adds an Action to those to be written out; this is an internal method used
