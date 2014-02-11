@@ -72,7 +72,7 @@ private:
 
     virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE { delete this; }
     virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) OVERRIDE { delete this; }
-    virtual void didFinishLoading(blink::WebURLLoader*, double) OVERRIDE { delete this; }
+    virtual void didFinishLoading(blink::WebURLLoader*, double, int64_t) OVERRIDE { delete this; }
     virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) OVERRIDE { delete this; }
     void timeout(Timer<PingLoader>*) { delete this; }
 

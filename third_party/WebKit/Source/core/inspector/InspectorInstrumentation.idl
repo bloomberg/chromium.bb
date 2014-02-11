@@ -322,7 +322,7 @@ interface InspectorInstrumentation {
     void didReceiveData(Frame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     [Timeline, Resource]
-    void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime);
+    void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength);
 
     [Resource]
     void didReceiveCORSRedirectResponse([Keep] Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);

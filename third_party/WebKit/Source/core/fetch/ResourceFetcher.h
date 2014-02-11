@@ -136,7 +136,7 @@ public:
     virtual void decrementRequestCount(const Resource*) OVERRIDE;
     virtual void didLoadResource(Resource*) OVERRIDE;
     virtual void redirectReceived(Resource*, const ResourceResponse&) OVERRIDE;
-    virtual void didFinishLoading(const Resource*, double finishTime) OVERRIDE;
+    virtual void didFinishLoading(const Resource*, double finishTime, int64_t encodedDataLength) OVERRIDE;
     virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) OVERRIDE;
     virtual void didFailLoading(const Resource*, const ResourceError&) OVERRIDE;
     virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&) OVERRIDE;

@@ -77,7 +77,7 @@ void FetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long, int, 
 {
 }
 
-void FetchContext::dispatchDidFinishLoading(DocumentLoader*, unsigned long, double)
+void FetchContext::dispatchDidFinishLoading(DocumentLoader*, unsigned long, double, int64_t)
 {
 }
 

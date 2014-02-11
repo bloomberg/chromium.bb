@@ -171,7 +171,7 @@ public:
         EXPECT_EQ(m_expectedLoader, loader);
     }
 
-    void didFinishLoading(WebURLLoader* loader, double finishTime)
+    void didFinishLoading(WebURLLoader* loader, double finishTime, int64_t encodedDataLength)
     {
         m_didFinishLoading = true;
         EXPECT_EQ(m_expectedLoader, loader);

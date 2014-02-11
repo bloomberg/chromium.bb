@@ -72,7 +72,7 @@ public:
     virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE;
     virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) OVERRIDE;
     virtual void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) OVERRIDE;
-    virtual void didFinishLoading(blink::WebURLLoader*, double finishTime) OVERRIDE;
+    virtual void didFinishLoading(blink::WebURLLoader*, double finishTime, int64 encodedDataLength) OVERRIDE;
     virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) OVERRIDE;
     virtual void didDownloadData(blink::WebURLLoader*, int, int) OVERRIDE;
 
@@ -89,7 +89,7 @@ private:
     void init(const ResourceRequest&);
     void requestSynchronously();
 
-    void didFinishLoadingOnePart(double finishTime);
+    void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
 
     bool responseNeedsAccessControlCheck() const;
 
