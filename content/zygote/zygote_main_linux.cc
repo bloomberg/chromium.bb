@@ -145,15 +145,29 @@ static LocaltimeFunction g_libc_localtime64;
 static LocaltimeRFunction g_libc_localtime_r;
 static LocaltimeRFunction g_libc_localtime64_r;
 
+static void* RealOrSanitizedFunction(const char* function_name) {
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER)
+  // If the sanitizer tool defines an interceptor for this function, we want our
+  // calls to go through the interceptor rather than directly to the libc
+  // implementation.
+  std::string interceptor_name("__interceptor_");
+  interceptor_name.append(function_name);
+  void* interceptor = dlsym(RTLD_DEFAULT, interceptor_name.c_str());
+  if (interceptor) return interceptor;
+#endif
+  return dlsym(RTLD_NEXT, function_name);
+}
+
 static void InitLibcLocaltimeFunctions() {
   g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
-      dlsym(RTLD_NEXT, "localtime"));
-  g_libc_localtime64 = reinterpret_cast<LocaltimeFunction>(
-      dlsym(RTLD_NEXT, "localtime64"));
+      RealOrSanitizedFunction("localtime"));
   g_libc_localtime_r = reinterpret_cast<LocaltimeRFunction>(
-      dlsym(RTLD_NEXT, "localtime_r"));
+      RealOrSanitizedFunction("localtime_r"));
+  g_libc_localtime64 = reinterpret_cast<LocaltimeFunction>(
+      RealOrSanitizedFunction("localtime64"));
   g_libc_localtime64_r = reinterpret_cast<LocaltimeRFunction>(
-      dlsym(RTLD_NEXT, "localtime64_r"));
+      RealOrSanitizedFunction("localtime64_r"));
 
   if (!g_libc_localtime || !g_libc_localtime_r) {
     // http://code.google.com/p/chromium/issues/detail?id=16800
