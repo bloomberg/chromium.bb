@@ -17,7 +17,8 @@ PasswordForm::PasswordForm()
       preferred(false),
       blacklisted_by_user(false),
       type(TYPE_MANUAL),
-      times_used(0) {
+      times_used(0),
+      use_additional_authentication(false) {
 }
 
 PasswordForm::~PasswordForm() {
@@ -46,6 +47,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       blacklisted_by_user == form.blacklisted_by_user &&
       type == form.type &&
       times_used == form.times_used &&
+      use_additional_authentication == form.use_additional_authentication &&
       form_data == form.form_data;
 }
 
@@ -74,6 +76,8 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " date_created: " << form.date_created.ToDoubleT()
             << " type: " << form.type
             << " times_used: " << form.times_used
+            << " use additional authentication: "
+            << form.use_additional_authentication
             << " form_data: " << form.form_data;
 }
 

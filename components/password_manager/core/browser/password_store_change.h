@@ -40,7 +40,9 @@ class PasswordStoreChange {
            form().ssl_valid == other.form().ssl_valid &&
            form().preferred == other.form().preferred &&
            form().date_created == other.form().date_created &&
-           form().blacklisted_by_user == other.form().blacklisted_by_user;
+           form().blacklisted_by_user == other.form().blacklisted_by_user &&
+           form().use_additional_authentication ==
+               other.form().use_additional_authentication;
   }
 
  private:

@@ -41,6 +41,7 @@ scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
+  password_form->use_additional_authentication = false;
   WebFormElementToFormData(web_form,
                            blink::WebFormControlElement(),
                            REQUIRE_NONE,
