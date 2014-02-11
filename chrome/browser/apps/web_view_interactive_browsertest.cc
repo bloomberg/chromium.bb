@@ -680,8 +680,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
-// This test is flaky. See crbug.com/309032
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   ExtensionTestMessageListener guest_connected_listener("connected", false);
   LoadAndLaunchPlatformApp("web_view/dnd_within_webview");
   ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
