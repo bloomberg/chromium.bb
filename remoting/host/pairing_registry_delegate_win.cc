@@ -249,7 +249,8 @@ bool PairingRegistryDelegateWin::Delete(const std::string& client_id) {
 }
 
 scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return scoped_ptr<PairingRegistry::Delegate>();
+  return scoped_ptr<PairingRegistry::Delegate>(
+      new PairingRegistryDelegateWin());
 }
 
 }  // namespace remoting

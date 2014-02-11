@@ -18,6 +18,12 @@
     <?define Manufacturer = "The Chromium Authors" ?>
   <?endif?>
 
+  <?if $(var.OfficialBuild) != 0 ?>
+    <?define ChromotingKeyPath = "Google\Chrome Remote Desktop" ?>
+  <?else?>
+    <?define ChromotingKeyPath = "Chromoting" ?>
+  <?endif?>
+
   <?define FirewallName = "$(var.ChromotingHost)" ?>
 
   <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
@@ -473,6 +479,27 @@
 
       </Component>
 
+      <!-- Creates the pairing registry store and protect it with an ACL. -->
+      <Component Id="remoting_pairing_registry" Guid="960bc7eb-a816-428b-90e8-ad13336955d5">
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\$(var.ChromotingKeyPath)\paired-clients"
+                     Action="create">
+          <RegistryKey Key="clients" Action="create"/>
+          <RegistryKey Key="secrets" Action="create">
+            <!-- Gives full access to SYSTEM only. -->
+            <!-- Cannot use the builtin PermissionEx element because it maps
+                 to the MsiLockPermissionsEx table which is not supported on
+                 Windows Installer version 4.5 or lower. Also Cannot use
+                 PermissionEx in WixUtilExtension because it automatically
+                 inherits all the ACLs from the parent. -->
+            <Permission User="SYSTEM" GenericAll="yes"
+                                      ChangePermission="yes"
+                                      TakeOwnership="yes"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
       <!-- Register with Sawbuck. See http://code.google.com/p/sawbuck/. -->
       <Component Id="sawbuck_provider" Guid="*">
         <RegistryKey Root="HKLM"
@@ -577,6 +604,7 @@
       <ComponentRef Id="remoting_desktop"/>
       <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="remoting_lib"/>
+      <ComponentRef Id="remoting_pairing_registry"/>
       <ComponentRef Id="sas"/>
       <ComponentRef Id="sawbuck_provider"/>
     </Feature>
