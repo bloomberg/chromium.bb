@@ -59,7 +59,7 @@ const CGFloat kAvatarTabStripShrink = 18;
 
 // Width of the full screen icon. Used to position the AvatarButton to the
 // left of the icon.
-const CGFloat kFullscreenIconWidth = 30;
+const CGFloat kFullscreenIconWidth = 32;
 
 // Insets for the location bar, used when the full toolbar is hidden.
 // TODO(viettrungluu): We can argue about the "correct" insetting; I like the
