@@ -59,8 +59,8 @@ namespace {
 // chrome/browser/ui/views/profile_chooser_view.cc
 const int kLargeImageSide = 64;
 const int kSmallImageSide = 32;
+const CGFloat kFixedMenuWidth = 250;
 
-const CGFloat kMinMenuWidth = 250;
 const CGFloat kVerticalSpacing = 20.0;
 const CGFloat kSmallVerticalSpacing = 10.0;
 const CGFloat kHorizontalSpacing = 20.0;
@@ -233,6 +233,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   ui::ScopedCrTrackingArea trackingArea_;
 }
 
+- (id)initWithFrame:(NSRect)frameRect
+         avatarMenu:(AvatarMenu*)avatarMenu
+        profileIcon:(const gfx::Image&)profileIcon
+     editingAllowed:(BOOL)editingAllowed;
+
 // Called when the "Change" button is clicked.
 - (void)editPhoto:(id)sender;
 
@@ -325,6 +330,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   Profile* profile_;  // Weak.
 }
 
+- (id)initWithFrame:(NSRect)frameRect
+            profile:(Profile*)profile
+        profileName:(NSString*)profileName
+     editingAllowed:(BOOL)editingAllowed;
+
 // Called when the button is clicked.
 - (void)showEditableView:(id)sender;
 
@@ -343,6 +353,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
     [self setAlignment:NSLeftTextAlignment];
+    [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
     [self setTitle:profileName];
 
     if (editingAllowed) {
@@ -367,8 +378,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [profileNameTextField_ setEditable:YES];
       [profileNameTextField_ setDrawsBackground:YES];
       [profileNameTextField_ setBezeled:YES];
+      [[profileNameTextField_ cell] setWraps:NO];
+      [[profileNameTextField_ cell] setLineBreakMode:
+          NSLineBreakByTruncatingTail];
       [profileNameTextField_ setDelegate:self];
-
       [self addSubview:profileNameTextField_];
 
       // Hide the textfield until the user clicks on the button.
@@ -381,13 +394,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // NSTextField objects send an NSNotification to a delegate if
 // it implements this method:
 - (void)controlTextDidEndEditing:(NSNotification *)obj {
-  NSString* newProfileName = [profileNameTextField_ stringValue];
-  if ([newProfileName length] > 0) {
-    profiles::UpdateProfileName(profile_,
-        base::SysNSStringToUTF16(newProfileName));
-    [self setTitle:newProfileName];
+  NSString* text = [profileNameTextField_ stringValue];
+  // Empty profile names are not allowed, and are treated as a cancel.
+  if ([text length] > 0) {
+    profiles::UpdateProfileName(profile_, base::SysNSStringToUTF16(text));
+    [self setTitle:text];
   }
   [profileNameTextField_ setHidden:YES];
+  [profileNameTextField_ resignFirstResponder];
 }
 
 - (void)showEditableView:(id)sender {
@@ -671,22 +685,18 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (!currentProfileView)  // Guest windows don't have an active profile.
     currentProfileView = [self createGuestProfileView];
 
-  CGFloat contentsWidth =
-      std::max(kMinMenuWidth, NSWidth([currentProfileView frame]));
-  CGFloat contentsWidthWithSpacing = contentsWidth + 2 * kHorizontalSpacing;
-
   // |yOffset| is the next position at which to draw in |contentView|
   // coordinates.
   CGFloat yOffset = kSmallVerticalSpacing;
 
   // Guest / Add Person / View All Persons buttons.
   NSView* optionsView = [self createOptionsViewWithRect:
-      NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
+      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
   [contentView addSubview:optionsView];
   yOffset = NSMaxY([optionsView frame]) + kSmallVerticalSpacing;
 
   NSBox* separator = [self separatorWithFrame:
-      NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
+      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
   [contentView addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
@@ -706,12 +716,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       yOffset += kSmallVerticalSpacing;
   } else if (viewToDisplay == ACCOUNT_MANAGEMENT_VIEW) {
     NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
-        NSMakeRect(kHorizontalSpacing, yOffset, contentsWidth, 0)];
+        NSMakeRect(kHorizontalSpacing,
+                   yOffset,
+                   kFixedMenuWidth - 2 * kHorizontalSpacing,
+                   0)];
     [contentView addSubview:currentProfileAccountsView];
     yOffset = NSMaxY([currentProfileAccountsView frame]) + kVerticalSpacing;
 
     NSBox* accountsSeparator = [self separatorWithFrame:
-        NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
+        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
     [contentView addSubview:accountsSeparator];
     yOffset = NSMaxY([accountsSeparator frame]) + kVerticalSpacing;
   }
@@ -724,7 +737,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
   }
 
-  SetWindowSize([self window], NSMakeSize(contentsWidthWithSpacing, yOffset));
+  SetWindowSize([self window], NSMakeSize(kFixedMenuWidth, yOffset));
 }
 
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item {
@@ -743,32 +756,28 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   CGFloat xOffset = NSMaxX([iconView frame]) + kHorizontalSpacing;
   CGFloat yOffset = kVerticalSpacing;
-  CGFloat maxXLinksContainer = 0;
   if (!isGuestSession_ && viewMode_ == PROFILE_CHOOSER_VIEW) {
     NSView* linksContainer =
         [self createCurrentProfileLinksForItem:item withXOffset:xOffset];
     [container addSubview:linksContainer];
     yOffset = NSMaxY([linksContainer frame]);
-    maxXLinksContainer = NSMaxX([linksContainer frame]);
   }
 
-  // TODO(noms): At the moment, this means that long profile names will
-  // not be displayed correctly in the bubble. This is related to
-  // crbug.com/334761, which will also fix this issue.
-  CGFloat maxX = std::max(maxXLinksContainer, kMinMenuWidth);
-
   // Profile name.
+  CGFloat availableTextWidth =
+      kFixedMenuWidth - xOffset - 2 * kHorizontalSpacing;
   base::scoped_nsobject<EditableProfileNameButton> profileName(
       [[EditableProfileNameButton alloc]
           initWithFrame:NSMakeRect(xOffset, yOffset,
-                                   maxX - xOffset, /* Width of the column */
+                                   availableTextWidth,
                                    kProfileButtonHeight)
                 profile:browser_->profile()
             profileName:base::SysUTF16ToNSString(item.name)
          editingAllowed:!isGuestSession_]);
 
   [container addSubview:profileName];
-  [container setFrameSize:NSMakeSize(maxX, NSHeight([iconView frame]))];
+  [container setFrameSize:NSMakeSize(kFixedMenuWidth,
+                                     NSHeight([iconView frame]))];
   return container.autorelease();
 }
 
@@ -845,6 +854,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
               imageTitleSpacing:kImageTitleSpacing]);
   [profileButton setCell:cell.get()];
 
+  [[profileButton cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [profileButton setTitle:base::SysUTF16ToNSString(item.name)];
   [profileButton setImage:CreateProfileImage(
       item.icon, kSmallImageSide).ToNSImage()];
@@ -855,7 +865,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [profileButton setTag:itemIndex];
   [profileButton setTarget:self];
   [profileButton setAction:@selector(switchToProfile:)];
+
+  // Since the bubble is fixed width, we need to calculate the width available
+  // for the profile name, as longer names will have to be elided.
+  CGFloat availableTextWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
   [profileButton sizeToFit];
+  [profileButton setFrameSize:NSMakeSize(availableTextWidth,
+                                         NSHeight([profileButton frame]))];
 
   return profileButton.autorelease();
 }
@@ -907,8 +923,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSRect viewRect = NSMakeRect(0, 0, rect.size.width, kBlueButtonHeight);
   base::scoped_nsobject<NSButton> addAccountsButton([[BlueLabelButton alloc]
       initWithFrame:viewRect]);
-  [addAccountsButton setTitle:l10n_util::GetNSStringFWithFixup(
-      IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name)];
+
+  // Manually elide the button text so that the contents fit inside the bubble.
+  // This is needed because the BlueLabelButton cell resets the style on
+  // every call to -cellSize, which prevents setting a custom lineBreakMode.
+  NSString* elidedButtonText = base::SysUTF16ToNSString(gfx::ElideText(
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name),
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont),
+      rect.size.width,
+      gfx::ELIDE_AT_END));
+
+  [addAccountsButton setTitle:elidedButtonText];
   [addAccountsButton setTarget:self];
   [addAccountsButton setAction:@selector(addAccount:)];
   [container addSubview:addAccountsButton];
