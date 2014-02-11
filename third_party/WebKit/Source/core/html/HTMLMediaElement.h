@@ -302,13 +302,11 @@ protected:
         NoRestrictions = 0,
         RequireUserGestureForPlayRestriction = 1 << 0,
         RequireUserGestureForFullscreenRestriction = 1 << 1,
-        RequirePageConsentToLoadMediaRestriction = 1 << 2,
     };
     typedef unsigned BehaviorRestrictions;
 
     bool userGestureRequiredForPlay() const { return m_restrictions & RequireUserGestureForPlayRestriction; }
     bool userGestureRequiredForFullscreen() const { return m_restrictions & RequireUserGestureForFullscreenRestriction; }
-    bool pageConsentRequiredForLoad() const { return m_restrictions & RequirePageConsentToLoadMediaRestriction; }
 
     void addBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions |= restriction; }
     void removeBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions &= ~restriction; }

@@ -275,7 +275,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_loadState(WaitingForSource)
     , m_webLayer(0)
     , m_opaque(false)
-    , m_restrictions(RequirePageConsentToLoadMediaRestriction)
+    , m_restrictions(NoRestrictions)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
@@ -714,11 +714,6 @@ void HTMLMediaElement::loadInternal()
     // us catch those bugs more quickly without needing all the branches to align to actually
     // trigger the event.
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-
-    // Once the page has allowed an element to load media, it is free to load at will. This allows a
-    // playlist that starts in a foreground tab to continue automatically if the tab is subsequently
-    // put in the the background.
-    removeBehaviorRestriction(RequirePageConsentToLoadMediaRestriction);
 
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
     // disabled state when the element's resource selection algorithm last started".
