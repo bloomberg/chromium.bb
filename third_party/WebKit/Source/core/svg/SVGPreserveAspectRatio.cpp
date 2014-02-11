@@ -67,98 +67,109 @@ PassRefPtr<NewSVGPropertyBase> SVGPreserveAspectRatio::cloneForAnimation(const S
 template<typename CharType>
 bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType* end, bool validate)
 {
-    // FIXME: Rewrite this parser, without gotos!
+    SVGPreserveAspectRatioType align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
+    SVGMeetOrSliceType meetOrSlice = SVG_MEETORSLICE_MEET;
+
+    setAlign(align);
+    setMeetOrSlice(meetOrSlice);
+
     if (!skipOptionalSVGSpaces(ptr, end))
-        goto bailOut;
+        return false;
 
     if (*ptr == 'd') {
         if (!skipString(ptr, end, "defer"))
-            goto bailOut;
+            return false;
 
         // FIXME: We just ignore the "defer" here.
         if (ptr == end)
             return true;
 
         if (!skipOptionalSVGSpaces(ptr, end))
-            goto bailOut;
+            return false;
     }
 
     if (*ptr == 'n') {
         if (!skipString(ptr, end, "none"))
-            goto bailOut;
-        m_align = SVG_PRESERVEASPECTRATIO_NONE;
+            return false;
+        align = SVG_PRESERVEASPECTRATIO_NONE;
         skipOptionalSVGSpaces(ptr, end);
     } else if (*ptr == 'x') {
         if ((end - ptr) < 8)
-            goto bailOut;
+            return false;
         if (ptr[1] != 'M' || ptr[4] != 'Y' || ptr[5] != 'M')
-            goto bailOut;
+            return false;
         if (ptr[2] == 'i') {
             if (ptr[3] == 'n') {
                 if (ptr[6] == 'i') {
                     if (ptr[7] == 'n')
-                        m_align = SVG_PRESERVEASPECTRATIO_XMINYMIN;
+                        align = SVG_PRESERVEASPECTRATIO_XMINYMIN;
                     else if (ptr[7] == 'd')
-                        m_align = SVG_PRESERVEASPECTRATIO_XMINYMID;
+                        align = SVG_PRESERVEASPECTRATIO_XMINYMID;
                     else
-                        goto bailOut;
-                } else if (ptr[6] == 'a' && ptr[7] == 'x')
-                     m_align = SVG_PRESERVEASPECTRATIO_XMINYMAX;
-                else
-                     goto bailOut;
+                        return false;
+                } else if (ptr[6] == 'a' && ptr[7] == 'x') {
+                    align = SVG_PRESERVEASPECTRATIO_XMINYMAX;
+                } else {
+                    return false;
+                }
             } else if (ptr[3] == 'd') {
                 if (ptr[6] == 'i') {
                     if (ptr[7] == 'n')
-                        m_align = SVG_PRESERVEASPECTRATIO_XMIDYMIN;
+                        align = SVG_PRESERVEASPECTRATIO_XMIDYMIN;
                     else if (ptr[7] == 'd')
-                        m_align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
+                        align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
                     else
-                        goto bailOut;
-                } else if (ptr[6] == 'a' && ptr[7] == 'x')
-                    m_align = SVG_PRESERVEASPECTRATIO_XMIDYMAX;
-                else
-                    goto bailOut;
-            } else
-                goto bailOut;
+                        return false;
+                } else if (ptr[6] == 'a' && ptr[7] == 'x') {
+                    align = SVG_PRESERVEASPECTRATIO_XMIDYMAX;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         } else if (ptr[2] == 'a' && ptr[3] == 'x') {
             if (ptr[6] == 'i') {
                 if (ptr[7] == 'n')
-                    m_align = SVG_PRESERVEASPECTRATIO_XMAXYMIN;
+                    align = SVG_PRESERVEASPECTRATIO_XMAXYMIN;
                 else if (ptr[7] == 'd')
-                    m_align = SVG_PRESERVEASPECTRATIO_XMAXYMID;
+                    align = SVG_PRESERVEASPECTRATIO_XMAXYMID;
                 else
-                    goto bailOut;
-            } else if (ptr[6] == 'a' && ptr[7] == 'x')
-                m_align = SVG_PRESERVEASPECTRATIO_XMAXYMAX;
-            else
-                goto bailOut;
-        } else
-            goto bailOut;
+                    return false;
+            } else if (ptr[6] == 'a' && ptr[7] == 'x') {
+                align = SVG_PRESERVEASPECTRATIO_XMAXYMAX;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
         ptr += 8;
         skipOptionalSVGSpaces(ptr, end);
-    } else
-        goto bailOut;
+    } else {
+        return false;
+    }
 
     if (ptr < end) {
         if (*ptr == 'm') {
             if (!skipString(ptr, end, "meet"))
-                goto bailOut;
+                return false;
             skipOptionalSVGSpaces(ptr, end);
         } else if (*ptr == 's') {
             if (!skipString(ptr, end, "slice"))
-                goto bailOut;
+                return false;
             skipOptionalSVGSpaces(ptr, end);
-            if (m_align != SVG_PRESERVEASPECTRATIO_NONE)
-                m_meetOrSlice = SVG_MEETORSLICE_SLICE;
+            if (align != SVG_PRESERVEASPECTRATIO_NONE)
+                meetOrSlice = SVG_MEETORSLICE_SLICE;
         }
     }
 
-    if (end != ptr && validate) {
-bailOut:
-        m_align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
-        m_meetOrSlice = SVG_MEETORSLICE_MEET;
+    if (end != ptr && validate)
         return false;
-    }
+
+    setAlign(align);
+    setMeetOrSlice(meetOrSlice);
+
     return true;
 }
 
