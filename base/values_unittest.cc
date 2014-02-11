@@ -138,18 +138,29 @@ TEST(ValuesTest, StringValue) {
   ASSERT_TRUE(utf16_value.get());
   ASSERT_TRUE(utf16_value->IsType(Value::TYPE_STRING));
 
-  // Test overloaded GetString.
+  // Test overloaded GetAsString.
   std::string narrow = "http://google.com";
   string16 utf16 = ASCIIToUTF16("http://google.com");
+  const StringValue* string_value = NULL;
   ASSERT_TRUE(narrow_value->GetAsString(&narrow));
   ASSERT_TRUE(narrow_value->GetAsString(&utf16));
+  ASSERT_TRUE(narrow_value->GetAsString(&string_value));
   ASSERT_EQ(std::string("narrow"), narrow);
   ASSERT_EQ(ASCIIToUTF16("narrow"), utf16);
+  ASSERT_EQ(string_value->GetString(), narrow);
 
   ASSERT_TRUE(utf16_value->GetAsString(&narrow));
   ASSERT_TRUE(utf16_value->GetAsString(&utf16));
+  ASSERT_TRUE(utf16_value->GetAsString(&string_value));
   ASSERT_EQ(std::string("utf16"), narrow);
   ASSERT_EQ(ASCIIToUTF16("utf16"), utf16);
+  ASSERT_EQ(string_value->GetString(), narrow);
+
+  // Don't choke on NULL values.
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<string16*>(NULL)));
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::string*>(NULL)));
+  ASSERT_TRUE(narrow_value->GetAsString(
+                  static_cast<const StringValue**>(NULL)));
 }
 
 // This is a Value object that allows us to tell if it's been

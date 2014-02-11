@@ -303,7 +303,7 @@ bool StringValue::GetAsString(string16* out_value) const {
 }
 
 bool StringValue::GetAsString(const StringValue** out_value) const {
-  if (*out_value)
+  if (out_value)
     *out_value = this;
   return true;
 }

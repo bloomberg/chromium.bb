@@ -53,8 +53,8 @@ void ChromeStorageImpl::DoGet(
     return;
   }
 
-  const base::Value* value;
-  const base::StringValue* string_value;
+  const base::Value* value = NULL;
+  const base::StringValue* string_value = NULL;
   if (backing_store_->GetValue(key, &value) &&
       value->GetAsString(&string_value)) {
     (*data_ready)(true, key, string_value->GetString());
