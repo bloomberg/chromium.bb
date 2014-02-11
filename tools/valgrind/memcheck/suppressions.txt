@@ -2785,16 +2785,6 @@
    fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy10OnMsgFlushERKNS_12HostResourceE
 }
 {
-   bug_101470
-   Memcheck:Param
-   write(buf)
-   obj:/lib/x86_64-linux-gnu/libc-2.15.so
-   ...
-   fun:new_do_write
-   ...
-   fun:_ZNK13safe_browsing9PrefixSet9WriteFileE*
-}
-{
    bug_101750
    Memcheck:Leak
    fun:malloc
