@@ -523,7 +523,8 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   WorkerPoolTaskVector tasks_required_for_activation;
 
   unsigned priority = kRasterTaskPriorityBase;
-  internal::TaskGraph graph;
+
+  graph_.Reset();
 
   size_t bytes_pending_upload = bytes_pending_upload_;
   bool did_throttle_raster_tasks = false;
@@ -575,7 +576,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     DCHECK(state_it->second == UNSCHEDULED || state_it->second == SCHEDULED);
     state_it->second = SCHEDULED;
 
-    InsertNodeForRasterTask(&graph, task, task->dependencies(), priority++);
+    InsertNodeForRasterTask(&graph_, task, task->dependencies(), priority++);
 
     tasks.container().push_back(task);
     if (IsRasterTaskRequiredForActivation(task))
@@ -599,7 +600,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
         CreateRasterRequiredForActivationFinishedTask(
             raster_tasks_required_for_activation_.size());
     raster_required_for_activation_finished_task_pending_ = true;
-    InsertNodeForTask(&graph,
+    InsertNodeForTask(&graph_,
                       new_raster_required_for_activation_finished_task.get(),
                       kRasterRequiredForActivationFinishedTaskPriority,
                       scheduled_raster_task_required_for_activation_count);
@@ -607,7 +608,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
              tasks_required_for_activation.container().begin();
          it != tasks_required_for_activation.container().end();
          ++it) {
-      graph.edges.push_back(internal::TaskGraph::Edge(
+      graph_.edges.push_back(internal::TaskGraph::Edge(
           *it, new_raster_required_for_activation_finished_task.get()));
     }
   }
@@ -622,7 +623,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       should_notify_client_if_no_tasks_are_pending_) {
     new_raster_finished_task = CreateRasterFinishedTask();
     raster_finished_task_pending_ = true;
-    InsertNodeForTask(&graph,
+    InsertNodeForTask(&graph_,
                       new_raster_finished_task.get(),
                       kRasterFinishedTaskPriority,
                       scheduled_raster_task_count);
@@ -630,12 +631,12 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
              tasks.container().begin();
          it != tasks.container().end();
          ++it) {
-      graph.edges.push_back(
+      graph_.edges.push_back(
           internal::TaskGraph::Edge(*it, new_raster_finished_task.get()));
     }
   }
 
-  SetTaskGraph(&graph);
+  SetTaskGraph(&graph_);
 
   scheduled_raster_task_count_ = scheduled_raster_task_count;
 
@@ -671,11 +672,9 @@ const char* PixelBufferRasterWorkerPool::StateName() const {
 }
 
 void PixelBufferRasterWorkerPool::CheckForCompletedWorkerPoolTasks() {
-  internal::Task::Vector completed_tasks;
-  CollectCompletedWorkerPoolTasks(&completed_tasks);
-
-  for (internal::Task::Vector::const_iterator it = completed_tasks.begin();
-       it != completed_tasks.end();
+  CollectCompletedWorkerPoolTasks(&completed_tasks_);
+  for (internal::Task::Vector::const_iterator it = completed_tasks_.begin();
+       it != completed_tasks_.end();
        ++it) {
     internal::WorkerPoolTask* task =
         static_cast<internal::WorkerPoolTask*>(it->get());
@@ -684,6 +683,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedWorkerPoolTasks() {
     task->CompleteOnOriginThread(this);
     task->DidComplete();
   }
+  completed_tasks_.clear();
 }
 
 scoped_ptr<base::Value> PixelBufferRasterWorkerPool::StateAsValue() const {

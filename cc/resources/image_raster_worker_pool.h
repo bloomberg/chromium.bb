@@ -50,6 +50,11 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;
 
+  // Task graph used when scheduling tasks and vector used to gather
+  // completed tasks.
+  internal::TaskGraph graph_;
+  internal::Task::Vector completed_tasks_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageRasterWorkerPool);
 };
 

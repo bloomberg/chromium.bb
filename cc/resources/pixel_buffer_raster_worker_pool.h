@@ -89,6 +89,11 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool raster_finished_task_pending_;
   bool raster_required_for_activation_finished_task_pending_;
 
+  // Task graph used when scheduling tasks and vector used to gather
+  // completed tasks.
+  internal::TaskGraph graph_;
+  internal::Task::Vector completed_tasks_;
+
   base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);

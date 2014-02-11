@@ -60,7 +60,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   raster_tasks_required_for_activation_pending_ = true;
 
   unsigned priority = kRasterTaskPriorityBase;
-  internal::TaskGraph graph;
+
+  graph_.Reset();
 
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
@@ -87,27 +88,27 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
     if (IsRasterTaskRequiredForActivation(task)) {
       ++raster_required_for_activation_finished_dependency_count;
-      graph.edges.push_back(internal::TaskGraph::Edge(
+      graph_.edges.push_back(internal::TaskGraph::Edge(
           task, new_raster_required_for_activation_finished_task.get()));
     }
 
-    InsertNodeForRasterTask(&graph, task, task->dependencies(), priority++);
+    InsertNodeForRasterTask(&graph_, task, task->dependencies(), priority++);
 
     ++raster_finished_dependency_count;
-    graph.edges.push_back(
+    graph_.edges.push_back(
         internal::TaskGraph::Edge(task, new_raster_finished_task.get()));
   }
 
-  InsertNodeForTask(&graph,
+  InsertNodeForTask(&graph_,
                     new_raster_required_for_activation_finished_task.get(),
                     kRasterRequiredForActivationFinishedTaskPriority,
                     raster_required_for_activation_finished_dependency_count);
-  InsertNodeForTask(&graph,
+  InsertNodeForTask(&graph_,
                     new_raster_finished_task.get(),
                     kRasterFinishedTaskPriority,
                     raster_finished_dependency_count);
 
-  SetTaskGraph(&graph);
+  SetTaskGraph(&graph_);
 
   set_raster_finished_task(new_raster_finished_task);
   set_raster_required_for_activation_finished_task(
@@ -136,11 +137,9 @@ ResourceFormat ImageRasterWorkerPool::GetResourceFormat() const {
 void ImageRasterWorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::CheckForCompletedTasks");
 
-  internal::Task::Vector completed_tasks;
-  CollectCompletedWorkerPoolTasks(&completed_tasks);
-
-  for (internal::Task::Vector::const_iterator it = completed_tasks.begin();
-       it != completed_tasks.end();
+  CollectCompletedWorkerPoolTasks(&completed_tasks_);
+  for (internal::Task::Vector::const_iterator it = completed_tasks_.begin();
+       it != completed_tasks_.end();
        ++it) {
     internal::WorkerPoolTask* task =
         static_cast<internal::WorkerPoolTask*>(it->get());
@@ -151,6 +150,7 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
 
     task->RunReplyOnOriginThread();
   }
+  completed_tasks_.clear();
 
   CheckForCompletedGpuRasterTasks();
 }
