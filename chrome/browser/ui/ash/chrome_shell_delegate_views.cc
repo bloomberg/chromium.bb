@@ -199,12 +199,14 @@ void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_ASH_SESSION_STARTED: {
+#if defined(OS_WIN)
       // If we are launched to service a windows 8 search request then let the
       // IPC which carries the search string create the browser and initiate
       // the navigation.
       if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWindows8Search))
         break;
+#endif
       // If Chrome ASH is launched when no browser is open in the desktop,
       // we should execute the startup code.
       // If there are browsers open in the desktop, we create a browser window
