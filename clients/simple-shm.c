@@ -112,12 +112,6 @@ create_shm_buffer(struct display *display, struct buffer *buffer,
 }
 
 static void
-handle_ping(void *data, struct xdg_surface *surface, uint32_t serial)
-{
-	xdg_surface_pong(surface, serial);
-}
-
-static void
 handle_configure(void *data, struct xdg_surface *surface,
 		 int32_t width, int32_t height)
 {
@@ -154,7 +148,6 @@ handle_focused_unset(void *data, struct xdg_surface *xdg_surface)
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
-	handle_ping,
 	handle_configure,
 	handle_request_set_maximized,
 	handle_request_unset_maximized,
@@ -329,6 +322,16 @@ struct wl_shm_listener shm_listener = {
 };
 
 static void
+xdg_shell_ping(void *data, struct xdg_shell *shell, uint32_t serial)
+{
+	xdg_shell_pong(shell, serial);
+}
+
+static const struct xdg_shell_listener xdg_shell_listener = {
+	xdg_shell_ping,
+};
+
+static void
 registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
 {
@@ -342,6 +345,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->shell = wl_registry_bind(registry,
 					    id, &xdg_shell_interface, 1);
 		xdg_shell_use_unstable_version(d->shell, 1);
+		xdg_shell_add_listener(d->shell, &xdg_shell_listener, d);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,
 					  id, &wl_shm_interface, 1);

@@ -265,13 +265,6 @@ init_gl(struct window *window)
 }
 
 static void
-handle_surface_ping(void *data,
-		    struct xdg_surface *xdg_surface, uint32_t serial)
-{
-	xdg_surface_pong(xdg_surface, serial);
-}
-
-static void
 handle_surface_configure(void *data, struct xdg_surface *surface,
 			 int32_t width, int32_t height)
 {
@@ -318,7 +311,6 @@ handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
-	handle_surface_ping,
 	handle_surface_configure,
 	handle_surface_request_set_maximized,
 	handle_surface_request_unset_maximized,
@@ -716,6 +708,16 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 static void
+xdg_shell_ping(void *data, struct xdg_shell *shell, uint32_t serial)
+{
+	xdg_shell_pong(shell, serial);
+}
+
+static const struct xdg_shell_listener xdg_shell_listener = {
+	xdg_shell_ping,
+};
+
+static void
 registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t name, const char *interface, uint32_t version)
 {
@@ -728,6 +730,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry, name,
 					    &xdg_shell_interface, 1);
+		xdg_shell_add_listener(d->shell, &xdg_shell_listener, d);
 		xdg_shell_use_unstable_version(d->shell, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		d->seat = wl_registry_bind(registry, name,
