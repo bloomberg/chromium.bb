@@ -74,6 +74,7 @@ void ContentViewRenderView::SurfaceCreated(
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env, jobject obj) {
   compositor_->SetSurface(NULL);
+  current_surface_format_ = 0;
 }
 
 void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
