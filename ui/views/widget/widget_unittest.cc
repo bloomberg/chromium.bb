@@ -574,7 +574,6 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->StackAtTop();
     widget->IsClosed();
     widget->Close();
-    widget->Show();
     widget->Hide();
     widget->Activate();
     widget->Deactivate();
@@ -611,6 +610,7 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     // widget->CenterWindow(gfx::Size(50, 60));
     // widget->GetRestoredBounds();
     // widget->ShowInactive();
+    // widget->Show();
   }
 
  private:
@@ -2303,7 +2303,7 @@ TEST_F(WidgetTest, ShowAfterShowInactive) {
   widget->CloseNow();
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
 TEST_F(WidgetTest, InactiveWidgetDoesNotGrabActivation) {
   Widget* widget = CreateTopLevelPlatformWidget();
   widget->Show();
@@ -2385,6 +2385,5 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
 
   widget->CloseNow();
 }
-
 }  // namespace test
 }  // namespace views

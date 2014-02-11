@@ -610,7 +610,9 @@ void Widget::Show() {
     // it is subsequently shown after being hidden.
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   } else {
-    native_widget_->Show();
+    CanActivate()
+        ? native_widget_->Show()
+        : native_widget_->ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
   }
 }
 
