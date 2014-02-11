@@ -13,11 +13,15 @@ namespace content {
 class BrowserContext;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace apps {
 
-// Shows an example window containing a WebView.
-void ShowWebViewWindow(content::BrowserContext* browser_context,
-                       aura::Window* window_context);
+// Create an example window containing a WebView.
+views::Widget* CreateWebViewWindow(content::BrowserContext* browser_context,
+                                   aura::Window* window_context);
 
 }  // namespace apps
 

@@ -125,8 +125,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   } else {
     // TODO(jamescook): For demo purposes create a window with a WebView just
     // to ensure that the content module is properly initialized.
-    ShowWebViewWindow(browser_context_.get(),
-                      wm_test_helper_->root_window()->window());
+    webview_window_.reset(CreateWebViewWindow(browser_context_.get(),
+        wm_test_helper_->root_window()->window()));
+    webview_window_->Show();
   }
 }
 
@@ -170,6 +171,8 @@ void ShellBrowserMainParts::CreateRootWindow() {
 }
 
 void ShellBrowserMainParts::DestroyRootWindow() {
+  // We should close widget before destroying root window.
+  webview_window_.reset();
   wm_test_helper_->root_window()->RemoveRootWindowObserver(this);
   wm_test_helper_->root_window()->PrepareForShutdown();
   wm_test_helper_.reset();

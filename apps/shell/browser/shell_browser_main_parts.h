@@ -25,6 +25,10 @@ class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace wm {
 class WMTestHelper;
 }
@@ -86,6 +90,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 
   scoped_ptr<aura::TestScreen> test_screen_;
+
+  scoped_ptr<views::Widget> webview_window_;
 
   // Owned by the BrowserContextKeyedService system.
   extensions::ShellExtensionSystem* extension_system_;

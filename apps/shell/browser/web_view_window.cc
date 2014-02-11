@@ -44,7 +44,8 @@ views::View* WebViewWindowContents::GetContentsView() {
 
 void WebViewWindowContents::WindowClosing() {
   // Close the app when the window is closed.
-  base::MessageLoopForUI::current()->Quit();
+  if (base::MessageLoopForUI::current()->is_running())
+    base::MessageLoopForUI::current()->Quit();
 }
 
 void WebViewWindowContents::ViewHierarchyChanged(
@@ -68,16 +69,20 @@ void WebViewWindowContents::InitChildViews() {
 
 namespace apps {
 
-void ShowWebViewWindow(content::BrowserContext* browser_context,
-                       aura::Window* window_context) {
+views::Widget* CreateWebViewWindow(content::BrowserContext* browser_context,
+                                 aura::Window* window_context) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.delegate = new WebViewWindowContents(browser_context);
   params.context = window_context;
+  // Make widget owns the native_widget, so that the pointer of widget is still
+  // valid after user click the close button of the widget inside root window.
+  // app_shell client controls the widget lifetime.
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = window_context->bounds();
   params.top_level = true;
   widget->Init(params);
-  widget->Show();
+  return widget;
 }
 
 }  // namespace apps
