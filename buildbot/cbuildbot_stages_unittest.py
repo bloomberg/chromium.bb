@@ -1216,7 +1216,8 @@ class PaygenStageTest(AbstractStageTest):
                                                        board='foo-board',
                                                        channel='foo-channel'),
                                          dry_run=False,
-                                         work_dir=mock.ANY)
+                                         work_dir=mock.ANY,
+                                         run_parallel=True)
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
@@ -1236,7 +1237,8 @@ class PaygenStageTest(AbstractStageTest):
                         board='foo-board-variant',
                         channel='foo-channel'),
           dry_run=True,
-          work_dir=mock.ANY)
+          work_dir=mock.ANY,
+          run_parallel=True)
 
 
 class AUTestStageTest(AbstractStageTest,

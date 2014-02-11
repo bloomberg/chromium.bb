@@ -3132,10 +3132,23 @@ def _RunPaygenInProcess(channel, board, version, debug):
                           board=board,
                           version=version)
 
-    # Generate the payloads.
-    paygen_build_lib.CreatePayloads(build,
-                                    work_dir=tempdir,
-                                    dry_run=debug)
+    try:
+      # Generate the payloads.
+      paygen_build_lib.CreatePayloads(build,
+                                      work_dir=tempdir,
+                                      dry_run=debug,
+                                      run_parallel=True)
+    except (paygen_build_lib.BuildFinished,
+            paygen_build_lib.BuildLocked,
+            paygen_build_lib.BuildSkip) as e:
+      # These errors are normal if it's possible for another process to
+      # work on the same build. This process could be a Paygen server, or
+      # another builder (perhaps by a trybot generating payloads on request).
+      #
+      # This means the build was finished by the other process, is already
+      # being processed (so the build is locked), or that it's been marked
+      # to skip (probably done manually).
+      cros_build_lib.Info('Paygen skipped because: %s', e)
 
 
 class AUTestStage(HWTestStage):
