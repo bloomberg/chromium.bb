@@ -86,14 +86,13 @@ static PlatformWheelEvent constructRelativeWheelEvent(const PlatformWheelEvent& 
 }
 
 // static
-PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, PopupType popupType, bool deviceSupportsTouch)
+PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, bool deviceSupportsTouch)
 {
-    return adoptRef(new PopupContainer(client, popupType, deviceSupportsTouch));
+    return adoptRef(new PopupContainer(client, deviceSupportsTouch));
 }
 
-PopupContainer::PopupContainer(PopupMenuClient* client, PopupType popupType, bool deviceSupportsTouch)
+PopupContainer::PopupContainer(PopupMenuClient* client, bool deviceSupportsTouch)
     : m_listBox(PopupListBox::create(client, deviceSupportsTouch))
-    , m_popupType(popupType)
     , m_popupOpen(false)
 {
     setScrollbarModes(ScrollbarAlwaysOff, ScrollbarAlwaysOff);
@@ -218,7 +217,7 @@ void PopupContainer::showPopup(FrameView* view)
     listBox()->m_focusedElement = m_frameView->frame().document()->focusedElement();
 
     IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
-    popupOpened(layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
+    popupOpened(layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())));
     m_popupOpen = true;
 
     if (!m_listBox->parent())
@@ -466,37 +465,17 @@ String PopupContainer::getSelectedItemToolTip()
     return listBox()->m_popupClient->itemToolTip(listBox()->m_selectedIndex);
 }
 
-// Converts a blink::PopupContainerType to a blink::WebPopupType.
-static WebPopupType convertPopupType(PopupContainer::PopupType type)
-{
-    switch (type) {
-    case PopupContainer::Select:
-        return WebPopupTypeSelect;
-    case PopupContainer::Suggestion:
-        return WebPopupTypeSuggestion;
-    }
-    ASSERT_NOT_REACHED();
-    return WebPopupTypeNone;
-}
-
-void PopupContainer::popupOpened(const IntRect& bounds, bool handleExternally)
+void PopupContainer::popupOpened(const IntRect& bounds)
 {
     WebViewImpl* webView = WebViewImpl::fromPage(m_frameView->frame().page());
     if (!webView->client())
         return;
 
-    WebWidget* webwidget;
-    if (handleExternally) {
-        WebPopupMenuInfo popupInfo;
-        getPopupMenuInfo(&popupInfo);
-        webwidget = webView->client()->createPopupMenu(popupInfo);
-    } else {
-        webwidget = webView->client()->createPopupMenu(convertPopupType(popupType()));
-        // We only notify when the WebView has to handle the popup, as when
-        // the popup is handled externally, the fact that a popup is showing is
-        // transparent to the WebView.
-        webView->popupOpened(this);
-    }
+    WebWidget* webwidget = webView->client()->createPopupMenu(WebPopupTypeSelect);
+    // We only notify when the WebView has to handle the popup, as when
+    // the popup is handled externally, the fact that a popup is showing is
+    // transparent to the WebView.
+    webView->popupOpened(this);
     toWebPopupMenuImpl(webwidget)->initialize(this, bounds);
 }
 

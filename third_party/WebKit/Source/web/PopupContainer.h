@@ -48,12 +48,7 @@ struct WebPopupMenuInfo;
 
 class PopupContainer FINAL : public WebCore::FramelessScrollView {
 public:
-    enum PopupType {
-        Select, // HTML select popup.
-        Suggestion, // Autocomplete/autofill popup.
-    };
-
-    static PassRefPtr<PopupContainer> create(WebCore::PopupMenuClient*, PopupType, bool deviceSupportsTouch);
+    static PassRefPtr<PopupContainer> create(WebCore::PopupMenuClient*, bool deviceSupportsTouch);
 
     // Whether a key event should be sent to this popup.
     bool isInterestedInEventForKey(int keyCode);
@@ -110,8 +105,6 @@ public:
     // The style of the menu being used.
     WebCore::PopupMenuStyle menuStyle() const;
 
-    PopupType popupType() const { return m_popupType; }
-
     // While hovering popup menu window, we want to show tool tip message.
     String getSelectedItemToolTip();
 
@@ -121,7 +114,7 @@ public:
 private:
     friend class WTF::RefCounted<PopupContainer>;
 
-    PopupContainer(WebCore::PopupMenuClient*, PopupType, bool deviceSupportsTouch);
+    PopupContainer(WebCore::PopupMenuClient*, bool deviceSupportsTouch);
     virtual ~PopupContainer();
 
     // Paint the border.
@@ -132,7 +125,7 @@ private:
 
     void fitToListBox();
 
-    void popupOpened(const WebCore::IntRect& bounds, bool handleExternally);
+    void popupOpened(const WebCore::IntRect& bounds);
     void getPopupMenuInfo(WebPopupMenuInfo*);
 
     // Returns the ChromeClient of the page this popup is associated with.
@@ -140,8 +133,6 @@ private:
 
     RefPtr<PopupListBox> m_listBox;
     RefPtr<WebCore::FrameView> m_frameView;
-
-    PopupType m_popupType;
 
     // m_controlPosition contains the transformed position of the
     // <select>/<input> associated with this popup. m_controlSize is the size

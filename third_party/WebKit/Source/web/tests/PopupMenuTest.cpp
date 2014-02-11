@@ -203,7 +203,6 @@ protected:
     {
         m_popupMenu->show(FloatQuad(FloatRect(0, 0, 100, 100)), IntSize(100, 100), 0);
         ASSERT_TRUE(popupOpen());
-        EXPECT_TRUE(webView()->selectPopup()->popupType() == PopupContainer::Select);
     }
 
     void hidePopup()

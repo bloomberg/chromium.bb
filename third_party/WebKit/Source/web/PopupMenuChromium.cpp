@@ -59,7 +59,7 @@ void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& co
 {
     if (!m_popup) {
         bool deviceSupportsTouch = m_frameView->frame().settings()->deviceSupportsTouch();
-        m_popup = PopupContainer::create(m_popupClient, PopupContainer::Select, deviceSupportsTouch);
+        m_popup = PopupContainer::create(m_popupClient, deviceSupportsTouch);
     }
     m_popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);
 }

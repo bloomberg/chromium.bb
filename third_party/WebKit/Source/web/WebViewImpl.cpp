@@ -1406,22 +1406,18 @@ bool WebViewImpl::bubblingScroll(ScrollDirection scrollDirection, ScrollGranular
 
 void WebViewImpl::popupOpened(PopupContainer* popupContainer)
 {
-    if (popupContainer->popupType() == PopupContainer::Select) {
-        ASSERT(!m_selectPopup);
-        m_selectPopup = popupContainer;
-        Document* document = mainFrameImpl()->frame()->document();
-        WheelController::from(document)->didAddWheelEventHandler(document);
-    }
+    ASSERT(!m_selectPopup);
+    m_selectPopup = popupContainer;
+    Document* document = mainFrameImpl()->frame()->document();
+    WheelController::from(document)->didAddWheelEventHandler(document);
 }
 
 void WebViewImpl::popupClosed(PopupContainer* popupContainer)
 {
-    if (popupContainer->popupType() == PopupContainer::Select) {
-        ASSERT(m_selectPopup);
-        m_selectPopup = 0;
-        Document* document = mainFrameImpl()->frame()->document();
-        WheelController::from(document)->didRemoveWheelEventHandler(document);
-    }
+    ASSERT(m_selectPopup);
+    m_selectPopup = 0;
+    Document* document = mainFrameImpl()->frame()->document();
+    WheelController::from(document)->didRemoveWheelEventHandler(document);
 }
 
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
