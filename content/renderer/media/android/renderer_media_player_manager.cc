@@ -429,10 +429,8 @@ void RendererMediaPlayerManager::RetrieveGeometryChanges(
     WebMediaPlayerAndroid* player = player_it->second;
 
     if (player && player->hasVideo()) {
-      gfx::RectF rect;
-      if (player->RetrieveGeometryChange(&rect)) {
-        (*changes)[player_it->first] = rect;
-      }
+      if (player->UpdateBoundaryRectangle())
+        (*changes)[player_it->first] = player->GetBoundaryRectangle();
     }
   }
 }

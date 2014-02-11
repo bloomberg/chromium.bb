@@ -270,6 +270,8 @@ IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DurationChanged,
 
 #if defined(VIDEO_HOLE)
 // Notify the player about the external surface, requesting it if necessary.
+// |is_request| true if the player is requesting the external surface.
+// |rect| the boundary rectangle of the video element.
 IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
                     int /* player_id */,
                     bool /* is_request */,

@@ -190,10 +190,12 @@ class WebMediaPlayerAndroid
   void Detach();
 
 #if defined(VIDEO_HOLE)
-  // Retrieve geometry of the media player (i.e. location and size of the video
-  // frame) if changed. Returns true only if the geometry has been changed since
-  // the last call.
-  bool RetrieveGeometryChange(gfx::RectF* rect);
+  // Calculate the boundary rectangle of the media player (i.e. location and
+  // size of the video frame).
+  // Returns true if the geometry has been changed since the last call.
+  bool UpdateBoundaryRectangle();
+
+  const gfx::RectF GetBoundaryRectangle();
 #endif  // defined(VIDEO_HOLE)
 
   virtual MediaKeyException generateKeyRequest(
@@ -389,6 +391,7 @@ class WebMediaPlayerAndroid
   ScopedStreamTextureProxy stream_texture_proxy_;
 
   // Whether media player needs external surface.
+  // Only used for the VIDEO_HOLE logic.
   bool needs_external_surface_;
 
   // A pointer back to the compositor to inform it about state changes. This is

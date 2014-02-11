@@ -1068,25 +1068,29 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
 }
 
 #if defined(VIDEO_HOLE)
-bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
+bool WebMediaPlayerAndroid::UpdateBoundaryRectangle() {
   if (!video_weblayer_)
     return false;
 
   // Compute the geometry of video frame layer.
   cc::Layer* layer = video_weblayer_->layer();
-  rect->set_size(layer->bounds());
+  gfx::RectF rect(layer->bounds());
   while (layer) {
-    rect->Offset(layer->position().OffsetFromOrigin());
+    rect.Offset(layer->position().OffsetFromOrigin());
     layer = layer->parent();
   }
 
   // Return false when the geometry hasn't been changed from the last time.
-  if (last_computed_rect_ == *rect)
+  if (last_computed_rect_ == rect)
     return false;
 
   // Store the changed geometry information when it is actually changed.
-  last_computed_rect_ = *rect;
+  last_computed_rect_ = rect;
   return true;
+}
+
+const gfx::RectF WebMediaPlayerAndroid::GetBoundaryRectangle() {
+  return last_computed_rect_;
 }
 #endif
 
