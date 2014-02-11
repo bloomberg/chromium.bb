@@ -11,10 +11,6 @@
 #include <linux/serial.h>
 #endif
 
-#if defined(OS_MACOSX)
-#include <IOKit/serial/ioss.h>
-#endif
-
 namespace extensions {
 
 namespace {
@@ -107,7 +103,9 @@ bool SetCustomBitrate(base::PlatformFile file,
   return ioctl(file, TIOCSSERIAL, &serial) >= 0;
 #elif defined(OS_MACOSX)
   speed_t speed = static_cast<speed_t>(bitrate);
-  return ioctl(file, IOSSIOSPEED, &speed) != -1;
+  cfsetispeed(config, speed);
+  cfsetospeed(config, speed);
+  return true;
 #else
   return false;
 #endif
@@ -254,6 +252,8 @@ bool SerialConnection::GetPortInfo(api::serial::ConnectionInfo* info) const {
     int bitrate = 0;
     if (SpeedConstantToBitrate(ispeed, &bitrate)) {
       info->bitrate.reset(new int(bitrate));
+    } else if (ispeed > 0) {
+      info->bitrate.reset(new int(static_cast<int>(ispeed)));
     }
   }
   if ((config.c_cflag & CSIZE) == CS7) {
