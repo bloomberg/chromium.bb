@@ -1018,11 +1018,6 @@ void BrowserPluginGuest::EndSystemDrag() {
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
   guest_rvh->DragSourceSystemDragEnded();
-  // Issue a MouseUp event to get out of a selection state.
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseUp;
-  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
-  guest_rvh->ForwardMouseEvent(mouse_event);
 }
 
 void BrowserPluginGuest::SetDelegate(BrowserPluginGuestDelegate* delegate) {
