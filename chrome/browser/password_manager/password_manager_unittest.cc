@@ -46,6 +46,15 @@ class MockPasswordManagerClient : public PasswordManagerClient {
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_METHOD1(GetProbabilityForExperiment,
                base::FieldTrial::Probability(const std::string&));
+
+  // The following is required because GMock does not support move-only
+  // parameters.
+  MOCK_METHOD1(AuthenticateAutofillAndFillFormPtr,
+               void(autofill::PasswordFormFillData* fill_data));
+  virtual void AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {
+    return AuthenticateAutofillAndFillFormPtr(fill_data.release());
+  }
 };
 
 class MockPasswordManagerDriver : public PasswordManagerDriver {

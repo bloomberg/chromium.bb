@@ -63,6 +63,11 @@ TabAndroid::~TabAndroid() {
   Java_TabBase_clearNativePtr(env, obj.obj());
 }
 
+base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return weak_java_tab_.get(env);
+}
+
 int TabAndroid::GetAndroidId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);

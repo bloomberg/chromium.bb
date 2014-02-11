@@ -7,6 +7,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_form_fill_data.h"
 
 class PasswordFormManager;
 class PasswordManagerDriver;
@@ -29,6 +30,11 @@ class PasswordManagerClient {
   // Called when a password is autofilled. Default implementation is a no-op.
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const {}
+
+  // Called to authenticate the autofill password data.  If authentication is
+  // successful, this should continue filling the form.
+  virtual void AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) = 0;
 
   // Get the profile for which we are managing passwords.
   // TODO(gcasto): Remove this function. crbug.com/335107.

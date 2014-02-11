@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -19,6 +20,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/password_authentication_manager.h"
+#endif  // OS_ANDROID
 
 namespace {
 
@@ -37,7 +42,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), driver_(web_contents, this) {
+    : web_contents_(web_contents),
+      driver_(web_contents, this),
+      weak_factory_(this) {
   // Avoid checking OS password until later on in browser startup
   // since it calls a few Windows APIs.
   base::MessageLoopProxy::current()->PostDelayedTask(
@@ -78,6 +85,25 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
           switches::kEnableSavePasswordBubble)) {
     manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
   }
+}
+
+void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) {
+#if defined(OS_ANDROID)
+  if (PasswordAuthenticationManager
+      ::IsAutofillPasswordAuthenticationEnabled()) {
+    PasswordAuthenticationManager::AuthenticatePasswordAutofill(
+        web_contents_,
+        base::Bind(&ChromePasswordManagerClient::CommitFillPasswordForm,
+                   weak_factory_.GetWeakPtr(),
+                   base::Owned(fill_data.release())));
+    return;
+  }
+#endif  // OS_ANDROID
+
+  // Additional authentication is currently only available for Android, so all
+  // other plaftorms should just fill the password form directly.
+  CommitFillPasswordForm(fill_data.get());
 }
 
 Profile* ChromePasswordManagerClient::GetProfile() {
@@ -136,4 +162,9 @@ PasswordManager* ChromePasswordManagerClient::GetManagerFromWebContents(
   if (!client)
     return NULL;
   return client->GetDriver()->GetPasswordManager();
+}
+
+void ChromePasswordManagerClient::CommitFillPasswordForm(
+    autofill::PasswordFormFillData* data) {
+  driver_.FillPasswordForm(*data);
 }

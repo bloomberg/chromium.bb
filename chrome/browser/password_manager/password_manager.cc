@@ -354,18 +354,33 @@ void PasswordManager::Autofill(
     const PasswordForm& preferred_match,
     bool wait_for_username) const {
   PossiblyInitializeUsernamesExperiment(best_matches);
+
+  // TODO(tedchoc): Switch to only requesting authentication if the user is
+  //                acting on the autofilled forms (crbug.com/342594) instead
+  //                of on page load.
+  bool authentication_required = preferred_match.use_additional_authentication;
+  for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
+       !authentication_required && it != best_matches.end(); ++it) {
+    if (it->second->use_additional_authentication)
+      authentication_required = true;
+  }
+
   switch (form_for_autofill.scheme) {
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observers_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      autofill::PasswordFormFillData fill_data;
+      scoped_ptr<autofill::PasswordFormFillData> fill_data(
+          new autofill::PasswordFormFillData());
       InitPasswordFormFillData(form_for_autofill,
                                best_matches,
                                &preferred_match,
                                wait_for_username,
                                OtherPossibleUsernamesEnabled(),
-                               &fill_data);
-      driver_->FillPasswordForm(fill_data);
+                               fill_data.get());
+      if (authentication_required)
+        client_->AuthenticateAutofillAndFillForm(fill_data.Pass());
+      else
+        driver_->FillPasswordForm(*fill_data.get());
       break;
     }
     default:

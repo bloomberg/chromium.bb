@@ -801,7 +801,7 @@ public abstract class TabBase implements NavigationClient {
     /**
      * @return The {@link WindowAndroid} associated with this {@link TabBase}.
      */
-    protected WindowAndroid getWindowAndroid() {
+    public WindowAndroid getWindowAndroid() {
         return mWindowAndroid;
     }
 

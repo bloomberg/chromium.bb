@@ -51,6 +51,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   TabAndroid(JNIEnv* env, jobject obj);
   virtual ~TabAndroid();
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
   // Return the WebContents, if any, currently owned by this TabAndroid.
   content::WebContents* web_contents() const { return web_contents_.get(); }
 

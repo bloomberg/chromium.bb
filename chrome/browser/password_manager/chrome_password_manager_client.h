@@ -30,6 +30,8 @@ class ChromePasswordManagerClient
       OVERRIDE;
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const OVERRIDE;
+  virtual void AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
@@ -52,8 +54,16 @@ class ChromePasswordManagerClient
   explicit ChromePasswordManagerClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
 
+  // Callback method to be triggered when authentication is successful for a
+  // given password authentication request.  If authentication is disabled or
+  // not supported, this will be triggered directly.
+  void CommitFillPasswordForm(autofill::PasswordFormFillData* fill_data);
+
   content::WebContents* web_contents_;
   ContentPasswordManagerDriver driver_;
+
+  // Allows authentication callbacks to be destroyed when this client is gone.
+  base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

@@ -19,6 +19,7 @@
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
+#include "chrome/browser/android/password_authentication_manager.h"
 #include "chrome/browser/android/password_ui_view_android.h"
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
@@ -124,6 +125,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NewTabPagePrefs",
     NewTabPagePrefs::RegisterNewTabPagePrefs },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
+  { "PasswordAuthenticationManager",
+    PasswordAuthenticationManager::RegisterPasswordAuthenticationManager },
   { "PasswordUIViewAndroid",
     PasswordUIViewAndroid::RegisterPasswordUIViewAndroid },
   { "PersonalDataManagerAndroid",

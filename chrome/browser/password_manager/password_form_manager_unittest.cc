@@ -59,6 +59,10 @@ class TestPasswordManagerClient : public PasswordManagerClient {
   virtual Profile* GetProfile() OVERRIDE { return profile_; }
   virtual PrefService* GetPrefs() OVERRIDE { return profile_->GetPrefs(); }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
+  virtual void AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {
+    driver_.FillPasswordForm(*fill_data.get());
+  }
 
   MockPasswordManagerDriver* GetMockDriver() { return &driver_; }
 
