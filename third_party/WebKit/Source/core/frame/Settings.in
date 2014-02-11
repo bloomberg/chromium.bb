@@ -176,7 +176,6 @@ compositorTouchHitTesting initial=true
 fixedPositionCreatesStackingContext initial=false
 syncXHRInDocumentsEnabled initial=true
 cookieEnabled initial=true
-navigateOnDragDrop initial=true
 mediaEnabled initial=true
 DOMPasteAllowed initial=false
 
