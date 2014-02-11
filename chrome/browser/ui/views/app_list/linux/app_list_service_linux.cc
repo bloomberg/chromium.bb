@@ -86,7 +86,7 @@ void AppListServiceLinux::OnAppListClosing() {
 }
 
 void AppListServiceLinux::Init(Profile* initial_profile) {
-  PerformStartupChecks(initial_profile);
+  HandleCommandLineFlags(initial_profile);
 }
 
 void AppListServiceLinux::CreateForProfile(Profile* requested_profile) {

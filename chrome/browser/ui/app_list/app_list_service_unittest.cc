@@ -38,8 +38,8 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
     return showing_for_profile_;
   }
 
-  void PerformStartupChecks(Profile* profile) {
-    AppListServiceImpl::PerformStartupChecks(profile);
+  void HandleCommandLineFlags(Profile* profile) {
+    AppListServiceImpl::HandleCommandLineFlags(profile);
   }
 
   virtual Profile* GetCurrentAppListProfile() OVERRIDE {
@@ -53,7 +53,6 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
 
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE {
     showing_for_profile_ = requested_profile;
-    RecordAppListLaunch();
   }
 
   virtual void DismissAppList() OVERRIDE {
@@ -78,13 +77,10 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
 
 class AppListServiceUnitTest : public testing::Test {
  public:
-  AppListServiceUnitTest() {}
-
   virtual void SetUp() OVERRIDE {
     SetupWithCommandLine(CommandLine(CommandLine::NO_PROGRAM));
   }
 
- protected:
   void SetupWithCommandLine(const CommandLine& command_line) {
     user_data_dir_ = base::FilePath(FILE_PATH_LITERAL("udd"));
     profile1_.reset(
@@ -109,11 +105,6 @@ class AppListServiceUnitTest : public testing::Test {
         scoped_ptr<KeepAliveService>(keep_alive_service_)));
   }
 
-  void EnableAppList() {
-    service_->EnableAppList(profile1_.get(),
-                            AppListService::ENABLE_VIA_COMMAND_LINE);
-  }
-
   base::FilePath user_data_dir_;
   scoped_ptr<PrefService> local_state_;
   FakeProfileStore* profile_store_;
@@ -121,13 +112,11 @@ class AppListServiceUnitTest : public testing::Test {
   scoped_ptr<TestingAppListServiceImpl> service_;
   scoped_ptr<FakeProfile> profile1_;
   scoped_ptr<FakeProfile> profile2_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceUnitTest);
 };
 
 TEST_F(AppListServiceUnitTest, EnablingStateIsPersisted) {
   EXPECT_FALSE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
-  EnableAppList();
+  service_->EnableAppList(profile1_.get());
   EXPECT_TRUE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
   EXPECT_EQ(profile1_->GetPath(), user_data_dir_.Append(
       local_state_->GetFilePath(prefs::kAppListProfile)));
@@ -135,14 +124,14 @@ TEST_F(AppListServiceUnitTest, EnablingStateIsPersisted) {
 
 TEST_F(AppListServiceUnitTest, ShowingForProfileLoadsAProfile) {
   profile_store_->LoadProfile(profile1_.get());
-  EnableAppList();
+  service_->EnableAppList(profile1_.get());
   service_->Show();
   EXPECT_EQ(profile1_.get(), service_->showing_for_profile());
   EXPECT_TRUE(service_->IsAppListVisible());
 }
 
 TEST_F(AppListServiceUnitTest, RemovedProfileResetsToInitialProfile) {
-  EnableAppList();
+  service_->EnableAppList(profile1_.get());
   profile_store_->RemoveProfile(profile1_.get());
   base::FilePath initial_profile_path =
       user_data_dir_.AppendASCII(chrome::kInitialProfile);
@@ -153,7 +142,7 @@ TEST_F(AppListServiceUnitTest, RemovedProfileResetsToInitialProfile) {
 TEST_F(AppListServiceUnitTest,
        RemovedProfileResetsToLastUsedProfileIfExists) {
   local_state_->SetString(prefs::kProfileLastUsed, "last-used");
-  EnableAppList();
+  service_->EnableAppList(profile1_.get());
   profile_store_->RemoveProfile(profile1_.get());
   base::FilePath last_used_profile_path =
       user_data_dir_.AppendASCII("last-used");
@@ -164,7 +153,7 @@ TEST_F(AppListServiceUnitTest,
 TEST_F(AppListServiceUnitTest, SwitchingProfilesPersists) {
   profile_store_->LoadProfile(profile1_.get());
   profile_store_->LoadProfile(profile2_.get());
-  EnableAppList();
+  service_->EnableAppList(profile1_.get());
   service_->SetProfilePath(profile2_->GetPath());
   service_->Show();
   EXPECT_EQ(profile2_.get(), service_->showing_for_profile());
@@ -179,7 +168,7 @@ TEST_F(AppListServiceUnitTest, EnableViaCommandLineFlag) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kEnableAppList);
   SetupWithCommandLine(command_line);
-  service_->PerformStartupChecks(profile1_.get());
+  service_->HandleCommandLineFlags(profile1_.get());
   EXPECT_TRUE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
 }
 
@@ -187,56 +176,6 @@ TEST_F(AppListServiceUnitTest, DisableViaCommandLineFlag) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kResetAppListInstallState);
   SetupWithCommandLine(command_line);
-  service_->PerformStartupChecks(profile1_.get());
+  service_->HandleCommandLineFlags(profile1_.get());
   EXPECT_FALSE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
-}
-
-TEST_F(AppListServiceUnitTest, UMAPrefStates) {
-  EXPECT_FALSE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
-  EXPECT_EQ(AppListService::ENABLE_NOT_RECORDED,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-  EXPECT_EQ(0, local_state_->GetInt64(prefs::kAppListEnableTime));
-
-  service_->EnableAppList(profile1_.get(),
-                          AppListService::ENABLE_FOR_APP_INSTALL);
-
-  // After enable, method and time should be recorded.
-  EXPECT_TRUE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
-  EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-  EXPECT_NE(0, local_state_->GetInt64(prefs::kAppListEnableTime));
-
-  service_->ShowForProfile(profile1_.get());
-
-  // After a regular "show", time should be cleared, so UMA is not re-recorded.
-  EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-  EXPECT_EQ(0, local_state_->GetInt64(prefs::kAppListEnableTime));
-
-  // A second enable should be a no-op.
-  service_->EnableAppList(profile1_.get(),
-                          AppListService::ENABLE_FOR_APP_INSTALL);
-  EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-  EXPECT_EQ(0, local_state_->GetInt64(prefs::kAppListEnableTime));
-
-  // An auto-show here should keep the recorded enable method.
-  service_->AutoShowForProfile(profile1_.get());
-  EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-
-  // Clear the enable state, so we can enable again.
-  local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, false);
-  service_->EnableAppList(profile1_.get(),
-                          AppListService::ENABLE_FOR_APP_INSTALL);
-
-  EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
-  EXPECT_NE(0, local_state_->GetInt64(prefs::kAppListEnableTime));
-
-  // An auto-show here should update the enable method to prevent recording it
-  // as ENABLE_FOR_APP_INSTALL.
-  service_->AutoShowForProfile(profile1_.get());
-  EXPECT_EQ(AppListService::ENABLE_SHOWN_UNDISCOVERED,
-            local_state_->GetInteger(prefs::kAppListEnableMethod));
 }

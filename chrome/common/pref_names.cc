@@ -2571,7 +2571,7 @@ const char kRLZDisabled[] = "rlz.disabled";
 #if defined(ENABLE_APP_LIST)
 // The directory in user data dir that contains the profile to be used with the
 // app launcher.
-const char kAppListProfile[] = "app_list.profile";
+extern const char kAppListProfile[] = "app_list.profile";
 
 // Whether to show the app list on a browser relaunch. Used when switching out
 // of metro mode after a user gesture requests showing the app list.
@@ -2579,24 +2579,17 @@ const char kRestartWithAppList[] = "app_list.show_on_relaunch";
 
 // The number of times the app launcher was launched since last ping and
 // the time of the last ping.
-const char kAppListLaunchCount[] = "app_list.launch_count";
-const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
+extern const char kAppListLaunchCount[] = "app_list.launch_count";
+extern const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
 
 // The number of times the an app was launched from the app launcher since last
 // ping and the time of the last ping.
-const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
-const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
+extern const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
+extern const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
 
 // A boolean that tracks whether the user has ever enabled the app launcher.
 const char kAppLauncherHasBeenEnabled[] =
     "apps.app_launcher.has_been_enabled";
-
-// An enum indicating how the app launcher was enabled. E.g., via webstore, app
-// install, command line, etc. For UMA.
-const char kAppListEnableMethod[] = "app_list.how_enabled";
-
-// The time that the app launcher was enabled. Cleared when UMA is recorded.
-const char kAppListEnableTime[] = "app_list.when_enabled";
 
 // TODO(calamity): remove this pref since app launcher will always be
 // installed.

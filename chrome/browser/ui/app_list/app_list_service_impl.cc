@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
@@ -27,8 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace {
-
-const int kDiscoverabilityTimeoutMinutes = 60;
 
 void SendAppListAppLaunch(int count) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -69,9 +66,6 @@ void RecordDailyEventFrequency(
     const char* last_ping_pref,
     const char* count_pref,
     void (*send_callback)(int count)) {
-  if (!g_browser_process)
-    return;  // In a unit test.
-
   PrefService* local_state = g_browser_process->local_state();
 
   int count = local_state->GetInteger(count_pref);
@@ -144,67 +138,13 @@ class ProfileStoreImpl : public ProfileStore {
   base::WeakPtrFactory<ProfileStoreImpl> weak_factory_;
 };
 
-void RecordAppListDiscoverability(PrefService* local_state,
-                                  bool is_startup_check) {
-  // Since this task may be delayed, ensure it does not interfere with shutdown
-  // when they unluckily coincide.
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  int64 enable_time_value = local_state->GetInt64(prefs::kAppListEnableTime);
-  if (enable_time_value == 0)
-    return;  // Already recorded or never enabled.
-
-  base::Time app_list_enable_time =
-      base::Time::FromInternalValue(enable_time_value);
-  if (is_startup_check) {
-    // When checking at startup, only clear and record the "timeout" case,
-    // otherwise wait for a timeout.
-    base::TimeDelta time_remaining =
-        app_list_enable_time +
-        base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes) -
-        base::Time::Now();
-    if (time_remaining > base::TimeDelta()) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&RecordAppListDiscoverability,
-                     base::Unretained(local_state),
-                     false),
-          time_remaining);
-      return;
-    }
-  }
-
-  local_state->SetInt64(prefs::kAppListEnableTime, 0);
-
-  AppListService::AppListEnableSource enable_source =
-      static_cast<AppListService::AppListEnableSource>(
-          local_state->GetInteger(prefs::kAppListEnableMethod));
-  if (enable_source == AppListService::ENABLE_FOR_APP_INSTALL) {
-    base::TimeDelta time_taken = base::Time::Now() - app_list_enable_time;
-    // This means the user "discovered" the app launcher naturally, after it was
-    // enabled on the first app install. Record how long it took to discover.
-    // Note that the last bucket is essentially "not discovered": subtract 1
-    // minute to account for clock inaccuracy.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Apps.AppListTimeToDiscover",
-        time_taken,
-        base::TimeDelta::FromSeconds(1),
-        base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes - 1),
-        10 /* bucket_count */);
-  }
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListHowEnabled",
-                            enable_source,
-                            AppListService::ENABLE_NUM_ENABLE_SOURCES);
-}
-
 }  // namespace
 
+// static
 void AppListServiceImpl::RecordAppListLaunch() {
   RecordDailyEventFrequency(prefs::kLastAppListLaunchPing,
                             prefs::kAppListLaunchCount,
                             &SendAppListLaunch);
-  RecordAppListDiscoverability(local_state_, false);
 }
 
 // static
@@ -315,40 +255,13 @@ void AppListServiceImpl::Show() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void AppListServiceImpl::AutoShowForProfile(Profile* requested_profile) {
-  if (local_state_->GetInt64(prefs::kAppListEnableTime) != 0) {
-    // User has not yet discovered the app launcher. Update the enable method to
-    // indicate this. It will then be recorded in UMA.
-    local_state_->SetInteger(prefs::kAppListEnableMethod,
-                             ENABLE_SHOWN_UNDISCOVERED);
-  }
-  ShowForProfile(requested_profile);
-}
-
-void AppListServiceImpl::EnableAppList(Profile* initial_profile,
-                                       AppListEnableSource enable_source) {
+void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
   SetProfilePath(initial_profile->GetPath());
   if (local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled))
     return;
 
   local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   CreateShortcut();
-
-  // UMA for launcher discoverability.
-  local_state_->SetInt64(prefs::kAppListEnableTime,
-                         base::Time::Now().ToInternalValue());
-  local_state_->SetInteger(prefs::kAppListEnableMethod, enable_source);
-  if (base::MessageLoop::current()) {
-    // Ensure a value is recorded if the user "never" shows the app list. Note
-    // there is no message loop in unit tests.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RecordAppListDiscoverability,
-                   base::Unretained(local_state_),
-                   false),
-        base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes));
-  }
-
   AppShortcutManager* shortcut_manager =
       AppShortcutManagerFactory::GetForProfile(initial_profile);
   if (shortcut_manager)
@@ -359,20 +272,15 @@ void AppListServiceImpl::InvalidatePendingProfileLoads() {
   profile_loader_->InvalidatePendingProfileLoads();
 }
 
-void AppListServiceImpl::PerformStartupChecks(Profile* initial_profile) {
-  // Except in rare, once-off cases, this just checks that a pref is "0" and
-  // returns.
-  RecordAppListDiscoverability(local_state_, true);
-
+void AppListServiceImpl::HandleCommandLineFlags(Profile* initial_profile) {
   if (command_line_.HasSwitch(switches::kResetAppListInstallState))
     local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, false);
 
   if (command_line_.HasSwitch(switches::kEnableAppList))
-    EnableAppList(initial_profile, ENABLE_VIA_COMMAND_LINE);
+    EnableAppList(initial_profile);
+}
 
-  if (!base::MessageLoop::current())
-    return;  // In a unit test.
-
+void AppListServiceImpl::SendUsageStats() {
   // Send app list usage stats after a delay.
   const int kSendUsageStatsDelay = 5;
   base::MessageLoop::current()->PostDelayedTask(

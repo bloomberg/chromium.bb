@@ -553,10 +553,8 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   AppListService* app_list_service =
       AppListService::Get(GetCurrentBrowser()->host_desktop_type());
 
-  if (approval_->enable_launcher) {
-    app_list_service->EnableAppList(GetProfile(),
-                                    AppListService::ENABLE_FOR_APP_INSTALL);
-  }
+  if (approval_->enable_launcher)
+    app_list_service->EnableAppList(GetProfile());
 
   if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
@@ -564,7 +562,7 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
     if (approval_->enable_launcher)
       app_list_service->CreateForProfile(GetProfile());
     else
-      app_list_service->AutoShowForProfile(GetProfile());
+      app_list_service->ShowForProfile(GetProfile());
   }
 
   // The extension will install through the normal extension install flow, but
@@ -623,8 +621,8 @@ WebstorePrivateEnableAppLauncherFunction::
     ~WebstorePrivateEnableAppLauncherFunction() {}
 
 bool WebstorePrivateEnableAppLauncherFunction::RunImpl() {
-  AppListService::Get(GetCurrentBrowser()->host_desktop_type())
-      ->EnableAppList(GetProfile(), AppListService::ENABLE_VIA_WEBSTORE_LINK);
+  AppListService::Get(GetCurrentBrowser()->host_desktop_type())->
+      EnableAppList(GetProfile());
   return true;
 }
 

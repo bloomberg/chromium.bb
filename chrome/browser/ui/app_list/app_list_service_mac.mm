@@ -347,7 +347,7 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   static bool init_called_with_profile = false;
   if (initial_profile && !init_called_with_profile) {
     init_called_with_profile = true;
-    PerformStartupChecks(initial_profile);
+    HandleCommandLineFlags(initial_profile);
     PrefService* local_state = g_browser_process->local_state();
     if (!IsAppLauncherEnabled()) {
       local_state->SetInteger(prefs::kAppLauncherShortcutVersion, 0);
@@ -442,9 +442,8 @@ bool AppListServiceMac::IsAppListVisible() const {
       ![animation_controller_ isClosing];
 }
 
-void AppListServiceMac::EnableAppList(Profile* initial_profile,
-                                      AppListEnableSource enable_source) {
-  AppListServiceImpl::EnableAppList(initial_profile, enable_source);
+void AppListServiceMac::EnableAppList(Profile* initial_profile) {
+  AppListServiceImpl::EnableAppList(initial_profile);
   AppController* controller = [NSApp delegate];
   [controller initAppShimMenuController];
 }

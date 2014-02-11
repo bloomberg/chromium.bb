@@ -425,7 +425,7 @@ void AppListServiceWin::Init(Profile* initial_profile) {
 
   if (enable_app_list_on_next_init_) {
     enable_app_list_on_next_init_ = false;
-    EnableAppList(initial_profile, ENABLE_ON_REINSTALL);
+    EnableAppList(initial_profile);
     CreateShortcut();
   }
 
@@ -464,7 +464,8 @@ void AppListServiceWin::Init(Profile* initial_profile) {
   ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
-  PerformStartupChecks(initial_profile);
+  HandleCommandLineFlags(initial_profile);
+  SendUsageStats();
 }
 
 void AppListServiceWin::CreateForProfile(Profile* profile) {
