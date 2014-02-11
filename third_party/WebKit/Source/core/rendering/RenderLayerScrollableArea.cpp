@@ -680,6 +680,10 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
     if (m_box->style()->appearance() == ListboxPart)
         return;
 
+    // RenderView shouldn't provide scrollbars on its own.
+    if (m_box->isRenderView())
+        return;
+
     if (!m_scrollDimensionsDirty)
         updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 

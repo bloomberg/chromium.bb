@@ -535,6 +535,7 @@ public:
     EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags._overflowY); }
     // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
     bool isOverflowVisible() const { ASSERT(overflowX() != OVISIBLE || overflowX() == overflowY()); return overflowX() == OVISIBLE; }
+    bool isOverflowPaged() const { return overflowY() == OPAGEDX || overflowY() == OPAGEDY; }
 
     EVisibility visibility() const { return static_cast<EVisibility>(inherited_flags._visibility); }
     EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags._vertical_align); }
@@ -825,6 +826,15 @@ public:
     bool hasInlineColumnAxis() const {
         ColumnAxis axis = columnAxis();
         return axis == AutoColumnAxis || isHorizontalWritingMode() == (axis == HorizontalColumnAxis);
+    }
+    bool hasInlinePaginationAxis() const
+    {
+        // If the pagination axis is parallel with the writing mode inline axis, columns may be laid
+        // out along the inline axis, just like for regular multicol. Otherwise, we need to lay out
+        // along the block axis.
+        if (isOverflowPaged())
+            return (overflowY() == OPAGEDX) == isHorizontalWritingMode();
+        return false;
     }
     ColumnProgression columnProgression() const { return static_cast<ColumnProgression>(rareNonInheritedData->m_multiCol->m_progression); }
     float columnWidth() const { return rareNonInheritedData->m_multiCol->m_width; }

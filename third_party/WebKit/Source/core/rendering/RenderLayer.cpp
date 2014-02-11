@@ -3735,7 +3735,11 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle*
 inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     ASSERT(newStyle);
-    return !hasCompositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
+    return !hasCompositedLayerMapping()
+        && oldStyle
+        && (oldStyle->overflowX() != newStyle->overflowX())
+        && m_stackingNode->ancestorStackingContainerNode()
+        && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
 }
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const

@@ -386,14 +386,6 @@ void RenderView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layout
     rects.append(LayoutRect(LayoutPoint::zero(), frameView()->contentsSize()));
 }
 
-bool RenderView::requiresColumns(int desiredColumnCount) const
-{
-    if (m_frameView)
-        return m_frameView->pagination().mode != Pagination::Unpaginated;
-
-    return RenderBlock::requiresColumns(desiredColumnCount);
-}
-
 void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
@@ -404,7 +396,7 @@ void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
 
     // This avoids painting garbage between columns if there is a column gap.
-    if (m_frameView && m_frameView->pagination().mode != Pagination::Unpaginated)
+    if (m_frameView && style()->isOverflowPaged())
         paintInfo.context->fillRect(paintInfo.rect, m_frameView->baseBackgroundColor());
 
     paintObject(paintInfo, paintOffset);

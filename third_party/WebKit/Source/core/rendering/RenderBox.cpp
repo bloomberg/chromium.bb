@@ -331,17 +331,9 @@ void RenderBox::updateFromStyle()
     setFloating(!isOutOfFlowPositioned() && styleToUse->isFloating());
 
     bool boxHasOverflowClip = false;
-    // We also handle <body> and <html>, whose overflow applies to the viewport.
-    if (!styleToUse->isOverflowVisible() && !isRootObject && isRenderBlock()) {
-        // Overflow on the body can propagate to the viewport under the following conditions.
-        // (1) The root element is <html>.
-        // (2) We are the primary <body> (can be checked by looking at document.body).
-        // (3) The root element has visible overflow.
-        if (isBody() && document().documentElement()->hasTagName(htmlTag)
-            && document().body() == node()
-            && document().documentElement()->renderer()->style()->isOverflowVisible()) {
-            boxHasOverflowClip = false;
-        } else {
+    if (!styleToUse->isOverflowVisible() && isRenderBlock() && !isViewObject) {
+        // If overflow has been propagated to the viewport, it has no effect here.
+        if (node() != document().viewportDefiningElement()) {
             boxHasOverflowClip = true;
             if (!hasOverflowClip()) {
                 // If we are getting an overflow clip, preemptively erase any overflowing content.

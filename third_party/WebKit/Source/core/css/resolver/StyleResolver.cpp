@@ -600,7 +600,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSF
     // This overrides any -webkit-user-modify inherited from the parent iframe.
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
 
-    document.setStyleDependentState(documentStyle.get());
+    document.setupFontBuilder(documentStyle.get());
     return documentStyle.release();
 }
 

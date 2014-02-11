@@ -105,33 +105,6 @@ static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLay
     return flags;
 }
 
-Pagination::Mode paginationModeForRenderStyle(RenderStyle* style)
-{
-    EOverflow overflow = style->overflowY();
-    if (overflow != OPAGEDX && overflow != OPAGEDY)
-        return Pagination::Unpaginated;
-
-    bool isHorizontalWritingMode = style->isHorizontalWritingMode();
-    TextDirection textDirection = style->direction();
-    WritingMode writingMode = style->writingMode();
-
-    // paged-x always corresponds to LeftToRightPaginated or RightToLeftPaginated. If the WritingMode
-    // is horizontal, then we use TextDirection to choose between those options. If the WritingMode
-    // is vertical, then the direction of the verticality dictates the choice.
-    if (overflow == OPAGEDX) {
-        if ((isHorizontalWritingMode && textDirection == LTR) || writingMode == LeftToRightWritingMode)
-            return Pagination::LeftToRightPaginated;
-        return Pagination::RightToLeftPaginated;
-    }
-
-    // paged-y always corresponds to TopToBottomPaginated or BottomToTopPaginated. If the WritingMode
-    // is horizontal, then the direction of the horizontality dictates the choice. If the WritingMode
-    // is vertical, then we use TextDirection to choose between those options.
-    if (writingMode == TopToBottomWritingMode || (!isHorizontalWritingMode && textDirection == LTR))
-        return Pagination::TopToBottomPaginated;
-    return Pagination::BottomToTopPaginated;
-}
-
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -551,39 +524,11 @@ void FrameView::applyOverflowToViewportAndSetRenderer(RenderObject* o, Scrollbar
             vMode = ScrollbarAuto;
             break;
         default:
-            // Don't set it at all. Values of OPAGEDX and OPAGEDY are handled by applyPaginationToViewPort().
+            // Don't set it at all.
             ;
     }
 
     m_viewportRenderer = o;
-}
-
-void FrameView::applyPaginationToViewport()
-{
-    Document* document = m_frame->document();
-    Node* documentElement = document->documentElement();
-    RenderObject* documentRenderer = documentElement ? documentElement->renderer() : 0;
-    RenderObject* documentOrBodyRenderer = documentRenderer;
-    Node* body = document->body();
-    if (body && body->renderer()) {
-        if (body->hasTagName(bodyTag))
-            documentOrBodyRenderer = documentRenderer->style()->overflowX() == OVISIBLE && documentElement->hasTagName(htmlTag) ? body->renderer() : documentRenderer;
-    }
-
-    Pagination pagination;
-
-    if (!documentOrBodyRenderer) {
-        setPagination(pagination);
-        return;
-    }
-
-    EOverflow overflowY = documentOrBodyRenderer->style()->overflowY();
-    if (overflowY == OPAGEDX || overflowY == OPAGEDY) {
-        pagination.mode = WebCore::paginationModeForRenderStyle(documentOrBodyRenderer->style());
-        pagination.gap = static_cast<unsigned>(documentOrBodyRenderer->style()->columnGap());
-    }
-
-    setPagination(pagination);
 }
 
 void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
@@ -607,22 +552,15 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
 
     if (!isSubtreeLayout()) {
         Document* document = m_frame->document();
-        Node* documentElement = document->documentElement();
-        RenderObject* rootRenderer = documentElement ? documentElement->renderer() : 0;
         Node* body = document->body();
-        if (body && body->renderer()) {
-            if (body->hasTagName(framesetTag)) {
-                vMode = ScrollbarAlwaysOff;
-                hMode = ScrollbarAlwaysOff;
-            } else if (body->hasTagName(bodyTag)) {
-                // It's sufficient to just check the X overflow,
-                // since it's illegal to have visible in only one direction.
-                RenderObject* o = rootRenderer->style()->overflowX() == OVISIBLE && document->documentElement()->hasTagName(htmlTag) ? body->renderer() : rootRenderer;
-                if (o->style())
-                    applyOverflowToViewportAndSetRenderer(o, hMode, vMode);
+        if (body && body->renderer() && body->hasTagName(framesetTag)) {
+            vMode = ScrollbarAlwaysOff;
+            hMode = ScrollbarAlwaysOff;
+        } else if (Element* viewportElement = document->viewportDefiningElement()) {
+            if (RenderObject* viewportRenderer = viewportElement->renderer()) {
+                if (viewportRenderer->style())
+                    applyOverflowToViewportAndSetRenderer(viewportRenderer, hMode, vMode);
             }
-        } else if (rootRenderer) {
-            applyOverflowToViewportAndSetRenderer(rootRenderer, hMode, vMode);
         }
     }
 }
@@ -803,10 +741,6 @@ void FrameView::performPreLayoutTasks()
     } else {
         document->evaluateMediaQueryList();
     }
-
-    // If there is any pagination to apply, it will affect the RenderView's style, so we should
-    // take care of that now.
-    applyPaginationToViewport();
 
     // Always ensure our style info is up-to-date. This can happen in situations where
     // the layout beats any sort of style recalc update that needs to occur.
@@ -2258,15 +2192,6 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
         m_frame->document()->enqueueAnimationFrameEvent(event.release());
     }
 
-}
-
-void FrameView::setPagination(const Pagination& pagination)
-{
-    if (m_pagination == pagination)
-        return;
-
-    m_pagination = pagination;
-    m_frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 IntRect FrameView::windowClipRect(bool clipToContents) const

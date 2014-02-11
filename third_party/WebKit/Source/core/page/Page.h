@@ -26,7 +26,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/HistoryController.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/rendering/Pagination.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/LayoutRect.h"

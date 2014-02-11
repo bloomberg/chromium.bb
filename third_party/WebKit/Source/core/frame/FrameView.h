@@ -26,7 +26,6 @@
 #define FrameView_h
 
 #include "core/frame/AdjustViewSizeOrNot.h"
-#include "core/rendering/Pagination.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/PartialLayoutState.h"
 #include "platform/geometry/LayoutRect.h"
@@ -51,8 +50,6 @@ class RenderObject;
 class RenderScrollbarPart;
 class RenderStyle;
 class RenderWidget;
-
-Pagination::Mode paginationModeForRenderStyle(RenderStyle*);
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -296,8 +293,6 @@ public:
     // we need this function in order to do the scroll ourselves.
     bool wheelEvent(const PlatformWheelEvent&);
 
-    const Pagination& pagination() const { return m_pagination; }
-
     bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
     void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
 
@@ -338,9 +333,6 @@ private:
     bool contentsInCompositedLayer() const;
 
     void applyOverflowToViewportAndSetRenderer(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
-    void applyPaginationToViewport();
-    void setPagination(const Pagination&);
-
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
     void paintControlTints();
@@ -467,8 +459,6 @@ private:
     bool m_horizontalOverflow;
     bool m_verticalOverflow;
     RenderObject* m_viewportRenderer;
-
-    Pagination m_pagination;
 
     bool m_wasScrolledByUser;
     bool m_inProgrammaticScroll;

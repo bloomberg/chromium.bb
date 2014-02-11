@@ -39,7 +39,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/rendering/Pagination.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/GridPosition.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -306,12 +305,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     } else if (style->overflowY() == OVISIBLE && style->overflowX() != OVISIBLE) {
         style->setOverflowY(OAUTO);
     }
-
-    // Call setStylesForPaginationMode() if a pagination mode is set for any non-root elements. If these
-    // styles are specified on a root element, then they will be incorporated in
-    // StyleAdjuster::styleForDocument().
-    if ((style->overflowY() == OPAGEDX || style->overflowY() == OPAGEDY) && !(e && (e->hasTagName(htmlTag) || e->hasTagName(bodyTag))))
-        Pagination::setStylesForPaginationMode(WebCore::paginationModeForRenderStyle(style), style);
 
     // Table rows, sections and the table itself will support overflow:hidden and will ignore scroll/auto.
     // FIXME: Eventually table sections will support auto and scroll.

@@ -1623,16 +1623,8 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
         root->recalcDistribution();
 }
 
-void Document::setStyleDependentState(RenderStyle* documentStyle)
+void Document::setupFontBuilder(RenderStyle* documentStyle)
 {
-    const Pagination& pagination = view()->pagination();
-    if (pagination.mode != Pagination::Unpaginated) {
-        Pagination::setStylesForPaginationMode(pagination.mode, documentStyle);
-        documentStyle->setColumnGap(pagination.gap);
-        if (renderView()->hasColumns())
-            renderView()->updateColumnInfoFromStyle(documentStyle);
-    }
-
     FontBuilder fontBuilder;
     fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
     RefPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
@@ -1650,16 +1642,27 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WritingMode rootWritingMode = documentElementStyle->writingMode();
     TextDirection rootDirection = documentElementStyle->direction();
-    HTMLElement* body = this->body();
 
+    HTMLElement* body = this->body();
+    RefPtr<RenderStyle> bodyStyle;
     if (body) {
-        RefPtr<RenderStyle> bodyStyle = body->renderStyle();
+        bodyStyle = body->renderStyle();
         if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
         if (!writingModeSetOnDocumentElement())
             rootWritingMode = bodyStyle->writingMode();
         if (!directionSetOnDocumentElement())
             rootDirection = bodyStyle->direction();
+    }
+
+    RefPtr<RenderStyle> overflowStyle;
+    if (Element* element = viewportDefiningElement(documentElementStyle.get())) {
+        if (element == body) {
+            overflowStyle = bodyStyle;
+        } else {
+            ASSERT(element == documentElement());
+            overflowStyle = documentElementStyle;
+        }
     }
 
     // Resolved rem units are stored in the matched properties cache so we need to make sure to
@@ -1675,12 +1678,31 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     RefPtr<RenderStyle> documentStyle = renderView()->style();
-    if (documentStyle->writingMode() != rootWritingMode || documentStyle->direction() != rootDirection) {
+    if (documentStyle->writingMode() != rootWritingMode
+        || documentStyle->direction() != rootDirection
+        || (overflowStyle && (documentStyle->overflowX() != overflowStyle->overflowX() || documentStyle->overflowY() != overflowStyle->overflowY()))) {
         RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
+        EOverflow overflowX = OAUTO;
+        EOverflow overflowY = OAUTO;
+        if (overflowStyle) {
+            overflowX = overflowStyle->overflowX();
+            overflowY = overflowStyle->overflowY();
+            // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
+            if (overflowX == OVISIBLE)
+                overflowX = OAUTO;
+            if (overflowY == OVISIBLE)
+                overflowY = OAUTO;
+
+            // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
+            // ways to specify gaps between pages), so we have to propagate it too.
+            newStyle->setColumnGap(overflowStyle->columnGap());
+        }
+        newStyle->setOverflowX(overflowX);
+        newStyle->setOverflowY(overflowY);
         renderView()->setStyle(newStyle);
-        setStyleDependentState(newStyle.get());
+        setupFontBuilder(newStyle.get());
     }
 
     if (body) {
@@ -2354,6 +2376,28 @@ HTMLHeadElement* Document::head()
             return toHTMLHeadElement(node);
     }
     return 0;
+}
+
+Element* Document::viewportDefiningElement(RenderStyle* rootStyle) const
+{
+    // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
+    // as the following conditions are all met:
+    // (1) The root element is HTML.
+    // (2) It is the primary BODY element (we only assert for this, expecting callers to behave).
+    // (3) The root element has visible overflow.
+    // Otherwise it's the root element's properties that are to be propagated.
+    Element* rootElement = documentElement();
+    Element* bodyElement = body();
+    if (!rootElement)
+        return 0;
+    if (!rootStyle) {
+        rootStyle = rootElement->renderStyle();
+        if (!rootStyle)
+            return 0;
+    }
+    if (bodyElement && rootStyle->isOverflowVisible() && rootElement->hasTagName(htmlTag))
+        return bodyElement;
+    return rootElement;
 }
 
 void Document::close()

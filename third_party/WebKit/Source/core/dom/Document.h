@@ -473,7 +473,7 @@ public:
     // Special support for editing
     PassRefPtr<Text> createEditingTextNode(const String&);
 
-    void setStyleDependentState(RenderStyle* documentStyle);
+    void setupFontBuilder(RenderStyle* documentStyle);
 
     void updateStyleIfNeeded();
     void updateStyleForNodeIfNeeded(Node*);
@@ -780,6 +780,12 @@ public:
     void setBody(PassRefPtr<HTMLElement>, ExceptionState&);
 
     HTMLHeadElement* head();
+
+    // Decide which element is to define the viewport's overflow policy. If |rootStyle| is set, use
+    // that as the style for the root element, rather than obtaining it on our own. The reason for
+    // this is that style may not have been associated with the elements yet - in which case it may
+    // have been calculated on the fly (without associating it with the actual element) somewhere.
+    Element* viewportDefiningElement(RenderStyle* rootStyle = 0) const;
 
     DocumentMarkerController* markers() const { return m_markers.get(); }
 
