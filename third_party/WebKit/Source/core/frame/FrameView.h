@@ -551,11 +551,11 @@ class AllowRepaintScope {
 public:
     explicit AllowRepaintScope(FrameView* view)
         : m_view(view)
+        , m_originalValue(view ? view->canRepaintDuringPerformLayout() : false)
     {
         if (!m_view)
             return;
 
-        m_originalValue = m_view->canRepaintDuringPerformLayout();
         m_view->setCanRepaintDuringPerformLayout(true);
     }
 
