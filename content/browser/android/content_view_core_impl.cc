@@ -316,6 +316,12 @@ void ContentViewCoreImpl::Observe(int type,
       if (switched_details->first) {
         old_pid = GetRenderProcessIdFromRenderViewHost(
             switched_details->first);
+
+        RenderWidgetHostViewAndroid* view =
+            static_cast<RenderWidgetHostViewAndroid*>(
+                switched_details->first->GetView());
+        if (view)
+          view->SetContentViewCore(NULL);
       }
       int new_pid = GetRenderProcessIdFromRenderViewHost(
           web_contents_->GetRenderViewHost());
