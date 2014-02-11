@@ -1260,7 +1260,7 @@ def ApplyTLSEdit(env, nexe_name, raw_nexe):
   return env.Command(
       nexe_name,
       [tls_edit_exe, raw_nexe],
-      '${SOURCES} ${TARGET}')
+      '${SOURCES[0]} --verbose ${SOURCES[1:]} ${TARGET}')
 
 pre_base_env.AddMethod(ApplyTLSEdit)
 

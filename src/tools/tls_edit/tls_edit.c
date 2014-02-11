@@ -21,6 +21,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_ragel/validator.h"
 
+static Bool g_verbose = FALSE;
 static void *g_contents;
 static size_t g_contents_size;
 static uint8_t *g_code_start;
@@ -87,8 +88,10 @@ static Bool ConsiderOneInsn(const uint8_t *insn_begin, const uint8_t *insn_end,
        * is being properly compiled without any special TLS flags.
        */
       uint32_t insn_addr = GetInsnAddr(insn_begin);
-      printf("%#x: %%gs address already pointing to correct offset (4)\n",
-             insn_addr);
+      if (g_verbose) {
+        printf("%#x: %%gs address already pointing to correct offset (4)\n",
+               insn_addr);
+      }
     } else {
       ReportError(insn_begin, "Unexpected %gs address");
     }
@@ -180,12 +183,16 @@ static Bool EditTLSCode(const char *infile, uint32_t code_addr,
       EditX86_32Code(g_code_start, code_length);
       break;
     case EM_X86_64:
-      printf("%s: x86-64 ELF detected, no instructions changed\n",
-             infile);
+      if (g_verbose) {
+        printf("%s: x86-64 ELF detected, no instructions changed\n",
+               infile);
+      }
       return TRUE;
     case EM_MIPS:
-      printf("%s: MIPS ELF detected, no instructions changed\n",
-             infile);
+      if (g_verbose) {
+        printf("%s: MIPS ELF detected, no instructions changed\n",
+               infile);
+      }
       return TRUE;
     default:
       fprintf(stderr, "%s: Unsupported e_machine %d\n",
@@ -193,13 +200,14 @@ static Bool EditTLSCode(const char *infile, uint32_t code_addr,
       return FALSE;
   }
 
-  if (g_changes == 0) {
-    printf("%s: Found no changes to make\n",
-           infile);
-    return TRUE;
-  } else {
-    printf("%s: %d instructions changed\n",
-           infile, g_changes);
+  if (g_verbose) {
+    if (g_changes == 0) {
+      printf("%s: Found no changes to make\n",
+             infile);
+    } else {
+      printf("%s: %d instructions changed\n",
+             infile, g_changes);
+    }
   }
 
   return TRUE;
@@ -320,14 +328,29 @@ static Bool Process64BitFile(const char *infile) {
 int main(int argc, char **argv) {
   const char *infile;
   const char *outfile;
+  int arg_iter;
 
-  if (argc != 3) {
-    fprintf(stderr, "Usage: %s INFILE OUTFILE\n", argv[0]);
+  for (arg_iter = 1; arg_iter < argc; ++arg_iter) {
+    if (argv[arg_iter][0] != '-')
+      break;
+
+    if (0 == strcmp(argv[arg_iter], "--verbose")) {
+      g_verbose = TRUE;
+    } else {
+      fprintf(stderr, "Invalid option: %s", argv[arg_iter]);
+      return 1;
+    }
+  }
+
+  if (argc - arg_iter != 2) {
+    fprintf(stderr, "Usage: %s [OPTIONS] INFILE OUTFILE\n", argv[0]);
+    fprintf(stderr, "\nOPTIONS:\n");
+    fprintf(stderr, "\t--verbose: Display verbose output messages\n");
     return 1;
   }
 
-  infile = argv[1];
-  outfile = argv[2];
+  infile = argv[arg_iter];
+  outfile = argv[arg_iter + 1];
 
   ReadInput(infile);
 
