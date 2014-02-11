@@ -677,7 +677,7 @@
             }],
             ['chromeos==0', {
               'dependencies': [
-                '../v8/src/d8.gyp:d8',
+                '../v8/src/d8.gyp:d8#host',
               ],
             }],
             ['internal_filter_fuzzer==1', {
