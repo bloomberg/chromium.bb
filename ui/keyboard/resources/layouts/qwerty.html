@@ -4,151 +4,132 @@
   -- found in the LICENSE file.
   -->
 
-<link id="spacebar-row" rel="import" href="spacebar-row.html">
-
 <template>
-  <kb-keyset id="qwerty-upper">
-    <kb-row>
-      <kb-key class="dark" char="&#x0009;" align="left"
-          weight="120">tab</kb-key>
+  <kb-keyset id="qwerty-upper" align="stretch">
+    <kb-row align="stretchright">
       <kb-key-sequence keys="QWERTYUIOP" hintTexts="1234567890">
       </kb-key-sequence>
       <kb-key class="dark" char="&#x0008;" repeat align="right"
-          weight="140">backspace</kb-key>
+          weight="110">backspace</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-key class="microphone dark" char="Microphone" weight="150"></kb-key>
+    <kb-row align="right">
       <kb-key-sequence keys="ASDFGHJKL"></kb-key-sequence>
       <kb-key class="dark" char="&#x000A;" align="right"
-          weight="210">enter</kb-key>
+          weight="175">enter</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-shift-key weight="180" align="left">shift</kb-shift-key>
-      <kb-key-sequence keys="ZXCVBNM"></kb-key-sequence>
-      <kb-key invert hintText="!" char=",">,</kb-key>
-      <kb-key invert hintText="?" char=".">.</kb-key>
-      <kb-shift-key weight="180" align="right">shift</kb-shift-key>
+    <kb-row align="stretchright">
+      <kb-shift-key weight="105" align="left">shift</kb-shift-key>
+      <kb-key-sequence keys="ZXCVBNM!?"></kb-key-sequence>
+      <kb-shift-key weight="105" align="right">shift</kb-shift-key>
     </kb-row>
     <kb-row>
       <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="left" weight="130">#123</kb-key>
-      <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="right" weight="130">#123</kb-key>
-      <kb-hide-keyboard-key>hide</kb-hide-keyboard-key>
+          align="left" weight="105">?123</kb-key>
+      <kb-key class="dark">_</kb-key>
+      <kb-key class="dark">/</kb-key>
+      <kb-key char=" " class="space" weight="540"></kb-key>
+      <kb-key class="dark">,</kb-key>
+      <kb-key class="dark">.</kb-key>
+      <kb-hide-keyboard-key weight="105">hide</kb-hide-keyboard-key>
     </kb-row>
     <kb-altkey-container hidden>
     </kb-altkey-container>
   </kb-keyset>
 
-  <kb-keyset id="qwerty-lower" isDefault=true>
-    <kb-row>
-      <kb-key class="dark" char="&#x0009;" align="left"
-          weight="120">tab</kb-key>
+  <kb-keyset id="qwerty-lower" isDefault=true align="stretch">
+    <kb-row align="stretchright">
       <kb-key-sequence keys="qwertyuiop" hintTexts="1234567890">
       </kb-key-sequence>
       <kb-key class="dark" char="&#x0008;" repeat align="right"
-          weight="140">backspace</kb-key>
+          weight="110">backspace</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-key class="microphone dark" char="Microphone" weight="150"></kb-key>
+    <kb-row align="right">
       <kb-key-sequence keys="asdfghjkl"></kb-key-sequence>
       <kb-key class="dark" char="&#x000A;" align="right"
-          weight="210">enter</kb-key>
+          weight="175">enter</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-shift-key weight="180" align="left">shift</kb-shift-key>
-      <kb-key-sequence keys="zxcvbnm"></kb-key-sequence>
-      <kb-key hintText="!">,</kb-key><kb-key hintText="?">.</kb-key>
-      <kb-shift-key weight="180" align="right">shift</kb-shift-key>
+    <kb-row align="stretchright">
+      <kb-shift-key weight="105" align="left">shift</kb-shift-key>
+      <kb-key-sequence keys="zxcvbnm!?"></kb-key-sequence>
+      <kb-shift-key weight="105" align="right">shift</kb-shift-key>
     </kb-row>
     <kb-row>
       <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="left" weight="130">#123</kb-key>
-      <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="right" weight="130">#123</kb-key>
-      <kb-hide-keyboard-key>hide</kb-hide-keyboard-key>
+          align="left" weight="105">?123</kb-key>
+      <kb-key class="dark">_</kb-key>
+      <kb-key class="dark">/</kb-key>
+      <kb-key char=" " class="space" weight="540"></kb-key>
+      <kb-key class="dark">,</kb-key>
+      <kb-key class="dark">.</kb-key>
+      <kb-hide-keyboard-key weight="105">hide</kb-hide-keyboard-key>
     </kb-row>
     <kb-altkey-container hidden>
     </kb-altkey-container>
   </kb-keyset>
 
-  <kb-keyset id="qwerty-symbol">
-    <kb-row>
-      <kb-key class="dark" char="&#x0009;" align="left"
-          weight="120">tab</kb-key>
-      <kb-key>1</kb-key><kb-key>2</kb-key>
-      <kb-key>3</kb-key><kb-key>4</kb-key>
-      <kb-key>5</kb-key><kb-key>6</kb-key><kb-key>7</kb-key>
-      <kb-key>8</kb-key><kb-key>9</kb-key><kb-key>0</kb-key>
+  <kb-keyset id="qwerty-symbol" align="stretch">
+    <kb-row align="stretchright">
+      <kb-key-sequence keys="1234567890"></kb-key-sequence>
       <kb-key class="dark" char="&#x0008;" repeat align="right"
-          weight="140">backspace</kb-key>
+          weight="110">backspace</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-key class="microphone dark" char="Microphone" weight="150"></kb-key>
-      <kb-key>@</kb-key><kb-key>#</kb-key><kb-key>$</kb-key>
-      <kb-key>%</kb-key><kb-key>&</kb-key>
-      <kb-key>*</kb-key><kb-key>/</kb-key>
-      <kb-key>(</kb-key><kb-key>)</kb-key>
+    <kb-row align="right">
+      <kb-key-sequence keys="@#$%&-+()"></kb-key-sequence>
       <kb-key class="dark" char="&#x000A;" align="right"
-          weight="210">enter</kb-key>
+          weight="175">enter</kb-key>
     </kb-row>
-    <kb-row>
+    <kb-row align="stretchright">
       <kb-key class="dark" toKeyset="down:more" char="Invalid" align="left"
-          weight="180">more</kb-key>
-      <kb-key>:</kb-key><kb-key>;</kb-key><kb-key>-</kb-key><kb-key>'</kb-key>
-      <kb-key>"</kb-key><kb-key>!</kb-key>
-      <kb-key>?</kb-key><kb-key>,</kb-key><kb-key>.</kb-key>
+          weight="105">~[&lt;</kb-key>
+      <kb-key-sequence keys="\=*&quot;':;!?"></kb-key-sequence>
       <kb-key class="dark" toKeyset="down:more" char="Invalid" align="right"
-          weight="180">more</kb-key>
+          weight="105">~[&lt;</kb-key>
     </kb-row>
     <kb-row>
-      <kb-abc-key align="left" weight="130">abc</kb-abc-key>
-      <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-abc-key align="right" weight="130">abc</kb-abc-key>
-      <kb-hide-keyboard-key>hide</kb-hide-keyboard-key>
+      <kb-abc-key align="left" weight="105">ABC</kb-abc-key>
+      <kb-key class="dark">_</kb-key>
+      <kb-key class="dark">/</kb-key>
+      <kb-key char=" " class="space" weight="540"></kb-key>
+      <kb-key class="dark">,</kb-key>
+      <kb-key class="dark">.</kb-key>
+      <kb-hide-keyboard-key weight="105">hide</kb-hide-keyboard-key>
     </kb-row>
     <kb-altkey-container hidden>
     </kb-altkey-container>
   </kb-keyset>
 
-  <kb-keyset id="qwerty-more">
+  <kb-keyset id="qwerty-more" align="stretch">
     <kb-row>
-      <kb-key class="dark" char="&#x0009;" align="left"
-          weight="120">tab</kb-key>
-      <kb-key>~</kb-key><kb-key>`</kb-key><kb-key>|</kb-key><kb-key>^</kb-key>
-      <kb-key>+</kb-key><kb-key>=</kb-key><kb-key>{</kb-key><kb-key>}</kb-key>
-      <kb-key>&#x003C;</kb-key><kb-key>&#x003E;</kb-key>
+      <kb-key-sequence
+          keys="~`|&#x2022;&radic;&Pi;&divide;&times;&para;&Delta;">
+      </kb-key-sequence>
       <kb-key class="dark" char="&#x0008;" repeat align="right"
-          weight="140">backspace</kb-key>
+          weight="110">backspace</kb-key>
     </kb-row>
-    <kb-row>
-      <kb-key class="microphone dark" char="Microphone" weight="150"></kb-key>
-      <kb-key>&#x00A3;</kb-key><kb-key>&#x00A2;</kb-key>
-      <kb-key>&#x20AC;</kb-key><kb-key>&#x2122;</kb-key>
-      <kb-key>&#x00A9;</kb-key><kb-key>&#x00AE;</kb-key>
-      <kb-key>\</kb-key><kb-key>[</kb-key>
-      <kb-key>]</kb-key>
+    <kb-row align="right">
+      <kb-key-sequence
+          keys="&pound;&#x00A2;&#x20AC;&yen;^&deg;={}">
+      </kb-key-sequence>
       <kb-key class="dark" char="&#x000A;" align="right"
-          weight="210">enter</kb-key>
+          weight="175">enter</kb-key>
+    </kb-row>
+    <kb-row align="stretchright">
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="left" weight="105">?123</kb-key>
+      <kb-key-sequence
+          keys="\&#x00A9;&#x00AE;&#x2122;&#8453;[]&iexcl;&iquest;">
+      </kb-key-sequence>
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="right" weight="105">?123</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="left" weight="180">#123</kb-key>
-      <kb-key>&#x00D7;</kb-key><kb-key>&#x00F7;</kb-key>
-      <kb-key>_</kb-key><kb-key>&#x00A7;</kb-key>
-      <kb-key>&#x00B6;</kb-key><kb-key>&#x00A1;</kb-key>
-      <kb-key>&#x00BF;</kb-key><kb-key>&#x2022;</kb-key>
-      <kb-key>&#x0394;</kb-key>
-      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
-          align="right" weight="180">#123</kb-key>
-    </kb-row>
-    <kb-row>
-      <kb-abc-key align="left" weight="130">abc</kb-abc-key>
-      <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-abc-key align="right" weight="130">abc</kb-abc-key>
-      <kb-hide-keyboard-key>hide</kb-hide-keyboard-key>
+      <kb-abc-key align="left" weight="105">ABC</kb-abc-key>
+      <kb-key class="dark">&lt;</kb-key>
+      <kb-key class="dark">&gt;</kb-key>
+      <kb-key char=" " class="space" weight="540"></kb-key>
+      <kb-key class="dark">,</kb-key>
+      <kb-key class="dark">.</kb-key>
+      <kb-hide-keyboard-key weight="105">hide</kb-hide-keyboard-key>
     </kb-row>
   </kb-keyset>
 </template>

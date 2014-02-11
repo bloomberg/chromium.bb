@@ -180,7 +180,6 @@ function testLowercaseKeysetAsync(testDoneCallback) {
     mockTypeCharacter('s', 0x53, Modifier.NONE);
     mockTypeCharacter('.', 0xBE, Modifier.NONE);
     mockTypeCharacter('\b', 0x08, Modifier.NONE, 0x08);
-    mockTypeCharacter('\t', 0x09, Modifier.NONE, 0x09);
     mockTypeCharacter('\n', 0x0D, Modifier.NONE, 0x0A);
     mockTypeCharacter(' ', 0x20, Modifier.NONE);
   };

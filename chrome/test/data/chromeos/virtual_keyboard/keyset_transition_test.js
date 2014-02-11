@@ -9,10 +9,10 @@
  * @enum {string}
  */
 var Key = {
-  MORE_SYMBOLS: 'more',
+  MORE_SYMBOLS: '~[<',
   SHIFT: 'shift',
-  SYMBOL: '#123',
-  TEXT: 'abc'
+  SYMBOL: '?123',
+  TEXT: 'ABC'
 };
 
 /**
@@ -119,6 +119,11 @@ KeysetTransitionTester.prototype = {
 function testPersistantCapitalizationAsync(testDoneCallback) {
   var tester = new KeysetTransitionTester(Layout.DEFAULT);
 
+  /**
+   * Checks persistant capitalization using the shift key with the given
+   * alignment.
+   * @param {string} alignment The alignment of the shift key.
+   */
   var checkPersistantCapitalization = function(alignment) {
     // Shift-lock
     tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_DOWN, Keyset.LOWER);
@@ -126,21 +131,26 @@ function testPersistantCapitalizationAsync(testDoneCallback) {
     tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_UP, Keyset.UPPER);
 
      // text -> symbol -> more -> text
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.UPPER);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_DOWN,
+        Keyset.UPPER);
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
         Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_DOWN,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.UPPER);
+    // Symbol key only has left alignment.
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP, Keyset.UPPER);
 
     // switch back to lower case
-    tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_DOWN, Keyset.UPPER);
+    tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_DOWN,
+        Keyset.UPPER);
     tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_UP, Keyset.LOWER);
   };
+  // Run the test using the left shift key.
   checkPersistantCapitalization(Alignment.LEFT);
+  // Run the test using the right shift key.
   checkPersistantCapitalization(Alignment.RIGHT);
 
   tester.scheduleTest('testInputTypeResponsivenessAsync', testDoneCallback);
@@ -183,44 +193,55 @@ function testKeysetTransitionsAsync(testDoneCallback) {
 
   var tester = new KeysetTransitionTester('qwerty');
 
+  /**
+   * Checks the transitions using the shift key with the given alignment.
+   * @param {string} alignment The alignment of the shift key.
+   */
   var checkBasicTransitions = function(alignment) {
     // Test the path abc -> symbol -> more -> symbol -> abc.
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.LOWER);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_DOWN,
+        Keyset.LOWER);
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
         Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_DOWN,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.MORE_SYMBOLS, EventType.KEY_UP,
+    tester.keyEvent(Alignment.LEFT, Key.MORE_SYMBOLS, EventType.KEY_UP,
         Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_DOWN,
+        Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP,
+        Keyset.LOWER);
 
     // Test the path abc -> symbol -> more -> abc.
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.LOWER);
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_DOWN,
+        Keyset.LOWER);
     // Mock keyUp on the abc since it occupies the space where the
     // symbol key used to be.
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
         Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP,
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN,
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_DOWN,
         Keyset.MORE_SYMBOLS);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
 
     // Test the path abc ->  highlighted ABC -> symbol -> abc.
     tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_DOWN, Keyset.LOWER);
     tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_UP, Keyset.UPPER);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.UPPER);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN, Keyset.SYMBOL);
-    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_DOWN,
+        Keyset.UPPER);
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.TEXT, EventType.KEY_DOWN,
+        Keyset.SYMBOL);
+    tester.keyEvent(Alignment.LEFT, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
   };
-
+  // Tests the transitions using the left shift key.
   checkBasicTransitions(Alignment.LEFT);
+  // Tests the transitions using the right shift key.
   checkBasicTransitions(Alignment.RIGHT);
 
   tester.scheduleTest('testKeysetTransitionsAsync', testDoneCallback);
