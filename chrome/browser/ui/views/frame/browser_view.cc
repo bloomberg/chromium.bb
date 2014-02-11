@@ -89,7 +89,9 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
+#include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -510,6 +512,11 @@ void BrowserView::InitStatusBubble() {
   contents_web_view_->SetStatusBubble(status_bubble_.get());
 }
 
+void BrowserView::InitPermissionBubbleView() {
+  permission_bubble_view_.reset(new PermissionBubbleViewViews(
+      GetLocationBarView()->GetLocationIconView()));
+}
+
 gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
   if (toolbar_bounds.IsEmpty())
@@ -839,6 +846,15 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   }
   infobar_container_->ChangeInfoBarService(
       InfoBarService::FromWebContents(new_contents));
+
+  if (old_contents && PermissionBubbleManager::FromWebContents(old_contents))
+    PermissionBubbleManager::FromWebContents(old_contents)->SetView(NULL);
+
+  if (new_contents && PermissionBubbleManager::FromWebContents(new_contents)) {
+    PermissionBubbleManager::FromWebContents(new_contents)->SetView(
+        permission_bubble_view_.get());
+  }
+
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
@@ -1459,6 +1475,9 @@ ToolbarView* BrowserView::GetToolbarView() const {
 // BrowserView, TabStripModelObserver implementation:
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {
+  if (PermissionBubbleManager::FromWebContents(contents))
+    PermissionBubbleManager::FromWebContents(contents)->SetView(NULL);
+
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetActiveWebContents() will return NULL or something else.
@@ -1473,6 +1492,9 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
 }
 
 void BrowserView::TabDeactivated(WebContents* contents) {
+  if (PermissionBubbleManager::FromWebContents(contents))
+    PermissionBubbleManager::FromWebContents(contents)->SetView(NULL);
+
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
@@ -1951,8 +1973,6 @@ void BrowserView::InitViews() {
   AddChildView(contents_container_);
   set_contents_view(contents_container_);
 
-  InitStatusBubble();
-
   // Top container holds tab strip and toolbar and lives at the front of the
   // view hierarchy.
   top_container_ = new TopContainerView(this);
@@ -1969,6 +1989,9 @@ void BrowserView::InitViews() {
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
+
+  InitStatusBubble();
+  InitPermissionBubbleView();
 
   // Create do-nothing view for the sake of controlling the z-order of the find
   // bar widget.

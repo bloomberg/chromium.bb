@@ -2177,6 +2177,8 @@
         'browser/ui/views/web_contents_modal_dialog_manager_views.cc',
         'browser/ui/views/website_settings/permission_selector_view.cc',
         'browser/ui/views/website_settings/permission_selector_view.h',
+        'browser/ui/views/website_settings/permissions_bubble_view.cc',
+        'browser/ui/views/website_settings/permissions_bubble_view.h',
         'browser/ui/views/website_settings/permission_selector_view_observer.h',
         'browser/ui/views/website_settings/website_settings_popup_view.cc',
         'browser/ui/views/website_settings/website_settings_popup_view.h',

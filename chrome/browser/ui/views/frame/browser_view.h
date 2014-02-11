@@ -50,6 +50,7 @@ class DownloadShelfView;
 class FullscreenExitBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
+class PermissionBubbleViewViews;
 class StatusBubbleViews;
 class SearchViewController;
 class TabStrip;
@@ -128,6 +129,11 @@ class BrowserView : public BrowserWindow,
   // events (such as changing enabling/disabling Aero on Win) can force a need
   // to change some of the bubble's creation parameters.
   void InitStatusBubble();
+
+  // Initializes the permission bubble view. This class is intended to be
+  // created once and then re-used for the life of the browser window. The
+  // bubbles it creates will be associated with a single visible tab.
+  void InitPermissionBubbleView();
 
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
@@ -668,6 +674,10 @@ class BrowserView : public BrowserWindow,
 
   // The Status information bubble that appears at the bottom of the window.
   scoped_ptr<StatusBubbleViews> status_bubble_;
+
+  // The permission bubble view is the toolkit-specific implementation of the
+  // interface used by the manager to display permissions bubbles.
+  scoped_ptr<PermissionBubbleViewViews> permission_bubble_view_;
 
   // A mapping between accelerators and commands.
   std::map<ui::Accelerator, int> accelerator_table_;

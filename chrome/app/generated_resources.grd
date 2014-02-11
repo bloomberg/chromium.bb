@@ -410,6 +410,19 @@ are declared in build/common.gypi.
         <ph name="PERMISSION_TYPE_LABEL">$1<ex>Plugins</ex></ph>:
       </message>
 
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a papup.">
+        This site would like to:
+      </message>
+      <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
+        Allow
+      </message>
+      <message name="IDS_PERMISSION_DENY" desc="Label on button to deny a permissions request.">
+        Deny
+      </message>
+      <message name="IDS_PERMISSION_CUSTOMIZE" desc="Label on text button to allow the user to customize a permissions request.">
+        Customize
+      </message>
+
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History
       </message>

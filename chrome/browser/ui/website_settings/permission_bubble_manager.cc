@@ -26,7 +26,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
 
   requests_.push_back(request);
   // TODO(gbillock): do we need to make default state a request property?
-  accept_state_.push_back(false);
+  accept_state_.push_back(true);
 
   // TODO(gbillock): need significantly more complex logic here to deal
   // with various states of the manager.
@@ -48,20 +48,18 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
   }
 
   view_ = view;
-  if (view_ == NULL)
+  if (view_)
+    view_->SetDelegate(this);
+  else
     return;
 
-  if (bubble_showing_) {
-    view_->SetDelegate(this);
-    view_->Show(requests_, accept_state_, customization_mode_);
-  } else if (!requests_.empty()) {
+  if (!requests_.empty())
     bubble_showing_ = true;
-    view_->SetDelegate(this);
+
+  if (bubble_showing_)
     view_->Show(requests_, accept_state_, customization_mode_);
-  } else {
+  else
     view_->Hide();
-    return;
-  }
 }
 
 PermissionBubbleManager::PermissionBubbleManager(
@@ -94,6 +92,8 @@ void PermissionBubbleManager::ToggleAccept(int request_index, bool new_value) {
 
 void PermissionBubbleManager::SetCustomizationMode() {
   customization_mode_ = true;
+  if (view_)
+    view_->Show(requests_, accept_state_, customization_mode_);
 }
 
 void PermissionBubbleManager::Accept() {
@@ -124,6 +124,11 @@ void PermissionBubbleManager::Closing() {
 }
 
 void PermissionBubbleManager::FinalizeBubble() {
+  if (view_) {
+    view_->SetDelegate(NULL);
+    view_->Hide();
+  }
+
   std::vector<PermissionBubbleRequest*>::iterator di;
   for (di = requests_.begin(); di != requests_.end(); di++)
     (*di)->RequestFinished();
