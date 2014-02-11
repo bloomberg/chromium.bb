@@ -477,6 +477,12 @@ extern const char kStabilityChildProcessCrashCount[];
 extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
+#if defined(OS_ANDROID)
+extern const char kStabilityForegroundActivityType[];
+extern const char kStabilityLaunchedActivityFlags[];
+extern const char kStabilityLaunchedActivityCounts[];
+extern const char kStabilityCrashedActivityCounts[];
+#endif
 
 extern const char kStabilityBreakpadRegistrationSuccess[];
 extern const char kStabilityBreakpadRegistrationFail[];

@@ -66,7 +66,7 @@ void HistogramDeltaSerialization::PrepareAndSerializeDeltas(
   // the histograms, so that the receiving process can distinguish them from the
   // local histograms.
   histogram_snapshot_manager_.PrepareDeltas(
-      Histogram::kIPCSerializationSourceFlag, false);
+      Histogram::kIPCSerializationSourceFlag, Histogram::kNoFlags);
   serialized_deltas_ = NULL;
 }
 

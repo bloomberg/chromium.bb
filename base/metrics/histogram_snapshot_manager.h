@@ -29,9 +29,13 @@ class BASE_EXPORT HistogramSnapshotManager {
   virtual ~HistogramSnapshotManager();
 
   // Snapshot all histograms, and ask |histogram_flattener_| to record the
-  // delta. The arguments allow selecting only a subset of histograms for
-  // recording, or to set a flag in each recorded histogram.
-  void PrepareDeltas(HistogramBase::Flags flags_to_set, bool record_only_uma);
+  // delta. |flags_to_set| is used to set flags for each histogram.
+  // |required_flags| is used to select histograms to be recorded.
+  // Only histograms that have all the flags specified by the argument will be
+  // chosen. If all histograms should be recorded, set it to
+  // |Histogram::kNoFlags|.
+  void PrepareDeltas(HistogramBase::Flags flags_to_set,
+                     HistogramBase::Flags required_flags);
 
  private:
   // Snapshot this histogram, and record the delta.

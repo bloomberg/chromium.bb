@@ -26,7 +26,14 @@ const char MetricsServiceBase::kMimeType[] = "application/vnd.chrome.uma";
 
 void MetricsServiceBase::RecordCurrentHistograms() {
   DCHECK(log_manager_.current_log());
-  histogram_snapshot_manager_.PrepareDeltas(base::Histogram::kNoFlags, true);
+  histogram_snapshot_manager_.PrepareDeltas(
+      base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+void MetricsServiceBase::RecordCurrentStabilityHistograms() {
+  DCHECK(log_manager_.current_log());
+  histogram_snapshot_manager_.PrepareDeltas(
+      base::Histogram::kNoFlags, base::Histogram::kUmaStabilityHistogramFlag);
 }
 
 void MetricsServiceBase::RecordDelta(

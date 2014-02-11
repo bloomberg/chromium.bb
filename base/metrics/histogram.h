@@ -190,6 +190,12 @@ class Lock;
         base::Histogram::FactoryGet(name, min, max, bucket_count, \
                                     base::HistogramBase::kNoFlags))
 
+// This is a helper macro used by other macros and shouldn't be used directly.
+#define HISTOGRAM_ENUMERATION_WITH_FLAG(name, sample, boundary, flag) \
+    STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
+        base::LinearHistogram::FactoryGet(name, 1, boundary, boundary + 1, \
+            flag))
+
 #define HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
     HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
 
@@ -349,9 +355,15 @@ class Lock;
 // The samples should always be strictly less than |boundary_value|.  For more
 // details, see the comment for the |HISTOGRAM_ENUMERATION| macro, above.
 #define UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
-    STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
-        base::LinearHistogram::FactoryGet(name, 1, boundary_value, \
-            boundary_value + 1, base::HistogramBase::kUmaTargetedHistogramFlag))
+    HISTOGRAM_ENUMERATION_WITH_FLAG(name, sample, boundary_value, \
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+
+// Similar to UMA_HISTOGRAM_ENUMERATION, but used for recording stability
+// histograms.  Use this if recording a histogram that should be part of the
+// initial stability log.
+#define UMA_STABILITY_HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
+    HISTOGRAM_ENUMERATION_WITH_FLAG(name, sample, boundary_value, \
+        base::HistogramBase::kUmaStabilityHistogramFlag)
 
 #define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \

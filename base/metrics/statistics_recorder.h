@@ -86,6 +86,7 @@ class BASE_EXPORT StatisticsRecorder {
 
   friend struct DefaultLazyInstanceTraits<StatisticsRecorder>;
   friend class HistogramBaseTest;
+  friend class HistogramSnapshotManagerTest;
   friend class HistogramTest;
   friend class SparseHistogramTest;
   friend class StatisticsDeltaReaderTest;

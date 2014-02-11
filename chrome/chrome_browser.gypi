@@ -100,6 +100,9 @@
         'browser/accessibility/accessibility_events.h',
         'browser/accessibility/invert_bubble_prefs.cc',
         'browser/accessibility/invert_bubble_prefs.h',
+        'browser/android/activity_type_id_list.h',
+        'browser/android/activity_type_ids.cc',
+        'browser/android/activity_type_ids.h',
         'browser/android/banners/app_banner_settings_helper.cc',
         'browser/android/banners/app_banner_settings_helper.h',
         'browser/android/bookmarks/managed_bookmarks_shim.cc',
@@ -1234,6 +1237,7 @@
         'browser/metrics/metrics_network_observer.h',
         'browser/metrics/metrics_reporting_scheduler.cc',
         'browser/metrics/metrics_reporting_scheduler.h',
+        'browser/metrics/metrics_service_android.cc',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
         'browser/metrics/perf_provider_chromeos.cc',
@@ -3717,6 +3721,18 @@
             'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'activity_type_ids_java',
+          'type': 'none',
+          'sources': [
+            'android/java/ActivityTypeIds.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser',
+            'template_deps': ['browser/android/activity_type_id_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           'target_name': 'resource_id_java',

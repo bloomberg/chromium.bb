@@ -482,6 +482,10 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+
+#if defined(OS_ANDROID)
+  RegisterPrefsAndroid(registry);
+#endif  // defined(OS_ANDROID)
 }
 
 // static
@@ -510,6 +514,10 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 
   local_state->ClearPref(prefs::kMetricsInitialLogs);
   local_state->ClearPref(prefs::kMetricsOngoingLogs);
+
+#if defined(OS_ANDROID)
+  DiscardOldStabilityStatsAndroid(local_state);
+#endif  // defined(OS_ANDROID)
 }
 
 MetricsService::MetricsService()
@@ -945,6 +953,10 @@ void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
   }
 
   session_id_ = pref->GetInteger(prefs::kMetricsSessionID);
+
+#if defined(OS_ANDROID)
+  LogAndroidStabilityToPrefs(pref);
+#endif  // defined(OS_ANDROID)
 
   if (!pref->GetBoolean(prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(prefs::kStabilityCrashCount);
@@ -1534,6 +1546,10 @@ void MetricsService::PrepareInitialStabilityLog() {
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(initial_stability_log.release(),
                                    MetricsLog::INITIAL_LOG);
+#if defined(OS_ANDROID)
+  ConvertAndroidStabilityPrefsToHistograms(pref);
+  RecordCurrentStabilityHistograms();
+#endif  // defined(OS_ANDROID)
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
@@ -1560,6 +1576,9 @@ void MetricsService::PrepareInitialMetricsLog(MetricsLog::LogType log_type) {
   // before writing them.
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(initial_metrics_log_.release(), log_type);
+#if defined(OS_ANDROID)
+  ConvertAndroidStabilityPrefsToHistograms(pref);
+#endif  // defined(OS_ANDROID)
   RecordCurrentHistograms();
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();

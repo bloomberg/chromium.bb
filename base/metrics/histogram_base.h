@@ -56,13 +56,20 @@ class BASE_EXPORT HistogramBase {
 
   enum Flags {
     kNoFlags = 0,
-    kUmaTargetedHistogramFlag = 0x1,  // Histogram should be UMA uploaded.
 
-    // Indicate that the histogram was pickled to be sent across an IPC Channel.
-    // If we observe this flag on a histogram being aggregated into after IPC,
-    // then we are running in a single process mode, and the aggregation should
-    // not take place (as we would be aggregating back into the source
-    // histogram!).
+    // Histogram should be UMA uploaded.
+    kUmaTargetedHistogramFlag = 0x1,
+
+    // Indicates that this is a stability histogram. This flag exists to specify
+    // which histograms should be included in the initial stability log. Please
+    // refer to |MetricsService::PrepareInitialStabilityLog|.
+    kUmaStabilityHistogramFlag = kUmaTargetedHistogramFlag | 0x2,
+
+    // Indicates that the histogram was pickled to be sent across an IPC
+    // Channel. If we observe this flag on a histogram being aggregated into
+    // after IPC, then we are running in a single process mode, and the
+    // aggregation should not take place (as we would be aggregating back into
+    // the source histogram!).
     kIPCSerializationSourceFlag = 0x10,
 
     // Only for Histogram and its sub classes: fancy bucket-naming support.

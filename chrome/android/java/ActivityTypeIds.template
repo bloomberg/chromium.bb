@@ -1,0 +1,11 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser;
+
+public class ActivityTypeIds {
+#define DEFINE_ACTIVITY_ID(id,value) public static final int ACTIVITY_##id = value;
+#include "chrome/browser/android/activity_type_id_list.h"
+#undef DEFINE_ACTIVITY_ID
+}

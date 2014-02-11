@@ -43,6 +43,10 @@ class MetricsServiceBase : public base::HistogramFlattener {
   // Called when we close a log.
   void RecordCurrentHistograms();
 
+  // Record complete list of stability histograms into the current log,
+  // i.e., histograms with the |kUmaStabilityHistogramFlag| flag set.
+  void RecordCurrentStabilityHistograms();
+
   // Manager for the various in-flight logs.
   MetricsLogManager log_manager_;
 

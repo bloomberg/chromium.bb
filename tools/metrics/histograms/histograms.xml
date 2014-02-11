@@ -1436,6 +1436,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Chrome.Android.Activity.CrashCounts" enum="AndroidActivityId">
+  <summary>
+    Indicates how many times each particular type of Activity was in the
+    foreground when a UMA session was terminated abnormally. UMA sessions last
+    as long as Chrome remains in the foreground.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.Android.Activity.LaunchCounts" enum="AndroidActivityId">
+  <summary>
+    Indicates how many times each particular type of Activity was brought to the
+    foreground when a UMA session was active (i.e. launched at some point). UMA
+    sessions last as long as Chrome remains in the foreground.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.Browser.CrashedExecutionPhase" enum="ExecutionPhase">
   <summary>
     Indicates the execution phase the browser was in when the browser crashed.
@@ -22545,6 +22561,14 @@ other types of suffix sets.
   <int value="2" label="Maximized"/>
   <int value="3" label="Fullscreen"/>
   <int value="4" label="Snapped"/>
+</enum>
+
+<enum name="AndroidActivityId" type="int">
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Main"/>
+  <int value="3" label="Preferences"/>
+  <int value="4" label="WebappActivity"/>
+  <int value="5" label="FullScreenActivity"/>
 </enum>
 
 <enum name="AndroidEvictionReason" type="int">
