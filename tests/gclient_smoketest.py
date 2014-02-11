@@ -1396,7 +1396,8 @@ class GClientSmokeBoth(GClientSmokeBase):
   # TODO(borenet): Enable this at the same time that the guard is removed in
   # gclient.
   if (os.environ.get('CHROME_HEADLESS') and
-      socket.gethostname() in ('vm859-m1', 'build1-m1', 'vm630-m1')):
+      socket.gethostname() in ('vm859-m1', 'BUILD1-M1',
+                               'vm630-m1.golo.chromium.org')):
     def testDeleteConflictingCheckout(self):
       if not self.enabled:
         return
