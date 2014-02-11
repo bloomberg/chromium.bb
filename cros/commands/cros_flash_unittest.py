@@ -49,7 +49,8 @@ class MockFlashCommand(init_unittest.MockCommand):
   TARGET_CLASS = cros_flash.FlashCommand
   COMMAND = 'flash'
   ATTRS = init_unittest.MockCommand.ATTRS + (
-      'UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads')
+      'UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads',
+      'SetupRootfsUpdate', 'Verify')
 
   UPDATE_ENGINE_TIMEOUT = 1
 
@@ -57,8 +58,6 @@ class MockFlashCommand(init_unittest.MockCommand):
     init_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def Run(self, inst):
-    # with mock.patch(
-    #   'chromite.lib.dev_server_wrapper.DevServerWrapper') as _m1:
     init_unittest.MockCommand.Run(self, inst)
 
   def GetUpdatePayloads(self, _inst, *_args, **_kwargs):
@@ -69,6 +68,12 @@ class MockFlashCommand(init_unittest.MockCommand):
 
   def UpdateRootfs(self, _inst, *_args, **_kwargs):
     """Mock out UpdateRootfs."""
+
+  def SetupRootfsUpdate(self, _inst, *_args, **_kwargs):
+    """Mock out SetupRootfsUpdate."""
+
+  def Verify(self, _inst, *_args, **_kwargs):
+    """Mock out SetupRootfsUpdate."""
 
 
 class ReadOptionTest(cros_test_lib.MockTempDirTestCase):

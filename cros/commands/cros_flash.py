@@ -224,6 +224,18 @@ using-the-dev-server/xbuddy-for-devserver
     device.CopyToWorkDir(src_dir)
     return os.path.join(device.work_dir, os.path.basename(src_dir))
 
+  def SetupRootfsUpdate(self, device):
+    """Makes sure |device| is ready for rootfs update."""
+    logging.info('Checking if update engine is idle...')
+    status, = self.GetUpdateStatus(device)
+    if status == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
+      logging.info('Device needs to reboot before updating...')
+      device.Reboot()
+      status, = self.GetUpdateStatus(device)
+
+    if status != 'UPDATE_STATUS_IDLE':
+      raise DeviceUpdateError('Update engine is not idle. Status: %s' % status)
+
   def UpdateRootfs(self, device, payload, tempdir):
     """Update the rootfs partition of the device.
 
@@ -242,16 +254,6 @@ using-the-dev-server/xbuddy-for-devserver
     devserver_bin = os.path.join(src_dir, 'devserver.py')
     ds = ds_wrapper.RemoteDevServerWrapper(
         device, devserver_bin, static_dir=static_dir, log_dir=device.work_dir)
-
-    logging.info('Checking if update engine is idle...')
-    status, = self.GetUpdateStatus(device)
-    if status == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
-      logging.info('Device needs to reboot before updating...')
-      device.Reboot()
-      status, = self.GetUpdateStatus(device)
-
-    if status != 'UPDATE_STATUS_IDLE':
-      raise DeviceUpdateError('Update engine is not idle. Status: %s' % status)
 
     logging.info('Updating rootfs partition')
     try:
@@ -275,7 +277,7 @@ using-the-dev-server/xbuddy-for-devserver
 
         if op == 'UPDATE_STATUS_IDLE':
           raise DeviceUpdateError(
-              'Update failed with unexpected update status: %s' % status)
+              'Update failed with unexpected update status: %s' % op)
 
         time.sleep(self.UPDATE_CHECK_INTERVAL)
 
@@ -457,11 +459,29 @@ using-the-dev-server/xbuddy-for-devserver
     self.yes = options.yes
     self.debug = options.debug
 
+  def Verify(self, old_root_dev, new_root_dev):
+    """Verifies that the root deivce changed after reboot."""
+    assert new_root_dev and old_root_dev
+    if new_root_dev == old_root_dev:
+      raise DeviceUpdateError(
+          'Failed to boot into the new version. Possibly there was a '
+          'signing problem, or an automated rollback occurred because '
+          'your new image failed to boot.')
+
+  @classmethod
+  def GetRootDev(cls, device):
+    """Get the current root device on |device|."""
+    rootdev = device.RunCommand(
+        ['rootdev', '-s'], capture_output=True).output.strip()
+    logging.debug('Current root device is %s', rootdev)
+    return rootdev
+
+
   # pylint: disable=E1101
   def Run(self):
     """Perfrom the cros flash command."""
     self._ReadOptions()
-
+    old_root_dev, new_root_dev = None, None
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port,
@@ -483,8 +503,15 @@ using-the-dev-server/xbuddy-for-devserver
                                  src_image=self.options.src_image)
 
         self._CheckPayloads(payload_dir)
+
         # Perform device updates.
         if self.do_rootfs_update:
+          self.SetupRootfsUpdate(device)
+          # Record the current root device. This must be done after
+          # SetupRootfsUpdate because SetupRootfsUpdate may reboot the
+          # device if there is a pending update, which changes the
+          # root device.
+          old_root_dev = self.GetRootDev(device)
           payload = os.path.join(payload_dir, self.ROOTFS_FILENAME)
           self.UpdateRootfs(device, payload, self.tempdir)
           logging.info('Rootfs update completed.')
@@ -497,6 +524,10 @@ using-the-dev-server/xbuddy-for-devserver
         if self.reboot:
           logging.info('Rebooting device..')
           device.Reboot()
+
+        if self.do_rootfs_update and self.reboot:
+          new_root_dev = self.GetRootDev(device)
+          self.Verify(old_root_dev, new_root_dev)
 
     except (Exception, KeyboardInterrupt):
       logging.error('Cros Flash failed before completing.')
