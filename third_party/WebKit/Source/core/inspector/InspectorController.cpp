@@ -121,6 +121,16 @@ PassOwnPtr<InspectorController> InspectorController::create(Page* page, Inspecto
     return adoptPtr(new InspectorController(page, client));
 }
 
+void InspectorController::setTextAutosizingEnabled(bool enabled)
+{
+    m_pageAgent->setTextAutosizingEnabled(enabled);
+}
+
+void InspectorController::setDeviceScaleAdjustment(float deviceScaleAdjustment)
+{
+    m_pageAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
+}
+
 void InspectorController::initializeDeferredAgents()
 {
     if (m_deferredAgentsInitialized)

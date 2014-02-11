@@ -75,9 +75,11 @@ public:
 
     static PassOwnPtr<InspectorController> create(Page*, InspectorClient*);
 
-    void initializeDeferredAgents();
-    void inspectedPageDestroyed();
+    // Settings overrides.
+    void setTextAutosizingEnabled(bool);
+    void setDeviceScaleAdjustment(float);
 
+    void inspectedPageDestroyed();
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
 
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
@@ -130,6 +132,8 @@ public:
 
 private:
     InspectorController(Page*, InspectorClient*);
+
+    void initializeDeferredAgents();
 
     friend InstrumentingAgents* instrumentationForPage(Page*);
 

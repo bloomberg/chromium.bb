@@ -380,7 +380,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect.width() != oldRect.width()) {
         if (isMainFrame()) {
             Page* page = m_frame->page();
-            bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page, page->settings().textAutosizingEnabled());
+            bool textAutosizingEnabled = m_frame->settings()->textAutosizingEnabled();
             if (textAutosizingEnabled) {
                 TextAutosizer* textAutosizer = m_frame->document()->textAutosizer();
                 if (textAutosizer) {

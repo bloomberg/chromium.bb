@@ -34,6 +34,7 @@
 #include "WebSettings.h"
 
 namespace WebCore {
+class InspectorController;
 class Settings;
 }
 
@@ -41,7 +42,7 @@ namespace blink {
 
 class WebSettingsImpl FINAL : public WebSettings {
 public:
-    explicit WebSettingsImpl(WebCore::Settings*);
+    explicit WebSettingsImpl(WebCore::Settings*, WebCore::InspectorController*);
     virtual ~WebSettingsImpl() { }
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
@@ -200,6 +201,7 @@ public:
 
 private:
     WebCore::Settings* m_settings;
+    WebCore::InspectorController* m_inspectorController;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

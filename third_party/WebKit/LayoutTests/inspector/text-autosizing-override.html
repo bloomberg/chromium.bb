@@ -72,9 +72,9 @@
         });
       },
 
-      function checkAutosizedWithoutDeviceMetrics(next) {
+      function checkNotAutosizedWithoutDeviceMetrics(next) {
         PageAgent.setDeviceMetricsOverride(0, 0, 2, false, false, true, function() {
-          assertAutosizingResult(true, next);
+          assertAutosizingResult(false, next);
         });
       },
 

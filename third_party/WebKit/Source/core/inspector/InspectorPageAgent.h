@@ -76,6 +76,10 @@ public:
 
     static PassOwnPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
 
+    // Settings overrides.
+    void setTextAutosizingEnabled(bool);
+    void setDeviceScaleAdjustment(float);
+
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
 
@@ -117,11 +121,6 @@ public:
     virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText) OVERRIDE;
     virtual void queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&) OVERRIDE;
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
-
-    // Text autosizing override helpers.
-    bool overrideTextAutosizing(bool);
-    // Note: This is used by Settings::deviceScaleAdjustment to calculate the overridden device scale adjustment.
-    float overrideFontScaleFactor(float);
 
     // InspectorInstrumentation API
     void didClearWindowObjectInMainWorld(Frame*);
@@ -173,7 +172,7 @@ private:
 
     InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
     bool deviceMetricsChanged(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
-    void updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow);
+    void updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizingEnabled);
     void updateTouchEventEmulationInPage(bool);
     bool forceCompositingMode(ErrorString*);
 
@@ -198,6 +197,8 @@ private:
     bool m_ignoreScriptsEnabledNotification;
     bool m_deviceMetricsOverridden;
     bool m_emulateViewportEnabled;
+    bool m_embedderTextAutosizingEnabled;
+    double m_embedderFontScaleFactor;
 };
 
 

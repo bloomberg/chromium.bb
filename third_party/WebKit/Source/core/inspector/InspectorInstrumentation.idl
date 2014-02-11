@@ -523,12 +523,6 @@ interface InspectorOverrides {
 
     [Worker, Inline=FastReturn]
     bool shouldPauseDedicatedWorkerOnStart(ExecutionContext* context);
-
-    [Page, Inline=FastReturn]
-    float overrideFontScaleFactor(Page* page, [DefaultReturn] float fontScaleFactor);
-
-    [Page, Inline=FastReturn]
-    bool overrideTextAutosizing(Page* page, [DefaultReturn] bool textAutosizing);
 }
 
 

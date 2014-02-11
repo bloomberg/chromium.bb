@@ -97,7 +97,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -2412,7 +2411,7 @@ void WebViewImpl::didChangeWindowResizerRect()
 WebSettingsImpl* WebViewImpl::settingsImpl()
 {
     if (!m_webSettings)
-        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings()));
+        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings(), &m_page->inspectorController()));
     ASSERT(m_webSettings);
     return m_webSettings.get();
 }
@@ -2909,7 +2908,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (settings()->viewportEnabled()) {
         layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 
-        bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page(), page()->settings().textAutosizingEnabled());
+        bool textAutosizingEnabled = page()->settings().textAutosizingEnabled();
         if (textAutosizingEnabled && layoutSize.width != view->layoutSize().width()) {
             TextAutosizer* textAutosizer = page()->mainFrame()->document()->textAutosizer();
             if (textAutosizer)

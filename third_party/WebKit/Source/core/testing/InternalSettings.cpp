@@ -30,9 +30,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorController.h"
+#include "core/page/Page.h"
 #include "platform/ColorChooser.h"
 #include "platform/Supplementable.h"
 #include "platform/text/LocaleToScriptMapping.h"
@@ -154,7 +154,7 @@ void InternalSettings::resetToConsistentState()
 
     m_backup.restoreTo(settings());
     m_backup = Backup(settings());
-    m_backup.m_originalTextAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page(), settings()->textAutosizingEnabled());
+    m_backup.m_originalTextAutosizingEnabled = settings()->textAutosizingEnabled();
 
     InternalSettingsGenerated::resetToConsistentState();
 }
@@ -298,7 +298,7 @@ void InternalSettings::setPictographFontFamily(const AtomicString& family, const
 void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    settings()->setTextAutosizingEnabled(enabled);
+    m_page->inspectorController().setTextAutosizingEnabled(enabled);
 }
 
 void InternalSettings::setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState& exceptionState)

@@ -1,0 +1,32 @@
+Tests the Timeline API instrumentation of a Layout event with Text Autosizing enabled.
+
+text
+text
+text
+text
+text
+AutosizeText Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        rootNode : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "AutosizeText"
+}
+AutosizeText Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        rootNode : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "AutosizeText"
+}
+

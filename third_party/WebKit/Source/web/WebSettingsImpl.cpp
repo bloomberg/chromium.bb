@@ -32,6 +32,7 @@
 #include "WebSettingsImpl.h"
 
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorController.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include "public/platform/WebString.h"
@@ -41,8 +42,9 @@ using namespace WebCore;
 
 namespace blink {
 
-WebSettingsImpl::WebSettingsImpl(Settings* settings)
+WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspectorController)
     : m_settings(settings)
+    , m_inspectorController(inspectorController)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
@@ -137,7 +139,7 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
 
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
-    m_settings->setTextAutosizingEnabled(enabled);
+    m_inspectorController->setTextAutosizingEnabled(enabled);
 }
 
 void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
@@ -147,7 +149,7 @@ void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
 
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
-    m_settings->setDeviceScaleAdjustment(deviceScaleAdjustment);
+    m_inspectorController->setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
 
 void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)

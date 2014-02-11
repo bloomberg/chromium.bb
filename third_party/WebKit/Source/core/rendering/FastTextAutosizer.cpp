@@ -35,7 +35,6 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
@@ -157,7 +156,7 @@ bool FastTextAutosizer::enabled()
     if (!m_document->settings() || !m_document->page() || m_document->printing())
         return false;
 
-    return InspectorInstrumentation::overrideTextAutosizing(m_document->page(), m_document->settings()->textAutosizingEnabled());
+    return m_document->settings()->textAutosizingEnabled();
 }
 
 void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
@@ -178,7 +177,7 @@ void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
     // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
     const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
     if (!viewportDescription.isSpecifiedByAuthor()) {
-        float deviceScaleAdjustment = InspectorInstrumentation::overrideFontScaleFactor(m_document->page(), m_document->settings()->deviceScaleAdjustment());
+        float deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
         m_baseMultiplier *= deviceScaleAdjustment;
     }
 #ifndef NDEBUG

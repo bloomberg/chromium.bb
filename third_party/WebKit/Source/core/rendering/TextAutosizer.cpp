@@ -185,12 +185,13 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     if (!m_document->settings() || layoutRoot->view()->document().printing() || !m_document->page())
         return false;
 
-    bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(m_document->page(), m_document->settings()->textAutosizingEnabled());
+    bool textAutosizingEnabled = m_document->settings()->textAutosizingEnabled();
     if (!textAutosizingEnabled)
         return false;
 
-    Frame* mainFrame = m_document->page()->mainFrame();
+    InspectorInstrumentation::willAutosizeText(layoutRoot);
 
+    Frame* mainFrame = m_document->page()->mainFrame();
     TextAutosizingWindowInfo windowInfo;
 
     // Window area, in logical (density-independent) pixels.
@@ -217,8 +218,10 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     // Note: this might suppress autosizing of an inner cluster with a different writing mode.
     // It's not clear what the correct behavior is for mixed writing modes anyway.
     if (!cluster || clusterMultiplier(cluster->style()->writingMode(), windowInfo,
-        std::numeric_limits<float>::infinity()) == 1.0f)
+        std::numeric_limits<float>::infinity()) == 1.0f) {
+        InspectorInstrumentation::didAutosizeText(layoutRoot);
         return false;
+    }
 
     TextAutosizingClusterInfo clusterInfo(cluster);
     processCluster(clusterInfo, container, layoutRoot, windowInfo);
@@ -248,7 +251,7 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
     // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
     const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
     if (!viewportDescription.isSpecifiedByAuthor()) {
-        float deviceScaleAdjustment = InspectorInstrumentation::overrideFontScaleFactor(m_document->page(), m_document->settings()->deviceScaleAdjustment());
+        float deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
         multiplier *= deviceScaleAdjustment;
     }
     return std::max(1.0f, multiplier);
