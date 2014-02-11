@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 """Defines a set of constants shared by test runners and other scripts."""
-# pylint: disable=W0212
 
 import collections
 import logging
 import os
 import subprocess
+import sys
 
 
 DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),

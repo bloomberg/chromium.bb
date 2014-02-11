@@ -7,8 +7,8 @@
 import threading
 import unittest
 
-from pylib.utils import reraiser_thread
-from pylib.utils import watchdog_timer
+import reraiser_thread
+import watchdog_timer
 
 
 class TestException(Exception):

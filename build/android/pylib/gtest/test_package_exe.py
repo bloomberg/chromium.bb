@@ -12,7 +12,8 @@ import tempfile
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
-from pylib.gtest.test_package import TestPackage
+
+from test_package import TestPackage
 
 
 class TestPackageExecutable(TestPackage):
@@ -51,8 +52,7 @@ class TestPackageExecutable(TestPackage):
       ret = 1
     return ret
 
-  @staticmethod
-  def _AddNativeCoverageExports(adb):
+  def _AddNativeCoverageExports(self, adb):
     # export GCOV_PREFIX set the path for native coverage results
     # export GCOV_PREFIX_STRIP indicates how many initial directory
     #                          names to strip off the hardwired absolute paths.

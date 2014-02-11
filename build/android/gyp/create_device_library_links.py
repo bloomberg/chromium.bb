@@ -11,14 +11,14 @@ options.target_dir). This script then creates links in an apk's lib/ folder to
 those native libraries.
 """
 
+import json
 import optparse
 import os
 import sys
 
-# pylint: disable=F0401
 from util import build_device
 from util import build_utils
-# pylint: enable=F0401
+from util import md5_check
 
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
@@ -80,7 +80,7 @@ def TriggerSymlinkScript(options):
   RunShellCommand(device, trigger_cmd)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--apk', help='Path to the apk.')
   parser.add_option('--script-host-path',
@@ -111,4 +111,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

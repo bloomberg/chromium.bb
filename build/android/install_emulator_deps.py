@@ -30,7 +30,6 @@ DEFAULT_ANDROID_API_LEVEL = constants.ANDROID_SDK_VERSION
 SDK_BASE_URL = 'http://dl.google.com/android/adt'
 SDK_ZIP = 'adt-bundle-linux-x86_64-20131030.zip'
 
-# pylint: disable=C0301
 # Android x86 system image from the Intel website:
 # http://software.intel.com/en-us/articles/intel-eula-x86-android-4-2-jelly-bean-bin
 # These don't exist prior to Android-15.
@@ -41,7 +40,6 @@ X86_IMG_URLS = {
   17: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip',
   18: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip',
   19: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-19_r01.zip'}
-#pylint: enable=C0301
 
 def CheckSDK():
   """Check if SDK is already installed.

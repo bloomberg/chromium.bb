@@ -9,6 +9,7 @@ should be delegated to a higher level (ex. DeviceUtils).
 """
 
 import errno
+import logging
 import os
 
 from pylib import cmd_helper

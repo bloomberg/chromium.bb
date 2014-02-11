@@ -95,7 +95,7 @@ def main(argv):
                     type='float',
                     help='Time in seconds to sleep between updates.')
 
-  options, _ = parser.parse_args(argv)
+  options, args = parser.parse_args(argv)
   run_tests_helper.SetLogLevel(options.verbose_count)
 
   adb = android_commands.AndroidCommands(options.device)

@@ -64,8 +64,7 @@ class LighttpdServer(object):
   def _Mktmp(self, name):
     return os.path.join(self.temp_dir, name)
 
-  @staticmethod
-  def _GetRandomPort():
+  def _GetRandomPort(self):
     # The ports of test server is arranged in constants.py.
     return random.randint(constants.LIGHTTPD_RANDOM_PORT_FIRST,
                           constants.LIGHTTPD_RANDOM_PORT_LAST)
@@ -146,8 +145,7 @@ class LighttpdServer(object):
         break
     return (client_error or 'Timeout', server_msg)
 
-  @staticmethod
-  def _KillProcessListeningOnPort(port):
+  def _KillProcessListeningOnPort(self, port):
     """Checks if there is a process listening on port number |port| and
     terminates it if found.
 
@@ -160,8 +158,7 @@ class LighttpdServer(object):
       assert subprocess.call(['fuser', '-v', '%d/tcp' % port]) != 0, \
           'Unable to kill process listening on port %d.' % port
 
-  @staticmethod
-  def _GetDefaultBaseConfig():
+  def _GetDefaultBaseConfig(self):
     return """server.tag                  = "%(server_tag)s"
 server.modules              = ( "mod_access",
                                 "mod_accesslog",

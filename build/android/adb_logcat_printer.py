@@ -17,7 +17,6 @@ Additionally, if a <base_dir>/LOGCAT_MONITOR_PID exists, the script
 will attempt to terminate the contained PID by sending a SIGINT and
 monitoring for the deletion of the aforementioned file.
 """
-# pylint: disable=W0702
 
 import cStringIO
 import logging

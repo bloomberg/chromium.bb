@@ -24,6 +24,7 @@ Run
 
 """
 
+import optparse
 import os
 import sys
 
@@ -31,7 +32,7 @@ from pylib import constants
 from pylib.utils import findbugs
 
 
-def main():
+def main(argv):
   parser = findbugs.GetCommonParser()
 
   options, _ = parser.parse_args()
@@ -46,4 +47,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

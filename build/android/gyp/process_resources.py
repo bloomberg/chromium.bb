@@ -11,7 +11,7 @@ import os
 import shlex
 import shutil
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 def ParseArgs():
   """Parses command line options.

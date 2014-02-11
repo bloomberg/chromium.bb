@@ -9,7 +9,7 @@ import optparse
 import os
 import sys
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 
 def StripLibrary(android_strip, android_strip_args, library_path, output_path):
@@ -21,7 +21,7 @@ def StripLibrary(android_strip, android_strip_args, library_path, output_path):
 
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
 
   parser.add_option('--android-strip',
@@ -56,4 +56,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

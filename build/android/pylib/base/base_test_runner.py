@@ -4,10 +4,15 @@
 
 """Base class for running tests on a single device."""
 
+import contextlib
+import httplib
 import logging
+import os
+import tempfile
 import time
 
 from pylib import android_commands
+from pylib import constants
 from pylib import ports
 from pylib.chrome_test_server_spawner import SpawningServer
 from pylib.forwarder import Forwarder
@@ -176,7 +181,7 @@ class BaseTestRunner(object):
     # well as IsHttpServerConnectable(). spawning_server.Start() should also
     # block until the server is ready.
     # Try 3 times to launch test spawner server.
-    for _ in xrange(0, 3):
+    for i in xrange(0, 3):
       self.test_server_spawner_port = ports.AllocateTestServerPort()
       self._ForwardPorts(
           [(self.test_server_spawner_port, self.test_server_spawner_port)])

@@ -10,6 +10,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import traceback
 
 
 def MakeDirectory(dir_path):
@@ -30,18 +31,18 @@ def Touch(path):
     os.utime(path, None)
 
 
-def FindInDirectory(directory, filename_filter):
+def FindInDirectory(directory, filter):
   files = []
-  for root, _dirnames, filenames in os.walk(directory):
-    matched_files = fnmatch.filter(filenames, filename_filter)
+  for root, dirnames, filenames in os.walk(directory):
+    matched_files = fnmatch.filter(filenames, filter)
     files.extend((os.path.join(root, f) for f in matched_files))
   return files
 
 
-def FindInDirectories(directories, filename_filter):
+def FindInDirectories(directories, filter):
   all_files = []
   for directory in directories:
-    all_files.extend(FindInDirectory(directory, filename_filter))
+    all_files.extend(FindInDirectory(directory, filter))
   return all_files
 
 
@@ -55,9 +56,7 @@ def ParseGypList(gyp_string):
   return shlex.split(gyp_string)
 
 
-def CheckOptions(options, parser, required=None):
-  if not required:
-    return
+def CheckOptions(options, parser, required=[]):
   for option_name in required:
     if not getattr(options, option_name):
       parser.error('--%s is required' % option_name.replace('_', '-'))
@@ -84,7 +83,6 @@ class CalledProcessError(Exception):
   exits with a non-zero exit code."""
 
   def __init__(self, cwd, args, output):
-    super(CalledProcessError, self).__init__()
     self.cwd = cwd
     self.args = args
     self.output = output
@@ -131,8 +129,8 @@ def IsTimeStale(output, inputs):
     return True
 
   output_time = GetModifiedTime(output)
-  for i in inputs:
-    if GetModifiedTime(i) > output_time:
+  for input in inputs:
+    if GetModifiedTime(input) > output_time:
       return True
   return False
 

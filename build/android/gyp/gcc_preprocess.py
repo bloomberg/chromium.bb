@@ -6,9 +6,10 @@
 
 import optparse
 import os
+import subprocess
 import sys
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 def DoGcc(options):
   build_utils.MakeDirectory(os.path.dirname(options.output))
@@ -29,7 +30,7 @@ def DoGcc(options):
   build_utils.CheckOutput(gcc_cmd)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--include-path', help='Include path for gcc.')
   parser.add_option('--template', help='Path to template.')
@@ -49,4 +50,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

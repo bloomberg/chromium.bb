@@ -12,16 +12,18 @@ Assumes system environment ANDROID_NDK_ROOT has been set.
 
 import logging
 import os
+import shutil
 import signal
 import subprocess
+import sys
 import time
 
+import time_profile
 # TODO(craigdh): Move these pylib dependencies to pylib/utils/.
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
-from pylib.utils import time_profile
 
 import errors
 import run_command
@@ -96,7 +98,7 @@ def _KillAllEmulators():
   for emu_name in emulators:
     cmd_helper.RunCmd(['adb', '-s', emu_name, 'emu', 'kill'])
   logging.info('Emulator killing is async; give a few seconds for all to die.')
-  for _ in range(5):
+  for i in range(5):
     if not android_commands.GetAttachedDevices(hardware=False):
       return
     time.sleep(1)
@@ -227,8 +229,7 @@ class Emulator(object):
     self.api_level = api_level
     self._CreateAVD()
 
-  @staticmethod
-  def _DeviceName():
+  def _DeviceName(self):
     """Return our device name."""
     port = _GetAvailablePort()
     return ('emulator-%d' % port, port)
@@ -348,8 +349,7 @@ class Emulator(object):
                                   stderr=subprocess.STDOUT)
     self._InstallKillHandler()
 
-  @staticmethod
-  def _AggressiveImageCleanup():
+  def _AggressiveImageCleanup(self):
     """Aggressive cleanup of emulator images.
 
     Experimentally it looks like our current emulator use on the bot
@@ -386,7 +386,7 @@ class Emulator(object):
         number_of_waits -= 1
         if not number_of_waits:
           break
-      except errors.WaitForResponseTimedOutError:
+      except errors.WaitForResponseTimedOutError as e:
         seconds_waited += self._WAITFORDEVICE_TIMEOUT
         adb_cmd = "adb -s %s %s" % (self.device, 'kill-server')
         run_command.RunCommand(adb_cmd)
@@ -411,7 +411,7 @@ class Emulator(object):
         self.popen.kill()
       self.popen = None
 
-  def _ShutdownOnSignal(self, _signum, _frame):
+  def _ShutdownOnSignal(self, signum, frame):
     logging.critical('emulator _ShutdownOnSignal')
     for sig in self._SIGNALS:
       signal.signal(sig, signal.SIG_DFL)

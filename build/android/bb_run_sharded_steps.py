@@ -10,6 +10,7 @@ TODO(bulach): remove me once all other repositories reference
 """
 
 import optparse
+import os
 import sys
 
 from pylib import cmd_helper
@@ -26,7 +27,7 @@ def main(argv):
   parser.add_option('-p', '--print_results',
                     help='Only prints the results for the previously '
                          'executed step, do not run it again.')
-  options, _ = parser.parse_args(argv)
+  options, urls = parser.parse_args(argv)
   if options.print_results:
     return cmd_helper.RunCmd(['build/android/test_runner.py', 'perf',
                               '--print-step', options.print_results])

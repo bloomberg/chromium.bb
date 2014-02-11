@@ -20,9 +20,10 @@ import threading
 
 from pylib import android_commands
 from pylib import constants
-from pylib.base import base_test_result
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
+
+import base_test_result
 
 
 DEFAULT_TIMEOUT = 7 * 60  # seven minutes
@@ -68,9 +69,7 @@ class _TestCollection(object):
     tests: List of tests to put in the collection.
   """
 
-  def __init__(self, tests=None):
-    if not tests:
-      tests = []
+  def __init__(self, tests=[]):
     self._lock = threading.Lock()
     self._tests = []
     self._tests_in_progress = 0

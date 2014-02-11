@@ -29,8 +29,7 @@ class SystemProperties(dict):
     # TODO(tonyg): This can fail with no root. Verify that it succeeds.
     self._adb.SendShellCommand('setprop %s "%s"' % (key, value), retry_count=3)
 
-  @staticmethod
-  def _IsStatic(key):
+  def _IsStatic(self, key):
     # TODO(tonyg): This list is conservative and could be expanded as needed.
     return (key.startswith('ro.boot.') or
             key.startswith('ro.build.') or

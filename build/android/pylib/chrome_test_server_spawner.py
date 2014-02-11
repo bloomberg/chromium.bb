@@ -7,7 +7,6 @@
 It's used to accept requests from the device to spawn and kill instances of the
 chrome test server on the host.
 """
-# pylint: disable=W0702
 
 import BaseHTTPServer
 import json
@@ -21,11 +20,10 @@ import threading
 import time
 import urlparse
 
-from pylib import constants
-from pylib import ports
+import constants
+import ports
 
 from pylib.forwarder import Forwarder
-
 
 # Path that are needed to import necessary modules when launching a testserver.
 os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
@@ -56,7 +54,7 @@ def _WaitUntil(predicate, max_attempts=5):
     Whether the provided predicate was satisfied once (before the timeout).
   """
   sleep_time_sec = 0.025
-  for _ in xrange(1, max_attempts):
+  for attempt in xrange(1, max_attempts):
     if predicate():
       return True
     time.sleep(sleep_time_sec)
@@ -128,7 +126,6 @@ class TestServerThread(threading.Thread):
     # Anonymous pipe in order to get port info from test server.
     self.pipe_in = None
     self.pipe_out = None
-    self.process = None
     self.command_line = []
 
   def _WaitToStartAndGetPortFromTestServer(self):

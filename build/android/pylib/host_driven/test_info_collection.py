@@ -7,7 +7,7 @@
 import logging
 import os
 
-from pylib.host_driven import tests_annotations
+import tests_annotations
 
 
 class TestInfo(object):
@@ -22,8 +22,7 @@ class TestInfo(object):
     self.set_up = set_up
     self.tear_down = tear_down
 
-  @staticmethod
-  def _GetQualifiedName(runnable):
+  def _GetQualifiedName(self, runnable):
     """Helper method to infer a runnable's name and module name.
 
     Many filters and lists presuppose a format of module_name.testMethodName.
@@ -103,8 +102,7 @@ class TestInfoCollection(object):
 
     return available_tests
 
-  @staticmethod
-  def _AnnotationIncludesTest(test_info, annotation_filter_list):
+  def _AnnotationIncludesTest(self, test_info, annotation_filter_list):
     """Checks whether a given test represented by test_info matches annotation.
 
     Args:
@@ -130,8 +128,7 @@ class TestInfoCollection(object):
         return True
     return False
 
-  @staticmethod
-  def _NameFilterIncludesTest(test_info, name_filter):
+  def _NameFilterIncludesTest(self, test_info, name_filter):
     """Checks whether a name filter matches a given test_info's method name.
 
     This is a case-sensitive, substring comparison: 'Foo' will match methods

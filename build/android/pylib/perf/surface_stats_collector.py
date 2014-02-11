@@ -71,8 +71,7 @@ class SurfaceStatsCollector(object):
   def GetResults(self):
     return self._results or self._GetEmptyResults()
 
-  @staticmethod
-  def _GetEmptyResults():
+  def _GetEmptyResults(self):
     return [
         SurfaceStatsCollector.Result('refresh_period', None, 'seconds'),
         SurfaceStatsCollector.Result('jank_count', None, 'janks'),
@@ -103,7 +102,7 @@ class SurfaceStatsCollector(object):
       frame_count = len(frame_lengths) + 1
     if len(frame_lengths) == 0:
       raise Exception('No valid frames lengths found.')
-    _length_changes, normalized_changes = \
+    length_changes, normalized_changes = \
         SurfaceStatsCollector._GetNormalizedDeltas(
             frame_lengths, refresh_period)
     jankiness = [max(0, round(change)) for change in normalized_changes]

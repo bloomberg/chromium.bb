@@ -16,6 +16,6 @@ if _PEXPECT_PATH not in sys.path:
 # pexpect is not available on all platforms. We allow this file to be imported
 # on platforms without pexpect and only fail when pexpect is actually used.
 try:
-  from pexpect import * # pylint: disable=W0401,W0614
-except ImportError:
+  from pexpect import *
+except:
   pass

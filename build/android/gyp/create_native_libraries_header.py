@@ -18,10 +18,10 @@ import optparse
 import os
 import sys
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
 
   parser.add_option('--native-library-list',
@@ -44,7 +44,7 @@ def main():
   # "content_shell_content_view" }' from a list of the form ["libbase.so",
   # libnet.so", "libcontent_shell_content_view.so"]
   libraries = ['"' + lib[3:-3] + '"' for lib in libraries]
-  array = '= { ' + ', '.join(libraries) + '}'
+  array = '= { ' + ', '.join(libraries) + '}';
 
   with open(options.native_library_list, 'w') as header:
     header.write(array)
@@ -53,4 +53,4 @@ def main():
     header.write('= "%s"' % options.version_name)
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

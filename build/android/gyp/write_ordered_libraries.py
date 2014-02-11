@@ -20,12 +20,13 @@ libraries that should be included in the APK.
 # gyp, rather than calculating it ourselves.
 # http://crbug.com/225558
 
+import json
 import optparse
 import os
 import re
 import sys
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 _options = None
 _library_re = re.compile(
@@ -91,7 +92,7 @@ def GetSortedTransitiveDependenciesForExecutable(executable):
   return GetSortedTransitiveDependencies(libraries)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
 
   parser.add_option('--input-libraries',
@@ -119,6 +120,6 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))
 
 

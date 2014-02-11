@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 """Unittests for test_dispatcher.py."""
-# pylint: disable=R0201
-# pylint: disable=W0212
 
 import os
 import sys
@@ -17,10 +15,10 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 from pylib import android_commands
 android_commands.GetAttachedDevices = lambda: ['0', '1']
 from pylib import constants
-from pylib.base import base_test_result
-from pylib.base import test_dispatcher
 from pylib.utils import watchdog_timer
 
+import base_test_result
+import test_dispatcher
 
 
 class TestException(Exception):
@@ -193,7 +191,7 @@ class TestShard(unittest.TestCase):
     android_commands.GetAttachedDevices = lambda: []
     try:
       with self.assertRaises(AssertionError):
-        _results, _exit_code = TestShard._RunShard(MockRunner)
+        results, exit_code = TestShard._RunShard(MockRunner)
     finally:
       android_commands.GetAttachedDevices = attached_devices
 

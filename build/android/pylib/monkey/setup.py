@@ -4,7 +4,7 @@
 
 """Generates test runner factory and tests for monkey tests."""
 
-from pylib.monkey import test_runner
+import test_runner
 
 
 def Setup(test_options):

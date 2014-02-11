@@ -9,10 +9,8 @@ import optparse
 import os
 import sys
 
-# pylint: disable=F0401
 from util import build_utils
 from util import md5_check
-# pylint: enable=F0401
 
 
 def DoJar(options):
@@ -40,7 +38,7 @@ def DoJar(options):
   build_utils.Touch(options.jar_path)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--classes-dir', help='Directory containing .class files.')
   parser.add_option('--jar-path', help='Jar output path.')
@@ -60,5 +58,5 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))
 

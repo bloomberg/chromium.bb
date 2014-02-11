@@ -4,11 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import fnmatch
 import optparse
 import os
 import sys
 
-from util import build_utils # pylint: disable=F0401
+from util import build_utils
 
 def DoProguard(options):
   injars = options.input_path
@@ -28,7 +29,7 @@ def DoProguard(options):
   build_utils.CheckOutput(proguard_cmd, print_stdout=True)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--proguard-path',
                     help='Path to the proguard executable.')
@@ -52,4 +53,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

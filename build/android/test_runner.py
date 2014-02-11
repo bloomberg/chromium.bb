@@ -14,6 +14,7 @@ import shutil
 import signal
 import sys
 import threading
+import traceback
 
 from pylib import android_commands
 from pylib import constants
@@ -186,7 +187,7 @@ def AddJavaTestOptions(option_parser):
                                  'chromium build directory.'))
 
 
-def ProcessJavaTestOptions(options):
+def ProcessJavaTestOptions(options, error_func):
   """Processes options/arguments and populates |options| with defaults."""
 
   if options.annotation_str:
@@ -245,7 +246,7 @@ def ProcessInstrumentationOptions(options, error_func):
     instrumentation tests.
   """
 
-  ProcessJavaTestOptions(options)
+  ProcessJavaTestOptions(options, error_func)
 
   if options.java_only and options.python_only:
     error_func('Options java_only (-j) and python_only (-p) '
@@ -323,7 +324,7 @@ def ProcessUIAutomatorOptions(options, error_func):
     uiautomator tests.
   """
 
-  ProcessJavaTestOptions(options)
+  ProcessJavaTestOptions(options, error_func)
 
   if not options.package:
     error_func('--package is required.')
@@ -489,7 +490,7 @@ def ProcessPerfTestOptions(options, args, error_func):
       single_step)
 
 
-def _RunGTests(options, devices):
+def _RunGTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs gtests."""
   ProcessGTestOptions(options)
 
@@ -527,7 +528,7 @@ def _RunGTests(options, devices):
   return exit_code
 
 
-def _RunLinkerTests(options, devices):
+def _RunLinkerTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs linker tests."""
   runner_factory, tests = linker_setup.Setup(options, devices)
 
@@ -713,9 +714,9 @@ def RunTestsCommand(command, options, args, option_parser):
     raise Exception('Failed to reset test server port.')
 
   if command == 'gtest':
-    return _RunGTests(options, devices)
+    return _RunGTests(options, option_parser.error, devices)
   elif command == 'linker':
-    return _RunLinkerTests(options, devices)
+    return _RunLinkerTests(options, option_parser.error, devices)
   elif command == 'instrumentation':
     return _RunInstrumentationTests(options, option_parser.error, devices)
   elif command == 'uiautomator':
@@ -728,13 +729,13 @@ def RunTestsCommand(command, options, args, option_parser):
     raise Exception('Unknown test type.')
 
 
-def HelpCommand(command, _options, args, option_parser):
+def HelpCommand(command, options, args, option_parser):
   """Display help for a certain command, or overall help.
 
   Args:
     command: String indicating the command that was received to trigger
         this function.
-    options: optparse options dictionary. unused.
+    options: optparse options dictionary.
     args: List of extra args from optparse.
     option_parser: optparse.OptionParser object.
 
@@ -790,12 +791,12 @@ VALID_COMMANDS = {
     }
 
 
-def DumpThreadStacks(_signal, _frame):
+def DumpThreadStacks(signal, frame):
   for thread in threading.enumerate():
     reraiser_thread.LogThreadStack(thread)
 
 
-def main():
+def main(argv):
   signal.signal(signal.SIGUSR1, DumpThreadStacks)
   option_parser = command_option_parser.CommandOptionParser(
       commands_dict=VALID_COMMANDS)
@@ -803,4 +804,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

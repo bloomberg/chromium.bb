@@ -14,10 +14,8 @@ import shutil
 import sys
 import tempfile
 
-# pylint: disable=F0401
 from util import build_utils
 from util import md5_check
-# pylint: enable=F0401
 
 def CreateStandaloneApk(options):
   def DoZip():
@@ -38,7 +36,7 @@ def CreateStandaloneApk(options):
       input_paths=input_paths)
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--libraries-top-dir',
       help='Top directory that contains libraries '
@@ -59,4 +57,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

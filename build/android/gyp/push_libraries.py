@@ -8,6 +8,7 @@
 
 """
 
+import json
 import optparse
 import os
 import sys
@@ -17,11 +18,9 @@ sys.path.append(BUILD_ANDROID_DIR)
 
 from pylib import constants
 
-# pylint: disable=F0401
 from util import build_device
 from util import build_utils
 from util import md5_check
-# pylint: disable=F0401
 
 def DoPush(options):
   libraries = build_utils.ReadJson(options.libraries_json)
@@ -52,7 +51,7 @@ def DoPush(options):
         input_strings=[device_path])
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--libraries-dir',
       help='Directory that contains stripped libraries.')
@@ -78,4 +77,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

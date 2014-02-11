@@ -17,16 +17,13 @@ class OmapThrottlingDetector(object):
   def __init__(self, adb):
     self._adb = adb
 
-  @staticmethod
-  def BecameThrottled(log_line):
+  def BecameThrottled(self, log_line):
     return 'omap_thermal_throttle' in log_line
 
-  @staticmethod
-  def BecameUnthrottled(log_line):
+  def BecameUnthrottled(self, log_line):
     return 'omap_thermal_unthrottle' in log_line
 
-  @staticmethod
-  def GetThrottlingTemperature(log_line):
+  def GetThrottlingTemperature(self, log_line):
     if 'throttle_delayed_work_fn' in log_line:
       return float([s for s in log_line.split() if s.isdigit()][0]) / 1000.0
 
@@ -44,20 +41,16 @@ class ExynosThrottlingDetector(object):
   def __init__(self, adb):
     pass
 
-  @staticmethod
-  def BecameThrottled(log_line):
+  def BecameThrottled(self, log_line):
     return 'exynos_tmu: Throttling interrupt' in log_line
 
-  @staticmethod
-  def BecameUnthrottled(log_line):
+  def BecameUnthrottled(self, log_line):
     return 'exynos_thermal_unthrottle: not throttling' in log_line
 
-  @staticmethod
-  def GetThrottlingTemperature(_log_line):
+  def GetThrottlingTemperature(self, log_line):
     return None
 
-  @staticmethod
-  def GetCurrentTemperature():
+  def GetCurrentTemperature(self):
     return None
 
 
