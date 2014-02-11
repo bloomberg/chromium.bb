@@ -383,15 +383,17 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
       runcommand.extend(testargs)
     else:
       runcommand.append( \
-          token.replace('%p', context.GetLaunchPath()) \
+          token.replace('%p', os.path.abspath(context.GetLaunchPath())) \
                .replace('%s', ' '.join(testargs)))
 
+  results = []
   for i in range(0, num_runs):
     subproc = subprocess.Popen(runcommand,
                                bufsize=-1,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     (stdout, stderr) = subproc.communicate()
+    results.append((subproc.returncode, stdout, stderr))
 
   os.chdir(cwd)
   try:
@@ -399,7 +401,10 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
   except Exception, e:
     pass
 
-  return (subproc.returncode, stdout, stderr)
+  for (returncode, stdout, stderr) in results:
+    if returncode:
+      return (returncode, stdout, stderr)
+  return results[0]
 
 
 def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
@@ -465,6 +470,7 @@ def Bisect(base_url,
            profile=None,
            flash_path=None,
            pdf_path=None,
+           interactive=True,
            evaluate=AskIsGoodBuild):
   """Given known good and known bad revisions, run a binary search on all
   archived revisions to determine the last known good revision.
@@ -476,6 +482,8 @@ def Bisect(base_url,
   @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
+  @param interactive If it is false, use command exit code for good or bad
+                     judgment of the argument build.
   @param evaluate A function which returns 'g' if the argument build is good,
                   'b' if it's bad or 'u' if unknown.
 
@@ -573,7 +581,15 @@ def Bisect(base_url,
     # On that basis, kill one of the background downloads and complete the
     # other, as described in the comments above.
     try:
-      answer = evaluate(rev, official_builds, status, stdout, stderr)
+      if not interactive:
+        if status:
+          answer = 'b'
+          print 'Bad revision: %s' % rev
+        else:
+          answer = 'g'
+          print 'Good revision: %s' % rev
+      else:
+        answer = evaluate(rev, official_builds, status, stdout, stderr)
       if answer == 'g' and good_rev < bad_rev or \
           answer == 'b' and bad_rev < good_rev:
         fetch.Stop()
@@ -765,6 +781,9 @@ def main():
                     default = '%p %a')
   parser.add_option('-l', '--blink', action='store_true',
                     help = 'Use Blink bisect instead of Chromium. ')
+  parser.add_option('', '--not-interactive', action='store_true',
+                    help = 'Use command exit code to tell good/bad revision.',
+                    default=False)
   parser.add_option('--aura',
                     dest='aura',
                     action='store_true',
@@ -833,7 +852,7 @@ def main():
   (min_chromium_rev, max_chromium_rev) = Bisect(
       base_url, opts.archive, opts.official_builds, opts.aura, good_rev,
       bad_rev, opts.times, opts.command, args, opts.profile, opts.flash_path,
-      opts.pdf_path)
+      opts.pdf_path, not opts.not_interactive)
 
   # Get corresponding blink revisions.
   try:
