@@ -56,6 +56,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     // Called when there's a fatal error, which leads to the channel no longer
     // being viable.
+    // For each raw channel, at most one |FATAL_ERROR_FAILED_READ| and one
+    // |FATAL_ERROR_FAILED_WRITE| notification will be issued. (And it is
+    // possible to get both.)
+    // After |OnFatalError(FATAL_ERROR_FAILED_READ)| there won't be further
+    // |OnReadMessage()| calls.
     virtual void OnFatalError(FatalError fatal_error) = 0;
 
    protected:

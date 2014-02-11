@@ -9,6 +9,7 @@
 
 #include <fcntl.h>
 #include <stdint.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include <vector>
@@ -59,6 +60,18 @@ bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
 
 void InitOnIOThread(RawChannel* raw_channel) {
   CHECK(raw_channel->Init());
+}
+
+bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
+                              uint32_t num_bytes) {
+  MessageInTransit* message = MakeTestMessage(num_bytes);
+
+  ssize_t write_size = HANDLE_EINTR(
+     write(handle.fd, message, message->size_with_header_and_padding()));
+  bool result = write_size ==
+      static_cast<ssize_t>(message->size_with_header_and_padding());
+  message->Destroy();
+  return result;
 }
 
 // -----------------------------------------------------------------------------
@@ -287,14 +300,9 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
     delegate.SetExpectedSizes(std::vector<uint32_t>(1, size));
-    MessageInTransit* message = MakeTestMessage(size);
 
-    ssize_t write_size = HANDLE_EINTR(
-        write(handles[1].get().fd, message,
-              message->size_with_header_and_padding()));
-    EXPECT_EQ(static_cast<ssize_t>(message->size_with_header_and_padding()),
-              write_size);
-    message->Destroy();
+    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), size));
+
     delegate.Wait();
   }
 
@@ -304,15 +312,8 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
     expected_sizes.push_back(size);
   delegate.SetExpectedSizes(expected_sizes);
-  for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
-    MessageInTransit* message = MakeTestMessage(size);
-    ssize_t write_size = HANDLE_EINTR(
-        write(handles[1].get().fd, message,
-              message->size_with_header_and_padding()));
-    EXPECT_EQ(static_cast<ssize_t>(message->size_with_header_and_padding()),
-              write_size);
-    message->Destroy();
-  }
+  for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
+    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), size));
   delegate.Wait();
 
   test::PostTaskAndWait(io_thread_task_runner(),
@@ -441,18 +442,17 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
 
 // RawChannelPosixTest.OnFatalError --------------------------------------------
 
-class FatalErrorRecordingRawChannelDelegate : public RawChannel::Delegate {
+class FatalErrorRecordingRawChannelDelegate
+    : public ReadCountdownRawChannelDelegate {
  public:
-  FatalErrorRecordingRawChannelDelegate()
-      : got_fatal_error_event_(false, false),
+  FatalErrorRecordingRawChannelDelegate(size_t expected_read_count_)
+      : ReadCountdownRawChannelDelegate(expected_read_count_),
+        got_fatal_error_event_(false, false),
         on_fatal_error_call_count_(0),
         last_fatal_error_(FATAL_ERROR_UNKNOWN) {}
+
   virtual ~FatalErrorRecordingRawChannelDelegate() {}
 
-  // |RawChannel::Delegate| implementation:
-  virtual void OnReadMessage(const MessageInTransit& /*message*/) OVERRIDE {
-    NOTREACHED();
-  }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
     CHECK_EQ(on_fatal_error_call_count_, 0);
     on_fatal_error_call_count_++;
@@ -479,7 +479,12 @@ class FatalErrorRecordingRawChannelDelegate : public RawChannel::Delegate {
 // TODO(vtl): Figure out how to make reading fail reliably. (I'm not convinced
 // that it does.)
 TEST_F(RawChannelPosixTest, OnFatalError) {
-  FatalErrorRecordingRawChannelDelegate delegate;
+  const size_t kMessageCount = 5;
+
+  // We're going to write to |fd(1)|. We'll do so in a blocking manner.
+  PCHECK(fcntl(handles[1].get().fd, F_SETFL, 0) == 0);
+
+  FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount);
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
                                                io_thread_message_loop()));
@@ -488,8 +493,15 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
 
-  // Close the other end, which should make writing fail.
-  handles[1].reset();
+  // Write into the other end a few messages.
+  uint32_t message_size = 1;
+  for (size_t count = 0; count < kMessageCount;
+       ++count, message_size += message_size / 2 + 1) {
+    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), message_size));
+  }
+
+  // Shut down read at the other end, which should make writing fail.
+  EXPECT_EQ(0, shutdown(handles[1].get().fd, SHUT_RD));
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 
@@ -497,6 +509,20 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
   // lead to read failing. In practice, it doesn't seem to.
   EXPECT_EQ(RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE,
             delegate.WaitForFatalError());
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(2)));
+
+  // Sleep a bit, to make sure we don't get another |OnFatalError()|
+  // notification. (If we actually get another one, |OnFatalError()| crashes.)
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+  // Write into the other end a few more messages.
+  for (size_t count = 0; count < kMessageCount;
+       ++count, message_size += message_size / 2 + 1) {
+    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), message_size));
+  }
+  // Wait for reading to finish. A writing failure shouldn't affect reading.
+  delegate.Wait();
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
