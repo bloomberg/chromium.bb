@@ -214,7 +214,6 @@
         'public/environment/buffer_tls.h',
         'public/environment/default_async_waiter.h',
         'public/environment/environment.h',
-        'public/environment/test_support.h',
         'public/environment/lib/default_async_waiter.cc',
         'public/environment/lib/buffer_tls.cc',
         'public/environment/lib/buffer_tls_setup.h',

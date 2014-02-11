@@ -66,7 +66,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
-        'mojo_environment_chromium',
         'mojo_system',
         'mojo_system_impl',
       ],
@@ -79,7 +78,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        'mojo_environment_chromium',
         'mojo_system',
         'mojo_system_impl',
       ],
@@ -281,7 +279,6 @@
         'environment/default_async_waiter.cc',
         'environment/buffer_tls.cc',
         'environment/environment.cc',
-        'environment/test_support.cc',
       ],
       'include_dirs': [
         '..',

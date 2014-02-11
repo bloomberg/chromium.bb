@@ -1,3 +1,5 @@
+# TODO(darin): Eliminate the base dependency!
 include_rules = [
+  "+base",
   "+mojo",
 ]
