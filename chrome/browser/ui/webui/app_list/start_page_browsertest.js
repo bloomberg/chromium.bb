@@ -36,16 +36,17 @@ AppListStartPageWebUITest.prototype = {
 
   /** @override */
   preLoad: function() {
-    this.makeAndRegisterMockHandler(['initialize', 'launchApp']);
+    this.makeAndRegisterMockHandler(
+        ['initialize', 'launchApp', 'setSpeechRecognitionState']);
     this.mockHandler.stubs().initialize().will(callFunction(function() {
       appList.startPage.setRecommendedApps(this.recommendedApps_);
     }.bind(this)));
     this.mockHandler.stubs().launchApp(ANYTHING);
+    this.mockHandler.expects(once()).setSpeechRecognitionState('READY');
   }
 };
 
-// Flaky on ChromeOS. http://crbug.com/339340
-TEST_F('AppListStartPageWebUITest', 'DISABLED_Basic', function() {
+TEST_F('AppListStartPageWebUITest', 'Basic', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var recommendedApp = $('start-page').querySelector('.recommended-apps');
@@ -56,8 +57,7 @@ TEST_F('AppListStartPageWebUITest', 'DISABLED_Basic', function() {
   }
 });
 
-// Flaky on ChromeOS. http://crbug.com/339340
-TEST_F('AppListStartPageWebUITest', 'DISABLED_ClickToLaunch', function() {
+TEST_F('AppListStartPageWebUITest', 'ClickToLaunch', function() {
   var recommendedApp = $('start-page').querySelector('.recommended-apps');
   for (var i = 0; i < recommendedApp.childElementCount; ++i) {
     this.mockHandler.expects(once()).launchApp(
