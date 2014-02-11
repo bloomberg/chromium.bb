@@ -16,11 +16,6 @@
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
-#include "gin/handle.h"
-#include "gin/public/gin_embedders.h"
-#include "gin/public/wrapper_info.h"
-#include "gin/wrappable.h"
-
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -50,31 +45,39 @@ struct CallbackParamTraits<const T*> {
 // CallbackHolder and CallbackHolderBase are used to pass a base::Callback from
 // CreateFunctionTemplate through v8 (via v8::FunctionTemplate) to
 // DispatchToCallback, where it is invoked.
-//
-// v8::FunctionTemplate only supports passing void* as data so how do we know
-// when to delete the base::Callback? That's where CallbackHolderBase comes in.
-// It inherits from Wrappable, which delete itself when both (a) the refcount
-// via base::RefCounted has dropped to zero, and (b) there are no more
-// JavaScript references in V8.
 
 // This simple base class is used so that we can share a single object template
 // among every CallbackHolder instance.
-class GIN_EXPORT CallbackHolderBase : public Wrappable<CallbackHolderBase> {
+class GIN_EXPORT CallbackHolderBase {
  public:
-  static WrapperInfo kWrapperInfo;
+  v8::Handle<v8::External> GetHandle(v8::Isolate* isolate);
+
  protected:
-  virtual ~CallbackHolderBase() {}
+  explicit CallbackHolderBase(v8::Isolate* isolate);
+  virtual ~CallbackHolderBase();
+
+ private:
+  static void WeakCallback(
+      const v8::WeakCallbackData<v8::External, CallbackHolderBase>& data);
+
+  v8::Persistent<v8::External> v8_ref_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackHolderBase);
 };
 
 template<typename Sig>
 class CallbackHolder : public CallbackHolderBase {
  public:
-  CallbackHolder(const base::Callback<Sig>& callback, int flags)
-      : callback(callback), flags(flags) {}
+  CallbackHolder(v8::Isolate* isolate,
+                 const base::Callback<Sig>& callback,
+                 int flags)
+      : CallbackHolderBase(isolate), callback(callback), flags(flags) {}
   base::Callback<Sig> callback;
   int flags;
  private:
   virtual ~CallbackHolder() {}
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackHolder);
 };
 
 
@@ -293,8 +296,10 @@ struct Dispatcher<R()> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R()> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -308,8 +313,10 @@ struct Dispatcher<R(P1)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -329,8 +336,10 @@ struct Dispatcher<R(P1, P2)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1, P2)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -352,8 +361,10 @@ struct Dispatcher<R(P1, P2, P3)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1, P2, P3)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -377,8 +388,10 @@ struct Dispatcher<R(P1, P2, P3, P4)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1, P2, P3, P4)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -405,8 +418,10 @@ struct Dispatcher<R(P1, P2, P3, P4, P5)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1, P2, P3, P4, P5)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -436,8 +451,10 @@ struct Dispatcher<R(P1, P2, P3, P4, P5, P6)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    CallbackHolderBase* holder_base = NULL;
-    CHECK(args.GetData(&holder_base));
+    v8::Handle<v8::External> v8_holder;
+    CHECK(args.GetData(&v8_holder));
+    CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
+        v8_holder->Value());
 
     typedef CallbackHolder<R(P1, P2, P3, P4, P5, P6)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
@@ -475,12 +492,13 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate, const base::Callback<Sig> callback,
     int callback_flags = 0) {
   typedef internal::CallbackHolder<Sig> HolderT;
-  gin::Handle<HolderT> holder = CreateHandle(
-      isolate, new HolderT(callback, callback_flags));
+  HolderT* holder = new HolderT(isolate, callback, callback_flags);
+
   return v8::FunctionTemplate::New(
       isolate,
       &internal::Dispatcher<Sig>::DispatchToCallback,
-      ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
+      ConvertToV8<v8::Handle<v8::External> >(isolate,
+                                             holder->GetHandle(isolate)));
 }
 
 }  // namespace gin
