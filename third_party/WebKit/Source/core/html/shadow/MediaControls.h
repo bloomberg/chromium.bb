@@ -49,43 +49,42 @@ public:
 
     virtual void setMediaController(MediaControllerInterface*);
 
-    virtual void reset();
+    void reset();
 
-    virtual void show();
-    virtual void hide();
-    virtual void makeOpaque();
-    virtual void makeTransparent();
+    void show();
+    void hide();
+    void makeOpaque();
+    void makeTransparent();
     virtual bool shouldHideControls();
 
-    virtual void bufferingProgressed();
+    void bufferingProgressed();
     virtual void playbackStarted();
-    virtual void playbackProgressed();
+    void playbackProgressed();
     virtual void playbackStopped();
 
-    virtual void updateStatusDisplay() { };
-    virtual void updateCurrentTimeDisplay();
-    virtual void showVolumeSlider();
+    void updateCurrentTimeDisplay();
+    void showVolumeSlider();
 
-    virtual void changedMute();
-    virtual void changedVolume();
+    void changedMute();
+    void changedVolume();
 
-    virtual void changedClosedCaptionsVisibility();
-    virtual void refreshClosedCaptionsButtonVisibility();
-    virtual void closedCaptionTracksChanged();
+    void changedClosedCaptionsVisibility();
+    void refreshClosedCaptionsButtonVisibility();
+    void closedCaptionTracksChanged();
 
-    virtual void enteredFullscreen();
-    virtual void exitedFullscreen();
+    void enteredFullscreen();
+    void exitedFullscreen();
 
     virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
 
-    virtual void hideFullscreenControlsTimerFired(Timer<MediaControls>*);
-    virtual void startHideFullscreenControlsTimer();
-    virtual void stopHideFullscreenControlsTimer();
+    void hideFullscreenControlsTimerFired(Timer<MediaControls>*);
+    void startHideFullscreenControlsTimer();
+    void stopHideFullscreenControlsTimer();
 
-    virtual void createTextTrackDisplay();
-    virtual void showTextTrackDisplay();
-    virtual void hideTextTrackDisplay();
-    virtual void updateTextTrackDisplay();
+    void createTextTrackDisplay();
+    void showTextTrackDisplay();
+    void hideTextTrackDisplay();
+    void updateTextTrackDisplay();
     virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
 
 protected:

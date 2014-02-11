@@ -1504,9 +1504,6 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
             changeNetworkStateFromLoadingToIdle();
         m_completelyLoaded = true;
     }
-
-    if (hasMediaControls())
-        mediaControls()->updateStatusDisplay();
 }
 
 void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
@@ -1630,10 +1627,8 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
 
     if (shouldUpdateDisplayState) {
         updateDisplayState();
-        if (hasMediaControls()) {
+        if (hasMediaControls())
             mediaControls()->refreshClosedCaptionsButtonVisibility();
-            mediaControls()->updateStatusDisplay();
-        }
     }
 
     updatePlayState();
