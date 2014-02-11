@@ -4,13 +4,16 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-options-menu-item" attributes="layout label active"
-    on-pointerup="up" on-pointerover="over" on-pointerout="out">
+<polymer-element name="kb-options-menu-item" attributes="label active"
+    on-pointerdown="down" on-pointerover="over" on-pointerout="out"
+    on-pointerup="up">bord
   <template>
     <style>
       :host {
-        -webkit-padding-end: 5px;
-        -webkit-padding-start: 5px;
+        -webkit-padding-after: 5px;
+        -webkit-padding-before: 5px;
+        -webkit-padding-end: 40px;
+        -webkit-padding-start: 40px;
         color: #fff;
         display: -webkit-box;
         font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
@@ -27,17 +30,8 @@
   </template>
   <script>
     Polymer('kb-options-menu-item', {
-      /**
-       * Layout to select on a key press.
-       */
-      layout: null,
-
-      up: function(event) {
-        if (this.layout == 'none')
-          hideKeyboard();
-        else
-          this.fire('set-layout', {layout: this.layout});
-        this.hidden = true;
+      down: function(event) {
+        event.stopPropagation();
       },
 
       over: function(event) {
@@ -46,6 +40,11 @@
 
       out: function(event) {
         this.classList.remove('active');
+      },
+
+      up: function(event) {
+        this.hidden = true;
+        hideKeyboard();
       },
     });
   </script>
@@ -94,39 +93,32 @@
         white-space:nowrap;
         z-index: 1;
       }
-
-      :host(kb-keyboard[layout=system-qwerty])
-          kb-options-menu-item:not([layout=none]) {
-        display:none;
+      .arm-dismiss :host {
+        opacity: 0;
       }
     </style>
-    <!-- TODO(kevers): This is a temporary placeholder to enable testing
-      -- of layout switching.  Deprecate once a decision is reached on
-      -- a more permanent solution for layout selection. -->
     <kb-options-menu-toggle-lock-item></kb-options-menu-toggle-lock-item>
-    <kb-options-menu-item layout="system-qwerty" label="System QWERTY">
-    </kb-options-menu-item>
-    <kb-options-menu-item layout="qwerty" label="QWERTY">
-    </kb-options-menu-item>
-    <kb-options-menu-item layout="dvorak" label="Dvorak">
-    </kb-options-menu-item>
     <kb-options-menu-item layout="none" label="Hide">
     </kb-options-menu-item>
   </template>
 </polymer-element>
 
 <polymer-element name="kb-keyboard-overlay" attributes="keyset"
-    on-pointerup="up">
+    on-pointerdown="down" on-pointerup="up">
   <template>
     <style>
       :host {
-          background-color: rgba(0, 0, 0, 0.6);
-          bottom: 0;
-          left: 0;
-          position: absolute;
-          right: 0;
-          top: 0;
-          z-index: 1;
+        background-color: rgba(0, 0, 0, 0.6);
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
+      }
+
+      :host.arm-dismiss {
+        background-color: rgba(0,0,0,0);
       }
     </style>
     <!-- Insert popups here. -->
@@ -134,8 +126,15 @@
   </template>
   <script>
     Polymer('kb-keyboard-overlay', {
-      up: function() {
+      up: function(event) {
         this.hidden = true;
+        this.classList.remove('arm-dismiss');
+        event.stopPropagation();
+      },
+
+      down: function(event) {
+        this.classList.add('arm-dismiss');
+        event.stopPropagation();
       },
 
       hiddenChanged: function() {

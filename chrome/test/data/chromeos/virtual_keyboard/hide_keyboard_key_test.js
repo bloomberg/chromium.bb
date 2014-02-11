@@ -31,57 +31,54 @@ HideKeyboardKeyTester.prototype = {
   },
 
   /**
-   * Mocks pressing on hide keyboard key.
+   * Mocks tap/click on hide keyboard key. It should pop up the overlay menu.
    * @param {string} keysetId Initial keyset.
    */
-  keyPress: function(keysetId) {
+  tapHideKeyboard: function(keysetId) {
     var self = this;
+    var mockEvent = {pointerId: 1};
+    mockEvent.stopPropagation = function() {};
     var fn = function() {
-      Debug('Mock keypress on hide keyboard key.');
-
-      // Verify that popup is initially hidden.
-      var popup = self.overlay;
-      assertTrue(!!popup && popup.hidden,
-                 'Keyboard overlay should be hidden initially.');
+      Debug('Mock tap on hide keyboard key.');
 
       var hideKey =
           $('keyboard').activeKeyset.querySelector('kb-hide-keyboard-key');
       assertTrue(!!hideKey, 'Unable to find hide keyboard key.');
-      hideKey.down({pointerId: 1});
+
+      hideKey.down(mockEvent);
+      hideKey.up(mockEvent);
     };
     this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
+    this.verifyOverlayVisibilityChange(true);
   },
 
   /**
-   * Mocks tap/click on hide keyboard key. It should hide and unlock keyboard.
+   * Mocks tap/click on the overlay menu. It should hide the overlay menu.
    * @param {string} keysetId Initial keyset.
    */
-  keyTap: function(keysetId) {
+  tapOverlay: function(keysetId) {
+    var mockEvent = {pointerId: 1};
+    mockEvent.stopPropagation = function() {};
     var self = this;
     var fn = function() {
-      Debug('Mock keypress on hide keyboard key.');
-
-      var hideKey =
-          $('keyboard').activeKeyset.querySelector('kb-hide-keyboard-key');
-      assertTrue(!!hideKey, 'Unable to find hide keyboard key.');
-
-      chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
-      // Hide keyboard should unlock keyboard too.
-      chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
-
-      hideKey.down({pointerId: 1});
-      hideKey.up({pointerId: 1});
+      Debug('Mock tap on overlay.');
+      var overlay = self.overlay;
+      overlay.up(mockEvent);
     };
     this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
+    this.verifyOverlayVisibilityChange(false);
   },
 
   /**
    * Mocks selection of lock/unlock button from the options menu.
+   * @param {string} keysetId Initial keyset.
    * @param {boolean} expect Whether or not the keyboard should be locked.
    */
-  selectLockUnlockButton: function(expect) {
+  selectLockUnlockButton: function(keysetId, expect) {
+    var mockEvent = {pointerId: 1};
+    mockEvent.stopPropagation = function() {};
     var self = this;
     var fn = function() {
       Debug('mock keyup on lock/unlock button.');
@@ -92,53 +89,97 @@ HideKeyboardKeyTester.prototype = {
       var lockUnlockButton = optionsMenu.shadowRoot.querySelector(
           'kb-options-menu-toggle-lock-item');
       assertTrue(!!lockUnlockButton, 'Unable to find lock/unlock button.');
-
-      // should hide keyboard
+      // Should toggle lock.
       chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(expect);
-      lockUnlockButton.up();
-      self.overlay.up();
+      lockUnlockButton.up(mockEvent);
+      self.overlay.up(mockEvent);
     };
-    fn.waitCondition = {
-      state: 'overlayVisibility',
-      value: true
-    };
+    this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
+    this.verifyOverlayVisibilityChange(false);
   },
 
   /**
-   * Waits for the overlay to close.
+   * Mocks selection of hide from the options menu.
+   * @param {string} keysetId Initial keyset.
    */
-  verifyClosedOverlay: function() {
+  selectHide: function(keysetId) {
+    var mockEvent = {pointerId: 1};
+    mockEvent.stopPropagation = function() {};
+    var self = this;
     var fn = function() {
-      Debug('Validated that overlay has closed.');
+      Debug('mock keyup on hide button.');
+      var optionsMenu = self.overlay.shadowRoot.querySelector(
+          'kb-options-menu');
+      assertTrue(!!optionsMenu, 'Unable to find options menu.');
+      var button = optionsMenu.shadowRoot.querySelector(
+          'kb-options-menu-item[layout=none]');
+      assertTrue(!!button, 'Unable to find hide button.');
+      // Expect hideKeyboard to be called.
+      chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
+      // hideKeyboard in api_adapter also unlocks the keyboard.
+      chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
+      button.up(mockEvent);
+      self.overlay.up(mockEvent);
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+    this.verifyOverlayVisibilityChange(false);
+  },
+
+  /**
+   * Waits for the overlay to change visibility.
+   * @param {string} keysetId Initial keyset.
+   */
+  verifyOverlayVisibilityChange: function(visibility) {
+    var fn = function() {
+      if (visibility)
+        Debug('Validated that overlay is now visible.');
+      else
+        Debug('Validated that overlay is now hidden.');
     };
     fn.waitCondition = {
       state: 'overlayVisibility',
-      value: false
+      value: visibility
     };
     this.addSubtask(fn);
   }
 };
 
-function testLockUnlockKeyboard(testDoneCallback) {
+/**
+ * Tests that the overlay menu appears when the hide keyboard button is clicked
+ * and disappears when the overlay is then clicked.
+ * @param {Function} testDoneCallback The callback function on completion.
+ */
+function testOverlayMenu(testDoneCallback) {
   var tester = new HideKeyboardKeyTester(Layout.DEFAULT);
+  tester.tapHideKeyboard(Keyset.LOWER);
+  tester.tapOverlay(Keyset.LOWER);
+  tester.scheduleTest('testOverlayMenu', testDoneCallback);
+}
 
-  /**
-   * Mocks type on hide keyboard key and select lock/unlock button.
-   * @param {boolean} expect Whether or not the keyboard should be locked.
-   */
-  var checkTypeLockUnlockKey = function(expect) {
-    tester.keyPress(Keyset.LOWER);
-    tester.wait(1000, Keyset.LOWER);
-    tester.selectLockUnlockButton(expect);
-    tester.verifyClosedOverlay();
-  };
+/**
+ * Tests that clicking hide in the overlay menu hides the keyboard.
+ * @param {Function} testDoneCallback The callback function on completion.
+ */
+function testHideKeyboard(testDoneCallback) {
+  var tester = new HideKeyboardKeyTester(Layout.DEFAULT);
+  tester.tapHideKeyboard(Keyset.LOWER);
+  tester.selectHide(Keyset.LOWER);
+  tester.scheduleTest('testHideKeyboard', testDoneCallback);
+}
 
-  checkTypeLockUnlockKey(true);  // Expect to lock keyboard.
-  checkTypeLockUnlockKey(false);  // Expect to unlock keyboard.
+/**
+ * Tests that the lock keyboard in the overlay menu toggles.
+ * @param {Function} testDoneCallback The callback function on completion.
+ */
+function testLockKeyboard(testDoneCallback) {
+  var tester = new HideKeyboardKeyTester(Layout.DEFAULT);
+  tester.tapHideKeyboard(Keyset.LOWER);
+  tester.selectLockUnlockButton(Keyset.LOWER, true);
 
-  checkTypeLockUnlockKey(true);  // Expect to lock keyboard.
-  tester.keyTap(Keyset.LOWER);
+  tester.tapHideKeyboard(Keyset.LOWER);
+  tester.selectLockUnlockButton(Keyset.LOWER, false);
 
-  tester.scheduleTest('testLockUnlockKeyboard', testDoneCallback);
+  tester.scheduleTest('testLockKeyboard', testDoneCallback);
 }
