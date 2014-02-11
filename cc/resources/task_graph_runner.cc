@@ -66,6 +66,35 @@ class DependentIterator {
   TaskGraph::Node* current_node_;
 };
 
+class DependencyMismatchComparator {
+ public:
+  explicit DependencyMismatchComparator(const TaskGraph* graph)
+      : graph_(graph) {}
+
+  bool operator()(const TaskGraph::Node& node) const {
+    return static_cast<size_t>(std::count_if(graph_->edges.begin(),
+                                             graph_->edges.end(),
+                                             DependentComparator(node.task))) !=
+           node.dependencies;
+  }
+
+ private:
+  class DependentComparator {
+   public:
+    explicit DependentComparator(const Task* dependent)
+        : dependent_(dependent) {}
+
+    bool operator()(const TaskGraph::Edge& edge) const {
+      return edge.dependent == dependent_;
+    }
+
+   private:
+    const Task* dependent_;
+  };
+
+  const TaskGraph* graph_;
+};
+
 }  // namespace
 
 Task::Task() : did_run_(false) {}
@@ -189,6 +218,10 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
                graph->edges.size());
 
   DCHECK(token.IsValid());
+  DCHECK(std::find_if(graph->nodes.begin(),
+                      graph->nodes.end(),
+                      DependencyMismatchComparator(graph)) ==
+         graph->nodes.end());
 
   {
     base::AutoLock lock(lock_);
@@ -268,6 +301,9 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
           running_tasks_.end())
         continue;
 
+      DCHECK(std::find(task_namespace.completed_tasks.begin(),
+                       task_namespace.completed_tasks.end(),
+                       node.task) == task_namespace.completed_tasks.end());
       task_namespace.completed_tasks.push_back(node.task);
     }
 

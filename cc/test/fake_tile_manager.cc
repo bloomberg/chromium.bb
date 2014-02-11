@@ -27,14 +27,12 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
-    RasterWorkerPool::SetRasterTasks(queue);
-    for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-         it != raster_tasks().end(); ++it) {
-      internal::WorkerPoolTask* task = it->get();
+    for (RasterTaskQueueIterator it(queue); it; ++it) {
+      internal::RasterWorkerPoolTask* task = *it;
 
       task->DidSchedule();
 
-      completed_tasks_.push_back(it->get());
+      completed_tasks_.push_back(task);
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {

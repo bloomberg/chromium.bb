@@ -7,9 +7,19 @@
 
 #include <deque>
 
-#include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
 #include "cc/resources/raster_worker_pool.h"
+
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template <>
+struct hash<cc::internal::RasterWorkerPoolTask*> {
+  size_t operator()(cc::internal::RasterWorkerPoolTask* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
 
 namespace cc {
 
@@ -48,6 +58,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskDeque;
   typedef internal::RasterWorkerPoolTask* RasterTaskMapKey;
+  typedef base::hash_set<RasterTaskMapKey> RasterTaskSet;
   typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
 
   // Overridden from RasterWorkerPool:
@@ -64,6 +75,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool HasPendingTasks() const;
   bool HasPendingTasksRequiredForActivation() const;
   void CheckForCompletedWorkerPoolTasks();
+  bool IsRasterTaskRequiredForActivation(internal::RasterWorkerPoolTask* task)
+      const;
 
   const char* StateName() const;
   scoped_ptr<base::Value> StateAsValue() const;
@@ -71,6 +84,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   bool shutdown_;
 
+  RasterTask::Queue raster_tasks_;
   RasterTaskSet raster_tasks_required_for_activation_;
   RasterTaskStateMap raster_task_states_;
   RasterTaskDeque raster_tasks_with_pending_upload_;

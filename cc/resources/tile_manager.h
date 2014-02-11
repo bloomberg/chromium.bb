@@ -216,6 +216,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   bool use_rasterize_on_demand_;
 
+  // Queue used when scheduling raster tasks.
+  RasterWorkerPool::RasterTask::Queue raster_tasks_;
+
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 

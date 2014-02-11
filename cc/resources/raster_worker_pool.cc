@@ -4,6 +4,8 @@
 
 #include "cc/resources/raster_worker_pool.h"
 
+#include <algorithm>
+
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -512,16 +514,34 @@ RasterWorkerPool::Task::~Task() {}
 
 void RasterWorkerPool::Task::Reset() { internal_ = NULL; }
 
-RasterWorkerPool::RasterTask::Queue::Queue() {}
+RasterWorkerPool::RasterTask::Queue::QueuedTask::QueuedTask(
+    internal::RasterWorkerPoolTask* task,
+    bool required_for_activation)
+    : task(task), required_for_activation(required_for_activation) {}
+
+RasterWorkerPool::RasterTask::Queue::QueuedTask::~QueuedTask() {}
+
+RasterWorkerPool::RasterTask::Queue::Queue()
+    : required_for_activation_count_(0u) {}
 
 RasterWorkerPool::RasterTask::Queue::~Queue() {}
+
+void RasterWorkerPool::RasterTask::Queue::Reset() {
+  tasks_.clear();
+  required_for_activation_count_ = 0u;
+}
 
 void RasterWorkerPool::RasterTask::Queue::Append(const RasterTask& task,
                                                  bool required_for_activation) {
   DCHECK(!task.is_null());
-  tasks_.push_back(task.internal_);
-  if (required_for_activation)
-    tasks_required_for_activation_.insert(task.internal_.get());
+  tasks_.push_back(QueuedTask(task.internal_, required_for_activation));
+  required_for_activation_count_ += required_for_activation;
+}
+
+void RasterWorkerPool::RasterTask::Queue::Swap(Queue* other) {
+  tasks_.swap(other->tasks_);
+  std::swap(required_for_activation_count_,
+            other->required_for_activation_count_);
 }
 
 RasterWorkerPool::RasterTask::RasterTask() {}
@@ -616,23 +636,10 @@ void RasterWorkerPool::SetClient(RasterWorkerPoolClient* client) {
 void RasterWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "RasterWorkerPool::Shutdown");
 
-  raster_tasks_.clear();
   internal::TaskGraph empty;
   SetTaskGraph(&empty);
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
-  raster_tasks_.swap(queue->tasks_);
-  raster_tasks_required_for_activation_.swap(
-      queue->tasks_required_for_activation_);
-}
-
-bool RasterWorkerPool::IsRasterTaskRequiredForActivation(
-    internal::RasterWorkerPoolTask* task) const {
-  return raster_tasks_required_for_activation_.find(task) !=
-         raster_tasks_required_for_activation_.end();
 }
 
 void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
@@ -743,14 +750,6 @@ void RasterWorkerPool::OnRasterRequiredForActivationFinished(
     return;
 
   OnRasterTasksRequiredForActivationFinished();
-}
-
-scoped_ptr<base::Value> RasterWorkerPool::ScheduledStateAsValue() const {
-  scoped_ptr<base::DictionaryValue> scheduled_state(new base::DictionaryValue);
-  scheduled_state->SetInteger("task_count", raster_tasks_.size());
-  scheduled_state->SetInteger("task_required_for_activation_count",
-                              raster_tasks_required_for_activation_.size());
-  return scheduled_state.PassAs<base::Value>();
 }
 
 // static

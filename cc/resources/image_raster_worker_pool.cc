@@ -51,8 +51,6 @@ ImageRasterWorkerPool::~ImageRasterWorkerPool() {}
 void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::ScheduleTasks");
 
-  RasterWorkerPool::SetRasterTasks(queue);
-
   if (!raster_tasks_pending_)
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
 
@@ -66,7 +64,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
           CreateRasterRequiredForActivationFinishedTask(
-              raster_tasks_required_for_activation().size()));
+              queue->required_for_activation_count()));
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
       CreateRasterFinishedTask());
 
@@ -74,11 +72,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   size_t raster_finished_dependency_count = 0u;
 
   RasterTaskVector gpu_raster_tasks;
-
-  for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-       it != raster_tasks().end();
-       ++it) {
-    internal::RasterWorkerPoolTask* task = it->get();
+  for (RasterTaskQueueIterator it(queue); it; ++it) {
+    internal::RasterWorkerPoolTask* task = *it;
     DCHECK(!task->HasCompleted());
 
     if (task->use_gpu_rasterization()) {
@@ -86,7 +81,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       continue;
     }
 
-    if (IsRasterTaskRequiredForActivation(task)) {
+    if (it.required_for_activation()) {
       ++raster_required_for_activation_finished_dependency_count;
       graph_.edges.push_back(internal::TaskGraph::Edge(
           task, new_raster_required_for_activation_finished_task.get()));
@@ -107,6 +102,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
                     new_raster_finished_task.get(),
                     kRasterFinishedTaskPriority,
                     raster_finished_dependency_count);
+
+  raster_tasks_.Swap(queue);
 
   SetTaskGraph(&graph_);
 
@@ -199,7 +196,6 @@ scoped_ptr<base::Value> ImageRasterWorkerPool::StateAsValue() const {
 
   state->SetBoolean("tasks_required_for_activation_pending",
                     raster_tasks_required_for_activation_pending_);
-  state->Set("scheduled_state", ScheduledStateAsValue().release());
   return state.PassAs<base::Value>();
 }
 

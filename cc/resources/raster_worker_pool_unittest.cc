@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"

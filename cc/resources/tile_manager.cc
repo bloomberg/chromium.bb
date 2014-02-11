@@ -798,9 +798,10 @@ void TileManager::ScheduleTasks(
                "TileManager::ScheduleTasks",
                "count",
                tiles_that_need_to_be_rasterized.size());
-  RasterWorkerPool::RasterTask::Queue tasks;
 
   DCHECK(did_check_for_completed_tasks_since_last_schedule_tasks_);
+
+  raster_tasks_.Reset();
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -818,17 +819,18 @@ void TileManager::ScheduleTasks(
     if (tile_version.raster_task_.is_null())
       tile_version.raster_task_ = CreateRasterTask(tile);
 
-    tasks.Append(tile_version.raster_task_, tile->required_for_activation());
+    raster_tasks_.Append(tile_version.raster_task_,
+                         tile->required_for_activation());
   }
 
   // We must reduce the amount of unused resoruces before calling
   // ScheduleTasks to prevent usage from rising above limits.
   resource_pool_->ReduceResourceUsage();
 
-  // Schedule running of |tasks|. This replaces any previously
+  // Schedule running of |raster_tasks_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
-  // in |tasks|.
-  raster_worker_pool_->ScheduleTasks(&tasks);
+  // in |raster_tasks_|.
+  raster_worker_pool_->ScheduleTasks(&raster_tasks_);
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
