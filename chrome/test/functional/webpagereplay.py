@@ -85,7 +85,7 @@ class ReplayServer(object):
     WPR_REPLAY_DIR: path to alternate Web Page Replay source.
   """
 
-  def __init__(self, archive_path, replay_host, dns_port, http_port, https_port,
+  def __init__(self, archive_path, replay_host, http_port, https_port,
                replay_options=None, replay_dir=None,
                log_path=None):
     """Initialize ReplayServer.
@@ -93,8 +93,6 @@ class ReplayServer(object):
     Args:
       archive_path: a path to a specific WPR archive (required).
       replay_host: the hostname to serve traffic.
-      dns_port: an integer port on which to serve DNS traffic. May be zero
-          to let the OS choose an available port.
       http_port: an integer port on which to serve HTTP traffic. May be zero
           to let the OS choose an available port.
       https_port: an integer port on which to serve HTTPS traffic. May be zero
@@ -107,7 +105,6 @@ class ReplayServer(object):
     self.replay_options = list(replay_options or ())
     self.replay_dir = os.environ.get('WPR_REPLAY_DIR', replay_dir or REPLAY_DIR)
     self.log_path = log_path or LOG_PATH
-    self.dns_port = dns_port
     self.http_port = http_port
     self.https_port = https_port
     self._replay_host = replay_host
@@ -133,7 +130,6 @@ class ReplayServer(object):
     self.replay_options = [
         '--host', str(self._replay_host),
         '--port', str(self.http_port),
-        '--dns_port', str(self.dns_port),
         '--ssl_port', str(self.https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
@@ -153,7 +149,7 @@ class ReplayServer(object):
   def WaitForStart(self, timeout):
     """Checks to see if the server is up and running."""
     port_re = re.compile(
-        '.*?(?P<protocol>[A-Z]+) server started on (?P<host>.*):(?P<port>\d+)')
+        '.*(?P<protocol>HTTPS?) server started on (?P<host>.*):(?P<port>\d+)')
 
     start_time = time.time()
     elapsed_time = 0
@@ -162,7 +158,7 @@ class ReplayServer(object):
         break  # The process has exited.
 
       # Read the ports from the WPR log.
-      if not self.http_port or not self.https_port or not self.dns_port:
+      if not self.http_port or not self.https_port:
         for line in open(self.log_path).readlines():
           m = port_re.match(line.strip())
           if m:
@@ -170,8 +166,6 @@ class ReplayServer(object):
               self.http_port = int(m.group('port'))
             elif not self.https_port and m.group('protocol') == 'HTTPS':
               self.https_port = int(m.group('port'))
-            elif not self.dns_port and m.group('protocol') == 'DNS':
-              self.dns_port = int(m.group('port'))
 
       # Try to connect to the WPR ports.
       if self.http_port and self.https_port:
