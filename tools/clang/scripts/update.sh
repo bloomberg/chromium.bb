@@ -42,7 +42,7 @@ mac_only=
 run_tests=
 bootstrap=
 with_android=yes
-chrome_tools="plugins"
+chrome_tools="plugins blink_gc_plugin"
 gcc_toolchain=
 
 if [[ "${OS}" = "Darwin" ]]; then

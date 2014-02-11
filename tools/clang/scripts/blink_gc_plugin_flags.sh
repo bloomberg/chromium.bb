@@ -14,5 +14,10 @@ else
   LIBSUFFIX=so
 fi
 
+FLAGS=""
+if [[ "$1" = "enable-oilpan=1" ]]; then
+    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang enable-oilpan"
+fi
+
 echo -Xclang -load -Xclang $CLANG_LIB_PATH/libBlinkGCPlugin.$LIBSUFFIX \
-  -Xclang -add-plugin -Xclang blink-gc-plugin
+  -Xclang -add-plugin -Xclang blink-gc-plugin $FLAGS

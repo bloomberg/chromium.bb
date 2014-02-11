@@ -8,6 +8,8 @@
 // Checks that are implemented:
 // [currently none]
 
+#include "Config.h"
+
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -54,8 +56,13 @@ class BlinkGCPluginAction : public PluginASTAction {
     bool parsed = true;
 
     for (size_t i = 0; i < args.size() && parsed; ++i) {
-      parsed = false;
-      llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";
+      if (args[i] == "enable-oilpan") {
+        // TODO: Remove this once all transition types are eliminated.
+        Config::set_oilpan_enabled(true);
+      } else {
+        parsed = false;
+        llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";
+      }
     }
 
     return parsed;
@@ -66,6 +73,8 @@ class BlinkGCPluginAction : public PluginASTAction {
 };
 
 }  // namespace
+
+bool Config::oilpan_enabled_ = false;
 
 static FrontendPluginRegistry::Add<BlinkGCPluginAction>
 X("blink-gc-plugin", "Check Blink GC invariants");
