@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/drag_messages.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
@@ -267,10 +268,12 @@ void WebContentsViewGuest::StartDragging(
   CHECK(embedder_render_view_host);
   RenderViewHostDelegateView* view =
       embedder_render_view_host->GetDelegate()->GetDelegateView();
-  if (view)
+  if (view) {
+    RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.StartDrag"));
     view->StartDragging(drop_data, ops, image, image_offset, event_info);
-  else
+  } else {
     embedder_web_contents->SystemDragEnded();
+  }
 }
 
 }  // namespace content

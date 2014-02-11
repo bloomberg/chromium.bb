@@ -324,6 +324,7 @@
 0x2b75a893f779e6df	BrowserPlugin.Guest.PermissionRequest.NewWindow
 0x2ff464e34165d946	BrowserPlugin.Guest.PermissionRequest.PointerLock
 0x69b219de7f17c077	BrowserPlugin.Guest.Responsive
+0x08702304ca6ced55	BrowserPlugin.Guest.StartDrag
 0x7784cf1f8b1cc3f0	BrowserPlugin.Guest.Terminate
 0xd09d482ae9adff4b	BrowserPlugin.PermissionAllow.Download
 0x3a3bb14eac6426bb	BrowserPlugin.PermissionAllow.Geolocation
