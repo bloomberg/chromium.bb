@@ -33,7 +33,7 @@ class PathCanonicalizer(object):
     '''Returns the paths to any file called |filename|.
     '''
     if self._files_to_paths is None:
-      self._files_to_paths = defaultdict(lambda: [])
+      self._files_to_paths = defaultdict(list)
       for base, dirs, files in self._file_system.Walk(''):
         for f in dirs + files:
           self._files_to_paths[_SimplifyFileName(f)].append(
@@ -57,7 +57,9 @@ class PathCanonicalizer(object):
 
     # The most likely canonical file is the one with the longest common prefix.
     # This is slightly weaker than it could be; |path| is compared, not the
-    # simplified form of |path|, which may matter.
+    # simplified form of |path|, which may matter. Ties in length are broken by
+    # taking the shortest, lexicographically smallest path.
+    potential_paths.sort(key=lambda p: (len(p), p))
     max_prefix = potential_paths[0]
     max_prefix_length = len(posixpath.commonprefix((max_prefix, path)))
     for path_for_file in potential_paths[1:]:
