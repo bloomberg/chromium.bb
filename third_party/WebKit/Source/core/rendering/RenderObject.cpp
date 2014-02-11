@@ -68,8 +68,6 @@
 #include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
-#include "core/rendering/RenderRuby.h"
-#include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTableCaption.h"
 #include "core/rendering/RenderTableCell.h"
@@ -141,8 +139,6 @@ void RenderObject::operator delete(void* ptr)
 
 RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 {
-    Document& doc = element->document();
-
     // Minimal support for content properties replacing an entire element.
     // Works only if we have exactly one piece of content and it's a URL.
     // Otherwise acts as if we didn't support this feature.
@@ -162,16 +158,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return image;
     }
 
-    if (element->hasTagName(rubyTag)) {
-        if (style->display() == INLINE)
-            return new RenderRubyAsInline(element);
-        else if (style->display() == BLOCK)
-            return new RenderRubyAsBlock(element);
-    }
-    // treat <rt> as ruby text ONLY if it still has its default treatment of block
-    if (element->hasTagName(rtTag) && style->display() == BLOCK)
-        return new RenderRubyText(element);
-
     switch (style->display()) {
     case NONE:
         return 0;
@@ -179,7 +165,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderInline(element);
     case BLOCK:
     case INLINE_BLOCK:
-        if ((!style->hasAutoColumnCount() || !style->hasAutoColumnWidth()) && doc.regionBasedColumnsEnabled())
+        if ((!style->hasAutoColumnCount() || !style->hasAutoColumnWidth()) && element->document().regionBasedColumnsEnabled())
             return new RenderMultiColumnBlock(element);
         return new RenderBlockFlow(element);
     case LIST_ITEM:
