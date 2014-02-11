@@ -79,16 +79,17 @@ static int GetRoutingID(PP_Instance instance) {
 }
 
 // Launch NaCl's sel_ldr process.
-PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
-                                     const char* alleged_url,
-                                     PP_Bool uses_irt,
-                                     PP_Bool uses_ppapi,
-                                     PP_Bool enable_ppapi_dev,
-                                     PP_Bool enable_dyncode_syscalls,
-                                     PP_Bool enable_exception_handling,
-                                     PP_Bool enable_crash_throttling,
-                                     void* imc_handle,
-                                     struct PP_Var* error_message) {
+void LaunchSelLdr(PP_Instance instance,
+                  const char* alleged_url,
+                  PP_Bool uses_irt,
+                  PP_Bool uses_ppapi,
+                  PP_Bool enable_ppapi_dev,
+                  PP_Bool enable_dyncode_syscalls,
+                  PP_Bool enable_exception_handling,
+                  PP_Bool enable_crash_throttling,
+                  void* imc_handle,
+                  struct PP_Var* error_message,
+                  PP_CompletionCallback callback) {
   nacl::FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
@@ -100,8 +101,13 @@ PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
   // so those nexes can skip finding a routing_id.
   if (uses_ppapi) {
     routing_id = GetRoutingID(instance);
-    if (!routing_id)
-      return PP_EXTERNAL_PLUGIN_FAILED;
+    if (!routing_id) {
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(callback.func, callback.user_data,
+                     static_cast<int32_t>(PP_ERROR_FAILED)));
+      return;
+    }
   }
 
   InstanceInfo instance_info;
@@ -128,11 +134,19 @@ PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
                                  PP_ToBool(enable_crash_throttling)),
           &launch_result,
           &error_message_string))) {
-    return PP_EXTERNAL_PLUGIN_FAILED;
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
   if (!error_message_string.empty()) {
     *error_message = ppapi::StringVar::StringToPPVar(error_message_string);
-    return PP_EXTERNAL_PLUGIN_FAILED;
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
   result_socket = launch_result.imc_channel_handle;
   instance_info.channel_handle = launch_result.ipc_channel_handle;
@@ -149,8 +163,10 @@ PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
 
   *(static_cast<NaClHandle*>(imc_handle)) =
       nacl::ToNativeHandle(result_socket);
-
-  return PP_EXTERNAL_PLUGIN_OK;
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(callback.func, callback.user_data,
+                 static_cast<int32_t>(PP_OK)));
 }
 
 PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance) {

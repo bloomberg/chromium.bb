@@ -484,7 +484,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                                 this,
                                                 init_done_cb, crash_cb)),
       exit_status_(-1),
-      start_sel_ldr_done_(false) {
+      start_sel_ldr_done_(false),
+      callback_factory_(this) {
   NaClSrpcChannelInitialize(&command_channel_);
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cond_);
@@ -577,7 +578,8 @@ bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
   return true;
 }
 
-bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
+void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
+                                 pp::CompletionCallback callback) {
   NaClLog(4, "ServiceRuntime::Start\n");
 
   nacl::scoped_ptr<SelLdrLauncherChrome>
@@ -591,21 +593,37 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
           "ServiceRuntime: failed to create sel_ldr launcher");
       plugin_->ReportLoadError(error_info);
     }
-    return false;
+    pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
+    return;
   }
-  nacl::string error_message;
-  bool started = tmp_subprocess->Start(plugin_->pp_instance(),
-                                       params.url.c_str(),
-                                       params.uses_irt,
-                                       params.uses_ppapi,
-                                       params.enable_dev_interfaces,
-                                       params.enable_dyncode_syscalls,
-                                       params.enable_exception_handling,
-                                       params.enable_crash_throttling,
-                                       &error_message);
-  if (!started) {
-    NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
+  pp::CompletionCallback internal_callback =
+      callback_factory_.NewCallback(&ServiceRuntime::StartSelLdrContinuation,
+                                    callback);
+
+  tmp_subprocess->Start(plugin_->pp_instance(),
+                        params.url.c_str(),
+                        params.uses_irt,
+                        params.uses_ppapi,
+                        params.enable_dev_interfaces,
+                        params.enable_dyncode_syscalls,
+                        params.enable_exception_handling,
+                        params.enable_crash_throttling,
+                        &start_sel_ldr_error_message_,
+                        internal_callback);
+  subprocess_.reset(tmp_subprocess.release());
+}
+
+void ServiceRuntime::StartSelLdrContinuation(int32_t pp_error,
+                                             pp::CompletionCallback callback) {
+  if (pp_error != PP_OK) {
+    NaClLog(LOG_ERROR, "ServiceRuntime::StartSelLdrContinuation "
+                       " (start failed)\n");
     if (main_service_runtime_) {
+      std::string error_message;
+      pp::Var var_error_message_cpp(pp::PASS_REF, start_sel_ldr_error_message_);
+      if (var_error_message_cpp.is_string()) {
+        error_message = var_error_message_cpp.AsString();
+      }
       ErrorInfo error_info;
       error_info.SetReportWithConsoleOnlyError(
           ERROR_SEL_LDR_LAUNCH,
@@ -613,12 +631,8 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
           error_message);
       plugin_->ReportLoadError(error_info);
     }
-    return false;
   }
-
-  subprocess_.reset(tmp_subprocess.release());
-  NaClLog(4, "ServiceRuntime::StartSelLdr (return 1)\n");
-  return true;
+  pp::Module::Get()->core()->CallOnMainThread(0, callback, pp_error);
 }
 
 void ServiceRuntime::WaitForSelLdrStart() {

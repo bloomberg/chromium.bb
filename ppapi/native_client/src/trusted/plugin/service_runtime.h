@@ -24,8 +24,8 @@
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
 #include "ppapi/cpp/completion_callback.h"
-
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 struct NaClFileInfo;
 
@@ -229,10 +229,9 @@ class ServiceRuntime {
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
-  // Spawn the sel_ldr instance. On success, returns true.
-  // On failure, returns false and |error_string| is set to something
-  // describing the error.
-  bool StartSelLdr(const SelLdrStartParams& params);
+  // Spawn the sel_ldr instance.
+  void StartSelLdr(const SelLdrStartParams& params,
+                   pp::CompletionCallback callback);
 
   // If starting sel_ldr from a background thread, wait for sel_ldr to
   // actually start.
@@ -274,6 +273,8 @@ class ServiceRuntime {
   bool LoadModule(nacl::DescWrapper* shm, ErrorInfo* error_info);
   bool InitReverseService(ErrorInfo* error_info);
   bool StartModule(ErrorInfo* error_info);
+  void StartSelLdrContinuation(int32_t pp_error,
+                               pp::CompletionCallback callback);
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
@@ -292,6 +293,9 @@ class ServiceRuntime {
   NaClCondVar cond_;
   int exit_status_;
   bool start_sel_ldr_done_;
+
+  PP_Var start_sel_ldr_error_message_;
+  pp::CompletionCallbackFactory<ServiceRuntime> callback_factory_;
 };
 
 }  // namespace plugin

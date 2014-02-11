@@ -299,12 +299,21 @@ class Plugin : public pp::InstancePrivate {
                                           const SelLdrStartParams& params);
 
   // Start sel_ldr from the main thread, given the start params.
-  // Sets |success| to true on success.
   // |pp_error| is set by CallOnMainThread (should be PP_OK).
   void StartSelLdrOnMainThread(int32_t pp_error,
                                ServiceRuntime* service_runtime,
                                const SelLdrStartParams& params,
-                               bool* success);
+                               pp::CompletionCallback callback);
+
+  // Signals that StartSelLdr has finished.
+  void SignalStartSelLdrDone(int32_t pp_error,
+                             bool* started,
+                             ServiceRuntime* service_runtime);
+
+  void LoadNexeAndStart(int32_t pp_error,
+                        nacl::DescWrapper* wrapper,
+                        ServiceRuntime* service_runtime,
+                        const pp::CompletionCallback& crash_cb);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr

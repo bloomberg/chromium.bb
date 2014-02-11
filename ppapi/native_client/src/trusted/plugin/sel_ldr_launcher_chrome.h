@@ -7,13 +7,15 @@
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
 
 class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
  public:
   virtual bool Start(const char* url);
-  virtual bool Start(PP_Instance instance,
+  virtual void Start(PP_Instance instance,
                      const char* url,
                      bool uses_irt,
                      bool uses_ppapi,
@@ -21,7 +23,8 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool enable_dyncode_syscalls,
                      bool enable_exception_handling,
                      bool enable_crash_throttling,
-                     nacl::string* error_message);
+                     PP_Var* error_message,
+                     pp::CompletionCallback callback);
 };
 
 }  // namespace plugin

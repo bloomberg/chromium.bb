@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Feb  7 16:10:35 2014. */
+/* From private/ppb_nacl_private.idl modified Mon Feb 10 11:05:29 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -78,16 +78,17 @@ struct PPB_NaCl_Private_1_0 {
    * the nexe contribute to crash throttling statisics and whether nexe starts
    * are throttled by crash throttling.
    */
-  PP_ExternalPluginResult (*LaunchSelLdr)(PP_Instance instance,
-                                          const char* alleged_url,
-                                          PP_Bool uses_irt,
-                                          PP_Bool uses_ppapi,
-                                          PP_Bool enable_ppapi_dev,
-                                          PP_Bool enable_dyncode_syscalls,
-                                          PP_Bool enable_exception_handling,
-                                          PP_Bool enable_crash_throttling,
-                                          void* imc_handle,
-                                          struct PP_Var* error_message);
+  void (*LaunchSelLdr)(PP_Instance instance,
+                       const char* alleged_url,
+                       PP_Bool uses_irt,
+                       PP_Bool uses_ppapi,
+                       PP_Bool enable_ppapi_dev,
+                       PP_Bool enable_dyncode_syscalls,
+                       PP_Bool enable_exception_handling,
+                       PP_Bool enable_crash_throttling,
+                       void* imc_handle,
+                       struct PP_Var* error_message,
+                       struct PP_CompletionCallback callback);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code
    * indicating the failure. PP_EXTERNAL_PLUGIN_FAILED is returned if

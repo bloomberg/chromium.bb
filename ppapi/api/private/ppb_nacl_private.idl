@@ -54,16 +54,17 @@ interface PPB_NaCl_Private {
    * the nexe contribute to crash throttling statisics and whether nexe starts
    * are throttled by crash throttling.
    */
-  PP_ExternalPluginResult LaunchSelLdr([in] PP_Instance instance,
-                                       [in] str_t alleged_url,
-                                       [in] PP_Bool uses_irt,
-                                       [in] PP_Bool uses_ppapi,
-                                       [in] PP_Bool enable_ppapi_dev,
-                                       [in] PP_Bool enable_dyncode_syscalls,
-                                       [in] PP_Bool enable_exception_handling,
-                                       [in] PP_Bool enable_crash_throttling,
-                                       [out] mem_t imc_handle,
-                                       [out] PP_Var error_message);
+  void LaunchSelLdr([in] PP_Instance instance,
+                    [in] str_t alleged_url,
+                    [in] PP_Bool uses_irt,
+                    [in] PP_Bool uses_ppapi,
+                    [in] PP_Bool enable_ppapi_dev,
+                    [in] PP_Bool enable_dyncode_syscalls,
+                    [in] PP_Bool enable_exception_handling,
+                    [in] PP_Bool enable_crash_throttling,
+                    [out] mem_t imc_handle,
+                    [out] PP_Var error_message,
+                    [in] PP_CompletionCallback callback);
 
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code

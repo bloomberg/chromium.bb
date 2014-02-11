@@ -302,10 +302,14 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
 
   // Now start the SelLdr instance.  This must be created on the main thread.
   bool service_runtime_started;
+  pp::CompletionCallback sel_ldr_callback =
+      callback_factory_.NewCallback(&Plugin::SignalStartSelLdrDone,
+                                    &service_runtime_started,
+                                    service_runtime);
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&Plugin::StartSelLdrOnMainThread,
                                     service_runtime, params,
-                                    &service_runtime_started);
+                                    sel_ldr_callback);
   pp::Module::Get()->core()->CallOnMainThread(0, callback, 0);
   service_runtime->WaitForSelLdrStart();
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
@@ -327,16 +331,20 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
 void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
                                      ServiceRuntime* service_runtime,
                                      const SelLdrStartParams& params,
-                                     bool* success) {
+                                     pp::CompletionCallback callback) {
   if (pp_error != PP_OK) {
     PLUGIN_PRINTF(("Plugin::StartSelLdrOnMainThread: non-PP_OK arg "
                    "-- SHOULD NOT HAPPEN\n"));
-    *success = false;
+    pp::Module::Get()->core()->CallOnMainThread(0, callback, pp_error);
     return;
   }
-  *success = service_runtime->StartSelLdr(params);
-  // Signal outside of StartSelLdr here, so that the write to *success
-  // is done before signaling.
+  service_runtime->StartSelLdr(params, callback);
+}
+
+void Plugin::SignalStartSelLdrDone(int32_t pp_error,
+                                   bool* started,
+                                   ServiceRuntime* service_runtime) {
+  *started = (pp_error == PP_OK);
   service_runtime->SignalStartSelLdrDone();
 }
 
@@ -346,6 +354,7 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
+  nacl::scoped_ptr<nacl::DescWrapper> scoped_wrapper(wrapper);
   CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
@@ -373,15 +382,20 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
     return;
   }
 
-  // Now start the SelLdr instance.  This must be created on the main thread.
-  bool service_runtime_started;
-  StartSelLdrOnMainThread(PP_OK, service_runtime, params,
-                          &service_runtime_started);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
-                 service_runtime_started));
-  if (!service_runtime_started) {
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &Plugin::LoadNexeAndStart, scoped_wrapper.release(), service_runtime,
+      crash_cb);
+  StartSelLdrOnMainThread(
+      static_cast<int32_t>(PP_OK), service_runtime, params, callback);
+}
+
+void Plugin::LoadNexeAndStart(int32_t pp_error,
+                              nacl::DescWrapper* wrapper,
+                              ServiceRuntime* service_runtime,
+                              const pp::CompletionCallback& crash_cb) {
+  nacl::scoped_ptr<nacl::DescWrapper> scoped_wrapper(wrapper);
+  if (pp_error != PP_OK)
     return;
-  }
 
   // Now actually load the nexe, which can happen on a background thread.
   bool nexe_loaded = service_runtime->LoadNexeAndStart(wrapper, crash_cb);
@@ -786,7 +800,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
-      wrapper.get(),
+      wrapper.release(),
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
       false, /* enable_crash_throttling */
@@ -903,7 +917,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
   LoadNaClModule(
-      wrapper.get(),
+      wrapper.release(),
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
       true, /* enable_crash_throttling */
