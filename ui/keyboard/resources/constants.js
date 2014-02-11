@@ -7,8 +7,6 @@ var RowAlignment = {
   LEFT: "left",
   RIGHT: "right",
   CENTER: "center",
-  // Assigns all extra weight to the right most key. TODO(rsadam): remove.
-  STRETCHRIGHT: "stretchright"
 }
 
 /**

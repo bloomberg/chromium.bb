@@ -5,7 +5,7 @@
   -->
 
 <polymer-element name="kb-key" extends="kb-key-base"
-    attributes="image keyCode keyName shiftModifier weight">
+    attributes="image keyCode keyName shiftModifier stretch weight">
   <template>
     <style>
       :host {
@@ -102,6 +102,12 @@
        * @type {boolean}
        */
       shiftModifier: false,
+
+      /**
+       * Whether the key can be stretched to accomodate pixel rounding errors.
+       */
+      stretch: false,
+
       /**
        * Weighting to use for layout in order to properly size the key.
        * Keys with a high weighting are wider than normal keys.

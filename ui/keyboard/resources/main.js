@@ -84,7 +84,8 @@
       var row = rows[0];
       var candidateLength = rows[0].childElementCount;
       for (var i = 1; i < rows.length; i++) {
-        if (rows[i].childElementCount > candidateLength) {
+        if (rows[i].childElementCount > candidateLength &&
+            rows[i].align == RowAlignment.STRETCH) {
           row = rows[i];
           candidateLength = rows[i].childElementCount;
         }
@@ -302,12 +303,14 @@
   function redistribute(allKeys, pitch, xOffset, width, keyHeight, yOffset) {
     var weight = 0;
     for (var i = 0; i < allKeys.length; i++) {
-      weight += allKeys[i].weight;
+      var key = allKeys[i];
+      weight += key.weight;
     }
     var availableWidth = width - (allKeys.length - 1) * pitch;
-    var pixelsPerWeight = availableWidth / weight;
+    var pixelsPerWeight = width / weight;
     for (var i = 0; i < allKeys.length; i++) {
-      var keyWidth = Math.floor(allKeys[i].weight * pixelsPerWeight);
+      var key = allKeys[i]
+      var keyWidth = Math.floor(key.weight * pixelsPerWeight);
       if (i == allKeys.length -1) {
         keyWidth =  availableWidth;
       }
@@ -424,12 +427,14 @@
       var key = all[i];
       if (key.weight == DEFAULT_KEY_WEIGHT_X){
         allSum += params.keyWidth;
-        continue;
-      }
-      nStretch++;
-      var width =
+      } else {
+        var width =
           Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight);
-      allSum += width;
+        allSum += width;
+      }
+      if (!key.stretch)
+        continue;
+      nStretch++;
       stretchWeightSum += key.weight;
     }
     var nRegular = all.length - nStretch;
@@ -444,12 +449,12 @@
       case RowAlignment.STRETCH:
         var extraPerWeight = extra/stretchWeightSum;
         for (var i = 0; i < all.length; i++) {
-          if (all[i].weight == DEFAULT_KEY_WEIGHT_X)
+          if (!all[i].stretch)
             continue;
           var delta = Math.floor(all[i].weight * extraPerWeight);
           extra -= delta;
           deltaWidth[i] = delta;
-          // All left-over pixels assigned to right most key.
+          // All left-over pixels assigned to right most stretchable key.
           nStretch--;
           if (nStretch == 0)
             deltaWidth[i] += extra;
@@ -461,8 +466,6 @@
       case RowAlignment.RIGHT:
         xOffset += extra;
         break;
-      case RowAlignment.STRETCHRIGHT:
-        deltaWidth[all.length - 1] = extra;
       default:
         break;
     };
