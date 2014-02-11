@@ -22,9 +22,12 @@
 
 // Argument structures used in messages
 
-IPC_ENUM_TRAITS(blink::WebIDBCursor::Direction)
-IPC_ENUM_TRAITS(blink::WebIDBDatabase::PutMode)
-IPC_ENUM_TRAITS(blink::WebIDBDatabase::TaskType)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBCursor::Direction,
+                          blink::WebIDBCursor::DirectionLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDatabase::PutMode,
+                          blink::WebIDBDatabase::PutModeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDatabase::TaskType,
+                          blink::WebIDBDatabase::TaskTypeLast)
 IPC_ENUM_TRAITS(blink::WebIDBDatabase::TransactionMode)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)

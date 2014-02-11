@@ -12,6 +12,9 @@
 
 #define IPC_MESSAGE_START DOMStorageMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebStorageArea::Result,
+                          blink::WebStorageArea::ResultLast)
+
 // Signals a local storage event.
 IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   // The key that generated the storage event.  Null if clear() was called.
@@ -37,8 +40,6 @@ IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   // this is a local storage event.
   IPC_STRUCT_MEMBER(int64, namespace_id)
 IPC_STRUCT_END()
-
-IPC_ENUM_TRAITS(blink::WebStorageArea::Result)
 
 // DOM Storage messages sent from the browser to the renderer.
 

@@ -17,7 +17,8 @@
 
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
-IPC_ENUM_TRAITS(blink::WebServiceWorkerError::ErrorType)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerError::ErrorType,
+                          blink::WebServiceWorkerError::ErrorTypeLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(url)
