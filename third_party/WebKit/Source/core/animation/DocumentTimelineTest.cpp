@@ -140,6 +140,25 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
     platformTiming->expectNoMoreActions();
     updateClockAndService(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTime());
+    EXPECT_FALSE(anim->isInEffect());
+
+    platformTiming->expectNoMoreActions();
+    updateClockAndService(100);
+    EXPECT_FLOAT_EQ(100, timeline->currentTime());
+}
+
+TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
+{
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector());
+    timing.fillMode = Timing::FillModeForwards;
+    RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
+
+    timeline->play(anim.get());
+
+    platformTiming->expectNoMoreActions();
+    updateClockAndService(0);
+    EXPECT_FLOAT_EQ(0, timeline->currentTime());
+    EXPECT_TRUE(anim->isInEffect());
     EXPECT_TRUE(anim->compositableValues()->isEmpty());
 
     platformTiming->expectNoMoreActions();
@@ -204,6 +223,7 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime)
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
+    timing.fillMode = Timing::FillModeForwards;
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
     RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
     Player* player1 = timeline->play(anim1.get());
@@ -218,6 +238,7 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
 {
     Timing timingForwardFill;
     timingForwardFill.iterationDuration = 2;
+    timingForwardFill.fillMode = Timing::FillModeForwards;
 
     Timing timingNoFill;
     timingNoFill.iterationDuration = 2;
@@ -233,25 +254,30 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     timingNoFillDelay.fillMode = Timing::FillModeNone;
     timingNoFillDelay.startDelay = 1;
 
+    Timing timingAutoFill;
+    timingAutoFill.iterationDuration = 2;
+
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingForwardFill);
     RefPtr<Animation> anim2 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFill);
     RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingBackwardFillDelay);
     RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFillDelay);
+    RefPtr<Animation> anim5 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingAutoFill);
 
     timeline->play(anim1.get());
     timeline->play(anim2.get());
     timeline->play(anim3.get());
     timeline->play(anim4.get());
+    timeline->play(anim5.get());
 
     platformTiming->expectNextFrameAction();
     updateClockAndService(0);
-    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
     platformTiming->expectNextFrameAction();
     updateClockAndService(0.5);
-    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
     platformTiming->expectNextFrameAction();
     updateClockAndService(1.5);
-    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
     platformTiming->expectNoMoreActions();
     updateClockAndService(3);
     EXPECT_EQ(1U, timeline->numberOfActiveAnimationsForTesting());

@@ -39,6 +39,7 @@ namespace WebCore {
 
 struct Timing {
     enum FillMode {
+        FillModeAuto,
         FillModeNone,
         FillModeForwards,
         FillModeBackwards,
@@ -54,7 +55,7 @@ struct Timing {
 
     Timing()
         : startDelay(0)
-        , fillMode(FillModeForwards)
+        , fillMode(FillModeAuto)
         , iterationStart(0)
         , iterationCount(1)
         , iterationDuration(std::numeric_limits<double>::quiet_NaN())

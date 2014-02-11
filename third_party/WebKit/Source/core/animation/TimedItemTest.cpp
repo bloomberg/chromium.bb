@@ -164,10 +164,24 @@ TEST(AnimationTimedItemTest, Sanity)
     EXPECT_EQ(1, timedItem->timeFraction());
 }
 
+TEST(AnimationTimedItemTest, FillAuto)
+{
+    Timing timing;
+    timing.iterationDuration = 1;
+    RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
+
+    timedItem->updateInheritedTime(-1);
+    EXPECT_EQ(0, timedItem->timeFraction());
+
+    timedItem->updateInheritedTime(2);
+    EXPECT_EQ(1, timedItem->timeFraction());
+}
+
 TEST(AnimationTimedItemTest, FillForwards)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
     timedItem->updateInheritedTime(-1);
@@ -209,6 +223,7 @@ TEST(AnimationTimedItemTest, StartDelay)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     timing.startDelay = 0.5;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -226,6 +241,7 @@ TEST(AnimationTimedItemTest, ZeroIteration)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 0;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -244,6 +260,7 @@ TEST(AnimationTimedItemTest, InfiniteIteration)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -383,6 +400,7 @@ TEST(AnimationTimedItemTest, ZeroDurationSanity)
 TEST(AnimationTimedItemTest, ZeroDurationFillForwards)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
     timedItem->updateInheritedTime(-1);
@@ -430,6 +448,7 @@ TEST(AnimationTimedItemTest, ZeroDurationFillBoth)
 TEST(AnimationTimedItemTest, ZeroDurationStartDelay)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     timing.startDelay = 0.5;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -466,6 +485,7 @@ TEST(AnimationTimedItemTest, ZeroDurationIterationStartAndCount)
 TEST(AnimationTimedItemTest, ZeroDurationInfiniteIteration)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -483,6 +503,7 @@ TEST(AnimationTimedItemTest, ZeroDurationInfiniteIteration)
 TEST(AnimationTimedItemTest, ZeroDurationIteration)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
@@ -523,6 +544,7 @@ TEST(AnimationTimedItemTest, ZeroDurationIterationStart)
 TEST(AnimationTimedItemTest, ZeroDurationIterationAlternate)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.direction = Timing::PlaybackDirectionAlternate;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -543,6 +565,7 @@ TEST(AnimationTimedItemTest, ZeroDurationIterationAlternate)
 TEST(AnimationTimedItemTest, ZeroDurationIterationAlternateReverse)
 {
     Timing timing;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -685,6 +708,7 @@ TEST(AnimationTimedItemTest, Events)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.startDelay = 1;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
@@ -729,6 +753,7 @@ TEST(AnimationTimedItemTest, TimeToEffectChange)
 {
     Timing timing;
     timing.iterationDuration = 1;
+    timing.fillMode = Timing::FillModeForwards;
     timing.iterationStart = 0.2;
     timing.iterationCount = 2.5;
     timing.startDelay = 1;

@@ -72,22 +72,22 @@ static inline bool isActiveInParentPhase(TimedItem::Phase parentPhase, Timing::F
     }
 }
 
-static inline double calculateActiveTime(double activeDuration, double localTime, TimedItem::Phase parentPhase, TimedItem::Phase phase, const Timing& specified)
+static inline double calculateActiveTime(double activeDuration, Timing::FillMode fillMode, double localTime, TimedItem::Phase parentPhase, TimedItem::Phase phase, const Timing& specified)
 {
     ASSERT(activeDuration >= 0);
     ASSERT(phase == calculatePhase(activeDuration, localTime, specified));
 
     switch (phase) {
     case TimedItem::PhaseBefore:
-        if (specified.fillMode == Timing::FillModeBackwards || specified.fillMode == Timing::FillModeBoth)
+        if (fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth)
             return 0;
         return nullValue();
     case TimedItem::PhaseActive:
-        if (isActiveInParentPhase(parentPhase, specified.fillMode))
+        if (isActiveInParentPhase(parentPhase, fillMode))
             return localTime - specified.startDelay;
         return nullValue();
     case TimedItem::PhaseAfter:
-        if (specified.fillMode == Timing::FillModeForwards || specified.fillMode == Timing::FillModeBoth)
+        if (fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth)
             return activeDuration;
         return nullValue();
     case TimedItem::PhaseNone:

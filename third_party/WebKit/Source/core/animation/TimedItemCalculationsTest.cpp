@@ -41,48 +41,35 @@ TEST(AnimationTimedItemCalculationsTest, ActiveTime)
 {
     Timing timing;
 
-    // calculateActiveTime(activeDuration, localTime, parentPhase, phase, timing)
+    // calculateActiveTime(activeDuration, fillMode, localTime, parentPhase, phase, timing)
 
     // Before Phase
     timing.startDelay = 10;
-    timing.fillMode = Timing::FillModeForwards;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
-    timing.fillMode = Timing::FillModeNone;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
-    timing.fillMode = Timing::FillModeBackwards;
-    EXPECT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
-    timing.fillMode = Timing::FillModeBoth;
-    EXPECT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
+    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBackwards, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
+    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBoth, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
 
     // Active Phase
     timing.startDelay = 10;
     // Active, and parent Before
-    timing.fillMode = Timing::FillModeNone;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
-    timing.fillMode = Timing::FillModeForwards;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
     // Active, and parent After
-    timing.fillMode = Timing::FillModeNone;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
-    timing.fillMode = Timing::FillModeBackwards;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeBackwards, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
     // Active, and parent Active
-    timing.fillMode = Timing::FillModeForwards;
-    EXPECT_EQ(5, calculateActiveTime(20, 15, TimedItem::PhaseActive, TimedItem::PhaseActive, timing));
+    EXPECT_EQ(5, calculateActiveTime(20, Timing::FillModeForwards, 15, TimedItem::PhaseActive, TimedItem::PhaseActive, timing));
 
     // After Phase
     timing.startDelay = 10;
-    timing.fillMode = Timing::FillModeForwards;
-    EXPECT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
-    timing.fillMode = Timing::FillModeBoth;
-    EXPECT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
-    timing.fillMode = Timing::FillModeBackwards;
-    EXPECT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
-    timing.fillMode = Timing::FillModeNone;
-    EXPECT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeForwards, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeBoth, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeBackwards, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeNone, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
 
     // None
-    EXPECT_TRUE(isNull(calculateActiveTime(32, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(32, Timing::FillModeNone, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
 }
 
 TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)

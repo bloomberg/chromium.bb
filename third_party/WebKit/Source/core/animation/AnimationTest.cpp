@@ -241,8 +241,12 @@ TEST_F(AnimationAnimationTest, TimingInputFillMode)
     v8::Context::Scope contextScope(context);
 
     Timing timing;
-    Timing::FillMode defaultFillMode = Timing::FillModeForwards;
+    Timing::FillMode defaultFillMode = Timing::FillModeAuto;
     EXPECT_EQ(defaultFillMode, timing.fillMode);
+
+    applyTimingInputString(timing, isolate, "fill", "auto");
+    EXPECT_EQ(Timing::FillModeAuto, timing.fillMode);
+    timing.fillMode = defaultFillMode;
 
     applyTimingInputString(timing, isolate, "fill", "forwards");
     EXPECT_EQ(Timing::FillModeForwards, timing.fillMode);

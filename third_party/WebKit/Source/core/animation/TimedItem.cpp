@@ -36,6 +36,19 @@
 
 namespace WebCore {
 
+namespace {
+
+Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
+{
+    if (fillMode != Timing::FillModeAuto)
+        return fillMode;
+    if (isAnimation)
+        return Timing::FillModeNone;
+    return Timing::FillModeBoth;
+}
+
+} // namespace
+
 TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
     : m_parent(0)
     , m_startTime(0)
@@ -90,7 +103,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_specified);
         // FIXME: parentPhase depends on groups being implemented.
         const TimedItem::Phase parentPhase = TimedItem::PhaseActive;
-        const double activeTime = calculateActiveTime(activeDuration, localTime, parentPhase, currentPhase, m_specified);
+        const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_specified.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_specified);
 
         double currentIteration;
         double timeFraction;
@@ -116,7 +129,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
             ASSERT(localActiveDuration >= 0);
             const double localLocalTime = localTime < m_specified.startDelay ? localTime : localActiveDuration + m_specified.startDelay;
             const TimedItem::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_specified);
-            const double localActiveTime = calculateActiveTime(localActiveDuration, localLocalTime, parentPhase, localCurrentPhase, m_specified);
+            const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_specified.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_specified);
             const double startOffset = m_specified.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
             const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_specified);
