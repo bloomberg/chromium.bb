@@ -138,7 +138,6 @@ int NaClSimpleRevClientStartServiceThread(struct NaClSimpleRevClient *self) {
           &self->acceptor)) {
     NaClLog(4, "NaClSimpleRevClientStartServiceThread: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) self);
-    self->acceptor = NULL;
     return 0;
   }
   return 1;

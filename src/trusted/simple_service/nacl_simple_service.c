@@ -325,8 +325,6 @@ int NaClSimpleServiceAcceptAndSpawnHandler(
           &conn->thread)) {
     NaClLog(4, "NaClSimpleServiceAcceptAndSpawnHandler: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) conn);
-    conn = NULL;
-    conn->thread = NULL;
     status = -NACL_ABI_EAGAIN;
     goto abort;
   }
@@ -376,7 +374,6 @@ int NaClSimpleServiceStartServiceThread(struct NaClSimpleService *server) {
           &server->acceptor)) {
     NaClLog(4, "NaClSimpleServiceStartServiceThread: no thread\n");
     NaClRefCountUnref(&server->base);  /* undo ref in Ctor call arglist */
-    server->acceptor = NULL;
     return 0;
   }
   NaClLog(4, "NaClSimpleServiceStartServiceThread: success\n");
