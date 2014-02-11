@@ -586,7 +586,9 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
     // optimization to work properly.
     if (position() != StaticPosition && surround->offset != other->surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
-        if (position() == AbsolutePosition && positionedObjectMovedOnly(surround->offset, other->surround->offset, m_box->width()) && repaintOnlyDiff(other, changedContextSensitiveProperties) == StyleDifferenceEqual)
+        if ((position() == AbsolutePosition || position() == FixedPosition)
+            && positionedObjectMovedOnly(surround->offset, other->surround->offset, m_box->width())
+            && repaintOnlyDiff(other, changedContextSensitiveProperties) == StyleDifferenceEqual)
             return StyleDifferenceLayoutPositionedMovementOnly;
         // FIXME: We would like to use SimplifiedLayout for relative positioning, but we can't quite do that yet.
         // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
