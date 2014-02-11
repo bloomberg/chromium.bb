@@ -118,7 +118,7 @@ deps = {
     "/trunk/src@321",
 
   "src/third_party/leveldatabase/src":
-    (Var("googlecode_url") % "leveldb") + "/trunk@78",
+    (Var("googlecode_url") % "leveldb") + "/trunk@79",
 
   # TODO(thakis): Pull from svn instead, http://crbug.com/333071
   "src/third_party/libc++/trunk":
