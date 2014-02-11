@@ -377,8 +377,8 @@ demo_clients +=					\
 	weston-simple-touch			\
 	weston-multi-resource
 
-weston_simple_shm_SOURCES =			\
-	clients/simple-shm.c			\
+weston_simple_shm_SOURCES = clients/simple-shm.c
+nodist_weston_simple_shm_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -395,8 +395,8 @@ endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
-weston_simple_egl_SOURCES =			\
-	clients/simple-egl.c			\
+weston_simple_egl_SOURCES = clients/simple-egl.c
+nodist_weston_simple_egl_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h
 weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
