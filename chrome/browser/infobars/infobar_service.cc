@@ -4,6 +4,7 @@
 
 #include "chrome/browser/infobars/infobar_service.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
@@ -77,6 +79,8 @@ InfoBarService::InfoBarService(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       infobars_enabled_(true) {
   DCHECK(web_contents);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableInfoBars))
+    infobars_enabled_ = false;
 }
 
 InfoBarService::~InfoBarService() {

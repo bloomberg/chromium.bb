@@ -18,9 +18,6 @@ class InfoBar;
 class InfoBarService : public content::WebContentsObserver,
                        public content::WebContentsUserData<InfoBarService> {
  public:
-  // Changes whether infobars are enabled.  The default is true.
-  void set_infobars_enabled(bool enabled) { infobars_enabled_ = enabled; }
-
   // Adds the specified |infobar|, which already owns a delegate.
   //
   // If infobars are disabled for this tab or the tab already has an infobar
