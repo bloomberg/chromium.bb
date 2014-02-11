@@ -20,7 +20,7 @@ TEST_F(ContentSettingsObserverTest, WhitelistedSchemes) {
   std::string end_url = ":something";
 
   GURL chrome_ui_url =
-      GURL(std::string(chrome::kChromeUIScheme).append(end_url));
+      GURL(std::string(content::kChromeUIScheme).append(end_url));
   EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
       WebSecurityOrigin::create(chrome_ui_url),
       GURL()));

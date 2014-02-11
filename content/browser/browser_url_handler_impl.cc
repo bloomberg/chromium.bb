@@ -24,9 +24,13 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     // Bug 26129: limit view-source to view the content and not any
     // other kind of 'active' url scheme like 'javascript' or 'data'.
     static const char* const default_allowed_sub_schemes[] = {
-      kHttpScheme, kHttpsScheme, kFtpScheme,
-      chrome::kChromeDevToolsScheme, chrome::kChromeUIScheme,
-      kFileScheme, kFileSystemScheme
+      kHttpScheme,
+      kHttpsScheme,
+      kFtpScheme,
+      chrome::kChromeDevToolsScheme,
+      kChromeUIScheme,
+      kFileScheme,
+      kFileSystemScheme
     };
 
     // Merge all the schemes for which view-source is allowed by default, with

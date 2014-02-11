@@ -612,7 +612,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     chrome::kDomDistillerScheme,
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,
-    chrome::kChromeUIScheme,
+    content::kChromeUIScheme,
     content::kDataScheme,
 #if defined(OS_CHROMEOS)
     chrome::kDriveScheme,

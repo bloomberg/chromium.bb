@@ -1138,7 +1138,7 @@ bool SessionModelAssociator::TabHasValidEntry(
       return false;
     const GURL& virtual_url = entry->GetVirtualURL();
     if (virtual_url.is_valid() &&
-        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !virtual_url.SchemeIs(content::kChromeUIScheme) &&
         !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
         !virtual_url.SchemeIsFile()) {
       found_valid_url = true;

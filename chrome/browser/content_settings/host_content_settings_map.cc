@@ -546,7 +546,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return false;
   }
-  if (secondary_url.SchemeIs(chrome::kChromeUIScheme) &&
+  if (secondary_url.SchemeIs(content::kChromeUIScheme) &&
       content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
       primary_url.SchemeIsSecure()) {
     return true;
@@ -565,7 +565,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     }
   }
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         primary_url.SchemeIs(chrome::kChromeUIScheme);
+         primary_url.SchemeIs(content::kChromeUIScheme);
 }
 
 base::Value* HostContentSettingsMap::GetWebsiteSetting(

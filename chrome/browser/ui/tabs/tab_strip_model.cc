@@ -1177,7 +1177,7 @@ std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
 
 bool TabStripModel::IsNewTabAtEndOfTabStrip(WebContents* contents) const {
   const GURL& url = contents->GetURL();
-  return url.SchemeIs(chrome::kChromeUIScheme) &&
+  return url.SchemeIs(content::kChromeUIScheme) &&
          url.host() == chrome::kChromeUINewTabHost &&
          contents == GetWebContentsAtImpl(count() - 1) &&
          contents->GetController().GetEntryCount() == 1;

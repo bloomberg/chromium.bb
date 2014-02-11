@@ -267,7 +267,7 @@ bool BaseSessionService::RestoreSetWindowAppNameCommand(
 bool BaseSessionService::ShouldTrackEntry(const GURL& url) {
   // Blacklist chrome://quit and chrome://restart to avoid quit or restart
   // loops.
-  return url.is_valid() && !(url.SchemeIs(chrome::kChromeUIScheme) &&
+  return url.is_valid() && !(url.SchemeIs(content::kChromeUIScheme) &&
                              (url.host() == chrome::kChromeUIQuitHost ||
                               url.host() == chrome::kChromeUIRestartHost));
 }

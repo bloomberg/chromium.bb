@@ -28,8 +28,8 @@ using content::BrowserThread;
 namespace {
 
 std::string GetThemePath() {
-  return std::string(chrome::kChromeUIScheme) +
-      "://" + std::string(chrome::kChromeUIThemePath) + "/";
+  return std::string(content::kChromeUIScheme) + "://" +
+         std::string(chrome::kChromeUIThemePath) + "/";
 }
 
 // use a resource map rather than hard-coded strings.

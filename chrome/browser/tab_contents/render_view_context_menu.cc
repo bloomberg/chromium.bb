@@ -391,7 +391,7 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 
 // static
 bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
-  if (!url.SchemeIs(chrome::kChromeUIScheme))
+  if (!url.SchemeIs(content::kChromeUIScheme))
     return false;
   return url.host() == chrome::kChromeUISyncResourcesHost;
 }
@@ -1289,7 +1289,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       return params_.src_url.is_valid() &&
-          (params_.src_url.scheme() != chrome::kChromeUIScheme);
+          (params_.src_url.scheme() != content::kChromeUIScheme);
 
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
       return params_.has_image_contents;

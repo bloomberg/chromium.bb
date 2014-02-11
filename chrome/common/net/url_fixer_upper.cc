@@ -425,9 +425,12 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
   }
 
   // Proceed with about and chrome schemes, but not file or nonstandard schemes.
-  if ((scheme != chrome::kAboutScheme) && (scheme != chrome::kChromeUIScheme) &&
-      ((scheme == content::kFileScheme) || !url_util::IsStandard(scheme.c_str(),
-           url_parse::Component(0, static_cast<int>(scheme.length())))))
+  if ((scheme != chrome::kAboutScheme) &&
+      (scheme != content::kChromeUIScheme) &&
+      ((scheme == content::kFileScheme) ||
+       !url_util::IsStandard(
+            scheme.c_str(),
+            url_parse::Component(0, static_cast<int>(scheme.length())))))
     return scheme;
 
   if (scheme == content::kFileSystemScheme) {
@@ -529,13 +532,14 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
 
   // Parse and rebuild about: and chrome: URLs, except about:blank.
   bool chrome_url = !LowerCaseEqualsASCII(trimmed, content::kAboutBlankURL) &&
-      ((scheme == chrome::kAboutScheme) || (scheme == chrome::kChromeUIScheme));
+                    ((scheme == chrome::kAboutScheme) ||
+                     (scheme == content::kChromeUIScheme));
 
   // For some schemes whose layouts we understand, we rebuild it.
   if (chrome_url || url_util::IsStandard(scheme.c_str(),
           url_parse::Component(0, static_cast<int>(scheme.length())))) {
     // Replace the about: scheme with the chrome: scheme.
-    std::string url(chrome_url ? chrome::kChromeUIScheme : scheme);
+    std::string url(chrome_url ? content::kChromeUIScheme : scheme);
     url.append(content::kStandardSchemeSeparator);
 
     // We need to check whether the |username| is valid because it is our

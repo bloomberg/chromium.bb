@@ -109,8 +109,8 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
       (*protocol_handlers)[content::kFileSystemScheme].release());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
-      chrome::kChromeUIScheme,
-      (*protocol_handlers)[chrome::kChromeUIScheme].release());
+      content::kChromeUIScheme,
+      (*protocol_handlers)[content::kChromeUIScheme].release());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,

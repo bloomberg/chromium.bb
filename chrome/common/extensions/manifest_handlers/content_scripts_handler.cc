@@ -151,7 +151,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
 
     // TODO(aboxhall): check for webstore
     if (!PermissionsData::CanExecuteScriptEverywhere(extension) &&
-        pattern.scheme() != chrome::kChromeUIScheme) {
+        pattern.scheme() != content::kChromeUIScheme) {
       // Exclude SCHEME_CHROMEUI unless it's been explicitly requested.
       // If the --extensions-on-chrome-urls flag has not been passed, requesting
       // a chrome:// url will cause a parse failure above, so there's no need to

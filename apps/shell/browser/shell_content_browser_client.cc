@@ -76,8 +76,8 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   // content::ShellURLRequestContextGetter::GetURLRequestContext().
   static const char* const kProtocolList[] = {
       chrome::kBlobScheme,
-      chrome::kChromeUIScheme,
       chrome::kChromeDevToolsScheme,
+      content::kChromeUIScheme,
       content::kDataScheme,
       content::kFileScheme,
       content::kFileSystemScheme,

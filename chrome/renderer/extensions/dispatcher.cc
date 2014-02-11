@@ -1355,7 +1355,7 @@ void Dispatcher::InitOriginPermissions(const Extension* extension) {
   if (extension->HasAPIPermission(APIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
-        WebString::fromUTF8(chrome::kChromeUIScheme),
+        WebString::fromUTF8(content::kChromeUIScheme),
         WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
         false);
   }
@@ -1376,7 +1376,7 @@ void Dispatcher::AddOrRemoveOriginPermissions(
       content::kHttpScheme,
       content::kHttpsScheme,
       content::kFileScheme,
-      chrome::kChromeUIScheme,
+      content::kChromeUIScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {

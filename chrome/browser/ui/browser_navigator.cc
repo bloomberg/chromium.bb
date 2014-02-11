@@ -723,7 +723,7 @@ bool IsURLAllowedInIncognito(const GURL& url,
   // Most URLs are allowed in incognito; the following are exceptions.
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
-  if (url.scheme() == chrome::kChromeUIScheme &&
+  if (url.scheme() == content::kChromeUIScheme &&
       (url.host() == chrome::kChromeUISettingsHost ||
        url.host() == chrome::kChromeUISettingsFrameHost ||
        url.host() == chrome::kChromeUIExtensionsHost ||
@@ -754,7 +754,7 @@ bool IsURLAllowedInIncognito(const GURL& url,
       &rewritten_url, browser_context, &reverse_on_redirect);
 
   // Some URLs are mapped to uber subpages. Do not allow them in incognito.
-  return !(rewritten_url.scheme() == chrome::kChromeUIScheme &&
+  return !(rewritten_url.scheme() == content::kChromeUIScheme &&
            rewritten_url.host() == chrome::kChromeUIUberHost);
 }
 

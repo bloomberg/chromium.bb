@@ -107,7 +107,7 @@ void UserScriptSlave::InitializeIsolatedWorld(int isolated_world_id,
       content::kHttpScheme,
       content::kHttpsScheme,
       content::kFileScheme,
-      chrome::kChromeUIScheme,
+      content::kChromeUIScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {

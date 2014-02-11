@@ -199,7 +199,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForURL(
   FaviconResultsCallback favicon_results_callback =
       Bind(&FaviconService::RunFaviconRawCallbackWithBitmapResults,
            base::Unretained(this), callback, 0, ui::ScaleFactor());
-  if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
+  if (page_url.SchemeIs(content::kChromeUIScheme) ||
       page_url.SchemeIs(extensions::kExtensionScheme)) {
     std::vector<ui::ScaleFactor> scale_factor;
     scale_factor.push_back(ui::SCALE_FACTOR_100P);
@@ -325,7 +325,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
     const FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  if (params.page_url.SchemeIs(chrome::kChromeUIScheme) ||
+  if (params.page_url.SchemeIs(content::kChromeUIScheme) ||
       params.page_url.SchemeIs(extensions::kExtensionScheme)) {
     return GetFaviconForChromeURL(profile_, params.page_url,
                                   desired_scale_factors, callback, tracker);

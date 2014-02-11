@@ -64,9 +64,9 @@ bool SchemeIsInSchemes(const std::string& scheme,
 bool CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
   DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme) ||
+         url.SchemeIs(kChromeUIScheme) ||
          (GetContentClient()->browser()->GetAdditionalWebUISchemes(
-             &additional_schemes),
+              &additional_schemes),
           SchemeIsInSchemes(url.scheme(), additional_schemes)));
 
   if (!url.is_valid()) {
@@ -394,7 +394,7 @@ class ChromeProtocolHandler
                                                           network_delegate);
 
     // Next check for chrome://appcache-internals/, which uses its own job type.
-    if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
+    if (request->url().SchemeIs(kChromeUIScheme) &&
         request->url().host() == kChromeUIAppCacheInternalsHost) {
       return appcache::ViewAppCacheInternalsJobFactory::CreateJobForRequest(
           request, network_delegate, appcache_service_);
@@ -408,14 +408,14 @@ class ChromeProtocolHandler
 
 #if defined(USE_TCMALLOC)
     // Next check for chrome://tcmalloc/, which uses its own job type.
-    if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
+    if (request->url().SchemeIs(kChromeUIScheme) &&
         request->url().host() == kChromeUITcmallocHost) {
       return new TcmallocInternalsRequestJob(request, network_delegate);
     }
 #endif
 
     // Next check for chrome://histograms/, which uses its own job type.
-    if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
+    if (request->url().SchemeIs(kChromeUIScheme) &&
         request->url().host() == kChromeUIHistogramHost) {
       return new HistogramInternalsRequestJob(request, network_delegate);
     }

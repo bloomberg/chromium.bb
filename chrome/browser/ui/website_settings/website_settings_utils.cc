@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeUIScheme) ||
+  return url.SchemeIs(content::kChromeUIScheme) ||
          url.SchemeIs(extensions::kExtensionScheme);
 }

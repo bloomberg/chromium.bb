@@ -445,7 +445,7 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
 #endif  // ADDRESS_SANITIZER
 
 static void MaybeHandleDebugURL(const GURL& url) {
-  if (!url.SchemeIs(chrome::kChromeUIScheme))
+  if (!url.SchemeIs(kChromeUIScheme))
     return;
   if (url == GURL(kChromeUICrashURL)) {
     CrashIntentionally();

@@ -88,7 +88,7 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
     return true;
 
   GURL url = web_contents()->GetURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+  if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host() == chrome::kChromeUINewTabHost) {
     return false;
   }

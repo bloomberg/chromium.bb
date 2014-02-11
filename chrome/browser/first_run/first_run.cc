@@ -366,7 +366,7 @@ void FirstRunBubbleLauncher::Observe(
     return;
   }
 
-  if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
+  if (contents && contents->GetURL().SchemeIs(content::kChromeUIScheme)) {
     // Suppress the first run bubble if 'make chrome metro' flow is showing.
     if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
       return;

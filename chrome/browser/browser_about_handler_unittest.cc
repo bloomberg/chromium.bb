@@ -17,7 +17,7 @@ using content::BrowserThread;
 typedef testing::Test BrowserAboutHandlerTest;
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
-  std::string chrome_prefix(chrome::kChromeUIScheme);
+  std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(content::kStandardSchemeSeparator);
   struct AboutURLTestData {
     GURL test_url;

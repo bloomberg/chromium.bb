@@ -56,7 +56,7 @@ void ExtensionWebContentsObserver::RenderViewCreated(
       (type == Manifest::TYPE_PLATFORM_APP &&
        extension->location() == Manifest::COMPONENT)) {
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process->GetID(), chrome::kChromeUIScheme);
+        process->GetID(), content::kChromeUIScheme);
   }
 
   // Some extensions use file:// URLs.

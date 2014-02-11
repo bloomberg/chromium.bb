@@ -280,7 +280,7 @@ bool ExtensionTabUtil::IsCrashURL(const GURL& url) {
   // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
   GURL fixed_url =
       URLFixerUpper::FixupURL(url.possibly_invalid_spec(), std::string());
-  return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
+  return (fixed_url.SchemeIs(content::kChromeUIScheme) &&
           (fixed_url.host() == content::kChromeUIBrowserCrashHost ||
            fixed_url.host() == chrome::kChromeUICrashHost));
 }

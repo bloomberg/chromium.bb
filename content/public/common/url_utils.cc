@@ -26,7 +26,7 @@ bool HasWebUIScheme(const GURL& url) {
 #if !defined(OS_IOS)
          url.SchemeIs(chrome::kChromeDevToolsScheme) ||
 #endif
-         url.SchemeIs(chrome::kChromeUIScheme);
+         url.SchemeIs(kChromeUIScheme);
 }
 
 bool IsSavableURL(const GURL& url) {

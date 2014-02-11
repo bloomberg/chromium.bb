@@ -1391,7 +1391,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, RendererDebugURLsDontSwap) {
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        IgnoreRendererDebugURLsWhenCrashed) {
   // Visit a WebUI page with bindings.
-  GURL webui_url = GURL(std::string(chrome::kChromeUIScheme) + "://" +
+  GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
                         std::string(kChromeUIGpuHost));
   NavigateToURL(shell(), webui_url);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(

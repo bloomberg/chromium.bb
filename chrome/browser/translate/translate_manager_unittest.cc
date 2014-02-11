@@ -19,7 +19,7 @@ TEST_F(TranslateManagerTest, CheckTranslatableURL) {
   GURL empty_url = GURL(std::string());
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(empty_url));
 
-  std::string chrome = std::string(chrome::kChromeUIScheme) + "://flags";
+  std::string chrome = std::string(content::kChromeUIScheme) + "://flags";
   GURL chrome_url = GURL(chrome);
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(chrome_url));
 

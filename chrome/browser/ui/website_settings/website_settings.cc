@@ -295,7 +295,7 @@ void WebsiteSettings::OnUIClosing() {
 void WebsiteSettings::Init(Profile* profile,
                            const GURL& url,
                            const content::SSLStatus& ssl) {
-  if (url.SchemeIs(chrome::kChromeUIScheme)) {
+  if (url.SchemeIs(content::kChromeUIScheme)) {
     site_identity_status_ = SITE_IDENTITY_STATUS_INTERNAL_PAGE;
     site_identity_details_ =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);

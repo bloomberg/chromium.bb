@@ -193,9 +193,9 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
 
     GURL url = entry->GetURL();
     GURL virtual_url = entry->GetVirtualURL();
-    if (url.SchemeIs(chrome::kChromeUIScheme) ||
-        virtual_url.SchemeIs(chrome::kChromeUIScheme)) {
-      if (!url.SchemeIs(chrome::kChromeUIScheme))
+    if (url.SchemeIs(content::kChromeUIScheme) ||
+        virtual_url.SchemeIs(content::kChromeUIScheme)) {
+      if (!url.SchemeIs(content::kChromeUIScheme))
         url = virtual_url;
       return url.host() != chrome::kChromeUINewTabHost;
     }

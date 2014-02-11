@@ -97,7 +97,7 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
   // - an FTP page (as FTP pages tend to have long lists of filenames that may
   //   confuse the CLD)
   return !url.is_empty() &&
-         !url.SchemeIs(chrome::kChromeUIScheme) &&
+         !url.SchemeIs(content::kChromeUIScheme) &&
          !url.SchemeIs(chrome::kChromeDevToolsScheme) &&
 #if defined(OS_CHROMEOS)
          !(url.SchemeIs(extensions::kExtensionScheme) &&

@@ -93,13 +93,13 @@ bool HasInternalURL(const NavigationEntry* entry) {
 
   // Check the |virtual_url()| first. This catches regular chrome:// URLs
   // including URLs that were rewritten (such as chrome://bookmarks).
-  if (entry->GetVirtualURL().SchemeIs(chrome::kChromeUIScheme))
+  if (entry->GetVirtualURL().SchemeIs(content::kChromeUIScheme))
     return true;
 
   // If the |virtual_url()| isn't a chrome:// URL, check if it's actually
   // view-source: of a chrome:// URL.
   if (entry->GetVirtualURL().SchemeIs(content::kViewSourceScheme))
-    return entry->GetURL().SchemeIs(chrome::kChromeUIScheme);
+    return entry->GetURL().SchemeIs(content::kChromeUIScheme);
 
   return false;
 }

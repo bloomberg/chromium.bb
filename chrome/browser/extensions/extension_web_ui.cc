@@ -66,13 +66,14 @@ void CleanUpDuplicates(base::ListValue* list) {
 
 // Reloads the page in |web_contents| if it uses the same profile as |profile|
 // and if the current URL is a chrome URL.
-void UnregisterAndReplaceOverrideForWebContents(
-    const std::string& page, Profile* profile, WebContents* web_contents) {
+void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
+                                                Profile* profile,
+                                                WebContents* web_contents) {
   if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) != profile)
     return;
 
   GURL url = web_contents->GetURL();
-  if (!url.SchemeIs(chrome::kChromeUIScheme) || url.host() != page)
+  if (!url.SchemeIs(content::kChromeUIScheme) || url.host() != page)
     return;
 
   // Don't use Reload() since |url| isn't the same as the internal URL that
@@ -169,8 +170,9 @@ void ExtensionWebUI::RegisterProfilePrefs(
 
 // static
 bool ExtensionWebUI::HandleChromeURLOverride(
-    GURL* url, content::BrowserContext* browser_context) {
-  if (!url->SchemeIs(chrome::kChromeUIScheme))
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  if (!url->SchemeIs(content::kChromeUIScheme))
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -261,7 +263,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
       if (!(*it2)->GetAsString(&override))
         continue;
       if (StartsWithASCII(url->spec(), override, true)) {
-        GURL original_url(chrome::kChromeUIScheme + std::string("://") +
+        GURL original_url(content::kChromeUIScheme + std::string("://") +
                           it.key() + url->spec().substr(override.length()));
         *url = original_url;
         return true;

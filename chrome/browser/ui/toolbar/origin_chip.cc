@@ -28,7 +28,7 @@ namespace {
 // number for the title of the page. If we don't have a specialized title,
 // returns -1.
 int StringForChromeHost(const GURL& url) {
-  DCHECK(url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme));
+  DCHECK(url.is_empty() || url.SchemeIs(content::kChromeUIScheme));
 
   if (url.is_empty())
     return IDS_NEW_TAB_TITLE;
@@ -99,7 +99,7 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
     return base::UTF8ToUTF16(url.spec());
 
   // Chrome built-in pages.
-  if (url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme)) {
+  if (url.is_empty() || url.SchemeIs(content::kChromeUIScheme)) {
     int string_ref = StringForChromeHost(url);
     return (string_ref == -1) ?
         base::UTF8ToUTF16("Chrome") :

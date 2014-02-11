@@ -374,7 +374,7 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   // disabled for security reasons. New tab page explains the reasons, so
   // we redirect user to new tab page.
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
-    if (url->SchemeIs(chrome::kChromeUIScheme) &&
+    if (url->SchemeIs(content::kChromeUIScheme) &&
         (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
 #if defined(ENABLE_ENHANCED_BOOKMARKS)
          url->DomainIs(chrome::kChromeUIEnhancedBookmarksHost) ||
@@ -392,7 +392,7 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
 // Reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
 // "chrome://foo/".
 bool HandleWebUIReverse(GURL* url, content::BrowserContext* browser_context) {
-  if (!url->is_valid() || !url->SchemeIs(chrome::kChromeUIScheme))
+  if (!url->is_valid() || !url->SchemeIs(content::kChromeUIScheme))
     return false;
 
   return RemoveUberHost(url);
@@ -2536,7 +2536,7 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   ContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(kChromeDevToolsScheme);
-  additional_allowed_schemes->push_back(kChromeUIScheme);
+  additional_allowed_schemes->push_back(content::kChromeUIScheme);
   additional_allowed_schemes->push_back(extensions::kExtensionScheme);
 }
 

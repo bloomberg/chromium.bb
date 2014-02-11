@@ -64,7 +64,7 @@ bool ShouldSyncSessionTab(const SessionTab& tab) {
   for (size_t i = 0; i < tab.navigations.size(); ++i) {
     const GURL& virtual_url = tab.navigations.at(i).virtual_url();
     if (virtual_url.is_valid() &&
-        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !virtual_url.SchemeIs(content::kChromeUIScheme) &&
         !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
         !virtual_url.SchemeIsFile()) {
       found_valid_url = true;

@@ -396,7 +396,7 @@ bool ContentSettingsObserver::allowWebComponents(WebFrame* frame,
     return true;
 
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+  if (EqualsASCII(origin.protocol(), content::kChromeUIScheme))
     return true;
 
   if (const extensions::Extension* extension = GetExtension(origin)) {
@@ -633,7 +633,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (origin.isUnique())
     return false;  // Uninitialized document?
 
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+  if (EqualsASCII(origin.protocol(), content::kChromeUIScheme))
     return true;  // Browser UI elements should still work.
 
   if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))

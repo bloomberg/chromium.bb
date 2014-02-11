@@ -225,7 +225,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-      !url.SchemeIs(chrome::kChromeUIScheme)) {
+      !url.SchemeIs(content::kChromeUIScheme)) {
     return NULL;
   }
 

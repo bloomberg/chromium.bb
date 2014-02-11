@@ -227,7 +227,7 @@ void OriginChipView::Update(content::WebContents* web_contents) {
   showing_16x16_icon_ = false;
 
   if (url_displayed_.is_empty() ||
-      url_displayed_.SchemeIs(chrome::kChromeUIScheme)) {
+      url_displayed_.SchemeIs(content::kChromeUIScheme)) {
     icon = IDR_PRODUCT_LOGO_16;
     showing_16x16_icon_ = true;
   }

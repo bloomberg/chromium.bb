@@ -1421,9 +1421,9 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   if (entry) {
     GURL url = entry->GetURL();
     GURL virtual_url = entry->GetVirtualURL();
-    if ((url.SchemeIs(chrome::kChromeUIScheme) &&
+    if ((url.SchemeIs(content::kChromeUIScheme) &&
         url.host() == chrome::kChromeUINewTabHost) ||
-        (virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        (virtual_url.SchemeIs(content::kChromeUIScheme) &&
         virtual_url.host() == chrome::kChromeUINewTabHost)) {
       return true;
     }

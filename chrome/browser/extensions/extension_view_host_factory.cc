@@ -83,7 +83,7 @@ const Extension* GetExtensionForUrl(Profile* profile, const GURL& url) {
   if (!service)
     return NULL;
   std::string extension_id = url.host();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+  if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host() == chrome::kChromeUIExtensionInfoHost)
     extension_id = url.path().substr(1);
   return service->extensions()->GetByID(extension_id);

@@ -85,7 +85,7 @@ void ChromeExtensionsClient::FilterHostPermissions(
   for (URLPatternSet::const_iterator i = hosts.begin();
        i != hosts.end(); ++i) {
     // Filters out every URL pattern that matches chrome:// scheme.
-    if (i->scheme() == chrome::kChromeUIScheme) {
+    if (i->scheme() == content::kChromeUIScheme) {
       // chrome://favicon is the only URL for chrome:// scheme that we
       // want to support. We want to deprecate the "chrome" scheme.
       // We should not add any additional "host" here.

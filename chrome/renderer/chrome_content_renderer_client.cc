@@ -297,7 +297,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // should not be accessible by normal content, and should also be unable to
   // script anything but themselves (to help limit the damage that a corrupt
   // page could cause).
-  WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
+  WebString chrome_ui_scheme(ASCIIToUTF16(content::kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
 
   WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));

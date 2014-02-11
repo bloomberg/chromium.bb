@@ -65,7 +65,7 @@ bool CanSpecifyHostPermission(const Extension* extension,
                               const URLPattern& pattern,
                               const APIPermissionSet& permissions) {
   if (!pattern.match_all_urls() &&
-      pattern.MatchesScheme(chrome::kChromeUIScheme)) {
+      pattern.MatchesScheme(content::kChromeUIScheme)) {
     URLPatternSet chrome_scheme_hosts = ExtensionsClient::Get()->
         GetPermittedChromeSchemeHosts(extension, permissions);
     if (chrome_scheme_hosts.ContainsPattern(pattern))
@@ -190,7 +190,7 @@ bool ParseHelper(Extension* extension,
           valid_schemes &= ~URLPattern::SCHEME_FILE;
       }
 
-      if (pattern.scheme() != chrome::kChromeUIScheme &&
+      if (pattern.scheme() != content::kChromeUIScheme &&
           !PermissionsData::CanExecuteScriptEverywhere(extension)) {
         // Keep chrome:// in allowed schemes only if it's explicitly requested
         // or CanExecuteScriptEverywhere is true. If the
@@ -476,7 +476,7 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
   }
 
   if (!command_line->HasSwitch(switches::kExtensionsOnChromeURLs)) {
-    if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
+    if (document_url.SchemeIs(content::kChromeUIScheme) &&
         !can_execute_everywhere) {
       if (error)
         *error = errors::kCannotAccessChromeUrl;

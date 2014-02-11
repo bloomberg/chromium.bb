@@ -24,7 +24,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
          !url->SchemeIs(chrome::kAboutScheme));
 
   // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.
-  if (!url->SchemeIs(chrome::kChromeUIScheme))
+  if (!url->SchemeIs(content::kChromeUIScheme))
     return false;
 
   std::string host(url->host());

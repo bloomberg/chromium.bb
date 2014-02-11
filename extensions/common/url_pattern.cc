@@ -24,7 +24,7 @@ const char* kValidSchemes[] = {
   content::kHttpsScheme,
   content::kFileScheme,
   content::kFtpScheme,
-  chrome::kChromeUIScheme,
+  content::kChromeUIScheme,
   extensions::kExtensionScheme,
   content::kFileSystemScheme,
 };

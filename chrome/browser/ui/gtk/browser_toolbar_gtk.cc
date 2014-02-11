@@ -653,7 +653,7 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
   if (!url.is_valid())
     return;
 
-  bool url_is_newtab = url.SchemeIs(chrome::kChromeUIScheme) &&
+  bool url_is_newtab = url.SchemeIs(content::kChromeUIScheme) &&
                        url.host() == chrome::kChromeUINewTabHost;
   home_page_is_new_tab_page_.SetValue(url_is_newtab);
   if (!url_is_newtab)

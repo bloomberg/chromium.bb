@@ -681,7 +681,7 @@ bool HandleNewTabURLRewrite(GURL* url,
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
-  if (!url->SchemeIs(chrome::kChromeUIScheme) ||
+  if (!url->SchemeIs(content::kChromeUIScheme) ||
       url->host() != chrome::kChromeUINewTabHost)
     return false;
 
