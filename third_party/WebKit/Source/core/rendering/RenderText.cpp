@@ -1023,7 +1023,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         }
 
         // Terminate word boundary at bidi run boundary.
-        j = min(j, run->stop());
+        j = min(j, run->stop() + 1);
         int wordLen = j - i;
         if (wordLen) {
             bool isSpace = (j < len) && c == ' ';
