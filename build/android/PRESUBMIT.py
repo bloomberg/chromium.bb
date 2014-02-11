@@ -35,6 +35,8 @@ def CommonChecks(input_api, output_api):
     """Returns a path relative to presubmit directory."""
     return input_api.os_path.join(input_api.PresubmitLocalPath(), *dirs)
 
+  # F0401 is issued when pylint can't import a module, but it doesn't seem to
+  # work correctly on our scripts.
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,

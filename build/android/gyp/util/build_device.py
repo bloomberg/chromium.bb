@@ -17,8 +17,6 @@ BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
 from pylib import android_commands
-# While this isn't used in this file, it is used in some files that import it.
-from pylib.android_commands import GetAttachedDevices # pylint: disable=W0611
 
 
 class BuildDevice(object):
