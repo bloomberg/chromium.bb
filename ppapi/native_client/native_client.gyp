@@ -229,6 +229,7 @@
             '../../native_client/src/untrusted/irt/irt.gyp:irt_browser_lib',
             '../../native_client/src/shared/srpc/srpc.gyp:srpc_lib',
             '../../native_client/src/shared/platform/platform.gyp:platform_lib',
+            '../../native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
             '../../native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
             '../../native_client/src/shared/gio/gio.gyp:gio_lib',
           ],
