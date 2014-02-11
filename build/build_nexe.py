@@ -268,6 +268,7 @@ class Builder(object):
     self.empty = options.empty
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
+    self.tls_edit = options.tls_edit
     self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
     goma_config = GetGomaConfig(options.gomadir, self.osname, arch, toolname,
                                 self.is_pnacl_toolchain)
@@ -574,17 +575,29 @@ class Builder(object):
     out = self.LinkOutputName()
     self.Log('\nLink %s' % out)
     bin_name = self.GetCXXCompiler()
-    MakeDir(os.path.dirname(out))
-    self.CleanOutput(out)
 
-    cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
+    link_out = out
+    if self.tls_edit is not None:
+      link_out = out + '.raw'
+
+    MakeDir(os.path.dirname(link_out))
+    self.CleanOutput(link_out)
+
+    cmd_line = [bin_name, '-o', link_out, '-Wl,--as-needed']
     if not self.empty:
       cmd_line += srcs
     cmd_line += self.link_options
 
-    err = self.Run(cmd_line, out)
+    err = self.Run(cmd_line, link_out)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
+
+    if self.tls_edit is not None:
+      tls_edit_cmd = [self.tls_edit, link_out, out]
+      tls_edit_err = self.Run(tls_edit_cmd, out)
+      if tls_edit_err:
+        raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
+
     return out
 
   # For now, only support translating a pexe, and not .o file(s)
@@ -716,6 +729,8 @@ def Main(argv):
                     action='store_false')
   parser.add_option('--source-list', dest='source_list',
                     help='Filename to load a source list from')
+  parser.add_option('--tls-edit', dest='tls_edit', default=None,
+                    help='tls_edit location if TLS should be modified for IRT')
   parser.add_option('-a', '--arch', dest='arch',
                     help='Set target architecture')
   parser.add_option('-c', '--compile', dest='compile_only', default=False,

@@ -335,6 +335,7 @@
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -354,6 +355,7 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=--target=x86_64-nacl -stdlib=libstdc++ -arch x86-64 --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call -Wn,-Trodata-segment=<(NACL_IRT_DATA_START) -Wn,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib64)',
+                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                },
              ],
@@ -513,6 +515,7 @@
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -531,6 +534,7 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_irt32) -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
+                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                },
              ],
@@ -695,6 +699,7 @@
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                   '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -713,6 +718,7 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm)',
+                  '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
               },
             ],
@@ -877,6 +883,7 @@
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                   '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -895,6 +902,7 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-arch mips -stdlib=libstdc++ --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call --pnacl-disable-abi-check -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt_mips) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
+                  '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
               },
             ],

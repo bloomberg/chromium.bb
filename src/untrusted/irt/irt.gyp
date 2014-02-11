@@ -52,16 +52,10 @@
   },
   'targets': [
     {
-      'target_name': 'irt_core_raw_nexe',
+      'target_name': 'irt_core_nexe',
       'type': 'none',
       'variables': {
-        'nexe_target': 'irt_core_raw',
-        # These out_* fields override the default filenames, which
-        # include a "_newlib" suffix and places them in the target
-        # directory.
-        'out_newlib64': '<(SHARED_INTERMEDIATE_DIR)/irt_core_x86_64_raw.nexe',
-        'out_newlib32': '<(SHARED_INTERMEDIATE_DIR)/irt_core_x86_32_raw.nexe',
-        'out_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/irt_core_arm_raw.nexe',
+        'nexe_target': 'irt_core',
         'build_glibc': 0,
         'build_newlib': 0,
         'build_irt': 1,
@@ -78,66 +72,10 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
+        '<(DEPTH)/native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
-    },
-    {
-      'target_name': 'irt_core_nexe',
-      'type': 'none',
-      'dependencies': [
-        'irt_core_raw_nexe',
-        '<(DEPTH)/native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
-      ],
-      'conditions': [
-        ['target_arch=="arm"', {
-          'actions': [
-            {
-              'action_name': 'tls_edit_irt_arm',
-              'message': 'Patching TLS for irt_core (arm)',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/tls_edit',
-                '<(SHARED_INTERMEDIATE_DIR)/irt_core_arm_raw.nexe',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/irt_core_newlib_arm.nexe',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-          ],
-        }],
-        ['target_arch!="arm"', {
-          'actions': [
-            {
-              'action_name': 'tls_edit_irt_x86-64',
-              'message': 'Patching TLS for irt_core (x86-64)',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/tls_edit',
-                '<(SHARED_INTERMEDIATE_DIR)/irt_core_x86_64_raw.nexe',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/irt_core_newlib_x64.nexe',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'tls_edit_irt_x86-32',
-              'message': 'Patching TLS for irt_core (x86-32)',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/tls_edit',
-                '<(SHARED_INTERMEDIATE_DIR)/irt_core_x86_32_raw.nexe',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/irt_core_newlib_x32.nexe',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-          ],
-        }],
       ],
     },
     {
