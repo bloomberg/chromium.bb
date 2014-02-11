@@ -83,8 +83,6 @@
             'NotFound.h',
             'NullPtr.cpp',
             'NullPtr.h',
-            'NumberOfCores.cpp',
-            'NumberOfCores.h',
             'OwnPtr.h',
             'OwnPtrCommon.h',
             'PageAllocator.cpp',
