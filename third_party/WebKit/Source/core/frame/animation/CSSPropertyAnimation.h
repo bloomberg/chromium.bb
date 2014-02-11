@@ -33,18 +33,12 @@
 
 namespace WebCore {
 
-class AnimationBase;
 class RenderStyle;
 
 class CSSPropertyAnimation {
 public:
-    static bool animationOfPropertyIsAccelerated(CSSPropertyID);
-    static bool propertiesEqual(CSSPropertyID, const RenderStyle* a, const RenderStyle* b);
-    static CSSPropertyID getPropertyAtIndex(int, bool& isShorthand);
-    static int getNumProperties();
+    static bool propertiesEqual(CSSPropertyID, const RenderStyle*, const RenderStyle*);
 
-    // Return true if we need to start software animation timers
-    static bool blendProperties(const AnimationBase*, CSSPropertyID, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress);
 private:
     static void ensurePropertyMap();
 };

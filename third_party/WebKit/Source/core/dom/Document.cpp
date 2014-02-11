@@ -119,7 +119,6 @@
 #include "core/frame/History.h"
 #include "core/frame/PageConsole.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1810,7 +1809,6 @@ void Document::updateStyleIfNeeded()
         return;
 
     RefPtr<Frame> holder(m_frame);
-    AnimationUpdateBlock animationUpdateBlock(m_frame ? &m_frame->animation() : 0);
     recalcStyle(NoChange);
     DocumentAnimations::serviceAfterStyleRecalc(*this);
 }

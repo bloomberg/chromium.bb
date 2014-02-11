@@ -228,7 +228,7 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 
     RenderObject* nextRenderer = this->nextRenderer();
     element->setRenderer(newRenderer);
-    newRenderer->setAnimatableStyle(&style); // setAnimatableStyle() can depend on renderer() already being set.
+    newRenderer->setStyle(&style); // setStyle() can depend on renderer() already being set.
 
     if (FullscreenElementStack::isActiveFullScreenElement(element)) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &element->document());

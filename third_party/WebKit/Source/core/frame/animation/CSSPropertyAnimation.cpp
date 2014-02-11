@@ -37,7 +37,6 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
-#include "core/frame/animation/AnimationBase.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -48,220 +47,6 @@
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
-
-template <typename T>
-static inline T blendFunc(const AnimationBase*, T from, T to, double progress)
-{
-    return blend(from, to, progress);
-}
-
-static inline float blendFunc(const AnimationBase*, float from, float to, double progress)
-{
-    return narrowPrecisionToFloat(from + (to - from) * progress);
-}
-
-static inline Color blendFunc(const AnimationBase*, const Color& from, const Color& to, double progress)
-{
-    return blend(from, to, progress);
-}
-
-static inline Length blendFunc(const AnimationBase*, const Length& from, const Length& to, double progress)
-{
-    return to.blend(from, progress, ValueRangeAll);
-}
-
-static inline BorderImageLength blendFunc(const AnimationBase* anim, const BorderImageLength& from, const BorderImageLength& to, double progress)
-{
-    if (from.isNumber() && to.isNumber())
-        return BorderImageLength(blendFunc(anim, from.number(), to.number(), progress));
-
-    if (from.isLength() && to.isLength())
-        return BorderImageLength(blendFunc(anim, from.length(), to.length(), progress));
-
-    // FIXME: Converting numbers to lengths using the computed border
-    // width would make it possible to interpolate between numbers and
-    // lengths.
-    // https://code.google.com/p/chromium/issues/detail?id=316164
-    return to;
-}
-
-static inline BorderImageLengthBox blendFunc(const AnimationBase* anim, const BorderImageLengthBox& from,
-    const BorderImageLengthBox& to, double progress)
-{
-    return BorderImageLengthBox(blendFunc(anim, from.top(), to.top(), progress),
-        blendFunc(anim, from.right(), to.right(), progress),
-        blendFunc(anim, from.bottom(), to.bottom(), progress),
-        blendFunc(anim, from.left(), to.left(), progress));
-}
-
-static inline LengthSize blendFunc(const AnimationBase* anim, const LengthSize& from, const LengthSize& to, double progress)
-{
-    return LengthSize(blendFunc(anim, from.width(), to.width(), progress),
-        blendFunc(anim, from.height(), to.height(), progress));
-}
-
-static inline LengthPoint blendFunc(const AnimationBase* anim, const LengthPoint& from, const LengthPoint& to, double progress)
-{
-    return LengthPoint(blendFunc(anim, from.x(), to.x(), progress), blendFunc(anim, from.y(), to.y(), progress));
-}
-
-static inline TransformOperations blendFunc(const AnimationBase* anim, const TransformOperations& from, const TransformOperations& to, double progress)
-{
-    if (anim->isTransformFunctionListValid())
-        return to.blendByMatchingOperations(from, progress);
-    return to.blendByUsingMatrixInterpolation(from, progress);
-}
-
-static inline PassRefPtr<ClipPathOperation> blendFunc(const AnimationBase*, ClipPathOperation* from, ClipPathOperation* to, double progress)
-{
-    // Other clip-path operations than BasicShapes can not be animated.
-    if (!from || !to || from->type() != ClipPathOperation::SHAPE || to->type() != ClipPathOperation::SHAPE)
-        return to;
-
-    const BasicShape* fromShape = toShapeClipPathOperation(from)->basicShape();
-    const BasicShape* toShape = toShapeClipPathOperation(to)->basicShape();
-
-    if (!fromShape->canBlend(toShape))
-        return to;
-
-    return ShapeClipPathOperation::create(toShape->blend(fromShape, progress));
-}
-
-static inline PassRefPtr<ShapeValue> blendFunc(const AnimationBase*, ShapeValue* from, ShapeValue* to, double progress)
-{
-    // FIXME Bug 102723: Shape-inside should be able to animate a value of 'outside-shape' when shape-outside is set to a BasicShape
-    if (!from || !to || from->type() != ShapeValue::Shape || to->type() != ShapeValue::Shape)
-        return to;
-
-    const BasicShape* fromShape = from->shape();
-    const BasicShape* toShape = to->shape();
-
-    if (!fromShape->canBlend(toShape))
-        return to;
-
-    return ShapeValue::createShapeValue(toShape->blend(fromShape, progress));
-}
-
-static inline FilterOperations blendFunc(const AnimationBase* anim, const FilterOperations& from, const FilterOperations& to, double progress)
-{
-    FilterOperations result;
-
-    // If we have a filter function list, use that to do a per-function animation.
-    if (anim->filterFunctionListsMatch()) {
-        size_t fromSize = from.operations().size();
-        size_t toSize = to.operations().size();
-        size_t size = max(fromSize, toSize);
-        for (size_t i = 0; i < size; i++) {
-            const FilterOperation* fromOp = (i < fromSize) ? from.operations()[i].get() : 0;
-            const FilterOperation* toOp = (i < toSize) ? to.operations()[i].get() : 0;
-            RefPtr<FilterOperation> blendedOp = FilterOperation::blend(fromOp, toOp, progress);
-            if (blendedOp)
-                result.operations().append(blendedOp);
-            else
-                ASSERT_NOT_REACHED();
-        }
-    } else {
-        // If the filter function lists don't match, we could try to cross-fade, but don't yet have a way to represent that in CSS.
-        // For now we'll just fail to animate.
-        result = to;
-    }
-
-    return result;
-}
-
-static inline EVisibility blendFunc(const AnimationBase* anim, EVisibility from, EVisibility to, double progress)
-{
-    // Any non-zero result means we consider the object to be visible. Only at 0 do we consider the object to be
-    // invisible. The invisible value we use (HIDDEN vs. COLLAPSE) depends on the specified from/to values.
-    double fromVal = from == VISIBLE ? 1. : 0.;
-    double toVal = to == VISIBLE ? 1. : 0.;
-    if (fromVal == toVal)
-        return to;
-    double result = blendFunc(anim, fromVal, toVal, progress);
-    return result > 0. ? VISIBLE : (to != VISIBLE ? to : from);
-}
-
-static inline LengthBox blendFunc(const AnimationBase* anim, const LengthBox& from, const LengthBox& to, double progress)
-{
-    // Length types have to match to animate
-    if (from.top().type() != to.top().type()
-        || from.right().type() != to.right().type()
-        || from.bottom().type() != to.bottom().type()
-        || from.left().type() != to.left().type())
-        return to;
-
-    LengthBox result(blendFunc(anim, from.top(), to.top(), progress),
-                     blendFunc(anim, from.right(), to.right(), progress),
-                     blendFunc(anim, from.bottom(), to.bottom(), progress),
-                     blendFunc(anim, from.left(), to.left(), progress));
-    return result;
-}
-
-static inline PassRefPtr<SVGLength> blendFunc(const AnimationBase*, PassRefPtr<SVGLength> from, PassRefPtr<SVGLength> to, double progress)
-{
-    return to->blend(from, narrowPrecisionToFloat(progress));
-}
-
-static inline PassRefPtr<SVGLengthList> blendFunc(const AnimationBase*, PassRefPtr<SVGLengthList> passFrom, PassRefPtr<SVGLengthList> passTo, double progress)
-{
-    RefPtr<SVGLengthList> from = passFrom;
-    RefPtr<SVGLengthList> to = passTo;
-
-    size_t fromLength = from->numberOfItems();
-    size_t toLength = to->numberOfItems();
-    if (!fromLength)
-        return !progress ? from->clone() : to->clone();
-    if (!toLength)
-        return progress == 1 ? from->clone() : to->clone();
-
-    size_t resultLength = fromLength;
-    if (fromLength != toLength) {
-        if (!(fromLength % toLength))
-            resultLength = fromLength;
-        else if (!(toLength % fromLength))
-            resultLength = toLength;
-        else
-            resultLength = fromLength * toLength;
-    }
-    RefPtr<SVGLengthList> result = SVGLengthList::create();
-    for (size_t i = 0; i < resultLength; ++i)
-        result->append(to->at(i % toLength)->blend(from->at(i % fromLength), narrowPrecisionToFloat(progress)));
-    return result;
-}
-
-static inline PassRefPtr<StyleImage> crossfadeBlend(const AnimationBase*, StyleFetchedImage* fromStyleImage, StyleFetchedImage* toStyleImage, double progress)
-{
-    // If progress is at one of the extremes, we want getComputedStyle to show the image,
-    // not a completed cross-fade, so we hand back one of the existing images.
-    if (!progress)
-        return fromStyleImage;
-    if (progress == 1)
-        return toStyleImage;
-
-    ImageResource* fromImageResource = static_cast<ImageResource*>(fromStyleImage->data());
-    ImageResource* toImageResource = static_cast<ImageResource*>(toStyleImage->data());
-
-    RefPtr<CSSImageValue> fromImageValue = CSSImageValue::create(fromImageResource->url(), fromStyleImage);
-    RefPtr<CSSImageValue> toImageValue = CSSImageValue::create(toImageResource->url(), toStyleImage);
-    RefPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromImageValue, toImageValue);
-
-    crossfadeValue->setPercentage(CSSPrimitiveValue::create(progress, CSSPrimitiveValue::CSS_NUMBER));
-
-    return StyleGeneratedImage::create(crossfadeValue.get());
-}
-
-static inline PassRefPtr<StyleImage> blendFunc(const AnimationBase* anim, StyleImage* from, StyleImage* to, double progress)
-{
-    if (!from || !to)
-        return to;
-
-    if (from->isImageResource() && to->isImageResource())
-        return crossfadeBlend(anim, toStyleFetchedImage(from), toStyleFetchedImage(to), progress);
-
-    // FIXME: Support transitioning generated images as well. (gradients, etc.)
-
-    return to;
-}
 
 class AnimationPropertyWrapperBase {
     WTF_MAKE_NONCOPYABLE(AnimationPropertyWrapperBase);
@@ -274,13 +59,9 @@ public:
 
     virtual ~AnimationPropertyWrapperBase() { }
 
-    virtual bool isShorthandWrapper() const { return false; }
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const = 0;
-    virtual void blend(const AnimationBase*, RenderStyle*, const RenderStyle*, const RenderStyle*, double) const = 0;
 
     CSSPropertyID property() const { return m_prop; }
-
-    virtual bool animationIsAccelerated() const { return false; }
 
 private:
     CSSPropertyID m_prop;
@@ -289,17 +70,6 @@ private:
 static int gPropertyWrapperMap[numCSSProperties];
 static const int cInvalidPropertyWrapperIndex = -1;
 static Vector<AnimationPropertyWrapperBase*>* gPropertyWrappers = 0;
-
-static void addPropertyWrapper(CSSPropertyID propertyID, AnimationPropertyWrapperBase* wrapper)
-{
-    int propIndex = propertyID - firstCSSProperty;
-
-    ASSERT(gPropertyWrapperMap[propIndex] == cInvalidPropertyWrapperIndex);
-
-    unsigned wrapperIndex = gPropertyWrappers->size();
-    gPropertyWrappers->append(wrapper);
-    gPropertyWrapperMap[propIndex] = wrapperIndex;
-}
 
 static AnimationPropertyWrapperBase* wrapperForProperty(CSSPropertyID propertyID)
 {
@@ -339,48 +109,18 @@ protected:
 template <typename T>
 class PropertyWrapper : public PropertyWrapperGetter<T> {
 public:
-    PropertyWrapper(CSSPropertyID prop, T (RenderStyle::*getter)() const, void (RenderStyle::*setter)(T))
+    PropertyWrapper(CSSPropertyID prop, T (RenderStyle::*getter)() const)
         : PropertyWrapperGetter<T>(prop, getter)
-        , m_setter(setter)
     {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*PropertyWrapperGetter<T>::m_getter)(), (b->*PropertyWrapperGetter<T>::m_getter)(), progress));
-    }
-
-protected:
-    void (RenderStyle::*m_setter)(T);
-};
-
-class NonNegativeLengthWrapper FINAL : public PropertyWrapper<Length> {
-public:
-    NonNegativeLengthWrapper(CSSPropertyID prop, Length (RenderStyle::*getter)() const, void (RenderStyle::*setter)(Length))
-    : PropertyWrapper<Length>(prop, getter, setter)
-    {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        Length from = (a->*PropertyWrapperGetter<Length>::m_getter)();
-        Length to = (b->*PropertyWrapperGetter<Length>::m_getter)();
-        (dst->*PropertyWrapper<Length>::m_setter)(to.blend(from, progress, ValueRangeNonNegative));
     }
 };
 
 template <typename T>
 class RefCountedPropertyWrapper : public PropertyWrapperGetter<T*> {
 public:
-    RefCountedPropertyWrapper(CSSPropertyID prop, T* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<T>))
+    RefCountedPropertyWrapper(CSSPropertyID prop, T* (RenderStyle::*getter)() const)
         : PropertyWrapperGetter<T*>(prop, getter)
-        , m_setter(setter)
     {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*PropertyWrapperGetter<T*>::m_getter)(), (b->*PropertyWrapperGetter<T*>::m_getter)(), progress));
     }
 
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
@@ -397,32 +137,13 @@ public:
             return false;
         return *aValue == *bValue;
     }
-
-protected:
-    void (RenderStyle::*m_setter)(PassRefPtr<T>);
 };
 
-
-class PropertyWrapperClipPath : public RefCountedPropertyWrapper<ClipPathOperation> {
-public:
-    PropertyWrapperClipPath(CSSPropertyID prop, ClipPathOperation* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<ClipPathOperation>))
-        : RefCountedPropertyWrapper<ClipPathOperation>(prop, getter, setter)
-    {
-    }
-};
-
-class PropertyWrapperShape : public RefCountedPropertyWrapper<ShapeValue> {
-public:
-    PropertyWrapperShape(CSSPropertyID prop, ShapeValue* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<ShapeValue>))
-        : RefCountedPropertyWrapper<ShapeValue>(prop, getter, setter)
-    {
-    }
-};
 
 class StyleImagePropertyWrapper FINAL : public RefCountedPropertyWrapper<StyleImage> {
 public:
-    StyleImagePropertyWrapper(CSSPropertyID prop, StyleImage* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<StyleImage>))
-        : RefCountedPropertyWrapper<StyleImage>(prop, getter, setter)
+    StyleImagePropertyWrapper(CSSPropertyID prop, StyleImage* (RenderStyle::*getter)() const)
+        : RefCountedPropertyWrapper<StyleImage>(prop, getter)
     {
     }
 
@@ -441,77 +162,11 @@ public:
     }
 };
 
-class PropertyWrapperColor FINAL : public PropertyWrapperGetter<Color> {
-public:
-    PropertyWrapperColor(CSSPropertyID prop, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&))
-        : PropertyWrapperGetter<Color>(prop, getter)
-        , m_setter(setter)
-    {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*PropertyWrapperGetter<Color>::m_getter)(), (b->*PropertyWrapperGetter<Color>::m_getter)(), progress));
-    }
-
-protected:
-    void (RenderStyle::*m_setter)(const Color&);
-};
-
-class PropertyWrapperAcceleratedOpacity FINAL : public PropertyWrapper<float> {
-public:
-    PropertyWrapperAcceleratedOpacity()
-        : PropertyWrapper<float>(CSSPropertyOpacity, &RenderStyle::opacity, &RenderStyle::setOpacity)
-    {
-    }
-
-    virtual bool animationIsAccelerated() const OVERRIDE { return true; }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        float fromOpacity = a->opacity();
-
-        // This makes sure we put the object being animated into a RenderLayer during the animation
-        dst->setOpacity(blendFunc(anim, (fromOpacity == 1) ? 0.999999f : fromOpacity, b->opacity(), progress));
-    }
-};
-
-class PropertyWrapperAcceleratedTransform FINAL : public PropertyWrapper<const TransformOperations&> {
-public:
-    PropertyWrapperAcceleratedTransform()
-        : PropertyWrapper<const TransformOperations&>(CSSPropertyWebkitTransform, &RenderStyle::transform, &RenderStyle::setTransform)
-    {
-    }
-
-    virtual bool animationIsAccelerated() const OVERRIDE { return true; }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        dst->setTransform(blendFunc(anim, a->transform(), b->transform(), progress));
-    }
-};
-
-class PropertyWrapperAcceleratedFilter FINAL : public PropertyWrapper<const FilterOperations&> {
-public:
-    PropertyWrapperAcceleratedFilter()
-        : PropertyWrapper<const FilterOperations&>(CSSPropertyWebkitFilter, &RenderStyle::filter, &RenderStyle::setFilter)
-    {
-    }
-
-    virtual bool animationIsAccelerated() const OVERRIDE { return true; }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        dst->setFilter(blendFunc(anim, a->filter(), b->filter(), progress));
-    }
-};
-
 class PropertyWrapperShadow FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperShadow(CSSPropertyID prop, ShadowList* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<ShadowList>))
+    PropertyWrapperShadow(CSSPropertyID prop, ShadowList* (RenderStyle::*getter)() const)
         : AnimationPropertyWrapperBase(prop)
         , m_getter(getter)
-        , m_setter(setter)
     {
     }
 
@@ -526,21 +181,14 @@ public:
         return false;
     }
 
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        (dst->*m_setter)(ShadowList::blend((a->*m_getter)(), (b->*m_getter)(), progress));
-    }
-
     ShadowList* (RenderStyle::*m_getter)() const;
-    void (RenderStyle::*m_setter)(PassRefPtr<ShadowList>);
 };
 
 class PropertyWrapperMaybeInvalidStyleColor FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperMaybeInvalidStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const StyleColor&))
+    PropertyWrapperMaybeInvalidStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const)
         : AnimationPropertyWrapperBase(prop)
         , m_getter(getter)
-        , m_setter(setter)
     {
     }
 
@@ -555,40 +203,22 @@ public:
         return fromColor.resolve(a->color()) == toColor.resolve(b->color());
     }
 
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        StyleColor fromColor = (a->*m_getter)();
-        StyleColor toColor = (b->*m_getter)();
-
-        if (fromColor.isCurrentColor() && toColor.isCurrentColor())
-            return;
-
-        (dst->*m_setter)(blendFunc(anim, fromColor.resolve(a->color()), toColor.resolve(b->color()), progress));
-    }
-
 private:
     StyleColor (RenderStyle::*m_getter)() const;
-    void (RenderStyle::*m_setter)(const StyleColor&);
 };
 
 
 class PropertyWrapperVisitedAffectedColor FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperVisitedAffectedColor(CSSPropertyID prop, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&),
-        Color (RenderStyle::*visitedGetter)() const, void (RenderStyle::*visitedSetter)(const Color&))
+    PropertyWrapperVisitedAffectedColor(CSSPropertyID prop, Color (RenderStyle::*getter)() const, Color (RenderStyle::*visitedGetter)() const)
         : AnimationPropertyWrapperBase(prop)
-        , m_wrapper(adoptPtr(new PropertyWrapperColor(prop, getter, setter)))
-        , m_visitedWrapper(adoptPtr(new PropertyWrapperColor(prop, visitedGetter, visitedSetter)))
+        , m_wrapper(adoptPtr(new PropertyWrapper<Color>(prop, getter)))
+        , m_visitedWrapper(adoptPtr(new PropertyWrapper<Color>(prop, visitedGetter)))
     {
     }
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const
     {
         return m_wrapper->equals(a, b) && m_visitedWrapper->equals(a, b);
-    }
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
-    {
-        m_wrapper->blend(anim, dst, a, b, progress);
-        m_visitedWrapper->blend(anim, dst, a, b, progress);
     }
 
 private:
@@ -598,21 +228,15 @@ private:
 
 class PropertyWrapperVisitedAffectedStyleColor FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperVisitedAffectedStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const StyleColor&),
-        StyleColor (RenderStyle::*visitedGetter)() const, void (RenderStyle::*visitedSetter)(const StyleColor&))
+    PropertyWrapperVisitedAffectedStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const, StyleColor (RenderStyle::*visitedGetter)() const)
         : AnimationPropertyWrapperBase(prop)
-        , m_wrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, getter, setter)))
-        , m_visitedWrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, visitedGetter, visitedSetter)))
+        , m_wrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, getter)))
+        , m_visitedWrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, visitedGetter)))
     {
     }
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
     {
         return m_wrapper->equals(a, b) && m_visitedWrapper->equals(a, b);
-    }
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        m_wrapper->blend(anim, dst, a, b, progress);
-        m_visitedWrapper->blend(anim, dst, a, b, progress);
     }
 
 private:
@@ -630,7 +254,6 @@ public:
     virtual ~FillLayerAnimationPropertyWrapperBase() { }
 
     virtual bool equals(const FillLayer*, const FillLayer*) const = 0;
-    virtual void blend(const AnimationBase*, FillLayer*, const FillLayer*, const FillLayer*, double) const = 0;
 };
 
 template <typename T>
@@ -660,43 +283,25 @@ protected:
 template <typename T>
 class FillLayerPropertyWrapper FINAL : public FillLayerPropertyWrapperGetter<T> {
 public:
-    FillLayerPropertyWrapper(T (FillLayer::*getter)() const, void (FillLayer::*setter)(T))
+    FillLayerPropertyWrapper(T (FillLayer::*getter)() const)
         : FillLayerPropertyWrapperGetter<T>(getter)
-        , m_setter(setter)
     {
     }
-
-    virtual void blend(const AnimationBase* anim, FillLayer* dst, const FillLayer* a, const FillLayer* b, double progress) const OVERRIDE
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*FillLayerPropertyWrapperGetter<T>::m_getter)(), (b->*FillLayerPropertyWrapperGetter<T>::m_getter)(), progress));
-    }
-
-protected:
-    void (FillLayer::*m_setter)(T);
 };
 
 template <typename T>
 class FillLayerRefCountedPropertyWrapper : public FillLayerPropertyWrapperGetter<T*> {
 public:
-    FillLayerRefCountedPropertyWrapper(T* (FillLayer::*getter)() const, void (FillLayer::*setter)(PassRefPtr<T>))
+    FillLayerRefCountedPropertyWrapper(T* (FillLayer::*getter)() const)
         : FillLayerPropertyWrapperGetter<T*>(getter)
-        , m_setter(setter)
     {
     }
-
-    virtual void blend(const AnimationBase* anim, FillLayer* dst, const FillLayer* a, const FillLayer* b, double progress) const
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*FillLayerPropertyWrapperGetter<T*>::m_getter)(), (b->*FillLayerPropertyWrapperGetter<T*>::m_getter)(), progress));
-    }
-
-protected:
-    void (FillLayer::*m_setter)(PassRefPtr<T>);
 };
 
 class FillLayerStyleImagePropertyWrapper FINAL : public FillLayerRefCountedPropertyWrapper<StyleImage> {
 public:
-    FillLayerStyleImagePropertyWrapper(StyleImage* (FillLayer::*getter)() const, void (FillLayer::*setter)(PassRefPtr<StyleImage>))
-        : FillLayerRefCountedPropertyWrapper<StyleImage>(getter, setter)
+    FillLayerStyleImagePropertyWrapper(StyleImage* (FillLayer::*getter)() const)
+        : FillLayerRefCountedPropertyWrapper<StyleImage>(getter)
     {
     }
 
@@ -719,29 +324,27 @@ public:
 class FillLayersPropertyWrapper FINAL : public AnimationPropertyWrapperBase {
 public:
     typedef const FillLayer* (RenderStyle::*LayersGetter)() const;
-    typedef FillLayer* (RenderStyle::*LayersAccessor)();
 
-    FillLayersPropertyWrapper(CSSPropertyID prop, LayersGetter getter, LayersAccessor accessor)
+    FillLayersPropertyWrapper(CSSPropertyID prop, LayersGetter getter)
         : AnimationPropertyWrapperBase(prop)
         , m_layersGetter(getter)
-        , m_layersAccessor(accessor)
     {
         switch (prop) {
         case CSSPropertyBackgroundPositionX:
         case CSSPropertyWebkitMaskPositionX:
-            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<Length>(&FillLayer::xPosition, &FillLayer::setXPosition);
+            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<Length>(&FillLayer::xPosition);
             break;
         case CSSPropertyBackgroundPositionY:
         case CSSPropertyWebkitMaskPositionY:
-            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<Length>(&FillLayer::yPosition, &FillLayer::setYPosition);
+            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<Length>(&FillLayer::yPosition);
             break;
         case CSSPropertyBackgroundSize:
         case CSSPropertyWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize:
-            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<LengthSize>(&FillLayer::sizeLength, &FillLayer::setSizeLength);
+            m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<LengthSize>(&FillLayer::sizeLength);
             break;
         case CSSPropertyBackgroundImage:
-            m_fillLayerPropertyWrapper = new FillLayerStyleImagePropertyWrapper(&FillLayer::image, &FillLayer::setImage);
+            m_fillLayerPropertyWrapper = new FillLayerStyleImagePropertyWrapper(&FillLayer::image);
             break;
         default:
             break;
@@ -764,98 +367,18 @@ public:
         return true;
     }
 
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        const FillLayer* aLayer = (a->*m_layersGetter)();
-        const FillLayer* bLayer = (b->*m_layersGetter)();
-        FillLayer* dstLayer = (dst->*m_layersAccessor)();
-
-        while (aLayer && bLayer && dstLayer) {
-            m_fillLayerPropertyWrapper->blend(anim, dstLayer, aLayer, bLayer, progress);
-            aLayer = aLayer->next();
-            bLayer = bLayer->next();
-            dstLayer = dstLayer->next();
-        }
-    }
-
 private:
     FillLayerAnimationPropertyWrapperBase* m_fillLayerPropertyWrapper;
 
     LayersGetter m_layersGetter;
-    LayersAccessor m_layersAccessor;
-};
-
-class ShorthandPropertyWrapper FINAL : public AnimationPropertyWrapperBase {
-public:
-    ShorthandPropertyWrapper(CSSPropertyID property, const StylePropertyShorthand& shorthand)
-        : AnimationPropertyWrapperBase(property)
-    {
-        for (unsigned i = 0; i < shorthand.length(); ++i) {
-            AnimationPropertyWrapperBase* wrapper = wrapperForProperty(shorthand.properties()[i]);
-            if (wrapper)
-                m_propertyWrappers.append(wrapper);
-        }
-    }
-
-    virtual bool isShorthandWrapper() const OVERRIDE { return true; }
-
-    virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
-    {
-        Vector<AnimationPropertyWrapperBase*>::const_iterator end = m_propertyWrappers.end();
-        for (Vector<AnimationPropertyWrapperBase*>::const_iterator it = m_propertyWrappers.begin(); it != end; ++it) {
-            if (!(*it)->equals(a, b))
-                return false;
-        }
-        return true;
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        Vector<AnimationPropertyWrapperBase*>::const_iterator end = m_propertyWrappers.end();
-        for (Vector<AnimationPropertyWrapperBase*>::const_iterator it = m_propertyWrappers.begin(); it != end; ++it)
-            (*it)->blend(anim, dst, a, b, progress);
-    }
-
-    const Vector<AnimationPropertyWrapperBase*> propertyWrappers() const { return m_propertyWrappers; }
-
-private:
-    Vector<AnimationPropertyWrapperBase*> m_propertyWrappers;
-};
-
-class PropertyWrapperFlex FINAL : public AnimationPropertyWrapperBase {
-public:
-    PropertyWrapperFlex()
-        : AnimationPropertyWrapperBase(CSSPropertyFlex)
-    {
-    }
-
-    virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
-    {
-        // If the style pointers are the same, don't bother doing the test.
-        // If either is null, return false. If both are null, return true.
-        if ((!a && !b) || a == b)
-            return true;
-        if (!a || !b)
-            return false;
-
-        return a->flexBasis() == b->flexBasis() && a->flexGrow() == b->flexGrow() && a->flexShrink() == b->flexShrink();
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        dst->setFlexBasis(blendFunc(anim, a->flexBasis(), b->flexBasis(), progress));
-        dst->setFlexGrow(blendFunc(anim, a->flexGrow(), b->flexGrow(), progress));
-        dst->setFlexShrink(blendFunc(anim, a->flexShrink(), b->flexShrink(), progress));
-    }
 };
 
 class PropertyWrapperSVGPaint FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperSVGPaint(CSSPropertyID prop, const SVGPaint::SVGPaintType& (RenderStyle::*paintTypeGetter)() const, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&))
+    PropertyWrapperSVGPaint(CSSPropertyID prop, const SVGPaint::SVGPaintType& (RenderStyle::*paintTypeGetter)() const, Color (RenderStyle::*getter)() const)
         : AnimationPropertyWrapperBase(prop)
         , m_paintTypeGetter(paintTypeGetter)
         , m_getter(getter)
-        , m_setter(setter)
     {
     }
 
@@ -875,37 +398,18 @@ public:
         return true;
     }
 
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
-    {
-        if ((a->*m_paintTypeGetter)() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR
-            || (b->*m_paintTypeGetter)() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR)
-            return;
-
-        Color fromColor = (a->*m_getter)();
-        Color toColor = (b->*m_getter)();
-
-        (dst->*m_setter)(blendFunc(anim, fromColor, toColor, progress));
-    }
-
 private:
     const SVGPaint::SVGPaintType& (RenderStyle::*m_paintTypeGetter)() const;
     Color (RenderStyle::*m_getter)() const;
-    void (RenderStyle::*m_setter)(const Color&);
 };
 
 template <typename T>
 class RefCountedSVGPropertyWrapper : public AnimationPropertyWrapperBase {
 public:
-    RefCountedSVGPropertyWrapper(CSSPropertyID prop, PassRefPtr<T> (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<T>))
+    RefCountedSVGPropertyWrapper(CSSPropertyID prop, PassRefPtr<T> (RenderStyle::*getter)() const)
         : AnimationPropertyWrapperBase(prop)
         , m_getter(getter)
-        , m_setter(setter)
     {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
-    {
-        (dst->*m_setter)(blendFunc(anim, (a->*m_getter)(), (b->*m_getter)(), progress));
     }
 
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
@@ -925,41 +429,7 @@ public:
 
 protected:
     PassRefPtr<T> (RenderStyle::*m_getter)() const;
-    void (RenderStyle::*m_setter)(PassRefPtr<T>);
 };
-
-static void addShorthandProperties()
-{
-    static const CSSPropertyID animatableShorthandProperties[] = {
-        CSSPropertyBackground, // for background-color, background-position, background-image
-        CSSPropertyBackgroundPosition,
-        CSSPropertyFont, // for font-size, font-weight
-        CSSPropertyWebkitMask, // for mask-position
-        CSSPropertyWebkitMaskPosition,
-        CSSPropertyBorderTop, CSSPropertyBorderRight, CSSPropertyBorderBottom, CSSPropertyBorderLeft,
-        CSSPropertyBorderColor,
-        CSSPropertyBorderRadius,
-        CSSPropertyBorderWidth,
-        CSSPropertyBorder,
-        CSSPropertyBorderImage,
-        CSSPropertyBorderSpacing,
-        CSSPropertyListStyle, // for list-style-image
-        CSSPropertyMargin,
-        CSSPropertyOutline,
-        CSSPropertyPadding,
-        CSSPropertyWebkitTextStroke,
-        CSSPropertyWebkitColumnRule,
-        CSSPropertyWebkitBorderRadius,
-        CSSPropertyWebkitTransformOrigin
-    };
-
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(animatableShorthandProperties); ++i) {
-        CSSPropertyID propertyID = animatableShorthandProperties[i];
-        StylePropertyShorthand shorthand = shorthandForProperty(propertyID);
-        if (shorthand.length() > 0)
-            addPropertyWrapper(propertyID, new ShorthandPropertyWrapper(propertyID, shorthand));
-    }
-}
 
 void CSSPropertyAnimation::ensurePropertyMap()
 {
@@ -970,228 +440,171 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers = new Vector<AnimationPropertyWrapperBase*>();
 
     // build the list of property wrappers to do the comparisons and blends
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyLeft, &RenderStyle::left, &RenderStyle::setLeft));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyRight, &RenderStyle::right, &RenderStyle::setRight));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyTop, &RenderStyle::top, &RenderStyle::setTop));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyBottom, &RenderStyle::bottom, &RenderStyle::setBottom));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyLeft, &RenderStyle::left));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyRight, &RenderStyle::right));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyTop, &RenderStyle::top));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyBottom, &RenderStyle::bottom));
 
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWidth, &RenderStyle::width, &RenderStyle::setWidth));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMinWidth, &RenderStyle::minWidth, &RenderStyle::setMinWidth));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMaxWidth, &RenderStyle::maxWidth, &RenderStyle::setMaxWidth));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWidth, &RenderStyle::width));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMinWidth, &RenderStyle::minWidth));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMaxWidth, &RenderStyle::maxWidth));
 
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyHeight, &RenderStyle::height, &RenderStyle::setHeight));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMinHeight, &RenderStyle::minHeight, &RenderStyle::setMinHeight));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMaxHeight, &RenderStyle::maxHeight, &RenderStyle::setMaxHeight));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyHeight, &RenderStyle::height));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMinHeight, &RenderStyle::minHeight));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMaxHeight, &RenderStyle::maxHeight));
 
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        gPropertyWrappers->append(new PropertyWrapperFlex());
+    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderLeftWidth, &RenderStyle::borderLeftWidth));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderRightWidth, &RenderStyle::borderRightWidth));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderTopWidth, &RenderStyle::borderTopWidth));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderBottomWidth, &RenderStyle::borderBottomWidth));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginLeft, &RenderStyle::marginLeft));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginRight, &RenderStyle::marginRight));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginTop, &RenderStyle::marginTop));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginBottom, &RenderStyle::marginBottom));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingLeft, &RenderStyle::paddingLeft));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingRight, &RenderStyle::paddingRight));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingTop, &RenderStyle::paddingTop));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingBottom, &RenderStyle::paddingBottom));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyColor, &RenderStyle::color, &RenderStyle::visitedLinkColor));
 
-    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderLeftWidth, &RenderStyle::borderLeftWidth, &RenderStyle::setBorderLeftWidth));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderRightWidth, &RenderStyle::borderRightWidth, &RenderStyle::setBorderRightWidth));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderTopWidth, &RenderStyle::borderTopWidth, &RenderStyle::setBorderTopWidth));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderBottomWidth, &RenderStyle::borderBottomWidth, &RenderStyle::setBorderBottomWidth));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginLeft, &RenderStyle::marginLeft, &RenderStyle::setMarginLeft));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginRight, &RenderStyle::marginRight, &RenderStyle::setMarginRight));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginTop, &RenderStyle::marginTop, &RenderStyle::setMarginTop));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMarginBottom, &RenderStyle::marginBottom, &RenderStyle::setMarginBottom));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingLeft, &RenderStyle::paddingLeft, &RenderStyle::setPaddingLeft));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingRight, &RenderStyle::paddingRight, &RenderStyle::setPaddingRight));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingTop, &RenderStyle::paddingTop, &RenderStyle::setPaddingTop));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingBottom, &RenderStyle::paddingBottom, &RenderStyle::setPaddingBottom));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyColor, &RenderStyle::color, &RenderStyle::setColor, &RenderStyle::visitedLinkColor, &RenderStyle::setVisitedLinkColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBackgroundColor, &RenderStyle::backgroundColor, &RenderStyle::visitedLinkBackgroundColor));
 
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBackgroundColor, &RenderStyle::backgroundColor, &RenderStyle::setBackgroundColor, &RenderStyle::visitedLinkBackgroundColor, &RenderStyle::setVisitedLinkBackgroundColor));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundImage, &RenderStyle::backgroundLayers));
+    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyListStyleImage, &RenderStyle::listStyleImage));
+    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskImage, &RenderStyle::maskImage));
 
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundImage, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
-    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyListStyleImage, &RenderStyle::listStyleImage, &RenderStyle::setListStyleImage));
-    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskImage, &RenderStyle::maskImage, &RenderStyle::setMaskImage));
+    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyBorderImageSource, &RenderStyle::borderImageSource));
+    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyBorderImageSlice, &RenderStyle::borderImageSlices));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageWidth, &RenderStyle::borderImageWidth));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageOutset, &RenderStyle::borderImageOutset));
 
-    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyBorderImageSource, &RenderStyle::borderImageSource, &RenderStyle::setBorderImageSource));
-    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyBorderImageSlice, &RenderStyle::borderImageSlices, &RenderStyle::setBorderImageSlices));
-    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageWidth, &RenderStyle::borderImageWidth, &RenderStyle::setBorderImageWidth));
-    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageOutset, &RenderStyle::borderImageOutset, &RenderStyle::setBorderImageOutset));
+    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskBoxImageSource, &RenderStyle::maskBoxImageSource));
+    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyWebkitMaskBoxImageSlice, &RenderStyle::maskBoxImageSlices));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageWidth, &RenderStyle::maskBoxImageWidth));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageOutset, &RenderStyle::maskBoxImageOutset));
 
-    gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskBoxImageSource, &RenderStyle::maskBoxImageSource, &RenderStyle::setMaskBoxImageSource));
-    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyWebkitMaskBoxImageSlice, &RenderStyle::maskBoxImageSlices, &RenderStyle::setMaskBoxImageSlices));
-    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageWidth, &RenderStyle::maskBoxImageWidth, &RenderStyle::setMaskBoxImageWidth));
-    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageOutset, &RenderStyle::maskBoxImageOutset, &RenderStyle::setMaskBoxImageOutset));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionX, &RenderStyle::backgroundLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionY, &RenderStyle::backgroundLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundSize, &RenderStyle::backgroundLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitBackgroundSize, &RenderStyle::backgroundLayers));
 
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionX, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionY, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundSize, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitBackgroundSize, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionX, &RenderStyle::maskLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionY, &RenderStyle::maskLayers));
+    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskSize, &RenderStyle::maskLayers));
 
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionX, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionY, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
-    gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskSize, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
-
-    gPropertyWrappers->append(new PropertyWrapper<LengthPoint>(CSSPropertyObjectPosition, &RenderStyle::objectPosition, &RenderStyle::setObjectPosition));
+    gPropertyWrappers->append(new PropertyWrapper<LengthPoint>(CSSPropertyObjectPosition, &RenderStyle::objectPosition));
 
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFontSize,
         // Must pass a specified size to setFontSize if Text Autosizing is enabled, but a computed size
         // if text zoom is enabled (if neither is enabled it's irrelevant as they're probably the same).
         // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
         // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
-        &RenderStyle::specifiedFontSize,
-        &RenderStyle::setFontSize));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnRuleWidth, &RenderStyle::columnRuleWidth, &RenderStyle::setColumnRuleWidth));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnGap, &RenderStyle::columnGap, &RenderStyle::setColumnGap));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnCount, &RenderStyle::columnCount, &RenderStyle::setColumnCount));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnWidth, &RenderStyle::columnWidth, &RenderStyle::setColumnWidth));
-    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWebkitBorderHorizontalSpacing, &RenderStyle::horizontalBorderSpacing, &RenderStyle::setHorizontalBorderSpacing));
-    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWebkitBorderVerticalSpacing, &RenderStyle::verticalBorderSpacing, &RenderStyle::setVerticalBorderSpacing));
-    gPropertyWrappers->append(new PropertyWrapper<int>(CSSPropertyZIndex, &RenderStyle::zIndex, &RenderStyle::setZIndex));
-    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyOrphans, &RenderStyle::orphans, &RenderStyle::setOrphans));
-    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWidows, &RenderStyle::widows, &RenderStyle::setWidows));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyLineHeight, &RenderStyle::specifiedLineHeight, &RenderStyle::setLineHeight));
-    gPropertyWrappers->append(new PropertyWrapper<int>(CSSPropertyOutlineOffset, &RenderStyle::outlineOffset, &RenderStyle::setOutlineOffset));
-    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyOutlineWidth, &RenderStyle::outlineWidth, &RenderStyle::setOutlineWidth));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyLetterSpacing, &RenderStyle::letterSpacing, &RenderStyle::setLetterSpacing));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWordSpacing, &RenderStyle::wordSpacing, &RenderStyle::setWordSpacing));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyTextIndent, &RenderStyle::textIndent, &RenderStyle::setTextIndent));
+        &RenderStyle::specifiedFontSize));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnRuleWidth, &RenderStyle::columnRuleWidth));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnGap, &RenderStyle::columnGap));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnCount, &RenderStyle::columnCount));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnWidth, &RenderStyle::columnWidth));
+    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWebkitBorderHorizontalSpacing, &RenderStyle::horizontalBorderSpacing));
+    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWebkitBorderVerticalSpacing, &RenderStyle::verticalBorderSpacing));
+    gPropertyWrappers->append(new PropertyWrapper<int>(CSSPropertyZIndex, &RenderStyle::zIndex));
+    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyOrphans, &RenderStyle::orphans));
+    gPropertyWrappers->append(new PropertyWrapper<short>(CSSPropertyWidows, &RenderStyle::widows));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyLineHeight, &RenderStyle::specifiedLineHeight));
+    gPropertyWrappers->append(new PropertyWrapper<int>(CSSPropertyOutlineOffset, &RenderStyle::outlineOffset));
+    gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyOutlineWidth, &RenderStyle::outlineWidth));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyLetterSpacing, &RenderStyle::letterSpacing));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWordSpacing, &RenderStyle::wordSpacing));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyTextIndent, &RenderStyle::textIndent));
 
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitPerspective, &RenderStyle::perspective, &RenderStyle::setPerspective));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitPerspectiveOriginX, &RenderStyle::perspectiveOriginX, &RenderStyle::setPerspectiveOriginX));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitPerspectiveOriginY, &RenderStyle::perspectiveOriginY, &RenderStyle::setPerspectiveOriginY));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitTransformOriginX, &RenderStyle::transformOriginX, &RenderStyle::setTransformOriginX));
-    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitTransformOriginY, &RenderStyle::transformOriginY, &RenderStyle::setTransformOriginY));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitTransformOriginZ, &RenderStyle::transformOriginZ, &RenderStyle::setTransformOriginZ));
-    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderTopLeftRadius, &RenderStyle::borderTopLeftRadius, &RenderStyle::setBorderTopLeftRadius));
-    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderTopRightRadius, &RenderStyle::borderTopRightRadius, &RenderStyle::setBorderTopRightRadius));
-    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderBottomLeftRadius, &RenderStyle::borderBottomLeftRadius, &RenderStyle::setBorderBottomLeftRadius));
-    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderBottomRightRadius, &RenderStyle::borderBottomRightRadius, &RenderStyle::setBorderBottomRightRadius));
-    gPropertyWrappers->append(new PropertyWrapper<EVisibility>(CSSPropertyVisibility, &RenderStyle::visibility, &RenderStyle::setVisibility));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyZoom, &RenderStyle::zoom, &RenderStyle::setZoomWithoutReturnValue));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitPerspective, &RenderStyle::perspective));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitPerspectiveOriginX, &RenderStyle::perspectiveOriginX));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitPerspectiveOriginY, &RenderStyle::perspectiveOriginY));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitTransformOriginX, &RenderStyle::transformOriginX));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyWebkitTransformOriginY, &RenderStyle::transformOriginY));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitTransformOriginZ, &RenderStyle::transformOriginZ));
+    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderTopLeftRadius, &RenderStyle::borderTopLeftRadius));
+    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderTopRightRadius, &RenderStyle::borderTopRightRadius));
+    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderBottomLeftRadius, &RenderStyle::borderBottomLeftRadius));
+    gPropertyWrappers->append(new PropertyWrapper<LengthSize>(CSSPropertyBorderBottomRightRadius, &RenderStyle::borderBottomRightRadius));
+    gPropertyWrappers->append(new PropertyWrapper<EVisibility>(CSSPropertyVisibility, &RenderStyle::visibility));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyZoom, &RenderStyle::zoom));
 
-    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyClip, &RenderStyle::clip, &RenderStyle::setClip));
+    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyClip, &RenderStyle::clip));
 
-    gPropertyWrappers->append(new PropertyWrapperAcceleratedOpacity());
-    gPropertyWrappers->append(new PropertyWrapperAcceleratedTransform());
-    gPropertyWrappers->append(new PropertyWrapperAcceleratedFilter());
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyOpacity, &RenderStyle::opacity));
+    gPropertyWrappers->append(new PropertyWrapper<const TransformOperations&>(CSSPropertyWebkitTransform, &RenderStyle::transform));
+    gPropertyWrappers->append(new PropertyWrapper<const FilterOperations&>(CSSPropertyWebkitFilter, &RenderStyle::filter));
 
-    gPropertyWrappers->append(new PropertyWrapperClipPath(CSSPropertyWebkitClipPath, &RenderStyle::clipPath, &RenderStyle::setClipPath));
+    gPropertyWrappers->append(new RefCountedPropertyWrapper<ClipPathOperation>(CSSPropertyWebkitClipPath, &RenderStyle::clipPath));
 
-    gPropertyWrappers->append(new PropertyWrapperShape(CSSPropertyShapeInside, &RenderStyle::shapeInside, &RenderStyle::setShapeInside));
-    gPropertyWrappers->append(new PropertyWrapperShape(CSSPropertyShapeOutside, &RenderStyle::shapeOutside, &RenderStyle::setShapeOutside));
-    gPropertyWrappers->append(new NonNegativeLengthWrapper(CSSPropertyShapeMargin, &RenderStyle::shapeMargin, &RenderStyle::setShapeMargin));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyShapeImageThreshold, &RenderStyle::shapeImageThreshold, &RenderStyle::setShapeImageThreshold));
+    gPropertyWrappers->append(new RefCountedPropertyWrapper<ShapeValue>(CSSPropertyShapeInside, &RenderStyle::shapeInside));
+    gPropertyWrappers->append(new RefCountedPropertyWrapper<ShapeValue>(CSSPropertyShapeOutside, &RenderStyle::shapeOutside));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyShapeMargin, &RenderStyle::shapeMargin));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyShapeImageThreshold, &RenderStyle::shapeImageThreshold));
 
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitColumnRuleColor, &RenderStyle::columnRuleColor, &RenderStyle::setColumnRuleColor, &RenderStyle::visitedLinkColumnRuleColor, &RenderStyle::setVisitedLinkColumnRuleColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitTextStrokeColor, &RenderStyle::textStrokeColor, &RenderStyle::setTextStrokeColor, &RenderStyle::visitedLinkTextStrokeColor, &RenderStyle::setVisitedLinkTextStrokeColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderLeftColor, &RenderStyle::borderLeftColor, &RenderStyle::setBorderLeftColor, &RenderStyle::visitedLinkBorderLeftColor, &RenderStyle::setVisitedLinkBorderLeftColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderRightColor, &RenderStyle::borderRightColor, &RenderStyle::setBorderRightColor, &RenderStyle::visitedLinkBorderRightColor, &RenderStyle::setVisitedLinkBorderRightColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderTopColor, &RenderStyle::borderTopColor, &RenderStyle::setBorderTopColor, &RenderStyle::visitedLinkBorderTopColor, &RenderStyle::setVisitedLinkBorderTopColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderBottomColor, &RenderStyle::borderBottomColor, &RenderStyle::setBorderBottomColor, &RenderStyle::visitedLinkBorderBottomColor, &RenderStyle::setVisitedLinkBorderBottomColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyOutlineColor, &RenderStyle::outlineColor, &RenderStyle::setOutlineColor, &RenderStyle::visitedLinkOutlineColor, &RenderStyle::setVisitedLinkOutlineColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitColumnRuleColor, &RenderStyle::columnRuleColor, &RenderStyle::visitedLinkColumnRuleColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitTextStrokeColor, &RenderStyle::textStrokeColor, &RenderStyle::visitedLinkTextStrokeColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderLeftColor, &RenderStyle::borderLeftColor, &RenderStyle::visitedLinkBorderLeftColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderRightColor, &RenderStyle::borderRightColor, &RenderStyle::visitedLinkBorderRightColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderTopColor, &RenderStyle::borderTopColor, &RenderStyle::visitedLinkBorderTopColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderBottomColor, &RenderStyle::borderBottomColor, &RenderStyle::visitedLinkBorderBottomColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyOutlineColor, &RenderStyle::outlineColor, &RenderStyle::visitedLinkOutlineColor));
 
-    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
-    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyWebkitBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
-    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyTextShadow, &RenderStyle::textShadow, &RenderStyle::setTextShadow));
+    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyBoxShadow, &RenderStyle::boxShadow));
+    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyWebkitBoxShadow, &RenderStyle::boxShadow));
+    gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyTextShadow, &RenderStyle::textShadow));
 
-    gPropertyWrappers->append(new PropertyWrapperSVGPaint(CSSPropertyFill, &RenderStyle::fillPaintType, &RenderStyle::fillPaintColor, &RenderStyle::setFillPaintColor));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFillOpacity, &RenderStyle::fillOpacity, &RenderStyle::setFillOpacity));
+    gPropertyWrappers->append(new PropertyWrapperSVGPaint(CSSPropertyFill, &RenderStyle::fillPaintType, &RenderStyle::fillPaintColor));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFillOpacity, &RenderStyle::fillOpacity));
 
-    gPropertyWrappers->append(new PropertyWrapperSVGPaint(CSSPropertyStroke, &RenderStyle::strokePaintType, &RenderStyle::strokePaintColor, &RenderStyle::setStrokePaintColor));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeOpacity, &RenderStyle::strokeOpacity, &RenderStyle::setStrokeOpacity));
-    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeWidth, &RenderStyle::strokeWidth, &RenderStyle::setStrokeWidth));
-    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLengthList>(CSSPropertyStrokeDasharray, &RenderStyle::strokeDashArray, &RenderStyle::setStrokeDashArray));
-    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeDashoffset, &RenderStyle::strokeDashOffset, &RenderStyle::setStrokeDashOffset));
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeMiterlimit, &RenderStyle::strokeMiterLimit, &RenderStyle::setStrokeMiterLimit));
+    gPropertyWrappers->append(new PropertyWrapperSVGPaint(CSSPropertyStroke, &RenderStyle::strokePaintType, &RenderStyle::strokePaintColor));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeOpacity, &RenderStyle::strokeOpacity));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeWidth, &RenderStyle::strokeWidth));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLengthList>(CSSPropertyStrokeDasharray, &RenderStyle::strokeDashArray));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeDashoffset, &RenderStyle::strokeDashOffset));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeMiterlimit, &RenderStyle::strokeMiterLimit));
 
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFloodOpacity, &RenderStyle::floodOpacity, &RenderStyle::setFloodOpacity));
-    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyFloodColor, &RenderStyle::floodColor, &RenderStyle::setFloodColor));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFloodOpacity, &RenderStyle::floodOpacity));
+    gPropertyWrappers->append(new PropertyWrapper<Color>(CSSPropertyFloodColor, &RenderStyle::floodColor));
 
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStopOpacity, &RenderStyle::stopOpacity, &RenderStyle::setStopOpacity));
-    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyStopColor, &RenderStyle::stopColor, &RenderStyle::setStopColor));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStopOpacity, &RenderStyle::stopOpacity));
+    gPropertyWrappers->append(new PropertyWrapper<Color>(CSSPropertyStopColor, &RenderStyle::stopColor));
 
-    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyLightingColor, &RenderStyle::lightingColor, &RenderStyle::setLightingColor));
+    gPropertyWrappers->append(new PropertyWrapper<Color>(CSSPropertyLightingColor, &RenderStyle::lightingColor));
 
-    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue, &RenderStyle::setBaselineShiftValue));
-    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning, &RenderStyle::setKerning));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning));
 
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexGrow, &RenderStyle::flexGrow, &RenderStyle::setFlexGrow));
-        gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexShrink, &RenderStyle::flexShrink, &RenderStyle::setFlexShrink));
-        gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyFlexBasis, &RenderStyle::flexBasis, &RenderStyle::setFlexBasis));
-    }
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexGrow, &RenderStyle::flexGrow));
+    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexShrink, &RenderStyle::flexShrink));
+    gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyFlexBasis, &RenderStyle::flexBasis));
 
     // TODO:
     //
     //  CSSPropertyVerticalAlign
-    //
-    // Compound properties that have components that should be animatable:
-    //
-    //  CSSPropertyWebkitColumns
-    //  CSSPropertyWebkitBoxReflect
 
     // Make sure unused slots have a value
     for (unsigned int i = 0; i < static_cast<unsigned int>(numCSSProperties); ++i)
         gPropertyWrapperMap[i] = cInvalidPropertyWrapperIndex;
 
-    // First we put the non-shorthand property wrappers into the map, so the shorthand-building
-    // code can find them.
     size_t n = gPropertyWrappers->size();
     for (unsigned int i = 0; i < n; ++i) {
         CSSPropertyID property = (*gPropertyWrappers)[i]->property();
-        ASSERT_WITH_MESSAGE(RuntimeEnabledFeatures::webAnimationsCSSEnabled() || CSSAnimations::isAnimatableProperty(property), "%s is not whitelisted for animation", getPropertyNameString(property).utf8().data());
+        ASSERT_WITH_MESSAGE(CSSAnimations::isAnimatableProperty(property), "%s is not whitelisted for animation", getPropertyNameString(property).utf8().data());
         ASSERT(property - firstCSSProperty < numCSSProperties);
         gPropertyWrapperMap[property - firstCSSProperty] = i;
     }
-
-    // Now add the shorthand wrappers.
-    addShorthandProperties();
-}
-
-// Returns true if we need to start animation timers
-bool CSSPropertyAnimation::blendProperties(const AnimationBase* anim, CSSPropertyID prop, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress)
-{
-    ASSERT(prop != CSSPropertyInvalid);
-
-    ensurePropertyMap();
-
-    AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
-    if (wrapper) {
-        wrapper->blend(anim, dst, a, b, progress);
-        return !wrapper->animationIsAccelerated() || !anim->isAccelerated();
-    }
-
-    return false;
-}
-
-bool CSSPropertyAnimation::animationOfPropertyIsAccelerated(CSSPropertyID prop)
-{
-    ensurePropertyMap();
-    AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
-    return wrapper ? wrapper->animationIsAccelerated() : false;
 }
 
 bool CSSPropertyAnimation::propertiesEqual(CSSPropertyID prop, const RenderStyle* a, const RenderStyle* b)
 {
-    ensurePropertyMap();
+    // FIXME: transitions of text-decoration-color are broken
+    if (prop == CSSPropertyTextDecorationColor)
+        return true;
 
-    AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
-    if (wrapper)
-        return wrapper->equals(a, b);
-    return true;
+    ensurePropertyMap();
+    return wrapperForProperty(prop)->equals(a, b);
 }
 
-CSSPropertyID CSSPropertyAnimation::getPropertyAtIndex(int i, bool& isShorthand)
-{
-    ensurePropertyMap();
-
-    if (i < 0 || i >= getNumProperties())
-        return CSSPropertyInvalid;
-
-    AnimationPropertyWrapperBase* wrapper = (*gPropertyWrappers)[i];
-    isShorthand = wrapper->isShorthandWrapper();
-    return wrapper->property();
-}
-
-int CSSPropertyAnimation::getNumProperties()
-{
-    ensurePropertyMap();
-
-    return gPropertyWrappers->size();
-}
 
 }

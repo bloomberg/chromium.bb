@@ -48,7 +48,6 @@
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestResult.h"
@@ -1785,15 +1784,6 @@ void RenderObject::handleDynamicFloatPositionChange()
     }
 }
 
-void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
-{
-    if (!isText() && style && !RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        setStyle(animation().updateAnimations(*this, *style));
-        return;
-    }
-    setStyle(style);
-}
-
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
     // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
@@ -2552,7 +2542,6 @@ void RenderObject::willBeDestroyed()
     if (Frame* frame = this->frame()) {
         if (frame->page())
             frame->page()->autoscrollController().stopAutoscrollIfNeeded(this);
-        frame->animation().cancelAnimations(this);
     }
 
     // For accessibility management, notify the parent of the imminent change to its child set.
@@ -3121,11 +3110,6 @@ void RenderObject::adjustRectForOutlineAndShadow(LayoutRect& rect) const
     }
 
     rect.inflate(outlineSize);
-}
-
-AnimationController& RenderObject::animation() const
-{
-    return frame()->animation();
 }
 
 bool RenderObject::isInert() const

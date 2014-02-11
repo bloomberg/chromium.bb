@@ -38,7 +38,6 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -416,8 +415,6 @@ void RenderLayerCompositor::updateCompositingLayers()
 
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
-
-    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame().animation());
 
     TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
 
@@ -1937,9 +1934,6 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
 
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer);
-
     return shouldCompositeForActiveAnimations(*renderer);
 }
 
@@ -2154,8 +2148,6 @@ bool RenderLayerCompositor::isRunningAcceleratedTransformAnimation(RenderObject*
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
     return hasActiveAnimations(*renderer, CSSPropertyWebkitTransform);
 }
 

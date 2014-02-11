@@ -44,7 +44,6 @@
 namespace WebCore {
 
 class AffineTransform;
-class AnimationController;
 class Cursor;
 class Document;
 class HitTestLocation;
@@ -701,11 +700,6 @@ public:
 
     virtual void dirtyLinesFromChangedChild(RenderObject*);
 
-    // Called to update a style that is allowed to trigger animations.
-    // FIXME: Right now this will typically be called only when updating happens from the DOM on explicit elements.
-    // We don't yet handle generated content animation such as first-letter or before/after (we'll worry about this later).
-    void setAnimatableStyle(PassRefPtr<RenderStyle>);
-
     // Set the style of the object and update the state of the object accordingly.
     void setStyle(PassRefPtr<RenderStyle>);
 
@@ -933,8 +927,6 @@ public:
     void selectionStartEnd(int& spos, int& epos) const;
 
     void remove() { if (parent()) parent()->removeChild(this); }
-
-    AnimationController& animation() const;
 
     bool isInert() const;
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert(); }

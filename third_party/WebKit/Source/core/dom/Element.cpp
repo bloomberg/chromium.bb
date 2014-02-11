@@ -1618,7 +1618,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 
     if (RenderObject* renderer = this->renderer()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || shouldNotifyRendererWithIdenticalStyles()) {
-            renderer->setAnimatableStyle(newStyle.get());
+            renderer->setStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
             // fooled into believing this style is the same.

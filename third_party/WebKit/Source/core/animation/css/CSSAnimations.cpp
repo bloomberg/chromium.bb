@@ -900,11 +900,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
         return true;
-    // FIXME: Shorthands should not be present in this list, but
-    // CSSPropertyAnimation implements animation of these shorthands
-    // directly and makes use of this method.
-    case CSSPropertyFlex:
-        return !RuntimeEnabledFeatures::webAnimationsCSSEnabled();
     default:
         return false;
     }

@@ -43,7 +43,6 @@ webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-w
 webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ WontFix ]
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
-webkit.org/b/86114 virtual/legacy-animations-engine/animations/combo-transform-translate+scale.html [ WontFix ]
 
 # Ref-tests can't have platform specific results.
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ WontFix ]
@@ -185,7 +184,6 @@ crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ Wont
 crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
 crbug.com/178745 plugins/open-and-close-window-with-plugin.html [ WontFix ]
 crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ WontFix ]
-crbug.com/243649 [ Mac ] virtual/legacy-animations-engine/transitions/cancel-transition.html [ WontFix ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ WontFix ]
 crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ WontFix ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ WontFix ]

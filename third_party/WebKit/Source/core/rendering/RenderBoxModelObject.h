@@ -191,14 +191,6 @@ public:
     void contentChanged(ContentChangeType);
     bool hasAcceleratedCompositing() const;
 
-    bool startTransition(double, CSSPropertyID, const RenderStyle* fromStyle, const RenderStyle* toStyle);
-    void transitionPaused(double timeOffset, CSSPropertyID);
-    void transitionFinished(CSSPropertyID);
-
-    bool startAnimation(double timeOffset, const CSSAnimationData*, const KeyframeList& keyframes);
-    void animationPaused(double timeOffset, const String& name);
-    void animationFinished(const String& name);
-
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE;
 
 protected:

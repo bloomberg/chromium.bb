@@ -43,18 +43,10 @@ crbug.com/321606 plugins/layout-in-beforeload-listener-affects-plugin-loading.ht
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
-crbug.com/305070 [ Debug ] virtual/legacy-animations-engine/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
-
 crbug.com/298211 animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 
 crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
-
-crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused.html [ Timeout ]
-crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused-start-event.html [ Timeout ]
-
-# This has flaky output so can't be rebaselined.
-crbug.com/258896 virtual/legacy-animations-engine/animations/transition-and-animation-3.html [ Failure ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
@@ -529,12 +521,9 @@ crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Pass Fa
 
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 
-crbug.com/322272 virtual/legacy-animations-engine/animations/interpolation/sample-interpolation-reftest.html [ ImageOnlyFailure ]
-
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
-crbug.com/243353 virtual/legacy-animations-engine/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
@@ -635,7 +624,6 @@ crbug.com/307781 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-x
 
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] virtual/legacy-animations-engine/animations/animation-shorthand-overriding.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/contents-opaque/layer-transform.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/empty-render-surface-crasher.html [ Timeout Pass ]
@@ -677,7 +665,6 @@ crbug.com/307777 [ Android ] storage/quota/storagequota-query-usage.html [ Failu
 crbug.com/307777 [ Android ] svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] virtual/legacy-animations-engine/transitions/transition-transform-translate-calculated-length-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
@@ -714,9 +701,6 @@ crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure P
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
-crbug.com/303444 virtual/legacy-animations-engine/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
-crbug.com/303444 virtual/legacy-animations-engine/animations/unsigned-underflow.html [ Timeout ]
-
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
@@ -739,7 +723,6 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
-crbug.com/310992 virtual/legacy-animations-engine/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
@@ -826,9 +809,6 @@ crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ F
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
-crbug.com/258896 virtual/legacy-animations-engine/animations/animation-controller-drt-api.html [ Pass Failure ]
-crbug.com/258896 virtual/legacy-animations-engine/transitions/interrupted-immediately.html [ Failure ]
-
 crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualRebaseline ]
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
 
@@ -898,8 +878,6 @@ crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 crbug.com/337735 [ Linux ] compositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
-
-crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]

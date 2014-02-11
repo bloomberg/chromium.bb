@@ -37,7 +37,6 @@ namespace WebCore {
 
 class KeyframeList;
 class RenderLayerCompositor;
-class WebAnimationProvider;
 
 enum CompositingLayerType {
     NormalCompositingLayer, // non-tiled layer with backing store
@@ -151,15 +150,6 @@ public:
 
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);
-
-    // Interface to start, finish, suspend and resume animations and transitions
-    bool startTransition(double, CSSPropertyID, const RenderStyle* fromStyle, const RenderStyle* toStyle);
-    void transitionPaused(double timeOffset, CSSPropertyID);
-    void transitionFinished(CSSPropertyID);
-
-    bool startAnimation(double timeOffset, const CSSAnimationData*, const KeyframeList& keyframes);
-    void animationPaused(double timeOffset, const String& name);
-    void animationFinished(const String& name);
 
     LayoutRect compositedBounds() const;
     void setCompositedBounds(const LayoutRect&);
@@ -349,8 +339,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
-
-    OwnPtr<WebAnimationProvider> m_animationProvider;
 
     OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
     OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.

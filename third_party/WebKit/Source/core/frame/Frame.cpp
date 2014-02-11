@@ -47,7 +47,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/EmptyClients.h"
@@ -112,7 +111,6 @@ inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
     , m_spellChecker(SpellChecker::create(*this))
     , m_selection(adoptPtr(new FrameSelection(this)))
     , m_eventHandler(adoptPtr(new EventHandler(this)))
-    , m_animationController(adoptPtr(new AnimationController(this)))
     , m_inputMethodController(InputMethodController::create(*this))
     , m_frameInit(frameInit)
     , m_pageZoomFactor(parentPageZoomFactor(this))

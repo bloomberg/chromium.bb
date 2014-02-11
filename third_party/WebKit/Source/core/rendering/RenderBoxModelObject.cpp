@@ -100,48 +100,6 @@ bool RenderBoxModelObject::hasAcceleratedCompositing() const
     return view()->compositor()->hasAcceleratedCompositing();
 }
 
-bool RenderBoxModelObject::startTransition(double timeOffset, CSSPropertyID propertyId, const RenderStyle* fromStyle, const RenderStyle* toStyle)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    return layer()->compositedLayerMapping()->startTransition(timeOffset, propertyId, fromStyle, toStyle);
-}
-
-void RenderBoxModelObject::transitionPaused(double timeOffset, CSSPropertyID propertyId)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    layer()->compositedLayerMapping()->transitionPaused(timeOffset, propertyId);
-}
-
-void RenderBoxModelObject::transitionFinished(CSSPropertyID propertyId)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    layer()->compositedLayerMapping()->transitionFinished(propertyId);
-}
-
-bool RenderBoxModelObject::startAnimation(double timeOffset, const CSSAnimationData* animation, const KeyframeList& keyframes)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    return layer()->compositedLayerMapping()->startAnimation(timeOffset, animation, keyframes);
-}
-
-void RenderBoxModelObject::animationPaused(double timeOffset, const String& name)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    layer()->compositedLayerMapping()->animationPaused(timeOffset, name);
-}
-
-void RenderBoxModelObject::animationFinished(const String& name)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    layer()->compositedLayerMapping()->animationFinished(name);
-}
-
 bool RenderBoxModelObject::shouldPaintAtLowQuality(GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
 {
     return ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(context, this, image, layer, size);

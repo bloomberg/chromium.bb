@@ -43,7 +43,6 @@ class WebLayer;
 
 namespace WebCore {
 
-    class AnimationController;
     class ChromeClient;
     class Color;
     class DOMWindow;
@@ -150,7 +149,6 @@ namespace WebCore {
         NavigationScheduler& navigationScheduler() const;
         FrameSelection& selection() const;
         FrameTree& tree() const;
-        AnimationController& animation() const;
         InputMethodController& inputMethodController() const;
         FetchContext& fetchContext() const { return loader().fetchContext(); }
         ScriptController& script();
@@ -239,7 +237,6 @@ namespace WebCore {
         const OwnPtr<SpellChecker> m_spellChecker;
         const OwnPtr<FrameSelection> m_selection;
         const OwnPtr<EventHandler> m_eventHandler;
-        OwnPtr<AnimationController> m_animationController;
         OwnPtr<InputMethodController> m_inputMethodController;
 
         RefPtr<FrameInit> m_frameInit;
@@ -297,11 +294,6 @@ namespace WebCore {
     inline SpellChecker& Frame::spellChecker() const
     {
         return *m_spellChecker;
-    }
-
-    inline AnimationController& Frame::animation() const
-    {
-        return *m_animationController;
     }
 
     inline InputMethodController& Frame::inputMethodController() const

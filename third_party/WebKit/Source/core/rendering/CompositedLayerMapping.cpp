@@ -39,7 +39,6 @@
 #include "core/page/Chrome.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/FilterEffectRenderer.h"
@@ -51,7 +50,6 @@
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/animation/WebAnimationProvider.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontCache.h"
@@ -156,7 +154,6 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(RenderLayer* layer)
 
 CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
     : m_owningLayer(layer)
-    , m_animationProvider(adoptPtr(new WebAnimationProvider))
     , m_artificiallyInflatedBounds(false)
     , m_isMainFrameRenderViewLayer(false)
     , m_requiresOwnBackingStoreForIntrinsicReasons(true)
@@ -621,15 +618,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
-        ? !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform)
-        : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitTransform))
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform))
         updateTransform(renderer()->style());
 
     // Set opacity, if it is not animating.
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
-        ? !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity)
-        : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
     bool isSimpleContainer = isSimpleContainerCompositingLayer();
@@ -2036,115 +2029,10 @@ void CompositedLayerMapping::verifyNotPainting()
 }
 #endif
 
-bool CompositedLayerMapping::startAnimation(double timeOffset, const CSSAnimationData* anim, const KeyframeList& keyframes)
-{
-    bool hasTransform = renderer()->isBox() && keyframes.containsProperty(CSSPropertyWebkitTransform);
-    IntSize boxSize;
-    if (hasTransform)
-        boxSize = toRenderBox(renderer())->pixelSnappedBorderBoxRect().size();
-    WebAnimations animations(m_animationProvider->startAnimation(timeOffset, anim, keyframes, hasTransform, boxSize));
-    if (animations.isEmpty())
-        return false;
-
-    bool hasOpacity = keyframes.containsProperty(CSSPropertyOpacity);
-    bool hasFilter = keyframes.containsProperty(CSSPropertyWebkitFilter);
-    int animationId = m_animationProvider->getWebAnimationId(keyframes.animationName());
-
-    // Animating only some properties of the animation is not supported. So if the
-    // GraphicsLayer rejects any property of the animation, we have to remove the
-    // animation and return false to indicate un-accelerated animation is required.
-    if (hasTransform) {
-        if (!animations.m_transformAnimation || !m_graphicsLayer->addAnimation(animations.m_transformAnimation.release()))
-            return false;
-    }
-    if (hasOpacity) {
-        if (!animations.m_opacityAnimation || !m_graphicsLayer->addAnimation(animations.m_opacityAnimation.release())) {
-            if (hasTransform)
-                m_graphicsLayer->removeAnimation(animationId);
-            return false;
-        }
-    }
-    if (hasFilter) {
-        if (!animations.m_filterAnimation || !m_graphicsLayer->addAnimation(animations.m_filterAnimation.release())) {
-            if (hasTransform || hasOpacity)
-                m_graphicsLayer->removeAnimation(animationId);
-            return false;
-        }
-    }
-    return true;
-}
-
-void CompositedLayerMapping::animationPaused(double timeOffset, const String& animationName)
-{
-    int animationId = m_animationProvider->getWebAnimationId(animationName);
-    ASSERT(animationId);
-    m_graphicsLayer->pauseAnimation(animationId, timeOffset);
-}
-
-void CompositedLayerMapping::animationFinished(const String& animationName)
-{
-    int animationId = m_animationProvider->getWebAnimationId(animationName);
-    ASSERT(animationId);
-    m_graphicsLayer->removeAnimation(animationId);
-}
-
-bool CompositedLayerMapping::startTransition(double timeOffset, CSSPropertyID property, const RenderStyle* fromStyle, const RenderStyle* toStyle)
-{
-    ASSERT(property != CSSPropertyInvalid);
-    IntSize boxSize;
-    if (property == CSSPropertyWebkitTransform && m_owningLayer->hasTransform()) {
-        ASSERT(renderer()->isBox());
-        boxSize = toRenderBox(renderer())->pixelSnappedBorderBoxRect().size();
-    }
-    float fromOpacity = 0;
-    float toOpacity = 0;
-    if (property == CSSPropertyOpacity) {
-        fromOpacity = compositingOpacity(fromStyle->opacity());
-        toOpacity = compositingOpacity(toStyle->opacity());
-    }
-
-    // Although KeyframeAnimation can have multiple properties of the animation, ImplicitAnimation (= Transition) has only one animation property.
-    WebAnimations animations(m_animationProvider->startTransition(timeOffset, property, fromStyle,
-        toStyle, m_owningLayer->hasTransform(), m_owningLayer->hasFilter(), boxSize, fromOpacity, toOpacity));
-    if (animations.m_transformAnimation && m_graphicsLayer->addAnimation(animations.m_transformAnimation.release())) {
-        // To ensure that the correct transform is visible when the animation ends, also set the final transform.
-        updateTransform(toStyle);
-        return true;
-    }
-    if (animations.m_opacityAnimation && m_graphicsLayer->addAnimation(animations.m_opacityAnimation.release())) {
-        // To ensure that the correct opacity is visible when the animation ends, also set the final opacity.
-        updateOpacity(toStyle);
-        return true;
-    }
-    if (animations.m_filterAnimation && m_graphicsLayer->addAnimation(animations.m_filterAnimation.release())) {
-        // To ensure that the correct filter is visible when the animation ends, also set the final filter.
-        updateFilters(toStyle);
-        return true;
-    }
-
-    return false;
-}
-
-void CompositedLayerMapping::transitionPaused(double timeOffset, CSSPropertyID property)
-{
-    int animationId = m_animationProvider->getWebAnimationId(property);
-    ASSERT(animationId);
-    m_graphicsLayer->pauseAnimation(animationId, timeOffset);
-}
-
-void CompositedLayerMapping::transitionFinished(CSSPropertyID property)
-{
-    int animationId = m_animationProvider->getWebAnimationId(property);
-    ASSERT(animationId);
-    m_graphicsLayer->removeAnimation(animationId);
-}
-
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime)
 {
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
-    else
-        renderer()->animation().notifyAnimationStarted(renderer(), wallClockTime);
 }
 
 LayoutRect CompositedLayerMapping::compositedBounds() const

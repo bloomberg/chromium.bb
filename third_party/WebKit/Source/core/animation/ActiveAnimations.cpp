@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/animation/ActiveAnimations.h"
 
-#include "core/frame/animation/AnimationController.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

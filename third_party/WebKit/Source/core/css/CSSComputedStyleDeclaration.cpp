@@ -59,7 +59,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/style/ContentData.h"
@@ -1495,16 +1494,6 @@ PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle(CSSPrope
 {
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
-    RenderObject* renderer = styledNode->renderer();
-    if (renderer && renderer->compositingState() == PaintsIntoOwnBacking
-        && !RuntimeEnabledFeatures::webAnimationsCSSEnabled() && AnimationController::supportsAcceleratedAnimationOfProperty(propertyID)) {
-        AnimationUpdateBlock animationUpdateBlock(renderer->animation());
-        if (m_pseudoElementSpecifier && !styledNode->isPseudoElement()) {
-            // FIXME: This cached pseudo style will only exist if the animation has been run at least once.
-            return renderer->animation().getAnimatedStyleForRenderer(renderer)->getCachedPseudoStyle(m_pseudoElementSpecifier);
-        }
-        return renderer->animation().getAnimatedStyleForRenderer(renderer);
-    }
     return styledNode->computedStyle(styledNode->isPseudoElement() ? NOPSEUDO : m_pseudoElementSpecifier);
 }
 

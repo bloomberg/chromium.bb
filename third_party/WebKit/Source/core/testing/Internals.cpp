@@ -104,7 +104,6 @@
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -476,7 +475,7 @@ unsigned Internals::numberOfActiveAnimations() const
     Document* document = contextFrame->document();
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
-    return contextFrame->animation().numberOfActiveAnimations(document);
+    return 0;
 }
 
 void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState)
@@ -489,8 +488,6 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
         frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
         frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
-    } else {
-        frame()->animation().pauseAnimationsForTesting(pauseTime);
     }
 }
 

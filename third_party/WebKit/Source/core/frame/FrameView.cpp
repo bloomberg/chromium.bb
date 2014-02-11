@@ -40,7 +40,6 @@
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -1912,9 +1911,6 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
     for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
-        if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-            frame->animation().serviceAnimations();
-
         DocumentAnimations::serviceOnAnimationFrame(*frame->document(), monotonicAnimationStartTime);
     }
 
