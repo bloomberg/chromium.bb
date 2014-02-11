@@ -368,6 +368,23 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         self.assertTrue(cfg['quick_unit'],
                         msg % (build_name, 'quick_unit=False'))
 
+  def testNoDuplicateSlavePrebuilts(self):
+    """Test that no two same-board paladin slaves upload prebuilts."""
+    for cfg in cbuildbot_config.config.values():
+      if (cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']):
+        slaves = builderstage.BuilderStage._GetSlavesForMaster(cfg)
+        prebuilt_slaves = [s for s in slaves if s['prebuilts']]
+        # Dictionary from board name to builder name that uploads prebuilt
+        prebuilt_slave_boards = {}
+        for slave in prebuilt_slaves:
+          for board in slave['boards']:
+            self.assertFalse(prebuilt_slave_boards.has_key(board),
+                             'Configs %s and %s both upload prebuilts for '
+                             'board %s.' % (prebuilt_slave_boards.get(board),
+                                            slave['name'],
+                                            board))
+            prebuilt_slave_boards[board] = slave['name']
+
   def testCantBeBothTypesOfPGO(self):
     """Using pgo_generate and pgo_use together doesn't work."""
     for config in cbuildbot_config.config.values():
