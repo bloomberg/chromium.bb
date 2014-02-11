@@ -371,8 +371,8 @@ int main(int argc, char** argv) {
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(
           cast_environment,
-          audio_config,
-          video_config,
+          &audio_config,
+          &video_config,
           NULL,  // gpu_factories.
           base::Bind(&InitializationResult),
           transport_sender.get()));

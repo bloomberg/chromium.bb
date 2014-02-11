@@ -15,8 +15,7 @@
 CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
       io_message_loop_proxy_(
-          content::RenderThread::Get()->GetIOMessageLoopProxy()) {
-}
+          content::RenderThread::Get()->GetIOMessageLoopProxy()) {}
 
 CastSession::~CastSession() {
   // We should always be able to delete the object on the IO thread.
@@ -25,20 +24,30 @@ CastSession::~CastSession() {
 
 void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
                              const FrameInputAvailableCallback& callback) {
-  io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(
-          &CastSessionDelegate::StartAudio,
-          base::Unretained(delegate_.get()),
-          config,
-          media::BindToCurrentLoop(callback)));
+  DCHECK(content::RenderThread::Get()
+             ->GetMessageLoop()
+             ->message_loop_proxy()
+             ->BelongsToCurrentThread());
+
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CastSessionDelegate::StartAudio,
+                 base::Unretained(delegate_.get()),
+                 config,
+                 media::BindToCurrentLoop(callback)));
 }
 
 void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                              const FrameInputAvailableCallback& callback) {
-  io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(
-          &CastSessionDelegate::StartVideo,
-          base::Unretained(delegate_.get()),
-          config,
-          media::BindToCurrentLoop(callback)));
+  DCHECK(content::RenderThread::Get()
+             ->GetMessageLoop()
+             ->message_loop_proxy()
+             ->BelongsToCurrentThread());
+
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CastSessionDelegate::StartVideo,
+                 base::Unretained(delegate_.get()),
+                 config,
+                 media::BindToCurrentLoop(callback)));
 }

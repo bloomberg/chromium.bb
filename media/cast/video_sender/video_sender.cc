@@ -120,8 +120,9 @@ VideoSender::VideoSender(
       new LocalRtpVideoSenderStatistics(transport_sender));
 
   if (video_config.use_external_encoder) {
-    video_encoder_.reset(new ExternalVideoEncoder(
-        cast_environment, video_config, gpu_factories));
+    CHECK(gpu_factories);
+    video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
+        video_config, gpu_factories));
   } else {
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment, video_config, max_unacked_frames_));

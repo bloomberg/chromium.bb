@@ -38,27 +38,36 @@ class CastTransportSender;
 // thread. All methods are accessible only on the IO thread.
 class CastSessionDelegate {
  public:
-  typedef
-  base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
-  FrameInputAvailableCallback;
+  typedef base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
+      FrameInputAvailableCallback;
 
   CastSessionDelegate();
   virtual ~CastSessionDelegate();
 
-  // After calling StartAudio() and StartVideo() with configuration encoding
-  // will begin.
+  // After calling StartAudio() or StartVideo() encoding of that media will
+  // begin as soon as data is delivered to its sink, if the second method is
+  // called the first media will be restarted. It is strongly recommended not to
+  // deliver any data between calling the two methods.
+  // It's OK to call only one of the two methods.
   void StartAudio(const media::cast::AudioSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
 
- private:
-  // Start encoding threads and configure CastSender. It is ready to accept
-  // audio/video frames after this call.
-  void StartSendingInternal();
-
+ protected:
   // Callback with the result of the initialization.
-  void InitializationResult(media::cast::CastInitializationStatus result);
+  // If this callback is called with STATUS_INITIALIZED it will report back
+  // to the sinks that it's ready to accept incoming audio / video frames.
+  void InitializationResult(media::cast::CastInitializationStatus result) const;
+
+ private:
+  // Start encoding threads and initialize the CastEnvironment.
+  void Initialize();
+
+  // Configure CastSender. It is ready to accept audio / video frames after
+  // receiving a successful call to InitializationResult.
+  void StartSendingInternal(const FrameInputAvailableCallback& callback,
+                            bool is_audio);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
@@ -73,11 +82,11 @@ class CastSessionDelegate {
   base::Thread video_encode_thread_;
 
   // Configuration for audio and video.
-  media::cast::AudioSenderConfig audio_config_;
-  media::cast::VideoSenderConfig video_config_;
-  bool audio_configured_;
-  bool video_configured_;
-  std::vector<FrameInputAvailableCallback> frame_input_available_callbacks_;
+  scoped_ptr<media::cast::AudioSenderConfig> audio_config_;
+  scoped_ptr<media::cast::VideoSenderConfig> video_config_;
+
+  scoped_ptr<FrameInputAvailableCallback> audio_frame_input_available_callback_;
+  scoped_ptr<FrameInputAvailableCallback> video_frame_input_available_callback_;
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

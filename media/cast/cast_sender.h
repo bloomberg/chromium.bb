@@ -56,14 +56,15 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
 };
 
 // This Class is thread safe.
-// The provided PacketSender object will always be called form the main cast
-// thread.
+// The provided CastTransportSender object will always be called from the main
+// cast thread.
+//  At least one of AudioSenderConfig and VideoSenderConfig have to be provided.
 class CastSender {
  public:
   static CastSender* CreateCastSender(
       scoped_refptr<CastEnvironment> cast_environment,
-      const AudioSenderConfig& audio_config,
-      const VideoSenderConfig& video_config,
+      const AudioSenderConfig* audio_config,
+      const VideoSenderConfig* video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       const CastInitializationCallback& cast_initialization,
       transport::CastTransportSender* const transport_sender);

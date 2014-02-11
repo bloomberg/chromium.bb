@@ -12,6 +12,9 @@ VideoSenderConfig::VideoSenderConfig()
       incoming_feedback_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
+      use_external_encoder(false),
+      width(0),
+      height(0),
       congestion_control_back_off(kDefaultCongestionControlBackOff),
       max_qp(kDefaultMaxQp),
       min_qp(kDefaultMinQp),
@@ -20,7 +23,7 @@ VideoSenderConfig::VideoSenderConfig()
 
 AudioSenderConfig::AudioSenderConfig()
     : rtcp_interval(kDefaultRtcpIntervalMs),
-      rtcp_mode(kRtcpReducedSize) {}
+      use_external_encoder(false) {}
 
 AudioReceiverConfig::AudioReceiverConfig()
     : feedback_ssrc(0),

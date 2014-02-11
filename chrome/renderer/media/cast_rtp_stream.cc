@@ -11,6 +11,7 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_video_sink.h"
+#include "content/public/renderer/render_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
@@ -114,8 +115,11 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
   explicit CastVideoSink(const blink::WebMediaStreamTrack& track)
-      : track_(track), sink_added_(false) {
-  }
+      : track_(track),
+        sink_added_(false),
+        render_thread_task_runner_(content::RenderThread::Get()
+                                       ->GetMessageLoop()
+                                       ->message_loop_proxy()) {}
 
   virtual ~CastVideoSink() {
     if (sink_added_)
@@ -123,29 +127,33 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   }
 
   // content::MediaStreamVideoSink implementation.
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
+  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE {
+    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
+    DCHECK(frame_input_);
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio/video sync.
-    frame_input_->InsertRawVideoFrame(frame,
-                                      base::TimeTicks::Now());
+    frame_input_->InsertRawVideoFrame(frame, base::TimeTicks::Now());
   }
 
   // Attach this sink to MediaStreamTrack. This method call must
   // be made on the render thread. Incoming data can then be
   // passed to media::cast::FrameInput on any thread.
-  void AddToTrack(
-      const scoped_refptr<media::cast::FrameInput>& frame_input) {
-    DCHECK(!sink_added_);
+  void AddToTrack(const scoped_refptr<media::cast::FrameInput>& frame_input) {
+    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
+
     frame_input_ = frame_input;
-    AddToVideoTrack(this, track_);
-    sink_added_ = true;
+    if (!sink_added_) {
+      AddToVideoTrack(this, track_);
+      sink_added_ = true;
+    }
   }
 
  private:
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::FrameInput> frame_input_;
   bool sink_added_;
+  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
 };
@@ -158,64 +166,82 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
                       public content::MediaStreamAudioSink {
  public:
   explicit CastAudioSink(const blink::WebMediaStreamTrack& track)
-      : track_(track), sink_added_(false) {
-  }
+      : track_(track),
+        sink_added_(false),
+        weak_factory_(this),
+        render_thread_task_runner_(content::RenderThread::Get()
+                                       ->GetMessageLoop()
+                                       ->message_loop_proxy()) {}
 
   virtual ~CastAudioSink() {
     if (sink_added_)
       RemoveFromAudioTrack(this, track_);
   }
 
+  // Called on real-time audio thread.
   // content::MediaStreamAudioSink implementation.
   virtual void OnData(const int16* audio_data,
                       int sample_rate,
                       int number_of_channels,
                       int number_of_frames) OVERRIDE {
     scoped_ptr<media::AudioBus> audio_bus(
-        media::AudioBus::Create(number_of_channels,
-                                number_of_frames));
+        media::AudioBus::Create(number_of_channels, number_of_frames));
     audio_bus->FromInterleaved(audio_data, number_of_frames, 2);
 
     // TODO(hclam): Pass in the accurate capture time to have good
-    // audio/video sync.
-    media::AudioBus* audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
-        audio_bus_ptr,
-        base::TimeTicks::Now(),
-        base::Bind(&DeleteAudioBus, base::Passed(&audio_bus)));
+    // audio / video sync.
+
+    // Bounce the call from the real-time audio thread to the render thread.
+    // Needed since frame_input_ can be changed runtime by the render thread.
+    media::AudioBus* const audio_bus_ptr = audio_bus.get();
+    render_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CastAudioSink::SendAudio,
+                   weak_factory_.GetWeakPtr(),
+                   audio_bus_ptr,
+                   base::TimeTicks::Now(),
+                   base::Bind(&DeleteAudioBus, base::Passed(&audio_bus))));
   }
 
-  virtual void OnSetFormat(
-      const media::AudioParameters& params) OVERRIDE{
+  void SendAudio(const media::AudioBus* audio_bus_ptr,
+                 const base::TimeTicks& recorded_time,
+                 const base::Closure& done_callback) {
+    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
+    DCHECK(frame_input_);
+    frame_input_->InsertAudio(audio_bus_ptr, recorded_time, done_callback);
+  }
+
+  // Called on real-time audio thread.
+  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
   // See CastVideoSink for details.
-  void AddToTrack(
-      const scoped_refptr<media::cast::FrameInput>& frame_input) {
-    DCHECK(!sink_added_);
+  void AddToTrack(const scoped_refptr<media::cast::FrameInput>& frame_input) {
+    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
     frame_input_ = frame_input;
-    AddToAudioTrack(this, track_);
-    sink_added_ = true;
+    if (!sink_added_) {
+      AddToAudioTrack(this, track_);
+      sink_added_ = true;
+    }
   }
 
  private:
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::FrameInput> frame_input_;
   bool sink_added_;
+  base::WeakPtrFactory<CastAudioSink> weak_factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };
 
 CastRtpParams::CastRtpParams(const CastRtpPayloadParams& payload_params)
-  : payload(payload_params) {
-}
+    : payload(payload_params) {}
 
-CastCodecSpecificParams::CastCodecSpecificParams() {
-}
+CastCodecSpecificParams::CastCodecSpecificParams() {}
 
-CastCodecSpecificParams::~CastCodecSpecificParams() {
-}
+CastCodecSpecificParams::~CastCodecSpecificParams() {}
 
 CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),

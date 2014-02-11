@@ -476,7 +476,10 @@ class End2EndTest : public ::testing::Test {
         &sender_to_receiver_));
 
     cast_sender_.reset(CastSender::CreateCastSender(
-        cast_environment_, audio_sender_config_, video_sender_config_, NULL,
+        cast_environment_,
+        &audio_sender_config_,
+        &video_sender_config_,
+        NULL,
         base::Bind(&End2EndTest::InitializationResult, base::Unretained(this)),
         transport_sender_.get()));
 

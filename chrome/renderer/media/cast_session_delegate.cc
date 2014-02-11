@@ -63,14 +63,11 @@ class DummyTransport : public media::cast::transport::CastTransportSender {
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyTransport);
 };
-
 }  // namespace
 
 CastSessionDelegate::CastSessionDelegate()
     : audio_encode_thread_("CastAudioEncodeThread"),
       video_encode_thread_("CastVideoEncodeThread"),
-      audio_configured_(false),
-      video_configured_(false),
       io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()) {
 }
@@ -79,38 +76,9 @@ CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 }
 
-void CastSessionDelegate::StartAudio(
-    const AudioSenderConfig& config,
-    const FrameInputAvailableCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  audio_configured_ = true;
-  audio_config_ = config;
-  frame_input_available_callbacks_.push_back(callback);
-  StartSendingInternal();
-}
-
-void CastSessionDelegate::StartVideo(
-    const VideoSenderConfig& config,
-    const FrameInputAvailableCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  video_configured_ = true;
-  video_config_ = config;
-  frame_input_available_callbacks_.push_back(callback);
-  StartSendingInternal();
-}
-
-// TODO(pwestin): This design does not work; as soon as audio or video is
-// initialized it will prevent the other from being enabled.
-void CastSessionDelegate::StartSendingInternal() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
+void CastSessionDelegate::Initialize() {
   if (cast_environment_)
-    return;
-
-  if (!audio_configured_ || !video_configured_)
-    return;
+    return;  // Already initialized.
 
   cast_transport_.reset(new DummyTransport());
   audio_encode_thread_.Start();
@@ -129,26 +97,62 @@ void CastSessionDelegate::StartSendingInternal() {
       NULL,
       base::MessageLoopProxy::current(),
       media::cast::GetDefaultCastSenderLoggingConfig());
+}
+
+void CastSessionDelegate::StartAudio(
+    const AudioSenderConfig& config,
+    const FrameInputAvailableCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  audio_config_.reset(new AudioSenderConfig(config));
+  StartSendingInternal(callback, true);
+}
+
+void CastSessionDelegate::StartVideo(
+    const VideoSenderConfig& config,
+    const FrameInputAvailableCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  video_config_.reset(new VideoSenderConfig(config));
+  StartSendingInternal(callback, false);
+}
+
+void CastSessionDelegate::StartSendingInternal(
+    const FrameInputAvailableCallback& callback,
+    bool is_audio) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  Initialize();
+
+  if (is_audio) {
+    audio_frame_input_available_callback_.reset(
+        new FrameInputAvailableCallback(callback));
+  } else {
+    video_frame_input_available_callback_.reset(
+        new FrameInputAvailableCallback(callback));
+  }
 
   cast_sender_.reset(CastSender::CreateCastSender(
       cast_environment_,
-      audio_config_,
-      video_config_,
+      audio_config_.get(),
+      video_config_.get(),
       NULL,  // GPU.
       base::Bind(&CastSessionDelegate::InitializationResult,
-          base::Unretained(this)),
+                 base::Unretained(this)),
       cast_transport_.get()));
 }
 
 void CastSessionDelegate::InitializationResult(
-    media::cast::CastInitializationStatus result) {
+    media::cast::CastInitializationStatus result) const {
   DCHECK(cast_sender_);
 
   // TODO(pwestin): handle the error codes.
-
-  for (size_t i = 0; i < frame_input_available_callbacks_.size(); ++i) {
-    frame_input_available_callbacks_[i].Run(
-        cast_sender_->frame_input());
+  if (result == media::cast::STATUS_INITIALIZED) {
+    if (audio_frame_input_available_callback_) {
+      audio_frame_input_available_callback_->Run(cast_sender_->frame_input());
+    }
+    if (video_frame_input_available_callback_) {
+      video_frame_input_available_callback_->Run(cast_sender_->frame_input());
+    }
   }
-  frame_input_available_callbacks_.clear();
 }

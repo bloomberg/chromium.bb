@@ -28,8 +28,8 @@ class CastSenderImpl : public CastSender {
  public:
   CastSenderImpl(
       scoped_refptr<CastEnvironment> cast_environment,
-      const AudioSenderConfig& audio_config,
-      const VideoSenderConfig& video_config,
+      const AudioSenderConfig* audio_config,
+      const VideoSenderConfig* video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       const CastInitializationCallback& initialization_status,
       transport::CastTransportSender* const transport_sender);
@@ -41,13 +41,21 @@ class CastSenderImpl : public CastSender {
 
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);
+  // Used to trampoline the result back on the correct thread. And guaranteed
+  // not to be called until the creation is complete.
+  void InitializationResult(CastInitializationStatus status) const;
 
-  AudioSender audio_sender_;
-  VideoSender video_sender_;
+  CastInitializationCallback initialization_callback_;
+  scoped_ptr<AudioSender> audio_sender_;
+  scoped_ptr<VideoSender> video_sender_;
   scoped_refptr<FrameInput> frame_input_;
+  transport::PacketReceiverCallback packet_receiver_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  const uint32 ssrc_of_audio_sender_;
-  const uint32 ssrc_of_video_sender_;
+  uint32 ssrc_of_audio_sender_;
+  uint32 ssrc_of_video_sender_;
+  base::WeakPtrFactory<CastSenderImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastSenderImpl);
 };
 
 }  // namespace cast
