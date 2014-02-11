@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +31,9 @@ public class WindowAndroid {
     // A string used as a key to store intent errors in a bundle
     static final String WINDOW_CALLBACK_ERRORS = "window_callback_errors";
 
+    // Error code returned when an Intent fails to start an Activity.
+    public static final int START_INTENT_FAILURE = -1;
+
     protected Context mApplicationContext;
     protected SparseArray<IntentCallback> mOutstandingIntents;
     protected HashMap<Integer, String> mIntentErrors;
@@ -46,10 +50,22 @@ public class WindowAndroid {
 
     /**
      * Shows an intent and returns the results to the callback object.
-     * @param intent The intent that needs to be showed.
+     * @param intent   The PendingIntent that needs to be shown.
      * @param callback The object that will receive the results for the intent.
-     * @param errorId The ID of error string to be show if activity is paused before intent
-     *        results.
+     * @param errorId  The ID of error string to be show if activity is paused before intent
+     *                 results.
+     * @return Whether the intent was shown.
+     */
+    public boolean showIntent(PendingIntent intent, IntentCallback callback, int errorId) {
+        return showCancelableIntent(intent, callback, errorId) >= 0;
+    }
+
+    /**
+     * Shows an intent and returns the results to the callback object.
+     * @param intent   The intent that needs to be shown.
+     * @param callback The object that will receive the results for the intent.
+     * @param errorId  The ID of error string to be show if activity is paused before intent
+     *                 results.
      * @return Whether the intent was shown.
      */
     public boolean showIntent(Intent intent, IntentCallback callback, int errorId) {
@@ -58,15 +74,30 @@ public class WindowAndroid {
 
     /**
      * Shows an intent that could be canceled and returns the results to the callback object.
-     * @param intent The intent that needs to be showed.
-     * @param callback The object that will receive the results for the intent.
-     * @param errorId The ID of error string to be show if activity is paused before intent
-     *        results.
-     * @return A non-negative request code that could be used for finishActivity, or -1 if failed.
+     * @param  intent   The PendingIntent that needs to be shown.
+     * @param  callback The object that will receive the results for the intent.
+     * @param  errorId  The ID of error string to be show if activity is paused before intent
+     *                  results.
+     * @return A non-negative request code that could be used for finishActivity, or
+     *         START_INTENT_FAILURE if failed.
+     */
+    public int showCancelableIntent(PendingIntent intent, IntentCallback callback, int errorId) {
+        Log.d(TAG, "Can't show intent as context is not an Activity: " + intent);
+        return START_INTENT_FAILURE;
+    }
+
+    /**
+     * Shows an intent that could be canceled and returns the results to the callback object.
+     * @param  intent   The intent that needs to be showed.
+     * @param  callback The object that will receive the results for the intent.
+     * @param  errorId  The ID of error string to be show if activity is paused before intent
+     *                  results.
+     * @return A non-negative request code that could be used for finishActivity, or
+     *         START_INTENT_FAILURE if failed.
      */
     public int showCancelableIntent(Intent intent, IntentCallback callback, int errorId) {
         Log.d(TAG, "Can't show intent as context is not an Activity: " + intent);
-        return -1;
+        return START_INTENT_FAILURE;
     }
 
     /**
