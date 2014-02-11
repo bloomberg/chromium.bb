@@ -11,9 +11,4 @@ include_rules = [
   "+native_client/src/trusted/service_runtime/nacl_config.h",
   # For various tests:
   "+native_client/src/trusted/service_runtime/include/sys",
-  # For irt ppapi glue:
-  "+ppapi/c",
-  "+ppapi/cpp",
-  # For pnacl shims:
-  "+ppapi/generators",
 ]
