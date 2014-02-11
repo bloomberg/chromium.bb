@@ -188,6 +188,13 @@ class CountingPolicyTest : public testing::Test {
                 "[\"hello\",\"world\"]", "", "", "", 1);
   }
 
+  static void Arguments_GetSinglesAction(
+      scoped_ptr<Action::ActionVector> actions) {
+    ASSERT_EQ(1, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "", "http://www.google.com/", "", "", 1);
+  }
+
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(3, static_cast<int>(actions->size()));
@@ -1059,6 +1066,34 @@ TEST_F(CountingPolicyTest, DeleteActions) {
       "punky",
       0,
       base::Bind(&CountingPolicyTest::Arguments_GetTodaysActions));
+
+  policy->DeleteDatabase();
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      -1,
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
+
+  // The following code tests that the caches of url and string tables were
+  // cleared by the deletion above.
+  // https://code.google.com/p/chromium/issues/detail?id=341674.
+  action =
+    new Action("punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  CheckReadData(
+      policy,
+      "",
+      -1,
+      base::Bind(&CountingPolicyTest::Arguments_GetSinglesAction));
 
   policy->DeleteDatabase();
 

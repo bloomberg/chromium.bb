@@ -645,6 +645,7 @@ void CountingPolicy::DoDeleteDatabase() {
     return;
   }
   statement.Clear();
+  string_table_.ClearCache();
   statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
                                           "DELETE FROM string_ids"));
   if (!statement.Run()) {
@@ -653,6 +654,7 @@ void CountingPolicy::DoDeleteDatabase() {
     return;
   }
   statement.Clear();
+  url_table_.ClearCache();
   statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
                                           "DELETE FROM url_ids"));
   if (!statement.Run()) {
