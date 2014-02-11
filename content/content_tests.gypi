@@ -496,6 +496,7 @@
         'browser/streams/stream_unittest.cc',
         'browser/streams/stream_url_request_job_unittest.cc',
         'browser/system_message_window_win_unittest.cc',
+        'browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc',
         'browser/web_contents/aura/window_slider_unittest.cc',
         'browser/web_contents/web_contents_delegate_unittest.cc',
         'browser/web_contents/web_contents_impl_unittest.cc',

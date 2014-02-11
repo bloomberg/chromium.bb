@@ -5,22 +5,28 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_NAVIGATION_OVERLAY_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_NAVIGATION_OVERLAY_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/browser/web_contents/aura/window_slider.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+
+struct ViewHostMsg_UpdateRect_Params;
 
 namespace content {
 
 class ImageLayerDelegate;
 class ImageWindowDelegate;
+class OverscrollNavigationOverlayTest;
 
 // When a history navigation is triggered at the end of an overscroll
 // navigation, it is necessary to show the history-screenshot until the page is
 // done navigating and painting. This class accomplishes this by showing the
 // screenshot window on top of the page until the page has completed loading and
 // painting.
-class OverscrollNavigationOverlay : public WebContentsObserver,
-                                    public WindowSlider::Delegate {
+class CONTENT_EXPORT OverscrollNavigationOverlay
+    : public WebContentsObserver,
+      public WindowSlider::Delegate {
  public:
   explicit OverscrollNavigationOverlay(WebContentsImpl* web_contents);
   virtual ~OverscrollNavigationOverlay();
@@ -44,6 +50,14 @@ class OverscrollNavigationOverlay : public WebContentsObserver,
   void SetupForTesting();
 
  private:
+  friend class OverscrollNavigationOverlayTest;
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
+                           FirstVisuallyNonEmptyPaint_NoImage);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
+                           FirstVisuallyNonEmptyPaint_WithImage);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
+                           PaintUpdateWithoutNonEmptyPaint);
+
   enum SlideDirection {
     SLIDE_UNKNOWN,
     SLIDE_BACK,
@@ -58,6 +72,9 @@ class OverscrollNavigationOverlay : public WebContentsObserver,
   // NavigationEntry for the screenshot image to display.
   ui::Layer* CreateSlideLayer(int offset);
 
+  // IPC message callbacks.
+  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+
   // Overridden from WindowSlider::Delegate:
   virtual ui::Layer* CreateBackLayer() OVERRIDE;
   virtual ui::Layer* CreateFrontLayer() OVERRIDE;
@@ -68,6 +85,7 @@ class OverscrollNavigationOverlay : public WebContentsObserver,
   // Overridden from WebContentsObserver:
   virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* host) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // The WebContents which is being navigated.
   WebContentsImpl* web_contents_;

@@ -24,7 +24,7 @@ class ShadowLayerDelegate;
 class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
                                     public aura::WindowObserver {
  public:
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
 

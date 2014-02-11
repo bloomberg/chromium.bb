@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_IMAGE_WINDOW_DELEGATE_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_IMAGE_WINDOW_DELEGATE_H_
 
+#include "content/common/content_export.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
@@ -13,7 +14,7 @@ namespace content {
 
 // An ImageWindowDelegate paints an image for a Window. The delegate destroys
 // itself when the Window is destroyed. The delegate does not consume any event.
-class ImageWindowDelegate : public aura::WindowDelegate {
+class CONTENT_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
  public:
   ImageWindowDelegate();
 

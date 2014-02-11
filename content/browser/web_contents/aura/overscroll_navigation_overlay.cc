@@ -5,8 +5,10 @@
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -147,6 +149,17 @@ ui::Layer* OverscrollNavigationOverlay::CreateSlideLayer(int offset) {
   return layer;
 }
 
+void OverscrollNavigationOverlay::OnUpdateRect(
+    const ViewHostMsg_UpdateRect_Params& params) {
+  if (loading_complete_ &&
+      ViewHostMsg_UpdateRect_Flags::is_repaint_ack(params.flags)) {
+    // This is a paint update after the page has been loaded. So do not wait for
+    // a 'first non-empty' paint update.
+    received_paint_update_ = true;
+    StopObservingIfDone();
+  }
+}
+
 ui::Layer* OverscrollNavigationOverlay::CreateBackLayer() {
   if (!web_contents_->GetController().CanGoBack())
     return NULL;
@@ -206,7 +219,21 @@ void OverscrollNavigationOverlay::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
 
 void OverscrollNavigationOverlay::DidStopLoading(RenderViewHost* host) {
   loading_complete_ = true;
+  if (!received_paint_update_) {
+    // Force a repaint after the page is loaded.
+    RenderViewHostImpl* view = static_cast<RenderViewHostImpl*>(host);
+    view->ScheduleComposite();
+  }
   StopObservingIfDone();
+}
+
+bool OverscrollNavigationOverlay::OnMessageReceived(
+    const IPC::Message& message) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  IPC_BEGIN_MESSAGE_MAP(OverscrollNavigationOverlay, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
+  IPC_END_MESSAGE_MAP()
+  return false;
 }
 
 }  // namespace content
