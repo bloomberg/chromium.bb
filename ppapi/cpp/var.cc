@@ -39,9 +39,8 @@ inline bool NeedsRefcounting(const PP_Var& var) {
   return var.type > PP_VARTYPE_DOUBLE;
 }
 
-// This helper function detects whether PPB_Var version 1.1 is available. If so,
-// it uses it to create a PP_Var for the given string. Otherwise it falls back
-// to PPB_Var version 1.0.
+// This helper function uses the latest available version of VarFromUtf8. Note
+// that version 1.0 of this method has a different API to later versions.
 PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
   if (has_interface<PPB_Var_1_1>()) {
     return get_interface<PPB_Var_1_1>()->VarFromUtf8(utf8_str, len);
@@ -49,9 +48,34 @@ PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
     return get_interface<PPB_Var_1_0>()->VarFromUtf8(Module::Get()->pp_module(),
                                                      utf8_str,
                                                      len);
-  } else {
-    return PP_MakeNull();
   }
+  return PP_MakeNull();
+}
+
+// This helper function uses the latest available version of AddRef.
+// Returns true on success, false if no appropriate interface was available.
+bool AddRefHelper(const PP_Var& var) {
+  if (has_interface<PPB_Var_1_1>()) {
+    get_interface<PPB_Var_1_1>()->AddRef(var);
+    return true;
+  } else if (has_interface<PPB_Var_1_0>()) {
+    get_interface<PPB_Var_1_0>()->AddRef(var);
+    return true;
+  }
+  return false;
+}
+
+// This helper function uses the latest available version of Release.
+// Returns true on success, false if no appropriate interface was available.
+bool ReleaseHelper(const PP_Var& var) {
+  if (has_interface<PPB_Var_1_1>()) {
+    get_interface<PPB_Var_1_1>()->Release(var);
+    return true;
+  } else if (has_interface<PPB_Var_1_0>()) {
+    get_interface<PPB_Var_1_0>()->Release(var);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -106,9 +130,7 @@ Var::Var(const PP_Var& var) {
   var_ = var;
   is_managed_ = true;
   if (NeedsRefcounting(var_)) {
-    if (has_interface<PPB_Var_1_0>())
-      get_interface<PPB_Var_1_0>()->AddRef(var_);
-    else
+    if (!AddRefHelper(var_))
       var_.type = PP_VARTYPE_NULL;
   }
 }
@@ -117,18 +139,14 @@ Var::Var(const Var& other) {
   var_ = other.var_;
   is_managed_ = true;
   if (NeedsRefcounting(var_)) {
-    if (has_interface<PPB_Var_1_0>())
-      get_interface<PPB_Var_1_0>()->AddRef(var_);
-    else
+    if (!AddRefHelper(var_))
       var_.type = PP_VARTYPE_NULL;
   }
 }
 
 Var::~Var() {
-  if (NeedsRefcounting(var_) &&
-      is_managed_ &&
-      has_interface<PPB_Var_1_0>())
-    get_interface<PPB_Var_1_0>()->Release(var_);
+  if (NeedsRefcounting(var_) && is_managed_)
+    ReleaseHelper(var_);
 }
 
 Var& Var::operator=(const Var& other) {
@@ -143,12 +161,10 @@ Var& Var::operator=(const Var& other) {
   bool old_is_managed = is_managed_;
   is_managed_ = true;
   if (NeedsRefcounting(other.var_)) {
-    // Assume we already has_interface<PPB_Var_1_0> for refcounted vars or else
-    // we couldn't have created them in the first place.
-    get_interface<PPB_Var_1_0>()->AddRef(other.var_);
+    AddRefHelper(other.var_);
   }
   if (NeedsRefcounting(var_) && old_is_managed)
-    get_interface<PPB_Var_1_0>()->Release(var_);
+    ReleaseHelper(var_);
 
   var_ = other.var_;
   return *this;
@@ -212,10 +228,14 @@ std::string Var::AsString() const {
     return std::string();
   }
 
-  if (!has_interface<PPB_Var_1_0>())
-    return std::string();
   uint32_t len;
-  const char* str = get_interface<PPB_Var_1_0>()->VarToUtf8(var_, &len);
+  const char* str;
+  if (has_interface<PPB_Var_1_1>())
+    str = get_interface<PPB_Var_1_1>()->VarToUtf8(var_, &len);
+  else if (has_interface<PPB_Var_1_0>())
+    str = get_interface<PPB_Var_1_0>()->VarToUtf8(var_, &len);
+  else
+    return std::string();
   return std::string(str, len);
 }
 
