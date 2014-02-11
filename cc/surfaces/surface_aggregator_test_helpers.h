@@ -87,6 +87,8 @@ void TestPassesMatchExpectations(Pass* expected_passes,
 
 void SubmitFrame(Pass* passes, size_t pass_count, Surface* surface);
 
+void QueuePassAsFrame(scoped_ptr<RenderPass> pass, Surface* surface);
+
 }  // namespace test
 }  // namespace cc
 

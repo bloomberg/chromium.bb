@@ -158,5 +158,15 @@ void SubmitFrame(Pass* passes, size_t pass_count, Surface* surface) {
   surface->QueueFrame(frame.Pass());
 }
 
+void QueuePassAsFrame(scoped_ptr<RenderPass> pass, Surface* surface) {
+  scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+  delegated_frame_data->render_pass_list.push_back(pass.Pass());
+
+  scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+  child_frame->delegated_frame_data = delegated_frame_data.Pass();
+
+  surface->QueueFrame(child_frame.Pass());
+}
+
 }  // namespace test
 }  // namespace cc

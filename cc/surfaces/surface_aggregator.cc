@@ -99,8 +99,17 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                       source.transform_to_root_target,
                       source.has_transparent_background);
 
+    // Contributing passes aggregated in to the pass list need to take the
+    // transform of the surface quad into account to update their transform to
+    // the root surface.
+    // TODO(jamesr): Make sure this is sufficient for surfaces nested several
+    // levels deep and add tests.
+    copy_pass->transform_to_root_target.ConcatTransform(
+        surface_quad->quadTransform());
+
     CopyQuadsToPass(source.quad_list,
                     source.shared_quad_state_list,
+                    gfx::Transform(),
                     copy_pass.get(),
                     surface_id);
 
@@ -111,55 +120,72 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
   const RenderPass& last_pass = *referenced_data->render_pass_list.back();
   const QuadList& quads = last_pass.quad_list;
 
-  for (size_t j = 0; j < last_pass.shared_quad_state_list.size(); ++j) {
-    dest_pass->shared_quad_state_list.push_back(
-        last_pass.shared_quad_state_list[j]->Copy());
-  }
-  // TODO(jamesr): Map transform correctly for quads in the referenced
-  // surface into this pass's space.
   // TODO(jamesr): Make sure clipping is enforced.
-  CopyQuadsToPass(
-      quads, last_pass.shared_quad_state_list, dest_pass, surface_id);
+  CopyQuadsToPass(quads,
+                  last_pass.shared_quad_state_list,
+                  surface_quad->quadTransform(),
+                  dest_pass,
+                  surface_id);
 
   referenced_surfaces_.erase(it);
+}
+
+void SurfaceAggregator::CopySharedQuadState(
+    const SharedQuadState& source_sqs,
+    const gfx::Transform& content_to_target_transform,
+    SharedQuadStateList* dest_sqs_list) {
+  scoped_ptr<SharedQuadState> copy_shared_quad_state = source_sqs.Copy();
+  // content_to_target_transform contains any transformation that may exist
+  // between the context that these quads are being copied from (i.e. the
+  // surface's draw transform when aggregated from within a surface) to the
+  // target space of the pass. This will be identity except when copying the
+  // root draw pass from a surface into a pass when the surface draw quad's
+  // transform is not identity.
+  copy_shared_quad_state->content_to_target_transform.ConcatTransform(
+      content_to_target_transform);
+  dest_sqs_list->push_back(copy_shared_quad_state.Pass());
 }
 
 void SurfaceAggregator::CopyQuadsToPass(
     const QuadList& source_quad_list,
     const SharedQuadStateList& source_shared_quad_state_list,
+    const gfx::Transform& content_to_target_transform,
     RenderPass* dest_pass,
     int surface_id) {
-  for (size_t j = 0; j < source_shared_quad_state_list.size(); ++j) {
-    dest_pass->shared_quad_state_list.push_back(
-        source_shared_quad_state_list[j]->Copy());
-  }
+  const SharedQuadState* last_copied_source_shared_quad_state = NULL;
 
   for (size_t i = 0, sqs_i = 0; i < source_quad_list.size(); ++i) {
     DrawQuad* quad = source_quad_list[i];
-
     while (quad->shared_quad_state != source_shared_quad_state_list[sqs_i]) {
       ++sqs_i;
       DCHECK_LT(sqs_i, source_shared_quad_state_list.size());
-      DCHECK_LT(sqs_i, dest_pass->shared_quad_state_list.size());
     }
     DCHECK_EQ(quad->shared_quad_state, source_shared_quad_state_list[sqs_i]);
 
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       HandleSurfaceQuad(surface_quad, dest_pass);
-    } else if (quad->material == DrawQuad::RENDER_PASS) {
-      const RenderPassDrawQuad* pass_quad =
-          RenderPassDrawQuad::MaterialCast(quad);
-      RenderPass::Id original_pass_id = pass_quad->render_pass_id;
-      RenderPass::Id remapped_pass_id =
-          RemapPassId(original_pass_id, surface_id);
-
-      dest_pass->quad_list.push_back(
-          pass_quad->Copy(dest_pass->shared_quad_state_list[sqs_i],
-                          remapped_pass_id).PassAs<DrawQuad>());
     } else {
-      dest_pass->quad_list.push_back(
-          quad->Copy(dest_pass->shared_quad_state_list[sqs_i]));
+      if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
+        CopySharedQuadState(*quad->shared_quad_state,
+                            content_to_target_transform,
+                            &dest_pass->shared_quad_state_list);
+        last_copied_source_shared_quad_state = quad->shared_quad_state;
+      }
+      if (quad->material == DrawQuad::RENDER_PASS) {
+        const RenderPassDrawQuad* pass_quad =
+            RenderPassDrawQuad::MaterialCast(quad);
+        RenderPass::Id original_pass_id = pass_quad->render_pass_id;
+        RenderPass::Id remapped_pass_id =
+            RemapPassId(original_pass_id, surface_id);
+
+        dest_pass->quad_list.push_back(
+            pass_quad->Copy(dest_pass->shared_quad_state_list.back(),
+                            remapped_pass_id).PassAs<DrawQuad>());
+      } else {
+        dest_pass->quad_list.push_back(
+            quad->Copy(dest_pass->shared_quad_state_list.back()));
+      }
     }
   }
 }
@@ -181,6 +207,7 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
 
     CopyQuadsToPass(source.quad_list,
                     source.shared_quad_state_list,
+                    gfx::Transform(),
                     copy_pass.get(),
                     surface_id);
 
@@ -204,12 +231,14 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(int surface_id) {
   const RenderPassList& source_pass_list =
       root_surface_frame->delegated_frame_data->render_pass_list;
 
-  referenced_surfaces_.insert(surface_id);
+  std::set<int>::iterator it = referenced_surfaces_.insert(surface_id).first;
 
   dest_pass_list_ = &frame->delegated_frame_data->render_pass_list;
   CopyPasses(source_pass_list, surface_id);
 
-  referenced_surfaces_.clear();
+  referenced_surfaces_.erase(it);
+  DCHECK(referenced_surfaces_.empty());
+
   dest_pass_list_ = NULL;
 
   // TODO(jamesr): Aggregate all resource references into the returned frame's

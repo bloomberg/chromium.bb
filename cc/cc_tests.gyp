@@ -105,10 +105,11 @@
       'trees/tree_synchronizer_unittest.cc',
     ],
     'cc_surfaces_unit_tests_source_files': [
-      'surfaces/surface_unittest.cc',
-      'surfaces/surface_aggregator_unittest.cc',
       'surfaces/surface_aggregator_test_helpers.cc',
       'surfaces/surface_aggregator_test_helpers.h',
+      'surfaces/surface_aggregator_unittest.cc',
+      'surfaces/surface_unittest.cc',
+      'surfaces/surfaces_pixeltest.cc',
     ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',

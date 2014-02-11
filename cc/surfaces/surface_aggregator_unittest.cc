@@ -406,5 +406,294 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
       RenderPassDrawQuad::MaterialCast(render_pass_quads[1])->render_pass_id);
 }
 
+void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
+                                    RenderPass* pass,
+                                    const SkXfermode::Mode blend_mode) {
+  const gfx::Transform content_to_target_transform;
+  const gfx::Size content_bounds(size);
+  const gfx::Rect visible_content_rect(size);
+  const gfx::Rect clip_rect(size);
+
+  bool is_clipped = false;
+  float opacity = 1.f;
+
+  bool force_anti_aliasing_off = false;
+  scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+  sqs->SetAll(content_to_target_transform,
+              content_bounds,
+              visible_content_rect,
+              clip_rect,
+              is_clipped,
+              opacity,
+              blend_mode);
+  pass->shared_quad_state_list.push_back(sqs.Pass());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(pass->shared_quad_state_list.back(),
+                     visible_content_rect,
+                     SK_ColorGREEN,
+                     force_anti_aliasing_off);
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+}
+
+// This tests that we update shared quad state pointers correctly within
+// aggregated passes.  The shared quad state list on the aggregated pass will
+// include the shared quad states from each pass in one list so the quads will
+// end up pointed to shared quad state objects at different offsets. This test
+// uses the blend_mode value stored on the shared quad state to track the shared
+// quad state, but anything saved on the shared quad state would work.
+//
+// This test has 4 surfaces in the following structure:
+// root_surface -> quad with kClear_Mode,
+//                 [child_one_surface],
+//                 quad with kDstOver_Mode,
+//                 [child_two_surface],
+//                 quad with kDstIn_Mode
+// child_one_surface -> quad with kSrc_Mode,
+//                      [grandchild_surface],
+//                      quad with kSrcOver_Mode
+// child_two_surface -> quad with kSrcIn_Mode
+// grandchild_surface -> quad with kDst_Mode
+//
+// Resulting in the following aggregated pass:
+//  quad_root_0       - blend_mode kClear_Mode
+//  quad_child_one_0  - blend_mode kSrc_Mode
+//  quad_grandchild_0 - blend_mode kDst_Mode
+//  quad_child_one_1  - blend_mode kSrcOver_Mode
+//  quad_root_1       - blend_mode kDstOver_Mode
+//  quad_child_two_0  - blend_mode kSrcIn_Mode
+//  quad_root_2       - blend_mode kDstIn_Mode
+TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
+  gfx::Size surface_size(5, 5);
+
+  const SkXfermode::Mode blend_modes[] = {SkXfermode::kClear_Mode,    // 0
+                                          SkXfermode::kSrc_Mode,      // 1
+                                          SkXfermode::kDst_Mode,      // 2
+                                          SkXfermode::kSrcOver_Mode,  // 3
+                                          SkXfermode::kDstOver_Mode,  // 4
+                                          SkXfermode::kSrcIn_Mode,    // 5
+                                          SkXfermode::kDstIn_Mode,    // 6
+  };
+
+  RenderPass::Id pass_id(1, 1);
+  Surface grandchild_surface(&manager_, NULL, surface_size);
+  scoped_ptr<RenderPass> grandchild_pass = RenderPass::Create();
+  gfx::Rect output_rect(surface_size);
+  gfx::RectF damage_rect(surface_size);
+  gfx::Transform transform_to_root_target;
+  grandchild_pass->SetNew(
+      pass_id, output_rect, damage_rect, transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(
+      surface_size, grandchild_pass.get(), blend_modes[2]);
+  test::QueuePassAsFrame(grandchild_pass.Pass(), &grandchild_surface);
+
+  Surface child_one_surface(&manager_, NULL, surface_size);
+
+  scoped_ptr<RenderPass> child_one_pass = RenderPass::Create();
+  child_one_pass->SetNew(
+      pass_id, output_rect, damage_rect, transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(
+      surface_size, child_one_pass.get(), blend_modes[1]);
+  scoped_ptr<SurfaceDrawQuad> grandchild_surface_quad =
+      SurfaceDrawQuad::Create();
+  grandchild_surface_quad->SetNew(child_one_pass->shared_quad_state_list.back(),
+                                  gfx::Rect(surface_size),
+                                  grandchild_surface.surface_id());
+  child_one_pass->quad_list.push_back(
+      grandchild_surface_quad.PassAs<DrawQuad>());
+  AddSolidColorQuadWithBlendMode(
+      surface_size, child_one_pass.get(), blend_modes[3]);
+  test::QueuePassAsFrame(child_one_pass.Pass(), &child_one_surface);
+
+  Surface child_two_surface(&manager_, NULL, surface_size);
+
+  scoped_ptr<RenderPass> child_two_pass = RenderPass::Create();
+  child_two_pass->SetNew(
+      pass_id, output_rect, damage_rect, transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(
+      surface_size, child_two_pass.get(), blend_modes[5]);
+  test::QueuePassAsFrame(child_two_pass.Pass(), &child_two_surface);
+
+  scoped_ptr<RenderPass> root_pass = RenderPass::Create();
+  root_pass->SetNew(
+      pass_id, output_rect, damage_rect, transform_to_root_target);
+
+  AddSolidColorQuadWithBlendMode(surface_size, root_pass.get(), blend_modes[0]);
+  scoped_ptr<SurfaceDrawQuad> child_one_surface_quad =
+      SurfaceDrawQuad::Create();
+  child_one_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
+                                 gfx::Rect(surface_size),
+                                 child_one_surface.surface_id());
+  root_pass->quad_list.push_back(child_one_surface_quad.PassAs<DrawQuad>());
+  AddSolidColorQuadWithBlendMode(surface_size, root_pass.get(), blend_modes[4]);
+  scoped_ptr<SurfaceDrawQuad> child_two_surface_quad =
+      SurfaceDrawQuad::Create();
+  child_two_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
+                                 gfx::Rect(surface_size),
+                                 child_two_surface.surface_id());
+  root_pass->quad_list.push_back(child_two_surface_quad.PassAs<DrawQuad>());
+  AddSolidColorQuadWithBlendMode(surface_size, root_pass.get(), blend_modes[6]);
+
+  test::QueuePassAsFrame(root_pass.Pass(), &root_surface_);
+
+  scoped_ptr<CompositorFrame> aggregated_frame =
+      aggregator_.Aggregate(root_surface_.surface_id());
+
+  ASSERT_TRUE(aggregated_frame);
+  ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+  DelegatedFrameData* frame_data = aggregated_frame->delegated_frame_data.get();
+
+  const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+  ASSERT_EQ(1u, aggregated_pass_list.size());
+
+  const QuadList& aggregated_quad_list = aggregated_pass_list[0]->quad_list;
+
+  ASSERT_EQ(7u, aggregated_quad_list.size());
+
+  for (size_t i = 0; i < aggregated_quad_list.size(); ++i) {
+    DrawQuad* quad = aggregated_quad_list[i];
+    EXPECT_EQ(blend_modes[i], quad->shared_quad_state->blend_mode) << i;
+  }
+}
+
+// This tests that when aggregating a frame with multiple render passes that we
+// map the transforms for the root pass but do not modify the transform on child
+// passes.
+//
+// The root surface has one pass with a surface quad transformed by +10 in the y
+// direction.
+//
+// The child surface has two passes. The first pass has a quad with a transform
+// of +5 in the x direction. The second pass has a reference to the first pass'
+// pass id and a transform of +8 in the x direction.
+//
+// After aggregation, the child surface's root pass quad should have both
+// transforms concatenated for a total transform of +8 x, +10 y. The
+// contributing render pass' transform in the aggregate frame should not be
+// affected.
+TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
+  gfx::Size surface_size(5, 5);
+
+  Surface child_surface(&manager_, NULL, surface_size);
+  RenderPass::Id child_pass_id[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2)};
+  test::Quad child_quads[][1] = {
+      {test::Quad::SolidColorQuad(SK_ColorGREEN)},
+      {test::Quad::RenderPassQuad(child_pass_id[0])}};
+  test::Pass child_passes[] = {
+      test::Pass(child_quads[0], arraysize(child_quads[0]), child_pass_id[0]),
+      test::Pass(child_quads[1], arraysize(child_quads[1]), child_pass_id[1])};
+
+  RenderPassList child_pass_list;
+  AddPasses(&child_pass_list,
+            gfx::Rect(surface_size),
+            child_passes,
+            arraysize(child_passes));
+
+  RenderPass* child_nonroot_pass = child_pass_list.at(0u);
+  child_nonroot_pass->transform_to_root_target.Translate(8, 0);
+  SharedQuadState* child_nonroot_pass_sqs =
+      child_nonroot_pass->shared_quad_state_list[0];
+  child_nonroot_pass_sqs->content_to_target_transform.Translate(5, 0);
+
+  RenderPass* child_root_pass = child_pass_list.at(1u);
+  SharedQuadState* child_root_pass_sqs =
+      child_root_pass->shared_quad_state_list[0];
+  child_root_pass_sqs->content_to_target_transform.Translate(8, 0);
+
+  scoped_ptr<DelegatedFrameData> child_frame_data(new DelegatedFrameData);
+  child_pass_list.swap(child_frame_data->render_pass_list);
+
+  scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+  child_frame->delegated_frame_data = child_frame_data.Pass();
+
+  child_surface.QueueFrame(child_frame.Pass());
+
+  test::Quad root_quads[] = {
+      test::Quad::SolidColorQuad(1),
+      test::Quad::SurfaceQuad(child_surface.surface_id())};
+  test::Pass root_passes[] = {test::Pass(root_quads, arraysize(root_quads))};
+
+  RenderPassList root_pass_list;
+  AddPasses(&root_pass_list,
+            gfx::Rect(surface_size),
+            root_passes,
+            arraysize(root_passes));
+
+  root_pass_list.at(0)
+      ->shared_quad_state_list[0]
+      ->content_to_target_transform.Translate(0, 7);
+  root_pass_list.at(0)
+      ->shared_quad_state_list[1]
+      ->content_to_target_transform.Translate(0, 10);
+
+  scoped_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
+  root_pass_list.swap(root_frame_data->render_pass_list);
+
+  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  root_frame->delegated_frame_data = root_frame_data.Pass();
+
+  root_surface_.QueueFrame(root_frame.Pass());
+
+  scoped_ptr<CompositorFrame> aggregated_frame =
+      aggregator_.Aggregate(root_surface_.surface_id());
+
+  ASSERT_TRUE(aggregated_frame);
+  ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+  DelegatedFrameData* frame_data = aggregated_frame->delegated_frame_data.get();
+
+  const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+  ASSERT_EQ(2u, aggregated_pass_list.size());
+
+  ASSERT_EQ(1u, aggregated_pass_list[0]->shared_quad_state_list.size());
+
+  // The first pass should have one shared quad state for the one solid color
+  // quad.
+  EXPECT_EQ(1u, aggregated_pass_list[0]->shared_quad_state_list.size());
+  // The second (root) pass should have just two shared quad states. We'll
+  // verify the properties through the quads.
+  EXPECT_EQ(2u, aggregated_pass_list[1]->shared_quad_state_list.size());
+
+  SharedQuadState* aggregated_first_pass_sqs =
+      aggregated_pass_list[0]->shared_quad_state_list.front();
+
+  // The first pass's transform should be unaffected by the embedding and still
+  // be a translation by +5 in the x direction.
+  gfx::Transform expected_aggregated_first_pass_sqs_transform;
+  expected_aggregated_first_pass_sqs_transform.Translate(5, 0);
+  EXPECT_EQ(expected_aggregated_first_pass_sqs_transform.ToString(),
+            aggregated_first_pass_sqs->content_to_target_transform.ToString());
+
+  // The first pass's transform to the root target should include the aggregated
+  // transform.
+  gfx::Transform expected_first_pass_transform_to_root_target;
+  expected_first_pass_transform_to_root_target.Translate(8, 10);
+  EXPECT_EQ(expected_first_pass_transform_to_root_target.ToString(),
+            aggregated_pass_list[0]->transform_to_root_target.ToString());
+
+  ASSERT_EQ(2u, aggregated_pass_list[1]->quad_list.size());
+
+  gfx::Transform expected_root_pass_quad_transforms[2];
+  // The first quad in the root pass is the solid color quad from the original
+  // root surface. Its transform should be unaffected by the aggregation and
+  // still be +7 in the y direction.
+  expected_root_pass_quad_transforms[0].Translate(0, 7);
+  // The second quad in the root pass is aggregated from the child surface so
+  // its transform should be the combination of its original translation (0, 10)
+  // and the child surface draw quad's translation (8, 0).
+  expected_root_pass_quad_transforms[1].Translate(8, 10);
+
+  for (size_t i = 0; i < 2; ++i) {
+    DrawQuad* quad = aggregated_pass_list[1]->quad_list.at(i);
+    EXPECT_EQ(expected_root_pass_quad_transforms[i].ToString(),
+              quad->quadTransform().ToString())
+        << i;
+  }
+}
+
 }  // namespace
 }  // namespace cc
+
