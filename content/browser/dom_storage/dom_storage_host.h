@@ -81,6 +81,8 @@ class CONTENT_EXPORT DOMStorageHost {
   scoped_refptr<DOMStorageContextImpl> context_;
   AreaMap connections_;
   int render_process_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMStorageHost);
 };
 
 }  // namespace content
