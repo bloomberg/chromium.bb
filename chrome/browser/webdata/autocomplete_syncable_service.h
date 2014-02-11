@@ -76,11 +76,6 @@ class AutocompleteSyncableService
   virtual void AutofillEntriesChanged(
       const autofill::AutofillChangeList& changes) OVERRIDE;
 
-  // Called via sync to tell us if we should cull expired entries when merging
-  // and/or processing sync changes.
-  void UpdateCullSetting(bool cull_expired_entries);
-  bool cull_expired_entries() const { return cull_expired_entries_; }
-
   // Provides a StartSyncFlare to the SyncableService. See
   // sync_start_util for more.
   void InjectStartSyncFlare(
@@ -167,10 +162,6 @@ class AutocompleteSyncableService
   // We receive ownership of |error_handler_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
-
-  // Whether we should cull expired autofill entries, can be updated by sync
-  // via UpdateCullingSetting.
-  bool cull_expired_entries_;
 
   syncer::SyncableService::StartSyncFlare flare_;
 

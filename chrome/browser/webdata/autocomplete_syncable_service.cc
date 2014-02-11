@@ -92,8 +92,7 @@ void* UserDataKey() {
 AutocompleteSyncableService::AutocompleteSyncableService(
     AutofillWebDataBackend* webdata_backend)
     : webdata_backend_(webdata_backend),
-      scoped_observer_(this),
-      cull_expired_entries_(false) {
+      scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(webdata_backend_);
 
@@ -121,8 +120,7 @@ AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
 
 AutocompleteSyncableService::AutocompleteSyncableService()
     : webdata_backend_(NULL),
-      scoped_observer_(this),
-      cull_expired_entries_(false) {
+      scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
@@ -190,14 +188,12 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
 
-  if (cull_expired_entries_) {
-    // This will schedule a deletion operation on the DB thread, which will
-    // trigger a notification to propagate the deletion to Sync.
-    // NOTE: This must be called *after* the ProcessSyncChanges call above.
-    // Otherwise, an item that Sync is not yet aware of might expire, causing a
-    // Sync error when that item's deletion is propagated to Sync.
-    webdata_backend_->RemoveExpiredFormElements();
-  }
+  // This will schedule a deletion operation on the DB thread, which will
+  // trigger a notification to propagate the deletion to Sync.
+  // NOTE: This must be called *after* the ProcessSyncChanges call above.
+  // Otherwise, an item that Sync is not yet aware of might expire, causing a
+  // Sync error when that item's deletion is propagated to Sync.
+  webdata_backend_->RemoveExpiredFormElements();
 
   return merge_result;
 }
@@ -302,11 +298,9 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
   webdata_backend_->NotifyOfMultipleAutofillChanges();
 
-  if (cull_expired_entries_) {
-    // This will schedule a deletion operation on the DB thread, which will
-    // trigger a notification to propagate the deletion to Sync.
-    webdata_backend_->RemoveExpiredFormElements();
-  }
+  // This will schedule a deletion operation on the DB thread, which will
+  // trigger a notification to propagate the deletion to Sync.
+  webdata_backend_->RemoveExpiredFormElements();
 
   return list_processing_error;
 }
@@ -467,12 +461,6 @@ void AutocompleteSyncableService::ActOnChanges(
     VLOG(1) << "[AUTOCOMPLETE SYNC] Failed processing change.  Error: "
             << error.message();
   }
-}
-
-void AutocompleteSyncableService::UpdateCullSetting(
-    bool cull_expired_entries) {
-  DCHECK(CalledOnValidThread());
-  cull_expired_entries_ = cull_expired_entries;
 }
 
 syncer::SyncData AutocompleteSyncableService::CreateSyncData(

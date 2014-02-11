@@ -1193,16 +1193,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   }
   bool found_experiment = false;
 
-  ReadNode autofill_culling_node(&trans);
-  if (autofill_culling_node.InitByClientTagLookup(
-          syncer::EXPERIMENTS,
-          syncer::kAutofillCullingTag) == BaseNode::INIT_OK &&
-      autofill_culling_node.GetExperimentsSpecifics().
-          autofill_culling().enabled()) {
-    experiments->autofill_culling = true;
-    found_experiment = true;
-  }
-
   ReadNode favicon_sync_node(&trans);
   if (favicon_sync_node.InitByClientTagLookup(
           syncer::EXPERIMENTS,

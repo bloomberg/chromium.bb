@@ -91,22 +91,6 @@ class FakeWebDataService : public AutofillWebDataService {
     run_loop.Run();
   }
 
-  void GetAutofillCullingValue(bool* result) {
-    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    *result = AutocompleteSyncableService::FromWebDataService(
-        this)->cull_expired_entries();
-  }
-
-  bool CheckAutofillCullingValue() {
-    bool result = false;
-    base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&FakeWebDataService::GetAutofillCullingValue,
-                   base::Unretained(this), &result), run_loop.QuitClosure());
-    run_loop.Run();
-    return result;
-  }
-
  private:
   virtual ~FakeWebDataService() {
   }
@@ -272,36 +256,6 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
   EXPECT_TRUE(last_start_error_.IsSet());
 
   EXPECT_EQ(DataTypeController::DISABLED, autofill_dtc_->state());
-}
-
-TEST_F(SyncAutofillDataTypeControllerTest, UpdateAutofillCullingSettings) {
-  FakeWebDataService* web_db =
-      static_cast<FakeWebDataService*>(
-          WebDataServiceFactory::GetAutofillWebDataForProfile(
-              &profile_, Profile::EXPLICIT_ACCESS).get());
-
-  // Set up the experiments state.
-  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
-      &profile_);
-  syncer::Experiments experiments;
-  experiments.autofill_culling = true;
-  sync->OnExperimentsChanged(experiments);
-
-  web_db->LoadDatabase();
-  autofill_dtc_->LoadModels(
-    base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
-               weak_ptr_factory_.GetWeakPtr()));
-
-  EXPECT_FALSE(web_db->CheckAutofillCullingValue());
-
-  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
-      .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
-  autofill_dtc_->StartAssociating(
-      base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
-  BlockForDBThread();
-
-  EXPECT_TRUE(web_db->CheckAutofillCullingValue());
 }
 
 }  // namespace
