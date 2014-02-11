@@ -98,6 +98,7 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
     : m_page(page)
     , m_scrollGestureRegionIsDirty(false)
     , m_touchEventTargetRectsAreDirty(false)
+    , m_shouldScrollOnMainThreadDirty(false)
     , m_wasFrameScrollable(false)
     , m_lastMainThreadScrollingReasons(0)
 {
@@ -133,9 +134,9 @@ void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const 
 
 void ScrollingCoordinator::notifyLayoutUpdated()
 {
-    // These computations need to happen after compositing is updated.
     m_scrollGestureRegionIsDirty = true;
     m_touchEventTargetRectsAreDirty = true;
+    m_shouldScrollOnMainThreadDirty = true;
 }
 
 void ScrollingCoordinator::updateAfterCompositingChange()
@@ -163,8 +164,10 @@ void ScrollingCoordinator::updateAfterCompositingChange()
 
     FrameView* frameView = m_page->mainFrame()->view();
     bool frameIsScrollable = frameView && frameView->isScrollable();
-    if (m_wasFrameScrollable != frameIsScrollable)
-        updateShouldUpdateScrollLayerPositionOnMainThread();
+    if (m_shouldScrollOnMainThreadDirty || m_wasFrameScrollable != frameIsScrollable) {
+        setShouldUpdateScrollLayerPositionOnMainThread(mainThreadScrollingReasons());
+        m_shouldScrollOnMainThreadDirty = false;
+    }
     m_wasFrameScrollable = frameIsScrollable;
 
     // The mainFrame view doesn't get included in the FrameTree below, so we
@@ -814,7 +817,7 @@ void ScrollingCoordinator::frameViewHasSlowRepaintObjectsDidChange(FrameView* fr
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
-    updateShouldUpdateScrollLayerPositionOnMainThread();
+    m_shouldScrollOnMainThreadDirty = true;
 }
 
 void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
@@ -825,7 +828,7 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
-    updateShouldUpdateScrollLayerPositionOnMainThread();
+    m_shouldScrollOnMainThreadDirty = true;
 }
 
 GraphicsLayer* ScrollingCoordinator::scrollLayerForScrollableArea(ScrollableArea* scrollableArea)
@@ -871,7 +874,6 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
 
     notifyLayoutUpdated();
     recomputeWheelEventHandlerCountForFrameView(frameView);
-    updateShouldUpdateScrollLayerPositionOnMainThread();
 }
 
 #if OS(MACOSX)
@@ -932,11 +934,6 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     return mainThreadScrollingReasons;
 }
 
-void ScrollingCoordinator::updateShouldUpdateScrollLayerPositionOnMainThread()
-{
-    setShouldUpdateScrollLayerPositionOnMainThread(mainThreadScrollingReasons());
-}
-
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollingReasons reasons)
 {
     StringBuilder stringBuilder;
@@ -955,6 +952,7 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
 {
+    ASSERT(m_page->mainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
     return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
 }
 

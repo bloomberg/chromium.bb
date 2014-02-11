@@ -136,13 +136,13 @@ protected:
     // Dirty flags used to idenfity what really needs to be computed after compositing is updated.
     bool m_scrollGestureRegionIsDirty;
     bool m_touchEventTargetRectsAreDirty;
+    bool m_shouldScrollOnMainThreadDirty;
 
 private:
     void recomputeWheelEventHandlerCountForFrameView(FrameView*);
     void setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons);
 
     bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;
-    void updateShouldUpdateScrollLayerPositionOnMainThread();
 
     static blink::WebLayer* scrollingWebLayerForScrollableArea(ScrollableArea*);
     static blink::WebLayer* containerWebLayerForScrollableArea(ScrollableArea*);
