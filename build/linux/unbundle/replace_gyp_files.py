@@ -29,6 +29,7 @@ REPLACEMENTS = {
   'use_system_libvpx': 'third_party/libvpx/libvpx.gyp',
   'use_system_libwebp': 'third_party/libwebp/libwebp.gyp',
   'use_system_libxml': 'third_party/libxml/libxml.gyp',
+  'use_system_libxnvctrl' : 'third_party/libXNVCtrl/libXNVCtrl.gyp',
   'use_system_libxslt': 'third_party/libxslt/libxslt.gyp',
   'use_system_openssl': 'third_party/openssl/openssl.gyp',
   'use_system_opus': 'third_party/opus/opus.gyp',
