@@ -296,7 +296,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_sentEndEvent(false)
     , m_pausedInternal(false)
     , m_closedCaptionsVisible(false)
-    , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
     , m_tracksAreReady(true)
@@ -316,13 +315,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     ScriptWrappable::init(this);
 
     if (document.settings()) {
-        if (document.settings()->mediaPlaybackRequiresUserGesture()) {
+        if (document.settings()->mediaPlaybackRequiresUserGesture())
             addBehaviorRestriction(RequireUserGestureForPlayRestriction);
-            addBehaviorRestriction(RequireUserGestureForLoadRestriction);
-        }
-        if (document.settings()->mediaFullscreenRequiresUserGesture()) {
+        if (document.settings()->mediaFullscreenRequiresUserGesture())
             addBehaviorRestriction(RequireUserGestureForFullscreenRestriction);
-        }
     }
 
     // We must always have a ShadowRoot so children like <source> will not render
@@ -629,12 +625,9 @@ void HTMLMediaElement::load()
     if (document().settings() && !document().settings()->mediaEnabled())
         return;
 
-    if (userGestureRequiredForLoad() && !UserGestureIndicator::processingUserGesture())
-        return;
-
-    m_loadInitiatedByUserGesture = UserGestureIndicator::processingUserGesture();
-    if (m_loadInitiatedByUserGesture)
+    if (UserGestureIndicator::processingUserGesture())
         removeBehaviorsRestrictionsAfterFirstUserGesture();
+
     prepareForLoad();
     loadInternal();
     prepareToPlay();

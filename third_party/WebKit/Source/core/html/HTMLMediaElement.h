@@ -300,14 +300,12 @@ protected:
     // Restrictions to change default behaviors.
     enum BehaviorRestrictionFlags {
         NoRestrictions = 0,
-        RequireUserGestureForLoadRestriction = 1 << 0,
-        RequireUserGestureForPlayRestriction = 1 << 1,
-        RequireUserGestureForFullscreenRestriction = 1 << 2,
-        RequirePageConsentToLoadMediaRestriction = 1 << 3,
+        RequireUserGestureForPlayRestriction = 1 << 0,
+        RequireUserGestureForFullscreenRestriction = 1 << 1,
+        RequirePageConsentToLoadMediaRestriction = 1 << 2,
     };
     typedef unsigned BehaviorRestrictions;
 
-    bool userGestureRequiredForLoad() const { return m_restrictions & RequireUserGestureForLoadRestriction; }
     bool userGestureRequiredForPlay() const { return m_restrictions & RequireUserGestureForPlayRestriction; }
     bool userGestureRequiredForFullscreen() const { return m_restrictions & RequireUserGestureForFullscreenRestriction; }
     bool pageConsentRequiredForLoad() const { return m_restrictions & RequirePageConsentToLoadMediaRestriction; }
@@ -383,6 +381,8 @@ private:
     void scheduleEvent(const AtomicString& eventName);
 
     // loading
+    void prepareForLoad();
+    void loadInternal();
     void selectMediaResource();
     void loadResource(const KURL&, ContentType&, const String& keySystem);
     void scheduleNextSourceChild();
@@ -406,11 +406,9 @@ private:
 
     void markCaptionAndSubtitleTracksAsUnconfigured();
 
-    // These "internal" functions do not check user gesture restrictions.
-    void loadInternal();
+    // This does not check user gesture restrictions.
     void playInternal();
 
-    void prepareForLoad();
     void allowVideoRendering();
 
     void updateVolume();
@@ -540,7 +538,6 @@ private:
 
     bool m_closedCaptionsVisible : 1;
 
-    bool m_loadInitiatedByUserGesture : 1;
     bool m_completelyLoaded : 1;
     bool m_havePreparedToPlay : 1;
 
