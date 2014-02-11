@@ -375,6 +375,8 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
   // TODO(skaslev): Add support for non-premultiplied alpha.
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);
+  if (!lock.valid())
+    return;
   const SkBitmap* bitmap = lock.sk_bitmap();
   gfx::RectF uv_rect = gfx::ScaleRect(gfx::BoundingRect(quad->uv_top_left,
                                                         quad->uv_bottom_right),
@@ -431,6 +433,8 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);
+  if (!lock.valid())
+    return;
   DCHECK_EQ(GL_CLAMP_TO_EDGE, lock.wrap_mode());
 
   gfx::RectF visible_tex_coord_rect = MathUtil::ScaleRectProportional(
@@ -457,6 +461,8 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   DCHECK(IsSoftwareResource(content_texture->id()));
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 content_texture->id());
+  if (!lock.valid())
+    return;
   SkShader::TileMode content_tile_mode = WrapModeToTileMode(lock.wrap_mode());
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
@@ -512,6 +518,8 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   if (quad->mask_resource_id) {
     ResourceProvider::ScopedReadLockSoftware mask_lock(resource_provider_,
                                                        quad->mask_resource_id);
+    if (!lock.valid())
+      return;
     SkShader::TileMode mask_tile_mode = WrapModeToTileMode(
         mask_lock.wrap_mode());
 

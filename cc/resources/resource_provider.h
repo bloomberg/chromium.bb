@@ -22,6 +22,7 @@
 #include "cc/resources/release_callback.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/return_callback.h"
+#include "cc/resources/shared_bitmap.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
@@ -265,8 +266,13 @@ class CC_EXPORT ResourceProvider {
                            ResourceProvider::ResourceId resource_id);
     ~ScopedReadLockSoftware();
 
-    const SkBitmap* sk_bitmap() const { return &sk_bitmap_; }
+    const SkBitmap* sk_bitmap() const {
+      DCHECK(valid());
+      return &sk_bitmap_;
+    }
     GLint wrap_mode() const { return wrap_mode_; }
+
+    bool valid() const { return !!sk_bitmap_.getPixels(); }
 
    private:
     ResourceProvider* resource_provider_;
@@ -284,6 +290,7 @@ class CC_EXPORT ResourceProvider {
     ~ScopedWriteLockSoftware();
 
     SkCanvas* sk_canvas() { return sk_canvas_.get(); }
+    bool valid() const { return !!sk_bitmap_.getPixels(); }
 
    private:
     ResourceProvider* resource_provider_;
@@ -380,6 +387,11 @@ class CC_EXPORT ResourceProvider {
              Origin origin,
              GLenum filter,
              GLint wrap_mode);
+    Resource(const SharedBitmapId& bitmap_id,
+             const gfx::Size& size,
+             Origin origin,
+             GLenum filter,
+             GLint wrap_mode);
 
     int child_id;
     unsigned gl_id;
@@ -416,6 +428,8 @@ class CC_EXPORT ResourceProvider {
     TextureUsageHint hint;
     ResourceType type;
     ResourceFormat format;
+    bool has_shared_bitmap_id;
+    SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;

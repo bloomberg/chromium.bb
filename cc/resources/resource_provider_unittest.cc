@@ -1238,13 +1238,18 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
     resource_provider_->ReceiveFromChild(child_id, list);
   }
 
-  EXPECT_EQ(0u, resource_provider_->num_resources());
-  ASSERT_EQ(1u, returned_to_child.size());
-  EXPECT_EQ(returned_to_child[0].id, id1);
+  EXPECT_EQ(1u, resource_provider_->num_resources());
+  EXPECT_EQ(0u, returned_to_child.size());
+
   ResourceProvider::ResourceIdMap resource_map =
       resource_provider_->GetChildToParentMap(child_id);
   ResourceProvider::ResourceId mapped_id1 = resource_map[id1];
-  EXPECT_EQ(0u, mapped_id1);
+  EXPECT_NE(0u, mapped_id1);
+  {
+    ResourceProvider::ScopedReadLockSoftware lock(resource_provider_.get(),
+                                                  mapped_id1);
+    EXPECT_FALSE(lock.valid());
+  }
 
   resource_provider_->DestroyChild(child_id);
   EXPECT_EQ(0u, resource_provider_->num_resources());

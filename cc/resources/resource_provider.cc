@@ -192,6 +192,7 @@ ResourceProvider::Resource::Resource()
       hint(TextureUsageAny),
       type(InvalidType),
       format(RGBA_8888),
+      has_shared_bitmap_id(false),
       shared_bitmap(NULL) {}
 
 ResourceProvider::Resource::~Resource() {}
@@ -235,6 +236,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       hint(hint),
       type(GLTexture),
       format(format),
+      has_shared_bitmap_id(false),
       shared_bitmap(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK_EQ(origin == Internal, !!texture_pool);
@@ -276,9 +278,53 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       hint(TextureUsageAny),
       type(Bitmap),
       format(RGBA_8888),
+      has_shared_bitmap_id(!!bitmap),
       shared_bitmap(bitmap) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK(origin == Delegated || pixels);
+  if (bitmap)
+    shared_bitmap_id = bitmap->id();
+}
+
+ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
+                                     const gfx::Size& size,
+                                     Origin origin,
+                                     GLenum filter,
+                                     GLint wrap_mode)
+    : child_id(0),
+      gl_id(0),
+      gl_pixel_buffer_id(0),
+      gl_upload_query_id(0),
+      pixels(NULL),
+      pixel_buffer(NULL),
+      lock_for_read_count(0),
+      imported_count(0),
+      exported_count(0),
+      locked_for_write(false),
+      origin(origin),
+      marked_for_deletion(false),
+      pending_set_pixels(false),
+      set_pixels_completion_forced(false),
+      allocated(false),
+      enable_read_lock_fences(false),
+      read_lock_fence(NULL),
+      size(size),
+      target(0),
+      original_filter(filter),
+      filter(filter),
+      image_id(0),
+      bound_image_id(0),
+      dirty_image(false),
+      texture_pool(0),
+      wrap_mode(wrap_mode),
+      lost(false),
+      hint(TextureUsageAny),
+      type(Bitmap),
+      format(RGBA_8888),
+      has_shared_bitmap_id(true),
+      shared_bitmap_id(bitmap_id),
+      shared_bitmap(NULL) {
+  DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
 ResourceProvider::Child::Child() : marked_for_deletion(false) {}
@@ -781,6 +827,17 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
                                    resource->mailbox.name()));
   }
 
+  if (!resource->pixels && resource->has_shared_bitmap_id &&
+      shared_bitmap_manager_) {
+    scoped_ptr<SharedBitmap> bitmap =
+        shared_bitmap_manager_->GetSharedBitmapFromId(
+            resource->size, resource->shared_bitmap_id);
+    if (bitmap) {
+      resource->shared_bitmap = bitmap.release();
+      resource->pixels = resource->shared_bitmap->pixels();
+    }
+  }
+
   resource->lock_for_read_count++;
   if (resource->enable_read_lock_fences)
     resource->read_lock_fence = current_read_lock_fence_;
@@ -875,7 +932,6 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
 
 void ResourceProvider::PopulateSkBitmapWithResource(
     SkBitmap* sk_bitmap, const Resource* resource) {
-  DCHECK(resource->pixels);
   DCHECK_EQ(RGBA_8888, resource->format);
   sk_bitmap->setConfig(SkBitmap::kARGB_8888_Config,
                        resource->size.width(),
@@ -904,6 +960,7 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
       resource_id_(resource_id) {
   ResourceProvider::PopulateSkBitmapWithResource(
       &sk_bitmap_, resource_provider->LockForWrite(resource_id));
+  DCHECK(valid());
   sk_canvas_.reset(new SkCanvas(sk_bitmap_));
 }
 
@@ -1085,18 +1142,8 @@ void ResourceProvider::ReceiveFromChild(
       continue;
     }
 
-    scoped_ptr<SharedBitmap> bitmap;
-    uint8_t* pixels = NULL;
-    if (it->is_software) {
-      if (shared_bitmap_manager_) {
-        bitmap = shared_bitmap_manager_->GetSharedBitmapFromId(
-            it->size, it->mailbox_holder.mailbox);
-      }
-      if (bitmap)
-        pixels = bitmap->pixels();
-    }
-
-    if ((!it->is_software && !gl) || (it->is_software && !pixels)) {
+    if ((!it->is_software && !gl) ||
+        (it->is_software && !shared_bitmap_manager_)) {
       TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
       ReturnedResourceArray to_return;
       to_return.push_back(it->ToReturnedResource());
@@ -1107,8 +1154,7 @@ void ResourceProvider::ReceiveFromChild(
     ResourceId local_id = next_id_++;
     Resource& resource = resources_[local_id];
     if (it->is_software) {
-      resource = Resource(pixels,
-                          bitmap.release(),
+      resource = Resource(it->mailbox_holder.mailbox,
                           it->size,
                           Resource::Delegated,
                           GL_LINEAR,
@@ -1228,7 +1274,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
       resource->read_lock_fence = current_read_lock_fence_;
 
     if (returned.sync_point) {
-      DCHECK(!resource->shared_bitmap);
+      DCHECK(!resource->has_shared_bitmap_id);
       if (resource->origin == Resource::Internal) {
         DCHECK(resource->gl_id);
         GLC(gl, gl->WaitSyncPointCHROMIUM(returned.sync_point));
@@ -1295,7 +1341,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->size = source->size;
 
   if (source->type == Bitmap) {
-    resource->mailbox_holder.mailbox = source->shared_bitmap->id();
+    resource->mailbox_holder.mailbox = source->shared_bitmap_id;
     resource->is_software = true;
   } else if (!source->mailbox.IsValid()) {
     LazyCreate(source);
