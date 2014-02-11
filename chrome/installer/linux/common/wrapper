@@ -48,4 +48,5 @@ if [[ -n "@@SXS_USER_DATA_DIR@@" ]]; then
   fi
 fi
 
+# Note: exec -a below is a bashism.
 exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$@"
