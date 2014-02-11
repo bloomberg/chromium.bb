@@ -1328,8 +1328,6 @@ bool Node::isEqualNode(Node* other) const
 
         if (documentTypeThis->internalSubset() != documentTypeOther->internalSubset())
             return false;
-
-        // FIXME: We don't compare entities or notations because currently both are always empty.
     }
 
     return true;
