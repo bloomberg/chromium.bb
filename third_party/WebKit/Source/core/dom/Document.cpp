@@ -1545,6 +1545,8 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 
 bool Document::shouldCallRecalcStyleForDocument()
 {
+    if (!isActive() || !view())
+        return false;
     return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
 }
 
@@ -1694,18 +1696,26 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
-// FIXME: need a better name than recalcStyle. It's performing style invalidation, style recalc, and distribution.
-void Document::recalcStyle(StyleRecalcChange change)
+// FIXME: We need a better name than updateStyleIfNeeded. It's performing style invalidation,
+// style recalc, distribution and <use> shadow tree creation.
+void Document::updateStyleIfNeeded()
 {
-    // we should not enter style recalc while painting
-    RELEASE_ASSERT(!view() || !view()->isPainting());
+    ASSERT(isMainThread());
 
-    // FIXME: We should never enter here without a FrameView or with an inactive document.
-    if (!isActive() || !view())
+    if (!shouldCallRecalcStyleForDocument())
         return;
 
     if (inStyleRecalc())
         return;
+
+    // Entering here from inside layout or paint would be catastrophic since recalcStyle can
+    // tear down the render tree or (unfortunately) run script. Kill the whole renderer if
+    // someone managed to get into here from inside layout or paint.
+    RELEASE_ASSERT(!view()->isInPerformLayout());
+    RELEASE_ASSERT(!view()->isPainting());
+
+    // Script can run below in PostAttachCallbacks or WidgetUpdates, so protect the Frame.
+    RefPtr<Frame> protect(m_frame);
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
@@ -1713,7 +1723,7 @@ void Document::recalcStyle(StyleRecalcChange change)
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     updateDistributionIfNeeded();
-    updateUseShadowTrees();
+    updateUseShadowTreesIfNeeded();
     updateStyleInvalidationIfNeeded();
 
     if (m_evaluateMediaQueriesOnStyleRecalc) {
@@ -1736,6 +1746,7 @@ void Document::recalcStyle(StyleRecalcChange change)
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
+        StyleRecalcChange change = NoChange;
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
@@ -1788,8 +1799,6 @@ void Document::recalcStyle(StyleRecalcChange change)
         m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
     }
 
-    InspectorInstrumentation::didRecalculateStyle(cookie);
-
     // As a result of the style recalculation, the currently hovered element might have been
     // detached (for example, by setting display:none in the :hover style), schedule another mouseMove event
     // to check if any other elements ended up under the mouse pointer due to re-layout.
@@ -1798,19 +1807,10 @@ void Document::recalcStyle(StyleRecalcChange change)
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
-}
 
-void Document::updateStyleIfNeeded()
-{
-    ASSERT(isMainThread());
-    ASSERT(!view() || (!view()->isInPerformLayout() && !view()->isPainting()));
-
-    if (!shouldCallRecalcStyleForDocument())
-        return;
-
-    RefPtr<Frame> holder(m_frame);
-    recalcStyle(NoChange);
     DocumentAnimations::serviceAfterStyleRecalc(*this);
+
+    InspectorInstrumentation::didRecalculateStyle(cookie);
 }
 
 void Document::updateStyleForNodeIfNeeded(Node* node)
@@ -1894,7 +1894,8 @@ void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
         // If new nodes have been added or style recalc has been done with style sheets still
         // pending, some nodes may not have had their real style calculated yet. Normally this
         // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
-        recalcStyle(Force);
+        setNeedsStyleRecalc(SubtreeStyleChange);
+        updateStyleIfNeeded();
     }
 }
 
@@ -2021,7 +2022,7 @@ void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element)
     m_useElementsNeedingUpdate.remove(&element);
 }
 
-void Document::updateUseShadowTrees()
+void Document::updateUseShadowTreesIfNeeded()
 {
     if (m_useElementsNeedingUpdate.isEmpty())
         return;

@@ -385,7 +385,9 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
-    document()->recalcStyle(Force);
+    // FIXME: This should not call updateStyleIfNeeded.
+    document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    document()->updateStyleIfNeeded();
 }
 
 void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)

@@ -474,8 +474,7 @@ public:
     PassRefPtr<Text> createEditingTextNode(const String&);
 
     void setStyleDependentState(RenderStyle* documentStyle);
-    void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
-    void recalcStyle(StyleRecalcChange);
+
     void updateStyleIfNeeded();
     void updateStyleForNodeIfNeeded(Node*);
     void updateLayout();
@@ -1066,10 +1065,11 @@ private:
     virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
+    void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
+
     void updateDistributionIfNeeded();
     void updateStyleInvalidationIfNeeded();
-
-    void updateUseShadowTrees();
+    void updateUseShadowTreesIfNeeded();
 
     void detachParser();
 

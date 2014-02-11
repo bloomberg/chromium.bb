@@ -411,13 +411,12 @@ void InspectorOverlay::update()
     if (!view)
         return;
     IntRect viewRect = view->visibleContentRect();
-    FrameView* overlayView = overlayPage()->mainFrame()->view();
 
     // Include scrollbars to avoid masking them by the gutter.
     IntSize frameViewFullSize = view->visibleContentRect(ScrollableArea::IncludeScrollbars).size();
     IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
     size.scale(m_page->pageScaleFactor());
-    overlayView->resize(size);
+    overlayPage()->mainFrame()->view()->resize(size);
 
     // Clear canvas and paint things.
     reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize, viewRect.x(), viewRect.y());
@@ -429,9 +428,8 @@ void InspectorOverlay::update()
     drawViewSize();
 
     // Position DOM elements.
-    overlayPage()->mainFrame()->document()->recalcStyle(Force);
-    if (overlayView->needsLayout())
-        overlayView->layout();
+    overlayPage()->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    overlayPage()->mainFrame()->document()->updateLayout();
 
     // Kick paint.
     m_client->highlight();
