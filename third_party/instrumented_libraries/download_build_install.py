@@ -186,6 +186,13 @@ def download_build_install(parsed_arguments):
           with ScopedChangeDirectory('nss') as cd_nss:
             nss_make_and_copy(parsed_arguments, environment, install_prefix)
         else:
+          if parsed_arguments.library == 'pango-1.0':
+            # This needs an absolute path and thus cannot be in GYP.
+            parsed_arguments.custom_configure_flags += \
+              ' --x-libraries=%s/lib' % install_prefix
+            parsed_arguments.custom_configure_flags += \
+              ' --x-includes=%s/include' % install_prefix
+
           configure_make_install(parsed_arguments, environment, install_prefix)
       except Exception as exception:
         print exception

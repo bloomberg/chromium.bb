@@ -67,6 +67,7 @@
         '<(_sanitizer_type)-pulseaudio',
         '<(_sanitizer_type)-libasound2',
         '<(_sanitizer_type)-libcups2',
+        '<(_sanitizer_type)-pango1.0',
       ],
       'conditions': [
         ['asan==1', {
@@ -313,6 +314,18 @@
         '--with-menudir=no',
         '--with-icondir=no',
         '--with-docdir=no'
+      ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'pango1.0',
+      'dependencies=': [
+        '<(_sanitizer_type)-libglib2.0-0',
+      ],
+      'custom_configure_flags': [
+        # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
+        '--enable-introspection=no',
+        # More flags are set in download_build_install.py.
       ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
