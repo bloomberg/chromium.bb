@@ -127,6 +127,10 @@ def UpdateClang():
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
 
+  if not re.search(r'cmake', os.environ['PATH'], flags=re.IGNORECASE):
+    # If CMake is not on the path, try looking in a standard location.
+    os.environ['PATH'] += os.pathsep + 'C:\\Program Files (x86)\\CMake 2.8\\bin'
+
   RunCommand(GetVSVersion().SetupScript('x64') +
              ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
