@@ -30,7 +30,6 @@ class LoggingImplTest : public ::testing::Test {
     // Enable all logging types.
     config_.enable_raw_data_collection = true;
     config_.enable_stats_data_collection = true;
-    config_.enable_uma_stats = true;
     config_.enable_tracing = true;
 
     testing_clock_.Advance(

@@ -4,8 +4,9 @@
 
 #include "media/cast/logging/logging_raw.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 
 namespace media {

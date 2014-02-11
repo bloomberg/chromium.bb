@@ -17,7 +17,6 @@ CastLoggingConfig::CastLoggingConfig(bool sender)
     : is_sender(sender),
       enable_raw_data_collection(false),
       enable_stats_data_collection(false),
-      enable_uma_stats(false),
       enable_tracing(false) {}
 
 CastLoggingConfig::~CastLoggingConfig() {}

@@ -24,11 +24,10 @@ struct CastLoggingConfig {
   bool is_sender;
   bool enable_raw_data_collection;
   bool enable_stats_data_collection;
-  bool enable_uma_stats;
   bool enable_tracing;
 };
 
-// By default, enable raw and stats data collection. Disable tracing and UMA.
+// By default, enable raw and stats data collection. Disable tracing.
 CastLoggingConfig GetDefaultCastSenderLoggingConfig();
 CastLoggingConfig GetDefaultCastReceiverLoggingConfig();
 CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled();

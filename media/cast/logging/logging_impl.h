@@ -7,8 +7,7 @@
 // Generic class that handles event logging for the cast library.
 // Logging has three possible optional forms:
 // 1. Raw data and stats accessible by the application.
-// 2. UMA stats.
-// 3. Tracing of raw events.
+// 2. Tracing of raw events.
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -67,7 +66,6 @@ class LoggingImpl : public base::NonThreadSafe {
   void ResetStats();
 
  private:
-  void InsertGenericUmaEvent(CastLoggingEvent event, int value);
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   const CastLoggingConfig config_;
   LoggingRaw raw_;

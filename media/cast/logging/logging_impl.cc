@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
-#include "base/metrics/histogram.h"
 #include "media/cast/logging/logging_impl.h"
 #include "net/base/big_endian.h"
 
@@ -50,13 +49,6 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
     stats_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp,
                                     frame_id, frame_size);
   }
-  if (config_.enable_uma_stats) {
-    if (event == kAudioFrameEncoded)
-      UMA_HISTOGRAM_COUNTS("Cast.AudioFrameEncodedSize", frame_size);
-    else if (event == kVideoFrameEncoded) {
-      UMA_HISTOGRAM_COUNTS("Cast.VideoFrameEncodedSize", frame_size);
-    }
-  }
 
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
@@ -78,13 +70,7 @@ void LoggingImpl::InsertFrameEventWithDelay(
     stats_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
                                      frame_id, delay);
   }
-  if (config_.enable_uma_stats) {
-    if (event == kAudioPlayoutDelay)
-      UMA_HISTOGRAM_TIMES("Cast.AudioPlayoutDelay", delay);
-    else if (event == kVideoRenderDelay) {
-      UMA_HISTOGRAM_TIMES("Cast.VideoRenderDelay", delay);
-    }
-  }
+
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
     TRACE_EVENT_INSTANT2(event_string.c_str(), "FED", TRACE_EVENT_SCOPE_THREAD,
@@ -145,9 +131,7 @@ void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
   if (config_.enable_stats_data_collection) {
     stats_.InsertGenericEvent(time_of_event, event, value);
   }
-  if (config_.enable_uma_stats) {
-    InsertGenericUmaEvent(event, value);
-  }
+
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
     TRACE_EVENT_INSTANT1(event_string.c_str(), "GE", TRACE_EVENT_SCOPE_THREAD,
@@ -181,26 +165,6 @@ GenericStatsMap LoggingImpl::GetGenericStatsData() const {
 void LoggingImpl::ResetStats() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   stats_.Reset();
-}
-
-void LoggingImpl::InsertGenericUmaEvent(CastLoggingEvent event, int value) {
-  switch (event) {
-    case kRttMs:
-      UMA_HISTOGRAM_COUNTS("Cast.RttMs", value);
-      break;
-    case kPacketLoss:
-      UMA_HISTOGRAM_COUNTS("Cast.PacketLossFraction", value);
-      break;
-    case kJitterMs:
-      UMA_HISTOGRAM_COUNTS("Cast.JitterMs", value);
-      break;
-    case kRembBitrate:
-      UMA_HISTOGRAM_COUNTS("Cast.RembBitrate", value);
-      break;
-    default:
-      // No-op
-      break;
-  }
 }
 
 }  // namespace cast
