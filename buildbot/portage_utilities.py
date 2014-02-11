@@ -928,3 +928,8 @@ def GetBinaryPackagePath(c, p, v, sysroot='/'):
     raise ValueError('Cannot find the binary package %s!' % path)
 
   return path
+
+
+def CleanOutdatedBinaryPackages(board):
+  """Cleans outdated binary packages for |board|."""
+  return cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'])

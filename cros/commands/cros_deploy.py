@@ -47,6 +47,7 @@ For more information of cros build usage:
     """Initializes DeployCommand."""
     cros.CrosCommand.__init__(self, options)
     self.emerge = True
+    self.clean_binpkg = True
     self.ssh_hostname = None
     self.ssh_port = None
 
@@ -65,6 +66,10 @@ For more information of cros build usage:
     parser.add_argument(
         '--unmerge',  dest='emerge', action='store_false', default=True,
         help='Unmerge requested packages.')
+    parser.add_argument(
+        '--no-clean-binpkg', dest='clean_binpkg', action='store_false',
+        default=True, help='Do not clean outdated binary packages. '
+        ' Defaults to always clean.')
     parser.add_argument(
         '--emerge-args', default=None,
         help='Extra arguments to pass to emerge.')
@@ -148,7 +153,7 @@ For more information of cros build usage:
       cmd.append(extra_args)
 
     try:
-      result = device.RunCommand(cmd, extra_env=extra_env)
+      result = device.RunCommand(cmd, extra_env=extra_env, capture_output=True)
       logging.debug(result.output)
     except Exception:
       logging.error('Failed to emerge package %s', pkg)
@@ -166,7 +171,7 @@ For more information of cros build usage:
     logging.info('Unmerging %s...', pkg)
     cmd = ['emerge', '--unmerge', pkg]
     try:
-      result = device.RunCommand(cmd)
+      result = device.RunCommand(cmd, capture_output=True)
       logging.debug(result.output)
     except Exception:
       logging.error('Failed to unmerge package %s', pkg)
@@ -177,6 +182,7 @@ For more information of cros build usage:
   def _ReadOptions(self):
     """Processes options and set variables."""
     self.emerge = self.options.emerge
+    self.clean_binpkg = self.options.clean_binpkg
     device = self.options.device
     # pylint: disable=E1101
     if urlparse.urlparse(device).scheme == '':
@@ -203,6 +209,10 @@ For more information of cros build usage:
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board)
         logging.info('Board is %s', board)
+
+        if self.clean_binpkg:
+          logging.info('Cleaning outdated binary packages for %s', board)
+          portage_utilities.CleanOutdatedBinaryPackages(board)
 
         if not device.MountRootfsReadWrite():
           cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting...')
