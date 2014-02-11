@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/invalidation/gcm_network_channel_delegate_impl.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
@@ -343,9 +344,8 @@ void TiclInvalidationService::StartInvalidator(
       break;
     }
     case GCM_NETWORK_CHANNEL: {
-      // TODO(pavely): Pass NULL pointer for now. When GCMNetworkChannelDelegate
-      // is implemented it will be instantiated and passed here.
       scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate;
+      delegate.reset(new GCMNetworkChannelDelegateImpl(profile_));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
               profile_->GetRequestContext(),

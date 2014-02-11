@@ -1014,6 +1014,7 @@
         'browser/install_verification/win/module_list_unittest.cc',
         'browser/install_verification/win/module_verification_test.cc',
         'browser/install_verification/win/module_verification_test.h',
+        'browser/invalidation/gcm_network_channel_delegate_impl_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',
         'browser/invalidation/invalidation_service_test_template.h',
@@ -1044,7 +1045,7 @@
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
         'browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc',
         'browser/media_galleries/media_file_system_registry_unittest.cc',
-	'browser/media_galleries/media_folder_finder_unittest.cc',
+        'browser/media_galleries/media_folder_finder_unittest.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.h',
         'browser/media_galleries/media_galleries_dialog_controller_unittest.cc',
@@ -2617,6 +2618,7 @@
             'browser/ui/autofill/autofill_popup_controller_unittest.cc',
 
             # Android uses a different invaliator.
+            'browser/invalidation/gcm_network_channel_delegate_impl_unittest.cc',
             'browser/invalidation/ticl_invalidation_service_unittest.cc',
 
             # The importer code is not used on Android.
