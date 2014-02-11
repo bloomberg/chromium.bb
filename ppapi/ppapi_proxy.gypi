@@ -242,6 +242,9 @@
         ],
         'target_conditions': [
           ['>(nacl_untrusted_build)==1', {
+            'sources': [
+              'proxy/irt_ppapi.c',
+            ],
             'sources!': [
               'proxy/audio_input_resource.cc',
               'proxy/broker_dispatcher.cc',

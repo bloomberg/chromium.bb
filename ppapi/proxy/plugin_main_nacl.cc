@@ -22,7 +22,6 @@
 #include "ipc/ipc_message.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"

@@ -18,6 +18,7 @@ include_rules = [
   # The untrusted build references the NaCl integrated runtime (IRT).
   "+native_client/src/public",
   "+native_client/src/shared/srpc/nacl_srpc.h",
-  "+native_client/src/untrusted/irt/irt_ppapi.h",
+  "+native_client/src/untrusted/irt/irt.h",
+  "+native_client/src/untrusted/irt/irt_private.h",
 ]
 

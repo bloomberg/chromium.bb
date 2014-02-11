@@ -10,8 +10,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
-#include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/generators/pnacl_shim.h"
+#include "ppapi/nacl_irt/irt_ppapi.h"
 #include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 
