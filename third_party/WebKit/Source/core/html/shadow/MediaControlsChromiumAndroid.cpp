@@ -32,42 +32,29 @@
 namespace WebCore {
 
 MediaControlsChromiumAndroid::MediaControlsChromiumAndroid(Document& document)
-    : MediaControlsChromium(document)
+    : MediaControls(document)
     , m_overlayPlayButton(0)
     , m_overlayEnclosure(0)
 {
 }
 
-PassRefPtr<MediaControls> MediaControls::create(Document& document)
+bool MediaControlsChromiumAndroid::initializeControls(Document& document)
 {
-    return MediaControlsChromiumAndroid::createControls(document);
-}
-
-PassRefPtr<MediaControlsChromiumAndroid> MediaControlsChromiumAndroid::createControls(Document& document)
-{
-    if (!document.page())
-        return 0;
-
-    RefPtr<MediaControlsChromiumAndroid> controls = adoptRef(new MediaControlsChromiumAndroid(document));
-
     TrackExceptionState exceptionState;
 
     RefPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(document);
     RefPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(document);
-    controls->m_overlayPlayButton = overlayPlayButton.get();
+    m_overlayPlayButton = overlayPlayButton.get();
     overlayEnclosure->appendChild(overlayPlayButton.release(), exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return false;
 
-    controls->m_overlayEnclosure = overlayEnclosure.get();
-    controls->appendChild(overlayEnclosure.release(), exceptionState);
+    m_overlayEnclosure = overlayEnclosure.get();
+    appendChild(overlayEnclosure.release(), exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return false;
 
-    if (controls->initializeControls(document))
-        return controls.release();
-
-    return 0;
+    return MediaControls::initializeControls(document);
 }
 
 void MediaControlsChromiumAndroid::setMediaController(MediaControllerInterface* controller)
@@ -76,19 +63,19 @@ void MediaControlsChromiumAndroid::setMediaController(MediaControllerInterface* 
         m_overlayPlayButton->setMediaController(controller);
     if (m_overlayEnclosure)
         m_overlayEnclosure->setMediaController(controller);
-    MediaControlsChromium::setMediaController(controller);
+    MediaControls::setMediaController(controller);
 }
 
 void MediaControlsChromiumAndroid::playbackStarted()
 {
     m_overlayPlayButton->updateDisplayType();
-    MediaControlsChromium::playbackStarted();
+    MediaControls::playbackStarted();
 }
 
 void MediaControlsChromiumAndroid::playbackStopped()
 {
     m_overlayPlayButton->updateDisplayType();
-    MediaControlsChromium::playbackStopped();
+    MediaControls::playbackStopped();
 }
 
 void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)

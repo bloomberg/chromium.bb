@@ -27,13 +27,12 @@
 #define MediaControlsChromiumAndroid_h
 
 #include "core/html/shadow/MediaControls.h"
-#include "core/html/shadow/MediaControlsChromium.h"
 
 namespace WebCore {
 
-class MediaControlsChromiumAndroid FINAL : public MediaControlsChromium {
+class MediaControlsChromiumAndroid FINAL : public MediaControls {
 public:
-    static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document&);
+    explicit MediaControlsChromiumAndroid(Document&);
 
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
     virtual void playbackStarted() OVERRIDE;
@@ -43,7 +42,7 @@ public:
     virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
 
 private:
-    explicit MediaControlsChromiumAndroid(Document&);
+    virtual bool initializeControls(Document&) OVERRIDE;
 
     MediaControlOverlayPlayButtonElement* m_overlayPlayButton;
     MediaControlOverlayEnclosureElement* m_overlayEnclosure;
