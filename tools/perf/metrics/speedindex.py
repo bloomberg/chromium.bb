@@ -133,7 +133,7 @@ class SpeedIndexImpl(object):
       # Update variables for next iteration.
       prev_completeness = completeness
       prev_time = time
-    return speed_index
+    return int(speed_index)
 
 
 class VideoSpeedIndexImpl(SpeedIndexImpl):
