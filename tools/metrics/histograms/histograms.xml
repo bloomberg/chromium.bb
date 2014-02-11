@@ -25838,6 +25838,18 @@ other types of suffix sets.
   <int value="254" label="EventSourceURL"/>
   <int value="255" label="WebSocketURL"/>
   <int value="256" label="UnsafeEvalBlocksCSSOM"/>
+  <int value="257" label="WorkerSubjectToCSP"/>
+  <int value="258" label="WorkerAllowedByChildBlockedByScript"/>
+  <int value="259" label="HTMLMediaElementControllerNotNull"/>
+  <int value="260" label="DeprecatedWebKitGradient"/>
+  <int value="261" label="DeprecatedWebKitLinearGradient"/>
+  <int value="262" label="DeprecatedWebKitRepeatingLinearGradient"/>
+  <int value="263" label="DeprecatedWebKitRadialGradient"/>
+  <int value="264" label="DeprecatedWebKitRepeatingRadialGradient"/>
+  <int value="265" label="PrefixedGetImageDataHD"/>
+  <int value="266" label="PrefixedPutImageDataHD"/>
+  <int value="267" label="PrefixedImageSmoothingEnabled"/>
+  <int value="268" label="UnprefixedImageSmoothingEnabled"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
