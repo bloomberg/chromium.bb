@@ -19,6 +19,7 @@ namespace media {
 namespace {
 
 SoundsManager* g_instance = NULL;
+bool g_initialized_for_testing = false;
 
 // SoundsManagerImpl ---------------------------------------------------
 
@@ -123,7 +124,11 @@ SoundsManager::~SoundsManager() { DCHECK(CalledOnValidThread()); }
 
 // static
 void SoundsManager::Create() {
-  CHECK(!g_instance) << "SoundsManager::Create() is called twice";
+  CHECK(!g_instance || g_initialized_for_testing)
+      << "SoundsManager::Create() is called twice";
+  if (g_initialized_for_testing)
+    return;
+
   const bool enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
                             ::switches::kDisableSystemSoundsManager);
   if (enabled)
@@ -144,6 +149,14 @@ void SoundsManager::Shutdown() {
 SoundsManager* SoundsManager::Get() {
   CHECK(g_instance) << "SoundsManager::Get() is called before Create()";
   return g_instance;
+}
+
+// static
+void SoundsManager::InitializeForTesting(SoundsManager* manager) {
+  CHECK(!g_instance) << "SoundsManager is already initialized.";
+  CHECK(manager);
+  g_instance = manager;
+  g_initialized_for_testing = true;
 }
 
 }  // namespace media

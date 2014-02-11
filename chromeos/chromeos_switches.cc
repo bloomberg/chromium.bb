@@ -55,6 +55,9 @@ const char kDisableNewChannelSwitcherUI[]   = "disable-new-channel-switcher-ui";
 const char kDisableQuickofficeComponentApp[] =
     "disable-quickoffice-component-app";
 
+// Disables volume adjust sound.
+const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
+
 // Disables fetching online CrOS EULA page, only static version is shown.
 const char kDisableOnlineEULA[] = "disable-cros-online-eula";
 
@@ -86,9 +89,6 @@ const char kEnableStubPortalledWifi[] = "enable-stub-portalled-wifi";
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
-
-// Enables volume adjust sound.
-const char kEnableVolumeAdjustSound[] = "enable-volume-adjust-sound";
 
 // Specifies stub network types to be enabled.  If this switch is not specified,
 // ethernet, wifi and vpn are enabled by default.

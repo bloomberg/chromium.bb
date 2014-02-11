@@ -23,9 +23,13 @@ namespace {
 // Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
+bool VolumeAdjustSoundEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableVolumeAdjustSound);
+}
+
 void PlayVolumeAdjustSound() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableVolumeAdjustSound)) {
+  if (VolumeAdjustSoundEnabled()) {
     ash::PlaySystemSound(chromeos::SOUND_VOLUME_ADJUST,
                          true /* honor_spoken_feedback */);
   }
@@ -36,9 +40,11 @@ void PlayVolumeAdjustSound() {
 VolumeController::VolumeController() {
   CrasAudioHandler::Get()->AddAudioObserver(this);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  media::SoundsManager::Get()->Initialize(
-      chromeos::SOUND_VOLUME_ADJUST,
-      bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
+  if (VolumeAdjustSoundEnabled()) {
+    media::SoundsManager::Get()->Initialize(
+        chromeos::SOUND_VOLUME_ADJUST,
+        bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
+  }
 }
 
 VolumeController::~VolumeController() {

@@ -29,6 +29,10 @@ class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
   // Returns a pointer to a singleton instance of the SoundsManager.
   static SoundsManager* Get();
 
+  // Initializes sounds manager for testing. The |manager| will be owned
+  // by the internal pointer and will be deleted by Shutdown().
+  static void InitializeForTesting(SoundsManager* manager);
+
   // Initializes SoundsManager with the wav data for the system
   // sounds. Returns true if SoundsManager was successfully
   // initialized.
