@@ -139,15 +139,6 @@
       ],
       'sources': [
         'public/utility/tests/run_loop_unittest.cc',
-        'public/utility/tests/mutex_unittest.cc',
-      ],
-      'conditions': [
-        # See crbug.com/342893:
-        ['OS=="win"', {
-          'sources!': [
-            'public/utility/tests/mutex_unittest.cc',
-          ],
-        }],
       ],
     },
     {
@@ -242,17 +233,6 @@
         'public/utility/lib/thread_local_win.cc',
         'public/utility/run_loop.h',
         'public/utility/run_loop_handler.h',
-        'public/utility/mutex.h',
-        'public/utility/lib/mutex.cc',
-      ],
-      'conditions': [
-        # See crbug.com/342893:
-        ['OS=="win"', {
-          'sources!': [
-            'public/utility/mutex.h',
-            'public/utility/lib/mutex.cc',
-          ],
-        }],
       ],
       'include_dirs': [
         '..',
