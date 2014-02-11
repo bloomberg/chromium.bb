@@ -12,7 +12,8 @@ fun:ff_get_cpu_flags_x86
 
 # False positives due to missing interceptors.
 # TODO(earthdok): remove as clang is rolled forward.
-# strtoll_l added in clang r200316.
+# strtoll_l and stroull_l added in clang r200316.
 fun:*__num_get_signed_integral*
+fun:*__num_get_unsigned_integral*
 # getresuid/getresgid added in clang r200925
 fun:*GetRESIds*
