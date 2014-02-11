@@ -369,7 +369,10 @@ Filter* Filter::PrependNewFilter(FilterType type_id,
       break;
     case FILTER_TYPE_SDCH:
     case FILTER_TYPE_SDCH_POSSIBLE:
-      first_filter.reset(InitSdchFilter(type_id, filter_context, buffer_size));
+      if (SdchManager::Global() && SdchManager::sdch_enabled()) {
+        first_filter.reset(
+            InitSdchFilter(type_id, filter_context, buffer_size));
+      }
       break;
     default:
       break;
