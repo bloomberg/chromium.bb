@@ -28,8 +28,6 @@ class FilePath;
 class AppListServiceImpl : public AppListService,
                            public ProfileInfoCacheObserver {
  public:
-  static void RecordAppListLaunch();
-  static void RecordAppListAppLaunch();
   virtual ~AppListServiceImpl();
 
   // Constructor used for testing.
@@ -37,6 +35,9 @@ class AppListServiceImpl : public AppListService,
                      PrefService* local_state,
                      scoped_ptr<ProfileStore> profile_store,
                      scoped_ptr<KeepAliveService> keep_alive_service);
+
+  void RecordAppListLaunch();
+  static void RecordAppListAppLaunch();
 
   // AppListService overrides:
   virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
@@ -46,7 +47,9 @@ class AppListServiceImpl : public AppListService,
       const base::FilePath& user_data_dir) OVERRIDE;
   virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
   virtual void Show() OVERRIDE;
-  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
+  virtual void AutoShowForProfile(Profile* requested_profile) OVERRIDE;
+  virtual void EnableAppList(Profile* initial_profile,
+                             AppListEnableSource enable_source) OVERRIDE;
 
  protected:
   AppListServiceImpl();
@@ -55,12 +58,10 @@ class AppListServiceImpl : public AppListService,
   ProfileLoader& profile_loader() { return *profile_loader_; }
   const ProfileLoader& profile_loader() const { return *profile_loader_; }
 
-  // Process command line flags shared between desktop implementations of the
-  // app list. Currently this allows for enabling or disabling the app list.
-  void HandleCommandLineFlags(Profile* initial_profile);
-
-  // Records UMA stats that try to approximate usage after a delay.
-  void SendUsageStats();
+  // Perform startup checks shared between desktop implementations of the app
+  // list. Currently this checks command line flags to enable or disable the app
+  // list, and records UMA stats delayed from a previous Chrome process.
+  void PerformStartupChecks(Profile* initial_profile);
 
   // Create a platform-specific shortcut for the app list.
   virtual void CreateShortcut();
