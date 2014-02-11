@@ -331,6 +331,12 @@ static const struct xdg_shell_listener xdg_shell_listener = {
 	xdg_shell_ping,
 };
 
+#define XDG_VERSION 2 /* The version of xdg-shell that we implement */
+#ifdef static_assert
+static_assert(XDG_VERSION == XDG_SHELL_VERSION_CURRENT,
+	      "Interface version doesn't match implementation version");
+#endif
+
 static void
 registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
@@ -344,7 +350,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry,
 					    id, &xdg_shell_interface, 1);
-		xdg_shell_use_unstable_version(d->shell, 1);
+		xdg_shell_use_unstable_version(d->shell, XDG_VERSION);
 		xdg_shell_add_listener(d->shell, &xdg_shell_listener, d);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,

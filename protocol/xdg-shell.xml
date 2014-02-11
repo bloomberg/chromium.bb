@@ -43,7 +43,7 @@
 	Use this enum to check the protocol version, and it will be updated
 	automatically.
       </description>
-      <entry name="current" value="1" summary="Always the latest version"/>
+      <entry name="current" value="2" summary="Always the latest version"/>
     </enum>
 
 
