@@ -227,7 +227,7 @@ class scoped_ptr_impl {
       abort();
 
     // Note that running data_.ptr = p can lead to undefined behavior if
-    // get_deleter()(get()) deletes this. In order to pevent this, reset()
+    // get_deleter()(get()) deletes this. In order to prevent this, reset()
     // should update the stored pointer before deleting its old value.
     //
     // However, changing reset() to use that behavior may cause current code to
