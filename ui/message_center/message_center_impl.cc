@@ -531,9 +531,9 @@ bool MessageCenterImpl::IsQuietMode() const {
 }
 
 bool MessageCenterImpl::HasClickedListener(const std::string& id) {
-  NotificationDelegate* delegate =
+  scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  return delegate && delegate->HasClickedListener();
+  return delegate.get() && delegate->HasClickedListener();
 }
 
 const NotificationList::Notifications&
@@ -637,9 +637,9 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
   if (!HasNotification(id))
     return;
 
-  NotificationDelegate* delegate =
+  scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  if (delegate)
+  if (delegate.get())
     delegate->Close(by_user);
 
   // In many cases |id| is a reference to an existing notification instance
@@ -673,8 +673,8 @@ void MessageCenterImpl::RemoveNotifications(
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     ids.insert((*iter)->id());
-    NotificationDelegate* delegate = (*iter)->delegate();
-    if (delegate)
+    scoped_refptr<NotificationDelegate> delegate = (*iter)->delegate();
+    if (delegate.get())
       delegate->Close(by_user);
     notification_list_->RemoveNotification((*iter)->id());
   }
@@ -777,9 +777,9 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-  NotificationDelegate* delegate =
+  scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  if (delegate)
+  if (delegate.get())
     delegate->Click();
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationClicked(id));
@@ -791,9 +791,9 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-  NotificationDelegate* delegate =
+  scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  if (delegate)
+  if (delegate.get())
     delegate->ButtonClick(button_index);
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationButtonClicked(
@@ -817,9 +817,9 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
   if (HasPopupNotifications())
     notification_list_->MarkSinglePopupAsDisplayed(id);
   notification_cache_.RecountUnread();
-  NotificationDelegate* delegate =
+  scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  if (delegate)
+  if (delegate.get())
     delegate->Display();
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationDisplayed(id));
