@@ -37,6 +37,7 @@ public:
         , m_lineSpacing(0)
         , m_xHeight(0)
         , m_zeroWidth(0)
+        , m_underlinethickness(0)
         , m_hasXHeight(false)
         , m_hasZeroWidth(false)
     {
@@ -122,6 +123,9 @@ public:
     bool hasZeroWidth() const { return m_hasZeroWidth; }
     void setHasZeroWidth(bool hasZeroWidth) { m_hasZeroWidth = hasZeroWidth; }
 
+    float underlineThickness() const { return m_underlinethickness; }
+    void setUnderlineThickness(float underlineThickness) { m_underlinethickness = underlineThickness; }
+
 private:
     friend class SimpleFontData;
 
@@ -134,6 +138,7 @@ private:
         m_lineSpacing = 0;
         m_xHeight = 0;
         m_hasXHeight = false;
+        m_underlinethickness = 0;
     }
 
     unsigned m_unitsPerEm;
@@ -143,6 +148,7 @@ private:
     float m_lineSpacing;
     float m_xHeight;
     float m_zeroWidth;
+    float m_underlinethickness;
     bool m_hasXHeight;
     bool m_hasZeroWidth;
 };

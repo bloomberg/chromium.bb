@@ -1084,7 +1084,13 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
     // Set the thick of the line to be 10% (or something else ?)of the computed font size and not less than 1px.
     // Using computedFontSize should take care of zoom as well.
-    const float textDecorationThickness = std::max(1.f, styleToUse->computedFontSize() / 10.f);
+
+    // Update Underline thickness, in case we have Faulty Font Metrics calculating underline thickness by old method.
+    float textDecorationThickness = styleToUse->fontMetrics().underlineThickness();
+    int fontHeightInt  = (int)(styleToUse->fontMetrics().floatHeight() + 0.5);
+    if ((textDecorationThickness == 0.f) || (textDecorationThickness >= (fontHeightInt >> 1)))
+        textDecorationThickness = std::max(1.f, styleToUse->computedFontSize() / 10.f);
+
     context->setStrokeThickness(textDecorationThickness);
 
     float extraOffset = 0;

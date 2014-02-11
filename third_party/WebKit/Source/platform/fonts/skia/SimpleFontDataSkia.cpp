@@ -133,6 +133,12 @@ void SimpleFontData::platformInit()
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setLineSpacing(lroundf(ascent) + lroundf(descent) + lroundf(lineGap));
 
+    // For now Skia does not support underline Thickness, once patch is comitted we can uncomment following
+    // code, till then setting Underline Thickness to Zero so that default calculation is done.
+    // float underlineThickness = SkScalarToFloat(metrics.fUnderlineThickness);
+    // m_fontMetrics.setUnderlineThickness(underlineThickness);
+    m_fontMetrics.setUnderlineThickness(0.f);
+
     if (platformData().orientation() == Vertical && !isTextOrientationFallback()) {
         static const uint32_t vheaTag = SkSetFourByteTag('v', 'h', 'e', 'a');
         static const uint32_t vorgTag = SkSetFourByteTag('V', 'O', 'R', 'G');
