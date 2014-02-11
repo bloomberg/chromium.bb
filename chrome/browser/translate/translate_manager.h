@@ -22,7 +22,6 @@ struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
 class Profile;
-class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
 
 namespace content {
@@ -47,9 +46,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
-
-  // Returns true if |language| is an Accept language for the user profile.
-  static bool IsAcceptLanguage(Profile* profile, const std::string& language);
 
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
@@ -160,10 +156,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;
-
-  // An instance of TranslateAcceptLanguages which manages Accept languages of
-  // each profiles.
-  scoped_ptr<TranslateAcceptLanguages> accept_languages_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 

@@ -17,7 +17,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -104,17 +103,6 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
            url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif
          !url.SchemeIs(content::kFtpScheme);
-}
-
-// static
-bool TranslateManager::IsAcceptLanguage(Profile* profile,
-                                        const std::string& language) {
-  if (GetInstance()->accept_languages_.get()) {
-    return GetInstance()->accept_languages_->IsAcceptLanguage(
-        profile, language);
-  }
-  NOTREACHED();
-  return false;
 }
 
 void TranslateManager::Observe(int type,
@@ -242,7 +230,6 @@ TranslateManager::TranslateManager()
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
                               content::NotificationService::AllSources());
-  accept_languages_.reset(new TranslateAcceptLanguages);
 }
 
 void TranslateManager::InitiateTranslation(WebContents* web_contents,

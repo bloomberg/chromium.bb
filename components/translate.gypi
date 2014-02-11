@@ -24,6 +24,8 @@
         'translate/core/browser/language_state.cc',
         'translate/core/browser/language_state.h',
         'translate/core/browser/page_translated_details.h',
+        'translate/core/browser/translate_accept_languages.cc',
+        'translate/core/browser/translate_accept_languages.h',
         'translate/core/browser/translate_browser_metrics.cc',
         'translate/core/browser/translate_browser_metrics.h',
         'translate/core/browser/translate_download_manager.cc',

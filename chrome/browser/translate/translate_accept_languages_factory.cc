@@ -1,0 +1,73 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/translate/translate_accept_languages_factory.h"
+
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
+
+namespace {
+
+// TranslateAcceptLanguagesService is a thin container for
+// TranslateAcceptLanguages to enable associating it with a BrowserContext.
+class TranslateAcceptLanguagesService : public BrowserContextKeyedService {
+ public:
+  explicit TranslateAcceptLanguagesService(PrefService* prefs);
+  virtual ~TranslateAcceptLanguagesService();
+
+  // Returns the associated TranslateAcceptLanguages.
+  TranslateAcceptLanguages& accept_languages() { return accept_languages_; }
+
+ private:
+  TranslateAcceptLanguages accept_languages_;
+  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguagesService);
+};
+
+TranslateAcceptLanguagesService::TranslateAcceptLanguagesService(
+    PrefService* prefs)
+    : accept_languages_(prefs, prefs::kAcceptLanguages) {}
+
+TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() {}
+
+}  // namespace
+
+// static
+TranslateAcceptLanguagesFactory*
+TranslateAcceptLanguagesFactory::GetInstance() {
+  return Singleton<TranslateAcceptLanguagesFactory>::get();
+}
+
+// static
+TranslateAcceptLanguages* TranslateAcceptLanguagesFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  TranslateAcceptLanguagesService* service =
+      static_cast<TranslateAcceptLanguagesService*>(
+          GetInstance()->GetServiceForBrowserContext(context, true));
+  return &service->accept_languages();
+}
+
+TranslateAcceptLanguagesFactory::TranslateAcceptLanguagesFactory()
+    : BrowserContextKeyedServiceFactory(
+          "TranslateAcceptLanguagesService",
+          BrowserContextDependencyManager::GetInstance()) {}
+
+TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {}
+
+BrowserContextKeyedService*
+TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
+    content::BrowserContext* browser_context) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return new TranslateAcceptLanguagesService(profile->GetPrefs());
+}
+
+content::BrowserContext*
+TranslateAcceptLanguagesFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}

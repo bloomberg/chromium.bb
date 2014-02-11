@@ -12,9 +12,10 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/translate/translate_accept_languages.h"
+#include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -292,8 +293,9 @@ bool TranslatePrefs::CanTranslateLanguage(Profile* profile,
   TranslatePrefs translate_prefs(profile->GetPrefs());
   bool blocked = translate_prefs.IsBlockedLanguage(language);
 
-  bool is_accept_language =
-      TranslateManager::IsAcceptLanguage(profile, language);
+  TranslateAcceptLanguages* accept_languages =
+      TranslateAcceptLanguagesFactory::GetForBrowserContext(profile);
+  bool is_accept_language = accept_languages->IsAcceptLanguage(language);
   bool can_be_accept_language =
       TranslateAcceptLanguages::CanBeAcceptLanguage(language);
 

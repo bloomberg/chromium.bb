@@ -9,6 +9,8 @@ static_library("translate_core_browser") {
     "core/browser/language_state.cc",
     "core/browser/language_state.h",
     "core/browser/page_translated_details.h",
+    "core/browser/translate_accept_languages.cc",
+    "core/browser/translate_accept_languages.h",
     "core/browser/translate_browser_metrics.cc",
     "core/browser/translate_browser_metrics.h",
     "core/browser/translate_download_manager.cc",
