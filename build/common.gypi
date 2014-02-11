@@ -4710,6 +4710,22 @@
                   '-ferror-limit=1',
                 ],
               },
+              'conditions': [
+                ['MSVS_VERSION=="2013" or MSVS_VERSION=="2013e"', {
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': [
+                      '-fmsc-version=1800',
+                    ],
+                  },
+                }],
+                ['MSVS_VERSION=="2010" or MSVS_VERSION=="2010e"', {
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': [
+                      '-fmsc-version=1600',
+                    ],
+                  },
+                }],
+              ],
             }],
           ],
         },
