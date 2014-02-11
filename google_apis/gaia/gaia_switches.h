@@ -28,6 +28,12 @@ extern const char kOAuth1LoginScope[];
 // Overrides OAuth wrap bridge user info scope.
 extern const char kOAuthWrapBridgeUserInfoScope[];
 
+// Specifies custom OAuth2 client id for testing purposes.
+extern const char kOAuth2ClientID[];
+
+// Specifies custom OAuth2 client secret for testing purposes.
+extern const char kOAuth2ClientSecret[];
+
 }  // namespace switches
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_SWITCHES_H_

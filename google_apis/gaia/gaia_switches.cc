@@ -13,5 +13,7 @@ const char kLsoUrl[]                        = "lso-url";
 const char kOAuth1LoginScope[]              = "oauth1-login-scope";
 const char kOAuthWrapBridgeUserInfoScope[] =
     "oauth-wrap-bridge-user-info-scope";
+const char kOAuth2ClientID[] = "oauth2-client-id";
+const char kOAuth2ClientSecret[] = "oauth2-client-secret";
 
 }  // namespace switches

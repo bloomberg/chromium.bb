@@ -13,6 +13,7 @@
 #include "google_apis/google_api_keys.h"
 
 #include "build/build_config.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The Win builders fail (with a linker crash) when trying to link

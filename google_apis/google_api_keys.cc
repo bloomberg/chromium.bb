@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
+#include "google_apis/gaia/gaia_switches.h"
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
@@ -68,16 +69,6 @@
 #if !defined(GOOGLE_DEFAULT_CLIENT_SECRET)
 #define GOOGLE_DEFAULT_CLIENT_SECRET ""
 #endif
-
-namespace switches {
-
-// Specifies custom OAuth2 client id for testing purposes.
-const char kOAuth2ClientID[] = "oauth2-client-id";
-
-// Specifies custom OAuth2 client secret for testing purposes.
-const char kOAuth2ClientSecret[] = "oauth2-client-secret";
-
-}  // namespace switches
 
 namespace google_apis {
 
