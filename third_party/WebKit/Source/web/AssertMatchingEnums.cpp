@@ -132,12 +132,6 @@
 #define COMPILE_ASSERT_MATCHING_UINT64(webkit_name, webcore_name) \
     COMPILE_ASSERT(blink::webkit_name == WebCore::webcore_name, mismatching_enums)
 
-// These constants are in WTF, bring them into WebCore so the ASSERT still works for them!
-namespace WebCore {
-    using WTF::TextCaseSensitive;
-    using WTF::TextCaseInsensitive;
-};
-
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventActiveDescendantChanged, AXObjectCache::AXActiveDescendantChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventAlert, AXObjectCache::AXAlert);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventAriaAttributeChanged, AXObjectCache::AXAriaAttributeChanged);

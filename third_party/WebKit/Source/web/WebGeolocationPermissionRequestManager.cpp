@@ -29,24 +29,18 @@
 #include "WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
-class Geolocation;
-}
+namespace blink {
 
 using namespace WebCore;
 
 typedef HashMap<Geolocation*, int> GeolocationIdMap;
 typedef HashMap<int, Geolocation*> IdGeolocationMap;
 
-namespace blink {
 class WebGeolocationPermissionRequestManagerPrivate {
 public:
     GeolocationIdMap m_geolocationIdMap;
     IdGeolocationMap m_idGeolocationMap;
 };
-}
-
-using namespace blink;
 
 int WebGeolocationPermissionRequestManager::add(const blink::WebGeolocationPermissionRequest& permissionRequest)
 {
@@ -93,3 +87,4 @@ void WebGeolocationPermissionRequestManager::reset()
     m_private.reset(0);
 }
 
+} // namespace blink
