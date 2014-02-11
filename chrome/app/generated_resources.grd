@@ -2805,7 +2805,7 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT" desc="Format for displaying a textual dump of an RSA public key.">
   Modulus (<ph name="MODULUS_NUM_BITS">$1<ex>1024</ex></ph> bits):
   <ph name="MODULUS_HEX_DUMP">$2<ex>00 0A 38 CF ...</ex></ph>
-  
+
   Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
   <ph name="EXPONENT_HEX_DUMP">$4<ex>01 00 01</ex></ph>
         </message>
@@ -13694,11 +13694,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT" desc="Prompt shown in the device requisition prompt popup.">
         Use this device requisition when enrolling the device for enterprise management:
       </message>
-      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TITLE" desc="Title for the device requisition remora prompt popup.">
-        Set up this device for remora only?
-      </message>
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT" desc="Prompt shown in the device requisition remora prompt popup.">
-        Are you sure you want to continue?
+        Are you sure, you want to set up this device as a Chromebox for Meetings device?
       </message>
 
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">

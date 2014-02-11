@@ -104,8 +104,6 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
                IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
   builder->Add("deviceRequisitionRemoraPromptOk",
                IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
-  builder->Add("deviceRequisitionRemoraPromptTitle",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TITLE);
   builder->Add("deviceRequisitionRemoraPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
 }

@@ -627,8 +627,7 @@ cr.define('cr.ui.login', function() {
         this.deviceRequisitionRemoraDialog_.setCancelLabel(
             loadTimeData.getString('deviceRequisitionRemoraPromptCancel'));
       }
-      this.deviceRequisitionRemoraDialog_.showWithTitle(
-          loadTimeData.getString('deviceRequisitionRemoraPromptTitle'),
+      this.deviceRequisitionRemoraDialog_.show(
           loadTimeData.getString('deviceRequisitionRemoraPromptText'),
           function() {
             chrome.send('setDeviceRequisition', ['remora']);
