@@ -15,8 +15,8 @@ namespace cast {
 // The callback should not be used, as the receiver is using the external
 // transport. Implementation is required as the pacer is common to sender and
 // receiver.
-static void DoNothingCastTransportStatus(transport::CastTransportStatus status)
-{
+static void DoNothingCastTransportStatus(
+    transport::CastTransportStatus status) {
   NOTREACHED() << "Internal transport used in CastReceiver";
 }
 // The video and audio receivers should only be called from the main thread.
@@ -31,34 +31,44 @@ class LocalFrameReceiver : public FrameReceiver {
         audio_receiver_(audio_receiver),
         video_receiver_(video_receiver) {}
 
-  virtual void GetRawVideoFrame(
-      const VideoFrameDecodedCallback& callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&VideoReceiver::GetRawVideoFrame,
-                   video_receiver_->AsWeakPtr(), callback));
+  virtual void GetRawVideoFrame(const VideoFrameDecodedCallback& callback)
+      OVERRIDE {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(&VideoReceiver::GetRawVideoFrame,
+                                           video_receiver_->AsWeakPtr(),
+                                           callback));
   }
 
-  virtual void GetEncodedVideoFrame(
-      const VideoFrameEncodedCallback& callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&VideoReceiver::GetEncodedVideoFrame,
-                   video_receiver_->AsWeakPtr(), callback));
+  virtual void GetEncodedVideoFrame(const VideoFrameEncodedCallback& callback)
+      OVERRIDE {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(&VideoReceiver::GetEncodedVideoFrame,
+                                           video_receiver_->AsWeakPtr(),
+                                           callback));
   }
 
-  virtual void GetRawAudioFrame(
-      int number_of_10ms_blocks,
-      int desired_frequency,
-      const AudioFrameDecodedCallback& callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, base::Bind(
-        &AudioReceiver::GetRawAudioFrame, audio_receiver_->AsWeakPtr(),
-        number_of_10ms_blocks, desired_frequency, callback));
+  virtual void GetRawAudioFrame(int number_of_10ms_blocks,
+                                int desired_frequency,
+                                const AudioFrameDecodedCallback& callback)
+      OVERRIDE {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(&AudioReceiver::GetRawAudioFrame,
+                                           audio_receiver_->AsWeakPtr(),
+                                           number_of_10ms_blocks,
+                                           desired_frequency,
+                                           callback));
   }
 
-  virtual void GetCodedAudioFrame(
-      const AudioFrameEncodedCallback& callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&AudioReceiver::GetEncodedAudioFrame,
-                   audio_receiver_->AsWeakPtr(), callback));
+  virtual void GetCodedAudioFrame(const AudioFrameEncodedCallback& callback)
+      OVERRIDE {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(&AudioReceiver::GetEncodedAudioFrame,
+                                           audio_receiver_->AsWeakPtr(),
+                                           callback));
   }
 
  protected:
@@ -77,10 +87,8 @@ CastReceiver* CastReceiver::CreateCastReceiver(
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
     transport::PacketSender* const packet_sender) {
-  return new CastReceiverImpl(cast_environment,
-                              audio_config,
-                              video_config,
-                              packet_sender);
+  return new CastReceiverImpl(
+      cast_environment, audio_config, video_config, packet_sender);
 }
 
 CastReceiverImpl::CastReceiverImpl(
@@ -99,8 +107,7 @@ CastReceiverImpl::CastReceiverImpl(
                                              &video_receiver_)),
       cast_environment_(cast_environment),
       ssrc_of_audio_sender_(audio_config.incoming_ssrc),
-      ssrc_of_video_sender_(video_config.incoming_ssrc) {
-}
+      ssrc_of_video_sender_(video_config.incoming_ssrc) {}
 
 CastReceiverImpl::~CastReceiverImpl() {}
 
@@ -123,12 +130,14 @@ void CastReceiverImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
     ssrc_of_sender = Rtcp::GetSsrcOfSender(data, length);
   }
   if (ssrc_of_sender == ssrc_of_audio_sender_) {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
                                 base::Bind(&AudioReceiver::IncomingPacket,
                                            audio_receiver_.AsWeakPtr(),
                                            base::Passed(&packet)));
   } else if (ssrc_of_sender == ssrc_of_video_sender_) {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
                                 base::Bind(&VideoReceiver::IncomingPacket,
                                            video_receiver_.AsWeakPtr(),
                                            base::Passed(&packet)));
@@ -139,8 +148,7 @@ void CastReceiverImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
 }
 
 transport::PacketReceiverCallback CastReceiverImpl::packet_receiver() {
-  return base::Bind(&CastReceiverImpl::ReceivedPacket,
-                    base::Unretained(this));
+  return base::Bind(&CastReceiverImpl::ReceivedPacket, base::Unretained(this));
 }
 
 scoped_refptr<FrameReceiver> CastReceiverImpl::frame_receiver() {

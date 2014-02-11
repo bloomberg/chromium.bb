@@ -61,10 +61,11 @@ bool CastEnvironment::PostTask(ThreadId identifier,
   return task_runner->PostTask(from_here, task);
 }
 
-bool CastEnvironment::PostDelayedTask(ThreadId identifier,
-                                 const tracked_objects::Location& from_here,
-                                 const base::Closure& task,
-                                 base::TimeDelta delay) {
+bool CastEnvironment::PostDelayedTask(
+    ThreadId identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    base::TimeDelta delay) {
   scoped_refptr<SingleThreadTaskRunner> task_runner =
       GetMessageSingleThreadTaskRunnerForThread(identifier);
 
@@ -113,13 +114,11 @@ bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
   }
 }
 
-base::TickClock* CastEnvironment::Clock() const {
-  return clock_.get();
-}
+base::TickClock* CastEnvironment::Clock() const { return clock_.get(); }
 
 LoggingImpl* CastEnvironment::Logging() {
-  DCHECK(CurrentlyOn(CastEnvironment::MAIN)) <<
-      "Must be called from main thread";
+  DCHECK(CurrentlyOn(CastEnvironment::MAIN))
+      << "Must be called from main thread";
   return logging_.get();
 }
 

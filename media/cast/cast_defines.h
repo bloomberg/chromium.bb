@@ -74,12 +74,12 @@ static const double kMagicFractionalUnit = 4.294967296E3;
 
 inline bool IsNewerFrameId(uint32 frame_id, uint32 prev_frame_id) {
   return (frame_id != prev_frame_id) &&
-      static_cast<uint32>(frame_id - prev_frame_id) < 0x80000000;
+         static_cast<uint32>(frame_id - prev_frame_id) < 0x80000000;
 }
 
 inline bool IsNewerRtpTimestamp(uint32 timestamp, uint32 prev_timestamp) {
   return (timestamp != prev_timestamp) &&
-      static_cast<uint32>(timestamp - prev_timestamp) < 0x80000000;
+         static_cast<uint32>(timestamp - prev_timestamp) < 0x80000000;
 }
 
 inline bool IsOlderFrameId(uint32 frame_id, uint32 prev_frame_id) {
@@ -88,7 +88,7 @@ inline bool IsOlderFrameId(uint32 frame_id, uint32 prev_frame_id) {
 
 inline bool IsNewerPacketId(uint16 packet_id, uint16 prev_packet_id) {
   return (packet_id != prev_packet_id) &&
-      static_cast<uint16>(packet_id - prev_packet_id) < 0x8000;
+         static_cast<uint16>(packet_id - prev_packet_id) < 0x8000;
 }
 
 inline bool IsNewerSequenceNumber(uint16 sequence_number,
@@ -126,7 +126,8 @@ inline void ConvertTimeTicksToNtp(const base::TimeTicks& time,
   base::TimeDelta elapsed_since_unix_epoch =
       time - base::TimeTicks::UnixEpoch();
 
-  int64 ntp_time_us = elapsed_since_unix_epoch.InMicroseconds() +
+  int64 ntp_time_us =
+      elapsed_since_unix_epoch.InMicroseconds() +
       (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond);
 
   ConvertTimeToFractions(ntp_time_us, ntp_seconds, ntp_fractions);
@@ -134,13 +135,13 @@ inline void ConvertTimeTicksToNtp(const base::TimeTicks& time,
 
 inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
                                              uint32 ntp_fractions) {
-  int64 ntp_time_us = static_cast<int64>(ntp_seconds) *
-      base::Time::kMicrosecondsPerSecond +
-          static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
+  int64 ntp_time_us =
+      static_cast<int64>(ntp_seconds) * base::Time::kMicrosecondsPerSecond +
+      static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
 
-  base::TimeDelta elapsed_since_unix_epoch =
-      base::TimeDelta::FromMicroseconds(ntp_time_us -
-          (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
+  base::TimeDelta elapsed_since_unix_epoch = base::TimeDelta::FromMicroseconds(
+      ntp_time_us -
+      (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
   return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
 }
 

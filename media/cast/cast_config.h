@@ -19,7 +19,7 @@ namespace media {
 namespace cast {
 
 enum RtcpMode {
-  kRtcpCompound,  // Compound RTCP mode is described by RFC 4585.
+  kRtcpCompound,     // Compound RTCP mode is described by RFC 4585.
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
 };
 
@@ -89,7 +89,7 @@ struct AudioReceiverConfig {
   int channels;
   transport::AudioCodec codec;
 
-  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_key;      // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
@@ -115,7 +115,7 @@ struct VideoReceiverConfig {
   bool decoder_faster_than_max_frame_rate;
   transport::VideoCodec codec;
 
-  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_key;      // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 

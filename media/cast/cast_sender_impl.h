@@ -13,7 +13,7 @@
 #include "media/cast/video_sender/video_sender.h"
 
 namespace media {
-  class VideoFrame;
+class VideoFrame;
 }
 
 namespace media {

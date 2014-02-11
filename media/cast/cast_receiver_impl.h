@@ -46,6 +46,8 @@ class CastReceiverImpl : public CastReceiver {
   scoped_refptr<CastEnvironment> cast_environment_;
   const uint32 ssrc_of_audio_sender_;
   const uint32 ssrc_of_video_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastReceiverImpl);
 };
 
 }  // namespace cast

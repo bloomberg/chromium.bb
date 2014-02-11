@@ -22,8 +22,14 @@ VideoSenderConfig::VideoSenderConfig()
       max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers) {}
 
 AudioSenderConfig::AudioSenderConfig()
-    : rtcp_interval(kDefaultRtcpIntervalMs),
-      use_external_encoder(false) {}
+    : sender_ssrc(0),
+      incoming_feedback_ssrc(0),
+      rtcp_interval(kDefaultRtcpIntervalMs),
+      rtcp_mode(kRtcpReducedSize),
+      use_external_encoder(false),
+      frequency(0),
+      channels(0),
+      bitrate(0) {}
 
 AudioReceiverConfig::AudioReceiverConfig()
     : feedback_ssrc(0),

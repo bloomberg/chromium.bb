@@ -32,17 +32,16 @@ typedef base::Callback<void(scoped_ptr<PcmAudioFrame>, const base::TimeTicks&)>
 
 // Callback in which the encoded audio frame and play-out time will be returned.
 typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
-    const base::TimeTicks&)> AudioFrameEncodedCallback;
+                            const base::TimeTicks&)> AudioFrameEncodedCallback;
 
 // Callback in which the raw frame and render time will be returned once
 // decoding is complete.
 typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks&)>
-    VideoFrameDecodedCallback;
+                            const base::TimeTicks&)> VideoFrameDecodedCallback;
 
 // Callback in which the encoded video frame and render time will be returned.
 typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
-    const base::TimeTicks&)> VideoFrameEncodedCallback;
+                            const base::TimeTicks&)> VideoFrameEncodedCallback;
 
 // This Class is thread safe.
 class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
@@ -57,7 +56,7 @@ class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
   virtual void GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
 
   virtual void GetEncodedVideoFrame(
-    const VideoFrameEncodedCallback& callback) = 0;
+      const VideoFrameEncodedCallback& callback) = 0;
 
  protected:
   virtual ~FrameReceiver() {}
