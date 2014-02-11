@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/dom_distiller/core/page_distiller.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
@@ -69,6 +70,7 @@ class DistillerImpl : public Distiller {
 
  private:
   void OnFetchImageDone(DistilledPageProto* distilled_page_proto,
+                        DistillerURLFetcher* url_fetcher,
                         const std::string& id,
                         const std::string& response);
 
@@ -91,7 +93,7 @@ class DistillerImpl : public Distiller {
   scoped_ptr<PageDistiller> page_distiller_;
   DistillerCallback distillation_cb_;
 
-  base::hash_map<std::string, DistillerURLFetcher*> image_fetchers_;
+  ScopedVector<DistillerURLFetcher> image_fetchers_;
   scoped_ptr<DistilledArticleProto> article_proto_;
   bool distillation_in_progress_;
   // Set to keep track of which urls are already seen by the distiller.

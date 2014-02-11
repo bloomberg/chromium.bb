@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -48,6 +50,8 @@ DistillerImpl::DistillerImpl(
 }
 
 DistillerImpl::~DistillerImpl() {
+  DCHECK(image_fetchers_.empty());
+  DCHECK(!distillation_in_progress_);
 }
 
 void DistillerImpl::Init() {
@@ -123,27 +127,33 @@ void DistillerImpl::FetchImage(DistilledPageProto* distilled_page_proto,
                                const std::string& item) {
   DistillerURLFetcher* fetcher =
       distiller_url_fetcher_factory_.CreateDistillerURLFetcher();
-  image_fetchers_[image_id] = fetcher;
+  image_fetchers_.push_back(fetcher);
   fetcher->FetchURL(item,
                     base::Bind(&DistillerImpl::OnFetchImageDone,
                                base::Unretained(this),
                                base::Unretained(distilled_page_proto),
+                               base::Unretained(fetcher),
                                image_id));
 }
 
 void DistillerImpl::OnFetchImageDone(DistilledPageProto* distilled_page_proto,
+                                     DistillerURLFetcher* url_fetcher,
                                      const std::string& id,
                                      const std::string& response) {
   DCHECK_GT(article_proto_->pages_size(), 0);
   DCHECK(distilled_page_proto);
+  DCHECK(url_fetcher);
+  ScopedVector<DistillerURLFetcher>::iterator fetcher_it =
+      std::find(image_fetchers_.begin(), image_fetchers_.end(), url_fetcher);
+
+  DCHECK(fetcher_it != image_fetchers_.end());
+  // Delete the |url_fetcher| by DeleteSoon since the OnFetchImageDone
+  // callback is invoked by the |url_fetcher|.
+  image_fetchers_.weak_erase(fetcher_it);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, url_fetcher);
   DistilledPageProto_Image* image = distilled_page_proto->add_image();
   image->set_name(id);
   image->set_data(response);
-  DCHECK(image_fetchers_.end() != image_fetchers_.find(id));
-  DistillerURLFetcher* fetcher = image_fetchers_[id];
-  int result = image_fetchers_.erase(id);
-  delete fetcher;
-  DCHECK_EQ(1, result);
   RunDistillerCallbackIfDone();
 }
 
