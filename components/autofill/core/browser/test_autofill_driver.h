@@ -10,6 +10,10 @@
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 
+namespace base {
+class SequencedWorkerPoolOwner;
+}
+
 namespace autofill {
 
 // This class is only for easier writing of tests.
@@ -46,7 +50,7 @@ class TestAutofillDriver : public AutofillDriver {
   void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
 
  private:
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
   net::URLRequestContextGetter* url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);
