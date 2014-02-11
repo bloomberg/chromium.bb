@@ -146,6 +146,8 @@
           'debug/debugger_win.cc',
           'debug/dump_without_crashing.cc',
           'debug/dump_without_crashing.h',
+          'debug/gdi_debug_util_win.cc',
+          'debug/gdi_debug_util_win.h',        
           # This file depends on files from the 'allocator' target,
           # but this target does not depend on 'allocator' (see
           # allocator.gyp for details).
