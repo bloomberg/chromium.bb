@@ -6,9 +6,9 @@
 
 import unittest
 
-from base_test_result import BaseTestResult
-from base_test_result import TestRunResults
-from base_test_result import ResultType
+from pylib.base.base_test_result import BaseTestResult
+from pylib.base.base_test_result import TestRunResults
+from pylib.base.base_test_result import ResultType
 
 
 class TestTestRunResults(unittest.TestCase):
