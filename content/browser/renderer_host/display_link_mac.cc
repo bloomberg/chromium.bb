@@ -7,22 +7,35 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 
+namespace base {
+
+template<>
+struct ScopedTypeRefTraits<CVDisplayLinkRef> {
+  static void Retain(CVDisplayLinkRef object) {
+    CVDisplayLinkRetain(object);
+  }
+  static void Release(CVDisplayLinkRef object) {
+    CVDisplayLinkRelease(object);
+  }
+};
+
+}  // namespace base
+
 namespace content {
 
 // static
 scoped_refptr<DisplayLinkMac> DisplayLinkMac::Create() {
   CVReturn ret = kCVReturnSuccess;
 
-  scoped_refptr<DisplayLinkMac> display_link_mac;
-  {
-    CVDisplayLinkRef display_link = NULL;
-    ret = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
-    if (ret != kCVReturnSuccess) {
-      LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
-      return NULL;
-    }
-    display_link_mac = new DisplayLinkMac(display_link);
+  base::ScopedTypeRef<CVDisplayLinkRef> display_link;
+  ret = CVDisplayLinkCreateWithActiveCGDisplays(display_link.InitializeInto());
+  if (ret != kCVReturnSuccess) {
+    LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
+    return NULL;
   }
+
+  scoped_refptr<DisplayLinkMac> display_link_mac;
+  display_link_mac = new DisplayLinkMac(display_link);
 
   ret = CVDisplayLinkSetOutputCallback(
       display_link_mac->display_link_,
@@ -36,18 +49,18 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::Create() {
   return display_link_mac;
 }
 
-DisplayLinkMac::DisplayLinkMac(CVDisplayLinkRef display_link)
-  : display_link_(display_link),
-    stop_timer_(
-        FROM_HERE, base::TimeDelta::FromSeconds(1),
-        this, &DisplayLinkMac::StopDisplayLink),
-    timebase_and_interval_valid_(false) {
+DisplayLinkMac::DisplayLinkMac(
+    base::ScopedTypeRef<CVDisplayLinkRef> display_link)
+      : display_link_(display_link),
+        stop_timer_(
+            FROM_HERE, base::TimeDelta::FromSeconds(1),
+            this, &DisplayLinkMac::StopDisplayLink),
+        timebase_and_interval_valid_(false) {
 }
 
 DisplayLinkMac::~DisplayLinkMac() {
   if (CVDisplayLinkIsRunning(display_link_))
     CVDisplayLinkStop(display_link_);
-  CVDisplayLinkRelease(display_link_);
 }
 
 bool DisplayLinkMac::GetVSyncParameters(

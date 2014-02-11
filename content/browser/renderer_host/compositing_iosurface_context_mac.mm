@@ -16,43 +16,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-namespace {
-
-template<typename T, void Release(T)>
-class ScopedCGLTypeRef {
- public:
-  ScopedCGLTypeRef() : object_(NULL) {}
-
-  ~ScopedCGLTypeRef() {
-    if (object_)
-      Release(object_);
-    object_ = NULL;
-  }
-
-  // Only to be used for pass-by-pointer initialization. The object must have
-  // been reset to NULL prior to calling.
-  T* operator&() {
-    DCHECK(object_ == NULL);
-    return &object_;
-  }
-
-  operator T() const {
-    return object_;
-  }
-
-  T release() WARN_UNUSED_RESULT {
-    T object = object_;
-    object_ = NULL;
-    return object;
-  }
-
- private:
-  T object_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCGLTypeRef);
-};
-
-}
-
 namespace content {
 
 CoreAnimationStatus GetCoreAnimationStatus() {
@@ -78,7 +41,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
 
   base::scoped_nsobject<NSOpenGLContext> nsgl_context;
-  ScopedCGLTypeRef<CGLContextObj, CGLReleaseContext> cgl_context_strong;
+  base::ScopedTypeRef<CGLContextObj> cgl_context_strong;
   CGLContextObj cgl_context = NULL;
   if (GetCoreAnimationStatus() == CORE_ANIMATION_DISABLED) {
     std::vector<NSOpenGLPixelFormatAttribute> attributes;
@@ -134,9 +97,10 @@ CompositingIOSurfaceContext::Get(int window_number) {
     }
     attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
     GLint number_virtual_screens = 0;
-    ScopedCGLTypeRef<CGLPixelFormatObj, CGLReleasePixelFormat> pixel_format;
-    error = CGLChoosePixelFormat(
-        &attribs.front(), &pixel_format, &number_virtual_screens);
+    base::ScopedTypeRef<CGLPixelFormatObj> pixel_format;
+    error = CGLChoosePixelFormat(&attribs.front(),
+                                 pixel_format.InitializeInto(),
+                                 &number_virtual_screens);
     if (error != kCGLNoError) {
       LOG(ERROR) << "Failed to create pixel format object.";
       return NULL;
@@ -148,7 +112,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
     if (!window_map()->empty())
       share_context = window_map()->begin()->second->cgl_context();
     error = CGLCreateContext(
-        pixel_format, share_context, &cgl_context_strong);
+        pixel_format, share_context, cgl_context_strong.InitializeInto());
     if (error != kCGLNoError) {
       LOG(ERROR) << "Failed to create context object.";
       return NULL;
@@ -161,19 +125,20 @@ CompositingIOSurfaceContext::Get(int window_number) {
 
   // Prepare the shader program cache. Precompile the shader programs
   // needed to draw the IO Surface for non-offscreen contexts.
-  CGLSetCurrentContext(cgl_context);
-  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache(
-      new CompositingIOSurfaceShaderPrograms());
   bool prepared = false;
-  if (window_number == kOffscreenContextWindowNumber) {
-    prepared = true;
-  } else {
-    prepared = (
-        shader_program_cache->UseBlitProgram() &&
-        shader_program_cache->UseSolidWhiteProgram());
+  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache;
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context);
+    shader_program_cache.reset(new CompositingIOSurfaceShaderPrograms());
+    if (window_number == kOffscreenContextWindowNumber) {
+      prepared = true;
+    } else {
+      prepared = (
+          shader_program_cache->UseBlitProgram() &&
+          shader_program_cache->UseSolidWhiteProgram());
+    }
+    glUseProgram(0u);
   }
-  glUseProgram(0u);
-  CGLSetCurrentContext(0);
   if (!prepared) {
     LOG(ERROR) << "IOSurface failed to compile/link required shader programs.";
     return NULL;
@@ -188,7 +153,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
   return new CompositingIOSurfaceContext(
       window_number,
       nsgl_context.release(),
-      cgl_context_strong.release(),
+      cgl_context_strong,
       cgl_context,
       is_vsync_disabled,
       display_link,
@@ -208,7 +173,7 @@ void CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable() {
 CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     int window_number,
     NSOpenGLContext* nsgl_context,
-    CGLContextObj cgl_context_strong,
+    base::ScopedTypeRef<CGLContextObj> cgl_context_strong,
     CGLContextObj cgl_context,
     bool is_vsync_disabled,
     scoped_refptr<DisplayLinkMac> display_link,
@@ -229,9 +194,10 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
 }
 
 CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
-  CGLSetCurrentContext(cgl_context_);
-  shader_program_cache_->Reset();
-  CGLSetCurrentContext(0);
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context_);
+    shader_program_cache_->Reset();
+  }
   if (can_be_shared_) {
     DCHECK(window_map()->find(window_number_) != window_map()->end());
     DCHECK(window_map()->find(window_number_)->second == this);
@@ -241,8 +207,6 @@ CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
     if (found != window_map()->end())
       DCHECK(found->second != this);
   }
-  if (cgl_context_strong_)
-    CGLReleaseContext(cgl_context_strong_);
 }
 
 NSOpenGLContext* CompositingIOSurfaceContext::nsgl_context() const {

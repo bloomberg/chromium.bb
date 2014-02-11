@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/display_link_mac.h"
+#include "ui/gl/scoped_cgl.h"
 
 namespace content {
 
@@ -60,7 +61,7 @@ class CompositingIOSurfaceContext
   CompositingIOSurfaceContext(
       int window_number,
       NSOpenGLContext* nsgl_context,
-      CGLContextObj clg_context_strong,
+      base::ScopedTypeRef<CGLContextObj> clg_context_strong,
       CGLContextObj clg_context,
       bool is_vsync_disabled_,
       scoped_refptr<DisplayLinkMac> display_link,
@@ -69,7 +70,7 @@ class CompositingIOSurfaceContext
 
   int window_number_;
   base::scoped_nsobject<NSOpenGLContext> nsgl_context_;
-  CGLContextObj cgl_context_strong_;
+  base::ScopedTypeRef<CGLContextObj> cgl_context_strong_;
   // Weak, backed by |nsgl_context_| or |cgl_context_strong_|.
   CGLContextObj cgl_context_;
 

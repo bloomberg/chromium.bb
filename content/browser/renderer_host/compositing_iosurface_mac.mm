@@ -257,10 +257,12 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   FailAllCopies();
-  CGLSetCurrentContext(offscreen_context_->cgl_context());
-  DestroyAllCopyContextsWithinContext();
-  UnrefIOSurfaceWithContextCurrent();
-  CGLSetCurrentContext(0);
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        offscreen_context_->cgl_context());
+    DestroyAllCopyContextsWithinContext();
+    UnrefIOSurfaceWithContextCurrent();
+  }
   offscreen_context_ = NULL;
 }
 
@@ -440,12 +442,15 @@ void CompositingIOSurfaceMac::CopyTo(
   DCHECK_EQ(output->rowBytesAsPixels(), dst_pixel_size.width())
       << "Stride is required to be equal to width for GPU readback.";
 
-  CGLSetCurrentContext(offscreen_context_->cgl_context());
-  const base::Closure copy_done_callback = CopyToSelectedOutputWithinContext(
-      src_pixel_subrect, gfx::Rect(dst_pixel_size), false,
-      output.get(), NULL,
-      base::Bind(&ReverseArgumentOrder, callback, base::Passed(&output)));
-  CGLSetCurrentContext(0);
+  base::Closure copy_done_callback;
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        offscreen_context_->cgl_context());
+    copy_done_callback = CopyToSelectedOutputWithinContext(
+        src_pixel_subrect, gfx::Rect(dst_pixel_size), false,
+        output.get(), NULL,
+        base::Bind(&ReverseArgumentOrder, callback, base::Passed(&output)));
+  }
   if (!copy_done_callback.is_null())
     copy_done_callback.Run();
 }
@@ -454,10 +459,13 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
     const gfx::Rect& src_pixel_subrect,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
-  CGLSetCurrentContext(offscreen_context_->cgl_context());
-  const base::Closure copy_done_callback = CopyToVideoFrameWithinContext(
-      src_pixel_subrect, false, target, callback);
-  CGLSetCurrentContext(0);
+  base::Closure copy_done_callback;
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        offscreen_context_->cgl_context());
+    copy_done_callback = CopyToVideoFrameWithinContext(
+        src_pixel_subrect, false, target, callback);
+  }
   if (!copy_done_callback.is_null())
     copy_done_callback.Run();
 }
@@ -542,9 +550,9 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurface() {
-  CGLSetCurrentContext(offscreen_context_->cgl_context());
+  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+      offscreen_context_->cgl_context());
   UnrefIOSurfaceWithContextCurrent();
-  CGLSetCurrentContext(0);
 }
 
 void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
@@ -747,11 +755,12 @@ void CompositingIOSurfaceMac::CheckIfAllCopiesAreFinished(
     return;
 
   std::vector<base::Closure> done_callbacks;
-  CGLContextObj previous_context = CGLGetCurrentContext();
-  CGLSetCurrentContext(offscreen_context_->cgl_context());
-  CheckIfAllCopiesAreFinishedWithinContext(
-      block_until_finished, &done_callbacks);
-  CGLSetCurrentContext(previous_context);
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        offscreen_context_->cgl_context());
+    CheckIfAllCopiesAreFinishedWithinContext(
+        block_until_finished, &done_callbacks);
+  }
   for (size_t i = 0; i < done_callbacks.size(); ++i)
     done_callbacks[i].Run();
 }

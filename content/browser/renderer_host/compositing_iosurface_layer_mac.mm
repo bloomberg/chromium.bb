@@ -102,10 +102,26 @@
   // This makes the window content not lag behind the resize (at the cost of
   // blocking on the browser's main thread).
   if (cached_view->render_widget_host_) {
-    cached_view->about_to_validate_and_paint_ = true;
-    (void)cached_view->render_widget_host_->GetBackingStore(true);
-    cached_view->about_to_validate_and_paint_ = false;
-    CGLSetCurrentContext(glContext);
+    // Note that GetBackingStore can potentially spawn a nested run loop, which
+    // may change the current GL context, or, because the GL contexts are
+    // shared, may change the currently-bound FBO. Ensure that, when the run
+    // loop returns, the original GL context remain current, and the original
+    // FBO remain bound.
+    // TODO(ccameron): This is far too fragile a mechanism to rely on. Find
+    // a way to avoid doing this.
+    GLuint previous_framebuffer = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING,
+                  reinterpret_cast<GLint*>(&previous_framebuffer));
+    {
+      gfx::ScopedCGLSetCurrentContext scoped_set_current_context(NULL);
+      cached_view->about_to_validate_and_paint_ = true;
+      (void)cached_view->render_widget_host_->GetBackingStore(true);
+      cached_view->about_to_validate_and_paint_ = false;
+    }
+    CHECK_EQ(CGLGetCurrentContext(), glContext)
+        << "original GL context failed to re-bind after nested run loop, "
+        << "browser crash is imminent.";
+    glBindFramebuffer(GL_FRAMEBUFFER, previous_framebuffer);
   }
 
   // If a transition to software mode has occurred, this layer should be

@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
 #define CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
 
-#import <QuartzCore/CVDisplayLink.h>
+#include <QuartzCore/CVDisplayLink.h>
 
+#include "base/mac/scoped_typeref.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -26,7 +27,7 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
  private:
   friend class base::RefCounted<DisplayLinkMac>;
 
-  DisplayLinkMac(CVDisplayLinkRef display_link);
+  DisplayLinkMac(base::ScopedTypeRef<CVDisplayLinkRef> display_link);
   virtual ~DisplayLinkMac();
 
   void StartOrContinueDisplayLink();
@@ -42,7 +43,7 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
       void* context);
 
   // CVDisplayLink for querying VSync timing info.
-  CVDisplayLinkRef display_link_;
+  base::ScopedTypeRef<CVDisplayLinkRef> display_link_;
 
   // Timer for stopping the display link if it has not been queried in
   // the last second.

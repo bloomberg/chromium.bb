@@ -1310,7 +1310,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
       if (frame_subscriber_->ShouldCaptureFrame(present_time,
                                                 &frame, &callback)) {
-        CGLSetCurrentContext(compositing_iosurface_context_->cgl_context());
+        gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+            compositing_iosurface_context_->cgl_context());
         compositing_iosurface_->SetIOSurfaceWithContextCurrent(
             compositing_iosurface_context_, surface_handle, size,
             surface_scale_factor);
@@ -1352,7 +1353,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   // Make the context current and update the IOSurface with the handle
   // passed in by the swap command.
-  CGLSetCurrentContext(compositing_iosurface_context_->cgl_context());
+  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+      compositing_iosurface_context_->cgl_context());
   if (!compositing_iosurface_->SetIOSurfaceWithContextCurrent(
           compositing_iosurface_context_, surface_handle, size,
           surface_scale_factor)) {
@@ -1376,7 +1378,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
       compositing_iosurface_->CopyToVideoFrame(
           gfx::Rect(size), frame,
           base::Bind(callback, present_time));
-      CGLSetCurrentContext(compositing_iosurface_context_->cgl_context());
+      DCHECK_EQ(CGLGetCurrentContext(),
+                compositing_iosurface_context_->cgl_context());
     }
   }
 
@@ -2914,7 +2917,7 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
       NSRectFill(dirtyRect);
     }
 
-    CGLSetCurrentContext(
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
         renderWidgetHostView_->compositing_iosurface_context_->cgl_context());
     if (renderWidgetHostView_->DrawIOSurfaceWithoutCoreAnimation())
       return;
