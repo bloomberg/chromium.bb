@@ -29,9 +29,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
   DEFINES+=" host_os=${host_os}"
 
   if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
-    DEFINES+=" branding=Chrome"
-    DEFINES+=" buildtype=Official"
-
     # These defines are used by various chrome build scripts to tag the binary's
     # version string as 'official' in linux builds (e.g. in
     # chrome/trunk/src/chrome/tools/build/version.py).
