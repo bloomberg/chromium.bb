@@ -32,7 +32,7 @@ struct ParamTraits<ui::Clipboard::FormatType> {
 
 #endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
-IPC_ENUM_TRAITS(ui::ClipboardType)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::ClipboardType, ui::CLIPBOARD_TYPE_LAST)
 
 // Clipboard IPC messages sent from the renderer to the browser.
 
