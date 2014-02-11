@@ -78,11 +78,9 @@ struct DisplayInfoSortFunctor {
   }
 };
 
-struct ResolutionMatcher {
-  explicit ResolutionMatcher(const gfx::Size& size) : size(size) {}
-  bool operator()(const Resolution& resolution) {
-    return resolution.size == size;
-  }
+struct DisplayModeMatcher {
+  DisplayModeMatcher(const gfx::Size& size) : size(size) {}
+  bool operator()(const DisplayMode& mode) { return mode.size == size; }
   gfx::Size size;
 };
 
@@ -446,22 +444,16 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
   if (gfx::Display::InternalDisplayId() == display_id)
     return;
   const DisplayInfo& display_info = GetDisplayInfo(display_id);
-  const std::vector<Resolution>& resolutions = display_info.resolutions();
-  DCHECK_NE(0u, resolutions.size());
-  std::vector<Resolution>::const_iterator iter =
-      std::find_if(resolutions.begin(),
-                   resolutions.end(),
-                   ResolutionMatcher(resolution));
-  if (iter == resolutions.end()) {
+  const std::vector<DisplayMode>& modes = display_info.display_modes();
+  DCHECK_NE(0u, modes.size());
+  std::vector<DisplayMode>::const_iterator iter =
+      std::find_if(modes.begin(), modes.end(), DisplayModeMatcher(resolution));
+  if (iter == modes.end()) {
     LOG(WARNING) << "Unsupported resolution was requested:"
                  << resolution.ToString();
     return;
-  } else if (iter == resolutions.begin()) {
-    // The best resolution was set, so forget it.
-    resolutions_.erase(display_id);
-  } else {
-    resolutions_[display_id] = resolution;
   }
+  display_modes_[display_id] = *iter;
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   if (base::SysInfo::IsRunningOnChromeOS())
     Shell::GetInstance()->output_configurator()->ScheduleConfigureOutputs();
@@ -483,18 +475,20 @@ void DisplayManager::RegisterDisplayProperty(
     display_info_[display_id].set_configured_ui_scale(ui_scale);
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
-  if (!resolution_in_pixels.IsEmpty())
-    resolutions_[display_id] = resolution_in_pixels;
+  if (!resolution_in_pixels.IsEmpty()) {
+    // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
+    // actual display info, is 60 Hz.
+    display_modes_[display_id] =
+        DisplayMode(resolution_in_pixels, 60.0f, false, false);
+  }
 }
 
-bool DisplayManager::GetSelectedResolutionForDisplayId(
-    int64 id,
-    gfx::Size* resolution_out) const {
-  std::map<int64, gfx::Size>::const_iterator iter =
-      resolutions_.find(id);
-  if (iter == resolutions_.end())
+bool DisplayManager::GetSelectedModeForDisplayId(int64 id,
+                                                 DisplayMode* mode_out) const {
+  std::map<int64, DisplayMode>::const_iterator iter = display_modes_.find(id);
+  if (iter == display_modes_.end())
     return false;
-  *resolution_out = iter->second;
+  *mode_out = iter->second;
   return true;
 }
 
@@ -568,19 +562,19 @@ void DisplayManager::OnNativeDisplaysChanged(
     }
 
     const gfx::Size& resolution = iter->bounds_in_native().size();
-    const std::vector<Resolution>& resolutions = iter->resolutions();
+    const std::vector<DisplayMode>& display_modes = iter->display_modes();
     // This is empty the displays are initialized from InitFromCommandLine.
-    if (!resolutions.size())
+    if (!display_modes.size())
       continue;
-    std::vector<Resolution>::const_iterator resolution_iter =
-        std::find_if(resolutions.begin(),
-                     resolutions.end(),
-                     ResolutionMatcher(resolution));
+    std::vector<DisplayMode>::const_iterator display_modes_iter =
+        std::find_if(display_modes.begin(),
+                     display_modes.end(),
+                     DisplayModeMatcher(resolution));
     // Update the actual resolution selected as the resolution request may fail.
-    if (resolution_iter == resolutions.begin())
-      resolutions_.erase(iter->id());
-    else if (resolutions_.find(iter->id()) != resolutions_.end())
-      resolutions_[iter->id()] = resolution;
+    if (display_modes_iter == display_modes.end())
+      display_modes_.erase(iter->id());
+    else if (display_modes_.find(iter->id()) != display_modes_.end())
+      display_modes_[iter->id()] = *display_modes_iter;
   }
   if (HasInternalDisplay() &&
       !internal_display_connected &&
@@ -661,7 +655,7 @@ void DisplayManager::UpdateDisplays(
       non_desktop_display_ =
           CreateDisplayFromDisplayInfoById(non_desktop_display_id);
       ++new_info_iter;
-      // Remove existing external dispaly if it is going to be used as
+      // Remove existing external display if it is going to be used as
       // non desktop.
       if (curr_iter != displays_.end() &&
           curr_iter->id() == non_desktop_display_id) {

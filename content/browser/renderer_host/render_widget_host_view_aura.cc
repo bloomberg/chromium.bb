@@ -3229,7 +3229,6 @@ void RenderWidgetHostViewAura::OnCompositingLockStateChanged(
 }
 
 void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
-    ui::Compositor* compositor,
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   if (IsShowing()) {
@@ -3530,6 +3529,10 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
     legacy_render_widget_host_HWND_->UpdateParent(
         reinterpret_cast<HWND>(GetNativeViewId()));
 #endif
+
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor)
+    compositor->vsync_manager()->AddObserver(this);
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -3553,8 +3556,12 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   RunOnCommitCallbacks();
   resize_lock_.reset();
   host_->WasResized();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
+
+  if (compositor) {
+    if (compositor->HasObserver(this))
+      compositor->RemoveObserver(this);
+    compositor->vsync_manager()->RemoveObserver(this);
+  }
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the desktop window. It

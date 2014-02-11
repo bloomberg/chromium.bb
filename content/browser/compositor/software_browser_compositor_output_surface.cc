@@ -21,13 +21,11 @@ SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-    base::MessageLoopProxy* compositor_message_loop,
-    base::WeakPtr<ui::Compositor> compositor)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : BrowserCompositorOutputSurface(software_device.Pass(),
                                      surface_id,
                                      output_surface_map,
-                                     compositor_message_loop,
-                                     compositor),
+                                     vsync_manager),
       output_surface_proxy_(surface_proxy) {}
 
 SoftwareBrowserCompositorOutputSurface::

@@ -6,18 +6,14 @@
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/id_map.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/output_surface.h"
 #include "content/common/content_export.h"
-
-namespace base { class MessageLoopProxy; }
+#include "ui/compositor/compositor_vsync_manager.h"
 
 namespace cc {
 class SoftwareOutputDevice;
 }
-
-namespace ui { class Compositor; }
 
 namespace content {
 class ContextProviderCommandBuffer;
@@ -26,6 +22,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 
 class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public cc::OutputSurface,
+      public ui::CompositorVSyncManager::Observer,
       public base::NonThreadSafe {
  public:
   virtual ~BrowserCompositorOutputSurface();
@@ -34,8 +31,12 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
   virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
 
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval);
+  // ui::CompositorOutputSurface::Observer implementation.
+  virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE;
+
+  void OnUpdateVSyncParametersFromGpu(base::TimeTicks tiembase,
+                                      base::TimeDelta interval);
 
   void SetReflector(ReflectorImpl* reflector);
 
@@ -45,22 +46,19 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-      base::MessageLoopProxy* compositor_message_loop,
-      base::WeakPtr<ui::Compositor> compositor);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-      base::MessageLoopProxy* compositor_message_loop,
-      base::WeakPtr<ui::Compositor> compositor);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   int surface_id_;
   IDMap<BrowserCompositorOutputSurface>* output_surface_map_;
 
-  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
-  base::WeakPtr<ui::Compositor> compositor_;
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
   scoped_refptr<ReflectorImpl> reflector_;
 
  private:

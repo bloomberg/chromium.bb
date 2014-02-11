@@ -46,9 +46,9 @@ class TestOutputSurface : public OutputSurface {
 
   using OutputSurface::ReleaseGL;
 
-  void OnVSyncParametersChangedForTesting(base::TimeTicks timebase,
-                                          base::TimeDelta interval) {
-    OnVSyncParametersChanged(timebase, interval);
+  void CommitVSyncParametersForTesting(base::TimeTicks timebase,
+                                       base::TimeDelta interval) {
+    CommitVSyncParameters(timebase, interval);
   }
 
   void BeginImplFrameForTesting() {
@@ -387,7 +387,7 @@ TEST(OutputSurfaceTest,
 
   // We need to subtract an epsilon from Now() because some platforms have
   // a slow clock.
-  output_surface.OnVSyncParametersChangedForTesting(
+  output_surface.CommitVSyncParametersForTesting(
       gfx::FrameTime::Now() - base::TimeDelta::FromSeconds(1), big_interval);
 
   output_surface.SetMaxFramesPending(2);

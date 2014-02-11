@@ -90,8 +90,8 @@ class CompositorOutputSurface
   };
 
   void OnMessageReceived(const IPC::Message& message);
-  void OnUpdateVSyncParameters(
-      base::TimeTicks timebase, base::TimeDelta interval);
+  void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
+                                          base::TimeDelta interval);
 #if defined(OS_ANDROID)
   void OnBeginImplFrame(const cc::BeginFrameArgs& args);
 #endif

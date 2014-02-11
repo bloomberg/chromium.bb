@@ -7,6 +7,10 @@
 
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
+namespace ui {
+class CompositorVSyncManager;
+}
+
 namespace content {
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
@@ -19,8 +23,7 @@ class GpuBrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-      base::MessageLoopProxy* compositor_message_loop,
-      base::WeakPtr<ui::Compositor> compositor);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   virtual ~GpuBrowserCompositorOutputSurface();
 

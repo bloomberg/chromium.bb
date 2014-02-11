@@ -719,49 +719,60 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
-  std::vector<Resolution> resolutions;
-  resolutions.push_back(Resolution(gfx::Size(1000, 500), false));
-  resolutions.push_back(Resolution(gfx::Size(800, 300), false));
-  resolutions.push_back(Resolution(gfx::Size(400, 500), false));
+  std::vector<DisplayMode> display_modes;
+  display_modes.push_back(
+      DisplayMode(gfx::Size(1000, 500), 58.0f, false, true));
+  display_modes.push_back(
+      DisplayMode(gfx::Size(800, 300), 59.0f, false, false));
+  display_modes.push_back(
+      DisplayMode(gfx::Size(400, 500), 60.0f, false, false));
 
-  native_display_info.set_resolutions(resolutions);
+  native_display_info.set_display_modes(display_modes);
 
   std::vector<DisplayInfo> display_info_list;
   display_info_list.push_back(native_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
-  gfx::Size selected;
-  EXPECT_FALSE(display_manager()->GetSelectedResolutionForDisplayId(
-      display_id, &selected));
+  DisplayMode mode;
+  EXPECT_FALSE(
+      display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
 
   // Unsupported resolution.
   display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 4000));
-  EXPECT_FALSE(display_manager()->GetSelectedResolutionForDisplayId(
-      display_id, &selected));
+  EXPECT_FALSE(
+      display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
 
   // Supported resolution.
   display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
-  EXPECT_TRUE(display_manager()->GetSelectedResolutionForDisplayId(
-      display_id, &selected));
-  EXPECT_EQ("800x300", selected.ToString());
+  EXPECT_TRUE(
+      display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
+  EXPECT_EQ("800x300", mode.size.ToString());
+  EXPECT_EQ(59.0f, mode.refresh_rate);
+  EXPECT_FALSE(mode.native);
 
   // Best resolution.
   display_manager()->SetDisplayResolution(display_id, gfx::Size(1000, 500));
-  EXPECT_FALSE(display_manager()->GetSelectedResolutionForDisplayId(
-      display_id, &selected));
+  EXPECT_TRUE(
+      display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
+  EXPECT_EQ("1000x500", mode.size.ToString());
+  EXPECT_EQ(58.0f, mode.refresh_rate);
+  EXPECT_TRUE(mode.native);
 }
 
 TEST_F(DisplayManagerTest, ResolutionFallback) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
-  std::vector<Resolution> resolutions;
-  resolutions.push_back(Resolution(gfx::Size(1000, 500), false));
-  resolutions.push_back(Resolution(gfx::Size(800, 300), false));
-  resolutions.push_back(Resolution(gfx::Size(400, 500), false));
+  std::vector<DisplayMode> display_modes;
+  display_modes.push_back(
+      DisplayMode(gfx::Size(1000, 500), 58.0f, false, true));
+  display_modes.push_back(
+      DisplayMode(gfx::Size(800, 300), 59.0f, false, false));
+  display_modes.push_back(
+      DisplayMode(gfx::Size(400, 500), 60.0f, false, false));
 
-  std::vector<Resolution> copy = resolutions;
-  native_display_info.set_resolutions(copy);
+  std::vector<DisplayMode> copy = display_modes;
+  native_display_info.set_display_modes(copy);
 
   std::vector<DisplayInfo> display_info_list;
   display_info_list.push_back(native_display_info);
@@ -770,31 +781,36 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
     display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
     DisplayInfo new_native_display_info =
         CreateDisplayInfo(display_id, gfx::Rect(0, 0, 400, 500));
-    copy = resolutions;
-    new_native_display_info.set_resolutions(copy);
+    copy = display_modes;
+    new_native_display_info.set_display_modes(copy);
     std::vector<DisplayInfo> new_display_info_list;
     new_display_info_list.push_back(new_native_display_info);
     display_manager()->OnNativeDisplaysChanged(new_display_info_list);
 
-    gfx::Size selected;
-    EXPECT_TRUE(display_manager()->GetSelectedResolutionForDisplayId(
-        display_id, &selected));
-    EXPECT_EQ("400x500", selected.ToString());
+    DisplayMode mode;
+    EXPECT_TRUE(
+        display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
+    EXPECT_EQ("400x500", mode.size.ToString());
+    EXPECT_EQ(60.0f, mode.refresh_rate);
+    EXPECT_FALSE(mode.native);
   }
   {
-    // Best resolution should not be set.
+    // Best resolution should find itself on the resolutions list.
     display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
     DisplayInfo new_native_display_info =
         CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
-    std::vector<Resolution> copy = resolutions;
-    new_native_display_info.set_resolutions(copy);
+    std::vector<DisplayMode> copy = display_modes;
+    new_native_display_info.set_display_modes(copy);
     std::vector<DisplayInfo> new_display_info_list;
     new_display_info_list.push_back(new_native_display_info);
     display_manager()->OnNativeDisplaysChanged(new_display_info_list);
 
-    gfx::Size selected;
-    EXPECT_FALSE(display_manager()->GetSelectedResolutionForDisplayId(
-        display_id, &selected));
+    DisplayMode mode;
+    EXPECT_TRUE(
+        display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
+    EXPECT_EQ("1000x500", mode.size.ToString());
+    EXPECT_EQ(58.0f, mode.refresh_rate);
+    EXPECT_TRUE(mode.native);
   }
 }
 

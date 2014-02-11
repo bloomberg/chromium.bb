@@ -138,7 +138,8 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   if (!HasClient())
     return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters,
+                        OnUpdateVSyncParametersFromBrowser);
     IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources, OnReclaimResources);
 #if defined(OS_ANDROID)
@@ -147,10 +148,11 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void CompositorOutputSurface::OnUpdateVSyncParameters(
-    base::TimeTicks timebase, base::TimeDelta interval) {
+void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
-  OnVSyncParametersChanged(timebase, interval);
+  CommitVSyncParameters(timebase, interval);
 }
 
 #if defined(OS_ANDROID)

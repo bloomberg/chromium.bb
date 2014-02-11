@@ -8,14 +8,13 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/common/content_export.h"
-#include "ui/compositor/compositor.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace cc {
 class SoftwareOutputDevice;
+}
+
+namespace ui {
+class CompositorVSyncManager;
 }
 
 namespace content {
@@ -30,8 +29,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-      base::MessageLoopProxy* compositor_message_loop,
-      base::WeakPtr<ui::Compositor> compositor);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   virtual ~SoftwareBrowserCompositorOutputSurface();
 

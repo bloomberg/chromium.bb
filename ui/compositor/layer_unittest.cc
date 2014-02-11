@@ -354,11 +354,6 @@ class TestCompositorObserver : public CompositorObserver {
   virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE {
   }
 
-  virtual void OnUpdateVSyncParameters(Compositor* compositor,
-                                       base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE {
-  }
-
   bool committed_;
   bool started_;
   bool ended_;

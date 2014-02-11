@@ -217,8 +217,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
             CreateSoftwareOutputDevice(compositor),
             per_compositor_data_[compositor]->surface_id,
             &output_surface_map_,
-            base::MessageLoopProxy::current().get(),
-            compositor->AsWeakPtr()));
+            compositor->vsync_manager()));
     return surface.PassAs<cc::OutputSurface>();
   }
 
@@ -237,8 +236,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
           context_provider,
           per_compositor_data_[compositor]->surface_id,
           &output_surface_map_,
-          base::MessageLoopProxy::current().get(),
-          compositor->AsWeakPtr()));
+          compositor->vsync_manager()));
   if (data->reflector.get()) {
     data->reflector->CreateSharedTexture();
     data->reflector->AttachToOutputSurface(surface.get());

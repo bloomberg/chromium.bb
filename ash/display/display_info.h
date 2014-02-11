@@ -16,13 +16,18 @@
 namespace ash {
 namespace internal {
 
-// A struct that represents the display's resolution and
-// interlaced info.
-struct ASH_EXPORT Resolution {
-  Resolution(const gfx::Size& size, bool interlaced);
+// A struct that represents the display's mode info.
+struct ASH_EXPORT DisplayMode {
+  DisplayMode();
+  DisplayMode(const gfx::Size& size,
+              float refresh_rate,
+              bool interlaced,
+              bool native);
 
-  gfx::Size size;
-  bool interlaced;
+  gfx::Size size;      // Physical pixel size of the display.
+  float refresh_rate;  // Refresh rate of the display, in Hz.
+  bool interlaced;     // True if mode is interlaced.
+  bool native;         // True if mode is native mode of the display.
 };
 
 // DisplayInfo contains metadata for each display. This is used to
@@ -47,7 +52,7 @@ class ASH_EXPORT DisplayInfo {
   //   270 degrees (to the 'l'eft).
   // - ui-scale is floating value, e.g. @1.5 or @1.25.
   // - |resolution list| is the list of size that is given in
-  //   |width x height| separated by '|'.
+  //   |width x height [% refresh_rate]| separated by '|'.
   //
   // A couple of examples:
   // "100x100"
@@ -63,9 +68,9 @@ class ASH_EXPORT DisplayInfo {
   // "10+20-300x200/u@1.5"
   //      300x200 window at 10,20 origin. 1x device scale factor.
   //      no overscan. flipped upside-down (180 degree) and 1.5 ui scale.
-  // "200x100#300x200|200x100|100x100"
+  // "200x100#300x200|200x100%59.0|100x100%60"
   //      200x100 window at 0,0 origin, with 3 possible resolutions,
-  //      300x200, 200x100 and 100x100.
+  //      300x200, 200x100 at 59 Hz, and 100x100 at 60 Hz.
   static DisplayInfo CreateFromSpec(const std::string& spec);
 
   // Creates a DisplayInfo from string spec using given |id|.
@@ -142,19 +147,19 @@ class ASH_EXPORT DisplayInfo {
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
-  const std::vector<Resolution>& resolutions() const {
-    return resolutions_;
+  const std::vector<DisplayMode>& display_modes() const {
+    return display_modes_;
   }
-  void set_resolutions(std::vector<Resolution>& resolution) {
-    resolutions_.swap(resolution);
+  void set_display_modes(std::vector<DisplayMode>& display_modes) {
+    display_modes_.swap(display_modes);
   }
 
-  // Returns a string representation of the DisplayInfo
-  // excluding resolutions.
+  // Returns a string representation of the DisplayInfo, excluding display
+  // modes.
   std::string ToString() const;
 
-  // Returns a string representation of the DisplayInfo
-  // including resolutions.
+  // Returns a string representation of the DisplayInfo, including display
+  // modes.
   std::string ToFullString() const;
 
  private:
@@ -188,8 +193,8 @@ class ASH_EXPORT DisplayInfo {
   // True if this comes from native platform (DisplayChangeObserver).
   bool native_;
 
-  // The list of resolutions supported by this display.
-  std::vector<Resolution> resolutions_;
+  // The list of modes supported by this display.
+  std::vector<DisplayMode> display_modes_;
 };
 
 }  // namespace internal
