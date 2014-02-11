@@ -33,6 +33,13 @@ class SmoothnessToughAnimationCases(test.Test):
   page_set = 'page_sets/tough_animation_cases.json'
 
 
+class SmoothnessKeySilkCases(test.Test):
+  """Measures rendering statistics for the key silk cases without GPU
+  rasterization
+  """
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_silk_cases.json'
+
 class SmoothnessThreadedRasterizationKeySilkCases(test.Test):
   """Measures rendering statistics for the key silk cases without GPU
   rasterization
