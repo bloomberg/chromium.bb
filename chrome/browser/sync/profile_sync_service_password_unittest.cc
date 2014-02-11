@@ -66,7 +66,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 
 ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   PasswordModelAssociator* model_associator =
       new PasswordModelAssociator(service, ps, NULL);
   PasswordChangeProcessor* change_processor =

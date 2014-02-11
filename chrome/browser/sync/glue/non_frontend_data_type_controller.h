@@ -114,6 +114,12 @@ class NonFrontendDataTypeController : public DataTypeController {
       const tracked_objects::Location& from_here,
       const base::Closure& task) = 0;
 
+  // Returns true if the current thread is the backend thread, i.e. the same
+  // thread used by |PostTaskOnBackendThread|. The default implementation just
+  // checks that the current thread is not the UI thread, but subclasses should
+  // override it appropriately.
+  virtual bool IsOnBackendThread();
+
   // Datatype specific creation of sync components.
   // Note: this is performed on the datatype's thread.
   virtual ProfileSyncComponentsFactory::SyncComponents

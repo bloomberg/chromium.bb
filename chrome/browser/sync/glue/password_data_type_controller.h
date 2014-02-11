@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
 class PasswordStore;
+class ProfileSyncServicePasswordTest;
 
 namespace browser_sync {
 
@@ -34,6 +35,7 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
+  virtual bool IsOnBackendThread() OVERRIDE;
   virtual bool StartModels() OVERRIDE;
   virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
       OVERRIDE;

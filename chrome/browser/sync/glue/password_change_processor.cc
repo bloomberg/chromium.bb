@@ -37,11 +37,7 @@ PasswordChangeProcessor::PasswordChangeProcessor(
       disconnected_(false) {
   DCHECK(model_associator);
   DCHECK(error_handler);
-#if defined(OS_MACOSX)
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-#else
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-#endif
+  DCHECK(password_store->GetBackgroundTaskRunner()->RunsTasksOnCurrentThread());
 }
 
 PasswordChangeProcessor::~PasswordChangeProcessor() {

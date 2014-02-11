@@ -11,24 +11,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/test/mock_notification_observer.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
 using base::WaitableEvent;
-using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAreArray;
@@ -54,14 +46,7 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
 
 class PasswordStoreDefaultTest : public testing::Test {
  protected:
-  PasswordStoreDefaultTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
-
   virtual void SetUp() {
-    ASSERT_TRUE(db_thread_.Start());
-
     profile_.reset(new TestingProfile());
 
     login_db_.reset(new LoginDatabase());
@@ -69,18 +54,7 @@ class PasswordStoreDefaultTest : public testing::Test {
         FILE_PATH_LITERAL("login_test"))));
   }
 
-  virtual void TearDown() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
-    db_thread_.Stop();
-  }
-
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  // PasswordStore, WDS schedule work on this thread.
-  content::TestBrowserThread db_thread_;
-
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
 };
@@ -89,15 +63,10 @@ ACTION(STLDeleteElements0) {
   STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::MessageLoop::current()->Quit();
-}
-
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::MessageLoopProxy::current(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      base::MessageLoopProxy::current(),
       login_db_.release()));
   store->Init();
 
@@ -123,38 +92,26 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
     store->AddLogin(*form);
   }
 
-  // The PasswordStore schedules tasks to run on the DB thread so we schedule
-  // yet another task to notify us that it's safe to carry on with the test.
-  // The PasswordStore doesn't really understand that it's "done" once the tasks
-  // we posted above have completed, so there's no formal notification for that.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  base::MessageLoop::current()->RunUntilIdle();
 
   MockPasswordStoreConsumer consumer;
-
-  // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnGetPasswordStoreResults(_))
-      .WillByDefault(QuitUIMessageLoop());
 
   // We expect to get the same data back, even though it's not all ASCII.
   EXPECT_CALL(consumer,
       OnGetPasswordStoreResults(ContainsAllPasswordForms(expected_forms)))
-      .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
-
+      .WillOnce(WithArg<0>(STLDeleteElements0()));
   store->GetAutofillableLogins(&consumer);
-  base::MessageLoop::current()->Run();
+
+  base::MessageLoop::current()->RunUntilIdle();
 
   STLDeleteElements(&expected_forms);
-
   store->Shutdown();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::MessageLoopProxy::current(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      base::MessageLoopProxy::current(),
       login_db_.release()));
   store->Init();
 
@@ -184,19 +141,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
-
-  // The PasswordStore schedules tasks to run on the DB thread so we schedule
-  // yet another task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Notification happens on the same thread that we added the observer on,
-  // so run message loop to get the notification
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Change the password.
   form->password_value = base::ASCIIToUTF16("a different password");
@@ -211,15 +156,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
-
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
+  base::MessageLoop::current()->RunUntilIdle();
 
   const PasswordStoreChange expected_delete_changes[] = {
     PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
@@ -231,15 +168,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
-
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
+  base::MessageLoop::current()->RunUntilIdle();
 
   store->RemoveObserver(&observer);
   store->Shutdown();

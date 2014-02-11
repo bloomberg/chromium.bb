@@ -65,7 +65,7 @@ BackendComponentsContainer::~BackendComponentsContainer() {
 }
 
 void NonFrontendDataTypeController::BackendComponentsContainer::Run() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(controller_->IsOnBackendThread());
   if (CreateComponents())
     Associate();
 }
@@ -243,8 +243,8 @@ void NonFrontendDataTypeController::StartAssociating(
 }
 
 void DestroyComponentsInBackend(
-    NonFrontendDataTypeController::BackendComponentsContainer *containter) {
-  delete containter;
+    NonFrontendDataTypeController::BackendComponentsContainer *container) {
+  delete container;
 }
 
 void NonFrontendDataTypeController::Stop() {
@@ -295,7 +295,7 @@ DataTypeController::State NonFrontendDataTypeController::state() const {
 void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsOnBackendThread());
   RecordUnrecoverableError(from_here, message);
   BrowserThread::PostTask(BrowserThread::UI, from_here,
       base::Bind(&NonFrontendDataTypeController::DisableImpl,
@@ -327,6 +327,10 @@ bool NonFrontendDataTypeController::StartModels() {
   // By default, no additional services need to be started before we can proceed
   // with model association, so do nothing.
   return true;
+}
+
+bool NonFrontendDataTypeController::IsOnBackendThread() {
+  return !BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
 void NonFrontendDataTypeController::StartDone(

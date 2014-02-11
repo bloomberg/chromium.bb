@@ -52,15 +52,11 @@ PasswordModelAssociator::PasswordModelAssociator(
       expected_loop_(base::MessageLoop::current()),
       error_handler_(error_handler) {
   DCHECK(sync_service_);
-#if defined(OS_MACOSX)
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-#else
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-#endif
+  DCHECK(password_store->GetBackgroundTaskRunner()->RunsTasksOnCurrentThread());
 }
 
 PasswordModelAssociator::~PasswordModelAssociator() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 syncer::SyncError PasswordModelAssociator::AssociateModels(

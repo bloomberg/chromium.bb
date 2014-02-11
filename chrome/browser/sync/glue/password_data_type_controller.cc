@@ -51,6 +51,10 @@ bool PasswordDataTypeController::PostTaskOnBackendThread(
   return password_store_->ScheduleTask(task);
 }
 
+bool PasswordDataTypeController::IsOnBackendThread() {
+  return password_store_->GetBackgroundTaskRunner()->RunsTasksOnCurrentThread();
+}
+
 bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
@@ -61,7 +65,7 @@ bool PasswordDataTypeController::StartModels() {
 
 ProfileSyncComponentsFactory::SyncComponents
 PasswordDataTypeController::CreateSyncComponents() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsOnBackendThread());
   DCHECK_EQ(state(), ASSOCIATING);
   return profile_sync_factory()->CreatePasswordSyncComponents(
       profile_sync_service(),

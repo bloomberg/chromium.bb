@@ -12,13 +12,11 @@
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
 using base::WaitableEvent;
-using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
@@ -31,18 +29,11 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
                void(const std::vector<PasswordForm*>&));
 };
 
-}  // anonymous namespace
+}  // namespace
 
 class PasswordStoreTest : public testing::Test {
  protected:
-  PasswordStoreTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
-
   virtual void SetUp() {
-    ASSERT_TRUE(db_thread_.Start());
-
     profile_.reset(new TestingProfile());
 
     login_db_.reset(new LoginDatabase());
@@ -50,18 +41,7 @@ class PasswordStoreTest : public testing::Test {
         FILE_PATH_LITERAL("login_test"))));
   }
 
-  virtual void TearDown() {
-    db_thread_.Stop();
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
-  }
-
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  // PasswordStore schedules work on this thread.
-  content::TestBrowserThread db_thread_;
-
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
 };
@@ -70,15 +50,10 @@ ACTION(STLDeleteElements0) {
   STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::MessageLoop::current()->Quit();
-}
-
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::MessageLoopProxy::current(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      base::MessageLoopProxy::current(),
       login_db_.release()));
   store->Init();
 
@@ -151,15 +126,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
     all_forms.push_back(form);
     store->AddLogin(*form);
   }
-
-  // The PasswordStore schedules tasks to run on the DB thread so we schedule
-  // yet another task to notify us that it's safe to carry on with the test.
-  // The PasswordStore doesn't really understand that it's "done" once the tasks
-  // we posted above have completed, so there's no formal notification for that.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // We expect to get back only the "recent" www.google.com login.
   // Theoretically these should never actually exist since there are no longer
@@ -188,16 +155,11 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   MockPasswordStoreConsumer consumer;
 
-  // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnGetPasswordStoreResults(_))
-      .WillByDefault(QuitUIMessageLoop());
-
   // Expect the appropriate replies, as above, in reverse order than we will
-  // issue the queries. Each retires on saturation to avoid matcher spew, except
-  // the last which quits the message loop.
+  // issue the queries. Each retires on saturation to avoid matcher spew.
   EXPECT_CALL(consumer,
       OnGetPasswordStoreResults(ContainsAllPasswordForms(bar_example_expected)))
-      .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
+      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
   EXPECT_CALL(consumer,
       OnGetPasswordStoreResults(
           ContainsAllPasswordForms(accounts_google_expected)))
@@ -211,9 +173,8 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->GetLogins(accounts_google, PasswordStore::ALLOW_PROMPT, &consumer);
   store->GetLogins(bar_example, PasswordStore::ALLOW_PROMPT, &consumer);
 
-  base::MessageLoop::current()->Run();
+  base::MessageLoop::current()->RunUntilIdle();
 
   STLDeleteElements(&all_forms);
-
   store->Shutdown();
 }
