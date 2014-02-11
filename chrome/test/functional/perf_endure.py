@@ -1388,7 +1388,7 @@ class ChromeEndureReplay(object):
     if 'WPR_RECORD' in os.environ:
       replay_options.append('--append')
     return webpagereplay.ReplayServer(archive_path,
-                                      cls.WEBPAGEREPLAY_HOST,
+                                      cls.WEBPAGEREPLAY_HOST, 0,
                                       cls.WEBPAGEREPLAY_HTTP_PORT,
                                       cls.WEBPAGEREPLAY_HTTPS_PORT,
                                       replay_options)
