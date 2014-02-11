@@ -27,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = 'b9af6dada55253abef4c2f1473dd25d9e624a66a'
+BIONIC_VERSION = '77ffe85f084f79cfe162c6083f65027d60f905ec'
 
 ARCHES = ['arm']
 
@@ -90,6 +90,7 @@ def ReplaceArch(text, arch, subarch=None):
 
 
 def Clobber():
+  Rmdir(os.path.join(TOOLCHAIN_BUILD, 'cache'))
   for arch in ARCHES:
     Rmdir(os.path.join(TOOLCHAIN, 'linux_%s_bionic' % arch))
     for workdir in PROJECTS:
@@ -178,9 +179,8 @@ def CreateBasicToolchain():
 
     workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
     workpath = ReplaceArch(workpath, arch)
-    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath)
-    ConfigureAndBuild(arch, 'bionic/libm', workpath, inspath)
-    # ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
+    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath,
+                      target='bootstrap')
 
     # Build specs file
     gcc = ReplaceArch(os.path.join(inspath, 'bin', '$NACL-nacl-gcc'), arch)
@@ -190,7 +190,13 @@ def CreateBasicToolchain():
       process.Run([gcc, '-dumpspecs'], cwd=None, shell=False,
                   outfile=specfile, verbose=False)
     text = open(specs, 'r').read()
-    text = ReplaceText(text, [{'-lgcc': '-lgcc %{!shared: -lgcc_eh}'}])
+
+    # Replace items in the spec file
+    text = ReplaceText(text, [{
+      '-lgcc': '-lgcc %{!shared: -lgcc_eh}',
+      '--hash-style=gnu': '--hash-style=sysv',
+    }])
+
     open(specs, 'w').write(text)
 
 
@@ -393,7 +399,9 @@ include $(src_path)/Makefile
   UpdateText(os.path.join(dst, 'Makefile'), text)
 
 
-def ConfigureAndBuild(arch, project, workpath, inspath, tcpath=None):
+def ConfigureAndBuild(arch, project, workpath, inspath,
+                      tcpath=None, target=None):
+
   # Create project for CRTx and LIBC files
   print 'Configure %s for %s.\n' % (project, arch)
   srcpath = os.path.join(TOOLCHAIN_BUILD_SRC, project)
@@ -401,7 +409,11 @@ def ConfigureAndBuild(arch, project, workpath, inspath, tcpath=None):
   libpath = ReplaceArch(os.path.join(inspath, '$NACL-nacl', 'lib'), arch)
   CreateProject(arch, srcpath, dstpath, libpath)
   print 'Building %s for %s at %s.' % (project, arch, dstpath)
-  if process.Run(['make', '-j12', 'V=1'], cwd=dstpath, outfile=sys.stdout):
+
+  args = ['make', '-j12', 'V=1']
+  if target:
+    args.append(target)
+  if process.Run(args, cwd=dstpath, outfile=sys.stdout):
     raise RuntimeError('Failed to build %s for %s.\n' % (project, arch))
   if tcpath:
     UpdateFromTo(inspath, tcpath)
@@ -485,7 +497,7 @@ def main(argv):
   parser.add_option(
       '-c', '--clobber', dest='clobber',
       default=False, action='store_true',
-      help='Clobber working bionic directories before building.')
+      help='Clobber working directories before building.')
   parser.add_option(
       '-s', '--sync', dest='sync',
       default=False, action='store_true',
