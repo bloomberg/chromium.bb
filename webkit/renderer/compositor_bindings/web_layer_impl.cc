@@ -188,13 +188,13 @@ void WebLayerImpl::setDrawsContent(bool draws_content) {
 
 bool WebLayerImpl::drawsContent() const { return layer_->DrawsContent(); }
 
-void WebLayerImpl::setPreserves3D(bool preserve3D) {
-  layer_->SetPreserves3d(preserve3D);
+void WebLayerImpl::setShouldFlattenTransform(bool flatten) {
+  layer_->SetShouldFlattenTransform(flatten);
 }
 
-void WebLayerImpl::setShouldFlattenTransform(bool flatten) { }
-
-void WebLayerImpl::setRenderingContext(int context) { }
+void WebLayerImpl::setRenderingContext(int context) {
+  layer_->SetIs3dSorted(context != 0);
+}
 
 void WebLayerImpl::setUseParentBackfaceVisibility(
     bool use_parent_backface_visibility) {

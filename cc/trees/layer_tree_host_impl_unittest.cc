@@ -1645,7 +1645,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
       static_cast<DidDrawCheckLayer*>(layer1->children()[0]);
 
   layer1->SetOpacity(0.3f);
-  layer1->SetPreserves3d(false);
+  layer1->SetShouldFlattenTransform(true);
 
   EXPECT_FALSE(root->did_draw_called());
   EXPECT_FALSE(layer1->did_draw_called());

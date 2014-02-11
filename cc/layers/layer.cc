@@ -53,10 +53,11 @@ Layer::Layer()
       masks_to_bounds_(false),
       contents_opaque_(false),
       double_sided_(true),
-      preserves_3d_(false),
+      should_flatten_transform_(true),
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
+      is_3d_sorted_(false),
       anchor_point_(0.5f, 0.5f),
       background_color_(0),
       opacity_(1.f),
@@ -816,6 +817,22 @@ void Layer::SetDoubleSided(bool double_sided) {
   SetNeedsCommit();
 }
 
+void Layer::SetIs3dSorted(bool sorted) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (is_3d_sorted_ == sorted)
+    return;
+  is_3d_sorted_ = sorted;
+  SetNeedsCommit();
+}
+
+void Layer::SetShouldFlattenTransform(bool should_flatten) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (should_flatten_transform_ == should_flatten)
+    return;
+  should_flatten_transform_ = should_flatten;
+  SetNeedsCommit();
+}
+
 void Layer::SetIsDrawable(bool is_drawable) {
   DCHECK(IsPropertyChangeAllowed());
   if (is_drawable_ == is_drawable)
@@ -938,7 +955,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       IsContainerForFixedPositionLayers());
   layer->SetFixedContainerSizeDelta(gfx::Vector2dF());
   layer->SetPositionConstraint(position_constraint_);
-  layer->SetPreserves3d(preserves_3d());
+  layer->SetShouldFlattenTransform(should_flatten_transform_);
+  layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())

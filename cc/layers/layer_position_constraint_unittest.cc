@@ -22,13 +22,15 @@ void SetLayerPropertiesForTesting(LayerImpl* layer,
                                   const gfx::PointF& anchor,
                                   const gfx::PointF& position,
                                   const gfx::Size& bounds,
-                                  bool preserves3d) {
+                                  bool flatten_transform,
+                                  bool is_3d_sorted) {
   layer->SetTransform(transform);
   layer->SetSublayerTransform(sublayer_transform);
   layer->SetAnchorPoint(anchor);
   layer->SetPosition(position);
   layer->SetBounds(bounds);
-  layer->SetPreserves3d(preserves3d);
+  layer->SetShouldFlattenTransform(flatten_transform);
+  layer->SetIs3dSorted(is_3d_sorted);
   layer->SetContentBounds(bounds);
 }
 
@@ -97,6 +99,7 @@ class LayerPositionConstraintTest : public testing::Test {
                                  anchor,
                                  position,
                                  bounds,
+                                 true,
                                  false);
     SetLayerPropertiesForTesting(child.get(),
                                  IdentityMatrix,
@@ -104,6 +107,7 @@ class LayerPositionConstraintTest : public testing::Test {
                                  anchor,
                                  position,
                                  bounds,
+                                 true,
                                  false);
     SetLayerPropertiesForTesting(grand_child.get(),
                                  IdentityMatrix,
@@ -111,6 +115,7 @@ class LayerPositionConstraintTest : public testing::Test {
                                  anchor,
                                  position,
                                  bounds,
+                                 true,
                                  false);
     SetLayerPropertiesForTesting(great_grand_child.get(),
                                  IdentityMatrix,
@@ -118,6 +123,7 @@ class LayerPositionConstraintTest : public testing::Test {
                                  anchor,
                                  position,
                                  bounds,
+                                 true,
                                  false);
 
     root->SetBounds(clip_bounds);
@@ -729,6 +735,7 @@ TEST_F(LayerPositionConstraintTest,
                                  gfx::PointF(),
                                  gfx::PointF(),
                                  gfx::Size(100, 100),
+                                 true,
                                  false);
     great_grand_child->AddChild(fixed_position_child.Pass());
   }
@@ -1152,6 +1159,5 @@ TEST_F(LayerPositionConstraintTest,
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_to_container2_transform,
                                   fixed_to_container2->draw_transform());
 }
-
 }  // namespace
 }  // namespace cc
