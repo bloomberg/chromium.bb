@@ -408,40 +408,36 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     // Compute combined bin.
     ManagedTileBin combined_bin = std::min(active_bin, pending_bin);
 
-    ManagedTileBin tree_bin[NUM_TREES];
-    tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
-    tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][pending_bin];
-
-    // The bin that the tile would have if the GPU memory manager had
-    // a maximally permissive policy, send to the GPU memory manager
-    // to determine policy.
-    ManagedTileBin gpu_memmgr_stats_bin = NEVER_BIN;
-    TilePriority tile_priority;
-
-    switch (tree_priority) {
-      case SAME_PRIORITY_FOR_BOTH_TREES:
-        mts.bin = kBinPolicyMap[memory_policy][combined_bin];
-        gpu_memmgr_stats_bin = combined_bin;
-        tile_priority = tile->combined_priority();
-        break;
-      case SMOOTHNESS_TAKES_PRIORITY:
-        mts.bin = tree_bin[ACTIVE_TREE];
-        gpu_memmgr_stats_bin = active_bin;
-        tile_priority = active_priority;
-        break;
-      case NEW_CONTENT_TAKES_PRIORITY:
-        mts.bin = tree_bin[PENDING_TREE];
-        gpu_memmgr_stats_bin = pending_bin;
-        tile_priority = pending_priority;
-        break;
-    }
-
     if (!tile_is_ready_to_draw || tile_version.requires_resource()) {
+      // The bin that the tile would have if the GPU memory manager had
+      // a maximally permissive policy, send to the GPU memory manager
+      // to determine policy.
+      ManagedTileBin gpu_memmgr_stats_bin = combined_bin;
       if ((gpu_memmgr_stats_bin == NOW_BIN) ||
           (gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
         memory_required_bytes_ += BytesConsumedIfAllocated(tile);
       if (gpu_memmgr_stats_bin != NEVER_BIN)
         memory_nice_to_have_bytes_ += BytesConsumedIfAllocated(tile);
+    }
+
+    ManagedTileBin tree_bin[NUM_TREES];
+    tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
+    tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][pending_bin];
+
+    TilePriority tile_priority;
+    switch (tree_priority) {
+      case SAME_PRIORITY_FOR_BOTH_TREES:
+        mts.bin = kBinPolicyMap[memory_policy][combined_bin];
+        tile_priority = tile->combined_priority();
+        break;
+      case SMOOTHNESS_TAKES_PRIORITY:
+        mts.bin = tree_bin[ACTIVE_TREE];
+        tile_priority = active_priority;
+        break;
+      case NEW_CONTENT_TAKES_PRIORITY:
+        mts.bin = tree_bin[PENDING_TREE];
+        tile_priority = pending_priority;
+        break;
     }
 
     // Bump up the priority if we determined it's NEVER_BIN on one tree,
