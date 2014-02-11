@@ -770,7 +770,7 @@ class GitWrapper(SCMWrapper):
       if not os.path.exists(os.path.join(folder, 'config')):
         gclient_utils.rmtree(folder)
         cmd = ['clone'] + v + ['-c', 'core.deltaBaseCacheLimit=2g',
-                               '--progress', '--mirror']
+                               '--progress', '--bare']
 
         if use_reference:
           cmd += ['--reference', os.path.abspath(self.checkout_path)]
