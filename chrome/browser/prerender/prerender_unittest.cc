@@ -18,6 +18,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/prerender_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_view_host.h"
@@ -83,6 +84,8 @@ class DummyPrerenderContents : public PrerenderContents {
 int DummyPrerenderContents::g_next_route_id_ = 0;
 
 const gfx::Size kSize(640, 480);
+
+const uint32 kDefaultRelTypes = PrerenderRelTypePrerender;
 
 }  // namespace
 
@@ -376,10 +379,9 @@ class PrerenderTest : public testing::Test {
   // true iff the prerender has been added to the PrerenderManager by the
   // PrerenderLinkManager and the PrerenderManager returned a handle.
   bool AddSimplePrerender(const GURL& url) {
-    prerender_link_manager()->OnAddPrerender(kDefaultChildId,
-                                             GetNextPrerenderID(),
-                                             url, content::Referrer(),
-                                             kSize, kDefaultRenderViewRouteId);
+    prerender_link_manager()->OnAddPrerender(
+        kDefaultChildId, GetNextPrerenderID(), url, kDefaultRelTypes,
+        content::Referrer(), kSize, kDefaultRenderViewRouteId);
     return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
   }
 
@@ -719,7 +721,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
           ORIGIN_GWS_PRERENDER,
           FINAL_STATUS_USED);
   prerender_link_manager()->OnAddPrerender(
-      child_id, GetNextPrerenderID(), pending_url,
+      child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
       Referrer(url, blink::WebReferrerPolicyDefault),
       kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
@@ -760,7 +762,7 @@ TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {
           ORIGIN_GWS_PRERENDER,
           FINAL_STATUS_UNSUPPORTED_SCHEME);
   prerender_link_manager()->OnAddPrerender(
-      child_id, GetNextPrerenderID(), pending_url,
+      child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
       Referrer(url, blink::WebReferrerPolicyDefault),
       kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
@@ -792,7 +794,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
 
   // Schedule a pending prerender launched from the prerender.
   prerender_link_manager()->OnAddPrerender(
-      child_id, GetNextPrerenderID(), pending_url,
+      child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
       Referrer(url, blink::WebReferrerPolicyDefault),
       kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
@@ -831,9 +833,38 @@ TEST_F(PrerenderTest, SourceRenderViewClosed) {
   prerender_manager()->CreateNextPrerenderContents(
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
-  prerender_link_manager()->OnAddPrerender(100, GetNextPrerenderID(), url,
-                                           Referrer(), kSize, 200);
+  prerender_link_manager()->OnAddPrerender(
+      100, GetNextPrerenderID(), url, kDefaultRelTypes, Referrer(), kSize, 200);
   EXPECT_FALSE(LauncherHasRunningPrerender(100, last_prerender_id()));
+}
+
+// Tests that prerendering doesn't launch rel=next prerenders without the field
+// trial.
+TEST_F(PrerenderTest, NoRelNextByDefault) {
+  GURL url("http://www.google.com/");
+  prerender_manager()->CreateNextPrerenderContents(
+      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+  DummyPrerenderContents* null = NULL;
+
+  prerender_link_manager()->OnAddPrerender(
+      kDefaultChildId, GetNextPrerenderID(), url, PrerenderRelTypeNext,
+      Referrer(), kSize, kDefaultRenderViewRouteId);
+  EXPECT_EQ(null, prerender_manager()->FindEntry(url));
+}
+
+// Tests that prerendering does launch rel=next prerenders with the field trial.
+TEST_F(PrerenderTest, RelNextByFieldTrial) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("PrerenderRelNextTrial",
+                                                     "Yes"));
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  prerender_link_manager()->OnAddPrerender(
+      kDefaultChildId, GetNextPrerenderID(), url, PrerenderRelTypeNext,
+      Referrer(), kSize, kDefaultRenderViewRouteId);
+  EXPECT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
 }
 
 // Tests that prerendering is cancelled when we launch a second prerender of
@@ -1391,10 +1422,9 @@ TEST_F(PrerenderTest, LinkManagerClearOnPendingAbandon) {
   ASSERT_TRUE(prerender_contents->GetRouteId(&route_id));
 
   GURL pending_url("http://www.neverlaunched.com");
-  prerender_link_manager()->OnAddPrerender(child_id,
-                                           GetNextPrerenderID(),
-                                           pending_url, content::Referrer(),
-                                           kSize, route_id);
+  prerender_link_manager()->OnAddPrerender(
+      child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
+      content::Referrer(), kSize, route_id);
   const int second_prerender_id = last_prerender_id();
 
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());

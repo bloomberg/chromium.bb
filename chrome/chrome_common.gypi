@@ -327,6 +327,7 @@
         'common/pepper_permission_util.h',
         'common/pref_names_util.cc',
         'common/pref_names_util.h',
+        'common/prerender_types.h',
         'common/print_messages.cc',
         'common/print_messages.h',
         'common/profiling.cc',

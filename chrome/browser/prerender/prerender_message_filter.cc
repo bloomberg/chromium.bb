@@ -72,7 +72,7 @@ void PrerenderMessageFilter::OnChannelClosing() {
 
 void PrerenderMessageFilter::OnAddPrerender(
     int prerender_id,
-    const GURL& url,
+    const PrerenderAttributes& attributes,
     const content::Referrer& referrer,
     const gfx::Size& size,
     int render_view_route_id) {
@@ -83,7 +83,8 @@ void PrerenderMessageFilter::OnAddPrerender(
     return;
   prerender_link_manager->OnAddPrerender(
       render_process_id_, prerender_id,
-      url, referrer, size, render_view_route_id);
+      attributes.url, attributes.rel_types, referrer,
+      size, render_view_route_id);
 }
 
 void PrerenderMessageFilter::OnCancelPrerender(

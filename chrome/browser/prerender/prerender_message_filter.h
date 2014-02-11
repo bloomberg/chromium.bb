@@ -10,6 +10,7 @@
 #include "url/gurl.h"
 
 class Profile;
+struct PrerenderAttributes;
 
 namespace content {
 struct Referrer;
@@ -41,7 +42,7 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   virtual void OnChannelClosing() OVERRIDE;
 
   void OnAddPrerender(int prerender_id,
-                      const GURL& url,
+                      const PrerenderAttributes& attributes,
                       const content::Referrer& referrer,
                       const gfx::Size& size,
                       int render_view_route_id);
