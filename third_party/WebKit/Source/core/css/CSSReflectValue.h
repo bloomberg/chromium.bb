@@ -47,7 +47,6 @@ public:
     CSSValue* mask() const { return m_mask.get(); }
 
     String customCSSText() const;
-    String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     bool equals(const CSSReflectValue&) const;
 

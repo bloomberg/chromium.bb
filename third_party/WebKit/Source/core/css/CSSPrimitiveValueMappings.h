@@ -4364,7 +4364,6 @@ enum LengthConversion {
 
 template<int supported> Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData)
 {
-    ASSERT(!hasVariableReference());
     if ((supported & FixedConversion) && isLength())
         return computeLength<Length>(conversionData);
     if ((supported & PercentConversion) && isPercentage())

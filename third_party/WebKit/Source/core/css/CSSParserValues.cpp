@@ -94,10 +94,6 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
         return primitiveValue;
     }
     if (unit == CSSParserValue::Function) {
-        if (function->name.equalIgnoringCase("var(")) {
-            ASSERT(function->args->size() == 1);
-            return CSSPrimitiveValue::create(function->args->valueAt(0)->string, CSSPrimitiveValue::CSS_VARIABLE_REFERENCE);
-        }
         return CSSFunctionValue::create(function);
     }
     if (unit == CSSParserValue::ValueList)
@@ -162,9 +158,6 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
     case CSSPrimitiveValue::CSS_CALC:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
-        return 0;
-    case CSSPrimitiveValue::CSS_VARIABLE_REFERENCE:
-        ASSERT_NOT_REACHED();
         return 0;
     }
 

@@ -31,7 +31,6 @@ CSSShapes status=experimental
 CSSStickyPosition status=experimental
 CSSTouchAction status=experimental
 CSSTouchActionDelay status=test
-CSSVariables status=test
 CSSViewport status=experimental
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental

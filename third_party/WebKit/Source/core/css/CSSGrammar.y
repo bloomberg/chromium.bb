@@ -119,8 +119,6 @@ static inline bool isCSSTokenAString(int yytype)
     case CALCFUNCTION:
     case MINFUNCTION:
     case MAXFUNCTION:
-    case VARFUNCTION:
-    case VAR_DEFINITION:
     case UNICODERANGE:
         return true;
     default:
@@ -267,8 +265,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token <string> CALCFUNCTION
 %token <string> MINFUNCTION
 %token <string> MAXFUNCTION
-%token <string> VARFUNCTION
-%token <string> VAR_DEFINITION
 %token <string> HOSTFUNCTION
 %token <string> ANCESTORFUNCTION
 
@@ -371,7 +367,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <valueList> calc_func_expr_list
 %type <valueList> calc_func_paren_expr
 %type <value> calc_function
-%type <value> var_function
 %type <string> min_or_max
 %type <value> min_or_max_function
 
@@ -1594,12 +1589,6 @@ decl_list:
     ;
 
 declaration:
-    VAR_DEFINITION maybe_space ':' maybe_space expr prio {
-        parser->storeVariableDeclaration($1, parser->sinkFloatingValueList($5), $6);
-        $$ = true;
-        parser->endProperty($6, true);
-    }
-    |
     property ':' maybe_space error_location expr prio {
         $$ = false;
         bool isPropertyParsed = false;
@@ -1724,7 +1713,6 @@ term:
   | '#' maybe_space { $$.id = CSSValueInvalid; $$.string = CSSParserString(); $$.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; } /* Handle error case: "color: #;" */
   /* FIXME: according to the specs a function can have a unary_operator in front. I know no case where this makes sense */
   | function maybe_space
-  | var_function maybe_space
   | calc_function maybe_space
   | min_or_max_function maybe_space
   | '%' maybe_space { /* Handle width: %; */
@@ -1782,22 +1770,8 @@ function:
     }
   ;
 
-var_function:
-  VARFUNCTION maybe_space IDENT closing_parenthesis {
-    CSSParserValue variableName;
-    variableName.string = $3;
-    CSSParserValueList* valueList = parser->createFloatingValueList();
-    valueList->addValue(variableName);
-    $$.setFromFunction(parser->createFloatingFunction($1, parser->sinkFloatingValueList(valueList)));
-  }
-  | VARFUNCTION maybe_space expr_recovery closing_parenthesis {
-      YYERROR;
-  }
-  ;
-
 calc_func_term:
   unary_term
-  | var_function
   | unary_operator unary_term { $$ = $2; $$.fValue *= $1; }
   ;
 
@@ -1960,7 +1934,7 @@ invalid_parentheses_block:
     opening_parenthesis error_recovery closing_parenthesis;
 
 opening_parenthesis:
-    '(' | FUNCTION | CALCFUNCTION | VARFUNCTION | MINFUNCTION | MAXFUNCTION | ANYFUNCTION | NOTFUNCTION | CUEFUNCTION | DISTRIBUTEDFUNCTION | HOSTFUNCTION
+    '(' | FUNCTION | CALCFUNCTION | MINFUNCTION | MAXFUNCTION | ANYFUNCTION | NOTFUNCTION | CUEFUNCTION | DISTRIBUTEDFUNCTION | HOSTFUNCTION
     ;
 
 error_location: {

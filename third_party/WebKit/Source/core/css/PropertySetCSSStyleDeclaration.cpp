@@ -27,9 +27,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/InlineVariablesIterator.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/VariablesIterator.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
@@ -284,59 +282,6 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID p
         mutationScope.enqueueMutationRecord();
 }
 
-unsigned AbstractPropertySetCSSStyleDeclaration::variableCount() const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    return propertySet()->variableCount();
-}
-
-String AbstractPropertySetCSSStyleDeclaration::variableValue(const AtomicString& name) const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    return propertySet()->variableValue(name);
-}
-
-bool AbstractPropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionState&)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    StyleAttributeMutationScope mutationScope(this);
-    willMutate();
-    bool changed = propertySet()->setVariableValue(name, value);
-    didMutate(changed ? PropertyChanged : NoChanges);
-    if (changed)
-        mutationScope.enqueueMutationRecord();
-    return changed;
-}
-
-bool AbstractPropertySetCSSStyleDeclaration::removeVariable(const AtomicString& name)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    StyleAttributeMutationScope mutationScope(this);
-    willMutate();
-    bool changed = propertySet()->removeVariable(name);
-    didMutate(changed ? PropertyChanged : NoChanges);
-    if (changed)
-        mutationScope.enqueueMutationRecord();
-    return changed;
-}
-
-bool AbstractPropertySetCSSStyleDeclaration::clearVariables(ExceptionState&)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    StyleAttributeMutationScope mutationScope(this);
-    willMutate();
-    bool changed = propertySet()->clearVariables();
-    didMutate(changed ? PropertyChanged : NoChanges);
-    if (changed)
-        mutationScope.enqueueMutationRecord();
-    return changed;
-}
-
-PassRefPtr<CSSVariablesIterator> AbstractPropertySetCSSStyleDeclaration::variablesIterator() const
-{
-    return propertySet()->variablesIterator();
-}
-
 CSSValue* AbstractPropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue* internalValue)
 {
     if (!internalValue)
@@ -458,11 +403,5 @@ void InlineCSSStyleDeclaration::deref()
 {
     m_parentElement->deref();
 }
-
-PassRefPtr<CSSVariablesIterator> InlineCSSStyleDeclaration::variablesIterator() const
-{
-    return InlineVariablesIterator::create(m_parentElement);
-}
-
 
 } // namespace WebCore

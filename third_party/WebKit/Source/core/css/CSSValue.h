@@ -69,7 +69,6 @@ public:
 
     String cssText() const;
     void setCSSText(const String&, ExceptionState&) { } // FIXME: Not implemented.
-    String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }
     bool isValueList() const { return m_classType >= ValueListClass; }
@@ -104,7 +103,6 @@ public:
     bool isCalcValue() const {return m_classType == CalculationClass; }
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
-    bool isVariableValue() const { return m_classType == VariableClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
@@ -164,7 +162,6 @@ protected:
         UnicodeRangeClass,
         LineBoxContainClass,
         CalculationClass,
-        VariableClass,
         GridTemplateAreasClass,
 
         // SVG classes.

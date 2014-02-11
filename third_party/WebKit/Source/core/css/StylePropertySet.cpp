@@ -27,11 +27,9 @@
 #include "StylePropertyShorthand.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/CSSVariableValue.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySerializer.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/VariablesIterator.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -117,37 +115,12 @@ String StylePropertySet::getPropertyValue(CSSPropertyID propertyID) const
     return StylePropertySerializer(*this).getPropertyValue(propertyID);
 }
 
-PassRefPtr<CSSVariablesIterator> MutableStylePropertySet::variablesIterator()
-{
-    return VariablesIterator::create(this);
-}
-
 PassRefPtr<CSSValue> StylePropertySet::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     int foundPropertyIndex = findPropertyIndex(propertyID);
     if (foundPropertyIndex == -1)
         return 0;
     return propertyAt(foundPropertyIndex).value();
-}
-
-unsigned StylePropertySet::variableCount() const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    unsigned count = 0;
-    for (unsigned i = 0; i < propertyCount(); ++i) {
-        if (propertyAt(i).id() == CSSPropertyVariable)
-            count++;
-    }
-    return count;
-}
-
-String StylePropertySet::variableValue(const AtomicString& name) const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    size_t index = findVariableIndex(name);
-    if (index == kNotFound)
-        return String();
-    return toCSSVariableValue(propertyAt(index).value())->value();
 }
 
 bool MutableStylePropertySet::removeShorthandProperty(CSSPropertyID propertyID)
@@ -284,28 +257,6 @@ unsigned getIndexInShorthandVectorForPrefixingVariant(const CSSProperty& propert
     Vector<StylePropertyShorthand, 4> shorthands;
     getMatchingShorthandsForLonghand(prefixingVariant, &shorthands);
     return indexOfShorthandForLonghand(prefixedShorthand, shorthands);
-}
-
-bool MutableStylePropertySet::setVariableValue(const AtomicString& name, const String& value, bool important)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    if (value.isEmpty())
-        return removeVariable(name);
-
-    size_t index = findVariableIndex(name);
-    if (index != kNotFound) {
-        const CSSValue* cssValue = m_propertyVector.at(index).value();
-        if (toCSSVariableValue(cssValue)->value() == value)
-            return false;
-    }
-
-    CSSProperty property(CSSPropertyVariable, CSSVariableValue::create(name, value), important);
-    if (index == kNotFound) {
-        m_propertyVector.append(property);
-        return true;
-    }
-    m_propertyVector.at(index) = property;
-    return false;
 }
 
 void MutableStylePropertySet::appendPrefixingVariantProperty(const CSSProperty& property)
@@ -489,17 +440,6 @@ int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     return -1;
 }
 
-size_t StylePropertySet::findVariableIndex(const AtomicString& name) const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    for (int i = propertyCount() - 1; i >= 0; --i) {
-        const PropertyReference& property = propertyAt(i);
-        if (property.id() == CSSPropertyVariable && toCSSVariableValue(property.value())->name() == name)
-            return i;
-    }
-    return kNotFound;
-}
-
 CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID propertyID)
 {
     int foundPropertyIndex = findPropertyIndex(propertyID);
@@ -542,23 +482,6 @@ void MutableStylePropertySet::removeEquivalentProperties(const CSSStyleDeclarati
     // FIXME: This should use mass removal.
     for (unsigned i = 0; i < propertiesToRemove.size(); ++i)
         removeProperty(propertiesToRemove[i]);
-}
-
-bool MutableStylePropertySet::removeVariable(const AtomicString& name)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    size_t index = findVariableIndex(name);
-    if (index == kNotFound)
-        return false;
-    m_propertyVector.remove(index);
-    return true;
-}
-
-bool MutableStylePropertySet::clearVariables()
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    CSSPropertyID variablesId = CSSPropertyVariable;
-    return removePropertiesInSet(&variablesId, 1);
 }
 
 PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
@@ -622,11 +545,6 @@ PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSPro
 
 String StylePropertySet::PropertyReference::cssName() const
 {
-    if (id() == CSSPropertyVariable) {
-        if (!propertyValue()->isVariableValue())
-            return emptyString(); // Should not happen, but if it does, avoid a bad cast.
-        return "var-" + toCSSVariableValue(propertyValue())->name();
-    }
     return getPropertyNameString(id());
 }
 

@@ -140,34 +140,6 @@ bool CSSValueList::equals(const CSSValue& other) const
     return value && value->equals(other);
 }
 
-String CSSValueList::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
-{
-    StringBuilder result;
-    String separator;
-    switch (m_valueListSeparator) {
-    case SpaceSeparator:
-        separator = " ";
-        break;
-    case CommaSeparator:
-        separator = ", ";
-        break;
-    case SlashSeparator:
-        separator = " / ";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-
-    unsigned size = m_values.size();
-    for (unsigned i = 0; i < size; i++) {
-        if (!result.isEmpty())
-            result.append(separator);
-        result.append(m_values[i]->serializeResolvingVariables(variables));
-    }
-
-    return result.toString();
-}
-
 bool CSSValueList::hasFailedOrCanceledSubresources() const
 {
     for (unsigned i = 0; i < m_values.size(); ++i) {

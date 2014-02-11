@@ -47,8 +47,6 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     short hyphenationShorts[3];
 
     Color touchColors;
-
-    void* variableDataRefs[1];
 };
 
 COMPILE_ASSERT(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), StyleRareInheritedData_should_bit_pack);
@@ -98,7 +96,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_tabSize(RenderStyle::initialTabSize())
     , tapHighlightColor(RenderStyle::initialTapHighlightColor())
 {
-    m_variables.init();
 }
 
 StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
@@ -152,7 +149,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_lineGrid(o.m_lineGrid)
     , m_tabSize(o.m_tabSize)
     , tapHighlightColor(o.tapHighlightColor)
-    , m_variables(o.m_variables)
 {
 }
 
@@ -219,7 +215,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_textUnderlinePosition == o.m_textUnderlinePosition
         && m_rubyPosition == o.m_rubyPosition
         && m_lineSnap == o.m_lineSnap
-        && m_variables == o.m_variables
         && m_lineAlign == o.m_lineAlign
         && StyleImage::imagesEquivalent(listStyleImage.get(), o.listStyleImage.get());
 }

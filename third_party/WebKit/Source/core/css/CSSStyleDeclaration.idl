@@ -36,7 +36,6 @@
     [Custom=PropertyGetter|PropertyEnumerator|PropertyQuery] getter (DOMString or float) (DOMString name);
     [Custom] setter void (DOMString propertyName, [TreatNullAs=NullString] DOMString propertyValue);
     readonly attribute CSSRule          parentRule;
-    [RuntimeEnabled=CSSVariables] readonly attribute CSSVariablesMap var;
 
     // Deprecated as of 2003: http://lists.w3.org/Archives/Public/www-style/2003Oct/0347.html
     // FIXME: This should be DeprecateAs=, but currently too many LayoutTests use

@@ -1562,7 +1562,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
     switch (propertyID) {
         case CSSPropertyInvalid:
-        case CSSPropertyVariable:
             break;
 
         case CSSPropertyBackgroundColor:
@@ -3043,88 +3042,6 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
 void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const String&, bool, ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + getPropertyNameString(id) + "' property is read-only.");
-}
-
-const HashMap<AtomicString, String>* CSSComputedStyleDeclaration::variableMap() const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    Node* styledNode = this->styledNode();
-    if (!styledNode)
-        return 0;
-    RefPtr<RenderStyle> style = styledNode->computedStyle(styledNode->isPseudoElement() ? NOPSEUDO : m_pseudoElementSpecifier);
-    if (!style)
-        return 0;
-    return style->variables();
-}
-
-unsigned CSSComputedStyleDeclaration::variableCount() const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    const HashMap<AtomicString, String>* variables = variableMap();
-    if (!variables)
-        return 0;
-    return variables->size();
-}
-
-String CSSComputedStyleDeclaration::variableValue(const AtomicString& name) const
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    const HashMap<AtomicString, String>* variables = variableMap();
-    if (!variables)
-        return emptyString();
-    HashMap<AtomicString, String>::const_iterator it = variables->find(name);
-    if (it == variables->end())
-        return emptyString();
-    return it->value;
-}
-
-bool CSSComputedStyleDeclaration::setVariableValue(const AtomicString& name, const String&, ExceptionState& exceptionState)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + name + "' property is read-only.");
-    return false;
-}
-
-bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    return false;
-}
-
-bool CSSComputedStyleDeclaration::clearVariables(ExceptionState& exceptionState)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore variables may not be cleared.");
-    return false;
-}
-
-CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::ComputedCSSVariablesIterator(const HashMap<AtomicString, String>* variables)
-    : m_active(variables)
-{
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    if (m_active) {
-        m_it = variables->begin();
-        m_end = variables->end();
-    }
-}
-
-void CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::advance()
-{
-    ASSERT(m_active);
-    ++m_it;
-    m_active = !atEnd();
-}
-
-AtomicString CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::name() const
-{
-    ASSERT(m_active);
-    return m_it->key;
-}
-
-String CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::value() const
-{
-    ASSERT(m_active);
-    return m_it->value;
 }
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForBackgroundShorthand() const

@@ -133,8 +133,6 @@ private:
     inline void detectAtToken(int, bool);
     template <typename CharacterType>
     inline void detectSupportsToken(int);
-    template <typename CharacterType>
-    inline void detectCSSVariableDefinitionToken(int);
 
     template <typename SourceCharacterType>
     int realLex(void* yylval);

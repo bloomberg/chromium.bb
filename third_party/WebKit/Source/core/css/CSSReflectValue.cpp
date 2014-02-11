@@ -39,13 +39,6 @@ String CSSReflectValue::customCSSText() const
     return m_direction->cssText() + ' ' + m_offset->cssText();
 }
 
-String CSSReflectValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
-{
-    if (m_mask)
-        return m_direction->customSerializeResolvingVariables(variables) + ' ' + m_offset->customSerializeResolvingVariables(variables) + ' ' + m_mask->serializeResolvingVariables(variables);
-    return m_direction->customSerializeResolvingVariables(variables) + ' ' + m_offset->customSerializeResolvingVariables(variables);
-}
-
 bool CSSReflectValue::equals(const CSSReflectValue& other) const
 {
     return m_direction == other.m_direction

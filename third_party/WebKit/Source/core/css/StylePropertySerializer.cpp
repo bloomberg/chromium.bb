@@ -69,11 +69,6 @@ String StylePropertySerializer::asText() const
         String value;
 
         switch (propertyID) {
-        case CSSPropertyVariable:
-            if (numDecls++)
-                result.append(' ');
-            result.append(property.cssText());
-            continue;
         case CSSPropertyBackgroundPositionX:
             positionXPropertyIndex = n;
             continue;

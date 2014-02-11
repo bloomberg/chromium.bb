@@ -27,7 +27,6 @@
 
 #include "core/css/StyleColor.h"
 #include "core/rendering/style/DataRef.h"
-#include "core/rendering/style/StyleVariableData.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
@@ -120,8 +119,6 @@ public:
     unsigned m_tabSize;
 
     Color tapHighlightColor;
-
-    DataRef<StyleVariableData> m_variables;
 
 private:
     StyleRareInheritedData();

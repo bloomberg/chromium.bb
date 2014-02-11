@@ -65,16 +65,6 @@ public:
             && m_identicalValuesPolicy == other.m_identicalValuesPolicy;
     }
 
-    String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
-    {
-        return generateCSSString(
-            first()->customSerializeResolvingVariables(variables),
-            second()->customSerializeResolvingVariables(variables),
-            m_identicalValuesPolicy);
-    }
-
-    bool hasVariableReference() const { return first()->hasVariableReference() || second()->hasVariableReference(); }
-
 private:
     Pair()
         : m_first(0)

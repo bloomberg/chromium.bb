@@ -62,7 +62,6 @@
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
 #include "core/css/HashTools.h"
 #include "core/css/MediaList.h"
@@ -1339,20 +1338,13 @@ PassRefPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const String& stri
     return m_mediaList.release();
 }
 
-static inline void filterProperties(bool important, const BisonCSSParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenVariables)
+static inline void filterProperties(bool important, const BisonCSSParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
     for (int i = input.size() - 1; i >= 0; --i) {
         const CSSProperty& property = input[i];
         if (property.isImportant() != important)
             continue;
-        if (property.id() == CSSPropertyVariable) {
-            const AtomicString& name = toCSSVariableValue(property.value())->name();
-            if (!seenVariables.add(name).isNewEntry)
-                continue;
-            output[--unusedEntries] = property;
-            continue;
-        }
         const unsigned propertyIDIndex = property.id() - firstCSSProperty;
         if (seenProperties.get(propertyIDIndex))
             continue;
@@ -1368,9 +1360,8 @@ PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::createStylePropertySet()
     Vector<CSSProperty, 256> results(unusedEntries);
 
     // Important properties have higher priority, so add them first. Duplicate definitions can then be ignored when found.
-    HashSet<AtomicString> seenVariables;
-    filterProperties(true, m_parsedProperties, results, unusedEntries, seenProperties, seenVariables);
-    filterProperties(false, m_parsedProperties, results, unusedEntries, seenProperties, seenVariables);
+    filterProperties(true, m_parsedProperties, results, unusedEntries, seenProperties);
+    filterProperties(false, m_parsedProperties, results, unusedEntries, seenProperties);
     if (unusedEntries)
         results.remove(0, unusedEntries);
 
@@ -1400,9 +1391,8 @@ void BisonCSSParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassR
 
 void BisonCSSParser::addProperty(CSSPropertyID propId, PassRefPtr<CSSValue> value, bool important, bool implicit)
 {
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value.get()) : 0;
-    // This property doesn't belong to a shorthand or is a CSS variable (which will be resolved later).
-    if (!m_currentShorthand || (primitiveValue && primitiveValue->isVariableReference())) {
+    // This property doesn't belong to a shorthand.
+    if (!m_currentShorthand) {
         m_parsedProperties.append(CSSProperty(propId, value, important, false, CSSPropertyInvalid, m_implicitShorthand || implicit));
         return;
     }
@@ -1465,20 +1455,12 @@ bool BisonCSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags
     case CalcPercentNumber:
         b = (unitflags & FPercent) && (unitflags & FNumber);
         break;
-    case CalcVariable:
-        b = true;
-        break;
     case CalcOther:
         break;
     }
     if (!b || releaseCalc == ReleaseParsedCalcValue)
         m_parsedCalculation.release();
     return b;
-}
-
-static bool isVariableReference(CSSParserValue* value)
-{
-    return RuntimeEnabledFeatures::cssVariablesEnabled() && value->unit == CSSParserValue::Function && equal(value->function->name, "var(");
 }
 
 inline bool BisonCSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
@@ -1491,10 +1473,6 @@ bool BisonCSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParser
 {
     if (isCalculation(value))
         return validCalculationUnit(value, unitflags, releaseCalc);
-
-    // Variables are checked at the point they are dereferenced because unit type is not available here.
-    if (isVariableReference(value))
-        return true;
 
     bool b = false;
     switch (value->unit) {
@@ -1558,9 +1536,6 @@ bool BisonCSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParser
 
 inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveNumericValue(CSSParserValue* value)
 {
-    if (isVariableReference(value))
-        return createPrimitiveVariableReferenceValue(value);
-
     if (m_parsedCalculation) {
         ASSERT(isCalculation(value));
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
@@ -1577,12 +1552,6 @@ inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveStringValue(
 {
     ASSERT(value->unit == CSSPrimitiveValue::CSS_STRING || value->unit == CSSPrimitiveValue::CSS_IDENT);
     return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_STRING);
-}
-
-inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveVariableReferenceValue(CSSParserValue* value)
-{
-    ASSERT(value->unit == CSSParserValue::Function && value->function->args->size() == 1);
-    return CSSPrimitiveValue::create(value->function->args->valueAt(0)->string, CSSPrimitiveValue::CSS_VARIABLE_REFERENCE);
 }
 
 static inline bool isComma(CSSParserValue* value)
@@ -1640,8 +1609,6 @@ inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseValidPrimitive(CSSValu
         return CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
     if (isCalculation(value))
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
-    if (isVariableReference(value))
-        return createPrimitiveVariableReferenceValue(value);
 
     return 0;
 }
@@ -1712,13 +1679,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         addExpandedPropertyForValue(propId, cssValuePool().createExplicitInitialValue(), important);
         return true;
     }
-
-    if (!id && num == 1 && isVariableReference(value)) {
-        addProperty(propId, createPrimitiveVariableReferenceValue(value), important);
-        m_valueList->next();
-        return true;
-    }
-    ASSERT(propId != CSSPropertyVariable);
 
     if (isKeywordPropertyID(propId)) {
         if (!isValidKeywordPropertyAndValue(propId, id, m_context))
@@ -2800,7 +2760,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTouchActionDelay:
-    case CSSPropertyVariable:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyWebkitBackfaceVisibility:
@@ -3070,30 +3029,6 @@ bool BisonCSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyI
 
     m_implicitShorthand = false;
     return true;
-}
-
-void BisonCSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr<CSSParserValueList> value, bool important)
-{
-    // When CSSGrammar.y encounters an invalid declaration it passes null for the CSSParserValueList, just bail.
-    if (!value)
-        return;
-
-    static const unsigned prefixLength = sizeof("var-") - 1;
-
-    ASSERT(name.length() > prefixLength);
-    AtomicString variableReference = name.atomicSubstring(prefixLength, name.length() - prefixLength);
-
-    StringBuilder builder;
-    for (unsigned i = 0, size = value->size(); i < size; i++) {
-        if (i)
-            builder.append(' ');
-        RefPtr<CSSValue> cssValue = value->valueAt(i)->createCSSValue();
-        if (!cssValue)
-            return;
-        builder.append(cssValue->cssText());
-    }
-
-    addProperty(CSSPropertyVariable, CSSVariableValue::create(variableReference, builder.toString()), important, false);
 }
 
 void BisonCSSParser::addAnimationValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> rval)
@@ -6921,19 +6856,15 @@ bool BisonCSSParser::parseReflect(CSSPropertyID propId, bool important)
     // Direction comes first.
     CSSParserValue* val = m_valueList->current();
     RefPtr<CSSPrimitiveValue> direction;
-    if (isVariableReference(val)) {
-        direction = createPrimitiveVariableReferenceValue(val);
-    } else {
-        switch (val->id) {
-        case CSSValueAbove:
-        case CSSValueBelow:
-        case CSSValueLeft:
-        case CSSValueRight:
-            direction = cssValuePool().createIdentifierValue(val->id);
-            break;
-        default:
-            return false;
-        }
+    switch (val->id) {
+    case CSSValueAbove:
+    case CSSValueBelow:
+    case CSSValueLeft:
+    case CSSValueRight:
+        direction = cssValuePool().createIdentifierValue(val->id);
+        break;
+    default:
+        return false;
     }
 
     // The offset comes next.

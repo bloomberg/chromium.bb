@@ -113,7 +113,6 @@ public:
     bool parseQuotes(CSSPropertyID, bool important);
 
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const Document&);
-    void storeVariableDeclaration(const CSSParserString&, PassOwnPtr<CSSParserValueList>, bool important);
 
     PassRefPtr<CSSValue> parseAttr(CSSParserValueList* args);
 
@@ -415,7 +414,6 @@ public:
 
     PassRefPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
-    PassRefPtr<CSSPrimitiveValue> createPrimitiveVariableReferenceValue(CSSParserValue*);
 
     CSSParserLocation currentLocation() { return m_tokenizer.currentLocation(); }
 

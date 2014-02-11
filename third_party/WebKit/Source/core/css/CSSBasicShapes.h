@@ -58,9 +58,6 @@ public:
     CSSPrimitiveValue* layoutBox() const { return m_layoutBox.get(); }
     void setLayoutBox(PassRefPtr<CSSPrimitiveValue> layoutBox) { m_layoutBox = layoutBox; }
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const = 0;
-    virtual bool hasVariableReference() const = 0;
-
 public:
     virtual ~CSSBasicShape() { }
 
@@ -90,9 +87,6 @@ public:
     virtual Type type() const OVERRIDE { return CSSBasicShapeRectangleType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
-
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
 
 private:
     CSSBasicShapeRectangle() { }
@@ -127,9 +121,6 @@ public:
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
-
 private:
     CSSBasicShapeInsetRectangle() { }
 
@@ -157,9 +148,6 @@ public:
     void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
     void setRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
-
 private:
     CSSBasicShapeCircle() { }
 
@@ -184,9 +172,6 @@ public:
 
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
-
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
 
 private:
     CSSDeprecatedBasicShapeCircle() { }
@@ -214,9 +199,6 @@ public:
     void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
-
 private:
     CSSBasicShapeEllipse() { }
 
@@ -243,9 +225,6 @@ public:
     virtual Type type() const OVERRIDE { return CSSDeprecatedBasicShapeEllipseType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
-
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
 
 private:
     CSSDeprecatedBasicShapeEllipse() { }
@@ -276,9 +255,6 @@ public:
     virtual Type type() const OVERRIDE { return CSSBasicShapePolygonType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const OVERRIDE;
-    virtual bool hasVariableReference() const OVERRIDE;
-
 private:
     CSSBasicShapePolygon()
         : m_windRule(RULE_NONZERO)
@@ -340,9 +316,6 @@ public:
     virtual Type type() const OVERRIDE { return CSSBasicShapeInsetType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
-
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
-    virtual bool hasVariableReference() const;
 
 private:
     CSSBasicShapeInset() { }

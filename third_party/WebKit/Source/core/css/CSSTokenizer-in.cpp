@@ -719,12 +719,6 @@ inline bool CSSTokenizer::detectFunctionTypeToken(int length)
             m_token = CUEFUNCTION;
             return true;
         }
-        CASE("var") {
-            if (!RuntimeEnabledFeatures::cssVariablesEnabled())
-                return false;
-            m_token = VARFUNCTION;
-            return true;
-        }
         CASE("calc") {
             m_token = CALCFUNCTION;
             return true;
@@ -1075,18 +1069,6 @@ inline void CSSTokenizer::detectSupportsToken(int length)
     }
 }
 
-template <typename CharacterType>
-inline void CSSTokenizer::detectCSSVariableDefinitionToken(int length)
-{
-    static const int prefixLength = static_cast<int>(sizeof("var-") - 1);
-    if (length <= prefixLength)
-        return;
-    CharacterType* name = tokenStart<CharacterType>();
-    COMPILE_ASSERT(prefixLength > 0, CSS_variable_prefix_must_be_nonempty);
-    if (name[prefixLength - 1] == '-' && isIdentifierStartAfterDash(name + prefixLength) && isEqualToCSSCaseSensitiveIdentifier(name, "var"))
-        m_token = VAR_DEFINITION;
-}
-
 template <typename SrcCharacterType>
 int CSSTokenizer::realLex(void* yylvalWithoutType)
 {
@@ -1176,8 +1158,6 @@ restartAfterComment:
                     }
                 }
             }
-        } else if (UNLIKELY(RuntimeEnabledFeatures::cssVariablesEnabled())) {
-            detectCSSVariableDefinitionToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
         }
         break;
 

@@ -508,7 +508,6 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyInternalMarqueeSpeed:
     case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyInvalid:
-    case CSSPropertyVariable:
         ASSERT_NOT_REACHED();
         return 0;
     }

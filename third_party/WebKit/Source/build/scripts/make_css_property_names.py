@@ -30,7 +30,6 @@ namespace WebCore {
 
 enum CSSPropertyID {
     CSSPropertyInvalid = 0,
-    CSSPropertyVariable = 1,
 %(property_enums)s
 };
 
@@ -202,7 +201,7 @@ class CSSPropertiesWriter(in_generator.Writer):
         if len(self._properties) > 1024:
             print "ERROR : There is more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly."
             exit(1)
-        self._first_property_id = 2  # We start after CSSPropertyInvalid and CSSPropertyVariable.
+        self._first_property_id = 1  # We start after CSSPropertyInvalid.
         property_id = self._first_property_id
         for offset, property in enumerate(self._properties):
             property['enum_name'] = self._enum_name_from_property_name(property['name'])

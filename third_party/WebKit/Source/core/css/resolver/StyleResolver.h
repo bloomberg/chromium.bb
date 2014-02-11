@@ -261,7 +261,6 @@ private:
     void applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
 
     enum StyleApplicationPass {
-        VariableDefinitions,
         AnimationProperties,
         HighPriorityProperties,
         LowPriorityProperties

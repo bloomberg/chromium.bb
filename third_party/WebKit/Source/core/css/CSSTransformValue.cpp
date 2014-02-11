@@ -76,11 +76,6 @@ String CSSTransformValue::customCSSText() const
     return transformValueToCssString(m_type, CSSValueList::customCSSText());
 }
 
-String CSSTransformValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
-{
-    return transformValueToCssString(m_type, CSSValueList::customSerializeResolvingVariables(variables));
-}
-
 CSSTransformValue::CSSTransformValue(const CSSTransformValue& cloneFrom)
     : CSSValueList(cloneFrom)
     , m_type(cloneFrom.m_type)

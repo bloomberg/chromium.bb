@@ -55,7 +55,6 @@
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/CSSVariableValue.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
 
@@ -200,8 +199,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSArrayFunctionValueClass:
             return compareCSSValues<CSSArrayFunctionValue>(*this, other);
-        case VariableClass:
-            return compareCSSValues<CSSVariableValue>(*this, other);
         case SVGColorClass:
             return compareCSSValues<SVGColor>(*this, other);
         case SVGPaintClass:
@@ -286,8 +283,6 @@ String CSSValue::cssText() const
         return toCSSFilterValue(this)->customCSSText();
     case CSSArrayFunctionValueClass:
         return toCSSArrayFunctionValue(this)->customCSSText();
-    case VariableClass:
-        return toCSSVariableValue(this)->value();
     case SVGColorClass:
         return toSVGColor(this)->customCSSText();
     case SVGPaintClass:
@@ -297,22 +292,6 @@ String CSSValue::cssText() const
     }
     ASSERT_NOT_REACHED();
     return String();
-}
-
-String CSSValue::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
-{
-    switch (classType()) {
-    case PrimitiveClass:
-        return toCSSPrimitiveValue(this)->customSerializeResolvingVariables(variables);
-    case ReflectClass:
-        return toCSSReflectValue(this)->customSerializeResolvingVariables(variables);
-    case ValueListClass:
-        return toCSSValueList(this)->customSerializeResolvingVariables(variables);
-    case CSSTransformClass:
-        return toCSSTransformValue(this)->customSerializeResolvingVariables(variables);
-    default:
-        return cssText();
-    }
 }
 
 void CSSValue::destroy()
@@ -411,9 +390,6 @@ void CSSValue::destroy()
         return;
     case CSSArrayFunctionValueClass:
         delete toCSSArrayFunctionValue(this);
-        return;
-    case VariableClass:
-        delete toCSSVariableValue(this);
         return;
     case SVGColorClass:
         delete toSVGColor(this);
@@ -525,9 +501,6 @@ void CSSValue::finalize()
     case CSSArrayFunctionValueClass:
         static_cast<CSSArrayFunctionValue*>(this)->~CSSArrayFunctionValue();
         return;
-    case VariableClass:
-        static_cast<CSSVariableValue*>(this)->~CSSVariableValue();
-        return;
     case SVGColorClass:
         static_cast<SVGColor*>(this)->~SVGColor();
         return;
@@ -637,9 +610,6 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case CSSArrayFunctionValueClass:
         static_cast<CSSArrayFunctionValue*>(this)->traceAfterDispatch(visitor);
-        return;
-    case VariableClass:
-        static_cast<CSSVariableValue*>(this)->traceAfterDispatch(visitor);
         return;
     case SVGColorClass:
         static_cast<SVGColor*>(this)->traceAfterDispatch(visitor);

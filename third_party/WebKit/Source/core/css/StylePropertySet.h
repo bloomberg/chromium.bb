@@ -86,12 +86,9 @@ public:
     bool isEmpty() const;
     PropertyReference propertyAt(unsigned index) const { return PropertyReference(*this, index); }
     int findPropertyIndex(CSSPropertyID) const;
-    size_t findVariableIndex(const AtomicString& name) const;
 
     PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
-    unsigned variableCount() const;
-    String variableValue(const AtomicString& name) const;
 
     bool propertyIsImportant(CSSPropertyID) const;
     CSSPropertyID getPropertyShorthand(CSSPropertyID) const;
@@ -197,7 +194,6 @@ public:
     void appendPrefixingVariantProperty(const CSSProperty&);
     void setPrefixingVariantProperty(const CSSProperty&);
     void setProperty(const CSSProperty&, CSSProperty* slot = 0);
-    bool setVariableValue(const AtomicString& name, const String& value, bool important = false);
 
     bool removeProperty(CSSPropertyID, String* returnText = 0);
     void removePrefixedOrUnprefixedProperty(CSSPropertyID);
@@ -205,10 +201,6 @@ public:
     bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
     void removeEquivalentProperties(const StylePropertySet*);
     void removeEquivalentProperties(const CSSStyleDeclaration*);
-    bool removeVariable(const AtomicString& name);
-    bool clearVariables();
-
-    PassRefPtr<CSSVariablesIterator> variablesIterator();
 
     void mergeAndOverrideOnConflict(const StylePropertySet*);
 
