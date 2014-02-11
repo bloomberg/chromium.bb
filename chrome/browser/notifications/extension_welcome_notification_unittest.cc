@@ -29,7 +29,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   MockMessageCenter()
       : add_notification_calls_(0),
         remove_notification_calls_(0),
-        notifications_with_shown_as_popup_(0) {};
+        notifications_with_shown_as_popup_(0) {
+  }
 
   int add_notification_calls() { return add_notification_calls_; }
   int remove_notification_calls() { return remove_notification_calls_; }
@@ -69,6 +70,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   int add_notification_calls_;
   int remove_notification_calls_;
   int notifications_with_shown_as_popup_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
 
 class WelcomeNotificationDelegate
@@ -76,7 +79,8 @@ class WelcomeNotificationDelegate
 public:
   WelcomeNotificationDelegate()
       : start_time_(base::Time::Now()),
-        message_center_(new MockMessageCenter()) {}
+        message_center_(new MockMessageCenter()) {
+  }
 
   // ExtensionWelcomeNotification::Delegate
   virtual message_center::MessageCenter* GetMessageCenter() OVERRIDE {
@@ -95,9 +99,9 @@ public:
   }
 
   // WelcomeNotificationDelegate
-  MockMessageCenter* message_center() { return message_center_.get(); }
+  MockMessageCenter* message_center() const { return message_center_.get(); }
 
-  base::Time GetStartTime() { return start_time_; }
+  base::Time GetStartTime() const { return start_time_; }
 
   void SetElapsedTime(base::TimeDelta elapsed_time) {
     elapsed_time_ = elapsed_time;
@@ -109,14 +113,19 @@ public:
     task_to_run.Run();
   }
 
-private:
-  base::Time start_time_;
+ private:
+  const base::Time start_time_;
   base::TimeDelta elapsed_time_;
   scoped_ptr<MockMessageCenter> message_center_;
   base::Closure pending_task_;
+
+  DISALLOW_COPY_AND_ASSIGN(WelcomeNotificationDelegate);
 };
 
 class TestSyncProcessor : public syncer::SyncChangeProcessor {
+ public:
+  TestSyncProcessor() {}
+
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE {
@@ -127,6 +136,9 @@ class TestSyncProcessor : public syncer::SyncChangeProcessor {
       const OVERRIDE {
     return syncer::SyncDataList();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSyncProcessor);
 };
 
 class ExtensionWelcomeNotificationTest : public testing::Test {
@@ -155,7 +167,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     task_runner_ = NULL;
   }
 
-  void StartPreferenceSyncing() {
+  void StartPreferenceSyncing() const {
     PrefServiceSyncable::FromProfile(profile_.get())
         ->GetSyncableService(syncer::PREFERENCES)
         ->MergeDataAndStartSyncing(
@@ -166,14 +178,14 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
                   new syncer::SyncErrorFactoryMock()));
   }
 
-  void ShowChromeNowNotification() {
+  void ShowChromeNowNotification() const {
     ShowNotification(
         "ChromeNowNotification",
         message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                    kChromeNowExtensionID));
   }
 
-  void ShowRegularNotification() {
+  void ShowRegularNotification() const {
     ShowNotification(
         "RegularNotification",
         message_center::NotifierId(message_center::NotifierId::APPLICATION,
@@ -182,22 +194,28 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
 
   void FlushMessageLoop() { delegate_->RunPendingTask(); }
 
-  MockMessageCenter* message_center() { return delegate_->message_center(); }
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
-  base::Time GetStartTime() { return delegate_->GetStartTime(); }
-  void SetElapsedTime(base::TimeDelta elapsed_time) {
+  MockMessageCenter* message_center() const {
+    return delegate_->message_center();
+  }
+  base::TestSimpleTaskRunner* task_runner() const {
+    return task_runner_.get();
+  }
+  base::Time GetStartTime() const {
+    return delegate_->GetStartTime();
+  }
+  void SetElapsedTime(base::TimeDelta elapsed_time) const {
     delegate_->SetElapsedTime(elapsed_time);
   }
-  bool GetBooleanPref(const char* path) {
+  bool GetBooleanPref(const char* path) const {
     return profile_->GetPrefs()->GetBoolean(path);
   }
-  void SetBooleanPref(const char* path, bool value) {
+  void SetBooleanPref(const char* path, bool value) const {
     profile_->GetPrefs()->SetBoolean(path, value);
   }
-  int64 GetInt64Pref(const char* path) {
+  int64 GetInt64Pref(const char* path) const {
     return profile_->GetPrefs()->GetInt64(path);
   }
-  void SetInt64Pref(const char* path, int64 value) {
+  void SetInt64Pref(const char* path, int64 value) const {
     profile_->GetPrefs()->SetInt64(path, value);
   }
 
@@ -228,7 +246,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   };
 
   void ShowNotification(std::string notification_id,
-                        const message_center::NotifierId& notifier_id) {
+                        const message_center::NotifierId& notifier_id) const {
     message_center::RichNotificationData rich_notification_data;
     rich_notification_data.priority = 0;
     Notification notification(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
@@ -251,6 +269,8 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   // Weak Ref owned by welcome_notification_
   WelcomeNotificationDelegate* delegate_;
   scoped_ptr<ExtensionWelcomeNotification> welcome_notification_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWelcomeNotificationTest);
 };
 
 // Show a regular notification. Expect that WelcomeNotification will
@@ -262,9 +282,9 @@ TEST_F(ExtensionWelcomeNotificationTest, FirstRunShowRegularNotification) {
 
   ShowRegularNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -278,9 +298,9 @@ TEST_F(ExtensionWelcomeNotificationTest, FirstRunChromeNowNotification) {
 
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -294,9 +314,9 @@ TEST_F(ExtensionWelcomeNotificationTest, ShowWelcomeNotificationAgain) {
 
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 1);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 1);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -311,9 +331,9 @@ TEST_F(ExtensionWelcomeNotificationTest,
 
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -329,9 +349,9 @@ TEST_F(ExtensionWelcomeNotificationTest, DismissWelcomeNotification) {
   message_center()->CloseCurrentNotification();
   FlushMessageLoop();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 1);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -346,9 +366,9 @@ TEST_F(ExtensionWelcomeNotificationTest, SyncedDismissalWelcomeNotification) {
   ShowChromeNowNotification();
   SetBooleanPref(prefs::kWelcomeNotificationDismissed, true);
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 1);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -363,9 +383,9 @@ TEST_F(ExtensionWelcomeNotificationTest,
 
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
@@ -376,9 +396,9 @@ TEST_F(ExtensionWelcomeNotificationTest,
 
   StartPreferenceSyncing();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -392,9 +412,9 @@ TEST_F(ExtensionWelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
 
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
@@ -404,9 +424,9 @@ TEST_F(ExtensionWelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
 
   StartPreferenceSyncing();
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
@@ -417,8 +437,7 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
   StartPreferenceSyncing();
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
-  EXPECT_TRUE(
-      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) == 0);
+  EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 0);
   EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
 
   ShowChromeNowNotification();
@@ -427,30 +446,30 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
       base::TimeDelta::FromDays(
           ExtensionWelcomeNotification::kRequestedShowTimeDays);
 
-  EXPECT_TRUE(task_runner()->GetPendingTasks().size() == 1);
-  EXPECT_TRUE(task_runner()->NextPendingTaskDelay() == requested_show_time);
+  EXPECT_EQ(task_runner()->GetPendingTasks().size(), 1U);
+  EXPECT_EQ(task_runner()->NextPendingTaskDelay(), requested_show_time);
 
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
-  EXPECT_TRUE(
-      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) ==
-          (GetStartTime() + requested_show_time).ToInternalValue());
+  EXPECT_EQ(
+      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp),
+      (GetStartTime() + requested_show_time).ToInternalValue());
 
   SetElapsedTime(requested_show_time);
   task_runner()->RunPendingTasks();
 
   EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
-  EXPECT_TRUE(message_center()->add_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 1);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 1);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 1);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
-  EXPECT_TRUE(
-      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) ==
-          (GetStartTime() + requested_show_time).ToInternalValue());
+  EXPECT_EQ(
+      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp),
+      (GetStartTime() + requested_show_time).ToInternalValue());
 }
 
 // Simulate the passage of time after Chrome is closed and the welcome
@@ -461,22 +480,22 @@ TEST_F(ExtensionWelcomeNotificationTest, NotificationPreviouslyExpired) {
   SetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp, 1);
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
-  EXPECT_TRUE(
-      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) == 1);
+  EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 1);
   EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
 
-  base::TimeDelta requested_show_time =
+  const base::TimeDelta requested_show_time =
       base::TimeDelta::FromDays(
           ExtensionWelcomeNotification::kRequestedShowTimeDays);
   SetElapsedTime(requested_show_time);
   ShowChromeNowNotification();
 
   EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
-  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
-  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_EQ(message_center()->add_notification_calls(), 0);
+  EXPECT_EQ(message_center()->remove_notification_calls(), 0);
+  EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
-  EXPECT_TRUE(
-      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) == 1);
+  EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 1);
 }
+
+// C++ Readability Review Change Trigger

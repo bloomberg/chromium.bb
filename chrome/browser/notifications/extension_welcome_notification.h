@@ -38,61 +38,67 @@ class Profile;
 // connectivity since it relies on synced preferences to work. This is generally
 // fine since the current consumers on the welcome notification also presume
 // network connectivity.
+// This class expects to be created and called from the UI thread.
 class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
  public:
-  // Requested time from showing the welcome notification to expiration.
-  static const unsigned int kRequestedShowTimeDays;
-
   // Allows for overriding global calls.
   class Delegate {
    public:
+    Delegate() {}
     virtual ~Delegate() {}
     virtual message_center::MessageCenter* GetMessageCenter() = 0;
     virtual base::Time GetCurrentTime() = 0;
     virtual void PostTask(
         const tracked_objects::Location& from_here,
         const base::Closure& task) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
+
+  // Requested time from showing the welcome notification to expiration.
+  static const int kRequestedShowTimeDays;
+
+  virtual ~ExtensionWelcomeNotification();
 
   // To workaround the lack of delegating constructors prior to C++11, we use
   // static Create methods.
-  // Creates an ExtensionWelcomeNotification with the default delegate.
+  // Creates an ExtensionWelcomeNotification owned by the specified
+  // extension id with the default delegate.
   static scoped_ptr<ExtensionWelcomeNotification> Create(
       const std::string& extension_id,
-      Profile* profile);
+      Profile* const profile);
 
-  // Creates an ExtensionWelcomeNotification with the specified delegate.
+  // Creates an ExtensionWelcomeNotification owned by the specified
+  // extension id with the specified delegate.
   static scoped_ptr<ExtensionWelcomeNotification> Create(
       const std::string& extension_id,
-      Profile* profile,
-      Delegate* delegate);
-
-  virtual ~ExtensionWelcomeNotification();
+      Profile* const profile,
+      Delegate* const delegate);
 
   // PrefServiceSyncableObserver
   virtual void OnIsSyncingChanged() OVERRIDE;
 
-  // Adds in a the welcome notification if required for components built
+  // Adds in the welcome notification if required for components built
   // into Chrome that show notifications like Chrome Now.
   void ShowWelcomeNotificationIfNecessary(const Notification& notification);
 
-  // Handles Preference Registeration for the Welcome Notification.
+  // Handles Preference Registration for the Welcome Notification.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
  private:
-  ExtensionWelcomeNotification(
-      const std::string& extension_id,
-      Profile* profile,
-      ExtensionWelcomeNotification::Delegate* delegate);
-
   enum PopUpRequest { POP_UP_HIDDEN = 0, POP_UP_SHOWN = 1, };
 
+  ExtensionWelcomeNotification(
+      const std::string& extension_id,
+      Profile* const profile,
+      ExtensionWelcomeNotification::Delegate* const delegate);
+
   // Gets the message center from the delegate.
-  message_center::MessageCenter* GetMessageCenter();
+  message_center::MessageCenter* GetMessageCenter() const;
 
   // Unconditionally shows the welcome notification.
   void ShowWelcomeNotification(const base::string16& display_source,
-                               PopUpRequest pop_up_request);
+                               const PopUpRequest pop_up_request);
 
   // Hides the welcome notification.
   void HideWelcomeNotification();
@@ -110,13 +116,13 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   void ExpireWelcomeNotification();
 
   // Gets the expiration timestamp or a null time is there is none.
-  base::Time GetExpirationTimestamp();
+  base::Time GetExpirationTimestamp() const;
 
   // Sets the expiration timestamp from now.
   void SetExpirationTimestampFromNow();
 
   // True if the welcome notification has expired, false otherwise.
-  bool IsWelcomeNotificationExpired();
+  bool IsWelcomeNotificationExpired() const;
 
   // Prefs listener for welcome_notification_dismissed.
   BooleanPrefMember welcome_notification_dismissed_pref_;
@@ -142,8 +148,13 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   scoped_ptr<base::OneShotTimer<ExtensionWelcomeNotification> >
       expiration_timer_;
 
-  // Delegate for global calls.
+  // Delegate for Chrome global calls like base::Time::GetTime() for
+  // testability.
   scoped_ptr<Delegate> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWelcomeNotification);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_EXTENSION_WELCOME_NOTIFICATION_H_
+
+// C++ Readability Review Change Trigger
