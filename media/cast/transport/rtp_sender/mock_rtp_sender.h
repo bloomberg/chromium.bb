@@ -33,4 +33,3 @@ class MockRtpSender : public RtpSender {
 }  // namespace media
 
 #endif  // MEDIA_CAST_TRANSPORT_RTP_SENDER_MOCK_RTP_SENDER_H_
-

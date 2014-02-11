@@ -23,6 +23,8 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestPacketSender : public PacketSender {
  public:
+  TestPacketSender() {}
+
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
     EXPECT_FALSE(expected_packet_size_.empty());
     size_t expected_packet_size = expected_packet_size_.front();
@@ -39,6 +41,8 @@ class TestPacketSender : public PacketSender {
 
  private:
   std::list<int> expected_packet_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
 
 class PacedSenderTest : public ::testing::Test {
@@ -47,9 +51,8 @@ class PacedSenderTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
-    paced_sender_.reset(new PacedSender(&testing_clock_,
-                                        &mock_transport_,
-                                        task_runner_));
+    paced_sender_.reset(
+        new PacedSender(&testing_clock_, &mock_transport_, task_runner_));
   }
 
   virtual ~PacedSenderTest() {}
@@ -70,6 +73,8 @@ class PacedSenderTest : public ::testing::Test {
   TestPacketSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PacedSender> paced_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(PacedSenderTest);
 };
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {
@@ -124,8 +129,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   PacketList second_frame_packets =
       CreatePacketList(kSize2, num_of_packets_in_frame);
 
-  PacketList nack_packets =
-      CreatePacketList(kNackSize, num_of_packets_in_nack);
+  PacketList nack_packets = CreatePacketList(kNackSize, num_of_packets_in_nack);
 
   // Check that the first burst of the frame go out on the wire.
   mock_transport_.AddExpectedSize(kSize1, 3);

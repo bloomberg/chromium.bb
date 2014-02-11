@@ -29,6 +29,8 @@ class PacketStorageTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   PacketStorage packet_storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(PacketStorageTest);
 };
 
 TEST_F(PacketStorageTest, TimeOut) {
@@ -63,7 +65,7 @@ TEST_F(PacketStorageTest, MaxNumberOfPackets) {
 
   uint32 frame_id = 0;
   for (uint16 packet_id = 0; packet_id <= PacketStorage::kMaxStoredPackets;
-      ++packet_id) {
+       ++packet_id) {
     packet_storage_.StorePacket(frame_id, packet_id, &test_123);
   }
   Packet packet;
@@ -109,4 +111,3 @@ TEST_F(PacketStorageTest, PacketContent) {
 }  // namespace transport
 }  // namespace cast
 }  // namespace media
-

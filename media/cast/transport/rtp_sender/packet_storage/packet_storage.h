@@ -49,6 +49,8 @@ class PacketStorage {
   PacketMap stored_packets_;
   TimeToPacketMap time_to_packet_map_;
   std::list<linked_ptr<StoredPacket> > free_packets_;
+
+  DISALLOW_COPY_AND_ASSIGN(PacketStorage);
 };
 
 }  // namespace transport

@@ -18,7 +18,6 @@ static const uint8 kCastKeyFrameBitMask = 0x80;
 static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 static const uint8 kRtpMarkerBitMask = 0x80;
 
-
 RtpPacketizerConfig::RtpPacketizerConfig()
     : audio(false),
       payload_type(-1),
@@ -50,7 +49,8 @@ void RtpPacketizer::IncomingEncodedVideoFrame(
     const EncodedVideoFrame* video_frame,
     const base::TimeTicks& capture_time) {
   DCHECK(!config_.audio) << "Invalid state";
-  if (config_.audio) return;
+  if (config_.audio)
+    return;
 
   time_last_sent_rtp_timestamp_ = capture_time;
   Cast(video_frame->key_frame,
@@ -82,7 +82,8 @@ uint16 RtpPacketizer::NextSequenceNumber() {
 
 bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
                                       uint32* rtp_timestamp) const {
-  if (time_last_sent_rtp_timestamp_.is_null()) return false;
+  if (time_last_sent_rtp_timestamp_.is_null())
+    return false;
 
   *time_sent = time_last_sent_rtp_timestamp_;
   *rtp_timestamp = rtp_timestamp_;
@@ -118,8 +119,8 @@ void RtpPacketizer::Cast(bool is_key,
     BuildCommonRTPheader(&packet, remaining_size == 0, timestamp);
 
     // Build Cast header.
-    packet.push_back(
-        (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
+    packet.push_back((is_key ? kCastKeyFrameBitMask : 0) |
+                     kCastReferenceFrameIdBitMask);
     packet.push_back(frame_id);
     size_t start_size = packet.size();
     packet.resize(start_size + 4);
@@ -150,8 +151,9 @@ void RtpPacketizer::Cast(bool is_key,
   packet_id_ = 0;
 }
 
-void RtpPacketizer::BuildCommonRTPheader(
-    Packet* packet, bool marker_bit, uint32 time_stamp) {
+void RtpPacketizer::BuildCommonRTPheader(Packet* packet,
+                                         bool marker_bit,
+                                         uint32 time_stamp) {
   packet->push_back(0x80);
   packet->push_back(static_cast<uint8>(config_.payload_type) |
                     (marker_bit ? kRtpMarkerBitMask : 0));

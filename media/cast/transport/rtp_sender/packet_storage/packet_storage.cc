@@ -20,9 +20,7 @@ typedef TimeToPacketMap::iterator TimeToPacketIterator;
 
 class StoredPacket {
  public:
-  StoredPacket() {
-    packet_.reserve(kMaxIpPacketSize);
-  }
+  StoredPacket() { packet_.reserve(kMaxIpPacketSize); }
 
   void Save(const Packet* packet) {
     DCHECK_LT(packet->size(), kMaxIpPacketSize) << "Invalid argument";
@@ -36,10 +34,11 @@ class StoredPacket {
 
  private:
   Packet packet_;
+
+  DISALLOW_COPY_AND_ASSIGN(StoredPacket);
 };
 
-PacketStorage::PacketStorage(base::TickClock* clock,
-                             int max_time_stored_ms)
+PacketStorage::PacketStorage(base::TickClock* clock, int max_time_stored_ms)
     : clock_(clock) {
   max_time_stored_ = base::TimeDelta::FromMilliseconds(max_time_stored_ms);
   DCHECK_LE(max_time_stored_ms, kMaxAllowedTimeStoredMs) << "Invalid argument";
@@ -50,7 +49,7 @@ PacketStorage::~PacketStorage() {
 
   PacketMapIterator store_it = stored_packets_.begin();
   for (; store_it != stored_packets_.end();
-      store_it = stored_packets_.begin()) {
+       store_it = stored_packets_.begin()) {
     stored_packets_.erase(store_it);
   }
   while (!free_packets_.empty()) {
@@ -96,7 +95,8 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
   }
 }
 
-void PacketStorage::StorePacket(uint32 frame_id, uint16 packet_id,
+void PacketStorage::StorePacket(uint32 frame_id,
+                                uint16 packet_id,
                                 const Packet* packet) {
   base::TimeTicks now = clock_->NowTicks();
   CleanupOldPackets(now);
@@ -129,8 +129,9 @@ PacketList PacketStorage::GetPackets(
 
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
-       missing_frames_and_packets.begin();
-       it != missing_frames_and_packets.end(); ++it) {
+           missing_frames_and_packets.begin();
+       it != missing_frames_and_packets.end();
+       ++it) {
     uint8 frame_id = it->first;
     const PacketIdSet& packets_set = it->second;
     bool success = false;
@@ -146,7 +147,8 @@ PacketList PacketStorage::GetPackets(
     } else {
       // Iterate over all of the packets in the frame.
       for (PacketIdSet::const_iterator set_it = packets_set.begin();
-          set_it != packets_set.end(); ++set_it) {
+           set_it != packets_set.end();
+           ++set_it) {
         GetPacket(frame_id, *set_it, &packets_to_resend);
       }
     }
@@ -164,8 +166,7 @@ bool PacketStorage::GetPacket(uint8 frame_id,
     return false;
   }
   it->second->GetCopy(packets);
-  VLOG(1) << "Resend " << static_cast<int>(frame_id)
-          << ":" << packet_id;
+  VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":" << packet_id;
   return true;
 }
 

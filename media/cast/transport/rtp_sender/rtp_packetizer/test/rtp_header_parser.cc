@@ -35,22 +35,21 @@ RtpCastTestHeader::RtpCastTestHeader()
 
 RtpCastTestHeader::~RtpCastTestHeader() {}
 
-RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data,
-                                 size_t rtp_data_length)
-  : rtp_data_begin_(rtp_data),
-    length_(rtp_data_length) {}
+RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data, size_t rtp_data_length)
+    : rtp_data_begin_(rtp_data), length_(rtp_data_length) {}
 
 RtpHeaderParser::~RtpHeaderParser() {}
 
 bool RtpHeaderParser::Parse(RtpCastTestHeader* parsed_packet) const {
-  if (length_ <  kRtpCommonHeaderLength + kRtpCastHeaderLength)
+  if (length_ < kRtpCommonHeaderLength + kRtpCastHeaderLength)
     return false;
-  if (!ParseCommon(parsed_packet)) return false;
+  if (!ParseCommon(parsed_packet))
+    return false;
   return ParseCast(parsed_packet);
 }
 
 bool RtpHeaderParser::ParseCommon(RtpCastTestHeader* parsed_packet) const {
-  const uint8 version  = rtp_data_begin_[0] >> 6;
+  const uint8 version = rtp_data_begin_[0] >> 6;
   if (version != 2) {
     return false;
   }
@@ -58,8 +57,7 @@ bool RtpHeaderParser::ParseCommon(RtpCastTestHeader* parsed_packet) const {
   const uint8 num_csrcs = rtp_data_begin_[0] & 0x0f;
   const bool marker = ((rtp_data_begin_[1] & 0x80) == 0) ? false : true;
   const uint8 payload_type = rtp_data_begin_[1] & 0x7f;
-  const uint16 sequence_number = (rtp_data_begin_[2] << 8) +
-      rtp_data_begin_[3];
+  const uint16 sequence_number = (rtp_data_begin_[2] << 8) + rtp_data_begin_[3];
 
   const uint8* ptr = &rtp_data_begin_[4];
 

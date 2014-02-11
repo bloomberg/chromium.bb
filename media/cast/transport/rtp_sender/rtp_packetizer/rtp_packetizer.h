@@ -70,11 +70,13 @@ class RtpPacketizer {
   size_t send_octet_count() { return send_octet_count_; }
 
  private:
-  void Cast(bool is_key, uint32 frame_id, uint32 reference_frame_id,
-            uint32 timestamp, const std::string& data);
+  void Cast(bool is_key,
+            uint32 frame_id,
+            uint32 reference_frame_id,
+            uint32 timestamp,
+            const std::string& data);
 
-  void BuildCommonRTPheader(Packet* packet, bool marker_bit,
-      uint32 time_stamp);
+  void BuildCommonRTPheader(Packet* packet, bool marker_bit, uint32 time_stamp);
 
   RtpPacketizerConfig config_;
   PacedSender* const transport_;  // Not owned by this class.

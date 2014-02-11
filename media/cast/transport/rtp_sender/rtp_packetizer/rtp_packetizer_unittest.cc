@@ -30,13 +30,13 @@ static const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
 class TestRtpPacketTransport : public PacketSender {
  public:
   explicit TestRtpPacketTransport(RtpPacketizerConfig config)
-       : config_(config),
-         sequence_number_(kSeqNum),
-         packets_sent_(0),
-         expected_number_of_packets_(0),
-         expected_packet_id_(0),
-         expected_frame_id_(0),
-         expectd_rtp_timestamp_(0) {}
+      : config_(config),
+        sequence_number_(kSeqNum),
+        packets_sent_(0),
+        expected_number_of_packets_(0),
+        expected_packet_id_(0),
+        expected_frame_id_(0),
+        expectd_rtp_timestamp_(0) {}
 
   void VerifyRtpHeader(const RtpCastTestHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
@@ -71,9 +71,7 @@ class TestRtpPacketTransport : public PacketSender {
     return true;
   }
 
-  int number_of_packets_received() const {
-    return packets_sent_;
-  }
+  int number_of_packets_received() const { return packets_sent_; }
 
   void set_expected_number_of_packets(int expected_number_of_packets) {
     expected_number_of_packets_ = expected_number_of_packets;
@@ -107,11 +105,10 @@ class RtpPacketizerTest : public ::testing::Test {
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    pacer_.reset(new PacedSender(&testing_clock_,
-                                 transport_.get(),
-                                 task_runner_));
-    rtp_packetizer_.reset(new RtpPacketizer(pacer_.get(), &packet_storage_,
-                                            config_));
+    pacer_.reset(
+        new PacedSender(&testing_clock_, transport_.get(), task_runner_));
+    rtp_packetizer_.reset(
+        new RtpPacketizer(pacer_.get(), &packet_storage_, config_));
     video_frame_.key_frame = false;
     video_frame_.frame_id = 0;
     video_frame_.last_referenced_frame_id = kStartFrameId;
