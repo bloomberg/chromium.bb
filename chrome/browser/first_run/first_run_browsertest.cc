@@ -251,8 +251,16 @@ class FirstRunMasterPrefsWithTrackedPreferences
   }
 };
 
+// http://crbug.com/314221
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_TrackedPreferencesSurviveFirstRun \
+    DISABLED_TrackedPreferencesSurviveFirstRun
+#else
+#define MAYBE_TrackedPreferencesSurviveFirstRun \
+    TrackedPreferencesSurviveFirstRun
+#endif
 IN_PROC_BROWSER_TEST_P(FirstRunMasterPrefsWithTrackedPreferences,
-                       TrackedPreferencesSurviveFirstRun) {
+                       MAYBE_TrackedPreferencesSurviveFirstRun) {
   const PrefService* user_prefs = browser()->profile()->GetPrefs();
   EXPECT_EQ("example.com", user_prefs->GetString(prefs::kHomePage));
   EXPECT_FALSE(user_prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
