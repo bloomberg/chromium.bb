@@ -25,8 +25,10 @@ class Loader {
  public:
   class Delegate {
    public:
+    // |mime_type| is NULL if a mime type was not specified.
     virtual void DidCompleteLoad(const GURL& app_url,
-                                 const base::FilePath& app_path) = 0;
+                                 const base::FilePath& app_path,
+                                 const std::string* mime_type) = 0;
 
    protected:
     virtual ~Delegate();

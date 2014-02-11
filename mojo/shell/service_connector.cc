@@ -37,11 +37,11 @@ class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
     connector_->RemoveServiceFactory(this);
   }
 
-  GURL url() const { return url_; }
+  const GURL& url() const { return url_; }
 
  private:
-  ServiceConnector* connector_;
-  GURL url_;
+  ServiceConnector* const connector_;
+  const GURL url_;
   RemotePtr<ShellClient> shell_client_;
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };

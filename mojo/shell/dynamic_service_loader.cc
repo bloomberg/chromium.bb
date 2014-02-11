@@ -68,7 +68,8 @@ class DynamicServiceLoader::LoadContext
  private:
   // From Loader::Delegate.
   virtual void DidCompleteLoad(const GURL& app_url,
-                               const base::FilePath& app_path) OVERRIDE {
+                               const base::FilePath& app_path,
+                               const std::string* mime_type) OVERRIDE {
     app_path_ = app_path;
     thread_.Start();
   }

@@ -10,6 +10,7 @@
 #include "mojo/shell/switches.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -39,7 +40,10 @@ void Loader::Job::OnURLFetchComplete(const net::URLFetcher* source) {
 
   base::FilePath app_path;
   source->GetResponseAsFilePath(true, &app_path);
-  delegate_->DidCompleteLoad(source->GetURL(), app_path);
+  std::string mime_type;
+  std::string* passed_mime_type =
+      source->GetResponseHeaders()->GetMimeType(&mime_type) ? &mime_type : NULL;
+  delegate_->DidCompleteLoad(source->GetURL(), app_path, passed_mime_type);
 }
 
 Loader::Loader(base::SingleThreadTaskRunner* network_runner,

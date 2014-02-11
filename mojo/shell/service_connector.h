@@ -52,6 +52,7 @@ class ServiceConnector {
   Loader* GetLoaderForURL(const GURL& gurl);
   // Loads a service if necessary and establishes a new client connection.
   void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
+
  private:
   class ServiceFactory;
 
