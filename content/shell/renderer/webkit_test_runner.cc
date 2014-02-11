@@ -554,9 +554,10 @@ void WebKitTestRunner::captureHistoryForWindow(
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame, int world_id) {
   WebTestingSupport::injectInternalsObject(frame);
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
-  if (world_id == 0)
+  if (world_id == 0) {
+    ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
     GCController::Install(frame);
+  }
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {

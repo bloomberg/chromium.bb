@@ -24,11 +24,14 @@ class WebURL;
 class WebView;
 }
 
+namespace content {
+class GamepadController;
+}
+
 namespace WebTestRunner {
 
 class AccessibilityController;
 class EventSender;
-class GamepadController;
 class TestRunner;
 class TextInputController;
 class WebTestDelegate;
@@ -61,7 +64,7 @@ public:
 private:
     scoped_ptr<AccessibilityController> m_accessibilityController;
     scoped_ptr<EventSender> m_eventSender;
-    scoped_ptr<GamepadController> m_gamepadController;
+    scoped_ptr<content::GamepadController> m_gamepadController;
     scoped_ptr<TextInputController> m_textInputController;
     scoped_ptr<TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;

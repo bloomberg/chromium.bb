@@ -8,10 +8,10 @@
 
 #include "content/shell/renderer/test_runner/AccessibilityController.h"
 #include "content/shell/renderer/test_runner/EventSender.h"
-#include "content/shell/renderer/test_runner/GamepadController.h"
 #include "content/shell/renderer/test_runner/TestRunner.h"
 #include "content/shell/renderer/test_runner/TextInputController.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -27,7 +27,7 @@ namespace WebTestRunner {
 TestInterfaces::TestInterfaces()
     : m_accessibilityController(new AccessibilityController())
     , m_eventSender(new EventSender(this))
-    , m_gamepadController(new GamepadController())
+    , m_gamepadController(new content::GamepadController())
     , m_textInputController(new TextInputController())
     , m_testRunner(new TestRunner(this))
     , m_delegate(0)
@@ -50,7 +50,7 @@ TestInterfaces::~TestInterfaces()
 
     m_accessibilityController->setDelegate(0);
     m_eventSender->setDelegate(0);
-    m_gamepadController->setDelegate(0);
+    m_gamepadController->SetDelegate(0);
     // m_textInputController doesn't depend on WebTestDelegate.
     m_testRunner->setDelegate(0);
 }
@@ -69,7 +69,7 @@ void TestInterfaces::setDelegate(WebTestDelegate* delegate)
 {
     m_accessibilityController->setDelegate(delegate);
     m_eventSender->setDelegate(delegate);
-    m_gamepadController->setDelegate(delegate);
+    m_gamepadController->SetDelegate(delegate);
     // m_textInputController doesn't depend on WebTestDelegate.
     m_testRunner->setDelegate(delegate);
     m_delegate = delegate;
@@ -79,7 +79,7 @@ void TestInterfaces::bindTo(WebFrame* frame)
 {
     m_accessibilityController->bindToJavascript(frame, WebString::fromUTF8("accessibilityController"));
     m_eventSender->bindToJavascript(frame, WebString::fromUTF8("eventSender"));
-    m_gamepadController->bindToJavascript(frame, WebString::fromUTF8("gamepadController"));
+    m_gamepadController->Install(frame);
     m_textInputController->bindToJavascript(frame, WebString::fromUTF8("textInputController"));
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("testRunner"));
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("layoutTestController"));
@@ -89,7 +89,7 @@ void TestInterfaces::resetTestHelperControllers()
 {
     m_accessibilityController->reset();
     m_eventSender->reset();
-    m_gamepadController->reset();
+    m_gamepadController->Reset();
     // m_textInputController doesn't have any state to reset.
     WebCache::clear();
 }
