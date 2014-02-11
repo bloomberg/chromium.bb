@@ -56,6 +56,8 @@ enum MediaContainerName {
   CONTAINER_WAV,              // WAV / WAVE (Waveform Audio)
   CONTAINER_WEBM,             // Matroska / WebM
   CONTAINER_WTV,              // WTV (Windows Television)
+  CONTAINER_DASH,             // DASH (MPEG-DASH)
+  CONTAINER_SMOOTHSTREAM,     // SmoothStreaming
   CONTAINER_MAX               // Must be last
 };
 

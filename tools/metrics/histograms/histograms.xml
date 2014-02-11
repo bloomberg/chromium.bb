@@ -1343,6 +1343,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.CastMediaType" enum="MediaContainers">
+  <summary>Records the media type of every video being cast.</summary>
+</histogram>
+
 <histogram name="Cast.Sender.CastPlaySuccess" enum="BooleanSuccess">
   <summary>
     Records the result of a request to play remotely. The value will be true if
@@ -6746,7 +6750,11 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Media.DetectedContainer" enum="MediaContainers">
-  <summary>Container used for HTML5 media.</summary>
+  <summary>
+    Container used for HTML5 media. Views that include pre-M34 data will
+    categorize dash (38) and smooth streaming (39) in the &quot;Other&quot;
+    bucket.
+  </summary>
 </histogram>
 
 <histogram name="Media.DetectedVideoCodec" enum="FFmpegCodecs">
@@ -28122,6 +28130,8 @@ other types of suffix sets.
   <int value="35" label="WAV / WAVE (Waveform Audio)"/>
   <int value="36" label="Matroska / WebM"/>
   <int value="37" label="WTV (Windows Television)"/>
+  <int value="38" label="DASH"/>
+  <int value="39" label="SmoothStream"/>
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">
