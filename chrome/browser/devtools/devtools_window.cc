@@ -65,6 +65,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
@@ -662,6 +663,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(profile));
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
+  web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
 
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |load_state_ == kLoadCompleted|.
