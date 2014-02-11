@@ -36,9 +36,7 @@
 #include "webkit/child/webkitplatformsupport_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
-#if defined(OS_WIN)
-#include "third_party/WebKit/public/platform/win/WebThemeEngine.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
 

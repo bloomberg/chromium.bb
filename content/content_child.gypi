@@ -171,8 +171,6 @@
     'child/webthemeengine_impl_default.h',
     'child/webthemeengine_impl_mac.cc',
     'child/webthemeengine_impl_mac.h',
-    'child/webthemeengine_impl_win.cc',
-    'child/webthemeengine_impl_win.h',
     'child/worker_thread_task_runner.cc',
     'child/worker_thread_task_runner.h',
     'public/child/image_decoder_utils.h',
