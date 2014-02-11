@@ -7,15 +7,18 @@
 #include <functional>
 #include <limits>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/common/prerender_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -28,7 +31,29 @@ using base::TimeTicks;
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
 
+namespace prerender {
+
 namespace {
+
+bool ShouldStartRelNextPrerenders() {
+  const std::string experiment_name =
+      base::FieldTrialList::FindFullName("PrerenderRelNextTrial");
+
+  return experiment_name.find("Yes") != std::string::npos;
+}
+
+bool ShouldStartPrerender(uint32 rel_types) {
+  const bool should_start_rel_next_prerenders =
+      ShouldStartRelNextPrerenders();
+
+  if (rel_types & PrerenderRelTypePrerender) {
+    return true;
+  } else if (should_start_rel_next_prerenders &&
+             (rel_types & PrerenderRelTypeNext) == PrerenderRelTypeNext) {
+    return true;
+  }
+  return false;
+}
 
 void Send(int child_id, IPC::Message* raw_message) {
   using content::RenderProcessHost;
@@ -41,8 +66,6 @@ void Send(int child_id, IPC::Message* raw_message) {
 }
 
 }  // namespace
-
-namespace prerender {
 
 // Helper class to implement PrerenderContents::Observer and watch prerenders
 // which launch other prerenders.
@@ -109,6 +132,7 @@ PrerenderLinkManager::~PrerenderLinkManager() {
 void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
                                           int prerender_id,
                                           const GURL& url,
+                                          uint32 rel_types,
                                           const content::Referrer& referrer,
                                           const gfx::Size& size,
                                           int render_view_route_id) {
@@ -135,7 +159,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
   }
 
   LinkPrerender
-      prerender(launcher_child_id, prerender_id, url, referrer, size,
+      prerender(launcher_child_id, prerender_id, url, rel_types, referrer, size,
                 render_view_route_id, manager_->GetCurrentTimeTicks(),
                 prerender_contents);
   prerenders_.push_back(prerender);
@@ -196,6 +220,7 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
     int launcher_child_id,
     int prerender_id,
     const GURL& url,
+    uint32 rel_types,
     const content::Referrer& referrer,
     const gfx::Size& size,
     int render_view_route_id,
@@ -204,6 +229,7 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
     : launcher_child_id(launcher_child_id),
       prerender_id(prerender_id),
       url(url),
+      rel_types(rel_types),
       referrer(referrer),
       size(size),
       render_view_route_id(render_view_route_id),
@@ -312,6 +338,11 @@ void PrerenderLinkManager::StartPrerenders() {
       } else {
         return;
       }
+    }
+
+    if (!ShouldStartPrerender((*i)->rel_types)) {
+      prerenders_.erase(*i);
+      continue;
     }
 
     PrerenderHandle* handle = manager_->AddPrerenderFromLinkRelPrerender(

@@ -47,6 +47,7 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   void OnAddPrerender(int child_id,
                       int prerender_id,
                       const GURL& url,
+                      uint32 rel_types,
                       const content::Referrer& referrer,
                       const gfx::Size& size,
                       int render_view_route_id);
@@ -75,6 +76,7 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     LinkPrerender(int launcher_child_id,
                   int prerender_id,
                   const GURL& url,
+                  uint32 rel_types,
                   const content::Referrer& referrer,
                   const gfx::Size& size,
                   int render_view_route_id,
@@ -86,6 +88,7 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     int launcher_child_id;
     int prerender_id;
     GURL url;
+    uint32 rel_types;
     content::Referrer referrer;
     gfx::Size size;
     int render_view_route_id;
@@ -170,4 +173,3 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_H_
-
