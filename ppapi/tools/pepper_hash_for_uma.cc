@@ -17,15 +17,21 @@
 #include "base/macros.h"
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <interface_name>\n", argv[0]);
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <interface1> <interface2> <...>\n", argv[0]);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Prints hashes for interface names.\n");
+    fprintf(stderr, "Example: %s \"PPB_Var;1.1\" \"PPB_FileIO;1.2\"\n",
+            argv[0]);
     return 1;
   }
-  uint32 data = base::Hash(argv[1], strlen(argv[1]));
+  for (int i = 1; i < argc; i++) {
+    uint32 data = base::Hash(argv[i], strlen(argv[i]));
 
-  // Strip off the signed bit because UMA doesn't support negative values,
-  // but takes a signed int as input.
-  int hash = static_cast<int>(data & 0x7fffffff);
-  printf("%s: %d\n", argv[1], hash);
+    // Strip off the signed bit because UMA doesn't support negative values,
+    // but takes a signed int as input.
+    int hash = static_cast<int>(data & 0x7fffffff);
+    printf("<int value=\"%d\" label=\"%s\">\n", hash, argv[i]);
+  }
   return 0;
 }
