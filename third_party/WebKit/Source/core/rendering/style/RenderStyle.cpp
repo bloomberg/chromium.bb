@@ -455,8 +455,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             && *rareNonInheritedData->m_multiCol.get() != *other->rareNonInheritedData->m_multiCol.get())
             return StyleDifferenceLayout;
 
-        if (rareNonInheritedData->m_transform.get() != other->rareNonInheritedData->m_transform.get()
-            && *rareNonInheritedData->m_transform.get() != *other->rareNonInheritedData->m_transform.get()) {
+        if (!transformDataEquivalent(other)) {
             // Don't return early here; instead take note of the type of
             // change, and deal with it when looking at compositing.
             changedContextSensitiveProperties |= ContextSensitivePropertyTransform;
