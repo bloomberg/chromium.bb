@@ -27,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '77ffe85f084f79cfe162c6083f65027d60f905ec'
+BIONIC_VERSION = '171e152bc66aec14029e90edc69d94af4f289bab'
 
 ARCHES = ['arm']
 
