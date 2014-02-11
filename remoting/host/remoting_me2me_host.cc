@@ -287,6 +287,7 @@ class HostProcess
   bool curtain_required_;
   ThirdPartyAuthConfig third_party_auth_config_;
 
+  scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
@@ -1033,16 +1034,20 @@ void HostProcess::StartHost() {
 
   signaling_connector_.reset(new SignalingConnector(
       signal_strategy_.get(),
-      context_->url_request_context_getter(),
       dns_blackhole_checker.Pass(),
       base::Bind(&HostProcess::OnAuthFailed, this)));
 
   if (!oauth_refresh_token_.empty()) {
-    scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
-        new SignalingConnector::OAuthCredentials(
+    scoped_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials;
+    oauth_credentials.reset(
+        new OAuthTokenGetter::OAuthCredentials(
             xmpp_server_config_.username, oauth_refresh_token_,
             use_service_account_));
-    signaling_connector_->EnableOAuth(oauth_credentials.Pass());
+
+    oauth_token_getter_.reset(new OAuthTokenGetter(
+        oauth_credentials.Pass(), context_->url_request_context_getter()));
+
+    signaling_connector_->EnableOAuth(oauth_token_getter_.get());
   }
 
   NetworkSettings network_settings(
@@ -1160,6 +1165,7 @@ void HostProcess::ShutdownOnNetworkThread() {
   host_status_sender_.reset();
   host_change_notification_listener_.reset();
   signaling_connector_.reset();
+  oauth_token_getter_.reset();
   signal_strategy_.reset();
   network_change_notifier_.reset();
 

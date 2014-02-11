@@ -9,14 +9,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/network_change_notifier.h"
+#include "remoting/host/oauth_token_getter.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace remoting {
 
@@ -33,37 +28,24 @@ class SignalingConnector
       public base::NonThreadSafe,
       public SignalStrategy::Listener,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public net::NetworkChangeNotifier::IPAddressObserver,
-      public gaia::GaiaOAuthClient::Delegate {
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  // This structure contains information required to perform
-  // authentication to OAuth2.
-  struct OAuthCredentials {
-    OAuthCredentials(const std::string& login_value,
-                     const std::string& refresh_token_value,
-                     bool is_service_account);
-
-    // The user's account name (i.e. their email address).
-    std::string login;
-
-    // Token delegating authority to us to act as the user.
-    std::string refresh_token;
-
-    // Whether these credentials belong to a service account.
-    bool is_service_account;
-  };
-
   // The |auth_failed_callback| is called when authentication fails.
   SignalingConnector(
       XmppSignalStrategy* signal_strategy,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
       const base::Closure& auth_failed_callback);
   virtual ~SignalingConnector();
 
   // May be called immediately after the constructor to enable OAuth
   // access token updating.
-  void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials);
+  // |oauth_token_getter| must outlive SignalingConnector.
+  void EnableOAuth(OAuthTokenGetter* oauth_token_getter);
+
+  // OAuthTokenGetter callback.
+  void OnAccessToken(OAuthTokenGetter::Status status,
+                     const std::string& user_email,
+                     const std::string& access_token);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
@@ -78,38 +60,21 @@ class SignalingConnector
   // NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // gaia::GaiaOAuthClient::Delegate interface.
-  virtual void OnGetTokensResponse(const std::string& user_email,
-                                   const std::string& access_token,
-                                   int expires_seconds) OVERRIDE;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
-  virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
-
  private:
+  void OnNetworkError();
   void ScheduleTryReconnect();
   void ResetAndTryReconnect();
   void TryReconnect();
   void OnDnsBlackholeCheckerDone(bool allow);
 
-  void RefreshOAuthToken();
-
   XmppSignalStrategy* signal_strategy_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   base::Closure auth_failed_callback_;
-
-  scoped_ptr<OAuthCredentials> oauth_credentials_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
+
+  OAuthTokenGetter* oauth_token_getter_;
 
   // Number of times we tried to connect without success.
   int reconnect_attempts_;
-
-  bool refreshing_oauth_token_;
-  std::string oauth_access_token_;
-  base::Time auth_token_expiry_time_;
 
   base::OneShotTimer<SignalingConnector> timer_;
 
