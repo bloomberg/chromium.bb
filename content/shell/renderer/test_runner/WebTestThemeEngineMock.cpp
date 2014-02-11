@@ -4,6 +4,7 @@
 
 #include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
 
+#include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -18,15 +19,26 @@ namespace WebTestRunner {
 
 static const SkColor edgeColor     = SK_ColorBLACK;
 static const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
-static const SkColor bgColors[]    = {
-    SkColorSetRGB(0xc9, 0xc9, 0xc9), // Disabled
-    SkColorSetRGB(0x43, 0xf9, 0xff), // Hover (Win's "Hot")
-    SkColorSetRGB(0x89, 0xc4, 0xff), // Normal
-    SkColorSetRGB(0xa9, 0xff, 0x12), // Pressed
-    SkColorSetRGB(0x00, 0xf3, 0xac), // Focused
-    SkColorSetRGB(0xf3, 0xe0, 0xd0), // Readonly
-};
 
+SkColor bgColors(WebThemeEngine::State state) {
+  switch (state) {
+    case WebThemeEngine::StateDisabled:
+      return SkColorSetRGB(0xc9, 0xc9, 0xc9);
+    case WebThemeEngine::StateHover:
+      return SkColorSetRGB(0x43, 0xf9, 0xff);
+    case WebThemeEngine::StateNormal:
+      return SkColorSetRGB(0x89, 0xc4, 0xff);
+    case WebThemeEngine::StatePressed:
+      return SkColorSetRGB(0xa9, 0xff, 0x12);
+    case WebThemeEngine::StateFocused:
+      return SkColorSetRGB(0x00, 0xf3, 0xac);
+    case WebThemeEngine::StateReadonly:
+      return SkColorSetRGB(0xf3, 0xe0, 0xd0);
+    default:
+      NOTREACHED();
+  }
+  return SkColorSetRGB(0x00, 0x00, 0xff);
+}
 
 blink::WebSize WebTestThemeEngineMock::getSize(WebThemeEngine::Part part)
 {
@@ -311,7 +323,7 @@ void WebTestThemeEngineMock::paint(
 
     switch (part) {
     case WebThemeEngine::PartScrollbarDownArrow:
-        box(canvas, irect, bgColors[state]);
+        box(canvas, irect, bgColors(state));
         triangle(canvas,
             left  + quarterWidth, top    + quarterHeight,
             right - quarterWidth, top    + quarterHeight,
@@ -321,7 +333,7 @@ void WebTestThemeEngineMock::paint(
         break;
 
     case WebThemeEngine::PartScrollbarLeftArrow:
-        box(canvas, irect, bgColors[state]);
+        box(canvas, irect, bgColors(state));
         triangle(canvas,
             right - quarterWidth, top    + quarterHeight,
             right - quarterWidth, bottom - quarterHeight,
@@ -330,7 +342,7 @@ void WebTestThemeEngineMock::paint(
         break;
 
     case WebThemeEngine::PartScrollbarRightArrow:
-        box(canvas, irect, bgColors[state]);
+        box(canvas, irect, bgColors(state));
         triangle(canvas,
             left  + quarterWidth, top    + quarterHeight,
             right - quarterWidth, top    + halfHeight,
@@ -339,7 +351,7 @@ void WebTestThemeEngineMock::paint(
         break;
 
     case WebThemeEngine::PartScrollbarUpArrow:
-        box(canvas, irect, bgColors[state]);
+        box(canvas, irect, bgColors(state));
         triangle(canvas,
             left  + quarterWidth, bottom - quarterHeight,
             left  + halfWidth,    top    + quarterHeight,
@@ -352,7 +364,7 @@ void WebTestThemeEngineMock::paint(
         // Draw a narrower box on top of the outside box.
         nestedBoxes(canvas, irect, thumbLongIndent, thumbShortIndent,
             thumbLongIndent, thumbShortIndent,
-            bgColors[state], bgColors[state]);
+            bgColors(state), bgColors(state));
         // Draw a horizontal crosshatch for the grip.
         int longOffset = halfWidth - gripLongIndent;
         line(canvas,
@@ -375,7 +387,7 @@ void WebTestThemeEngineMock::paint(
         // Draw a shorter box on top of the outside box.
         nestedBoxes(canvas, irect, thumbShortIndent, thumbLongIndent,
             thumbShortIndent, thumbLongIndent,
-            bgColors[state], bgColors[state]);
+            bgColors(state), bgColors(state));
         // Draw a vertical crosshatch for the grip.
         int longOffset = halfHeight - gripLongIndent;
         line(canvas,
@@ -400,11 +412,11 @@ void WebTestThemeEngineMock::paint(
         if (extraParams->scrollbarTrack.isBack) {
             // back, notch on left
             nestedBoxes(canvas, irect, noOffset, longOffset, shortOffset,
-                longOffset, bgColors[state], edgeColor);
+                longOffset, bgColors(state), edgeColor);
         } else {
             // forward, notch on right
             nestedBoxes(canvas, irect, shortOffset, longOffset, noOffset,
-                longOffset, bgColors[state], edgeColor);
+                longOffset, bgColors(state), edgeColor);
         }
 
         markState(canvas, irect, state);
@@ -417,11 +429,11 @@ void WebTestThemeEngineMock::paint(
         if (extraParams->scrollbarTrack.isBack) {
             // back, notch at top
             nestedBoxes(canvas, irect, longOffset, noOffset, longOffset,
-                shortOffset, bgColors[state], edgeColor);
+                shortOffset, bgColors(state), edgeColor);
         } else {
             // forward, notch at bottom
             nestedBoxes(canvas, irect, longOffset, shortOffset, longOffset,
-                noOffset, bgColors[state], edgeColor);
+                noOffset, bgColors(state), edgeColor);
         }
 
         markState(canvas, irect, state);
@@ -443,16 +455,16 @@ void WebTestThemeEngineMock::paint(
             nestedBoxes(canvas, irect,
                 checkIndent, halfHeight,
                 checkIndent, halfHeight,
-                bgColors[state], edgeColor);
+                bgColors(state), edgeColor);
         } else if (extraParams->button.checked) {
             irect = validate(irect, part);
             nestedBoxes(canvas, irect,
                 checkIndent, checkIndent,
                 checkIndent, checkIndent,
-                bgColors[state], edgeColor);
+                bgColors(state), edgeColor);
         } else {
             irect = validate(irect, part);
-            box(canvas, irect, bgColors[state]);
+            box(canvas, irect, bgColors(state));
         }
         break;
 
@@ -460,15 +472,15 @@ void WebTestThemeEngineMock::paint(
         irect = validate(irect, part);
         halfHeight = irect.height() / 2;
         if (extraParams->button.checked) {
-            circle(canvas, irect, SkIntToScalar(halfHeight), bgColors[state]);
+            circle(canvas, irect, SkIntToScalar(halfHeight), bgColors(state));
             circle(canvas, irect, SkIntToScalar(halfHeight - checkIndent), edgeColor);
         } else {
-            circle(canvas, irect, SkIntToScalar(halfHeight), bgColors[state]);
+            circle(canvas, irect, SkIntToScalar(halfHeight), bgColors(state));
         }
         break;
 
     case WebThemeEngine::PartButton:
-        roundRect(canvas, irect, bgColors[state]);
+        roundRect(canvas, irect, bgColors(state));
         markState(canvas, irect, state);
         break;
 
@@ -507,7 +519,7 @@ void WebTestThemeEngineMock::paint(
 
         if (state == WebThemeEngine::StateFocused) // FIXME: draw differenty?
             state = WebThemeEngine::StateNormal;
-        box(canvas, irect, bgColors[state]);
+        box(canvas, irect, bgColors(state));
         triangle(canvas,
             irect.fLeft  + quarterWidth, irect.fTop,
             irect.fRight - quarterWidth, irect.fTop,
@@ -524,12 +536,12 @@ void WebTestThemeEngineMock::paint(
             state = WebThemeEngine::StateNormal;
         if (extraParams->slider.vertical) {
             lirect.inset(halfWidth - sliderIndent, noOffset);
-            box(canvas, lirect, bgColors[state]);
+            box(canvas, lirect, bgColors(state));
             line(canvas, left, top, right, top, edgeColor);
             line(canvas, left, bottom, right, bottom, edgeColor);
         } else {
             lirect.inset(noOffset, halfHeight - sliderIndent);
-            box(canvas, lirect, bgColors[state]);
+            box(canvas, lirect, bgColors(state));
             line(canvas, left, top, left, bottom, edgeColor);
             line(canvas, right, top, right, bottom, edgeColor);
         }
@@ -539,7 +551,7 @@ void WebTestThemeEngineMock::paint(
     case WebThemeEngine::PartSliderThumb:
         if (state == WebThemeEngine::StateFocused) // FIXME: draw differently?
             state = WebThemeEngine::StateNormal;
-        oval(canvas, irect, bgColors[state]);
+        oval(canvas, irect, bgColors(state));
         break;
 
     case WebThemeEngine::PartInnerSpinButton: {
@@ -550,7 +562,7 @@ void WebTestThemeEngineMock::paint(
             state = blink::WebThemeEngine::StateDisabled;
 
         lirect.set(rect.x, rect.y, rect.x + rect.width - 1, rect.y + halfHeight - 1);
-        box(canvas, lirect, bgColors[state]);
+        box(canvas, lirect, bgColors(state));
         bottom = lirect.fBottom;
         quarterHeight = lirect.height() / 4;
         triangle(canvas,
@@ -564,7 +576,7 @@ void WebTestThemeEngineMock::paint(
         top = lirect.fTop;
         bottom = lirect.fBottom;
         quarterHeight = lirect.height() / 4;
-        box(canvas, lirect, bgColors[state]);
+        box(canvas, lirect, bgColors(state));
         triangle(canvas,
             left  + quarterWidth, top    + quarterHeight,
             right - quarterWidth, top    + quarterHeight,
@@ -574,7 +586,7 @@ void WebTestThemeEngineMock::paint(
         break;
     }
     case WebThemeEngine::PartProgressBar: {
-        paint.setColor(bgColors[state]);
+        paint.setColor(bgColors(state));
         paint.setStyle(SkPaint::kFill_Style);
         canvas->drawIRect(irect, paint);
 
