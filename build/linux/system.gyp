@@ -296,6 +296,9 @@
       'target_name': 'glib',
       'type': 'none',
       'toolsets': ['host', 'target'],
+      'dependencies': [
+        'xtst'
+      ],
       'variables': {
         'glib_packages': 'glib-2.0 gmodule-2.0 gobject-2.0 gthread-2.0',
       },
@@ -328,11 +331,6 @@
               '<!@(pkg-config --libs-only-l <(glib_packages))',
             ],
           },
-        }],
-        ['use_x11==1', {
-          'link_settings': {
-            'libraries': [ '-lXtst' ]
-          }
         }],
       ],
     },
@@ -952,21 +950,57 @@
       },
     },
     {
-      'target_name': 'xtst',
+      'target_name': 'xscrnsaver',
       'type': 'none',
       'direct_dependent_settings': {
         'cflags': [
-          '<!@(<(pkg-config) --cflags xtst)',
+          '<!@(<(pkg-config) --cflags xscrnsaver)',
         ],
       },
       'link_settings': {
         'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xscrnsaver)',
         ],
         'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xtst)',
+          '<!@(<(pkg-config) --libs-only-l xscrnsaver)',
         ],
       },
+    },
+    {
+      'target_name': 'xtst',
+      'type': 'none',
+      'toolsets': ['host', 'target'],
+      'conditions': [
+        ['_toolset=="target"', {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xtst)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xtst)',
+            ],
+          },
+        }, {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(pkg-config --cflags xtst)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(pkg-config --libs-only-L --libs-only-other xtst)',
+            ],
+            'libraries': [
+              '<!@(pkg-config --libs-only-l xtst)',
+            ],
+          },
+        }]
+      ]
     }
   ],
 }

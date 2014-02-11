@@ -1305,6 +1305,11 @@
                   '<(DEPTH)/third_party/libva',
                 ],
               }],
+              ['use_x11==1', {
+                'dependencies': [
+                  '../build/linux/system.gyp:x11',  # Used by rendering_helper.cc
+                ],
+              }],
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [ 4267, ],

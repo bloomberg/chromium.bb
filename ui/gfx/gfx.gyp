@@ -436,6 +436,11 @@
             'text_utils_skia.cc',
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:x11',
+          ],
+        }],
         ['use_pango==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:pangocairo',

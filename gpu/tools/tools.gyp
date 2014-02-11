@@ -16,6 +16,7 @@
           'type': 'executable',
           'dependencies': [
             '../../base/base.gyp:base',
+            '../../build/linux/system.gyp:x11',
             '../../ui/gl/gl.gyp:gl',
           ],
           'libraries': [

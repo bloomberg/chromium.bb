@@ -2968,13 +2968,6 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-          'link_settings': {
-            'libraries': [
-              '-lXss',
-            ],
-          },
-        }],
         ['use_nss!=1', {
           'sources!': [
             'browser/ui/webui/options/certificate_manager_handler.cc',

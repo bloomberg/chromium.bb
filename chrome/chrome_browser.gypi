@@ -3093,12 +3093,10 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-          'link_settings': {
-            'libraries': [
-              '-lXss',
-            ],
-          },
+        ['use_x11==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:xscrnsaver',
+          ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "ios"', {
           'sources': [

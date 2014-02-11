@@ -527,16 +527,6 @@
             'ldflags': [
               '-L<(PRODUCT_DIR)',
             ],
-            # TODO(jamesr): Targets using X11 should declare dependencies on the
-            # appropriate build/linux/system.gyp targets themselves instead of
-            # independently picking it up from ui.
-            'link_settings': {
-              'libraries': [
-                '-lX11',
-                '-lXcursor',
-                '-lXrender',
-              ],
-            },
           },
           'dependencies': [
             '../build/linux/system.gyp:x11',

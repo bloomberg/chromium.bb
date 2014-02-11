@@ -116,6 +116,13 @@
         'test/test_utils.cc',
         'test/test_utils.h',
       ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:x11'
+          ]
+        }]
+      ]
     },
     {
       'target_name': 'compositor_unittests',

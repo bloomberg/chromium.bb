@@ -501,11 +501,6 @@
           'export_dependent_settings': [
             '../third_party/sqlite/sqlite.gyp:sqlite',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lXss',
-            ],
-          },
         }],
         ['chromeos==1', {
           'sources!': [

@@ -207,12 +207,6 @@
               'GL_GLEXT_PROTOTYPES',
             ],
           },
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXcomposite',
-            ],
-          },
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:x11',
             '<(DEPTH)/build/linux/system.gyp:xcomposite',
