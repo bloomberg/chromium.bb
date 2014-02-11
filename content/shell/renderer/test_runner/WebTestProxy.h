@@ -134,6 +134,7 @@ protected:
     void didInvalidateRect(const blink::WebRect&);
     void didScrollRect(int, int, const blink::WebRect&);
     void scheduleAnimation();
+    bool isCompositorFramePending() const;
     // FIXME: Remove once we switch to use didForceResize.
     void setWindowRect(const blink::WebRect&);
     void show(blink::WebNavigationPolicy);
@@ -257,6 +258,10 @@ public:
     virtual void scheduleAnimation()
     {
         WebTestProxyBase::scheduleAnimation();
+    }
+    virtual bool isCompositorFramePending() const
+    {
+        return WebTestProxyBase::isCompositorFramePending();
     }
     virtual void setWindowRect(const blink::WebRect& rect)
     {

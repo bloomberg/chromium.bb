@@ -738,6 +738,11 @@ void WebTestProxyBase::animateNow()
     }
 }
 
+bool WebTestProxyBase::isCompositorFramePending() const
+{
+    return m_animateScheduled || !m_paintRect.isEmpty();
+}
+
 void WebTestProxyBase::show(WebNavigationPolicy)
 {
     invalidateAll();
