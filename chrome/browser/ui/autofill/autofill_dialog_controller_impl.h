@@ -504,6 +504,9 @@ class AutofillDialogControllerImpl
   // messages - see AllSectionsAreValid.
   bool SectionIsValid(DialogSection section);
 
+  // Whether validation rules for |section| are loaded.
+  bool RulesAreLoaded(DialogSection section);
+
   // Whether the currently active credit card expiration date is valid.
   bool IsCreditCardExpirationValid(const base::string16& year,
                                    const base::string16& month) const;
@@ -694,6 +697,9 @@ class AutofillDialogControllerImpl
 
   // |DialogSection|s that are in edit mode that are based on existing data.
   std::set<DialogSection> section_editing_state_;
+
+  // Sections that need to be validated when their validation rules load.
+  std::set<DialogSection> needs_validation_;
 
   // Whether |form_structure_| has asked for any details that would indicate
   // we should show a shipping section.

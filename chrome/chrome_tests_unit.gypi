@@ -1441,6 +1441,8 @@
         'browser/ui/autofill/country_combobox_model_unittest.cc',
         'browser/ui/autofill/data_model_wrapper_unittest.cc',
         'browser/ui/autofill/generated_credit_card_bubble_controller_unittest.cc',
+        'browser/ui/autofill/mock_address_validator.cc',
+        'browser/ui/autofill/mock_address_validator.h',
         'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',
         'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
         'browser/ui/autofill/mock_new_credit_card_bubble_controller.cc',

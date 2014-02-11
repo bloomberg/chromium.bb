@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/mock_address_validator.h"
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -75,6 +76,7 @@ using testing::AtLeast;
 using testing::Return;
 using testing::_;
 
+const char kSourceUrl[] = "http://localbike.shop";
 const char kFakeEmail[] = "user@chromium.org";
 const char kFakeFingerprintEncoded[] = "CgVaAwiACA==";
 const char kEditedBillingAddress[] = "123 edited billing address";
@@ -216,6 +218,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   MOCK_METHOD0(UpdateForErrors, void());
 
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE {}
+  virtual void ValidateSection(DialogSection) OVERRIDE {}
 
   void SetUserInput(DialogSection section, const FieldValueMap& map) {
     outputs_[section] = map;
@@ -241,26 +244,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   bool save_details_locally_checked_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
-};
-
-class MockAddressValidator : public AddressValidator {
- public:
-  MockAddressValidator() {
-    ON_CALL(*this, ValidateAddress(_, _, _)).WillByDefault(Return(SUCCESS));
-  }
-
-  virtual ~MockAddressValidator() {}
-
-  MOCK_METHOD1(LoadRules, void(const std::string& country_code));
-
-  MOCK_CONST_METHOD3(ValidateAddress,
-      ::i18n::addressinput::AddressValidator::Status(
-          const AddressData& address,
-          const AddressProblemFilter& filter,
-          AddressProblems* problems));
-
-  MOCK_CONST_METHOD1(CanonicalizeAdministrativeArea,
-                     bool(AddressData* address_data));
 };
 
 class TestAutofillDialogController
@@ -466,7 +449,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     controller_ = (new testing::NiceMock<TestAutofillDialogController>(
         web_contents(),
         form_data,
-        GURL(),
+        GURL(kSourceUrl),
         metric_logger_,
         callback,
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
@@ -3023,28 +3006,23 @@ TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {
   EXPECT_EQ(1U, updates.size());
 }
 
-MATCHER_P(CountryCode, country_code, "Checks country code of an AddressData") {
-  // |arg| is an AddressData object.
-  return arg.country_code == country_code;
-}
-
 TEST_F(AutofillDialogControllerI18nTest, CorrectCountryFromInputs) {
   EXPECT_CALL(*controller()->GetMockValidator(),
-              ValidateAddress(CountryCode("CN"), _, _));
+              ValidateAddress(CountryCodeMatcher("CN"), _, _));
 
   FieldValueMap billing_inputs;
   billing_inputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("China");
   controller()->InputsAreValid(SECTION_BILLING, billing_inputs);
 
   EXPECT_CALL(*controller()->GetMockValidator(),
-              ValidateAddress(CountryCode("FR"), _, _));
+              ValidateAddress(CountryCodeMatcher("FR"), _, _));
 
   FieldValueMap shipping_inputs;
   shipping_inputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("France");
   controller()->InputsAreValid(SECTION_SHIPPING, shipping_inputs);
 }
 
-TEST_F(AutofillDialogControllerI18nTest, LoadValidationRules) {
+TEST_F(AutofillDialogControllerI18nTest, ValidationRulesLoadedOnCountryChange) {
   ResetControllerWithFormData(DefaultFormData());
   EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("US"));
   controller()->Show();
@@ -3056,6 +3034,66 @@ TEST_F(AutofillDialogControllerI18nTest, LoadValidationRules) {
                                            gfx::Rect(),
                                            ASCIIToUTF16("France"),
                                            true);
+}
+
+TEST_F(AutofillDialogControllerI18nTest, InvalidWhenRulesNotReady) {
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+
+  // If the rules haven't loaded yet, validation errors should show on submit.
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCodeMatcher("US"), _, _)).
+              WillRepeatedly(Return(AddressValidator::RULES_NOT_READY));
+
+  FieldValueMap inputs;
+  inputs[ADDRESS_HOME_ZIP] = ASCIIToUTF16("1234");
+  inputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("United States");
+
+  ValidityMessages messages =
+      controller()->InputsAreValid(SECTION_SHIPPING, inputs);
+  EXPECT_FALSE(messages.GetMessageOrDefault(ADDRESS_HOME_ZIP).text.empty());
+  EXPECT_FALSE(messages.HasSureError(ADDRESS_HOME_ZIP));
+  // Country should never show an error message as it's always valid.
+  EXPECT_TRUE(messages.GetMessageOrDefault(ADDRESS_HOME_COUNTRY).text.empty());
+}
+
+TEST_F(AutofillDialogControllerI18nTest, ValidButUnverifiedWhenRulesFail) {
+  SwitchToAutofill();
+
+  // Add suggestions so the credit card and billing sections aren't showing
+  // their manual inputs (to isolate to just shipping).
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+  CreditCard verified_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
+
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+
+  // If the rules are unavailable, validation errors should not show.
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCodeMatcher("US"), _, _)).
+              WillRepeatedly(Return(AddressValidator::RULES_UNAVAILABLE));
+
+  FieldValueMap outputs;
+  AutofillProfile full_profile(test::GetFullProfile());
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const ServerFieldType type = inputs[i].type;
+    outputs[type] = full_profile.GetInfo(AutofillType(type), "en-US");
+  }
+  controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(true);
+  controller()->OnAccept();
+
+  // Profiles saved while rules are unavailable shouldn't be verified.
+  const AutofillProfile& imported_profile =
+      controller()->GetTestingManager()->imported_profile();
+  ASSERT_EQ(imported_profile.GetRawInfo(NAME_FULL),
+            full_profile.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(imported_profile.origin(), GURL(kSourceUrl).GetOrigin().spec());
+  EXPECT_FALSE(imported_profile.IsVerified());
 }
 
 }  // namespace autofill

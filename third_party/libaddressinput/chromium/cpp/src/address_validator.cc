@@ -116,17 +116,22 @@ class AddressValidatorImpl : public AddressValidator {
     // We can still validate the required fields even if the full ruleset isn't
     // ready.
     if (ruleset_it == rules_.end()) {
-      Rule rule;
-      rule.CopyFrom(Rule::GetDefault());
-      if (rule.ParseSerializedRule(
-               RegionDataConstants::GetRegionData(address.country_code))) {
-        EnforceRequiredFields(rule, address, filter, problems);
+      if (problems != NULL) {
+        Rule rule;
+        rule.CopyFrom(Rule::GetDefault());
+        if (rule.ParseSerializedRule(
+                 RegionDataConstants::GetRegionData(address.country_code))) {
+          EnforceRequiredFields(rule, address, filter, problems);
+        }
       }
 
       return loading_rules_.find(address.country_code) != loading_rules_.end()
           ? RULES_NOT_READY
           : RULES_UNAVAILABLE;
     }
+
+    if (problems == NULL)
+      return SUCCESS;
 
     const Ruleset* ruleset = ruleset_it->second;
     assert(ruleset != NULL);
@@ -225,6 +230,7 @@ class AddressValidatorImpl : public AddressValidator {
                              const AddressData& address,
                              const AddressProblemFilter& filter,
                              AddressProblems* problems) const {
+    assert(problems != NULL);
     for (std::vector<AddressField>::const_iterator
              field_it = country_rule.GetRequired().begin();
          field_it != country_rule.GetRequired().end();

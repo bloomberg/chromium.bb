@@ -1154,6 +1154,7 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
 
 void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   SetEditingExistingData(section, false);
+  needs_validation_.erase(section);
 
   if (i18ninput::Enabled()) {
     CountryComboboxModel* model = CountryComboboxModelForSection(section);
@@ -1864,14 +1865,13 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     const ServerFieldType type = iter->first;
     base::string16 text = InputValidityMessage(section, type, iter->second);
 
-    // Skip empty/unchanged fields in edit mode. Ignore country as it always has
-    // a value. If the individual field does not have validation errors, assume
-    // it to be valid unless later proven otherwise.
-    bool sure = InputWasEdited(type, iter->second) ||
-                AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY;
+    // Skip empty/unchanged fields in edit mode. If the individual field does
+    // not have validation errors, assume it to be valid unless later proven
+    // otherwise.
+    bool sure = InputWasEdited(type, iter->second);
 
-    if (status != AddressValidator::SUCCESS &&
-        InputWasEdited(type, iter->second) &&
+    if (sure && status == AddressValidator::RULES_NOT_READY &&
+        !ComboboxModelForAutofillType(type) &&
         (AutofillType(type).group() == ADDRESS_HOME ||
          AutofillType(type).group() == ADDRESS_BILLING)) {
       DCHECK(text.empty());
@@ -1879,6 +1879,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
       text = base::ASCIIToUTF16("Sorry, Chrome failed to validate this field. "
                                 "Please wait and try again.");
       sure = false;
+      needs_validation_.insert(section);
     }
 
     messages.Set(type, ValidityMessage(text, sure));
@@ -3058,7 +3059,6 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
     if (section == SECTION_CC) {
       CreditCard card;
-      card.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &card);
 
       // The card holder name comes from the billing address section.
@@ -3066,6 +3066,10 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
                       GetValueFromSection(SECTION_BILLING, NAME_BILLING_FULL));
 
       if (ShouldSaveDetailsLocally()) {
+        // Only save new profiles as verified if validation rules are loaded.
+        card.set_origin(RulesAreLoaded(section) ?
+            kAutofillDialogOrigin : source_url_.GetOrigin().spec());
+
         std::string guid = GetManager()->SaveImportedCreditCard(card);
         newly_saved_data_model_guids_[section] = guid;
         DCHECK(!profile()->IsOffTheRecord());
@@ -3081,10 +3085,12 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
           output[CREDIT_CARD_VERIFICATION_CODE]);
     } else {
       AutofillProfile profile;
-      profile.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &profile);
 
       if (ShouldSaveDetailsLocally()) {
+        profile.set_origin(RulesAreLoaded(section) ?
+            kAutofillDialogOrigin : source_url_.GetOrigin().spec());
+
         std::string guid = GetManager()->SaveImportedProfile(profile);
         newly_saved_data_model_guids_[section] = guid;
       }
@@ -3295,6 +3301,17 @@ bool AutofillDialogControllerImpl::SectionIsValid(
   FieldValueMap detail_outputs;
   view_->GetUserInput(section, &detail_outputs);
   return !InputsAreValid(section, detail_outputs).HasSureErrors();
+}
+
+bool AutofillDialogControllerImpl::RulesAreLoaded(DialogSection section) {
+  if (!i18ninput::Enabled())
+    return true;
+
+  AddressData address_data;
+  address_data.country_code = CountryCodeForSection(section);
+  AddressValidator::Status status = GetValidator()->ValidateAddress(
+      address_data, AddressProblemFilter(), NULL);
+  return status == AddressValidator::SUCCESS;
 }
 
 bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
@@ -3530,8 +3547,17 @@ void AutofillDialogControllerImpl::OnAddressValidationRulesLoaded(
     const std::string& country_code,
     bool success) {
   // TODO(dbeam): should we retry on failure?
-  // TODO(dbeam): disable the submit button until rules are successfully loaded.
-  // TODO(dbeam): ask |view_| to re-validate its contents if necessary.
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+    if (!SectionIsActive(section) || !IsManuallyEditingSection(section))
+      continue;
+
+    if (needs_validation_.count(section) &&
+        CountryCodeForSection(section) == country_code) {
+      view_->ValidateSection(section);
+      needs_validation_.erase(section);
+    }
+  }
 }
 
 void AutofillDialogControllerImpl::DoFinishSubmit() {

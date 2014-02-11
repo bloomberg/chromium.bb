@@ -48,6 +48,7 @@ class AutofillDialogCocoa;
 - (void)modelChanged;
 - (void)updateErrorBubble;
 - (void)onSignInResize:(NSSize)size;
+- (void)validateSection:(autofill::DialogSection)section;
 
 @end
 

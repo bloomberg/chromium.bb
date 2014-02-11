@@ -139,6 +139,9 @@ void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
       NSMakeSize(pref_size.width(), pref_size.height())];
 }
 
+void AutofillDialogCocoa::ValidateSection(DialogSection section) {
+  [sheet_delegate_ validateSection:section];
+}
 
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {

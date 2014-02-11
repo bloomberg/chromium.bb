@@ -50,7 +50,13 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
  private:
   // LoadRulesDelegate implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) {}
+                                              bool success) {
+    AddressData address_data;
+    address_data.country_code = country_code;
+    AddressValidator::Status status =
+        validator_->ValidateAddress(address_data, AddressProblemFilter(), NULL);
+    EXPECT_EQ(success, status == AddressValidator::SUCCESS);
+  }
 };
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {

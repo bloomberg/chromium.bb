@@ -96,6 +96,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void HideSignIn() OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
+  virtual void ValidateSection(DialogSection section) OVERRIDE;
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

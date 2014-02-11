@@ -101,6 +101,9 @@ class AutofillDialogView {
   // resize. |pref_size| is the new preferred size of the sign-in page.
   virtual void OnSignInResize(const gfx::Size& pref_size) = 0;
 
+  // Tells the view to validate its manual input in |section|.
+  virtual void ValidateSection(DialogSection section) = 0;
+
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.
   static AutofillDialogView* Create(AutofillDialogViewDelegate* delegate);

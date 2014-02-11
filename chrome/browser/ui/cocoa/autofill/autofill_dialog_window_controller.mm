@@ -460,4 +460,8 @@ const CGFloat kMinimumContentsHeight = 101;
   [self requestRelayout];
 }
 
+- (void)validateSection:(autofill::DialogSection)section {
+  [[mainContainer_ sectionForId:section] validateFor:autofill::VALIDATE_EDIT];
+}
+
 @end

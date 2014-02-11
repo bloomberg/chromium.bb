@@ -1446,6 +1446,10 @@ void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
   ContentsPreferredSizeChanged();
 }
 
+void AutofillDialogViews::ValidateSection(DialogSection section) {
+  ValidateGroup(*GroupForSection(section), VALIDATE_EDIT);
+}
+
 gfx::Size AutofillDialogViews::GetPreferredSize() {
   if (preferred_size_.IsEmpty())
     preferred_size_ = CalculatePreferredSize(false);

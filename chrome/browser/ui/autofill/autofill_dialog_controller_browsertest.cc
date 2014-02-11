@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_tester.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#include "chrome/browser/ui/autofill/mock_address_validator.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -78,7 +79,9 @@ namespace autofill {
 
 namespace {
 
+using testing::Return;
 using testing::_;
+using ::i18n::addressinput::AddressValidator;
 
 void MockCallback(const FormStructure*) {}
 
@@ -187,6 +190,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_manager_;
   }
 
+  MockAddressValidator* GetMockValidator() {
+    return &mock_validator_;
+  }
+
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsManuallyEditingSection;
   using AutofillDialogControllerImpl::IsPayingWithWallet;
@@ -217,6 +224,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &const_cast<TestAutofillDialogController*>(this)->test_manager_;
   }
 
+  virtual AddressValidator* GetValidator() OVERRIDE {
+    return &mock_validator_;
+  }
+
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
     return &mock_wallet_client_;
   }
@@ -235,6 +246,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
+  testing::NiceMock<MockAddressValidator> mock_validator_;
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   bool use_validation_;
@@ -1564,6 +1576,36 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Belarus"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, RulesLoaded) {
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+  controller()->set_use_validation(true);
+
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCodeMatcher("CN"), _, _)).Times(2).
+              WillOnce(Return(AddressValidator::RULES_NOT_READY));
+
+  // Validation should occur on country change and see the rules haven't loaded.
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  view->SetTextContentsOfInput(ADDRESS_HOME_ZIP, ASCIIToUTF16("123"));
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("China"));
+  view->ActivateInput(ADDRESS_HOME_COUNTRY);
+
+  // Different country loaded, validation should not occur.
+  controller()->OnAddressValidationRulesLoaded("FR", true);
+
+  // Relevant country loaded, validation should occur.
+  controller()->OnAddressValidationRulesLoaded("CN", true);
+
+  // Relevant country loaded but revalidation already happened, no further
+  // validation should occur.
+  controller()->OnAddressValidationRulesLoaded("CN", false);
+
+  // Cancelling the dialog causes additional validation to see if the user
+  // cancelled with invalid fields, so verify and clear here.
+  testing::Mock::VerifyAndClearExpectations(controller()->GetMockValidator());
 }
 
 }  // namespace autofill
