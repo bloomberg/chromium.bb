@@ -2449,7 +2449,7 @@ Press any key to continue exploring.
     User certificate must be hardware-backed.
   </message>
   <message name="IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
-    Enable Verified Access service
+    Enable Verified Access
   </message>
   <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
     Reconnect
