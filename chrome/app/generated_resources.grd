@@ -13986,6 +13986,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </ph> wants to permanently store large data on your local computer.
       </message>
     </if>
+    <message name="IDS_REQUEST_QUOTA_PERMISSION_FRAGMENT" desc="Permission fragment presented in the permission bubble when the webapp requests new larger quota to persistently store data on the device. Follows a 'This site would like to:' prompt.">
+      permanently store data on your device.
+    </message>
 
     <!-- Manage Profile Dialog -->
     <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
