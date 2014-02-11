@@ -982,7 +982,8 @@ class XcodeSettings(object):
     project, then the environment variable was empty. Starting with this
     version, Xcode uses the name of the newest SDK installed.
     """
-    if self._XcodeVersion() < '0500':
+    xcode_version, xcode_build = self._XcodeVersion()
+    if xcode_version < '0500':
       return ''
     default_sdk_path = self._XcodeSdkPath('')
     default_sdk_root = XcodeSettings._sdk_root_cache.get(default_sdk_path)
