@@ -3758,6 +3758,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="EnterpriseCheck.InvalidPoliciesDetected"
+    units="disabled policies">
+  <summary>
+    The number of disabled policy entries due to integrity violations while
+    parsing the policy data which happens on start-up and when the policy has
+    changed.
+  </summary>
+</histogram>
+
 <histogram name="EnterpriseCheck.OSType" enum="OsSuite">
   <summary>
     The rough Windows suite we are runnnig on. This check is performed once at
