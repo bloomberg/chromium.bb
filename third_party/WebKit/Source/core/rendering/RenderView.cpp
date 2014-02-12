@@ -524,6 +524,9 @@ void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur)
 
     repaintViewRectangle(ur);
 
+    // FIXME: We don't actually know how to hit these ASSERTS.
+    DisableCompositingQueryAsserts disabler;
+
     if (compositor()->inCompositingMode()) {
         IntRect repaintRect = pixelSnappedIntRect(ur);
         compositor()->repaintCompositedLayers(&repaintRect);
@@ -533,6 +536,9 @@ void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur)
 void RenderView::repaintViewAndCompositedLayers()
 {
     repaint();
+
+    // The only way we know how to hit these ASSERTS below this point is via the Chromium OS login screen.
+    DisableCompositingQueryAsserts disabler;
 
     if (compositor()->inCompositingMode())
         compositor()->repaintCompositedLayers();
