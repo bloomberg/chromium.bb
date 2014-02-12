@@ -1876,6 +1876,10 @@ handle_wl_shell_ping(struct shell_surface *shsurf, uint32_t serial)
 
 	if (shsurf->ping_timer)
 		return;
+	if (shsurf->unresponsive) {
+		ping_timeout_handler(shsurf);
+		return;
+	}
 
 	shsurf->ping_timer = malloc(sizeof *shsurf->ping_timer);
 	if (!shsurf->ping_timer)
@@ -1975,21 +1979,14 @@ handle_pointer_focus(struct wl_listener *listener, void *data)
 	struct weston_pointer *pointer = data;
 	struct weston_view *view = pointer->focus;
 	struct weston_compositor *compositor;
-	struct shell_surface *shsurf;
 	uint32_t serial;
 
 	if (!view)
 		return;
 
 	compositor = view->surface->compositor;
-	shsurf = get_shell_surface(view->surface);
-
-	if (shsurf && shsurf->unresponsive) {
-		set_busy_cursor(shsurf, pointer);
-	} else {
-		serial = wl_display_next_serial(compositor->wl_display);
-		ping_handler(view->surface, serial);
-	}
+	serial = wl_display_next_serial(compositor->wl_display);
+	ping_handler(view->surface, serial);
 }
 
 static void
@@ -5909,7 +5906,6 @@ module_init(struct weston_compositor *ec,
 	shell->wake_listener.notify = wake_handler;
 	wl_signal_add(&ec->wake_signal, &shell->wake_listener);
 
-	ec->ping_handler = ping_handler;
 	ec->shell_interface.shell = shell;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.get_primary_view = get_primary_view;

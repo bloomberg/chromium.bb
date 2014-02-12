@@ -1000,13 +1000,8 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = seat->pointer;
-	struct weston_surface *focus =
-		(struct weston_surface *) pointer->focus;
-	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-		if (compositor->ping_handler && focus)
-			compositor->ping_handler(focus, serial);
 		weston_compositor_idle_inhibit(compositor);
 		if (pointer->button_count == 0) {
 			pointer->grab_button = button;
@@ -1036,14 +1031,8 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = seat->pointer;
-	struct weston_surface *focus =
-		(struct weston_surface *) pointer->focus;
-	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
-
-	if (compositor->ping_handler && focus)
-		compositor->ping_handler(focus, serial);
 
 	weston_compositor_wake(compositor);
 
@@ -1260,15 +1249,10 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = seat->keyboard;
-	struct weston_surface *focus = keyboard->focus;
 	struct weston_keyboard_grab *grab = keyboard->grab;
-	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		if (compositor->ping_handler && focus)
-			compositor->ping_handler(focus, serial);
-
 		weston_compositor_idle_inhibit(compositor);
 		keyboard->grab_key = key;
 		keyboard->grab_time = time;

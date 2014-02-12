@@ -622,8 +622,6 @@ struct weston_compositor {
 	void (*restore)(struct weston_compositor *ec);
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);
 
-	void (*ping_handler)(struct weston_surface *surface, uint32_t serial);
-
 	struct weston_launcher *launcher;
 
 	uint32_t output_id_pool;

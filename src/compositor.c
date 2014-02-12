@@ -3588,8 +3588,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;
 
-	ec->ping_handler = NULL;
-
 	screenshooter_create(ec);
 	text_backend_init(ec);
 
