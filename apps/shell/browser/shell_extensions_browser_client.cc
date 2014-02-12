@@ -82,6 +82,10 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
   return context;
 }
 
+bool ShellExtensionsBrowserClient::IsGuestSession(BrowserContext* context) {
+  return false;
+}
+
 bool ShellExtensionsBrowserClient::IsExtensionIncognitoEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {

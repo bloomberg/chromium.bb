@@ -82,8 +82,8 @@ void AppLifetimeMonitor::OnShellWindowAdded(ShellWindow* shell_window) {
     return;
 
   ShellWindowRegistry::ShellWindowList windows =
-      ShellWindowRegistry::Get(shell_window->profile())->
-          GetShellWindowsForApp(shell_window->extension_id());
+      ShellWindowRegistry::Get(shell_window->browser_context())
+          ->GetShellWindowsForApp(shell_window->extension_id());
   if (windows.size() == 1)
     NotifyAppActivated(shell_window->extension_id());
 }
@@ -92,8 +92,8 @@ void AppLifetimeMonitor::OnShellWindowIconChanged(ShellWindow* shell_window) {}
 
 void AppLifetimeMonitor::OnShellWindowRemoved(ShellWindow* shell_window) {
   ShellWindowRegistry::ShellWindowList windows =
-      ShellWindowRegistry::Get(shell_window->profile())->
-          GetShellWindowsForApp(shell_window->extension_id());
+      ShellWindowRegistry::Get(shell_window->browser_context())
+          ->GetShellWindowsForApp(shell_window->extension_id());
   if (windows.empty())
     NotifyAppDeactivated(shell_window->extension_id());
 }

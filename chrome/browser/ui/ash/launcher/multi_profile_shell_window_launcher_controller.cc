@@ -43,14 +43,18 @@ void MultiProfileShellWindowLauncherController::ActiveUserChanged(
   for (ShellWindowList::iterator it = shell_window_list_.begin();
        it != shell_window_list_.end(); ++it) {
     apps::ShellWindow* shell_window = *it;
-    if (!multi_user_util::IsProfileFromActiveUser(shell_window->profile()) &&
+    Profile* profile =
+        Profile::FromBrowserContext(shell_window->browser_context());
+    if (!multi_user_util::IsProfileFromActiveUser(profile) &&
         IsRegisteredApp(shell_window->GetNativeWindow()))
       UnregisterApp(shell_window->GetNativeWindow());
   }
   for (ShellWindowList::iterator it = shell_window_list_.begin();
        it != shell_window_list_.end(); ++it) {
     apps::ShellWindow* shell_window = *it;
-    if (multi_user_util::IsProfileFromActiveUser(shell_window->profile()) &&
+    Profile* profile =
+        Profile::FromBrowserContext(shell_window->browser_context());
+    if (multi_user_util::IsProfileFromActiveUser(profile) &&
         !IsRegisteredApp(shell_window->GetNativeWindow()))
       RegisterApp(*it);
   }
@@ -69,7 +73,9 @@ void MultiProfileShellWindowLauncherController::OnShellWindowAdded(
   if (!ControlsWindow(shell_window->GetNativeWindow()))
     return;
   shell_window_list_.push_back(shell_window);
-  if (multi_user_util::IsProfileFromActiveUser(shell_window->profile()))
+  Profile* profile =
+      Profile::FromBrowserContext(shell_window->browser_context());
+  if (multi_user_util::IsProfileFromActiveUser(profile))
     RegisterApp(shell_window);
 }
 

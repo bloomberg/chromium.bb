@@ -11,8 +11,6 @@
 #include "apps/app_shim/app_shim_launch.h"
 #include "base/files/file_path.h"
 
-class Profile;
-
 namespace apps {
 
 // Registrar, and interface for services that can handle interactions with OSX
