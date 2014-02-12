@@ -43,9 +43,6 @@ namespace gpu {
 
 namespace {
 
-static base::LazyInstance<std::set<InProcessCommandBuffer*> >
-    g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
-
 static bool g_use_virtualized_gl_context = false;
 static bool g_uses_explicit_scheduling = false;
 static GpuMemoryBufferFactory* g_gpu_memory_buffer_factory = NULL;
@@ -251,7 +248,6 @@ class ScopedEvent {
 
 InProcessCommandBuffer::InProcessCommandBuffer()
     : context_lost_(false),
-      share_group_id_(0),
       last_put_offset_(-1),
       flush_event_(false, false),
       queue_(CreateSchedulerClient()),
@@ -259,15 +255,6 @@ InProcessCommandBuffer::InProcessCommandBuffer()
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
   Destroy();
-}
-
-bool InProcessCommandBuffer::IsContextLost() {
-  CheckSequencedThread();
-  if (context_lost_ || !command_buffer_) {
-    return true;
-  }
-  CommandBuffer::State state = GetState();
-  return error::IsError(state.error);
 }
 
 void InProcessCommandBuffer::OnResizeView(gfx::Size size, float scale_factor) {
@@ -308,17 +295,14 @@ bool InProcessCommandBuffer::GetBufferChanged(int32 transfer_buffer_id) {
 bool InProcessCommandBuffer::Initialize(
     scoped_refptr<gfx::GLSurface> surface,
     bool is_offscreen,
-    bool share_resources,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     const base::Closure& context_lost_callback,
-    unsigned int share_group_id) {
+    InProcessCommandBuffer* share_group) {
 
-  share_resources_ = share_resources;
   context_lost_callback_ = WrapCallback(context_lost_callback);
-  share_group_id_ = share_group_id;
 
   if (surface) {
     // GPU thread must be the same as client thread due to GLSurface not being
@@ -328,8 +312,13 @@ bool InProcessCommandBuffer::Initialize(
   }
 
   gpu::Capabilities capabilities;
-  InitializeOnGpuThreadParams params(
-      is_offscreen, window, size, attribs, gpu_preference, &capabilities);
+  InitializeOnGpuThreadParams params(is_offscreen,
+                                     window,
+                                     size,
+                                     attribs,
+                                     gpu_preference,
+                                     &capabilities,
+                                     share_group);
 
   base::Callback<bool(void)> init_task =
       base::Bind(&InProcessCommandBuffer::InitializeOnGpuThread,
@@ -351,9 +340,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     const InitializeOnGpuThreadParams& params) {
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
-  // Use one share group for all contexts.
-  CR_DEFINE_STATIC_LOCAL(scoped_refptr<gfx::GLShareGroup>, share_group,
-                         (new gfx::GLShareGroup));
 
   DCHECK(params.size.width() >= 0 && params.size.height() >= 0);
 
@@ -374,24 +360,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     return false;
   }
 
-  InProcessCommandBuffer* context_group = NULL;
-
-  if (share_resources_ && !g_all_shared_contexts.Get().empty()) {
-    DCHECK(share_group_id_);
-    for (std::set<InProcessCommandBuffer*>::iterator it =
-             g_all_shared_contexts.Get().begin();
-         it != g_all_shared_contexts.Get().end();
-         ++it) {
-      if ((*it)->share_group_id_ == share_group_id_) {
-        context_group = *it;
-        DCHECK(context_group->share_resources_);
-        context_lost_ = context_group->IsContextLost();
-        break;
-      }
-    }
-    if (!context_group)
-      share_group = new gfx::GLShareGroup;
-  }
+  gl_share_group_ = params.context_group
+                        ? params.context_group->gl_share_group_.get()
+                        : new gfx::GLShareGroup;
 
 #if defined(OS_ANDROID)
   stream_texture_manager_.reset(new StreamTextureManagerInProcess);
@@ -399,7 +370,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   bool bind_generates_resource = false;
   decoder_.reset(gles2::GLES2Decoder::Create(
-      context_group ? context_group->decoder_->GetContextGroup()
+      params.context_group ? params.context_group->decoder_->GetContextGroup()
                     : new gles2::ContextGroup(NULL,
                                               NULL,
                                               NULL,
@@ -428,15 +399,15 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   if (g_use_virtualized_gl_context) {
-    context_ = share_group->GetSharedContext();
+    context_ = gl_share_group_->GetSharedContext();
     if (!context_.get()) {
       context_ = gfx::GLContext::CreateGLContext(
-          share_group.get(), surface_.get(), params.gpu_preference);
-      share_group->SetSharedContext(context_.get());
+          gl_share_group_.get(), surface_.get(), params.gpu_preference);
+      gl_share_group_->SetSharedContext(context_.get());
     }
 
     context_ = new GLContextVirtual(
-        share_group.get(), context_.get(), decoder_->AsWeakPtr());
+        gl_share_group_.get(), context_.get(), decoder_->AsWeakPtr());
     if (context_->Initialize(surface_.get(), params.gpu_preference)) {
       VLOG(1) << "Created virtual GL context.";
     } else {
@@ -444,7 +415,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     }
   } else {
     context_ = gfx::GLContext::CreateGLContext(
-        share_group.get(), surface_.get(), params.gpu_preference);
+        gl_share_group_.get(), surface_.get(), params.gpu_preference);
   }
 
   if (!context_.get()) {
@@ -486,10 +457,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
         &InProcessCommandBuffer::OnResizeView, gpu_thread_weak_ptr_));
   }
 
-  if (share_resources_) {
-    g_all_shared_contexts.Pointer()->insert(this);
-  }
-
   return true;
 }
 
@@ -517,11 +484,11 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   }
   context_ = NULL;
   surface_ = NULL;
+  gl_share_group_ = NULL;
 #if defined(OS_ANDROID)
   stream_texture_manager_.reset();
 #endif
 
-  g_all_shared_contexts.Pointer()->erase(this);
   return true;
 }
 
@@ -538,14 +505,6 @@ void InProcessCommandBuffer::OnContextLost() {
   }
 
   context_lost_ = true;
-  if (share_resources_) {
-    for (std::set<InProcessCommandBuffer*>::iterator it =
-             g_all_shared_contexts.Get().begin();
-         it != g_all_shared_contexts.Get().end();
-         ++it) {
-      (*it)->context_lost_ = true;
-    }
-  }
 }
 
 CommandBuffer::State InProcessCommandBuffer::GetStateFast() {

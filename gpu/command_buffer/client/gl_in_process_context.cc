@@ -79,7 +79,6 @@ class GLInProcessContextImpl
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<InProcessCommandBuffer> command_buffer_;
 
-  unsigned int share_group_id_;
   bool context_lost_;
   base::Closure context_lost_callback_;
 
@@ -92,7 +91,7 @@ base::LazyInstance<std::set<GLInProcessContextImpl*> > g_all_shared_contexts =
     LAZY_INSTANCE_INITIALIZER;
 
 GLInProcessContextImpl::GLInProcessContextImpl()
-    : share_group_id_(0), context_lost_(false) {}
+    : context_lost_(false) {}
 
 GLInProcessContextImpl::~GLInProcessContextImpl() {
   {
@@ -189,6 +188,7 @@ bool GLInProcessContextImpl::Initialize(
 
   scoped_ptr<base::AutoLock> scoped_shared_context_lock;
   scoped_refptr<gles2::ShareGroup> share_group;
+  InProcessCommandBuffer* share_command_buffer = NULL;
   if (share_resources) {
     scoped_shared_context_lock.reset(
         new base::AutoLock(g_all_shared_contexts_lock.Get()));
@@ -199,24 +199,21 @@ bool GLInProcessContextImpl::Initialize(
       const GLInProcessContextImpl* context = *it;
       if (!context->context_lost_) {
         share_group = context->gles2_implementation_->share_group();
+        share_command_buffer = context->command_buffer_.get();
         DCHECK(share_group);
-        share_group_id_ = context->share_group_id_;
+        DCHECK(share_command_buffer);
         break;
       }
-      share_group_id_ = std::max(share_group_id_, context->share_group_id_);
     }
-    if (!share_group && !++share_group_id_)
-        ++share_group_id_;
   }
   if (!command_buffer_->Initialize(surface,
                                    is_offscreen,
-                                   share_resources,
                                    window,
                                    size,
                                    attrib_vector,
                                    gpu_preference,
                                    wrapped_callback,
-                                   share_group_id_)) {
+                                   share_command_buffer)) {
     LOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return false;
   }

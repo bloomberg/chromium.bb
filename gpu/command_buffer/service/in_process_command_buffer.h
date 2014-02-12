@@ -28,6 +28,7 @@ class SequenceChecker;
 
 namespace gfx {
 class GLContext;
+class GLShareGroup;
 class GLSurface;
 class Size;
 }
@@ -80,13 +81,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // a new GLSurface.
   bool Initialize(scoped_refptr<gfx::GLSurface> surface,
                   bool is_offscreen,
-                  bool share_resources,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
                   const std::vector<int32>& attribs,
                   gfx::GpuPreference gpu_preference,
                   const base::Closure& context_lost_callback,
-                  unsigned int share_group_id);
+                  InProcessCommandBuffer* share_group);
   void Destroy();
 
   // CommandBuffer implementation:
@@ -154,19 +154,22 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const std::vector<int32>& attribs;
     gfx::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
+    InProcessCommandBuffer* context_group;
 
     InitializeOnGpuThreadParams(bool is_offscreen,
                                 gfx::AcceleratedWidget window,
                                 const gfx::Size& size,
                                 const std::vector<int32>& attribs,
                                 gfx::GpuPreference gpu_preference,
-                                gpu::Capabilities* capabilities)
+                                gpu::Capabilities* capabilities,
+                                InProcessCommandBuffer* share_group)
         : is_offscreen(is_offscreen),
           window(window),
           size(size),
           attribs(attribs),
           gpu_preference(gpu_preference),
-          capabilities(capabilities) {}
+          capabilities(capabilities),
+          context_group(share_group) {}
   };
 
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
@@ -174,7 +177,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void FlushOnGpuThread(int32 put_offset);
   uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
   bool MakeCurrent();
-  bool IsContextLost();
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
   void QueueTask(const base::Closure& task) { queue_->QueueTask(task); }
@@ -190,14 +192,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
   bool context_lost_;
-  bool share_resources_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   base::Closure context_lost_callback_;
-  unsigned int share_group_id_;
 
   // Members accessed on the client thread:
   State last_state_;
@@ -212,6 +212,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
   scoped_ptr<GpuControl> gpu_control_;
+  scoped_refptr<gfx::GLShareGroup> gl_share_group_;
 
 #if defined(OS_ANDROID)
   scoped_ptr<StreamTextureManagerInProcess> stream_texture_manager_;
