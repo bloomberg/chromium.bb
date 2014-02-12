@@ -116,6 +116,11 @@ TEST_F(AudioFileReaderTest, MP3) {
           base::TimeDelta::FromMicroseconds(313470), 13824, 12719);
 }
 
+TEST_F(AudioFileReaderTest, CorruptMP3) {
+  RunTest("corrupt.mp3", "-4.95,-2.95,-0.44,1.16,0.31,-2.21,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(1018826), 44930, 44928);
+}
+
 TEST_F(AudioFileReaderTest, AAC) {
   RunTest("sfx.m4a", "1.81,1.66,2.32,3.27,4.46,3.36,", 1, 44100,
           base::TimeDelta::FromMicroseconds(312001), 13759, 13312);

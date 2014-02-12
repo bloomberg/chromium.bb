@@ -161,7 +161,6 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
         DLOG(WARNING)
             << "AudioFileReader::Read() : error in avcodec_decode_audio4() -"
             << result;
-        continue_decoding = false;
         break;
       }
 
