@@ -50,7 +50,6 @@ const uint64 kBlankAndroidId = 999999UL;
 const uint64 kBlankSecurityToken = 999999UL;
 const char kChromeVersion[] = "Version String";
 const uint64 kSecurityToken = 77;
-const int64 kUserSerialNumber = 7;
 
 class CheckinRequestTest : public testing::Test {
  public:
@@ -121,7 +120,6 @@ void CheckinRequestTest::CreateRequest(uint64 android_id,
                  base::Unretained(this)),
       kDefaultBackoffPolicy,
       chrome_build_proto_,
-      kUserSerialNumber,
       android_id,
       security_token,
       url_request_context_getter_.get()));
@@ -182,7 +180,6 @@ TEST_F(CheckinRequestTest, FetcherData) {
 
   EXPECT_EQ(kAndroidId, static_cast<uint64>(request_proto.id()));
   EXPECT_EQ(kSecurityToken, request_proto.security_token());
-  EXPECT_EQ(kUserSerialNumber, request_proto.user_serial_number());
   EXPECT_EQ(chrome_build_proto_.platform(),
             request_proto.checkin().chrome_build().platform());
   EXPECT_EQ(chrome_build_proto_.chrome_version(),
@@ -348,6 +345,7 @@ TEST_F(CheckinRequestTest, SuccessfulFirstTimeCheckin) {
   SetResponse(VALID_RESPONSE);
   CompleteFetch();
 
+  EXPECT_TRUE(callback_called_);
   EXPECT_EQ(kAndroidId, android_id_);
   EXPECT_EQ(kSecurityToken, security_token_);
 }

@@ -28,7 +28,6 @@ namespace {
 enum LastEvent {
   NONE,
   LOADING_COMPLETED,
-  CHECKIN_COMPLETED,
   REGISTRATION_COMPLETED,
   MESSAGE_SEND_ERROR,
   MESSAGE_RECEIVED,
@@ -38,9 +37,6 @@ enum LastEvent {
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
 const char kRegistrationResponsePrefix[] = "token=";
-const char kUsername[] = "test";
-const uint64 kUserAndroidId = 67890;
-const uint64 kUserSecurityToken = 9876;
 
 // Helper for building arbitrary data messages.
 MCSMessage BuildDownstreamMessage(
@@ -48,7 +44,6 @@ MCSMessage BuildDownstreamMessage(
     const std::string& app_id,
     const std::map<std::string, std::string>& data) {
   mcs_proto::DataMessageStanza data_message;
-  data_message.set_device_user_id(1);
   data_message.set_from(project_id);
   data_message.set_category(app_id);
   for (std::map<std::string, std::string>::const_iterator iter = data.begin();
@@ -66,9 +61,7 @@ class FakeMCSClient : public MCSClient {
   FakeMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory);
   virtual ~FakeMCSClient();
-  virtual void Login(uint64 android_id,
-                      uint64 security_token,
-                      const std::vector<int64>& user_serial_numbers) OVERRIDE;
+  virtual void Login(uint64 android_id, uint64 security_token) OVERRIDE;
   virtual void SendMessage(const MCSMessage& message) OVERRIDE;
   void set_gcm_store(GCMStore* gcm_store);
 
@@ -101,9 +94,7 @@ void FakeMCSClient::set_gcm_store(GCMStore* gcm_store) {
   SetGCMStoreForTesting(gcm_store);
 }
 
-void FakeMCSClient::Login(uint64 android_id,
-                          uint64 security_token,
-                          const std::vector<int64>& user_serial_numbers) {
+void FakeMCSClient::Login(uint64 android_id, uint64 security_token) {
   last_android_id_ = android_id;
   last_security_token_ = security_token;
 }
@@ -134,8 +125,6 @@ class GCMClientImplTest : public testing::Test,
   void CompleteRegistration(const std::string& registration_id);
 
   // GCMClient::Delegate overrides (for verification).
-  virtual void OnCheckInFinished(const GCMClient::CheckinInfo& checkin_info,
-                                 GCMClient::Result result) OVERRIDE;
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
@@ -149,12 +138,7 @@ class GCMClientImplTest : public testing::Test,
   virtual void OnMessageSendError(const std::string& app_id,
                                   const std::string& message_id,
                                   GCMClient::Result result) OVERRIDE;
-  virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE {
-    return checkin_info_;
-  }
   virtual void OnGCMReady() OVERRIDE;
-
-  void SetCheckinInfo(uint64 android_id, uint64 security_token);
 
   GCMClientImpl* gcm_client() const { return gcm_client_.get(); }
   FakeMCSClient* mcs_client() const {
@@ -168,9 +152,6 @@ class GCMClientImplTest : public testing::Test,
   }
   const std::string& last_message_id() const { return last_message_id_; }
   GCMClient::Result last_result() const { return last_result_; }
-  const GCMClient::CheckinInfo& last_checkin_info() const {
-    return last_checkin_info_;
-  }
   const GCMClient::IncomingMessage& last_message() const {
     return last_message_;
   }
@@ -193,11 +174,9 @@ class GCMClientImplTest : public testing::Test,
   std::string last_registration_id_;
   std::string last_message_id_;
   GCMClient::Result last_result_;
-  GCMClient::CheckinInfo last_checkin_info_;
   GCMClient::IncomingMessage last_message_;
 
   scoped_ptr<GCMClientImpl> gcm_client_;
-  GCMClient::CheckinInfo checkin_info_;
   scoped_ptr<FakeConnectionFactory> connection_factory_;
 
   base::MessageLoop message_loop_;
@@ -223,8 +202,6 @@ void GCMClientImplTest::SetUp() {
   run_loop_.reset(new base::RunLoop);
   BuildGCMClient();
   InitializeGCMClient();
-  gcm_client()->SetUserDelegate(kUsername, this);
-  PumpLoop();
 }
 
 void GCMClientImplTest::PumpLoop() {
@@ -289,7 +266,8 @@ void GCMClientImplTest::InitializeGCMClient() {
   gcm_client_->Initialize(chrome_build_proto,
                           temp_directory_.path(),
                           message_loop_.message_loop_proxy(),
-                          url_request_context_getter_);
+                          url_request_context_getter_,
+                          this);
 #if defined(OS_MACOSX)
   // On OSX, prevent the Keychain permissions popup during unit tests.
   Encryptor::UseMockKeychain(true);  // Must be after Initialize.
@@ -298,7 +276,6 @@ void GCMClientImplTest::InitializeGCMClient() {
   mcs_client()->set_gcm_store(gcm_client_->gcm_store_.get());
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken);
-  PumpLoopUntilIdle();
 }
 
 void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
@@ -308,15 +285,6 @@ void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
 void GCMClientImplTest::OnGCMReady() {
   last_event_ = LOADING_COMPLETED;
   QuitLoop();
-}
-
-void GCMClientImplTest::OnCheckInFinished(
-    const GCMClient::CheckinInfo& checkin_info,
-    GCMClient::Result result) {
-  last_event_ = CHECKIN_COMPLETED;
-  last_checkin_info_.android_id = checkin_info.android_id;
-  last_checkin_info_.secret = checkin_info.secret;
-  last_result_ = result;
 }
 
 void GCMClientImplTest::OnMessageReceived(
@@ -355,34 +323,16 @@ int64 GCMClientImplTest::CurrentTime() {
   return clock()->Now().ToInternalValue() / base::Time::kMicrosecondsPerSecond;
 }
 
-void GCMClientImplTest::SetCheckinInfo(
-    uint64 android_id,
-    uint64 security_token) {
-  checkin_info_.android_id = android_id;
-  checkin_info_.secret = security_token;
-}
-
 TEST_F(GCMClientImplTest, LoadingCompleted) {
   EXPECT_EQ(LOADING_COMPLETED, last_event());
   EXPECT_EQ(kDeviceAndroidId, mcs_client()->last_android_id());
   EXPECT_EQ(kDeviceSecurityToken, mcs_client()->last_security_token());
 }
 
-TEST_F(GCMClientImplTest, CheckInUser) {
-  gcm_client()->CheckIn(kUsername);
-  CompleteCheckin(kUserAndroidId, kUserSecurityToken);
-
-  EXPECT_EQ(CHECKIN_COMPLETED, last_event());
-  EXPECT_EQ(kUserAndroidId, last_checkin_info().android_id);
-  EXPECT_EQ(kUserSecurityToken, last_checkin_info().secret);
-  EXPECT_EQ(GCMClient::SUCCESS, last_result());
-}
-
 TEST_F(GCMClientImplTest, RegisterApp) {
   std::vector<std::string> senders;
   senders.push_back("sender");
-  SetCheckinInfo(kUserAndroidId, kUserSecurityToken);
-  gcm_client()->Register(kUsername, "app_id", "cert", senders);
+  gcm_client()->Register("app_id", "cert", senders);
   CompleteRegistration("reg_id");
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
@@ -442,7 +392,7 @@ TEST_F(GCMClientImplTest, SendMessage) {
   message.id = "007";
   message.time_to_live = 500;
   message.data["key"] = "value";
-  gcm_client()->Send(kUsername, "app_id", "project_id", message);
+  gcm_client()->Send("app_id", "project_id", message);
 
   EXPECT_EQ(kDataMessageStanzaTag, mcs_client()->last_message_tag());
   EXPECT_EQ("app_id", mcs_client()->last_data_message_stanza().category());
@@ -450,7 +400,6 @@ TEST_F(GCMClientImplTest, SendMessage) {
   EXPECT_EQ(500, mcs_client()->last_data_message_stanza().ttl());
   EXPECT_EQ(CurrentTime(), mcs_client()->last_data_message_stanza().sent());
   EXPECT_EQ("007", mcs_client()->last_data_message_stanza().id());
-  EXPECT_EQ(1, mcs_client()->last_data_message_stanza().device_user_id());
   EXPECT_EQ("gcm@chrome.com", mcs_client()->last_data_message_stanza().from());
   EXPECT_EQ("project_id", mcs_client()->last_data_message_stanza().to());
   EXPECT_EQ("key", mcs_client()->last_data_message_stanza().app_data(0).key());

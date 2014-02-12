@@ -57,8 +57,6 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   struct GCM_EXPORT RequestInfo {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
-                uint64 user_android_id,
-                int64 user_serial_number,
                 const std::string& app_id,
                 const std::string& cert,
                 const std::vector<std::string>& sender_ids);
@@ -68,10 +66,6 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     uint64 android_id;
     // Security token of the device.
     uint64 security_token;
-    // User's android ID. (Can be omitted in a single user scenario.)
-    uint64 user_android_id;
-    // User's serial number. (Can be omitted in a single user scenario.)
-    int64 user_serial_number;
     // Application ID.
     std::string app_id;
     // Certificate of the application.

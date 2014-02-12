@@ -22,8 +22,6 @@ const char kDeveloperId[] = "Project1";
 const char kLoginHeader[] = "AidLogin";
 const char kAppId[] = "TestAppId";
 const uint64 kSecurityToken = 77UL;
-const uint64 kUserAndroidId = 1111;
-const int64 kUserSerialNumber = 1;
 
 // Backoff policy for testing registration request.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
@@ -105,8 +103,6 @@ void RegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
   request_.reset(new RegistrationRequest(
       RegistrationRequest::RequestInfo(kAndroidId,
                                        kSecurityToken,
-                                       kUserAndroidId,
-                                       kUserSerialNumber,
                                        kAppId,
                                        kCert,
                                        senders),
@@ -161,8 +157,6 @@ TEST_F(RegistrationRequestTest, RequestDataPassedToFetcher) {
   expected_pairs["sender"] = kDeveloperId;
   expected_pairs["cert"] = kCert;
   expected_pairs["device"] = base::Uint64ToString(kAndroidId);
-  expected_pairs["device_user_id"] = base::Int64ToString(kUserSerialNumber);
-  expected_pairs["X-GOOG.USER_AID"] = base::Uint64ToString(kUserAndroidId);
 
   // Verify data was formatted properly.
   std::string upload_data = fetcher->upload_data();

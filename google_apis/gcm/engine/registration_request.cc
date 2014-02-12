@@ -32,8 +32,6 @@ const char kCertKey[] = "cert";
 const char kDeviceIdKey[] = "device";
 const char kLoginHeader[] = "AidLogin";
 const char kSenderKey[] = "sender";
-const char kUserAndroidIdKey[] = "X-GOOG.USER_AID";
-const char kUserSerialNumberKey[] = "device_user_id";
 
 // Request validation constants.
 const size_t kMaxSenders = 100;
@@ -80,15 +78,11 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
 RegistrationRequest::RequestInfo::RequestInfo(
     uint64 android_id,
     uint64 security_token,
-    uint64 user_android_id,
-    int64 user_serial_number,
     const std::string& app_id,
     const std::string& cert,
     const std::vector<std::string>& sender_ids)
     : android_id(android_id),
       security_token(security_token),
-      user_android_id(user_android_id),
-      user_serial_number(user_serial_number),
       app_id(app_id),
       cert(cert),
       sender_ids(sender_ids) {
@@ -146,16 +140,6 @@ void RegistrationRequest::Start() {
     senders.append(*iter);
   }
   BuildFormEncoding(kSenderKey, senders, &body);
-
-  if (request_info_.user_serial_number != 0) {
-    DCHECK(request_info_.user_android_id != 0);
-    BuildFormEncoding(kUserSerialNumberKey,
-                      base::Int64ToString(request_info_.user_serial_number),
-                      &body);
-    BuildFormEncoding(kUserAndroidIdKey,
-                      base::Uint64ToString(request_info_.user_android_id),
-                      &body);
-  }
 
   DVLOG(1) << "Performing registration for: " << request_info_.app_id;
   DVLOG(1) << "Registration request: " << body;

@@ -33,9 +33,8 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   CheckinRequest(const CheckinRequestCallback& callback,
                  const net::BackoffEntry::Policy& backoff_policy,
                  const checkin_proto::ChromeBuildProto& chrome_build_proto,
-                 int64 user_serial_number,
                  uint64 android_id,
-                 uint64 secret_token,
+                 uint64 security_token,
                  net::URLRequestContextGetter* request_context_getter);
   virtual ~CheckinRequest();
 
@@ -57,7 +56,6 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   checkin_proto::ChromeBuildProto chrome_build_proto_;
   uint64 android_id_;
   uint64 security_token_;
-  int64 user_serial_number_;
 
   base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
 

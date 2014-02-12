@@ -18,13 +18,13 @@ namespace {
 const char kCheckinURL[] = "https://android.clients.google.com/checkin";
 const char kRequestContentType[] = "application/x-protobuf";
 const int kRequestVersionValue = 2;
+const int kDefaultUserSerialNumber = 0;
 }  // namespace
 
 CheckinRequest::CheckinRequest(
     const CheckinRequestCallback& callback,
     const net::BackoffEntry::Policy& backoff_policy,
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
-    int64 user_serial_number,
     uint64 android_id,
     uint64 security_token,
     net::URLRequestContextGetter* request_context_getter)
@@ -34,7 +34,6 @@ CheckinRequest::CheckinRequest(
       chrome_build_proto_(chrome_build_proto),
       android_id_(android_id),
       security_token_(security_token),
-      user_serial_number_(user_serial_number),
       weak_ptr_factory_(this) {
 }
 
@@ -46,7 +45,7 @@ void CheckinRequest::Start() {
   checkin_proto::AndroidCheckinRequest request;
   request.set_id(android_id_);
   request.set_security_token(security_token_);
-  request.set_user_serial_number(user_serial_number_);
+  request.set_user_serial_number(kDefaultUserSerialNumber);
   request.set_version(kRequestVersionValue);
 
   checkin_proto::AndroidCheckinProto* checkin = request.mutable_checkin();

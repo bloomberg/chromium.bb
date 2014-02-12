@@ -41,8 +41,8 @@ BrowserContextKeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   if (!gcm::GCMProfileService::IsGCMEnabled(profile))
     return NULL;
   GCMProfileService* service = new GCMProfileService(profile);
-  GCMClientFactory gcm_client_factory;
-  service->Initialize(&gcm_client_factory);
+  scoped_ptr<GCMClientFactory> gcm_client_factory(new GCMClientFactory);
+  service->Initialize(gcm_client_factory.Pass());
   return service;
 }
 

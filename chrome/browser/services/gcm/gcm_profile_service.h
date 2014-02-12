@@ -51,8 +51,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   class TestingDelegate {
    public:
     virtual GCMEventRouter* GetEventRouter() const = 0;
-    virtual void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
-                                 GCMClient::Result result) = 0;
   };
 
   // Returns true if the GCM support is enabled.
@@ -64,7 +62,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   explicit GCMProfileService(Profile* profile);
   virtual ~GCMProfileService();
 
-  void Initialize(GCMClientFactory* gcm_client_factory);
+  void Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory);
 
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
@@ -119,14 +117,17 @@ class GCMProfileService : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Allows a signed-in user to use the GCM. If the check-in info can be found
-  // in the prefs store, use it directly. Otherwise, a check-in communication
-  // will be made with the GCM.
-  void AddUser(const std::string& username);
+  // Checks in with GCM by creating and initializing GCMClient when the profile
+  // has been signed in.
+  void CheckIn(const std::string& username);
 
-  // Stops the user from using the GCM after the user signs out. This simply
-  // removes the cached and persisted check-in info.
-  void RemoveUser();
+  // Checks out of GCM when the profile has been signed out. This will erase
+  // all the cached and persisted data.
+  void CheckOut();
+
+  // Resets the GCMClient instance. This is called when the profile is being
+  // destroyed.
+  void ResetGCMClient();
 
   // Ensures that the app is ready for GCM functions and events.
   void EnsureAppReady(const std::string& app_id);
@@ -134,7 +135,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Unregisters an app from using the GCM after it has been uninstalled.
   void Unregister(const std::string& app_id);
 
-  void DoCheckIn();
   void DoRegister(const std::string& app_id,
                   const std::vector<std::string>& sender_ids,
                   const std::string& cert);
@@ -143,8 +143,6 @@ class GCMProfileService : public BrowserContextKeyedService,
               const GCMClient::OutgoingMessage& message);
 
   // Callbacks posted from IO thread to UI thread.
-  void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
-                       GCMClient::Result result);
   void RegisterFinished(const std::string& app_id,
                         const std::string& registration_id,
                         GCMClient::Result result);
@@ -179,12 +177,11 @@ class GCMProfileService : public BrowserContextKeyedService,
   // The profile which owns this object.
   Profile* profile_;
 
+  // Used to creat the GCMClient instance.
+  scoped_ptr<GCMClientFactory> gcm_client_factory_;
+
   // Flag to indicate if GCMClient is ready.
   bool gcm_client_ready_;
-
-  // Flag to indicate if the user check-in info has been read from the prefs
-  // store.
-  bool checkin_info_read_;
 
   // The username of the signed-in profile.
   std::string username_;

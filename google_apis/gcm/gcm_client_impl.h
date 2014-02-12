@@ -35,7 +35,7 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
-class UserList;
+class RegistrationRequest;
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
 // with MCS) and other pieces of GCM infrastructure like Registration and
@@ -52,18 +52,14 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter) OVERRIDE;
-  virtual void SetUserDelegate(const std::string& username,
-                               Delegate* delegate) OVERRIDE;
-  virtual void CheckIn(const std::string& username) OVERRIDE;
-  virtual void Register(const std::string& username,
-                        const std::string& app_id,
+          url_request_context_getter,
+      Delegate* delegate) OVERRIDE;
+  virtual void CheckOut() OVERRIDE;
+  virtual void Register(const std::string& app_id,
                         const std::string& cert,
                         const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void Unregister(const std::string& username,
-                          const std::string& app_id) OVERRIDE;
-  virtual void Send(const std::string& username,
-                    const std::string& app_id,
+  virtual void Unregister(const std::string& app_id) OVERRIDE;
+  virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
   virtual bool IsReady() const OVERRIDE;
@@ -81,27 +77,23 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
     READY,
   };
 
-  // Collection of pending checkin requests. Keys are serial numbers of the
-  // users as assigned by the user_list_. Values are pending checkin requests to
-  // obtain android IDs and security tokens for the users.
-  typedef std::map<int64, CheckinRequest*> PendingCheckins;
+  // The check-in info for the user. Returned by the server.
+  struct GCM_EXPORT CheckinInfo {
+    CheckinInfo() : android_id(0), secret(0) {}
+    bool IsValid() const { return android_id != 0 && secret != 0; }
+    void Reset() {
+      android_id = 0;
+      secret = 0;
+    }
 
-  // A pair of |username| and |app_id| identifying a pending
-  // RegistrationRequest.
-  struct PendingRegistrationKey {
-    PendingRegistrationKey(const std::string& username,
-                           const std::string& app_id);
-    ~PendingRegistrationKey();
-    bool operator<(const PendingRegistrationKey& rhs) const;
-
-    std::string username;
-    std::string app_id;
+    uint64 android_id;
+    uint64 secret;
   };
 
-  // Collection of pending registration requests. Keys are pairs of |username|
-  // and |app_id|, while values are pending registration requests to obtain a
-  // registration ID for requesting application.
-  typedef std::map<PendingRegistrationKey, RegistrationRequest*>
+  // Collection of pending registration requests. Keys are app_id, while values
+  // are pending registration requests to obtain a registration ID for
+  // requesting application.
+  typedef std::map<std::string, RegistrationRequest*>
       PendingRegistrations;
 
   friend class GCMClientImplTest;
@@ -132,32 +124,21 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // delegates.
   void OnReady();
 
-  // Startes a checkin request for a user with specified |serial_number|.
-  // Checkin info can be invalid, in which case it is considered a first time
-  // checkin.
-  void StartCheckin(int64 user_serial_number,
-                    const CheckinInfo& checkin_info);
-  // Completes the checkin request for the specified |serial_number|.
+  // Starts a first time device checkin.
+  void StartCheckin(const CheckinInfo& checkin_info);
+  // Completes the device checkin request.
   // |android_id| and |security_token| are expected to be non-zero or an error
   // is triggered. Function also cleans up the pending checkin.
-  void OnCheckinCompleted(int64 user_serial_number,
-                          uint64 android_id,
+  void OnCheckinCompleted(uint64 android_id,
                           uint64 security_token);
-  // Completes the checkin request for a device (serial number of 0).
-  void OnDeviceCheckinCompleted(const CheckinInfo& checkin_info);
 
   // Callback for persisting device credentials in the |gcm_store_|.
   void SetDeviceCredentialsCallback(bool success);
 
   // Completes the registration request.
-  void OnRegisterCompleted(const PendingRegistrationKey& registration_key,
+  void OnRegisterCompleted(const std::string& app_id,
                            RegistrationRequest::Status status,
                            const std::string& registration_id);
-
-  // Callback for setting a delegate on a |user_list_|. Informs that the
-  // delegate with matching |username| was assigned a |user_serial_number|.
-  void SetDelegateCompleted(const std::string& username,
-                            int64 user_serial_number);
 
   // Handles incoming data message and dispatches it the a relevant user
   // delegate.
@@ -179,6 +160,8 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // State of the GCM Client Implementation.
   State state_;
 
+  Delegate* delegate_;
+
   // Device checkin info (android ID and security token used by device).
   CheckinInfo device_checkin_info_;
 
@@ -194,10 +177,6 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // serial number mappings.
   scoped_ptr<GCMStore> gcm_store_;
 
-  // Keeps the mappings of user's serial numbers and assigns new serial numbers
-  // once a user delegate is added for the first time.
-  scoped_ptr<UserList> user_list_;
-
   scoped_refptr<net::HttpNetworkSession> network_session_;
   net::BoundNetLog net_log_;
   scoped_ptr<ConnectionFactory> connection_factory_;
@@ -206,9 +185,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Controls receiving and sending of packets and reliable message queueing.
   scoped_ptr<MCSClient> mcs_client_;
 
-  // Currently pending checkins. GCMClientImpl owns the CheckinRequests.
-  PendingCheckins pending_checkins_;
-  STLValueDeleter<PendingCheckins> pending_checkins_deleter_;
+  scoped_ptr<CheckinRequest> checkin_request_;
 
   // Currently pending registrations. GCMClientImpl owns the
   // RegistrationRequests.

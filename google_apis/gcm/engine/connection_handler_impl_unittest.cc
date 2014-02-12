@@ -67,9 +67,7 @@ std::string EncodeHandshakeRequest() {
   std::string result;
   const char version_byte[1] = {kMCSVersion};
   result.append(version_byte, 1);
-  std::vector<int64> user_serial_numbers;
-  ScopedMessage login_request(
-      BuildLoginRequest(kAuthId, kAuthToken, user_serial_numbers));
+  ScopedMessage login_request(BuildLoginRequest(kAuthId, kAuthToken));
   result.append(EncodePacket(kLoginRequestTag,
                              login_request->SerializeAsString()));
   return result;
@@ -204,9 +202,8 @@ void GCMConnectionHandlerImplTest::Connect(
           base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
                      base::Unretained(this))));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
-  std::vector<int64> user_serial_numbers;
   connection_handler_->Init(
-      *BuildLoginRequest(kAuthId, kAuthToken, user_serial_numbers),
+      *BuildLoginRequest(kAuthId, kAuthToken),
       socket_.get());
 }
 

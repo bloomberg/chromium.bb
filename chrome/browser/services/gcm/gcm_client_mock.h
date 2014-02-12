@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_MOCK_H_
 #define CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_MOCK_H_
 
-#include <map>
-
 #include "base/compiler_specific.h"
 #include "google_apis/gcm/gcm_client.h"
 
@@ -19,7 +17,14 @@ class GCMClientMock : public GCMClient {
     READY
   };
 
-  explicit GCMClientMock(Status status);
+  enum ErrorSimulation {
+    ALWAYS_SUCCEED,
+    FORCE_ERROR
+  };
+
+  // |status| denotes if the fake client is ready or not at the beginning.
+  // |error_simulation| denotes if we should simulate server error.
+  GCMClientMock(Status status, ErrorSimulation error_simulation);
   virtual ~GCMClientMock();
 
   // Overridden from GCMClient:
@@ -29,68 +34,45 @@ class GCMClientMock : public GCMClient {
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter) OVERRIDE;
-  virtual void SetUserDelegate(const std::string& username,
-                               Delegate* delegate) OVERRIDE;
-  virtual void CheckIn(const std::string& username) OVERRIDE;
-  virtual void Register(const std::string& username,
-                        const std::string& app_id,
+          url_request_context_getter,
+      Delegate* delegate) OVERRIDE;
+  virtual void CheckOut() OVERRIDE;
+  virtual void Register(const std::string& app_id,
                         const std::string& cert,
                         const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void Unregister(const std::string& username,
-                          const std::string& app_id) OVERRIDE;
-  virtual void Send(const std::string& username,
-                    const std::string& app_id,
+  virtual void Unregister(const std::string& app_id) OVERRIDE;
+  virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
   virtual bool IsReady() const OVERRIDE;
 
   // Simulate receiving something from the server.
   // Called on UI thread.
-  void ReceiveMessage(const std::string& username,
-                      const std::string& app_id,
+  void ReceiveMessage(const std::string& app_id,
                       const IncomingMessage& message);
-  void DeleteMessages(const std::string& username, const std::string& app_id);
-
-  void set_simulate_server_error(bool simulate_server_error) {
-    simulate_server_error_ = simulate_server_error;
-  }
+  void DeleteMessages(const std::string& app_id);
 
   // Can only transition from non-ready to ready.
   void SetReady();
 
-  static CheckinInfo GetCheckinInfoFromUsername(const std::string& username);
   static std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids);
 
  private:
-  Delegate* GetDelegate(const std::string& username) const;
-
   // Called on IO thread.
-  // TODO(fgorski): Update parameters to const ref.
-  void CheckInFinished(std::string username, CheckinInfo checkin_info);
-  void RegisterFinished(std::string username,
-                        std::string app_id,
-                        std::string registrion_id);
-  void SendFinished(std::string username,
-                    std::string app_id,
-                    std::string message_id);
-  void MessageReceived(std::string username,
-                       std::string app_id,
-                       IncomingMessage message);
-  void MessagesDeleted(std::string username, std::string app_id);
-  void MessageSendError(std::string username,
-                        std::string app_id,
-                        std::string message_id);
+  void RegisterFinished(const std::string& app_id,
+                        const std::string& registrion_id);
+  void SendFinished(const std::string& app_id, const std::string& message_id);
+  void MessageReceived(const std::string& app_id,
+                       const IncomingMessage& message);
+  void MessagesDeleted(const std::string& app_id);
+  void MessageSendError(const std::string& app_id,
+                        const std::string& message_id);
   void SetReadyOnIO();
 
-  std::map<std::string, Delegate*> delegates_;
-
+  Delegate* delegate_;
   Status status_;
-
-  // The testing code could set this to simulate the server error in order to
-  // test the error scenario.
-  bool simulate_server_error_;
+  ErrorSimulation error_simulation_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientMock);
 };

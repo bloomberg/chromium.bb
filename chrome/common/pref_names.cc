@@ -1303,10 +1303,6 @@ const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 // The GCM channel's enabled state.
 const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 
-// Stores the check-in info retrieved from the GCM server.
-const char kGCMUserAccountID[] = "gcm.user.account_id";
-const char kGCMUserToken[] = "gcm.user.token";
-
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

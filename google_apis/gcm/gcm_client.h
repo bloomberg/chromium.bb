@@ -76,29 +76,10 @@ class GCM_EXPORT GCMClient {
     MessageData data;
   };
 
-  // The check-in info for the user. Returned by the server.
-  struct GCM_EXPORT CheckinInfo {
-    CheckinInfo() : android_id(0), secret(0) {}
-    bool IsValid() const { return android_id != 0 && secret != 0; }
-    void Reset() {
-      android_id = 0;
-      secret = 0;
-    }
-
-    uint64 android_id;
-    uint64 secret;
-  };
-
   // A delegate interface that allows the GCMClient instance to interact with
   // its caller, i.e. notifying asynchronous event.
   class Delegate {
    public:
-    // Called when the user has been checked in successfully or an error occurs.
-    // |checkin_info|: valid if the CheckIn(..) completed successfully.
-    // |result|: the type of the error if an error occured, success otherwise.
-    virtual void OnCheckInFinished(const CheckinInfo& checkin_info,
-                                   Result result) = 0;
-
     // Called when the registration completed successfully or an error occurs.
     // |app_id|: application ID.
     // |registration_id|: non-empty if the registration completed successfully.
@@ -134,11 +115,6 @@ class GCM_EXPORT GCMClient {
                                     const std::string& message_id,
                                     Result result) = 0;
 
-    // Returns the checkin info associated with this user. The delegate class
-    // is expected to persist the checkin info that is provided by
-    // OnCheckInFinished.
-    virtual CheckinInfo GetCheckinInfo() const = 0;
-
     // Called when the GCM becomes ready. To get to this state, GCMClient
     // finished loading from the GCM store and retrieved the device check-in
     // from the server if it hadn't yet.
@@ -149,54 +125,47 @@ class GCM_EXPORT GCMClient {
   virtual ~GCMClient();
 
   // Begins initialization of the GCM Client.
+  // |chrome_build_proto|: chrome info, i.e., version, channel and etc.
+  // |store_path|: path to the GCM store.
+  // |blocking_task_runner|: for running blocking file tasks.
+  // |url_request_context_getter|: for url requests.
+  // |delegate|: the delegate whose methods will be called asynchronously in
+  //             response to events and messages.
   virtual void Initialize(
       const checkin_proto::ChromeBuildProto& chrome_build_proto,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter) = 0;
+          url_request_context_getter,
+      Delegate* delegate) = 0;
 
-  // Sets the delegate to interact with related to a specific user.
-  // |username|: the username (email address) used to check in with the server.
-  // |delegate|: the delegate whose methods will be called asynchronously in
-  //             response to events and messages.
-  virtual void SetUserDelegate(const std::string& username,
-                               Delegate* delegate) = 0;
-
-  // Checks in the user to use GCM. If the device has not been checked in, it
-  // will be done first.
-  // |username|: the username (email address) used to check in with the server.
-  virtual void CheckIn(const std::string& username) = 0;
+  // Checks out of the GCM service. This will erase all the cached and persisted
+  // data.
+  virtual void CheckOut() = 0;
 
   // Registers the application for GCM. Delegate::OnRegisterFinished will be
   // called asynchronously upon completion.
-  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
   // |cert|: SHA-1 of public key of the application, in base16 format.
   // |sender_ids|: list of IDs of the servers that are allowed to send the
   //               messages to the application. These IDs are assigned by the
   //               Google API Console.
-  virtual void Register(const std::string& username,
-                        const std::string& app_id,
+  virtual void Register(const std::string& app_id,
                         const std::string& cert,
                         const std::vector<std::string>& sender_ids) = 0;
 
   // Unregisters the application from GCM when it is uninstalled.
   // Delegate::OnUnregisterFinished will be called asynchronously upon
   // completion.
-  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
-  virtual void Unregister(const std::string& username,
-                          const std::string& app_id) = 0;
+  virtual void Unregister(const std::string& app_id) = 0;
 
   // Sends a message to a given receiver. Delegate::OnSendFinished will be
   // called asynchronously upon completion.
-  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
   // |receiver_id|: registration ID of the receiver party.
   // |message|: message to be sent.
-  virtual void Send(const std::string& username,
-                    const std::string& app_id,
+  virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) = 0;
 
