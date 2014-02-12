@@ -1431,11 +1431,9 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   render_view_termination_status_ =
       static_cast<base::TerminationStatus>(status);
 
-  // Reset frame tree state.
-  // TODO(creis): Once subframes can be in different processes, we'll need to
-  // clear just the FrameTreeNodes affected by the crash (and their subtrees).
+  // Reset frame tree state associated with this process.
   main_frame_id_ = -1;
-  delegate_->GetFrameTree()->ResetForMainFrameSwap();
+  delegate_->GetFrameTree()->RenderProcessGone(this);
 
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);
