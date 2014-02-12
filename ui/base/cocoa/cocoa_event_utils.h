@@ -15,6 +15,9 @@ namespace ui {
 // Retrieves a bitsum of ui::EventFlags represented by |event|,
 UI_BASE_EXPORT int EventFlagsFromNSEvent(NSEvent* event);
 
+// Converts the Cocoa |modifiers| bitsum into a ui::EventFlags bitsum.
+UI_BASE_EXPORT int EventFlagsFromModifiers(NSUInteger modifiers);
+
 // Retrieves a bitsum of ui::EventFlags represented by |event|,
 // but instead use the modifier flags given by |modifiers|,
 // which is the same format as |-NSEvent modifierFlags|. This allows

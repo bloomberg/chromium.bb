@@ -43,13 +43,18 @@ int EventFlagsFromNSEvent(NSEvent* event) {
   return EventFlagsFromNSEventWithModifiers(event, modifiers);
 }
 
-int EventFlagsFromNSEventWithModifiers(NSEvent* event, NSUInteger modifiers) {
+int EventFlagsFromModifiers(NSUInteger modifiers) {
   int flags = 0;
   flags |= (modifiers & NSAlphaShiftKeyMask) ? ui::EF_CAPS_LOCK_DOWN : 0;
   flags |= (modifiers & NSShiftKeyMask) ? ui::EF_SHIFT_DOWN : 0;
   flags |= (modifiers & NSControlKeyMask) ? ui::EF_CONTROL_DOWN : 0;
   flags |= (modifiers & NSAlternateKeyMask) ? ui::EF_ALT_DOWN : 0;
   flags |= (modifiers & NSCommandKeyMask) ? ui::EF_COMMAND_DOWN : 0;
+  return flags;
+}
+
+int EventFlagsFromNSEventWithModifiers(NSEvent* event, NSUInteger modifiers) {
+  int flags = EventFlagsFromModifiers(modifiers);
   flags |= isLeftButtonEvent(event) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
   flags |= isRightButtonEvent(event) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
   flags |= isMiddleButtonEvent(event) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;

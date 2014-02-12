@@ -521,18 +521,6 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
     }
   }
 
-  // Control characters.
-  if (flags & NSControlKeyMask) {
-    if (keycode >= VKEY_A && keycode <= VKEY_Z)
-      *character = 1 + keycode - VKEY_A;
-    else if (macKeycode == kVK_ANSI_LeftBracket)
-      *character = 27;
-    else if (macKeycode == kVK_ANSI_Backslash)
-      *character = 28;
-    else if (macKeycode == kVK_ANSI_RightBracket)
-      *character = 29;
-  }
-
   // TODO(suzhe): Support characters for Option key bindings.
   return macKeycode;
 }

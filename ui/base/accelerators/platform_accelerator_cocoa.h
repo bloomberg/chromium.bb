@@ -23,7 +23,10 @@ class UI_BASE_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
   virtual scoped_ptr<PlatformAccelerator> CreateCopy() const OVERRIDE;
   virtual bool Equals(const PlatformAccelerator& rhs) const OVERRIDE;
 
+  // The keyEquivalent of the NSMenuItem associated with the accelerator.
   NSString* characters() const { return characters_.get(); }
+  // The keyEquivalentModifierMask of the NSMenuItem associated with the
+  // accelerator.
   NSUInteger modifier_mask() const { return modifier_mask_; }
 
  private:

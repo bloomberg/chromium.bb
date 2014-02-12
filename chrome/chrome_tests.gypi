@@ -1452,6 +1452,7 @@
         'browser/ui/browser_navigator_browsertest.cc',
         'browser/ui/browser_navigator_browsertest.h',
         'browser/ui/browser_navigator_browsertest_chromeos.cc',
+        'browser/ui/cocoa/accelerators_cocoa_browsertest.mm',
         'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
         'browser/ui/cocoa/applescript/window_applescript_test.mm',
         'browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm',

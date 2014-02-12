@@ -16,8 +16,8 @@ namespace ui {
 // We use windows virtual keycodes throughout our keyboard event related code,
 // including unit tests. But Mac uses a different set of virtual keycodes.
 // This function converts a windows virtual keycode into Mac's virtual key code
-// and corresponding unicode character. |flags| is the modifiers mask such
-// as NSControlKeyMask, NSShiftKeyMask, etc.
+// and corresponding unicode character. |flags| is the Cocoa modifiers mask
+// such as NSControlKeyMask, NSShiftKeyMask, etc.
 // When success, the corresponding Mac's virtual key code will be returned.
 // The corresponding unicode character will be stored in |character|, and the
 // corresponding unicode character ignoring the modifiers will be stored in
