@@ -25,7 +25,8 @@ public:
 
     static PassOwnPtr<ScriptFunction> create(PassRefPtr<WaitUntilObserver> observer, ResolveType type)
     {
-        return adoptPtr(new ThenFunction(toIsolate(observer->executionContext()), observer, type));
+        ExecutionContext* executionContext = observer->executionContext();
+        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
     }
 
 private:
