@@ -60,47 +60,47 @@ def GetStdout(cmdlist):
 
 
 if sys.platform == 'darwin':
-  test = TestGyp.TestGyp()
-  if test.format == 'ninja' or test.format == 'xcode':
-    test_cases = [
-      ('Default', 'TestNoArchs', ['i386']),
-      ('Default', 'TestArch32Bits', ['i386']),
-      ('Default', 'TestArch64Bits', ['x86_64']),
-      ('Default', 'TestMultiArchs', ['i386', 'x86_64']),
-      ('Default-iphoneos', 'TestNoArchs', ['armv7']),
-      ('Default-iphoneos', 'TestArch32Bits', ['armv7']),
-      ('Default-iphoneos', 'TestArch64Bits', ['arm64']),
-      ('Default-iphoneos', 'TestMultiArchs', ['armv7', 'arm64']),
-    ]
+  test = TestGyp.TestGyp(formats=['ninja', 'xcode'])
 
-    xcode_version = XcodeVersion()
-    test.run_gyp('test-archs.gyp', chdir='app-bundle')
-    for configuration, target, archs in test_cases:
-      is_64_bit_build = ('arm64' in archs or 'x86_64' in archs)
-      is_device_build = configuration.endswith('-iphoneos')
+  test_cases = [
+    ('Default', 'TestNoArchs', ['i386']),
+    ('Default', 'TestArch32Bits', ['i386']),
+    ('Default', 'TestArch64Bits', ['x86_64']),
+    ('Default', 'TestMultiArchs', ['i386', 'x86_64']),
+    ('Default-iphoneos', 'TestNoArchs', ['armv7']),
+    ('Default-iphoneos', 'TestArch32Bits', ['armv7']),
+    ('Default-iphoneos', 'TestArch64Bits', ['arm64']),
+    ('Default-iphoneos', 'TestMultiArchs', ['armv7', 'arm64']),
+  ]
 
-      kwds = collections.defaultdict(list)
-      if test.format == 'xcode' and is_device_build:
-        configuration, sdk = configuration.split('-')
-        kwds['arguments'].extend(['-sdk', sdk])
+  xcode_version = XcodeVersion()
+  test.run_gyp('test-archs.gyp', chdir='app-bundle')
+  for configuration, target, archs in test_cases:
+    is_64_bit_build = ('arm64' in archs or 'x86_64' in archs)
+    is_device_build = configuration.endswith('-iphoneos')
 
-      # TODO(sdefresne): remove those special-cases once the bots have been
-      # updated to use a more recent version of Xcode.
-      if xcode_version < '0500':
-        if is_64_bit_build:
-          continue
-        if test.format == 'xcode':
-          arch = 'i386'
-          if is_device_build:
-            arch = 'armv7'
-          kwds['arguments'].extend(['-arch', arch])
+    kwds = collections.defaultdict(list)
+    if test.format == 'xcode' and is_device_build:
+      configuration, sdk = configuration.split('-')
+      kwds['arguments'].extend(['-sdk', sdk])
 
-      test.set_configuration(configuration)
-      filename = '%s.bundle/%s' % (target, target)
-      test.build('test-archs.gyp', target, chdir='app-bundle', **kwds)
-      result_file = test.built_file_path(filename, chdir='app-bundle')
+    # TODO(sdefresne): remove those special-cases once the bots have been
+    # updated to use a more recent version of Xcode.
+    if xcode_version < '0500':
+      if is_64_bit_build:
+        continue
+      if test.format == 'xcode':
+        arch = 'i386'
+        if is_device_build:
+          arch = 'armv7'
+        kwds['arguments'].extend(['-arch', arch])
 
-      test.must_exist(result_file)
-      CheckFileType(test, result_file, archs)
+    test.set_configuration(configuration)
+    filename = '%s.bundle/%s' % (target, target)
+    test.build('test-archs.gyp', target, chdir='app-bundle', **kwds)
+    result_file = test.built_file_path(filename, chdir='app-bundle')
 
-    test.pass_test()
+    test.must_exist(result_file)
+    CheckFileType(test, result_file, archs)
+
+  test.pass_test()
