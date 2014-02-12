@@ -9,7 +9,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/media/video_capture_device_impl.h"
+#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"
@@ -421,7 +421,7 @@ void DesktopVideoCaptureMachine::OnCompositingEnded(
 
 DesktopCaptureDeviceAura::DesktopCaptureDeviceAura(
     const DesktopMediaID& source)
-    : impl_(new VideoCaptureDeviceImpl(scoped_ptr<VideoCaptureMachine>(
+    : core_(new ContentVideoCaptureDeviceCore(scoped_ptr<VideoCaptureMachine>(
         new DesktopVideoCaptureMachine(source)))) {}
 
 DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {
@@ -438,11 +438,11 @@ void DesktopCaptureDeviceAura::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  impl_->AllocateAndStart(params, client.Pass());
+  core_->AllocateAndStart(params, client.Pass());
 }
 
 void DesktopCaptureDeviceAura::StopAndDeAllocate() {
-  impl_->StopAndDeAllocate();
+  core_->StopAndDeAllocate();
 }
 
 }  // namespace content

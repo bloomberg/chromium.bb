@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_device_impl.h"
+#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -190,7 +190,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   }
 }
 
-void VideoCaptureDeviceImpl::AllocateAndStart(
+void ContentVideoCaptureDeviceCore::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<media::VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -232,13 +232,13 @@ void VideoCaptureDeviceImpl::AllocateAndStart(
       base::Bind(&VideoCaptureMachine::Start,
                  base::Unretained(capture_machine_.get()),
                  oracle_proxy_),
-      base::Bind(&VideoCaptureDeviceImpl::CaptureStarted,
+      base::Bind(&ContentVideoCaptureDeviceCore::CaptureStarted,
                  AsWeakPtr()));
 
   TransitionStateTo(kCapturing);
 }
 
-void VideoCaptureDeviceImpl::StopAndDeAllocate() {
+void ContentVideoCaptureDeviceCore::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ != kCapturing)
@@ -257,7 +257,7 @@ void VideoCaptureDeviceImpl::StopAndDeAllocate() {
           base::Bind(&base::DoNothing)));
 }
 
-void VideoCaptureDeviceImpl::CaptureStarted(bool success) {
+void ContentVideoCaptureDeviceCore::CaptureStarted(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!success) {
     std::string reason("Failed to start capture machine.");
@@ -266,12 +266,12 @@ void VideoCaptureDeviceImpl::CaptureStarted(bool success) {
   }
 }
 
-VideoCaptureDeviceImpl::VideoCaptureDeviceImpl(
+ContentVideoCaptureDeviceCore::ContentVideoCaptureDeviceCore(
     scoped_ptr<VideoCaptureMachine> capture_machine)
     : state_(kIdle),
       capture_machine_(capture_machine.Pass()) {}
 
-VideoCaptureDeviceImpl::~VideoCaptureDeviceImpl() {
+ContentVideoCaptureDeviceCore::~ContentVideoCaptureDeviceCore() {
   // If capture_machine is not NULL, then we need to return to the UI thread to
   // safely stop the capture machine.
   if (capture_machine_) {
@@ -283,10 +283,10 @@ VideoCaptureDeviceImpl::~VideoCaptureDeviceImpl() {
                    base::Bind(&DeleteCaptureMachineOnUIThread,
                               base::Passed(&capture_machine_))));
   }
-  DVLOG(1) << "VideoCaptureDeviceImpl@" << this << " destroying.";
+  DVLOG(1) << "ContentVideoCaptureDeviceCore@" << this << " destroying.";
 }
 
-void VideoCaptureDeviceImpl::TransitionStateTo(State next_state) {
+void ContentVideoCaptureDeviceCore::TransitionStateTo(State next_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
 #ifndef NDEBUG
@@ -300,7 +300,7 @@ void VideoCaptureDeviceImpl::TransitionStateTo(State next_state) {
   state_ = next_state;
 }
 
-void VideoCaptureDeviceImpl::Error(const std::string& reason) {
+void ContentVideoCaptureDeviceCore::Error(const std::string& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == kIdle)

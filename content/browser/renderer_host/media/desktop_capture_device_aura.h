@@ -18,7 +18,7 @@ class Window;
 
 namespace content {
 
-class VideoCaptureDeviceImpl;
+class ContentVideoCaptureDeviceCore;
 
 // An implementation of VideoCaptureDevice that mirrors an Aura window.
 class CONTENT_EXPORT DesktopCaptureDeviceAura
@@ -37,7 +37,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
  private:
   DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
-  const scoped_ptr<class VideoCaptureDeviceImpl> impl_;
+  const scoped_ptr<class ContentVideoCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAura);
 };

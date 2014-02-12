@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_DEVICE_IMPL_H_
-#define CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_DEVICE_IMPL_H_
+#ifndef CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
+#define CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
 
 #include <string>
 
@@ -133,23 +133,24 @@ class VideoCaptureMachine {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMachine);
 };
 
-// The "meat" of the video capture implementation.
+// The "meat" of a content video capturer.
 //
 // Separating this from the "shell classes" WebContentsVideoCaptureDevice and
-// BrowserCompositorCaptureDevice allows safe destruction without needing to
-// block any threads (e.g., the IO BrowserThread), as well as code sharing.
+// DesktopCaptureDeviceAura allows safe destruction without needing to block any
+// threads (e.g., the IO BrowserThread), as well as code sharing.
 //
-// VideoCaptureDeviceImpl manages a simple state machine and the pipeline (see
-// notes at top of this file).  It times the start of successive
-// captures and facilitates the processing of each through the stages of the
+// ContentVideoCaptureDeviceCore manages a simple state machine and the pipeline
+// (see notes at top of this file).  It times the start of successive captures
+// and facilitates the processing of each through the stages of the
 // pipeline.
-class CONTENT_EXPORT VideoCaptureDeviceImpl
-    : public base::SupportsWeakPtr<VideoCaptureDeviceImpl> {
+class CONTENT_EXPORT ContentVideoCaptureDeviceCore
+    : public base::SupportsWeakPtr<ContentVideoCaptureDeviceCore> {
  public:
-  VideoCaptureDeviceImpl(scoped_ptr<VideoCaptureMachine> capture_machine);
-  virtual ~VideoCaptureDeviceImpl();
+  ContentVideoCaptureDeviceCore(
+      scoped_ptr<VideoCaptureMachine> capture_machine);
+  virtual ~ContentVideoCaptureDeviceCore();
 
-  // Asynchronous requests to change VideoCaptureDeviceImpl state.
+  // Asynchronous requests to change ContentVideoCaptureDeviceCore state.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<media::VideoCaptureDevice::Client> client);
   void StopAndDeAllocate();
@@ -183,14 +184,14 @@ class CONTENT_EXPORT VideoCaptureDeviceImpl
   scoped_ptr<VideoCaptureMachine> capture_machine_;
 
   // Our thread-safe capture oracle which serves as the gateway to the video
-  // capture pipeline. Besides the WCVCD itself, it is the only component of the
-  // system with direct access to |client_|.
+  // capture pipeline. Besides the VideoCaptureDevice itself, it is the only
+  // component of the/ system with direct access to |client_|.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceImpl);
+  DISALLOW_COPY_AND_ASSIGN(ContentVideoCaptureDeviceCore);
 };
 
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_DEVICE_IMPL_H_
+#endif  // CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_

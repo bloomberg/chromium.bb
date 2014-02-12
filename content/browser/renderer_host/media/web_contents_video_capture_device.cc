@@ -62,7 +62,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/media/video_capture_device_impl.h"
+#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
 #include "content/browser/renderer_host/media/video_capture_oracle.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -792,7 +792,7 @@ void WebContentsCaptureMachine::RenewFrameSubscription() {
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     int render_process_id, int render_view_id)
-    : impl_(new VideoCaptureDeviceImpl(scoped_ptr<VideoCaptureMachine>(
+    : core_(new ContentVideoCaptureDeviceCore(scoped_ptr<VideoCaptureMachine>(
         new WebContentsCaptureMachine(render_process_id, render_view_id)))) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
@@ -817,11 +817,11 @@ void WebContentsVideoCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  impl_->AllocateAndStart(params, client.Pass());
+  core_->AllocateAndStart(params, client.Pass());
 }
 
 void WebContentsVideoCaptureDevice::StopAndDeAllocate() {
-  impl_->StopAndDeAllocate();
+  core_->StopAndDeAllocate();
 }
 
 }  // namespace content
