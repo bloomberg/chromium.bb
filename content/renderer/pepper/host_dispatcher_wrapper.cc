@@ -98,10 +98,12 @@ void HostDispatcherWrapper::RemoveInstance(PP_Instance instance) {
   // TODO(brettw) remove null check as described in AddInstance.
   if (host) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
-    render_frame->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
-        plugin_child_id_,
-        instance,
-        is_external_));
+    if (render_frame) {
+      render_frame->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
+          plugin_child_id_,
+          instance,
+          is_external_));
+    }
   }
 }
 

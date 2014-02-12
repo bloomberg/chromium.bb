@@ -728,7 +728,8 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
     content_decryptor_delegate_.reset();
   }
 
-  render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
+  if (render_frame_)
+    render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
   UnSetAndDeleteLockTargetAdapter();
 }
 
@@ -767,6 +768,8 @@ bool PepperPluginInstanceImpl::Initialize(
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
     bool full_frame) {
+  if (!render_frame_)
+    return false;
   message_channel_.reset(new MessageChannel(this));
 
   full_frame_ = full_frame;
@@ -1006,6 +1009,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
+  if (!render_frame_)
+    return false;
   if (WebInputEvent::isMouseEventType(event.type)) {
     render_frame_->PepperDidReceiveMouseEvent(this);
   }
@@ -1476,6 +1481,9 @@ void PepperPluginInstanceImpl::SendFocusChangeNotification() {
   // plugin behavior described at the NOTE above Delete().
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
+  if (!render_frame_)
+    return;
+
   bool has_focus = PluginHasFocus();
   render_frame_->render_view()->PepperFocusChanged(this, has_focus);
 
@@ -1715,6 +1723,8 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   if (fullscreen == IsFullscreenOrPending())
     return false;
 
+  if (!render_frame_)
+    return false;
   if (fullscreen &&
       !render_frame_->render_view()->renderer_preferences().
           plugin_fullscreen_allowed)
@@ -2087,6 +2097,8 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
       SimulateImeSetCompositionEvent(input_event);
       break;
     case PP_INPUTEVENT_TYPE_IME_TEXT:
+      if (!render_frame_)
+        return false;
       render_frame_->SimulateImeConfirmComposition(
           base::UTF8ToUTF16(input_event.character_text), gfx::Range());
       break;
@@ -2098,6 +2110,9 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
 
 void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
     const InputEventData& input_event) {
+  if (!render_frame_)
+    return;
+
   std::vector<size_t> offsets;
   offsets.push_back(input_event.composition_selection_start);
   offsets.push_back(input_event.composition_selection_end);
@@ -2295,6 +2310,8 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
 }
 
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
+  if (!render_frame_)
+    return PP_MakeUndefined();
   return StringVar::StringToPPVar(
       render_frame_->render_view()->webkit_preferences().default_encoding);
 }
@@ -2386,15 +2403,19 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
     int32_t total,
     PP_Bool final_result) {
   DCHECK_NE(find_identifier_, -1);
-  render_frame_->reportFindInPageMatchCount(
-      find_identifier_, total, PP_ToBool(final_result));
+  if (render_frame_) {
+    render_frame_->reportFindInPageMatchCount(
+        find_identifier_, total, PP_ToBool(final_result));
+  }
 }
 
 void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
                                                          int32_t index) {
   DCHECK_NE(find_identifier_, -1);
-  render_frame_->reportFindInPageSelection(
-      find_identifier_, index + 1, blink::WebRect());
+  if (render_frame_) {
+    render_frame_->reportFindInPageSelection(
+        find_identifier_, index + 1, blink::WebRect());
+  }
 }
 
 PP_Bool PepperPluginInstanceImpl::IsFullscreen(PP_Instance instance) {
@@ -2487,6 +2508,8 @@ void PepperPluginInstanceImpl::ZoomChanged(PP_Instance instance,
 void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,
                                                  double minimum_factor,
                                                  double maximum_factor) {
+  if (!render_frame_)
+    return;
   if (minimum_factor > maximum_factor) {
     NOTREACHED();
     return;
@@ -2577,6 +2600,8 @@ void PepperPluginInstanceImpl::UnlockMouse(PP_Instance instance) {
 
 void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
                                                 PP_TextInput_Type type) {
+  if (!render_frame_)
+    return;
   int itype = type;
   if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
     itype = ui::TEXT_INPUT_TYPE_NONE;
@@ -2588,6 +2613,8 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
     PP_Instance instance,
     const PP_Rect& caret,
     const PP_Rect& bounding_box) {
+  if (!render_frame_)
+    return;
   text_input_caret_ = PP_ToGfxRect(caret);
   text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
   text_input_caret_set_ = true;
@@ -2595,7 +2622,8 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
 }
 
 void PepperPluginInstanceImpl::CancelCompositionText(PP_Instance instance) {
-  render_frame_->PepperCancelComposition(this);
+  if (render_frame_)
+    render_frame_->PepperCancelComposition(this);
 }
 
 void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
@@ -2618,6 +2646,8 @@ void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
                                                      const char* text,
                                                      uint32_t caret,
                                                      uint32_t anchor) {
+  if (!render_frame_)
+    return;
   surrounding_text_ = text;
   selection_caret_ = caret;
   selection_anchor_ = anchor;
@@ -2789,7 +2819,7 @@ PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
 }
 
 RenderView* PepperPluginInstanceImpl::GetRenderView() {
-  return render_frame_->render_view();
+  return render_frame_ ? render_frame_->render_view() : NULL;
 }
 
 blink::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
@@ -2881,7 +2911,7 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
   if (fullscreen_container_) {
     fullscreen_container_->DidChangeCursor(*cursor);
-  } else {
+  } else if (render_frame_) {
     render_frame_->PepperDidChangeCursor(this, *cursor);
   }
 }
@@ -2903,6 +2933,8 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
   if (fullscreen == FlashIsFullscreenOrPending())
     return true;
 
+  if (!render_frame_)
+    return false;
   if (fullscreen &&
       !render_frame_->render_view()->renderer_preferences().
           plugin_fullscreen_allowed)
@@ -3030,6 +3062,8 @@ void PepperPluginInstanceImpl::KeepSizeAttributesBeforeFullscreen() {
 }
 
 void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
+  if (!render_frame_)
+    return;
   blink::WebScreenInfo info = render_frame_->GetRenderWidget()->screenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
   std::string width = StringPrintf("%d", screen_size_for_fullscreen_.width());
@@ -3084,9 +3118,10 @@ MouseLockDispatcher* PepperPluginInstanceImpl::GetMouseLockDispatcher() {
     RenderWidgetFullscreenPepper* container =
         static_cast<RenderWidgetFullscreenPepper*>(fullscreen_container_);
     return container->mouse_lock_dispatcher();
-  } else {
+  } else if (render_frame_) {
     return render_frame_->render_view()->mouse_lock_dispatcher();
   }
+  return NULL;
 }
 
 void PepperPluginInstanceImpl::UnSetAndDeleteLockTargetAdapter() {
