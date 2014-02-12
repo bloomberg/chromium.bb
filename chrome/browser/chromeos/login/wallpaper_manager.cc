@@ -278,13 +278,19 @@ base::FilePath WallpaperManager::TestApi::current_wallpaper_path() {
   return wallpaper_manager_->current_wallpaper_path_;
 }
 
-gfx::ImageSkia WallpaperManager::TestApi::CachedWallpaper(
-    const std::string& user_id) {
-  CustomWallpaperMap::const_iterator it =
-      wallpaper_manager_->wallpaper_cache_.find(user_id);
-  if (it != wallpaper_manager_->wallpaper_cache_.end())
-    return it->second;
-  return gfx::ImageSkia();
+bool WallpaperManager::TestApi::GetWallpaperFromCache(
+    const std::string& user_id, gfx::ImageSkia* image) {
+  return wallpaper_manager_->GetWallpaperFromCache(user_id, image);
+}
+
+void WallpaperManager::TestApi::SetWallpaperCache(const std::string& user_id,
+                                                  const gfx::ImageSkia& image) {
+  DCHECK(!image.isNull());
+  wallpaper_manager_->wallpaper_cache_[user_id] = image;
+}
+
+void WallpaperManager::TestApi::ClearWallpaperCache() {
+  wallpaper_manager_->ClearWallpaperCache();
 }
 
 // static
@@ -379,15 +385,15 @@ void WallpaperManager::ClearWallpaperCache() {
       logged_in_users_names.insert((*it)->email());
     }
 
+    CustomWallpaperMap logged_in_users_cache;
     for (CustomWallpaperMap::iterator it = wallpaper_cache_.begin();
-         it != wallpaper_cache_.end(); ) {
-      if (logged_in_users_names.find(it->first) ==
+         it != wallpaper_cache_.end(); ++it) {
+      if (logged_in_users_names.find(it->first) !=
           logged_in_users_names.end()) {
-        wallpaper_cache_.erase(it);
-      } else {
-        ++it;
+        logged_in_users_cache.insert(*it);
       }
     }
+    wallpaper_cache_ = logged_in_users_cache;
   }
 }
 
@@ -397,17 +403,6 @@ base::FilePath WallpaperManager::GetCustomWallpaperPath(
     const std::string& file) {
   base::FilePath custom_wallpaper_path = GetCustomWallpaperDir(sub_dir);
   return custom_wallpaper_path.Append(user_id_hash).Append(file);
-}
-
-bool WallpaperManager::GetWallpaperFromCache(const std::string& email,
-                                             gfx::ImageSkia* wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(email);
-  if (it != wallpaper_cache_.end()) {
-    *wallpaper = (*it).second;
-    return true;
-  }
-  return false;
 }
 
 base::FilePath WallpaperManager::GetOriginalWallpaperPathForUser(
@@ -852,6 +847,17 @@ void WallpaperManager::NotifyAnimationFinished() {
 
 // WallpaperManager, private: --------------------------------------------------
 
+bool WallpaperManager::GetWallpaperFromCache(const std::string& email,
+                                             gfx::ImageSkia* wallpaper) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(email);
+  if (it != wallpaper_cache_.end()) {
+    *wallpaper = (*it).second;
+    return true;
+  }
+  return false;
+}
+
 void WallpaperManager::CacheUsersWallpapers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserList users = UserManager::Get()->GetUsers();
@@ -870,7 +876,7 @@ void WallpaperManager::CacheUsersWallpapers() {
 }
 
 void WallpaperManager::CacheUserWallpaper(const std::string& email) {
-  if (wallpaper_cache_.find(email) == wallpaper_cache_.end())
+  if (wallpaper_cache_.find(email) != wallpaper_cache_.end())
     return;
   WallpaperInfo info;
   if (GetUserWallpaperInfo(email, &info)) {

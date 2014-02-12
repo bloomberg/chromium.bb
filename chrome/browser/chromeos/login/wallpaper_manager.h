@@ -80,7 +80,13 @@ class WallpaperManager: public content::NotificationObserver {
 
     base::FilePath current_wallpaper_path();
 
-    gfx::ImageSkia CachedWallpaper(const std::string& user_id);
+    bool GetWallpaperFromCache(const std::string& user_id,
+                               gfx::ImageSkia* image);
+
+    void SetWallpaperCache(const std::string& user_id,
+                           const gfx::ImageSkia& image);
+
+    void ClearWallpaperCache();
 
    private:
     WallpaperManager* wallpaper_manager_;  // not owned
@@ -192,10 +198,6 @@ class WallpaperManager: public content::NotificationObserver {
                                         const std::string& user_id_hash,
                                         const std::string& file);
 
-  // Gets encoded wallpaper from cache. Returns true if success.
-  bool GetWallpaperFromCache(const std::string& email,
-                             gfx::ImageSkia* wallpaper);
-
   // Returns filepath to save original custom wallpaper for the given user.
   base::FilePath GetOriginalWallpaperPathForUser(const std::string& user_id);
 
@@ -286,6 +288,10 @@ class WallpaperManager: public content::NotificationObserver {
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
+
+  // Gets encoded wallpaper from cache. Returns true if success.
+  bool GetWallpaperFromCache(const std::string& email,
+                             gfx::ImageSkia* wallpaper);
 
   // The number of wallpapers have loaded. For test only.
   int loaded_wallpapers() const { return loaded_wallpapers_; }
