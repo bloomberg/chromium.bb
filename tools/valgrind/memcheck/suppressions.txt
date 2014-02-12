@@ -6228,6 +6228,18 @@
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton10OpenUserDBERKN4base8FilePathEPKc
 }
 {
+   bug_321976_b
+   Memcheck:Leak
+   ...
+   fun:nssList_Create
+   fun:nssTrustDomain_UpdateCachedTokenCerts
+   fun:nssSlot_Refresh
+   fun:nssSlot_IsTokenPresent
+   fun:pk11_IsPresentCertLoad
+   fun:SECMOD_OpenNewSlot
+   fun:_ZN12NSSDecryptor4InitERKN4base8FilePathES3_
+}
+{
    bug_327672
    Memcheck:Uninitialized
    fun:_ZNK7WebCore18StyleSheetContents11isCacheableEv
