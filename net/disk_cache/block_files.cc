@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/file_lock.h"
+#include "net/disk_cache/stress_support.h"
 #include "net/disk_cache/trace.h"
 
 using base::TimeTicks;
@@ -63,7 +64,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
   }
 
   if (!target) {
-    NOTREACHED();
+    STRESS_NOTREACHED();
     return false;
   }
 
@@ -83,7 +84,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
       disk_cache::FileLock lock(header_);
       int index_offset = j * 4 + 4 - target;
       *index = current * 32 + index_offset;
-      DLOG_IF(ERROR, *index / 4 != (*index + size - 1) / 4) << "Bit mismatch";
+      STRESS_DCHECK(*index / 4 == (*index + size - 1) / 4);
       uint32 to_add = ((1 << size) - 1) << index_offset;
       header_->num_entries++;
 
@@ -96,7 +97,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
 
       header_->hints[target - 1] = current;
       header_->empty[target - 1]--;
-      DCHECK_GE(header_->empty[target - 1], 0);
+      STRESS_DCHECK(header_->empty[target - 1] >= 0);
       if (target != size) {
         header_->empty[target - size - 1]++;
       }
@@ -133,20 +134,20 @@ void BlockHeader::DeleteMapBlock(int index, int size) {
   int new_type = GetMapBlockType(new_value);
 
   disk_cache::FileLock lock(header_);
-  DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
+  STRESS_DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
   uint8  to_clear = ((1 << size) - 1) << (index % 8);
-  DCHECK((byte_map[byte_index] & to_clear) == to_clear);
+  STRESS_DCHECK((byte_map[byte_index] & to_clear) == to_clear);
   byte_map[byte_index] &= ~to_clear;
 
   if (update_counters) {
     if (bits_at_end)
       header_->empty[bits_at_end - 1]--;
     header_->empty[new_type - 1]++;
-    DCHECK_GE(header_->empty[bits_at_end - 1], 0);
+    STRESS_DCHECK(header_->empty[bits_at_end - 1] >= 0);
   }
   base::subtle::MemoryBarrier();
   header_->num_entries--;
-  DCHECK_GE(header_->num_entries, 0);
+  STRESS_DCHECK(header_->num_entries >= 0);
   HISTOGRAM_TIMES("DiskCache.DeleteBlock", TimeTicks::Now() - start);
 }
 
@@ -162,7 +163,7 @@ bool BlockHeader::UsedMapBlock(int index, int size) {
   if (index % 8 >= 4)
     map_block >>= 4;
 
-  DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
+  STRESS_DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
   uint8  to_clear = ((1 << size) - 1) << (index % 8);
   return ((byte_map[byte_index] & to_clear) == to_clear);
 }
