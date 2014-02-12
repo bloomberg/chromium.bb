@@ -33,12 +33,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/GraphicsTypes3D.h"
-
+#include "platform/graphics/gpu/WebGLImageConversion.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -52,8 +53,8 @@ class WebLayer;
 }
 
 namespace WebCore {
-class GraphicsContext3D;
 class ImageData;
+class ImageBuffer;
 
 // Abstract interface to allow basic context eviction management
 class PLATFORM_EXPORT ContextEvictionManager : public RefCounted<ContextEvictionManager> {
@@ -142,7 +143,7 @@ public:
     PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&);
 
 private:
-    DrawingBuffer(blink::WebGraphicsContext3D*, GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
+    DrawingBuffer(blink::WebGraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
                   bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     void initialize(const IntSize&);
@@ -182,7 +183,7 @@ private:
 
     // Helper function which does a readback from the currently-bound
     // framebuffer into a buffer of a certain size with 4-byte pixels.
-    void readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder, GraphicsContext3D::AlphaOp);
+    void readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder, WebGLImageConversion::AlphaOp);
 
     // Helper function to flip a bitmap vertically.
     void flipVertically(uint8_t* data, int width, int height);
@@ -198,7 +199,6 @@ private:
     GLenum m_activeTextureUnit;
 
     blink::WebGraphicsContext3D* m_context;
-    RefPtr<GraphicsContext3D> m_contextSupport;
     IntSize m_size;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;

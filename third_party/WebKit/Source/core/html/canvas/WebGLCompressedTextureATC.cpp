@@ -54,7 +54,7 @@ PassRefPtr<WebGLCompressedTextureATC> WebGLCompressedTextureATC::create(WebGLRen
 
 bool WebGLCompressedTextureATC::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_AMD_compressed_ATC_texture");
+    return context->extensionsUtil()->supportsExtension("GL_AMD_compressed_ATC_texture");
 }
 
 const char* WebGLCompressedTextureATC::extensionName()

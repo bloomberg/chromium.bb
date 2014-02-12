@@ -20,8 +20,8 @@
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/skia/GaneshUtils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
@@ -466,7 +466,7 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebGraphicsCont
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    if (!GraphicsContext3D::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
 
     return m_webMediaPlayer->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);

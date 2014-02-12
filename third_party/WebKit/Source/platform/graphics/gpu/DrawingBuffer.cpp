@@ -35,6 +35,7 @@
 #include <algorithm>
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"
@@ -78,26 +79,22 @@ private:
 
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(blink::WebGraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
-    RefPtr<GraphicsContext3D> contextSupport(GraphicsContext3D::createContextSupport(context));
-
-    bool multisampleSupported = contextSupport->supportsExtension("GL_ANGLE_framebuffer_blit")
-        && contextSupport->supportsExtension("GL_ANGLE_framebuffer_multisample")
-        && contextSupport->supportsExtension("GL_OES_rgb8_rgba8");
+    Extensions3DUtil extensionsUtil(context);
+    bool multisampleSupported = extensionsUtil.supportsExtension("GL_CHROMIUM_framebuffer_multisample")
+        && extensionsUtil.supportsExtension("GL_OES_rgb8_rgba8");
     if (multisampleSupported) {
-        contextSupport->ensureExtensionEnabled("GL_ANGLE_framebuffer_blit");
-        contextSupport->ensureExtensionEnabled("GL_ANGLE_framebuffer_multisample");
-        contextSupport->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
+        extensionsUtil.ensureExtensionEnabled("GL_CHROMIUM_framebuffer_multisample");
+        extensionsUtil.ensureExtensionEnabled("GL_OES_rgb8_rgba8");
     }
-    bool packedDepthStencilSupported = contextSupport->supportsExtension("GL_OES_packed_depth_stencil");
+    bool packedDepthStencilSupported = extensionsUtil.supportsExtension("GL_OES_packed_depth_stencil");
     if (packedDepthStencilSupported)
-        contextSupport->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
+        extensionsUtil.ensureExtensionEnabled("GL_OES_packed_depth_stencil");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, contextSupport.get(), size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
     return drawingBuffer.release();
 }
 
 DrawingBuffer::DrawingBuffer(blink::WebGraphicsContext3D* context,
-    GraphicsContext3D* contextSupport,
     const IntSize& size,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
@@ -109,7 +106,6 @@ DrawingBuffer::DrawingBuffer(blink::WebGraphicsContext3D* context,
     , m_framebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_context(context)
-    , m_contextSupport(contextSupport)
     , m_size(-1, -1)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
@@ -179,7 +175,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
         unsigned char* pixels = bitmap->pixels();
         bool needPremultiply = m_attributes.alpha && !m_attributes.premultipliedAlpha;
-        GraphicsContext3D::AlphaOp op = needPremultiply ? GraphicsContext3D::AlphaDoPremultiply : GraphicsContext3D::AlphaDoNothing;
+        WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
         if (pixels)
             readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
     }
@@ -326,7 +322,7 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
     if (!context->makeContextCurrent())
         return false;
 
-    if (!GraphicsContext3D::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     bool unpackPremultiplyAlphaNeeded = false;
@@ -445,7 +441,6 @@ void DrawingBuffer::releaseResources()
         if (m_fbo)
             m_context->deleteFramebuffer(m_fbo);
 
-        m_contextSupport.clear();
         m_context = 0;
     }
 
@@ -784,7 +779,7 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
     RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
-    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, GraphicsContext3D::AlphaDoNothing);
+    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, WebGLImageConversion::AlphaDoNothing);
     flipVertically(pixels->data(), width, height);
 
     return pixels.release();
@@ -819,7 +814,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
     pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? GraphicsContext3D::AlphaDoPremultiply : GraphicsContext3D::AlphaDoNothing);
+    readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing);
     flipVertically(pixels, width, height);
 
     readbackBitmap->notifyPixelsChanged();
@@ -832,7 +827,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
     }
 }
 
-void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, GraphicsContext3D::AlphaOp op)
+void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, WebGLImageConversion::AlphaOp op)
 {
     if (m_packAlignment > 4)
         m_context->pixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -852,13 +847,13 @@ void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int he
 #endif
     }
 
-    if (op == GraphicsContext3D::AlphaDoPremultiply) {
+    if (op == WebGLImageConversion::AlphaDoPremultiply) {
         for (size_t i = 0; i < bufferSize; i += 4) {
             pixels[i + 0] = std::min(255, pixels[i + 0] * pixels[i + 3] / 255);
             pixels[i + 1] = std::min(255, pixels[i + 1] * pixels[i + 3] / 255);
             pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
         }
-    } else if (op != GraphicsContext3D::AlphaDoNothing) {
+    } else if (op != WebGLImageConversion::AlphaDoNothing) {
         ASSERT_NOT_REACHED();
     }
 }

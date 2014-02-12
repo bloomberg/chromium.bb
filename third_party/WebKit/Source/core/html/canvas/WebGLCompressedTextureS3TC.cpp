@@ -57,11 +57,11 @@ PassRefPtr<WebGLCompressedTextureS3TC> WebGLCompressedTextureS3TC::create(WebGLR
 
 bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContext* context)
 {
-    GraphicsContext3D* contextSupport = context->graphicsContext3D();
-    return contextSupport->supportsExtension("GL_EXT_texture_compression_s3tc")
-        || (contextSupport->supportsExtension("GL_EXT_texture_compression_dxt1")
-            && contextSupport->supportsExtension("GL_CHROMIUM_texture_compression_dxt3")
-            && contextSupport->supportsExtension("GL_CHROMIUM_texture_compression_dxt5"));
+    Extensions3DUtil* extensionsUtil = context->extensionsUtil();
+    return extensionsUtil->supportsExtension("GL_EXT_texture_compression_s3tc")
+        || (extensionsUtil->supportsExtension("GL_EXT_texture_compression_dxt1")
+            && extensionsUtil->supportsExtension("GL_CHROMIUM_texture_compression_dxt3")
+            && extensionsUtil->supportsExtension("GL_CHROMIUM_texture_compression_dxt5"));
 }
 
 const char* WebGLCompressedTextureS3TC::extensionName()

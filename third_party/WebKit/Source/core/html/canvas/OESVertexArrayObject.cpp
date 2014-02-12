@@ -37,7 +37,7 @@ OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_vertex_array_object");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_vertex_array_object");
 }
 
 OESVertexArrayObject::~OESVertexArrayObject()
@@ -109,7 +109,7 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
 
 bool OESVertexArrayObject::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_OES_vertex_array_object");
+    return context->extensionsUtil()->supportsExtension("GL_OES_vertex_array_object");
 }
 
 const char* OESVertexArrayObject::extensionName()

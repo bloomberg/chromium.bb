@@ -57,7 +57,6 @@ class Element;
 class FileChooser;
 class FloatRect;
 class Frame;
-class GraphicsContext3D;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class HitTestResult;

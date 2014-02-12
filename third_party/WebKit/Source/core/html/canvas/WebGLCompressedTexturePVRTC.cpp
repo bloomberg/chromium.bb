@@ -57,7 +57,7 @@ PassRefPtr<WebGLCompressedTexturePVRTC> WebGLCompressedTexturePVRTC::create(WebG
 
 bool WebGLCompressedTexturePVRTC::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_IMG_texture_compression_pvrtc");
+    return context->extensionsUtil()->supportsExtension("GL_IMG_texture_compression_pvrtc");
 }
 
 const char* WebGLCompressedTexturePVRTC::extensionName()

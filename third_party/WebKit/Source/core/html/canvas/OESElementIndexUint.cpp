@@ -33,7 +33,7 @@ OESElementIndexUint::OESElementIndexUint(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_element_index_uint");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_element_index_uint");
 }
 
 OESElementIndexUint::~OESElementIndexUint()
@@ -52,7 +52,7 @@ PassRefPtr<OESElementIndexUint> OESElementIndexUint::create(WebGLRenderingContex
 
 bool OESElementIndexUint::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_OES_element_index_uint");
+    return context->extensionsUtil()->supportsExtension("GL_OES_element_index_uint");
 }
 
 const char* OESElementIndexUint::extensionName()

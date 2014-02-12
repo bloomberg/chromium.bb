@@ -33,7 +33,7 @@ WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_EXT_draw_buffers");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_draw_buffers");
 }
 
 WebGLDrawBuffers::~WebGLDrawBuffers()
@@ -53,7 +53,7 @@ PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* con
 // static
 bool WebGLDrawBuffers::supported(WebGLRenderingContext* context)
 {
-    return (context->graphicsContext3D()->supportsExtension("GL_EXT_draw_buffers")
+    return (context->extensionsUtil()->supportsExtension("GL_EXT_draw_buffers")
         && satisfiesWebGLRequirements(context));
 }
 
@@ -100,7 +100,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglContext)
 {
     blink::WebGraphicsContext3D* context = webglContext->webGraphicsContext3D();
-    GraphicsContext3D* contextSupport = webglContext->graphicsContext3D();
+    Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();
 
     // This is called after we make sure GL_EXT_draw_buffers is supported.
     GLint maxDrawBuffers = 0;
@@ -114,11 +114,11 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
-    bool supportsDepth = (contextSupport->supportsExtension("GL_CHROMIUM_depth_texture")
-        || contextSupport->supportsExtension("GL_OES_depth_texture")
-        || contextSupport->supportsExtension("GL_ARB_depth_texture"));
-    bool supportsDepthStencil = (contextSupport->supportsExtension("GL_EXT_packed_depth_stencil")
-        || contextSupport->supportsExtension("GL_OES_packed_depth_stencil"));
+    bool supportsDepth = (extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture")
+        || extensionsUtil->supportsExtension("GL_OES_depth_texture")
+        || extensionsUtil->supportsExtension("GL_ARB_depth_texture"));
+    bool supportsDepthStencil = (extensionsUtil->supportsExtension("GL_EXT_packed_depth_stencil")
+        || extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
     Platform3DObject depthStencil = 0;
     if (supportsDepthStencil) {
         depthStencil = context->createTexture();

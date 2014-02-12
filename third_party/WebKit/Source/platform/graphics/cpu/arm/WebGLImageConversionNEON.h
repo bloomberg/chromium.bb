@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsContext3DNEON_h
-#define GraphicsContext3DNEON_h
+#ifndef WebGLImageConversionNEON_h
+#define WebGLImageConversionNEON_h
 
 #if HAVE(ARM_NEON_INTRINSICS)
 
@@ -301,4 +301,4 @@ ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort565(const uint8_t*& source, u
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 
-#endif // GraphicsContext3DNEON_h
+#endif // WebGLImageConversionNEON_h

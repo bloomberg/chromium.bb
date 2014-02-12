@@ -54,7 +54,6 @@ class WebGraphicsContext3D;
 namespace WebCore {
 
 class DrawingBuffer;
-class GraphicsContext3D;
 class Image;
 class IntPoint;
 class IntRect;

@@ -40,7 +40,7 @@ ANGLEInstancedArrays::ANGLEInstancedArrays(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_ANGLE_instanced_arrays");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_ANGLE_instanced_arrays");
 }
 
 ANGLEInstancedArrays::~ANGLEInstancedArrays()
@@ -59,7 +59,7 @@ PassRefPtr<ANGLEInstancedArrays> ANGLEInstancedArrays::create(WebGLRenderingCont
 
 bool ANGLEInstancedArrays::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_ANGLE_instanced_arrays");
+    return context->extensionsUtil()->supportsExtension("GL_ANGLE_instanced_arrays");
 }
 
 const char* ANGLEInstancedArrays::extensionName()

@@ -63,7 +63,7 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
 
 bool WebGLDebugShaders::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_ANGLE_translated_shader_source");
+    return context->extensionsUtil()->supportsExtension("GL_ANGLE_translated_shader_source");
 }
 
 const char* WebGLDebugShaders::extensionName()

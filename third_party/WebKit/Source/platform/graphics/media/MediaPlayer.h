@@ -44,7 +44,6 @@ namespace WebCore {
 
 class AudioSourceProvider;
 class GraphicsContext;
-class GraphicsContext3D;
 class IntRect;
 class IntSize;
 class KURL;

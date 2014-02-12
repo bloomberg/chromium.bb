@@ -31,11 +31,11 @@
 #include "core/html/canvas/WebGLGetInfo.h"
 #include "core/page/Page.h"
 #include "platform/Timer.h"
-#include "platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBuffer.h"
-
+#include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/graphics/gpu/WebGLImageConversion.h"
 #include "public/platform/WebGraphicsContext3D.h"
-
 #include "wtf/Float32Array.h"
 #include "wtf/Int32Array.h"
 #include "wtf/OwnPtr.h"
@@ -319,9 +319,9 @@ public:
     void loseContextImpl(LostContextMode);
 
     blink::WebGraphicsContext3D* webGraphicsContext3D() const { return m_context.get(); }
-    GraphicsContext3D* graphicsContext3D() const { return m_contextSupport.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
+    Extensions3DUtil* extensionsUtil();
 
     void reshape(int width, int height);
 
@@ -350,7 +350,7 @@ public:
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
 
-    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, PassRefPtr<GraphicsContext3D>, WebGLContextAttributes*);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, WebGLContextAttributes*);
     void initializeNewContext();
     void setupFlags();
 
@@ -358,7 +358,7 @@ public:
     void addContextObject(WebGLContextObject*);
     void detachAndRemoveAllObjects();
 
-    void destroyGraphicsContext3D();
+    void destroyContext();
     void markContextChanged();
 
     // Query if the GL implementation is NPOT strict.
@@ -386,7 +386,6 @@ public:
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 
     OwnPtr<blink::WebGraphicsContext3D> m_context;
-    RefPtr<GraphicsContext3D> m_contextSupport;
     RefPtr<WebGLContextGroup> m_contextGroup;
 
     // Structure for rendering to a DrawingBuffer, instead of directly
@@ -524,6 +523,7 @@ public:
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
     bool m_preserveDrawingBuffer;
+    OwnPtr<Extensions3DUtil> m_extensionsUtil;
 
     // Enabled extension objects.
     RefPtr<ANGLEInstancedArrays> m_angleInstancedArrays;
@@ -683,9 +683,9 @@ public:
     GLenum convertTexInternalFormat(GLenum internalformat, GLenum type);
 
     void texImage2DBase(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels, ExceptionState&);
-    void texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
+    void texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
     void texSubImage2DBase(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels, ExceptionState&);
-    void texSubImage2DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
+    void texSubImage2DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
 
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
@@ -878,7 +878,7 @@ public:
         DontDisplayInConsole
     };
 
-    // Wrapper for GraphicsContext3D::synthesizeGLError that sends a message
+    // Wrapper for WebGraphicsContext3D::synthesizeGLError that sends a message
     // to the JavaScript console.
     void synthesizeGLError(GLenum, const char* functionName, const char* description, ConsoleDisplayPreference = DisplayInConsole);
     void emitGLWarning(const char* function, const char* reason);

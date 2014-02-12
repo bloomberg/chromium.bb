@@ -65,8 +65,6 @@
 
 namespace WebCore {
 
-class GraphicsContext3D;
-
 class EmptyChromeClient : public ChromeClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:

@@ -33,7 +33,7 @@ OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_texture_half_float");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_texture_half_float");
 }
 
 OESTextureHalfFloat::~OESTextureHalfFloat()
@@ -52,7 +52,7 @@ PassRefPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContex
 
 bool OESTextureHalfFloat::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_OES_texture_half_float");
+    return context->extensionsUtil()->supportsExtension("GL_OES_texture_half_float");
 }
 
 const char* OESTextureHalfFloat::extensionName()

@@ -33,7 +33,7 @@ OESTextureHalfFloatLinear::OESTextureHalfFloatLinear(WebGLRenderingContext* cont
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_texture_half_float_linear");
+    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_texture_half_float_linear");
 }
 
 OESTextureHalfFloatLinear::~OESTextureHalfFloatLinear()
@@ -52,7 +52,7 @@ PassRefPtr<OESTextureHalfFloatLinear> OESTextureHalfFloatLinear::create(WebGLRen
 
 bool OESTextureHalfFloatLinear::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_OES_texture_half_float_linear");
+    return context->extensionsUtil()->supportsExtension("GL_OES_texture_half_float_linear");
 }
 
 const char* OESTextureHalfFloatLinear::extensionName()

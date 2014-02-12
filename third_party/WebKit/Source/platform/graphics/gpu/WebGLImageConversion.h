@@ -1,84 +1,23 @@
-/*
- * Copyright (C) 2009 Apple Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef GraphicsContext3D_h
-#define GraphicsContext3D_h
+#ifndef WebGLImageConversion_h
+#define WebGLImageConversion_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/Image.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
-
-// FIXME: Find a better way to avoid the name confliction for NO_ERROR.
-#if OS(WIN)
-#undef NO_ERROR
-#endif
-
-namespace blink {
-class WebGraphicsContext3D;
-}
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 class Image;
-class ImageBuffer;
-class IntRect;
 class IntSize;
 
-class PLATFORM_EXPORT GraphicsContext3D : public RefCounted<GraphicsContext3D> {
+// Helper functions for texture uploading and pixel readback.
+class PLATFORM_EXPORT WebGLImageConversion {
 public:
-    // This is the preferred method for creating an instance of this class. When created this way the webContext
-    // is not owned by the GraphicsContext3D
-    static PassRefPtr<GraphicsContext3D> createContextSupport(blink::WebGraphicsContext3D* webContext);
-
-    ~GraphicsContext3D();
-
-    //----------------------------------------------------------------------
-    // Helpers for texture uploading and pixel readback.
-    //
-
-    // Computes the components per pixel and bytes per component
-    // for the given format and type combination. Returns false if
-    // either was an invalid enum.
-    static bool computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent);
-
-    // Computes the image size in bytes. If paddingInBytes is not null, padding
-    // is also calculated in return. Returns NO_ERROR if succeed, otherwise
-    // return the suggested GL error indicating the cause of the failure:
-    //   INVALID_VALUE if width/height is negative or overflow happens.
-    //   INVALID_ENUM if format/type is illegal.
-    static GLenum computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes);
-
     // Attempt to enumerate all possible native image formats to
     // reduce the amount of temporary allocations during texture
     // uploading. This enum must be public because it is accessed
@@ -110,16 +49,6 @@ public:
         DataFormatNumFormats
     };
 
-    // Check if the format is one of the formats from the ImageData or DOM elements.
-    // The formats from ImageData is always RGBA8.
-    // The formats from DOM elements vary with Graphics ports. It can only be RGBA8 or BGRA8.
-    static ALWAYS_INLINE bool srcFormatComeFromDOMElementOrImageData(DataFormat SrcFormat)
-    {
-    return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
-    }
-
-    static unsigned getClearBitsByFormat(GLenum);
-
     enum ChannelBits {
         ChannelRed = 1,
         ChannelGreen = 2,
@@ -130,8 +59,6 @@ public:
         ChannelRGB = ChannelRed | ChannelGreen | ChannelBlue,
         ChannelRGBA = ChannelRGB | ChannelAlpha,
     };
-
-    static unsigned getChannelBitsByFormat(GLenum);
 
     // Possible alpha operations that may need to occur during
     // pixel packing. FIXME: kAlphaDoUnmultiply is lossy and must
@@ -181,6 +108,29 @@ public:
         unsigned m_imageSourceUnpackAlignment;
     };
 
+    // Computes the components per pixel and bytes per component
+    // for the given format and type combination. Returns false if
+    // either was an invalid enum.
+    static bool computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent);
+
+    // Computes the image size in bytes. If paddingInBytes is not null, padding
+    // is also calculated in return. Returns NO_ERROR if succeed, otherwise
+    // return the suggested GL error indicating the cause of the failure:
+    //   INVALID_VALUE if width/height is negative or overflow happens.
+    //   INVALID_ENUM if format/type is illegal.
+    static GLenum computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes);
+
+    // Check if the format is one of the formats from the ImageData or DOM elements.
+    // The formats from ImageData is always RGBA8.
+    // The formats from DOM elements vary with Graphics ports. It can only be RGBA8 or BGRA8.
+    static ALWAYS_INLINE bool srcFormatComeFromDOMElementOrImageData(DataFormat SrcFormat)
+    {
+        return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
+    }
+
+    static unsigned getClearBitsByFormat(GLenum);
+    static unsigned getChannelBitsByFormat(GLenum);
+
     // The Following functions are implemented in GraphicsContext3DImagePacking.cpp
 
     // Packs the contents of the given Image which is passed in |pixels| into the passed Vector
@@ -203,16 +153,7 @@ public:
 
     // End GraphicsContext3DImagePacking.cpp functions
 
-    // Extension support.
-    bool supportsExtension(const String& name);
-    bool ensureExtensionEnabled(const String& name);
-    bool isExtensionEnabled(const String& name);
-
-    static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
-
 private:
-    GraphicsContext3D(blink::WebGraphicsContext3D* webContext);
-
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
     // data into the specified OpenGL destination format and type.
     // A sourceUnpackAlignment of zero indicates that the source
@@ -220,15 +161,8 @@ private:
     // Destination data will have no gaps between rows.
     // Implemented in GraphicsContext3DImagePacking.cpp
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
-
-    void initializeExtensions();
-
-    blink::WebGraphicsContext3D* m_impl;
-    bool m_initializedAvailableExtensions;
-    HashSet<String> m_enabledExtensions;
-    HashSet<String> m_requestableExtensions;
 };
 
 } // namespace WebCore
 
-#endif // GraphicsContext3D_h
+#endif // WebGLImageConversion_h
