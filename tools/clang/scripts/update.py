@@ -73,7 +73,7 @@ def ClobberChromiumBuildFiles():
     if not os.path.exists(d):
       continue
     n += DeleteFiles(d, r'.*\.o')
-    n += DeleteFiles(d, r'.*\.o\.d')
+    n += DeleteFiles(d, r'.*\.obj')
     n += DeleteFiles(d, r'stamp.untar')
   print 'Removed %d files.' % (n)
 
