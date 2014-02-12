@@ -421,6 +421,7 @@ TextTrackCueList
 TextTrackList
 TimeRanges
 TimedItem
+Timeline
 Touch
 TouchEvent
 TouchList

@@ -1,11 +1,11 @@
-Check that Web Animations API methods are not available without experimental web platform features enabled. Expected to fail in LayoutTests/webexposed and pass in LayoutTests/virtual/stable/webexposed.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-FAIL Element.animate() is exposed.
-FAIL Animation constructor is exposed.
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+FAIL Element.animate() should not be exposed without experimental web platform features enabled.
+This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
+FAIL Animation constructor should not be exposed without experimental web platform features enabled.
+This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
+FAIL DocumentTimeline should not be exposed without experimental web platform features enabled.
+This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
+FAIL document.timeline should not be exposed without experimental web platform features enabled.
+This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
+Harness: the test ran to completion.
 

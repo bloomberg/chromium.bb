@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
-description("Check that Web Animations API methods are not available without experimental web platform features enabled. " +
-    "Expected to fail in LayoutTests/webexposed and pass in LayoutTests/virtual/stable/webexposed.");
+test(function() {
+    assert_false('animate' in Element.prototype);
+}, 'Element.animate() should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayouTests/webexposed.');
 
-if ('animate' in Element.prototype)
-    testFailed("Element.animate() is exposed.");
-else
-    testPassed("Element.animate() is not exposed.");
+test(function() {
+    assert_false('Animation' in window);
+},'Animation constructor should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayouTests/webexposed.');
 
-if ('Animation' in window)
-    testFailed("Animation constructor is exposed.");
-else
-    testPassed("Animation constructor is not exposed.");
+test(function() {
+    assert_false('Timeline' in window);
+},'DocumentTimeline should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayouTests/webexposed.');
+
+test(function() {
+    assert_false('timeline' in document);
+},'document.timeline should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayouTests/webexposed.');
 </script>
-

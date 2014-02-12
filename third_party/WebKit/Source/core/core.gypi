@@ -5,6 +5,7 @@
             'animation/Animation.idl',
             'animation/Player.idl',
             'animation/TimedItem.idl',
+            'animation/Timeline.idl',
             'clipboard/Clipboard.idl',
             'clipboard/DataTransferItem.idl',
             'clipboard/DataTransferItemList.idl',
@@ -449,6 +450,7 @@
         ],
         # 'partial interface' or target (right side of) 'implements'
         'core_dependency_idl_files': [
+            'animation/DocumentAnimation.idl',
             'animation/ElementAnimation.idl',
             'css/DocumentFontFaceSet.idl',
             'dom/ChildNode.idl',
@@ -584,6 +586,7 @@
             'animation/CompositorAnimations.cpp',
             'animation/CompositorAnimations.h',
             'animation/CompositorAnimationsImpl.h',
+            'animation/DocumentAnimation.h',
             'animation/DocumentAnimations.cpp',
             'animation/DocumentAnimations.h',
             'animation/DocumentTimeline.cpp',
