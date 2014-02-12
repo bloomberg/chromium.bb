@@ -196,52 +196,29 @@ public:
     bool isValueID() const { return m_primitiveUnitType == CSS_VALUE_ID; }
     bool colorIsDerivedFromElement() const;
 
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
+    static PassRefPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID) { return adoptRef(new CSSPrimitiveValue(valueID)); }
+    static PassRefPtr<CSSPrimitiveValue> createIdentifier(CSSPropertyID propertyID) { return adoptRef(new CSSPrimitiveValue(propertyID)); }
+    static PassRefPtr<CSSPrimitiveValue> createParserOperator(int parserOperator) { return adoptRef(new CSSPrimitiveValue(parserOperator)); }
+    static PassRefPtr<CSSPrimitiveValue> createColor(unsigned rgbValue) { return adoptRef(new CSSPrimitiveValue(rgbValue)); }
+    static PassRefPtr<CSSPrimitiveValue> create(double value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
+    static PassRefPtr<CSSPrimitiveValue> create(const String& value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
+    static PassRefPtr<CSSPrimitiveValue> create(const Length& value, float zoom) { return adoptRef(new CSSPrimitiveValue(value, zoom)); }
+    static PassRefPtr<CSSPrimitiveValue> create(const LengthSize& value) { return adoptRef(new CSSPrimitiveValue(value)); }
+
+    template<typename T> static PassRefPtr<CSSPrimitiveValue> create(T value)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(valueID));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSPropertyID propertyID)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(propertyID));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createParserOperator(int parserOperator)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(parserOperator));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(unsigned rgbValue)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(rgbValue));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitTypes type)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, type));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const String& value, UnitTypes type)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, type));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const Length& value, float zoom)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, zoom));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value));
-    }
-    template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
-    {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value));
+        return adoptRef(new CSSPrimitiveValue(value));
     }
 
     // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
     // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
     // When the quirky value is used, if you're in quirks mode, the margin will collapse away
     // inside a table cell.
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createAllowingMarginQuirk(double value, UnitTypes type)
+    static PassRefPtr<CSSPrimitiveValue> createAllowingMarginQuirk(double value, UnitTypes type)
     {
         CSSPrimitiveValue* quirkValue = new CSSPrimitiveValue(value, type);
         quirkValue->m_isQuirkValue = true;
-        return adoptRefCountedWillBeRefCountedGarbageCollected(quirkValue);
+        return adoptRef(quirkValue);
     }
 
     ~CSSPrimitiveValue();
@@ -333,7 +310,7 @@ public:
 
     bool isQuirkValue() { return m_isQuirkValue; }
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> cloneForCSSOM() const;
+    PassRefPtr<CSSPrimitiveValue> cloneForCSSOM() const;
     void setCSSOMSafe() { m_isCSSOMSafe = true; }
 
     bool equals(const CSSPrimitiveValue&) const;

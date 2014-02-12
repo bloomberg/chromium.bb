@@ -1488,7 +1488,6 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!style)
         return 0;
 
-    // FIXME: oilpan: Change to RefPtrWillBeRawPtr when changing CSSValue.
     RefPtr<CSSPrimitiveValue> value = static_pointer_cast<CSSPrimitiveValue>(style->getPropertyCSSValue(CSSPropertyFontSize));
     if (!value)
         return 0;

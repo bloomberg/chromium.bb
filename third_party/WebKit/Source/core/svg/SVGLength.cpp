@@ -303,7 +303,7 @@ PassRefPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
     return length.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRefPtr<SVGLength> passLength)
+PassRefPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRefPtr<SVGLength> passLength)
 {
     RefPtr<SVGLength> length = passLength;
 

@@ -47,17 +47,10 @@ enum CSSGradientType {
 };
 enum CSSGradientRepeat { NonRepeating, Repeating };
 
-// This struct is stack allocated and allocated as part of vectors.
-// When allocated on the stack its members are found by conservative
-// stack scanning. When allocated as part of Vectors in heap-allocated
-// objects its members are visited via the containing object's
-// (CSSGradientValue) traceAfterDispatch method.
 struct CSSGradientColorStop {
-    ALLOW_ONLY_INLINE_ALLOCATION();
-public:
     CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { };
-    RefPtrWillBeMember<CSSPrimitiveValue> m_position; // percentage or length
-    RefPtrWillBeMember<CSSPrimitiveValue> m_color;
+    RefPtr<CSSPrimitiveValue> m_position; // percentage or length
+    RefPtr<CSSPrimitiveValue> m_color;
     Color m_resolvedColor;
     bool m_colorIsDerivedFromElement;
     bool operator==(const CSSGradientColorStop& other) const
@@ -65,18 +58,16 @@ public:
         return compareCSSValuePtr(m_color, other.m_color)
             && compareCSSValuePtr(m_position, other.m_position);
     }
-
-    void trace(Visitor*);
 };
 
 class CSSGradientValue : public CSSImageGeneratorValue {
 public:
     PassRefPtr<Image> image(RenderObject*, const IntSize&);
 
-    void setFirstX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_firstX = val; }
-    void setFirstY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_firstY = val; }
-    void setSecondX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_secondX = val; }
-    void setSecondY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_secondY = val; }
+    void setFirstX(PassRefPtr<CSSPrimitiveValue> val) { m_firstX = val; }
+    void setFirstY(PassRefPtr<CSSPrimitiveValue> val) { m_firstY = val; }
+    void setSecondX(PassRefPtr<CSSPrimitiveValue> val) { m_secondX = val; }
+    void setSecondY(PassRefPtr<CSSPrimitiveValue> val) { m_secondY = val; }
 
     void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
 
@@ -129,14 +120,14 @@ protected:
     bool isCacheable() const;
 
     // Points. Some of these may be null.
-    RefPtrWillBeMember<CSSPrimitiveValue> m_firstX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_firstY;
+    RefPtr<CSSPrimitiveValue> m_firstX;
+    RefPtr<CSSPrimitiveValue> m_firstY;
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_secondX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_secondY;
+    RefPtr<CSSPrimitiveValue> m_secondX;
+    RefPtr<CSSPrimitiveValue> m_secondY;
 
     // Stops
-    WillBeHeapVector<CSSGradientColorStop, 2> m_stops;
+    Vector<CSSGradientColorStop, 2> m_stops;
     bool m_stopsSorted;
     CSSGradientType m_gradientType;
     bool m_repeating;
@@ -152,7 +143,7 @@ public:
         return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSLinearGradientValue(repeat, gradientType));
     }
 
-    void setAngle(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_angle = val; }
+    void setAngle(PassRefPtr<CSSPrimitiveValue> val) { m_angle = val; }
 
     String customCSSText() const;
 
@@ -180,7 +171,7 @@ private:
     {
     }
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_angle; // may be null.
+    RefPtr<CSSPrimitiveValue> m_angle; // may be null.
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSLinearGradientValue, isLinearGradientValue());
@@ -199,14 +190,14 @@ public:
 
     String customCSSText() const;
 
-    void setFirstRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_firstRadius = val; }
-    void setSecondRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_secondRadius = val; }
+    void setFirstRadius(PassRefPtr<CSSPrimitiveValue> val) { m_firstRadius = val; }
+    void setSecondRadius(PassRefPtr<CSSPrimitiveValue> val) { m_secondRadius = val; }
 
-    void setShape(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_shape = val; }
-    void setSizingBehavior(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_sizingBehavior = val; }
+    void setShape(PassRefPtr<CSSPrimitiveValue> val) { m_shape = val; }
+    void setSizingBehavior(PassRefPtr<CSSPrimitiveValue> val) { m_sizingBehavior = val; }
 
-    void setEndHorizontalSize(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_endHorizontalSize = val; }
-    void setEndVerticalSize(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_endVerticalSize = val; }
+    void setEndHorizontalSize(PassRefPtr<CSSPrimitiveValue> val) { m_endHorizontalSize = val; }
+    void setEndVerticalSize(PassRefPtr<CSSPrimitiveValue> val) { m_endVerticalSize = val; }
 
     // Create the gradient for a given size.
     PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
@@ -237,15 +228,15 @@ private:
     float resolveRadius(CSSPrimitiveValue*, const CSSToLengthConversionData&, float* widthOrHeight = 0);
 
     // These may be null for non-deprecated gradients.
-    RefPtrWillBeMember<CSSPrimitiveValue> m_firstRadius;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_secondRadius;
+    RefPtr<CSSPrimitiveValue> m_firstRadius;
+    RefPtr<CSSPrimitiveValue> m_secondRadius;
 
     // The below are only used for non-deprecated gradients. Any of them may be null.
-    RefPtrWillBeMember<CSSPrimitiveValue> m_shape;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_sizingBehavior;
+    RefPtr<CSSPrimitiveValue> m_shape;
+    RefPtr<CSSPrimitiveValue> m_sizingBehavior;
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_endHorizontalSize;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_endVerticalSize;
+    RefPtr<CSSPrimitiveValue> m_endHorizontalSize;
+    RefPtr<CSSPrimitiveValue> m_endVerticalSize;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());

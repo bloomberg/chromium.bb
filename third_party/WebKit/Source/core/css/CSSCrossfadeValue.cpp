@@ -220,7 +220,6 @@ bool CSSCrossfadeValue::equals(const CSSCrossfadeValue& other) const
 
 void CSSCrossfadeValue::traceAfterDispatch(Visitor* visitor)
 {
-    visitor->trace(m_percentageValue);
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 

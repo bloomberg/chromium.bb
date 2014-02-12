@@ -114,7 +114,7 @@ private:
         return create(CSSCalcValue::createExpressionNode(leftAddend->toCSSCalcExpressionNode(), rightAddend->toCSSCalcExpressionNode(), CalcAdd));
     }
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
+    PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
     PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
     PassRefPtr<AnimatableLength> scale(double) const;
@@ -155,7 +155,7 @@ private:
 
     RefPtr<CSSCalcExpressionNode> m_calcExpression;
 
-    mutable RefPtrWillBePersistent<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
+    mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 
     friend class AnimationAnimatableLengthTest;
 };

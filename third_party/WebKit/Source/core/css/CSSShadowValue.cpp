@@ -27,12 +27,12 @@
 namespace WebCore {
 
 // Used for text-shadow and box-shadow
-CSSShadowValue::CSSShadowValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> color)
+CSSShadowValue::CSSShadowValue(PassRefPtr<CSSPrimitiveValue> x,
+    PassRefPtr<CSSPrimitiveValue> y,
+    PassRefPtr<CSSPrimitiveValue> blur,
+    PassRefPtr<CSSPrimitiveValue> spread,
+    PassRefPtr<CSSPrimitiveValue> style,
+    PassRefPtr<CSSPrimitiveValue> color)
     : CSSValue(ShadowClass)
     , x(x)
     , y(y)
@@ -90,12 +90,6 @@ bool CSSShadowValue::equals(const CSSShadowValue& other) const
 
 void CSSShadowValue::traceAfterDispatch(Visitor* visitor)
 {
-    visitor->trace(x);
-    visitor->trace(y);
-    visitor->trace(blur);
-    visitor->trace(spread);
-    visitor->trace(style);
-    visitor->trace(color);
     CSSValue::traceAfterDispatch(visitor);
 }
 

@@ -155,7 +155,7 @@ static bool isCompatibleWithRange(const CSSPrimitiveValue* primitiveValue, Numbe
     return primitiveValue->getDoubleValue() >= 0;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange range) const
+PassRefPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange range) const
 {
     if (!m_cachedCSSPrimitiveValue || !isCompatibleWithRange(m_cachedCSSPrimitiveValue.get(), range)) {
         if (isCalc())

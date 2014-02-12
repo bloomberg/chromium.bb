@@ -405,10 +405,10 @@ static CSSValueID valueForRepeatRule(int rule)
 static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSlice(const NinePieceImage& image)
 {
     // Create the slices.
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> top;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> right;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> left;
+    RefPtr<CSSPrimitiveValue> top;
+    RefPtr<CSSPrimitiveValue> right;
+    RefPtr<CSSPrimitiveValue> bottom;
+    RefPtr<CSSPrimitiveValue> left;
 
     if (image.imageSlices().top().isPercent())
         top = cssValuePool().createValue(image.imageSlices().top().value(), CSSPrimitiveValue::CSS_PERCENTAGE);
@@ -455,13 +455,13 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
     return CSSBorderImageSliceValue::create(cssValuePool().createValue(quad.release()), image.fill());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const RenderStyle& style)
 {
     // Create the slices.
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> top;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> right;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> left;
+    RefPtr<CSSPrimitiveValue> top;
+    RefPtr<CSSPrimitiveValue> right;
+    RefPtr<CSSPrimitiveValue> bottom;
+    RefPtr<CSSPrimitiveValue> left;
 
     if (box.top().isNumber())
         top = cssValuePool().createValue(box.top().number(), CSSPrimitiveValue::CSS_NUMBER);
@@ -509,8 +509,8 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(cons
 
 static PassRefPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& image)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRepeat;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRepeat;
+    RefPtr<CSSPrimitiveValue> horizontalRepeat;
+    RefPtr<CSSPrimitiveValue> verticalRepeat;
 
     horizontalRepeat = cssValuePool().createIdentifierValue(valueForRepeatRule(image.horizontalRule()));
     if (image.horizontalRule() == image.verticalRule())
@@ -545,17 +545,17 @@ static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, 
     return createBorderImageValue(imageValue.release(), imageSlices.release(), borderSlices.release(), outset.release(), repeat.release());
 }
 
-inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const RenderStyle& style)
+inline static PassRefPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const RenderStyle& style)
 {
     return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::CSS_PX);
 }
 
-inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedNumberValue(double value, const RenderStyle& style)
+inline static PassRefPtr<CSSPrimitiveValue> zoomAdjustedNumberValue(double value, const RenderStyle& style)
 {
     return cssValuePool().createValue(value / style.effectiveZoom(), CSSPrimitiveValue::CSS_NUMBER);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Length& length, const RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Length& length, const RenderStyle& style)
 {
     if (length.isFixed())
         return zoomAdjustedPixelValue(length.value(), style);
@@ -567,13 +567,13 @@ static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection
     if (!reflection)
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> offset;
+    RefPtr<CSSPrimitiveValue> offset;
     if (reflection->offset().isPercent())
         offset = cssValuePool().createValue(reflection->offset().percent(), CSSPrimitiveValue::CSS_PERCENTAGE);
     else
         offset = zoomAdjustedPixelValue(reflection->offset().value(), style);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> direction;
+    RefPtr<CSSPrimitiveValue> direction;
     switch (reflection->direction()) {
     case ReflectionBelow:
         direction = cssValuePool().createIdentifierValue(CSSValueBelow);
@@ -644,7 +644,7 @@ static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSProper
     return zoomAdjustedPixelValueForLength(l, style);
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderStyle& style, const StyleColor& color) const
+PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderStyle& style, const StyleColor& color) const
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     return cssValuePool().createColorValue(color.resolve(style.color()).rgb());
@@ -1186,12 +1186,12 @@ bool CSSComputedStyleDeclaration::useFixedFontDefaultSize() const
 
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const ShadowData& shadow, const RenderStyle& style, bool useSpread) const
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(shadow.blur(), style);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = useSpread ? zoomAdjustedPixelValue(shadow.spread(), style) : PassRefPtrWillBeRawPtr<CSSPrimitiveValue>();
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> shadowStyle = shadow.style() == Normal ? PassRefPtrWillBeRawPtr<CSSPrimitiveValue>() : cssValuePool().createIdentifierValue(CSSValueInset);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = currentColorOrValidColor(style, shadow.color());
+    RefPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
+    RefPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
+    RefPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(shadow.blur(), style);
+    RefPtr<CSSPrimitiveValue> spread = useSpread ? zoomAdjustedPixelValue(shadow.spread(), style) : PassRefPtr<CSSPrimitiveValue>();
+    RefPtr<CSSPrimitiveValue> shadowStyle = shadow.style() == Normal ? PassRefPtr<CSSPrimitiveValue>() : cssValuePool().createIdentifierValue(CSSValueInset);
+    RefPtr<CSSPrimitiveValue> color = currentColorOrValidColor(style, shadow.color());
     return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
 }
 
@@ -1229,7 +1229,7 @@ static CSSValueID identifierForFamily(const AtomicString& family)
     return CSSValueInvalid;
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFamily(const AtomicString& family)
+static PassRefPtr<CSSPrimitiveValue> valueForFamily(const AtomicString& family)
 {
     if (CSSValueID familyIdentifier = identifierForFamily(family))
         return cssValuePool().createIdentifierValue(familyIdentifier);
@@ -1372,7 +1372,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(RenderStyle& styl
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle& style)
 {
     Length length = style.lineHeight();
     if (length.isNegative())
@@ -1381,26 +1381,26 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle&
     return zoomAdjustedPixelValue(floatValueForLength(length, style.fontDescription().specifiedSize()), style);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& style)
 {
     return zoomAdjustedPixelValue(style.fontDescription().computedPixelSize(), style);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForFontStyle(RenderStyle& style)
 {
     if (style.fontDescription().italic())
         return cssValuePool().createIdentifierValue(CSSValueItalic);
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForFontVariant(RenderStyle& style)
 {
     if (style.fontDescription().smallCaps())
         return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle& style)
+static PassRefPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle& style)
 {
     switch (style.fontDescription().weight()) {
     case FontWeight100:

@@ -25,7 +25,6 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/properties/NewSVGProperty.h"
-#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -91,7 +90,7 @@ public:
     }
 
     static PassRefPtr<SVGLength> fromCSSPrimitiveValue(CSSPrimitiveValue*);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toCSSPrimitiveValue(PassRefPtr<SVGLength>);
+    static PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(PassRefPtr<SVGLength>);
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
 
     PassRefPtr<SVGLength> blend(PassRefPtr<SVGLength> from, float progress) const;

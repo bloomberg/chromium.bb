@@ -76,12 +76,6 @@ bool CSSFontValue::equals(const CSSFontValue& other) const
 
 void CSSFontValue::traceAfterDispatch(Visitor* visitor)
 {
-
-    visitor->trace(style);
-    visitor->trace(variant);
-    visitor->trace(weight);
-    visitor->trace(size);
-    visitor->trace(lineHeight);
     visitor->trace(family);
     CSSValue::traceAfterDispatch(visitor);
 }
