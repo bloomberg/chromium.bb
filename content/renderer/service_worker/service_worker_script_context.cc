@@ -48,12 +48,7 @@ void ServiceWorkerScriptContext::Send(int request_id,
 
 void ServiceWorkerScriptContext::OnInstallEvent(
     int active_version_embedded_worker_id) {
-  // TODO(kinuko): Uncomment this when blink side becomes ready.
-  // proxy_->dispatchInstallEvent(current_request_id_);
-
-  // TODO(kinuko): this should be called asynchronously from blink side
-  // when blink-side plumbing is done.
-  DidHandleInstallEvent(current_request_id_);
+  proxy_->dispatchInstallEvent(current_request_id_);
 }
 
 void ServiceWorkerScriptContext::OnFetchEvent(
