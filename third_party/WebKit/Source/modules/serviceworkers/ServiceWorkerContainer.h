@@ -28,11 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    RuntimeEnabled=ServiceWorker,
-    NoInterfaceObject
-] interface NavigatorServiceWorkerInterface {
-  [CallWith=ExecutionContext, ImplementedAs=registerServiceWorker] Promise
-  register(DOMString url, optional Dictionary options);
-  [CallWith=ExecutionContext, ImplementedAs=unregisterServiceWorker] Promise unregister(optional DOMString scope);
+#ifndef ServiceWorkerContainer_h
+#define ServiceWorkerContainer_h
+
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+
+namespace blink {
+class WebServiceWorkerProvider;
+}
+
+namespace WebCore {
+
+class Dictionary;
+class ExecutionContext;
+
+class ServiceWorkerContainer FINAL : public RefCounted<ServiceWorkerContainer>, public ScriptWrappable {
+public:
+    static PassRefPtr<ServiceWorkerContainer> create();
+    ~ServiceWorkerContainer();
+
+    ScriptPromise registerServiceWorker(ExecutionContext*, const String& pattern, const Dictionary&);
+    ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& scope = String());
+
+private:
+    ServiceWorkerContainer();
+    blink::WebServiceWorkerProvider* ensureProvider(ExecutionContext*);
+
+    OwnPtr<blink::WebServiceWorkerProvider> m_provider;
 };
+
+} // namespace WebCore
+
+#endif // ServiceWorkerContainer_h

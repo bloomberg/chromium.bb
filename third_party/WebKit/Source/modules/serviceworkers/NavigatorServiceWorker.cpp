@@ -6,7 +6,7 @@
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 
 #include "core/frame/Navigator.h"
-#include "modules/serviceworkers/NavigatorServiceWorkerInterface.h"
+#include "modules/serviceworkers/ServiceWorkerContainer.h"
 
 namespace WebCore {
 
@@ -34,15 +34,15 @@ const char* NavigatorServiceWorker::supplementName()
     return "NavigatorServiceWorker";
 }
 
-NavigatorServiceWorkerInterface* NavigatorServiceWorker::serviceWorker(Navigator* navigator)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator* navigator)
 {
     return NavigatorServiceWorker::from(navigator)->serviceWorker();
 }
 
-NavigatorServiceWorkerInterface* NavigatorServiceWorker::serviceWorker()
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()
 {
     if (!m_serviceWorker && frame())
-        m_serviceWorker = NavigatorServiceWorkerInterface::create();
+        m_serviceWorker = ServiceWorkerContainer::create();
     return m_serviceWorker.get();
 }
 

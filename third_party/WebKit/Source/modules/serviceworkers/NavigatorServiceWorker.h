@@ -12,7 +12,7 @@
 namespace WebCore {
 
 class Navigator;
-class NavigatorServiceWorkerInterface;
+class ServiceWorkerContainer;
 
 class NavigatorServiceWorker FINAL : public Supplement<Navigator>, DOMWindowProperty {
 public:
@@ -21,13 +21,13 @@ public:
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator* navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
     static const char* supplementName();
 
-    static NavigatorServiceWorkerInterface* serviceWorker(Navigator*);
+    static ServiceWorkerContainer* serviceWorker(Navigator*);
 
 private:
     explicit NavigatorServiceWorker(Navigator*);
-    NavigatorServiceWorkerInterface* serviceWorker();
+    ServiceWorkerContainer* serviceWorker();
 
-    RefPtr<NavigatorServiceWorkerInterface> m_serviceWorker;
+    RefPtr<ServiceWorkerContainer> m_serviceWorker;
 };
 
 } // namespace WebCore

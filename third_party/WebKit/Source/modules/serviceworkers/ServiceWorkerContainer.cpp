@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "modules/serviceworkers/NavigatorServiceWorkerInterface.h"
+#include "modules/serviceworkers/ServiceWorkerContainer.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
@@ -49,16 +49,16 @@ using blink::WebServiceWorkerProvider;
 
 namespace WebCore {
 
-PassRefPtr<NavigatorServiceWorkerInterface> NavigatorServiceWorkerInterface::create()
+PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create()
 {
-    return adoptRef(new NavigatorServiceWorkerInterface());
+    return adoptRef(new ServiceWorkerContainer());
 }
 
-NavigatorServiceWorkerInterface::~NavigatorServiceWorkerInterface()
+ServiceWorkerContainer::~ServiceWorkerContainer()
 {
 }
 
-ScriptPromise NavigatorServiceWorkerInterface::registerServiceWorker(ExecutionContext* executionContext, const String& url, const Dictionary& dictionary)
+ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* executionContext, const String& url, const Dictionary& dictionary)
 {
     RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
@@ -82,7 +82,7 @@ ScriptPromise NavigatorServiceWorkerInterface::registerServiceWorker(ExecutionCo
     return promise;
 }
 
-ScriptPromise NavigatorServiceWorkerInterface::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
+ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     ScriptPromise promise = ScriptPromise::createPending(executionContext);
@@ -100,12 +100,12 @@ ScriptPromise NavigatorServiceWorkerInterface::unregisterServiceWorker(Execution
     return promise;
 }
 
-NavigatorServiceWorkerInterface::NavigatorServiceWorkerInterface()
+ServiceWorkerContainer::ServiceWorkerContainer()
 {
     ScriptWrappable::init(this);
 }
 
-WebServiceWorkerProvider* NavigatorServiceWorkerInterface::ensureProvider(ExecutionContext* executionContext)
+WebServiceWorkerProvider* ServiceWorkerContainer::ensureProvider(ExecutionContext* executionContext)
 {
     if (!m_provider) {
         // FIXME: This is temporarily hooked up here until we hook up to the loading process, or should be replaced with an interface that is dedicated for scripting.
