@@ -3285,6 +3285,18 @@ void WebGLRenderingContext::stencilOpSeparate(GLenum face, GLenum fail, GLenum z
     m_context->stencilOpSeparate(face, fail, zfail, zpass);
 }
 
+GLenum WebGLRenderingContext::convertTexInternalFormat(GLenum internalformat, GLenum type)
+{
+    // Convert to sized internal formats that are renderable with GL_CHROMIUM_color_buffer_float_rgb(a).
+    if (type == GL_FLOAT && internalformat == GL_RGBA
+        && m_contextSupport->isExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"))
+        return GL_RGBA32F_EXT;
+    if (type == GL_FLOAT && internalformat == GL_RGB
+        && m_contextSupport->isExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgb"))
+        return GL_RGB32F_EXT;
+    return internalformat;
+}
+
 void WebGLRenderingContext::texImage2DBase(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels, ExceptionState& exceptionState)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
@@ -3294,8 +3306,7 @@ void WebGLRenderingContext::texImage2DBase(GLenum target, GLint level, GLenum in
     ASSERT(tex);
     ASSERT(!level || !WebGLTexture::isNPOT(width, height));
     ASSERT(!pixels || validateSettableTexFormat("texImage2D", internalformat));
-    m_context->texImage2D(target, level, internalformat, width, height,
-                          border, format, type, pixels);
+    m_context->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, type);
 }
 

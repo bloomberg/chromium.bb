@@ -33,7 +33,11 @@ OESTextureFloat::OESTextureFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_texture_float");
+    if (context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_texture_float")) {
+        // Implicitly enable rendering to float textures
+        context->graphicsContext3D()->ensureExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba");
+        context->graphicsContext3D()->ensureExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgb");
+    }
 }
 
 OESTextureFloat::~OESTextureFloat()

@@ -679,6 +679,9 @@ public:
     // Helper to restore state that clearing the framebuffer may destroy.
     void restoreStateAfterClear();
 
+    // Convert texture internal format.
+    GLenum convertTexInternalFormat(GLenum internalformat, GLenum type);
+
     void texImage2DBase(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels, ExceptionState&);
     void texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
     void texSubImage2DBase(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels, ExceptionState&);
