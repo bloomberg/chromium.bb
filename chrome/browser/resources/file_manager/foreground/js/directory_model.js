@@ -488,6 +488,8 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
     return;
 
   if (kind == util.EntryChangedKind.CREATED) {
+    // Refresh the cache.
+    this.metadataCache_.clear([entry], '*');
     entry.getParent(function(parentEntry) {
       if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
         // Do nothing if current directory changed during async operations.
@@ -501,7 +503,7 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
 
         var index = this.findIndexByEntry_(entry);
         if (index >= 0)
-          this.getFileList().splice(index, 1, entry);
+          this.getFileList().replaceItem(this.getFileList().item(index), entry);
         else
           this.getFileList().push(entry);
       }.bind(this));
