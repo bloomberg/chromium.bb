@@ -377,20 +377,13 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_.get())
     return shared_main_thread_contexts_;
 
-  if (ui::Compositor::WasInitializedWithThread()) {
-    // In threaded compositing mode, we have to create our own context for the
-    // main thread since the compositor's context will be bound to the
-    // compositor thread.
-    shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
-        "Offscreen-MainThread");
-  } else {
-    // In single threaded compositing mode, we can just reuse the compositor's
-    // shared context.
-    shared_main_thread_contexts_ =
-        static_cast<ContextProviderCommandBuffer*>(
-            OffscreenCompositorContextProvider().get());
-  }
+  // In threaded compositing mode, we have to create our own context for the
+  // main thread since the compositor's context will be bound to the
+  // compositor thread. When not in threaded mode, we still need a separate
+  // context so that skia and gl_helper don't step on each other.
+  shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
+      GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
+      "Offscreen-MainThread");
 
   if (shared_main_thread_contexts_) {
     shared_main_thread_contexts_->SetLostContextCallback(
