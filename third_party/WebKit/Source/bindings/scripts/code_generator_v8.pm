@@ -4903,9 +4903,9 @@ END
     }
     $implementation{nameSpaceWebCore}->add("    fromInternalPointer(object)->deref();\n");
     if (IsWillBeGarbageCollectedType($interface->name)) {
-        $implementation{nameSpaceWebCore}->add("#endif\n");
+        $implementation{nameSpaceWebCore}->add("#endif // !ENABLE(OILPAN)\n");
     }
-    $implementation{nameSpaceWebCore}->add("}\n");
+    $implementation{nameSpaceWebCore}->add("}\n\n");
 
     $implementation{nameSpaceWebCore}->add(<<END);
 template<>

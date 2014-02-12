@@ -1104,6 +1104,7 @@ void V8TestInterfacePython::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
+
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

@@ -140,6 +140,7 @@ void V8TestInterfaceDoNotCheckConstants::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
+
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfaceDoNotCheckConstants* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

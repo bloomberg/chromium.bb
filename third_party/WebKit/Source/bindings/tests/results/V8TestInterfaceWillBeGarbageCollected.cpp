@@ -225,8 +225,9 @@ void V8TestInterfaceWillBeGarbageCollected::derefObject(void* object)
 {
 #if !ENABLE(OILPAN)
     fromInternalPointer(object)->deref();
-#endif
+#endif // !ENABLE(OILPAN)
 }
+
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfaceWillBeGarbageCollected* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
