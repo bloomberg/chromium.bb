@@ -4,8 +4,12 @@
  */
 
 /* Overrides for the desktop user manager screen. */
- .oobe-display {
+.oobe-display {
   background-color: #eee;
+}
+
+.bubble.faded {
+  opacity: 0;
 }
 
 .pod {
