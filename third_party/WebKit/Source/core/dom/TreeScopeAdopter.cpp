@@ -82,6 +82,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 
 void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document& newDocument) const
 {
+    ASSERT(oldDocument != newDocument);
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         moveNodeToNewDocument(*node, oldDocument, newDocument);
         for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
@@ -112,7 +113,7 @@ inline void TreeScopeAdopter::updateTreeScope(Node& node) const
 
 inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDocument, Document& newDocument) const
 {
-    ASSERT(!node.inDocument() || oldDocument != newDocument);
+    ASSERT(oldDocument != newDocument);
 
     if (node.hasRareData()) {
         NodeRareData* rareData = node.rareData();
