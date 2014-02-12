@@ -15,6 +15,7 @@ from environment import IsDevServer
 from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, STATIC_DOCS
 from file_system_util import CreateURLsFromPaths
 from future import Gettable, Future
+from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
@@ -100,6 +101,9 @@ class CronServlet(Servlet):
 
     def CreateGithubFileSystemProvider(self, object_store_creator):
       return GithubFileSystemProvider(object_store_creator)
+
+    def CreateGCSFileSystemProvider(self, object_store_creator):
+      return CloudStorageFileSystemProvider(object_store_creator)
 
     def GetAppVersion(self):
       return GetAppVersion()
@@ -287,8 +291,11 @@ class CronServlet(Servlet):
         object_store_creator, max_trunk_revision=revision)
     github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
         object_store_creator)
+    gcs_file_system_provider = self._delegate.CreateGCSFileSystemProvider(
+        object_store_creator)
     return ServerInstance(object_store_creator,
                           CompiledFileSystem.Factory(object_store_creator),
                           branch_utility,
                           host_file_system_provider,
-                          github_file_system_provider)
+                          github_file_system_provider,
+                          gcs_file_system_provider)

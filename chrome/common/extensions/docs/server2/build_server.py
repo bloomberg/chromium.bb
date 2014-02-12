@@ -75,6 +75,9 @@ def main():
                  make_init=False)
   MakeInit(LOCAL_THIRD_PARTY_DIR)
 
+  CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'google_appengine_cloudstorage',
+                 'cloudstorage'), 'cloudstorage')
+
   # To be able to use the Handlebar class we need this import in __init__.py.
   with open(os.path.join(LOCAL_THIRD_PARTY_DIR,
                          'handlebar',

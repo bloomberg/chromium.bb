@@ -74,32 +74,26 @@
     },
     "serveFrom": "native-client",
     "supportsTemplates": true
+  },
+  "devtools-docs": {
+    "gcs": {
+      "bucket": "gs://chromedocs-devtools"
+    },
+    "serveFrom": "devtools",
+    "supportsTemplates": true
+  },
+  "multidevice-docs": {
+    "gcs": {
+      "bucket": "gs://chromedocs-multidevice"
+    },
+    "serveFrom": "multidevice",
+    "supportsTemplates": true
+  },
+  "webstore-docs": {
+    "gcs": {
+      "bucket": "gs://chromedocs-webstore"
+    },
+    "serveFrom": "webstore",
+    "supportsTemplates": true
   }
-
-  // GitHub is not working at the moment. Disable entirely.
-  //
-  //"devtools-docs": {
-  //  "github": {
-  //    "owner": "GoogleChrome",
-  //    "repo": "devtools-docs-migration"
-  //  },
-  //  "serveFrom": "devtools",
-  //  "supportsTemplates": true
-  //},
-  //"multidevice-docs": {
-  //  "github": {
-  //    "owner": "GoogleChrome",
-  //    "repo": "multi-device"
-  //  },
-  //  "serveFrom": "multidevice",
-  //  "supportsTemplates": true
-  //},
-  //"webstore-docs": {
-  //  "github": {
-  //    "owner": "GoogleChrome",
-  //    "repo": "webstore-docs"
-  //  },
-  //  "serveFrom": "webstore",
-  //  "supportsTemplates": true
-  //}
 }

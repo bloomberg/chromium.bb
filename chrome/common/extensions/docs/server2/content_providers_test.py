@@ -9,6 +9,7 @@ import unittest
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
 from extensions_paths import EXTENSIONS
+from gcs_file_system_provider import CloudStorageFileSystemProvider
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_util import DisableLogging
@@ -102,10 +103,14 @@ class ContentProvidersTest(unittest.TestCase):
   def setUp(self):
     test_file_system = TestFileSystem(_FILE_SYSTEM_DATA, relative_to=EXTENSIONS)
     self._github_fs_provider = _MockGithubFileSystemProvider(test_file_system)
+    object_store_creator = ObjectStoreCreator.ForTest()
+    # TODO(mangini): create tests for GCS
+    self._gcs_fs_provider = CloudStorageFileSystemProvider(object_store_creator)
     self._content_providers = ContentProviders(
-        CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()),
+        CompiledFileSystem.Factory(object_store_creator),
         test_file_system,
-        self._github_fs_provider)
+        self._github_fs_provider,
+        self._gcs_fs_provider)
 
   def testSimpleRootPath(self):
     provider = self._content_providers.GetByName('apples')

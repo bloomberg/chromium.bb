@@ -21,6 +21,33 @@ be sufficient. If for some reason you want to test against the app engine SDK:
   3. View docs at http://localhost:8080/(apps|extensions)/<doc_name>
 
 
+--------------------------------------------
+Using Google Cloud Storage content providers
+
+With preview.py:
+
+  1. create a directory "[...]/server2/local_debug/gcs/<bucketname>" for every
+     gcs bucket referenced in content_providers.json
+
+  2. copy files to the respective local bucket directories. Preview.py has
+     no access to the real Google Cloud Storage.
+
+With start_dev_server.py:
+
+    1. Install gsutils from https://developers.google.com/storage/docs/gsutil
+
+    2. Set gsutil accordingly to the official instructions.
+
+    3. Make sure you have permission to the GCS buckets specified in
+       content_providers.json by running "gsutil ls gs://bucketname"
+
+    4. Get an oauth token (see instructions at the comment of
+       gcs_file_system_provider.py) and save it to the file
+       "[...]/server2/local_debug/gcs_debug.conf"
+
+Remember that the step 4 needs to be repeated every 10 minutes or so,
+because the oauth access token expires quickly.
+
 --------------------
 Deploying the Server
 

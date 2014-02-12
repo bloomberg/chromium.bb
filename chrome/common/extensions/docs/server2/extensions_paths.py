@@ -30,3 +30,7 @@ PRIVATE_TEMPLATES = join(TEMPLATES, 'private/')
 PUBLIC_TEMPLATES = join(TEMPLATES, 'public/')
 
 CONTENT_PROVIDERS = join(JSON_TEMPLATES, 'content_providers.json')
+
+LOCAL_DEBUG_DIR = join(SERVER2, 'local_debug/')
+LOCAL_GCS_DIR = join(LOCAL_DEBUG_DIR, 'gcs/')
+LOCAL_GCS_DEBUG_CONF = join(LOCAL_DEBUG_DIR, 'gcs_debug.conf')

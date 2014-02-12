@@ -3,12 +3,15 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import traceback
 
 from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
-from extensions_paths import CONTENT_PROVIDERS
+import environment
+from extensions_paths import CONTENT_PROVIDERS, LOCAL_DEBUG_DIR
 from future import Gettable, Future
+from local_file_system import LocalFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
 
@@ -39,11 +42,32 @@ class ContentProviders(object):
   def __init__(self,
                compiled_fs_factory,
                host_file_system,
-               github_file_system_provider):
+               github_file_system_provider,
+               gcs_file_system_provider):
     self._compiled_fs_factory = compiled_fs_factory
     self._host_file_system = host_file_system
     self._github_file_system_provider = github_file_system_provider
-    self._cache = compiled_fs_factory.ForJson(host_file_system)
+    self._gcs_file_system_provider = gcs_file_system_provider
+    self._cache = None
+
+    # If running the devserver and there is a LOCAL_DEBUG_DIR, we
+    # will read the content_provider configuration from there instead
+    # of fetching it from SVN trunk or patch.
+    if environment.IsDevServer() and os.path.exists(LOCAL_DEBUG_DIR):
+      local_fs = LocalFileSystem(LOCAL_DEBUG_DIR)
+      conf_stat = None
+      try:
+        conf_stat = local_fs.Stat(CONTENT_PROVIDERS)
+      except:
+        pass
+
+      if conf_stat:
+        logging.warn(("Using local debug folder (%s) for "
+                      "content_provider.json configuration") % LOCAL_DEBUG_DIR)
+        self._cache = compiled_fs_factory.ForJson(local_fs)
+
+    if not self._cache:
+      self._cache = compiled_fs_factory.ForJson(host_file_system)
 
   @memoize
   def GetByName(self, name):
@@ -94,6 +118,20 @@ class ContentProviders(object):
         return None
       file_system = ChrootFileSystem(self._host_file_system,
                                      chromium_config['dir'])
+    elif 'gcs' in config:
+      gcs_config = config['gcs']
+      if 'bucket' not in gcs_config:
+        logging.error('%s: "gcs" must have a "bucket" property' % name)
+        return None
+      bucket = gcs_config['bucket']
+      if not bucket.startswith('gs://'):
+        logging.error('%s: bucket %s should start with gs://' % (name, bucket))
+        return None
+      bucket = bucket[len('gs://'):]
+      file_system = self._gcs_file_system_provider.Create(bucket)
+      if 'dir' in gcs_config:
+        file_system = ChrootFileSystem(file_system, gcs_config['dir'])
+
     elif 'github' in config:
       github_config = config['github']
       if 'owner' not in github_config or 'repo' not in github_config:
@@ -103,9 +141,9 @@ class ContentProviders(object):
           github_config['owner'], github_config['repo'])
       if 'dir' in github_config:
         file_system = ChrootFileSystem(file_system, github_config['dir'])
+
     else:
-      logging.error(
-          '%s: content provider type "%s" not supported' % (name, type_))
+      logging.error('%s: content provider type not supported' % name)
       return None
 
     return ContentProvider(name,

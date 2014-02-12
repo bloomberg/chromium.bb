@@ -13,9 +13,10 @@ from document_renderer import DocumentRenderer
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
 from features_bundle import FeaturesBundle
+from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
-from host_file_system_provider import HostFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
+from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
@@ -33,6 +34,7 @@ class ServerInstance(object):
                branch_utility,
                host_file_system_provider,
                github_file_system_provider,
+               gcs_file_system_provider,
                base_path='/'):
     '''
     |object_store_creator|
@@ -61,6 +63,7 @@ class ServerInstance(object):
     host_fs_at_trunk = host_file_system_provider.GetTrunk()
 
     self.github_file_system_provider = github_file_system_provider
+    self.gcs_file_system_provider = gcs_file_system_provider
 
     assert base_path.startswith('/') and base_path.endswith('/')
     self.base_path = base_path
@@ -136,7 +139,8 @@ class ServerInstance(object):
     self.content_providers = ContentProviders(
         self.compiled_fs_factory,
         host_fs_at_trunk,
-        self.github_file_system_provider)
+        self.github_file_system_provider,
+        self.gcs_file_system_provider)
 
     # TODO(kalman): Move all the remaining DataSources into DataSourceRegistry,
     # then factor out the DataSource creation into a factory method, so that
@@ -170,6 +174,7 @@ class ServerInstance(object):
                           TestBranchUtility.CreateWithCannedData(),
                           file_system_provider,
                           GithubFileSystemProvider.ForEmpty(),
+                          CloudStorageFileSystemProvider(object_store_creator),
                           base_path=base_path)
 
   @staticmethod
@@ -183,4 +188,5 @@ class ServerInstance(object):
         CompiledFileSystem.Factory(object_store_creator),
         TestBranchUtility.CreateWithCannedData(),
         host_file_system_provider,
-        GithubFileSystemProvider.ForEmpty())
+        GithubFileSystemProvider.ForEmpty(),
+        CloudStorageFileSystemProvider(object_store_creator))

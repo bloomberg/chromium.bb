@@ -13,6 +13,7 @@ from empty_dir_file_system import EmptyDirFileSystem
 from extensions_paths import (
     APP_YAML, CONTENT_PROVIDERS, EXTENSIONS, PUBLIC_TEMPLATES, SERVER2,
     STATIC_DOCS)
+from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from local_file_system import LocalFileSystem
@@ -49,6 +50,9 @@ class _TestDelegate(CronServlet.Delegate):
 
   def CreateGithubFileSystemProvider(self, object_store_creator):
     return GithubFileSystemProvider.ForEmpty()
+
+  def CreateGCSFileSystemProvider(self, object_store_creator):
+    return CloudStorageFileSystemProvider.ForEmpty()
 
   def GetAppVersion(self):
     return self._app_version

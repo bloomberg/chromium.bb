@@ -19,6 +19,7 @@ from patched_file_system import PatchedFileSystem
 from server_instance import ServerInstance
 from servlet import Request, Response, Servlet
 import url_constants
+from gcs_file_system_provider import CloudStorageFileSystemProvider
 
 
 class _PatchServletDelegate(RenderServlet.Delegate):
@@ -63,6 +64,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
         branch_utility,
         patched_host_file_system_provider,
         self._delegate.CreateGithubFileSystemProvider(object_store_creator),
+        CloudStorageFileSystemProvider(object_store_creator),
         base_path='/_patch/%s/' % self._issue)
 
     # HACK: if content_providers.json changes in this patch then the cron needs
