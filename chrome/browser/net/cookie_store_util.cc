@@ -99,7 +99,7 @@ net::CookieMonsterDelegate* CreateCookieDelegate(Profile* profile) {
       new ChromeCookieMonsterDelegate(profile));
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 namespace {
 
 // Use the operating system's mechanisms to encrypt cookies before writing
@@ -136,10 +136,10 @@ base::LazyInstance<CookieOSCryptoDelegate> g_cookie_crypto_delegate =
 content::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return g_cookie_crypto_delegate.Pointer();
 }
-#else  // defined(OS_WIN) || defined(OS_LINUX)
+#else  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 content::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return NULL;
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 }  // namespace chrome_browser_net

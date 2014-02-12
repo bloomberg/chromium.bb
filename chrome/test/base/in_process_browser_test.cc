@@ -42,6 +42,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -185,6 +186,11 @@ void InProcessBrowserTest::SetUp() {
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
   autorelease_pool_ = new base::mac::ScopedNSAutoreleasePool;
+
+  // Always use the MockKeychain if OS encription is used (which is when
+  // anything sensitive gets stored, including Cookies).  Without this,
+  // many tests will hang waiting for a user to approve KeyChain access.
+  Encryptor::UseMockKeychain(true);
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

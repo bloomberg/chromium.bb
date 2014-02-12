@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
@@ -289,6 +290,10 @@ void GCMClientImplTest::InitializeGCMClient() {
                           temp_directory_.path(),
                           message_loop_.message_loop_proxy(),
                           url_request_context_getter_);
+#if defined(OS_MACOSX)
+  // On OSX, prevent the Keychain permissions popup during unit tests.
+  Encryptor::UseMockKeychain(true);  // Must be after Initialize.
+#endif
   // Ensuring that mcs_client is using the same gcm_store as gcm_client.
   mcs_client()->set_gcm_store(gcm_client_->gcm_store_.get());
   PumpLoopUntilIdle();
