@@ -29,8 +29,8 @@ function test()
     {
         InspectorTest.createWorkspace();
         manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-        resourceScriptMapping = new WebInspector.ResourceScriptMapping(InspectorTest.testWorkspace);
-        defaultScriptMapping = new WebInspector.DefaultScriptMapping(InspectorTest.testWorkspace);
+        resourceScriptMapping = new WebInspector.ResourceScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace);
+        defaultScriptMapping = new WebInspector.DefaultScriptMapping(WebInspector.debuggerModel,InspectorTest.testWorkspace);
     }
 
     InspectorTest.runTestSuite([
