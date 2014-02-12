@@ -36,8 +36,10 @@ std::string ExtractDomainName(const std::string& email);
 bool IsGaiaSignonRealm(const GURL& url);
 
 // Parses JSON data returned by /ListAccounts call, returns vector of
-// accounts (email addresses).
-std::vector<std::string> ParseListAccountsData(const std::string& data);
+// accounts (email addresses).  If there an error parsing the JSON, then
+// false is returned.
+bool ParseListAccountsData(const std::string& data,
+                           std::vector<std::string>* accounts);
 
 }  // namespace gaia
 

@@ -292,7 +292,8 @@ void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
 void OAuth2LoginManager::OnListAccountsSuccess(const std::string& data) {
   MergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
   // Let's analyze which accounts we see logged in here:
-  std::vector<std::string> accounts = gaia::ParseListAccountsData(data);
+  std::vector<std::string> accounts;
+  gaia::ParseListAccountsData(data, &accounts);
   std::string user_email = gaia::CanonicalizeEmail(GetPrimaryAccountId());
   if (!accounts.empty()) {
     bool found = false;

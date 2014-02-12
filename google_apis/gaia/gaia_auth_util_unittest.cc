@@ -110,40 +110,43 @@ TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
 
 TEST(GaiaAuthUtilTest, ParseListAccountsData) {
   std::vector<std::string> accounts;
-  accounts = ParseListAccountsData("");
+  ASSERT_FALSE(ParseListAccountsData("", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData("1");
+  ASSERT_FALSE(ParseListAccountsData("1", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData("[]");
+  ASSERT_FALSE(ParseListAccountsData("[]", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData("[\"foo\", \"bar\"]");
+  ASSERT_FALSE(ParseListAccountsData("[\"foo\", \"bar\"]", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData("[\"foo\", []]");
+  ASSERT_TRUE(ParseListAccountsData("[\"foo\", []]", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData(
-      "[\"foo\", [[\"bar\", 0, \"name\", 0, \"photo\", 0, 0, 0]]]");
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", 0, \"photo\", 0, 0, 0]]]", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
-  accounts = ParseListAccountsData(
-      "[\"foo\", [[\"bar\", 0, \"name\", \"u@g.c\", \"photo\", 0, 0, 0]]]");
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", \"u@g.c\", \"photo\", 0, 0, 0]]]",
+      &accounts));
   ASSERT_EQ(1u, accounts.size());
   ASSERT_EQ("u@g.c", accounts[0]);
 
-  accounts = ParseListAccountsData(
+  ASSERT_TRUE(ParseListAccountsData(
       "[\"foo\", [[\"bar1\", 0, \"name1\", \"u1@g.c\", \"photo1\", 0, 0, 0], "
-                 "[\"bar2\", 0, \"name2\", \"u2@g.c\", \"photo2\", 0, 0, 0]]]");
+                 "[\"bar2\", 0, \"name2\", \"u2@g.c\", \"photo2\", 0, 0, 0]]]",
+      &accounts));
   ASSERT_EQ(2u, accounts.size());
   ASSERT_EQ("u1@g.c", accounts[0]);
   ASSERT_EQ("u2@g.c", accounts[1]);
 
-  accounts = ParseListAccountsData(
+  ASSERT_TRUE(ParseListAccountsData(
       "[\"foo\", [[\"b1\", 0, \"name1\", \"U1@g.c\", \"photo1\", 0, 0, 0], "
-                 "[\"b2\", 0, \"name2\", \"u.2@g.c\", \"photo2\", 0, 0, 0]]]");
+                 "[\"b2\", 0, \"name2\", \"u.2@g.c\", \"photo2\", 0, 0, 0]]]",
+      &accounts));
   ASSERT_EQ(2u, accounts.size());
   ASSERT_EQ(CanonicalizeEmail("U1@g.c"), accounts[0]);
   ASSERT_EQ(CanonicalizeEmail("u.2@g.c"), accounts[1]);

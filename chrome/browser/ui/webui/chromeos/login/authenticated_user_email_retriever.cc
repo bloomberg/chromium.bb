@@ -28,7 +28,8 @@ AuthenticatedUserEmailRetriever::~AuthenticatedUserEmailRetriever() {
 
 void AuthenticatedUserEmailRetriever::OnListAccountsSuccess(
     const std::string& data) {
-  std::vector<std::string> accounts = gaia::ParseListAccountsData(data);
+  std::vector<std::string> accounts;
+  gaia::ParseListAccountsData(data, &accounts);
   if (accounts.size() != 1)
     callback_.Run(std::string());
   else

@@ -51,6 +51,8 @@ MockAccountReconcilor::MockAccountReconcilor(Profile* profile)
     : testing::StrictMock<AccountReconcilor>(profile) {
 }
 
+}  // namespace
+
 class AccountReconcilorTest : public testing::Test {
  public:
   AccountReconcilorTest();
@@ -69,6 +71,16 @@ class AccountReconcilorTest : public testing::Test {
   }
 
   MockAccountReconcilor* GetMockReconcilor();
+
+  void SimulateMergeSessionCompleted(
+      MergeSessionHelper::Observer* observer,
+      const std::string& account_id,
+      const GoogleServiceAuthError& error);
+
+  void SimulateRefreshTokenFetched(
+      AccountReconcilor* reconcilor,
+      const std::string& account_id,
+      const std::string& refresh_token);
 
 private:
   content::TestBrowserThreadBundle bundle_;
@@ -120,7 +132,19 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   return mock_reconcilor_;
 }
 
-}  // namespace
+void AccountReconcilorTest::SimulateMergeSessionCompleted(
+    MergeSessionHelper::Observer* observer,
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  observer->MergeSessionCompleted(account_id, error);
+}
+
+void AccountReconcilorTest::SimulateRefreshTokenFetched(
+    AccountReconcilor* reconcilor,
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  reconcilor->HandleRefreshTokenFetched(account_id, refresh_token);
+}
 
 TEST_F(AccountReconcilorTest, Basic) {
   AccountReconcilor* reconcilor =
@@ -305,6 +329,7 @@ TEST_F(AccountReconcilorTest, StartReconcileNoop) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileNoopMultiple) {
@@ -343,6 +368,7 @@ TEST_F(AccountReconcilorTest, StartReconcileNoopMultiple) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileAddToCookie) {
@@ -358,13 +384,18 @@ TEST_F(AccountReconcilorTest, StartReconcileAddToCookie) {
   SetFakeResponse("https://www.googleapis.com/oauth2/v1/userinfo",
       "{\"id\":\"foo\"}", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  GetMockReconcilor()->StartReconcile();
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
   token_service()->IssueAllTokensForAccount("other@gmail.com", "access_token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
   token_service()->IssueAllTokensForAccount("user@gmail.com", "access_token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateMergeSessionCompleted(reconcilor, "other@gmail.com",
+                                GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileAddToChrome) {
@@ -381,11 +412,15 @@ TEST_F(AccountReconcilorTest, StartReconcileAddToChrome) {
   SetFakeResponse("https://www.googleapis.com/oauth2/v1/userinfo",
       "{\"id\":\"foo\"}", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  GetMockReconcilor()->StartReconcile();
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
   token_service()->IssueAllTokensForAccount("user@gmail.com", "access_token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateRefreshTokenFetched(reconcilor, "other@gmail.com", "");
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileBadPrimary) {
@@ -404,13 +439,21 @@ TEST_F(AccountReconcilorTest, StartReconcileBadPrimary) {
   SetFakeResponse("https://www.googleapis.com/oauth2/v1/userinfo",
       "{\"id\":\"foo\"}", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  GetMockReconcilor()->StartReconcile();
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
   token_service()->IssueAllTokensForAccount("other@gmail.com", "access_token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
   token_service()->IssueAllTokensForAccount("user@gmail.com", "access_token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateMergeSessionCompleted(reconcilor, "other@gmail.com",
+                                GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateMergeSessionCompleted(reconcilor, "user@gmail.com",
+                                GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileOnlyOnce) {
