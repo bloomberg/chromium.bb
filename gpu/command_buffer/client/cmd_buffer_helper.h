@@ -17,6 +17,15 @@
 
 namespace gpu {
 
+#if !defined(OS_ANDROID)
+#define CMD_HELPER_PERIODIC_FLUSH_CHECK
+const int kCommandsPerFlushCheck = 100;
+const float kPeriodicFlushDelay = 1.0f / (5.0f * 60.0f);
+#endif
+
+const int kAutoFlushSmall = 16;  // 1/16 of the buffer
+const int kAutoFlushBig = 2;     // 1/2 of the buffer
+
 // Command buffer helper class. This class simplifies ring buffer management:
 // it will allocate the buffer, give it to the buffer interface, and let the
 // user add commands to it, while taking care of the synchronization (put and
@@ -92,14 +101,43 @@ class GPU_EXPORT CommandBufferHelper {
 
   // Called prior to each command being issued. Waits for a certain amount of
   // space to be available. Returns address of space.
-  CommandBufferEntry* GetSpace(uint32 entries);
+  CommandBufferEntry* GetSpace(int32 entries) {
+#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
+    // Allow this command buffer to be pre-empted by another if a "reasonable"
+    // amount of work has been done. On highend machines, this reduces the
+    // latency of GPU commands. However, on Android, this can cause the
+    // kernel to thrash between generating GPU commands and executing them.
+    ++commands_issued_;
+    if (flush_automatically_ &&
+        (commands_issued_ % kCommandsPerFlushCheck == 0)) {
+      PeriodicFlushCheck();
+    }
+#endif
+
+    // Test for immediate entries.
+    if (entries > immediate_entry_count_) {
+      WaitForAvailableEntries(entries);
+      if (entries > immediate_entry_count_)
+        return NULL;
+    }
+
+    DCHECK_LE(entries, immediate_entry_count_);
+
+    // Allocate space and advance put_.
+    CommandBufferEntry* space = &entries_[put_];
+    put_ += entries;
+    immediate_entry_count_ -= entries;
+
+    DCHECK_LE(put_, total_entry_count_);
+    return space;
+  }
 
   // Typed version of GetSpace. Gets enough room for the given type and returns
   // a reference to it.
   template <typename T>
   T* GetCmdSpace() {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
-    uint32 space_needed = ComputeNumEntries(sizeof(T));
+    int32 space_needed = ComputeNumEntries(sizeof(T));
     void* data = GetSpace(space_needed);
     return reinterpret_cast<T*>(data);
   }
@@ -108,7 +146,7 @@ class GPU_EXPORT CommandBufferHelper {
   template <typename T>
   T* GetImmediateCmdSpace(size_t data_space) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    uint32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
+    int32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
     void* data = GetSpace(space_needed);
     return reinterpret_cast<T*>(data);
   }
@@ -117,7 +155,7 @@ class GPU_EXPORT CommandBufferHelper {
   template <typename T>
   T* GetImmediateCmdSpaceTotalSize(size_t total_space) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    uint32 space_needed = ComputeNumEntries(total_space);
+    int32 space_needed = ComputeNumEntries(total_space);
     void* data = GetSpace(space_needed);
     return reinterpret_cast<T*>(data);
   }
@@ -230,6 +268,7 @@ class GPU_EXPORT CommandBufferHelper {
 
   void ClearUsable() {
     usable_ = false;
+    CalcImmediateEntries(0);
   }
 
  private:
@@ -241,8 +280,14 @@ class GPU_EXPORT CommandBufferHelper {
     return (get_offset() - put_ - 1 + total_entry_count_) % total_entry_count_;
   }
 
+  void CalcImmediateEntries(int waiting_count);
   bool AllocateRingBuffer();
   void FreeResources();
+
+#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
+  // Calls Flush if automatic flush conditions are met.
+  void PeriodicFlushCheck();
+#endif
 
   CommandBuffer* command_buffer_;
   int32 ring_buffer_id_;
@@ -250,10 +295,15 @@ class GPU_EXPORT CommandBufferHelper {
   Buffer ring_buffer_;
   CommandBufferEntry* entries_;
   int32 total_entry_count_;  // the total number of entries
+  int32 immediate_entry_count_;
   int32 token_;
   int32 put_;
   int32 last_put_sent_;
+
+#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
   int commands_issued_;
+#endif
+
   bool usable_;
   bool context_lost_;
   bool flush_automatically_;

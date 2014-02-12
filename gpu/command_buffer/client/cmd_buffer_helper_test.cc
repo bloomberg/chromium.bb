@@ -4,8 +4,11 @@
 
 // Tests for the Command Buffer Helper.
 
+#include <list>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -28,7 +31,7 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::_;
 
-const int32 kTotalNumCommandEntries = 10;
+const int32 kTotalNumCommandEntries = 32;
 const int32 kCommandBufferSizeBytes =
     kTotalNumCommandEntries * sizeof(CommandBufferEntry);
 const int32 kUnusedCommandId = 5;  // we use 0 and 2 currently.
@@ -89,16 +92,21 @@ class CommandBufferHelperTest : public testing::Test {
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
+
+    test_command_next_id_ = kUnusedCommandId;
   }
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
+    test_command_args_.clear();
   }
 
   const CommandParser* GetParser() const {
     return gpu_scheduler_->parser();
   }
+
+  int32 ImmediateEntryCount() const { return helper_->immediate_entry_count_; }
 
   // Adds a command to the buffer through the helper, while adding it as an
   // expected call on the API mock.
@@ -122,6 +130,25 @@ class CommandBufferHelperTest : public testing::Test {
         .WillOnce(Return(_return));
   }
 
+  void AddUniqueCommandWithExpect(error::Error _return, int cmd_size) {
+    EXPECT_GE(cmd_size, 1);
+    EXPECT_LT(cmd_size, kTotalNumCommandEntries);
+    int arg_count = cmd_size - 1;
+
+    // Allocate array for args.
+    linked_ptr<std::vector<CommandBufferEntry> > args_ptr(
+        new std::vector<CommandBufferEntry>(arg_count ? arg_count : 1));
+
+    for (int32 ii = 0; ii < arg_count; ++ii) {
+      (*args_ptr)[ii].value_uint32 = 0xF00DF00D + ii;
+    }
+
+    // Add command and save args in test_command_args_ until the test completes.
+    AddCommandWithExpect(
+        _return, test_command_next_id_++, arg_count, &(*args_ptr)[0]);
+    test_command_args_.insert(test_command_args_.end(), args_ptr);
+  }
+
   void TestCommandWrappingFull(int32 cmd_size, int32 start_commands) {
     const int32 num_args = cmd_size - 1;
     EXPECT_EQ(kTotalNumCommandEntries % cmd_size, 0);
@@ -131,7 +158,7 @@ class CommandBufferHelperTest : public testing::Test {
       args[ii].value_uint32 = ii + 1;
     }
 
-    // Initially insert commands up to start_commands and Finish()
+    // Initially insert commands up to start_commands and Finish().
     for (int32 ii = 0; ii < start_commands; ++ii) {
       AddCommandWithExpect(
           error::kNoError, ii + kUnusedCommandId, num_args, &args[0]);
@@ -143,10 +170,10 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_EQ(GetParser()->get(),
               (start_commands * cmd_size) % kTotalNumCommandEntries);
 
-    // Lock flushing to force the buffer to get full
+    // Lock flushing to force the buffer to get full.
     command_buffer_->LockFlush();
 
-    // Add enough commands to over fill the buffer
+    // Add enough commands to over fill the buffer.
     for (int32 ii = 0; ii < kTotalNumCommandEntries / cmd_size + 2; ++ii) {
       AddCommandWithExpect(error::kNoError,
                            start_commands + ii + kUnusedCommandId,
@@ -154,7 +181,7 @@ class CommandBufferHelperTest : public testing::Test {
                            &args[0]);
     }
 
-    // Flush all commands
+    // Flush all commands.
     command_buffer_->UnlockFlush();
     helper_->Finish();
 
@@ -196,6 +223,10 @@ class CommandBufferHelperTest : public testing::Test {
     return command_buffer_->GetState().put_offset;
   }
 
+  int32 GetHelperGetOffset() { return helper_->get_offset(); }
+
+  int32 GetHelperPutOffset() { return helper_->put_; }
+
   error::Error GetError() {
     return command_buffer_->GetState().error;
   }
@@ -211,8 +242,172 @@ class CommandBufferHelperTest : public testing::Test {
   scoped_ptr<CommandBufferServiceLocked> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
+  std::list<linked_ptr<std::vector<CommandBufferEntry> > > test_command_args_;
+  unsigned int test_command_next_id_;
   Sequence sequence_;
 };
+
+// Checks immediate_entry_count_ changes based on 'usable' state.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesNotUsable) {
+  // Auto flushing mode is tested separately.
+  helper_->SetAutomaticFlushes(false);
+  EXPECT_EQ(helper_->usable(), true);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
+  helper_->ClearUsable();
+  EXPECT_EQ(ImmediateEntryCount(), 0);
+}
+
+// Checks immediate_entry_count_ changes based on RingBuffer state.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesNoRingBuffer) {
+  helper_->SetAutomaticFlushes(false);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
+  helper_->FreeRingBuffer();
+  EXPECT_EQ(ImmediateEntryCount(), 0);
+}
+
+// Checks immediate_entry_count_ calc when Put >= Get and Get == 0.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesGetAtZero) {
+  // No internal auto flushing.
+  helper_->SetAutomaticFlushes(false);
+  command_buffer_->LockFlush();
+
+  // Start at Get = Put = 0.
+  EXPECT_EQ(GetHelperPutOffset(), 0);
+  EXPECT_EQ(GetHelperGetOffset(), 0);
+
+  // Immediate count should be 1 less than the end of the buffer.
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 3);
+
+  helper_->Finish();
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks immediate_entry_count_ calc when Put >= Get and Get > 0.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesGetInMiddle) {
+  // No internal auto flushing.
+  helper_->SetAutomaticFlushes(false);
+  command_buffer_->LockFlush();
+
+  // Move to Get = Put = 2.
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  helper_->Finish();
+  EXPECT_EQ(GetHelperPutOffset(), 2);
+  EXPECT_EQ(GetHelperGetOffset(), 2);
+
+  // Immediate count should be up to the end of the buffer.
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 2);
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 4);
+
+  helper_->Finish();
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks immediate_entry_count_ calc when Put < Get.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesGetBeforePut) {
+  // Move to Get = kTotalNumCommandEntries / 4, Put = 0.
+  const int kInitGetOffset = kTotalNumCommandEntries / 4;
+  helper_->SetAutomaticFlushes(false);
+  command_buffer_->LockFlush();
+  AddUniqueCommandWithExpect(error::kNoError, kInitGetOffset);
+  helper_->Finish();
+  AddUniqueCommandWithExpect(error::kNoError,
+                             kTotalNumCommandEntries - kInitGetOffset);
+
+  // Flush instead of Finish will let Put wrap without the command buffer
+  // immediately processing the data between Get and Put.
+  helper_->Flush();
+
+  EXPECT_EQ(GetHelperGetOffset(), kInitGetOffset);
+  EXPECT_EQ(GetHelperPutOffset(), 0);
+
+  // Immediate count should be up to Get - 1.
+  EXPECT_EQ(ImmediateEntryCount(), kInitGetOffset - 1);
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  EXPECT_EQ(ImmediateEntryCount(), kInitGetOffset - 3);
+
+  helper_->Finish();
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks immediate_entry_count_ calc when automatic flushing is enabled.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesAutoFlushing) {
+  command_buffer_->LockFlush();
+
+  // Start at Get = Put = 0.
+  EXPECT_EQ(GetHelperPutOffset(), 0);
+  EXPECT_EQ(GetHelperGetOffset(), 0);
+
+  // Without auto flushes, up to kTotalNumCommandEntries - 1 is available.
+  helper_->SetAutomaticFlushes(false);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
+
+  // With auto flushes, and Get == Last Put,
+  // up to kTotalNumCommandEntries / kAutoFlushSmall is available.
+  helper_->SetAutomaticFlushes(true);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries / kAutoFlushSmall);
+
+  // With auto flushes, and Get != Last Put,
+  // up to kTotalNumCommandEntries / kAutoFlushBig is available.
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  helper_->Flush();
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries / kAutoFlushBig);
+
+  helper_->Finish();
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks immediate_entry_count_ calc when automatic flushing is enabled, and
+// we allocate commands over the immediate_entry_count_ size.
+TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesOverFlushLimit) {
+  // Lock internal flushing.
+  command_buffer_->LockFlush();
+
+  // Start at Get = Put = 0.
+  EXPECT_EQ(GetHelperPutOffset(), 0);
+  EXPECT_EQ(GetHelperGetOffset(), 0);
+
+  // Pre-check ImmediateEntryCount is limited with automatic flushing enabled.
+  helper_->SetAutomaticFlushes(true);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries / kAutoFlushSmall);
+
+  // Add a command larger than ImmediateEntryCount().
+  AddUniqueCommandWithExpect(error::kNoError, ImmediateEntryCount() + 1);
+
+  // ImmediateEntryCount() should now be 0, to force a flush check on the next
+  // command.
+  EXPECT_EQ(ImmediateEntryCount(), 0);
+
+  // Add a command when ImmediateEntryCount() == 0.
+  AddUniqueCommandWithExpect(error::kNoError, ImmediateEntryCount() + 1);
+
+  helper_->Finish();
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
 
 // Checks that commands in the buffer are properly executed, and that the
 // status/error stay valid.
@@ -251,12 +446,16 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
 // Checks that commands in the buffer are properly executed when wrapping the
 // buffer, and that the status/error stay valid.
 TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
-  // Add 5 commands of size 3 through the helper to make sure we do wrap.
+  // Add num_commands * commands of size 3 through the helper to make sure we
+  // do wrap.  kTotalNumCommandEntries must not be a multiple of 3.
+  COMPILE_ASSERT(kTotalNumCommandEntries % 3 != 0,
+                 Is_multiple_of_num_command_entries);
+  const int kNumCommands = (kTotalNumCommandEntries / 3) * 2;
   CommandBufferEntry args1[2];
   args1[0].value_uint32 = 5;
   args1[1].value_float = 4.f;
 
-  for (unsigned int i = 0; i < 5; ++i) {
+  for (int i = 0; i < kNumCommands; ++i) {
     AddCommandWithExpect(error::kNoError, kUnusedCommandId + i, 2, args1);
   }
 
@@ -293,14 +492,18 @@ TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   EXPECT_EQ(error::kNoError, GetError());
 }
 
+// Checks exact wrapping condition with Get = 0.
 TEST_F(CommandBufferHelperTest, TestCommandWrappingFullAtStart) {
   TestCommandWrappingFull(2, 0);
 }
 
+// Checks exact wrapping condition with 0 < Get < kTotalNumCommandEntries.
 TEST_F(CommandBufferHelperTest, TestCommandWrappingFullInMiddle) {
   TestCommandWrappingFull(2, 1);
 }
 
+// Checks exact wrapping condition with Get = kTotalNumCommandEntries.
+// Get should wrap back to 0, but making sure.
 TEST_F(CommandBufferHelperTest, TestCommandWrappingFullAtEnd) {
   TestCommandWrappingFull(2, kTotalNumCommandEntries / 2);
 }

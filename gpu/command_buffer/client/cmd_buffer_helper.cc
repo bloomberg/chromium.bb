@@ -12,22 +12,19 @@
 
 namespace gpu {
 
-const int kCommandsPerFlushCheck = 100;
-
-#if !defined(OS_ANDROID)
-const double kFlushDelay = 1.0 / (5.0 * 60.0);
-#endif
-
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       ring_buffer_id_(-1),
       ring_buffer_size_(0),
       entries_(NULL),
       total_entry_count_(0),
+      immediate_entry_count_(0),
       token_(0),
       put_(0),
       last_put_sent_(0),
+#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
       commands_issued_(0),
+#endif
       usable_(true),
       context_lost_(false),
       flush_automatically_(true),
@@ -36,6 +33,7 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
 
 void CommandBufferHelper::SetAutomaticFlushes(bool enabled) {
   flush_automatically_ = enabled;
+  CalcImmediateEntries(0);
 }
 
 bool CommandBufferHelper::IsContextLost() {
@@ -43,6 +41,47 @@ bool CommandBufferHelper::IsContextLost() {
     context_lost_ = error::IsError(command_buffer()->GetLastError());
   }
   return context_lost_;
+}
+
+void CommandBufferHelper::CalcImmediateEntries(int waiting_count) {
+  DCHECK_GE(waiting_count, 0);
+
+  // Check if usable & allocated.
+  if (!usable() || !HaveRingBuffer()) {
+    immediate_entry_count_ = 0;
+    return;
+  }
+
+  // Get maximum safe contiguous entries.
+  const int32 curr_get = get_offset();
+  if (curr_get > put_) {
+    immediate_entry_count_ = curr_get - put_ - 1;
+  } else {
+    immediate_entry_count_ =
+        total_entry_count_ - put_ - (curr_get == 0 ? 1 : 0);
+  }
+
+  // Limit entry count to force early flushing.
+  if (flush_automatically_) {
+    int32 limit =
+        total_entry_count_ /
+        ((curr_get == last_put_sent_) ? kAutoFlushSmall : kAutoFlushBig);
+
+    int32 pending =
+        (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
+
+    if (pending > 0 && pending >= limit) {
+      // Time to force flush.
+      immediate_entry_count_ = 0;
+    } else {
+      // Limit remaining entries, but not lower than waiting_count entries to
+      // prevent deadlock when command size is greater than the flush limit.
+      limit -= pending;
+      limit = limit < waiting_count ? waiting_count : limit;
+      immediate_entry_count_ =
+          immediate_entry_count_ > limit ? limit : immediate_entry_count_;
+    }
+  }
 }
 
 bool CommandBufferHelper::AllocateRingBuffer() {
@@ -78,6 +117,7 @@ bool CommandBufferHelper::AllocateRingBuffer() {
 
   total_entry_count_ = num_ring_buffer_entries;
   put_ = state.put_offset;
+  CalcImmediateEntries(0);
   return true;
 }
 
@@ -85,6 +125,7 @@ void CommandBufferHelper::FreeResources() {
   if (HaveRingBuffer()) {
     command_buffer_->DestroyTransferBuffer(ring_buffer_id_);
     ring_buffer_id_ = -1;
+    CalcImmediateEntries(0);
   }
 }
 
@@ -107,19 +148,38 @@ bool CommandBufferHelper::FlushSync() {
   if (!usable()) {
     return false;
   }
+
+  // Wrap put_ before flush.
+  if (put_ == total_entry_count_)
+    put_ = 0;
+
   last_flush_time_ = clock();
   last_put_sent_ = put_;
   CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
+  CalcImmediateEntries(0);
   return state.error == error::kNoError;
 }
 
 void CommandBufferHelper::Flush() {
+  // Wrap put_ before flush.
+  if (put_ == total_entry_count_)
+    put_ = 0;
+
   if (usable() && last_put_sent_ != put_) {
     last_flush_time_ = clock();
     last_put_sent_ = put_;
     command_buffer_->Flush(put_);
+    CalcImmediateEntries(0);
   }
 }
+
+#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
+void CommandBufferHelper::PeriodicFlushCheck() {
+  clock_t current_time = clock();
+  if (current_time - last_flush_time_ > kPeriodicFlushDelay * CLOCKS_PER_SEC)
+    Flush();
+}
+#endif
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
 // error is set.
@@ -209,13 +269,15 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // but we need to make sure get wraps first, actually that get is 1 or
     // more (since put will wrap to 0 after we add the noops).
     DCHECK_LE(1, put_);
-    if (get_offset() > put_ || get_offset() == 0) {
+    int32 curr_get = get_offset();
+    if (curr_get > put_ || curr_get == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
-      while (get_offset() > put_ || get_offset() == 0) {
+      while (curr_get > put_ || curr_get == 0) {
         // Do not loop forever if the flush fails, meaning the command buffer
         // reader has shutdown.
         if (!FlushSync())
           return;
+        curr_get = get_offset();
       }
     }
     // Insert Noops to fill out the buffer.
@@ -228,52 +290,26 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     }
     put_ = 0;
   }
-  if (AvailableEntries() < count) {
-    TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
-    while (AvailableEntries() < count) {
-      // Do not loop forever if the flush fails, meaning the command buffer
-      // reader has shutdown.
-      if (!FlushSync())
-        return;
-    }
-  }
-  // Force a flush if the buffer is getting half full, or even earlier if the
-  // reader is known to be idle.
-  int32 pending =
-      (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
-  int32 limit = total_entry_count_ /
-      ((get_offset() == last_put_sent_) ? 16 : 2);
-  if (pending > limit) {
+
+  // Try to get 'count' entries without flushing.
+  CalcImmediateEntries(count);
+  if (immediate_entry_count_ < count) {
+    // Try again with a shallow Flush().
     Flush();
-  } else if (flush_automatically_ &&
-             (commands_issued_ % kCommandsPerFlushCheck == 0)) {
-#if !defined(OS_ANDROID)
-    // Allow this command buffer to be pre-empted by another if a "reasonable"
-    // amount of work has been done. On highend machines, this reduces the
-    // latency of GPU commands. However, on Android, this can cause the
-    // kernel to thrash between generating GPU commands and executing them.
-    clock_t current_time = clock();
-    if (current_time - last_flush_time_ > kFlushDelay * CLOCKS_PER_SEC)
-      Flush();
-#endif
+    CalcImmediateEntries(count);
+    if (immediate_entry_count_ < count) {
+      // Buffer is full.  Need to wait for entries.
+      TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
+      while (immediate_entry_count_ < count) {
+        // Do not loop forever if the flush fails, meaning the command buffer
+        // reader has shutdown.
+        if (!FlushSync())
+          return;
+        CalcImmediateEntries(count);
+      }
+    }
   }
 }
 
-CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
-  AllocateRingBuffer();
-  if (!usable()) {
-    return NULL;
-  }
-  DCHECK(HaveRingBuffer());
-  ++commands_issued_;
-  WaitForAvailableEntries(entries);
-  CommandBufferEntry* space = &entries_[put_];
-  put_ += entries;
-  DCHECK_LE(put_, total_entry_count_);
-  if (put_ == total_entry_count_) {
-    put_ = 0;
-  }
-  return space;
-}
 
 }  // namespace gpu
