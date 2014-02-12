@@ -101,38 +101,8 @@ class DeviceUpdateError(Exception):
   """Thrown when there is an error during device update."""
 
 
-@cros.CommandDecorator('flash')
-class FlashCommand(cros.CrosCommand):
-  """Update the device with an image.
-
-  This command updates the device with the image. It assumes that
-  device is able to accept ssh connections.
-
-  For rootfs partition update, this command may launch a devserver to
-  generate payloads. As a side effect, it may create symlinks in
-  static_dir/others used by the devserver.
-  """
-
-  EPILOG = """
-To update the device with the latest locally built image:
-  cros flash device latest
-  cros flash device
-
-To update the device with a local image path:
-  cros flash device path_to_image
-
-To update the device with an xbuddy path:
-  cros flash device xbuddy://{local|remote}/board/version
-
-  Common xbuddy version aliases are latest,
-  latest-{dev|beta|stable|canary}, and latest-official, where 'latest'
-  is a short version of latest-stable.
-
-  For more information about xbuddy paths, please see
-  http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/\
-using-the-dev-server/xbuddy-for-devserver
-"""
-
+class RemoteDeviceUpdater(object):
+  """Performs update on a remote device."""
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
   DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
@@ -145,8 +115,27 @@ using-the-dev-server/xbuddy-for-devserver
   # stateful partition and thus has enough space to store the payloads.
   DEVICE_WORK_DIR = '/mnt/stateful_partition/cros-flash'
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
+  def __init__(self, ssh_hostname, ssh_port, image_path, stateful_update=True,
+               rootfs_update=True, clobber_stateful=False, reboot=True,
+               board=None, src_image=None, wipe=True, debug=False, yes=False):
+    """Initializes RemoteDeviceUpdater"""
+    if not stateful_update and not rootfs_update:
+      cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
+
+    self.tempdir = tempfile.mkdtemp(prefix='cros-flash')
+    self.ssh_hostname = ssh_hostname
+    self.ssh_port = ssh_port
+    self.image_path = image_path
+    self.board = board
+    self.src_image = src_image
+    self.do_stateful_update = stateful_update
+    self.do_rootfs_update = rootfs_update
+    self.clobber_stateful = clobber_stateful
+    self.reboot = reboot
+    self.debug = debug
+    # Do not wipe if debug is set.
+    self.wipe = wipe and not debug
+    self.yes = yes
 
   @classmethod
   def GetUpdateStatus(cls, device, keys=None):
@@ -343,75 +332,6 @@ using-the-dev-server/xbuddy-for-devserver
       else:
         logging.warning('Could not find %s', ds.log_filename)
 
-  @classmethod
-  def AddParser(cls, parser):
-    """Add parser arguments."""
-    super(FlashCommand, cls).AddParser(parser)
-    parser.add_argument(
-        'device', help='The hostname/IP[:port] address of the device.')
-    parser.add_argument(
-        'image', nargs='?', default='latest', help="Image to install; "
-        "can be a local path or an xbuddy path "
-        "(xbuddy://{local|remote}/board/version). Note any strings that do not "
-        "map to a real file path will be converted to an xbuddy path i.e. "
-        "latest, will map to xbuddy://latest if latest isn't a local file.")
-
-    advanced = parser.add_argument_group('Advanced options')
-    advanced.add_argument(
-        '--board', default=None, help='The board to use. By default it is '
-        'automatically detected. You can override the detected board with '
-        'this option')
-    advanced.add_argument(
-        '--yes', default=False, action='store_true',
-        help='Force yes to any prompt. Use with caution.')
-    advanced.add_argument(
-        '--no-reboot', action='store_false', dest='reboot', default=True,
-        help='Do not reboot after update. Default is always reboot.')
-    advanced.add_argument(
-        '--no-wipe', action='store_false', dest='wipe', default=True,
-        help='Do not wipe the temporary working directory.')
-    advanced.add_argument(
-        '--no-stateful-update', action='store_false', dest='stateful_update',
-        help='Do not update the stateful partition on the device.'
-        'Default is always update.')
-    advanced.add_argument(
-        '--no-rootfs-update', action='store_false', dest='rootfs_update',
-        help='Do not update the rootfs partition on the device. '
-        'Default is always update.')
-    advanced.add_argument(
-        '--src-image', type='path',
-        help='Local path to an image to be used as the base to generate '
-        'payloads.')
-    advanced.add_argument(
-        '--clobber-stateful', action='store_true', default=False,
-        help='Clobber stateful partition when performing update.')
-
-  def __init__(self, options):
-    """Initializes cros flash."""
-    cros.CrosCommand.__init__(self, options)
-    self.source_root = constants.SOURCE_ROOT
-    self.do_stateful_update = False
-    self.do_rootfs_update = False
-    self.clobber_stateful = False
-    self.image_as_payload_dir = False
-    self.reboot = True
-    self.wipe = True
-    self.yes = False
-    self.tempdir = tempfile.mkdtemp(prefix='cros-flash')
-    self.ssh = False
-    self.ssh_hostname = None
-    self.ssh_port = None
-    self.debug = False
-
-  def Cleanup(self):
-    """Cleans up the temporary directory."""
-    if self.wipe:
-      logging.info('Cleaning up temporary working directory...')
-      osutils.RmDir(self.tempdir)
-    else:
-      logging.info('You can find the log files and/or payloads in %s',
-                   self.tempdir)
-
   def _CheckPayloads(self, payload_dir):
     """Checks that all update payloads exists in |payload_dir|."""
     filenames = []
@@ -421,43 +341,6 @@ using-the-dev-server/xbuddy-for-devserver
       payload = os.path.join(payload_dir, fname)
       if not os.path.exists(payload):
         cros_build_lib.Die('Payload %s does not exist!' % payload)
-
-  def _ParseDevice(self, device):
-    """Parse |device| and set corresponding variables ."""
-    # pylint: disable=E1101
-    if urlparse.urlparse(device).scheme == '':
-      # For backward compatibility, prepend ssh:// ourselves.
-      device = 'ssh://%s' % device
-
-    parsed = urlparse.urlparse(device)
-
-    if parsed.scheme == 'ssh':
-      self.ssh = True
-      self.ssh_hostname = parsed.hostname
-      self.ssh_port = parsed.port
-    else:
-      cros_build_lib.Die('Does not support device %s' % device)
-
-  def _ReadOptions(self):
-    """Check and read optoins."""
-    options = self.options
-    if not options.stateful_update and not options.rootfs_update:
-      cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
-
-    self._ParseDevice(options.device)
-    # If the given path is a directory, we use the pre-generated
-    # update payload(s) in the directory.
-    if os.path.isdir(options.image):
-      self.image_as_payload_dir = True
-
-    self.reboot = options.reboot
-    # Do not wipe if debug is set.
-    self.wipe = options.wipe and not options.debug
-    self.do_stateful_update = options.stateful_update
-    self.do_rootfs_update = options.rootfs_update
-    self.clobber_stateful = options.clobber_stateful
-    self.yes = options.yes
-    self.debug = options.debug
 
   def Verify(self, old_root_dev, new_root_dev):
     """Verifies that the root deivce changed after reboot."""
@@ -476,11 +359,17 @@ using-the-dev-server/xbuddy-for-devserver
     logging.debug('Current root device is %s', rootdev)
     return rootdev
 
+  def Cleanup(self):
+    """Cleans up the temporary directory."""
+    if self.wipe:
+      logging.info('Cleaning up temporary working directory...')
+      osutils.RmDir(self.tempdir)
+    else:
+      logging.info('You can find the log files and/or payloads in %s',
+                   self.tempdir)
 
-  # pylint: disable=E1101
   def Run(self):
-    """Perfrom the cros flash command."""
-    self._ReadOptions()
+    """Performs remote device update."""
     old_root_dev, new_root_dev = None, None
     try:
       with remote_access.ChromiumOSDeviceHandler(
@@ -488,22 +377,23 @@ using-the-dev-server/xbuddy-for-devserver
           work_dir=self.DEVICE_WORK_DIR) as device:
 
         board = cros_build_lib.GetBoard(device_board=device.board,
-                                        override_board=self.options.board,
+                                        override_board=self.board,
                                         force=self.yes)
         logging.info('Board is %s', board)
 
-        if self.image_as_payload_dir:
-          payload_dir = self.options.image
+        # If the given path is a directory, we use the pre-generated
+        # update payload(s) in the directory.
+        if os.path.isdir(self.image_path):
+          payload_dir = self.image_path
           logging.info('Using payloads in %s', payload_dir)
         else:
           # Launch a local devserver to generate/serve update payloads.
           payload_dir = self.tempdir
-          self.GetUpdatePayloads(self.options.image, payload_dir,
+          self.GetUpdatePayloads(self.image_path, payload_dir,
                                  board=board,
-                                 src_image=self.options.src_image)
+                                 src_image=self.src_image)
 
         self._CheckPayloads(payload_dir)
-
         # Perform device updates.
         if self.do_rootfs_update:
           self.SetupRootfsUpdate(device)
@@ -529,10 +419,145 @@ using-the-dev-server/xbuddy-for-devserver
           new_root_dev = self.GetRootDev(device)
           self.Verify(old_root_dev, new_root_dev)
 
-    except (Exception, KeyboardInterrupt):
-      logging.error('Cros Flash failed before completing.')
+    except Exception:
+      logging.error('Device update failed.')
       raise
     else:
       logging.info('Update performed successfully.')
     finally:
       self.Cleanup()
+
+
+@cros.CommandDecorator('flash')
+class FlashCommand(cros.CrosCommand):
+  """Update the device with an image.
+
+  This command updates the device with the image. It assumes that
+  device is able to accept ssh connections.
+
+  For rootfs partition update, this command may launch a devserver to
+  generate payloads. As a side effect, it may create symlinks in
+  static_dir/others used by the devserver.
+  """
+
+  EPILOG = """
+To update the device with the latest locally built image:
+  cros flash device latest
+  cros flash device
+
+To update the device with an xbuddy path:
+  cros flash device xbuddy://{local, remote}/<board>/<version>
+
+  Common xbuddy version aliases are 'latest' (alias for 'latest-stable')
+  latest-{dev, beta, stable, canary}, and latest-official.
+
+To update the device with a local image path:
+  cros flash device /path/to/image.bin
+
+There are certain constraints on the local image path:
+  1. The image path has to be in your source tree.
+  2. The image name should be one of the following:
+  3. You should create a separate directory for each image as devserve
+    writes temp files to it and reuses payloads it finds.
+
+  For more information and known problems/fixes, please see:
+  http://dev.chromium.org/chromium-os/build/cros-flash
+"""
+  # Override base class property to enable stats upload.
+  upload_stats = True
+
+  @classmethod
+  def AddParser(cls, parser):
+    """Add parser arguments."""
+    super(FlashCommand, cls).AddParser(parser)
+    parser.add_argument(
+        'device', help='The hostname/IP[:port] address of the device.')
+    parser.add_argument(
+        'image', nargs='?', default='latest', help="Image to install; "
+        "can be a local path or an xbuddy path "
+        "(xbuddy://{local|remote}/board/version). Note any strings that do not "
+        "map to a real file path will be converted to an xbuddy path i.e. "
+        "latest, will map to xbuddy://latest if latest isn't a local file.")
+
+    update = parser.add_argument_group('Advanced device update options')
+    update.add_argument(
+        '--board', default=None, help='The board to use. By default it is '
+        'automatically detected. You can override the detected board with '
+        'this option')
+    update.add_argument(
+        '--yes', default=False, action='store_true',
+        help='Force yes to any prompt. Use with caution.')
+    update.add_argument(
+        '--no-reboot', action='store_false', dest='reboot', default=True,
+        help='Do not reboot after update. Default is always reboot.')
+    update.add_argument(
+        '--no-wipe', action='store_false', dest='wipe', default=True,
+        help='Do not wipe the temporary working directory.')
+    update.add_argument(
+        '--no-stateful-update', action='store_false', dest='stateful_update',
+        help='Do not update the stateful partition on the device.'
+        'Default is always update.')
+    update.add_argument(
+        '--no-rootfs-update', action='store_false', dest='rootfs_update',
+        help='Do not update the rootfs partition on the device. '
+        'Default is always update.')
+    update.add_argument(
+        '--src-image', type='path',
+        help='Local path to an image to be used as the base to generate '
+        'payloads.')
+    update.add_argument(
+        '--clobber-stateful', action='store_true', default=False,
+        help='Clobber stateful partition when performing update.')
+
+  def __init__(self, options):
+    """Initializes cros flash."""
+    cros.CrosCommand.__init__(self, options)
+    self.ssh_mode = False
+    self.ssh_hostname = None
+    self.ssh_port = None
+
+  def _ParseDevice(self, device):
+    """Parse |device| and set corresponding variables ."""
+    # pylint: disable=E1101
+    if urlparse.urlparse(device).scheme == '':
+      # For backward compatibility, prepend ssh:// ourselves.
+      device = 'ssh://%s' % device
+
+    parsed = urlparse.urlparse(device)
+    if parsed.scheme == 'ssh':
+      self.ssh_mode = True
+      self.ssh_hostname = parsed.hostname
+      self.ssh_port = parsed.port
+    else:
+      cros_build_lib.Die('Does not support device %s' % device)
+
+  # pylint: disable=E1101
+  def Run(self):
+    """Perfrom the cros flash command."""
+    self.options.Freeze()
+    self._ParseDevice(self.options.device)
+
+    try:
+      if self.ssh_mode:
+        logging.info('Preparing to update the remote device %s',
+                     self.options.device)
+        updater = RemoteDeviceUpdater(
+            self.ssh_hostname,
+            self.ssh_port,
+            self.options.image,
+            board=self.options.board,
+            src_image=self.options.src_image,
+            rootfs_update=self.options.rootfs_update,
+            stateful_update=self.options.stateful_update,
+            clobber_stateful=self.options.clobber_stateful,
+            reboot=self.options.reboot,
+            wipe=self.options.wipe,
+            debug=self.options.debug,
+            yes=self.options.yes)
+
+        # Perform device update.
+        updater.Run()
+
+    except (Exception, KeyboardInterrupt):
+      logging.error('Cros Flash failed before completing.')
+      raise

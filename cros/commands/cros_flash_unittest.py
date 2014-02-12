@@ -15,6 +15,7 @@ from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
+from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
 
@@ -48,17 +49,22 @@ class MockFlashCommand(init_unittest.MockCommand):
   TARGET = 'chromite.cros.commands.cros_flash.FlashCommand'
   TARGET_CLASS = cros_flash.FlashCommand
   COMMAND = 'flash'
-  ATTRS = init_unittest.MockCommand.ATTRS + (
-      'UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads',
-      'SetupRootfsUpdate', 'Verify')
-
-  UPDATE_ENGINE_TIMEOUT = 1
 
   def __init__(self, *args, **kwargs):
     init_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def Run(self, inst):
     init_unittest.MockCommand.Run(self, inst)
+
+
+class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
+  """Mock out RemoteDeviceUpdater"""
+  TARGET = 'chromite.cros.commands.cros_flash.RemoteDeviceUpdater'
+  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads',
+           'SetupRootfsUpdate', 'Verify')
+
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self)
 
   def GetUpdatePayloads(self, _inst, *_args, **_kwargs):
     """Mock out GetUpdatePayloads."""
@@ -74,69 +80,6 @@ class MockFlashCommand(init_unittest.MockCommand):
 
   def Verify(self, _inst, *_args, **_kwargs):
     """Mock out SetupRootfsUpdate."""
-
-
-class ReadOptionTest(cros_test_lib.MockTempDirTestCase):
-  """Test that we read options and set flags correctly."""
-  IMAGE = '/path/to/image'
-  DEVICE = '1.1.1.1'
-
-  def SetupCommandMock(self, cmd_args):
-    """Setup command mock."""
-    self.cmd_mock = MockFlashCommand(
-        cmd_args, base_args=['--cache-dir', self.tempdir])
-    self.StartPatcher(self.cmd_mock)
-
-  def setUp(self):
-    self.cmd_mock = None
-
-  def testParser(self):
-    """Tests that our parser works normally."""
-    self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    self.assertEquals(self.cmd_mock.inst.options.device, self.DEVICE)
-    self.assertEquals(self.cmd_mock.inst.options.image, self.IMAGE)
-
-  def testUpdateAll(self):
-    """Tests that update operations are set correctly."""
-    self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    self.cmd_mock.inst._ReadOptions()
-    self.assertEquals(self.cmd_mock.inst.do_stateful_update, True)
-    self.assertEquals(self.cmd_mock.inst.do_rootfs_update, True)
-
-  def testUpdateRootfsOnly(self):
-    """Tests that update operations are set correctly."""
-    self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
-    self.cmd_mock.inst._ReadOptions()
-    self.assertEquals(self.cmd_mock.inst.do_stateful_update, False)
-    self.assertEquals(self.cmd_mock.inst.do_rootfs_update, True)
-
-  def testUpdateStatefulOnly(self):
-    """Tests that update operations are set correctly."""
-    self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
-    self.cmd_mock.inst._ReadOptions()
-    self.assertEquals(self.cmd_mock.inst.do_stateful_update, True)
-    self.assertEquals(self.cmd_mock.inst.do_rootfs_update, False)
-
-  def testNeedUpdateOp(self):
-    """Tests that at least one update operations is set."""
-    self.SetupCommandMock(['--no-stateful-update', '--no-rootfs-update',
-                           self.DEVICE, self.IMAGE])
-    self.assertRaises(cros_build_lib.DieSystemExit,
-                      self.cmd_mock.inst._ReadOptions)
-
-  def testImageAsPayloadDir(self):
-    """Tests that image_as_payload_dir is set when a directory is given."""
-    self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.isdir', return_value=True):
-      self.cmd_mock.inst._ReadOptions()
-    self.assertEquals(self.cmd_mock.inst.image_as_payload_dir, True)
-
-  def testDebug(self):
-    """Tests that no wipe when debug is set."""
-    self.SetupCommandMock(['--debug', self.DEVICE, self.IMAGE])
-    self.cmd_mock.inst._ReadOptions()
-    self.assertEquals(self.cmd_mock.inst.options.debug, True)
-    self.assertEquals(self.cmd_mock.inst.wipe, False)
 
 
 class RunTest(cros_test_lib.MockTempDirTestCase,
@@ -155,6 +98,7 @@ class RunTest(cros_test_lib.MockTempDirTestCase,
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
+    self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
     self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
@@ -167,24 +111,24 @@ class RunTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
     with mock.patch('os.path.exists', return_value=True) as _m:
       self.cmd_mock.inst.Run()
-      self.assertTrue(self.cmd_mock.patched['UpdateStateful'].called)
-      self.assertTrue(self.cmd_mock.patched['UpdateRootfs'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
     with mock.patch('os.path.exists', return_value=True) as _m:
       self.cmd_mock.inst.Run()
-      self.assertTrue(self.cmd_mock.patched['UpdateStateful'].called)
-      self.assertFalse(self.cmd_mock.patched['UpdateRootfs'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
     with mock.patch('os.path.exists', return_value=True) as _m:
       self.cmd_mock.inst.Run()
-      self.assertFalse(self.cmd_mock.patched['UpdateStateful'].called)
-      self.assertTrue(self.cmd_mock.patched['UpdateRootfs'].called)
+      self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testMissingPayloads(self):
     """Tests we exit when payloads are missing."""
