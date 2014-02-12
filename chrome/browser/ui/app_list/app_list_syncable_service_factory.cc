@@ -50,18 +50,12 @@ void AppListSyncableServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* AppListSyncableServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // In guest session, off the record profile should be used instead of the
-  // original one, as the off the record profile is the active profile.
-  // TODO(tbarzic): Add a helper function to incognito_helpers.h that properly
-  //     handles the guest mode.
+  // In Guest session, off the record profile should not be redirected to the
+  // original one.
   Profile* profile = static_cast<Profile*>(context);
   if (profile->IsGuestSession())
-    return profile->GetOffTheRecordProfile();
+    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
   return chrome::GetBrowserContextRedirectedInIncognito(context);
-}
-
-bool AppListSyncableServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return true;
 }
 
 }  // namespace app_list

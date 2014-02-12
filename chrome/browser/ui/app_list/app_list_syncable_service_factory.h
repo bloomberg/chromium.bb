@@ -37,7 +37,6 @@ class AppListSyncableServiceFactory : public BrowserContextKeyedServiceFactory {
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableServiceFactory);
 };
