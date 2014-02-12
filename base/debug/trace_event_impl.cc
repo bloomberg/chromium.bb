@@ -1238,16 +1238,17 @@ void TraceLog::UpdateSyntheticDelaysFromCategoryFilter() {
     TraceEventSyntheticDelay* delay =
         TraceEventSyntheticDelay::Lookup(tokens.token());
     while (tokens.GetNext()) {
+      std::string token = tokens.token();
       char* duration_end;
-      double target_duration = strtod(tokens.token().c_str(), &duration_end);
-      if (duration_end != tokens.token().c_str()) {
+      double target_duration = strtod(token.c_str(), &duration_end);
+      if (duration_end != token.c_str()) {
         delay->SetTargetDuration(
             TimeDelta::FromMicroseconds(target_duration * 1e6));
-      } else if (tokens.token() == "static") {
+      } else if (token == "static") {
         delay->SetMode(TraceEventSyntheticDelay::STATIC);
-      } else if (tokens.token() == "oneshot") {
+      } else if (token == "oneshot") {
         delay->SetMode(TraceEventSyntheticDelay::ONE_SHOT);
-      } else if (tokens.token() == "alternating") {
+      } else if (token == "alternating") {
         delay->SetMode(TraceEventSyntheticDelay::ALTERNATING);
       }
     }
