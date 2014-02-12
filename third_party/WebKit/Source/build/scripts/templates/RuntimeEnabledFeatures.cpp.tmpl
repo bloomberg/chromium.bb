@@ -17,7 +17,7 @@ void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool e
 
 {%- for feature in features if not feature.custom %}
 {%- call wrap_with_condition(feature.condition) %}
-bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = false;
+bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.status == 'stable' else 'false'}};
 {%- endcall %}
 {%- endfor %}
 

@@ -40,10 +40,8 @@ namespace blink {
 
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
-    RuntimeEnabledFeatures::setStableFeaturesEnabled(enable);
-    // FIXME: enableMediaPlayer does not use RuntimeEnabledFeatures
-    // and does not belong as part of WebRuntimeFeatures.
-    enableMediaPlayer(enable);
+    // FIXME: This entire method should be removed once it is no longer called by Chromium.
+    ASSERT(enable);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
