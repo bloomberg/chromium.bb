@@ -52,6 +52,11 @@
 
 #if defined(OS_WIN)
 extern sandbox::TargetServices* g_target_services;
+
+// Used by EnumSystemLocales for warming up.
+static BOOL CALLBACK EnumLocalesProc(LPTSTR lpLocaleString) {
+  return TRUE;
+}
 #else
 extern void* g_target_services;
 #endif
@@ -296,6 +301,11 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     // Warm up language subsystems before the sandbox is turned on.
     ::GetUserDefaultLangID();
     ::GetUserDefaultLCID();
+
+    if (permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
+      // Warm up system locales.
+      EnumSystemLocalesW(EnumLocalesProc, LCID_INSTALLED);
+    }
 
     g_target_services->LowerToken();
   }
