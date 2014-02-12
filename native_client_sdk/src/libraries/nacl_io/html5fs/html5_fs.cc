@@ -75,8 +75,7 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
     return ENOENT;
 
   int32_t result = ppapi()->GetFileRefInterface()->MakeDirectory(
-      fileref_resource.pp_resource(), PP_MAKEDIRECTORYFLAG_NONE,
-      PP_BlockUntilComplete());
+      fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 

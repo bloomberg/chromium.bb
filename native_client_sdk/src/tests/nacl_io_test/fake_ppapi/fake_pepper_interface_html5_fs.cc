@@ -500,7 +500,7 @@ PP_Var FakeFileRefInterface::GetName(PP_Resource file_ref) {
 }
 
 int32_t FakeFileRefInterface::MakeDirectory(PP_Resource directory_ref,
-                                            int32_t make_directory_flags,
+                                            PP_Bool make_parents,
                                             PP_CompletionCallback callback) {
   FakeFileRefResource* directory_ref_resource =
       core_interface_->resource_manager()->Get<FakeFileRefResource>(
@@ -508,9 +508,9 @@ int32_t FakeFileRefInterface::MakeDirectory(PP_Resource directory_ref,
   if (directory_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  // TODO(binji): We don't currently use make_directory_flags in nacl_io, so
-  // I won't bother implementing it.
-  if (make_directory_flags)
+  // TODO(binji): We don't currently use make_parents in nacl_io, so
+  // I won't bother handling it yet.
+  if (make_parents == PP_TRUE)
     return PP_ERROR_FAILED;
 
   FakeHtml5FsFilesystem* filesystem = directory_ref_resource->filesystem;
