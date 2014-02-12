@@ -412,9 +412,14 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
     // When comparing rules declared in inner treescopes, inner's rules win.
     CascadeOrder innerCascadeOrder = m_treeBoundaryCrossingRules.size();
 
-    DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.begin();
-    while (it != m_treeBoundaryCrossingRules.end()) {
+    for (DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.begin(); it != m_treeBoundaryCrossingRules.end(); ++it) {
         const ContainerNode* scopingNode = toContainerNode(*it);
+
+        if (ShadowRoot* shadowRoot = scopingNode->containingShadowRoot()) {
+            if (!shadowRoot->isActiveForStyling())
+                continue;
+        }
+
         RuleSet* ruleSet = m_treeBoundaryCrossingRules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
         bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
@@ -432,7 +437,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
         collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder);
         ++innerCascadeOrder;
         --outerCascadeOrder;
-        ++it;
     }
 }
 

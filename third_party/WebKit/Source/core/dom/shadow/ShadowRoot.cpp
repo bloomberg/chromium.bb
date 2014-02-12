@@ -185,12 +185,16 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     clearChildNeedsStyleRecalc();
 }
 
-bool ShadowRoot::isActive() const
+bool ShadowRoot::isActiveForStyling() const
 {
-    for (ShadowRoot* shadowRoot = youngerShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot())
-        if (!shadowRoot->containsShadowElements())
-            return false;
-    return true;
+    if (!youngerShadowRoot())
+        return true;
+
+    if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
+        if (point->containingShadowRoot())
+            return true;
+    }
+    return false;
 }
 
 void ShadowRoot::setApplyAuthorStyles(bool value)
@@ -202,7 +206,7 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
         return;
 
     m_applyAuthorStyles = value;
-    if (!isActive())
+    if (!isActiveForStyling())
         return;
 
     ASSERT(host());
@@ -228,7 +232,7 @@ void ShadowRoot::setResetStyleInheritance(bool value)
         return;
 
     m_resetStyleInheritance = value;
-    if (!isActive())
+    if (!isActiveForStyling())
         return;
 
     setNeedsStyleRecalc(SubtreeStyleChange);

@@ -10,8 +10,6 @@
 </body>
 <script>
 
-var borderColor;
-
 function borderColorOf(node)
 {
     return document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color');
@@ -381,6 +379,23 @@ sandbox.appendChild(
                         document.createTextNode('no red border')))))));
 
 borderColorShouldNotBe('inner/target', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+// :host ^^ span is declared in a shadow tree, but the shadow root does not participate in composed tree.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host ^^ span { border: 1px solid red; }')),
+            createDOM('span', {},
+                document.createTextNode('some text'))),
+        createShadowRoot(
+            createDOM('span', {'id': 'target'},
+                document.createTextNode('not red border')))));
+
+borderColorShouldNotBe('host//target', 'rgb(255, 0, 0)');
 
 cleanUp();
 

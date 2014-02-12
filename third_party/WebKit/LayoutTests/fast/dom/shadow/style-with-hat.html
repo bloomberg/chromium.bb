@@ -23,6 +23,13 @@ function borderColorShouldBe(selector, color)
     shouldBeEqualToString(text, color);
 }
 
+function borderColorShouldNotBe(selector, color)
+{
+    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
 function cleanUp()
 {
     document.getElementById('sandbox').innerHTML = '';
@@ -254,6 +261,24 @@ sandbox.appendChild(
                         document.createTextNode('no border')))))));
 
 borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// div ^ span in an insert shadow tree cannot match any element in active shadow tree.
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div ^ span { border: 1px solid red; }')),
+            createDOM('span', {},
+                document.createTextNode('some text'))),
+        createShadowRoot(
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('span', {'id': 'target'},
+                        document.createTextNode('green border')))))));
+
+borderColorShouldNotBe('host//host2/target', 'rgb(255, 0, 0)');
 
 cleanUp();
 
