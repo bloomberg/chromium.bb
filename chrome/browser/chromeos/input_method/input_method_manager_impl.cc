@@ -13,6 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/fake_xkeyboard.h"
 #include "chromeos/ime/input_method_delegate.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -727,7 +729,10 @@ void InputMethodManagerImpl::InitializeComponentExtension() {
 void InputMethodManagerImpl::Init(base::SequencedTaskRunner* ui_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  xkeyboard_.reset(XKeyboard::Create());
+  if (base::SysInfo::IsRunningOnChromeOS())
+    xkeyboard_.reset(XKeyboard::Create());
+  else
+    xkeyboard_.reset(new FakeXKeyboard());
 
   // We can't call impl->Initialize here, because file thread is not available
   // at this moment.

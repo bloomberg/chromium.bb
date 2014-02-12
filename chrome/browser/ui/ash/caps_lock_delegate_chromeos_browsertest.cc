@@ -6,7 +6,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/ime/mock_xkeyboard.h"
+#include "chromeos/ime/fake_xkeyboard.h"
 
 namespace {
 
@@ -26,7 +26,7 @@ class CapsLockDelegateTest : public InProcessBrowserTest {
 
  protected:
   const bool initial_caps_lock_state_;
-  chromeos::input_method::MockXKeyboard xkeyboard_;
+  chromeos::input_method::FakeXKeyboard xkeyboard_;
   scoped_ptr<CapsLockDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CapsLockDelegateTest);

@@ -216,6 +216,8 @@
         'ime/component_extension_ime_manager.h',
         'ime/extension_ime_util.cc',
         'ime/extension_ime_util.h',
+        'ime/fake_xkeyboard.cc',
+        'ime/fake_xkeyboard.h',
         'ime/ibus_keymap.cc',
         'ime/ibus_keymap.h',
         'ime/composition_text.cc',
@@ -437,8 +439,6 @@
         'dbus/fake_update_engine_client.h',
         'ime/fake_input_method_delegate.cc',
         'ime/fake_input_method_delegate.h',
-        'ime/mock_xkeyboard.cc',
-        'ime/mock_xkeyboard.h',
       ],
       'include_dirs': [
         '..',

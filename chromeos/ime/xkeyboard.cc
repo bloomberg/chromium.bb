@@ -84,6 +84,8 @@ class XKeyboardImpl : public XKeyboard {
   virtual unsigned int GetNumLockMask() OVERRIDE;
   virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
                                   bool* out_num_lock_enabled) OVERRIDE;
+  virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
+  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 
  private:
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
@@ -297,6 +299,28 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
     *out_num_lock_enabled = status.locked_mods & num_lock_mask_;
 }
 
+bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
+  if (enabled)
+    XAutoRepeatOn(GetXDisplay());
+  else
+    XAutoRepeatOff(GetXDisplay());
+  DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
+  return true;
+}
+
+bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
+  DVLOG(1) << "Set auto-repeat rate to: "
+           << rate.initial_delay_in_ms << " ms delay, "
+           << rate.repeat_interval_in_ms << " ms interval";
+  if (XkbSetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
+                           rate.initial_delay_in_ms,
+                           rate.repeat_interval_in_ms) != True) {
+    DVLOG(1) << "Failed to set auto-repeat rate";
+    return false;
+  }
+  return true;
+}
+
 void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
                                        ModifierLockStatus new_num_lock_status) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -365,30 +389,6 @@ void XKeyboardImpl::OnSetLayoutFinish() {
 }
 
 }  // namespace
-
-// static
-bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
-  if (enabled)
-    XAutoRepeatOn(GetXDisplay());
-  else
-    XAutoRepeatOff(GetXDisplay());
-  DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
-  return true;
-}
-
-// static
-bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
-  DVLOG(1) << "Set auto-repeat rate to: "
-           << rate.initial_delay_in_ms << " ms delay, "
-           << rate.repeat_interval_in_ms << " ms interval";
-  if (XkbSetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
-                           rate.initial_delay_in_ms,
-                           rate.repeat_interval_in_ms) != True) {
-    DVLOG(1) << "Failed to set auto-repeat rate";
-    return false;
-  }
-  return true;
-}
 
 // static
 bool XKeyboard::GetAutoRepeatEnabledForTesting() {

@@ -531,7 +531,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
     const bool enabled = xkb_auto_repeat_enabled_.GetValue();
-    input_method::XKeyboard::SetAutoRepeatEnabled(enabled);
+    input_method::InputMethodManager::Get()->GetXKeyboard()
+        ->SetAutoRepeatEnabled(enabled);
   }
   if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
                      (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
@@ -625,7 +626,8 @@ void Preferences::UpdateAutoRepeatRate() {
   rate.repeat_interval_in_ms = xkb_auto_repeat_interval_pref_.GetValue();
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
-  input_method::XKeyboard::SetAutoRepeatRate(rate);
+  input_method::InputMethodManager::Get()->GetXKeyboard()
+      ->SetAutoRepeatRate(rate);
 }
 
 void Preferences::OnTouchHudProjectionToggled(bool enabled) {

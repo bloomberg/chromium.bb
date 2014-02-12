@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/ime/mock_xkeyboard.h"
+#include "chromeos/ime/fake_xkeyboard.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
@@ -1527,7 +1527,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
   search.SetValue(chromeos::input_method::kCapsLockKey);
 
-  chromeos::input_method::MockXKeyboard xkeyboard;
+  chromeos::input_method::FakeXKeyboard xkeyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_xkeyboard_for_testing(&xkeyboard);
@@ -1640,7 +1640,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::MockXKeyboard xkeyboard;
+  chromeos::input_method::FakeXKeyboard xkeyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_xkeyboard_for_testing(&xkeyboard);
@@ -1668,7 +1668,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKey) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::MockXKeyboard xkeyboard;
+  chromeos::input_method::FakeXKeyboard xkeyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_xkeyboard_for_testing(&xkeyboard);
@@ -1713,7 +1713,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::MockXKeyboard xkeyboard;
+  chromeos::input_method::FakeXKeyboard xkeyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_xkeyboard_for_testing(&xkeyboard);

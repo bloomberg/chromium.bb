@@ -80,15 +80,6 @@ static void SetUserLRUInputMethod(
 
 void PersistUserInputMethod(const std::string& input_method,
                             InputMethodManager* const manager) {
-  // TODO(nkostylev): This feature is currently broken in various ways (see for
-  // example crbug.com/328541). Furthermore it is planned to combine all IME
-  // settings of all users in a session, which means that the user might not
-  // have the used IME setting installed. We therefore do not persist the IME
-  // in a multi profile session. This should be fixed in M34.
-  if (UserManager::IsInitialized() &&
-      UserManager::Get()->GetLoggedInUsers().size() > 1)
-    return;
-
   PrefService* user_prefs = NULL;
   // Persist the method on a per user basis. Note that the keyboard settings are
   // stored per user desktop and a visiting window will use the same input

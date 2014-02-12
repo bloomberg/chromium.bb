@@ -101,14 +101,12 @@ class CHROMEOS_EXPORT XKeyboard {
 
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
-  // TODO(yusukes): Make this function non-static so we can mock it.
-  static CHROMEOS_EXPORT bool SetAutoRepeatEnabled(bool enabled);
+  virtual bool SetAutoRepeatEnabled(bool enabled) = 0;
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success. Do not call the function from
   // non-UI threads.
-  // TODO(yusukes): Make this function non-static so we can mock it.
-  static CHROMEOS_EXPORT bool SetAutoRepeatRate(const AutoRepeatRate& rate);
+  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) = 0;
 
   // Returns true if auto repeat is enabled. This function is protected: for
   // testability.

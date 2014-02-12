@@ -176,10 +176,10 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
     return;
   }
   const bool state = XKeyboard::GetAutoRepeatEnabledForTesting();
-  XKeyboard::SetAutoRepeatEnabled(!state);
+  xkey_->SetAutoRepeatEnabled(!state);
   EXPECT_EQ(!state, XKeyboard::GetAutoRepeatEnabledForTesting());
   // Restore the initial state.
-  XKeyboard::SetAutoRepeatEnabled(state);
+  xkey_->SetAutoRepeatEnabled(state);
   EXPECT_EQ(state, XKeyboard::GetAutoRepeatEnabledForTesting());
 }
 
@@ -194,13 +194,13 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
   AutoRepeatRate tmp(rate);
   ++tmp.initial_delay_in_ms;
   ++tmp.repeat_interval_in_ms;
-  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(tmp));
+  EXPECT_TRUE(xkey_->SetAutoRepeatRate(tmp));
   EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms + 1, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms + 1, tmp.repeat_interval_in_ms);
 
   // Restore the initial state.
-  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(rate));
+  EXPECT_TRUE(xkey_->SetAutoRepeatRate(rate));
   EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms, tmp.repeat_interval_in_ms);

@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
+#include "chromeos/ime/fake_xkeyboard.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
-#include "chromeos/ime/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
@@ -65,7 +65,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(
         candidate_window_controller_);
-    xkeyboard_ = new MockXKeyboard;
+    xkeyboard_ = new FakeXKeyboard;
     manager_->SetXKeyboardForTesting(xkeyboard_);
     mock_engine_handler_.reset(new MockIMEEngineHandler());
     IMEBridge::Initialize();
@@ -149,7 +149,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   FakeInputMethodDelegate* delegate_;
   MockCandidateWindowController* candidate_window_controller_;
   scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
-  MockXKeyboard* xkeyboard_;
+  FakeXKeyboard* xkeyboard_;
   base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
   std::vector<ComponentExtensionIME> ime_list_;
