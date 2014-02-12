@@ -29703,6 +29703,7 @@ other types of suffix sets.
   <int value="2062775054" label="PPB_IMEInputEvent(Dev);0.1"/>
   <int value="2070630224" label="PPB_AudioInput(Dev);0.3"/>
   <int value="2095945999" label="PPB_NetAddress_Private;0.1"/>
+  <int value="2098849894" label="PPB_ContentDecryptor_Private;0.10"/>
   <int value="2123225074" label="PPB_HostResolver_Private;0.1"/>
   <int value="2126196629" label="PPB_UDPSocket_Private;0.4"/>
 </enum>
