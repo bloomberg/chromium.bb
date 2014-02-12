@@ -87,7 +87,7 @@ public:
     // Parameter automation.
     void setValueAtTime(float value, double time) { m_timeline.setValueAtTime(value, time); }
     void linearRampToValueAtTime(float value, double time) { m_timeline.linearRampToValueAtTime(value, time); }
-    void exponentialRampToValueAtTime(float value, double time) { m_timeline.exponentialRampToValueAtTime(value, time); }
+    void exponentialRampToValueAtTime(float value, double time, ExceptionState& es) { m_timeline.exponentialRampToValueAtTime(value, time, es); }
     void setTargetAtTime(float target, double time, double timeConstant) { m_timeline.setTargetAtTime(target, time, timeConstant); }
     void setValueCurveAtTime(Float32Array* curve, double time, double duration) { m_timeline.setValueCurveAtTime(curve, time, duration); }
     void cancelScheduledValues(double startTime) { m_timeline.cancelScheduledValues(startTime); }

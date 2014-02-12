@@ -157,6 +157,12 @@ function runTest() {
     shouldNotThrow("osc1 = context.createOscillator()");
     shouldNotThrow("osc1.start()");
     shouldNotThrow("osc1.stop()");
+
+    // exponentialRampToValue should throw on non-positive target values.
+    node = context.createGain();
+    node.connect(context.destination);
+    shouldThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
+    shouldThrow("node.gain.exponentialRampToValueAtTime(0, 0.1)");
 }
 
 runTest();

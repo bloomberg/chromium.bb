@@ -29,6 +29,8 @@
 
 #include "modules/webaudio/AudioParamTimeline.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
@@ -48,8 +50,16 @@ void AudioParamTimeline::linearRampToValueAtTime(float value, double time)
     insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, 0));
 }
 
-void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time)
+void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
+    if (value <= 0) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Target value for exponential ramp must be positive: " + String::number(value));
+        return;
+    }
+
     insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, 0));
 }
 

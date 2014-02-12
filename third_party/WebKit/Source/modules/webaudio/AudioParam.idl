@@ -42,7 +42,7 @@
     // Parameter automation.
     void setValueAtTime(float value, double time);
     void linearRampToValueAtTime(float value, double time);
-    void exponentialRampToValueAtTime(float value, double time);
+    [RaisesException] void exponentialRampToValueAtTime(float value, double time);
 
     // Exponentially approach the target with a rate having the given time constant.
     void setTargetAtTime(float target, double time, double timeConstant);

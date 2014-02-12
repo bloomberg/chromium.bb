@@ -70,6 +70,8 @@ PASS osc.stop() threw exception InvalidStateError: Failed to execute 'stop' on '
 PASS osc1 = context.createOscillator() did not throw exception.
 PASS osc1.start() did not throw exception.
 PASS osc1.stop() did not throw exception.
+PASS node.gain.exponentialRampToValueAtTime(-1, 0.1) threw exception InvalidStateError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value for exponential ramp must be positive: -1.
+PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidStateError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value for exponential ramp must be positive: 0.
 PASS successfullyParsed is true
 
 TEST COMPLETE
