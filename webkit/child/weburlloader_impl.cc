@@ -491,9 +491,12 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   if (!referrer.isEmpty())
     new_request.setHTTPReferrer(referrer, referrer_policy_);
 
+  std::string method = request_.httpMethod().utf8();
   std::string new_method = net::URLRequest::ComputeMethodForRedirect(
-             request_.httpMethod().utf8(), response.httpStatusCode());
+      method, response.httpStatusCode());
   new_request.setHTTPMethod(WebString::fromUTF8(new_method));
+  if (new_method == method)
+    new_request.setHTTPBody(request_.httpBody());
 
   client_->willSendRequest(loader_, new_request, response);
   request_ = new_request;
