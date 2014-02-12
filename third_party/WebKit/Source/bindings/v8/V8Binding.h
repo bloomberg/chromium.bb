@@ -615,7 +615,11 @@ namespace WebCore {
     ExecutionContext* currentExecutionContext(v8::Isolate*);
 
     // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
+    // This method returns an empty context if there is no frame or the frame is already detached.
     v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);
+    // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
+    // This method returns an empty context if the frame is already detached.
+    v8::Local<v8::Context> toV8Context(v8::Isolate*, Frame*, DOMWrapperWorld*);
 
     // Returns the frame object of the window object associated with
     // a context, if the window is currently being displayed in the Frame.

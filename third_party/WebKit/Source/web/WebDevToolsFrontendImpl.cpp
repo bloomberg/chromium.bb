@@ -139,7 +139,9 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
         return;
     v8::Isolate* isolate = toIsolate(frame->frame());
     v8::HandleScope scope(isolate);
-    v8::Handle<v8::Context> frameContext = frame->frame()->script().currentWorldContextOrMainWorldContext();
+    v8::Handle<v8::Context> frameContext = toV8Context(isolate, frame->frame(), DOMWrapperWorld::mainWorld());
+    if (frameContext.IsEmpty())
+        return;
     v8::Context::Scope contextScope(frameContext);
     v8::Handle<v8::Value> inspectorFrontendApiValue = frameContext->Global()->Get(v8::String::NewFromUtf8(isolate, "InspectorFrontendAPI"));
     if (!inspectorFrontendApiValue->IsObject())

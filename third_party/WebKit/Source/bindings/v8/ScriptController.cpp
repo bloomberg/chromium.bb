@@ -281,23 +281,6 @@ static inline v8::Local<v8::Context> contextForWorld(ScriptController& scriptCon
     return scriptController.windowShell(world)->context();
 }
 
-v8::Local<v8::Context> ScriptController::currentWorldContextOrMainWorldContext()
-{
-    if (!isolate()->InContext())
-        return contextForWorld(*this, DOMWrapperWorld::mainWorld());
-
-    v8::Handle<v8::Context> context = isolate()->GetEnteredContext();
-    DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(context);
-    if (!isolatedWorld)
-        return contextForWorld(*this, DOMWrapperWorld::mainWorld());
-
-    Frame* frame = toFrameIfNotDetached(context);
-    if (m_frame == frame)
-        return v8::Local<v8::Context>::New(m_isolate, context);
-
-    return contextForWorld(*this, isolatedWorld);
-}
-
 v8::Local<v8::Context> ScriptController::mainWorldContext()
 {
     return contextForWorld(*this, DOMWrapperWorld::mainWorld());

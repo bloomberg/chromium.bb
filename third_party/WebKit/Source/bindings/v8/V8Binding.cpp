@@ -559,7 +559,7 @@ ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
 Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
     DOMWindow* window = toDOMWindow(context);
-    if (window->isCurrentlyDisplayedInFrame())
+    if (window && window->isCurrentlyDisplayedInFrame())
         return window->frame();
     // We return 0 here because |context| is detached from the Frame. If we
     // did return |frame| we could get in trouble because the frame could be
@@ -569,6 +569,7 @@ Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 
 v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* world)
 {
+    ASSERT(context);
     if (context->isDocument()) {
         ASSERT(world);
         if (Frame* frame = toDocument(context)->frame())
@@ -579,6 +580,16 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* w
             return script->context();
     }
     return v8::Local<v8::Context>();
+}
+
+v8::Local<v8::Context> toV8Context(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld* world)
+{
+    ASSERT(frame);
+    v8::Local<v8::Context> context = frame->script().windowShell(world)->context();
+    if (context.IsEmpty())
+        return v8::Local<v8::Context>();
+    Frame* attachedFrame= toFrameIfNotDetached(context);
+    return frame == attachedFrame ? context : v8::Local<v8::Context>();
 }
 
 bool handleOutOfMemory()

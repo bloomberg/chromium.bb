@@ -614,7 +614,8 @@ Page* InspectorOverlay::overlayPage()
     loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     v8::Isolate* isolate = toIsolate(frame.get());
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> frameContext = frame->script().currentWorldContextOrMainWorldContext();
+    v8::Handle<v8::Context> frameContext = toV8Context(isolate, frame.get(), DOMWrapperWorld::mainWorld());
+    ASSERT(!frameContext.IsEmpty());
     v8::Context::Scope contextScope(frameContext);
     v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Object> global = frameContext->Global();

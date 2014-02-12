@@ -70,7 +70,7 @@ namespace WebCore {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
-void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& exceptionState)
+void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& exceptionState)
 {
     int argumentCount = info.Length();
 
@@ -78,7 +78,12 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         return;
 
     DOMWindow* imp = V8Window::toNative(info.Holder());
-    if (!imp->document()) {
+    if (!imp->frame() || !imp->document()) {
+        exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
+        return;
+    }
+    v8::Handle<v8::Context> context = toV8Context(info.GetIsolate(), imp->frame(), DOMWrapperWorld::current(info.GetIsolate()));
+    if (context.IsEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
     }
@@ -121,14 +126,14 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
 
         // params is passed to action, and released in action's destructor
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContextOrMainWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
         if (imp->document() && !imp->document()->contentSecurityPolicy()->allowScriptEval()) {
             v8SetReturnValue(info, 0);
             return;
         }
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContextOrMainWorldContext(), functionString, KURL(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(context, functionString, KURL(), info.GetIsolate()));
     }
 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
@@ -158,7 +163,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
     }
 
     ASSERT(frame);
-    v8::Local<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
+    v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame, DOMWrapperWorld::current(info.GetIsolate()));
     if (context.IsEmpty())
         return;
 
@@ -178,7 +183,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
     }
 
     ASSERT(frame);
-    v8::Local<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
+    v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame, DOMWrapperWorld::current(info.GetIsolate()));
     if (context.IsEmpty())
         return;
 
@@ -314,7 +319,9 @@ private:
 
 inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* isolate)
 {
-    m_dialogContext = dialogFrame->frame() ? dialogFrame->frame()->script().currentWorldContextOrMainWorldContext() : v8::Local<v8::Context>();
+    // FIXME: It's wrong to use the current world. Instead we should use the world
+    // from which the modal dialog was requested.
+    m_dialogContext = dialogFrame->frame() ? toV8Context(isolate, dialogFrame->frame(), DOMWrapperWorld::current(isolate)) : v8::Local<v8::Context>();
     if (m_dialogContext.IsEmpty())
         return;
     if (m_dialogArguments.IsEmpty())
@@ -429,7 +436,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setTimeout", "Window", info.Holder(), info.GetIsolate());
-    WindowSetTimeoutImpl(info, true, exceptionState);
+    windowSetTimeoutImpl(info, true, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -437,7 +444,7 @@ void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setInterval", "Window", info.Holder(), info.GetIsolate());
-    WindowSetTimeoutImpl(info, false, exceptionState);
+    windowSetTimeoutImpl(info, false, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -544,7 +551,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     }
 
     // Otherwise, return the global object associated with this frame.
-    v8::Handle<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
+    v8::Handle<v8::Context> context = toV8Context(isolate, frame, DOMWrapperWorld::current(isolate));
     if (context.IsEmpty())
         return v8Undefined();
 

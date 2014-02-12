@@ -126,8 +126,6 @@ public:
     // It is potentially slow and consumes memory.
     static v8::Local<v8::Context> mainWorldContext(Frame*);
     v8::Local<v8::Context> mainWorldContext();
-    // If we're currently not in a context, returns the main world. The latter case will most likely result in cross-world leaks.
-    v8::Local<v8::Context> currentWorldContextOrMainWorldContext();
 
     TextPosition eventHandlerPosition() const;
 
