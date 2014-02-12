@@ -35,4 +35,6 @@ var initialize_ExtensionsAuditsTest = function()
         var progress = document.querySelector(".panel.audits progress");
         InspectorTest.addResult("Progress: " + Math.round(100 * progress.value / progress.max) + "%");
     }
+
+    WebInspector.showPanel("audits");
 }

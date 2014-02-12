@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testInitialLoad(next)
+        {
+            InspectorTest.dumpLoadedModules(next);
+        },
+
+        function testCreateElementsPanel(next)
+        {
+            WebInspector.panel("elements");
+            InspectorTest.dumpLoadedModules(next);
+        },
+
+        function testCreateNetworkPanel(next)
+        {
+            WebInspector.panel("network");
+            InspectorTest.dumpLoadedModules(next);
+        },
+
+        function testShowSourcesPanel(next)
+        {
+            WebInspector.showPanel("sources");
+            InspectorTest.dumpLoadedModules(next);
+        },
+
+        function testOpenUISourceCode(next)
+        {
+            var resource;
+            WebInspector.resourceTreeModel.forAllResources(function(r) {
+                if (r.url.indexOf("inspector-test.js") !== -1) {
+                    resource = r;
+                    return true;
+                }
+            });
+            var uiLocation = new WebInspector.UILocation(WebInspector.workspace.uiSourceCodeForOriginURL(resource.url), 2, 1);
+            WebInspector.Revealer.reveal(uiLocation);
+            InspectorTest.dumpLoadedModules(next);
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>This test validates initial set of loaded modules.</p>
+</body>
+</html>

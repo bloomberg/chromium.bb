@@ -1,0 +1,5 @@
+This test checks load with rendering options turned on by default.
+
+Loaded modules:
+    elements
+

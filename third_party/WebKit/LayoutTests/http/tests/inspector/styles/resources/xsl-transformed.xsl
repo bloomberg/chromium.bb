@@ -11,6 +11,8 @@
         <script>
         function test()
         {
+            WebInspector.showPanel("elements");
+
             InspectorTest.reloadPage(step1);
 
             function step1()

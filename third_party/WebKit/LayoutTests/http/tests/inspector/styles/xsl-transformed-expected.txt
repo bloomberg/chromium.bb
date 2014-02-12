@@ -9,7 +9,7 @@ Page reloaded.
           <script src="../elements-test.js"></script>
           <script src="../resources-test.js"></script>
         - <script>
-              function test()\n        {\n            InspectorTest.reloadPage(step1);\n\n            function step1()\n            {\n                InspectorTest.runAfterResourcesAreFinished(["xsl-transformed.xsl"], InspectorTest.expandElementsTree.bind(InspectorTest, step2));\n            }\n\n            function step2()\n            {\n                InspectorTest.dumpElementsTree();\n                InspectorTest.completeTest();\n            }\n        }\n
+              function test()\n        {\n            WebInspector.showPanel("elements");\n\n            InspectorTest.reloadPage(step1);\n\n            function step1()\n            {\n                InspectorTest.runAfterResourcesAreFinished(["xsl-transformed.xsl"], InspectorTest.expandElementsTree.bind(InspectorTest, step2));\n            }\n\n            function step2()\n            {\n                InspectorTest.dumpElementsTree();\n                InspectorTest.completeTest();\n            }\n        }\n
           </script>
       </head>
     - <body onload="runTest()">
@@ -21,13 +21,6 @@ Page reloaded.
           <span>Two</span>
           <span>Three</span>
         - <div>
-            - <div>
-                - <div class="output" id="output" style="white-space: pre;">
-                      "Page reloaded."
-                      <br>
-                  </div>
-              </div>
-          </div>
       </body>
   </html>
 

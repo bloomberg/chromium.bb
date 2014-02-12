@@ -530,6 +530,19 @@ InspectorTest.TempFileMock.prototype = {
     remove: function() { }
 }
 
+InspectorTest.dumpLoadedModules = function(next)
+{
+    InspectorTest.addResult("Loaded modules:");
+    var modules = WebInspector.moduleManager._modules;
+    for (var i = 0; i < modules.length; ++i) {
+        if (modules[i]._loaded) {
+            InspectorTest.addResult("    " + modules[i]._descriptor.name);
+        }
+    }
+    if (next)
+        next();
+}
+
 WebInspector.TempFile = InspectorTest.TempFileMock;
 
 };
@@ -610,7 +623,6 @@ function runTest(enableWatchDogWhileDebugging)
 
         InspectorTest.completeTestCallId = completeTestCallId;
 
-        WebInspector.showPanel("audits");
         try {
             testFunction();
         } catch (e) {

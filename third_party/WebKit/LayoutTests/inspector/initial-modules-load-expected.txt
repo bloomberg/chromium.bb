@@ -1,0 +1,29 @@
+This test validates initial set of loaded modules.
+
+
+Running: testInitialLoad
+Loaded modules:
+    elements
+
+Running: testCreateElementsPanel
+Loaded modules:
+    elements
+
+Running: testCreateNetworkPanel
+Loaded modules:
+    elements
+    network
+
+Running: testShowSourcesPanel
+Loaded modules:
+    elements
+    network
+    sources
+
+Running: testOpenUISourceCode
+Loaded modules:
+    elements
+    network
+    sources
+    codemirror
+
