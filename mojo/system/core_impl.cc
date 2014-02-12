@@ -495,10 +495,10 @@ MojoResult CoreImpl::CreateSharedBuffer(
   return MOJO_RESULT_UNIMPLEMENTED;
 }
 
-MojoResult CoreImpl::DuplicateSharedBuffer(
-    MojoHandle shared_buffer_handle,
-    const MojoDuplicateSharedBufferOptions* options,
-    MojoHandle* new_shared_buffer_handle) {
+MojoResult CoreImpl::DuplicateBufferHandle(
+    MojoHandle buffer_handle,
+    const MojoDuplicateBufferHandleOptions* options,
+    MojoHandle* new_buffer_handle) {
   // TODO(vtl)
   NOTIMPLEMENTED();
   return MOJO_RESULT_UNIMPLEMENTED;

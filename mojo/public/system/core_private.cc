@@ -128,13 +128,13 @@ MojoResult MojoCreateSharedBuffer(
   return g_core->CreateSharedBuffer(options, num_bytes, shared_buffer_handle);
 }
 
-MojoResult MojoDuplicateSharedBuffer(
-    MojoHandle shared_buffer_handle,
-    const struct MojoDuplicateSharedBufferOptions* options,
-    MojoHandle* new_shared_buffer_handle) {
+MojoResult MojoDuplicateBufferHandle(
+    MojoHandle buffer_handle,
+    const struct MojoDuplicateBufferHandleOptions* options,
+    MojoHandle* new_buffer_handle) {
   assert(g_core);
-  return g_core->DuplicateSharedBuffer(shared_buffer_handle, options,
-                                       new_shared_buffer_handle);
+  return g_core->DuplicateBufferHandle(buffer_handle, options,
+                                       new_buffer_handle);
 }
 
 MojoResult MojoMapBuffer(MojoHandle buffer_handle,

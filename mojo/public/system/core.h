@@ -318,35 +318,35 @@ MOJO_COMPILE_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
                     MojoCreateSharedBufferOptions_has_wrong_size);
 #endif
 
-// |MojoDuplicateSharedBufferOptions|: Used to specify parameters in duplicating
-// access to a shared buffer to |MojoDuplicateSharedBuffer()|.
+// |MojoDuplicateBufferHandleOptions|: Used to specify parameters in duplicating
+// access to a shared buffer to |MojoDuplicateBufferHandle()|.
 //   |uint32_t struct_size|: Set to the size of the
-//       |MojoDuplicateSharedBufferOptions| struct. (Used to allow for future
+//       |MojoDuplicateBufferHandleOptions| struct. (Used to allow for future
 //       extensions.)
-//   |MojoDuplicateSharedBufferOptionsFlags flags|: Reserved for future use.
-//       |MOJO_DUPLICATE_SHARED_BUFFER_OPTIONS_FLAG_NONE|: No flags; default
+//   |MojoDuplicateBufferHandleOptionsFlags flags|: Reserved for future use.
+//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE|: No flags; default
 //       mode.
 //
 // TODO(vtl): Add flags to remove writability (and executability)? Also, COW?
 
-typedef uint32_t MojoDuplicateSharedBufferOptionsFlags;
+typedef uint32_t MojoDuplicateBufferHandleOptionsFlags;
 
 #ifdef __cplusplus
-const MojoDuplicateSharedBufferOptionsFlags
-    MOJO_DUPLICATE_SHARED_BUFFER_OPTIONS_FLAG_NONE = 0;
+const MojoDuplicateBufferHandleOptionsFlags
+    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE = 0;
 #else
-#define MOJO_DUPLICATE_SHARED_BUFFER_OPTIONS_FLAG_NONE \
-    ((MojoDuplicateSharedBufferOptionsFlags) 0)
+#define MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE \
+    ((MojoDuplicateBufferHandleOptionsFlags) 0)
 #endif
 
-struct MojoDuplicateSharedBufferOptions {
+struct MojoDuplicateBufferHandleOptions {
   uint32_t struct_size;
-  MojoDuplicateSharedBufferOptionsFlags flags;
+  MojoDuplicateBufferHandleOptionsFlags flags;
 };
 // TODO(vtl): Can we make this assertion work in C?
 #ifdef __cplusplus
-MOJO_COMPILE_ASSERT(sizeof(MojoDuplicateSharedBufferOptions) == 8,
-                    MojoDuplicateSharedBufferOptions_has_wrong_size);
+MOJO_COMPILE_ASSERT(sizeof(MojoDuplicateBufferHandleOptions) == 8,
+                    MojoDuplicateBufferHandleOptions_has_wrong_size);
 #endif
 
 // |MojoMapBufferFlags|: Used to specify different modes to |MojoMapBuffer()|.
@@ -782,7 +782,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
 // TODO(vtl): General comments.
 
 // Creates a buffer that can be shared between applications (by duplicating the
-// handle -- see |MojoDuplicateSharedBuffer()| -- and passing it over a message
+// handle -- see |MojoDuplicateBufferHandle()| -- and passing it over a message
 // pipe). To access the buffer, one must call |MojoMapBuffer()|.
 // TODO(vtl): More.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
@@ -790,15 +790,17 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
     uint64_t* num_bytes,  // In/out.
     MojoHandle* shared_buffer_handle);  // Out.
 
-// Duplicates the handle |shared_buffer_handle| to a shared buffer. This creates
-// another handle (returned in |*new_shared_buffer_handle| on success), which
-// can then be sent to another application over a message pipe, while retaining
-// access to the |shared_buffer_handle| (and any mappings that it may have).
+// Duplicates the handle |buffer_handle| to a buffer. This creates another
+// handle (returned in |*new_buffer_handle| on success), which can then be sent
+// to another application over a message pipe, while retaining access to the
+// |buffer_handle| (and any mappings that it may have).
+//
+// Note: We may add buffer types for which this operation is not supported.
 // TODO(vtl): More.
-MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateSharedBuffer(
-    MojoHandle shared_buffer_handle,
-    const struct MojoDuplicateSharedBufferOptions* options,  // Optional.
-    MojoHandle* new_shared_buffer_handle);  // Out.
+MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
+    MojoHandle buffer_handle,
+    const struct MojoDuplicateBufferHandleOptions* options,  // Optional.
+    MojoHandle* new_buffer_handle);  // Out.
 
 // Map the part (at offset |offset| of length |num_bytes|) of the buffer given
 // by |buffer_handle| into memory. |offset + num_bytes| must be less than or
@@ -807,7 +809,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateSharedBuffer(
 //
 // A single buffer handle may have multiple active mappings (possibly depending
 // on the buffer type). The permissions (e.g., writable or executable) of the
-// returned memory may depend on the buffer/buffer handle as well as |flags|.
+// returned memory may depend on the properties of the buffer and properties
+// attached to the buffer handle as well as |flags|.
 // TODO(vtl): More.
 MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                                             uint64_t offset,

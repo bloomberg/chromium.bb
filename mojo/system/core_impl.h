@@ -87,10 +87,10 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
       const MojoCreateSharedBufferOptions* options,
       uint64_t* num_bytes,
       MojoHandle* shared_buffer_handle) OVERRIDE;
-  virtual MojoResult DuplicateSharedBuffer(
-      MojoHandle shared_buffer_handle,
-      const MojoDuplicateSharedBufferOptions* options,
-      MojoHandle* new_shared_buffer_handle) OVERRIDE;
+  virtual MojoResult DuplicateBufferHandle(
+      MojoHandle buffer_handle,
+      const MojoDuplicateBufferHandleOptions* options,
+      MojoHandle* new_buffer_handle) OVERRIDE;
   virtual MojoResult MapBuffer(MojoHandle buffer_handle,
                                uint64_t offset,
                                uint64_t num_bytes,
