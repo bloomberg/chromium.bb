@@ -57,7 +57,6 @@ TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelega
     , m_eventDelegate(eventDelegate)
     , m_calculated()
     , m_isFirstSample(true)
-    , m_needsUpdate(true)
     , m_lastUpdateTime(nullValue())
 {
     m_specified.assertValid();
@@ -88,8 +87,7 @@ double TimedItem::activeDuration() const
 
 bool TimedItem::updateInheritedTime(double inheritedTime) const
 {
-    bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
-    m_needsUpdate = false;
+    bool needsUpdate = (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
     m_lastUpdateTime = inheritedTime;
 
     const double previousIteration = m_calculated.currentIteration;
@@ -165,6 +163,16 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, timeToNextIteration);
     }
     return didTriggerStyleRecalc;
+}
+
+const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
+{
+    if (!m_player)
+        return m_calculated;
+    if (m_player->needsUpdate())
+        m_player->update();
+    ASSERT(!m_player->needsUpdate());
+    return m_calculated;
 }
 
 } // namespace WebCore

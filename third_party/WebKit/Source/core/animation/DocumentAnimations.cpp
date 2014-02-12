@@ -46,9 +46,8 @@ namespace WebCore {
 
 namespace {
 
-void updateAnimationTiming(Document& document, double monotonicAnimationStartTime)
+void updateAnimationTiming(Document& document)
 {
-    document.animationClock().updateTime(monotonicAnimationStartTime);
     bool didTriggerStyleRecalc = document.timeline()->serviceAnimations();
     didTriggerStyleRecalc |= document.transitionTimeline()->serviceAnimations();
     if (!didTriggerStyleRecalc)
@@ -74,7 +73,8 @@ void DocumentAnimations::serviceOnAnimationFrame(Document& document, double mono
     if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
-    updateAnimationTiming(document, monotonicAnimationStartTime);
+    document.animationClock().updateTime(monotonicAnimationStartTime);
+    updateAnimationTiming(document);
     dispatchAnimationEvents(document);
 }
 
@@ -83,14 +83,17 @@ void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID
     if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
-    if (node.isElementNode()) {
-        const Element& element = toElement(node);
-        if (const ActiveAnimations* activeAnimations = element.activeAnimations()) {
-            if (activeAnimations->hasActiveAnimationsOnCompositor(property))
-                updateAnimationTiming(element.document(), monotonicallyIncreasingTime());
-        }
+    if (!node.isElementNode())
+        return;
+    const Element& element = toElement(node);
+    if (element.document().timeline()->hasPlayerNeedingUpdate()) {
+        updateAnimationTiming(element.document());
+        return;
     }
-
+    if (const ActiveAnimations* activeAnimations = element.activeAnimations()) {
+        if (activeAnimations->hasActiveAnimationsOnCompositor(property))
+            updateAnimationTiming(element.document());
+    }
 }
 
 void DocumentAnimations::serviceAfterStyleRecalc(Document& document)

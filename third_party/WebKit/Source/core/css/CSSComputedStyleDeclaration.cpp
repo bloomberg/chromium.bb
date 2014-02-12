@@ -1528,8 +1528,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
     if (updateLayout) {
         Document& document = styledNode->document();
 
-        // If a compositor animation is running we may need to service animations
-        // in order to generate an up to date value.
+        // If a compositor animation is running or animations have been updated
+        // via the api we may need to service animations in order to generate
+        // an up to date value.
         DocumentAnimations::serviceBeforeGetComputedStyle(*styledNode, propertyID);
 
         document.updateStyleForNodeIfNeeded(styledNode);

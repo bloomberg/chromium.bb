@@ -51,6 +51,7 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_paused(false)
     , m_held(false)
     , m_isPausedForTesting(false)
+    , m_needsUpdate(false)
 {
     if (m_content)
         m_content->attach(this);
@@ -100,6 +101,7 @@ void Player::updateTimingState(double newCurrentTime)
         m_holdTime = nullValue();
         m_storedTimeLag = currentTimeWithoutLag() - newCurrentTime;
     }
+    setNeedsUpdate();
 }
 
 void Player::updateCurrentTimingState()
@@ -126,10 +128,9 @@ void Player::setCurrentTime(double newCurrentTime)
     if (!std::isfinite(newCurrentTime))
         return;
     updateTimingState(newCurrentTime);
-    m_timeline.serviceAnimations();
 }
 
-void Player::setStartTime(double newStartTime, bool serviceAnimations)
+void Player::setStartTime(double newStartTime)
 {
     if (!std::isfinite(newStartTime))
         return;
@@ -137,10 +138,6 @@ void Player::setStartTime(double newStartTime, bool serviceAnimations)
     m_startTime = newStartTime;
     if (!m_held)
         updateCurrentTimingState();
-    if (serviceAnimations)
-        m_timeline.serviceAnimations();
-    else
-        update();
 }
 
 void Player::setSource(TimedItem* newSource)
@@ -227,7 +224,12 @@ void Player::setPlaybackRate(double playbackRate)
     double storedCurrentTime = currentTime();
     m_playbackRate = playbackRate;
     updateTimingState(storedCurrentTime);
-    m_timeline.serviceAnimations();
+}
+
+void Player::setNeedsUpdate()
+{
+    m_needsUpdate = true;
+    timeline().setHasPlayerNeedingUpdate();
 }
 
 bool Player::maybeStartAnimationOnCompositor()
@@ -256,6 +258,9 @@ void Player::cancelAnimationOnCompositor()
 
 bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
 {
+    double inheritedTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
+    m_needsUpdate = false;
+
     if (!m_content) {
         if (timeToEffectChange)
             *timeToEffectChange = std::numeric_limits<double>::infinity();
@@ -264,13 +269,14 @@ bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
         return false;
     }
 
-    double inheritedTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
     bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(inheritedTime);
 
     if (timeToEffectChange)
         *timeToEffectChange = m_content->timeToEffectChange();
     if (didTriggerStyleRecalc)
         *didTriggerStyleRecalc = didTriggerStyleRecalcLocal;
+
+    ASSERT(!m_needsUpdate);
     return m_content->isCurrent() || m_content->isInEffect();
 }
 
