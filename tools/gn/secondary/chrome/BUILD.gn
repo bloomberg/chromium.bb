@@ -66,9 +66,8 @@ static_library("browser") {
   external = true
 
   if (is_linux) {
-    libs = [ "dl" ]
     if (toolkit_uses_gtk) {
-      libs += [ "gconf-2" ]
+      libs = [ "gconf-2" ]
     }
   }
   if (is_linux) {

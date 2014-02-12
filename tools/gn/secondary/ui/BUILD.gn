@@ -8,7 +8,6 @@ component("ui") {
   # TODO(brettw) do this target, this current stuff is only to make Chrome
   # link.
 
-  if (is_linux) {  # TODO(brettw) this should be some X11 thing.
     configs += "//build/config/linux:x11"
   }
 }

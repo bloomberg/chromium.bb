@@ -1238,8 +1238,7 @@ if (component_mode == "static_library") {
 }
 
 
-if (is_linux && !is_android) {
-    # TODO(brettw) && arch != "arm" && arch != "mipsel"
+if (is_linux && (cpu_arch == "x86" || cpu_arch == "x64")) {
   sse_cflags = [ "-msse2" ]
 } else {
   sse_cflags = []

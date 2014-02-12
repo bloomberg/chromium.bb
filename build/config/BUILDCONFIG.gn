@@ -97,7 +97,8 @@ declare_args() {
 # - is_mac is set only for desktop Mac. It is not set on iOS.
 # - is_posix is true for mac and any Unix-like system (basically everything
 #   except Windows).
-# - is_linux is true for any Linux variant including Android and ChromeOS.
+# - is_linux is true for desktop Linux and ChromeOS, but not Android (which is
+#   generally too different despite being based on the Linux kernel).
 #
 # Do not add more is_* variants here for random lesser-used Unix systems like
 # aix or one of the BSDs. If you need to check these, just check the os value
@@ -131,7 +132,7 @@ if (os == "win") {
   is_android = true
   is_chromeos = false
   is_ios = false
-  is_linux = true
+  is_linux = false
   is_mac = false
   is_nacl = false
   is_posix = true
@@ -402,7 +403,7 @@ set_defaults("executable") {
     configs += windows_linker_configs
   } else if (is_mac) {
     configs += [ "//build/config/mac:mac_dynamic_flags" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_android) {
     configs += [ "//build/config/linux:executable_ldconfig" ]
   }
 }
