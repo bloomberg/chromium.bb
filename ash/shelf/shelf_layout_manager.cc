@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -389,7 +390,23 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, Gesture dragging:
+// ShelfLayoutManager, Gesture functions:
+
+void ShelfLayoutManager::OnGestureEdgeSwipe(const ui::GestureEvent& gesture) {
+  // Edge swipe should exit fullscreen, show the tray, and disable auto-hide.
+
+  if (workspace_controller_->GetWindowState() ==
+      WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
+    accelerators::ToggleFullscreen();
+  }
+
+  ShelfVisibilityState visibility = CalculateShelfVisibility();
+  if (visibility == SHELF_AUTO_HIDE &&
+      CalculateAutoHideState(visibility) == SHELF_AUTO_HIDE_HIDDEN) {
+    SetState(SHELF_VISIBLE);
+    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  }
+}
 
 void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;

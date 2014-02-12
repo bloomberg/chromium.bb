@@ -1493,6 +1493,48 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
             display.work_area().y() - display.bounds().y());
 }
 
+TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  widget->Init(params);
+  widget->Show();
+  widget->Maximize();
+
+  aura::Window* window = widget->GetNativeWindow();
+  shelf->LayoutShelf();
+
+  gfx::Rect shelf_shown = GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Rect bounds_shelf = window->bounds();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureEdgeSwipe();
+
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  widget->SetFullscreen(true);
+  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(false);
+  shelf->UpdateVisibilityState();
+
+  gfx::Rect bounds_fullscreen = window->bounds();
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  generator.GestureEdgeSwipe();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_FALSE(widget->IsFullscreen());
+}
+
 #if defined(OS_WIN)
 // RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
 #define MAYBE_GestureDrag DISABLED_GestureDrag

@@ -32144,6 +32144,7 @@ other types of suffix sets.
   <int value="31" label="Long tap"/>
   <int value="32" label="Show Press"/>
   <int value="33" label="Tap Cancel"/>
+  <int value="34" label="Edge swipe"/>
 </enum>
 
 <enum name="UmaInitSequence" type="int">

@@ -43,6 +43,11 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   ShelfLayoutManager* shelf = controller->GetShelfLayoutManager();
 
+  if (event.type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE) {
+    shelf->OnGestureEdgeSwipe(event);
+    return true;
+  }
+
   const aura::Window* fullscreen = controller->GetWindowForFullscreenMode();
   if (fullscreen &&
       ash::wm::GetWindowState(fullscreen)->hide_shelf_when_fullscreen()) {

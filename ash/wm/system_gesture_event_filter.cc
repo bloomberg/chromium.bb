@@ -13,12 +13,14 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/gestures/overview_gesture_handler.h"
+#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/gestures/system_pinch_handler.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/events/x/touch_factory_x11.h"
@@ -43,7 +45,8 @@ namespace internal {
 SystemGestureEventFilter::SystemGestureEventFilter()
     : system_gestures_enabled_(CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
-      long_press_affordance_(new LongPressAffordanceHandler) {
+      long_press_affordance_(new LongPressAffordanceHandler),
+      shelf_gesture_handler_(new ShelfGestureHandler()) {
   if (switches::UseOverviewMode())
     overview_gesture_handler_.reset(new OverviewGestureHandler);
 }
@@ -81,6 +84,12 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
 
   if (overview_gesture_handler_ &&
       overview_gesture_handler_->ProcessGestureEvent(*event)) {
+    event->StopPropagation();
+    return;
+  }
+
+  if (event->type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE &&
+      shelf_gesture_handler_->ProcessGestureEvent(*event)) {
     event->StopPropagation();
     return;
   }

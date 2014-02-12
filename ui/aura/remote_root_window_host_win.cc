@@ -220,6 +220,7 @@ bool RemoteWindowTreeHostWin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowActivated,
                         OnWindowActivated)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_EdgeGesture, OnEdgeGesture)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchDown,
                         OnTouchDown)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchUp,
@@ -594,6 +595,18 @@ void RemoteWindowTreeHostWin::OnChar(uint32 key_code,
 
 void RemoteWindowTreeHostWin::OnWindowActivated() {
   delegate_->OnHostActivated();
+}
+
+void RemoteWindowTreeHostWin::OnEdgeGesture() {
+  ui::GestureEvent event(
+      ui::ET_GESTURE_WIN8_EDGE_SWIPE,
+      0,
+      0,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE, 0, 0),
+      0);
+  SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnTouchDown(int32 x,

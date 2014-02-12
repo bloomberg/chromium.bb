@@ -125,6 +125,7 @@ class EVENTS_EXPORT Event {
       case ET_GESTURE_LONG_TAP:
       case ET_GESTURE_MULTIFINGER_SWIPE:
       case ET_GESTURE_SHOW_PRESS:
+      case ET_GESTURE_WIN8_EDGE_SWIPE:
         // When adding a gesture event which is paired with an event which
         // occurs earlier, add the event to |IsEndingEvent|.
         return true;

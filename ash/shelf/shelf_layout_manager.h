@@ -154,7 +154,8 @@ class ASH_EXPORT ShelfLayoutManager :
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
-  // Gesture dragging related functions:
+  // Gesture related functions:
+  void OnGestureEdgeSwipe(const ui::GestureEvent& gesture);
   void StartGestureDrag(const ui::GestureEvent& gesture);
   enum DragState {
     DRAG_SHELF,

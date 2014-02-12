@@ -191,6 +191,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
               uint32 scan_code,
               uint32 flags);
   void OnWindowActivated();
+  void OnEdgeGesture();
   void OnTouchDown(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
   void OnTouchUp(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
   void OnTouchMoved(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);

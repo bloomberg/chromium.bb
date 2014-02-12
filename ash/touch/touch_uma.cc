@@ -58,8 +58,10 @@ enum UMAEventType {
   UMA_ET_GESTURE_LONG_TAP,
   UMA_ET_GESTURE_SHOW_PRESS,
   UMA_ET_GESTURE_TAP_CANCEL,
+  UMA_ET_GESTURE_WIN8_EDGE_SWIPE,
   // NOTE: Add new event types only immediately above this line. Make sure to
-  // update the enum list in tools/metrics/histogram/histograms.xml accordingly.
+  // update the UIEventType enum in tools/metrics/histograms/histograms.xml
+  // accordingly.
   UMA_ET_COUNT
 };
 
@@ -168,6 +170,8 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
         return UMA_ET_GESTURE_MULTIFINGER_SWIPE_3;
       return UMA_ET_GESTURE_MULTIFINGER_SWIPE;
     }
+    case ui::ET_GESTURE_WIN8_EDGE_SWIPE:
+      return UMA_ET_GESTURE_WIN8_EDGE_SWIPE;
     case ui::ET_GESTURE_TAP_CANCEL:
       return UMA_ET_GESTURE_TAP_CANCEL;
     case ui::ET_GESTURE_SHOW_PRESS:

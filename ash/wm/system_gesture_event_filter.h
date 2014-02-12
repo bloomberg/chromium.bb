@@ -31,6 +31,7 @@ class SystemGestureEventFilterTest;
 namespace internal {
 class LongPressAffordanceHandler;
 class OverviewGestureHandler;
+class ShelfGestureHandler;
 class SystemPinchHandler;
 class TouchUMA;
 
@@ -67,6 +68,7 @@ class SystemGestureEventFilter : public ui::EventHandler,
 
   scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
   scoped_ptr<OverviewGestureHandler> overview_gesture_handler_;
+  scoped_ptr<ShelfGestureHandler> shelf_gesture_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };

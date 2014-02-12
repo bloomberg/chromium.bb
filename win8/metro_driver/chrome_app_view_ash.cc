@@ -1288,11 +1288,7 @@ HRESULT ChromeAppViewAsh::HandleProtocolRequest(
 HRESULT ChromeAppViewAsh::OnEdgeGestureCompleted(
     winui::Input::IEdgeGesture* gesture,
     winui::Input::IEdgeGestureEventArgs* args) {
-  // Swipe from edge gesture (and win+z) is equivalent to pressing F11.
-  // TODO(cpu): Make this cleaner for m33.
-  ui_channel_->Send(new MetroViewerHostMsg_KeyDown(VK_F11, 1, 0, 0));
-  ::Sleep(15);
-  ui_channel_->Send(new MetroViewerHostMsg_KeyUp(VK_F11, 1, 0, 0));
+  ui_channel_->Send(new MetroViewerHostMsg_EdgeGesture());
   return S_OK;
 }
 

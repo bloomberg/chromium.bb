@@ -214,6 +214,11 @@ class EventGenerator {
   // to the center of the window.
   void PressMoveAndReleaseTouchToCenterOf(Window* window);
 
+  // Generates and dispatches a Win8 edge-swipe event (swipe up from bottom or
+  // swipe down from top).  Note that it is not possible to distinguish between
+  // the two edges with this event.
+  void GestureEdgeSwipe();
+
   // Generates and dispatches touch-events required to generate a TAP gesture.
   // Note that this can generate a number of other gesture events at the same
   // time (e.g. GESTURE_BEGIN, TAP_DOWN, END).
