@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.10",
+  "version": "3.11",
   "entries": [
     {
       "id": 1,
@@ -744,6 +744,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "count_all_in_varyings_packing"
+      ]
+    },
+    {
+      "id": 57,
+      "cr_bugs": [322760],
+      "description": "Mac drivers handle varyings without static use incorrectly",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "init_varyings_without_static_use"
       ]
     }
   ]

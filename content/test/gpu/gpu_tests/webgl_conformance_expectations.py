@@ -95,8 +95,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
 
     # Mac failures.
-    self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
-        ['mac'], bug=322760)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['mac'], bug=322795)
 
