@@ -37,6 +37,7 @@ class PrerenderDispatcher : public content::RenderProcessObserver,
   // Message handlers for messages from the browser process.
   void OnPrerenderStart(int prerender_id);
   void OnPrerenderStopLoading(int prerender_id);
+  void OnPrerenderDomContentLoaded(int prerender_id);
   void OnPrerenderAddAlias(const GURL& alias);
   void OnPrerenderRemoveAliases(const std::vector<GURL>& aliases);
   void OnPrerenderStop(int prerender_id);

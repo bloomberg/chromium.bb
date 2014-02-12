@@ -60,6 +60,20 @@ void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
   prerender.didSendLoadForPrerender();
 }
 
+void PrerenderDispatcher::OnPrerenderDomContentLoaded(int prerender_id) {
+  std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+  if (it == prerenders_.end())
+    return;
+
+  WebPrerender& prerender = it->second;
+  DCHECK(!prerender.isNull())
+      << "OnPrerenderDomContentLoaded shouldn't be called from a unit test,"
+      << " the only context in which a WebPrerender in the dispatcher can be"
+      << " null.";
+
+  prerender.didSendDOMContentLoadedForPrerender();
+}
+
 void PrerenderDispatcher::OnPrerenderAddAlias(const GURL& alias) {
   running_prerender_urls_.insert(alias);
 }
@@ -98,6 +112,8 @@ bool PrerenderDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStart, OnPrerenderStart)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStopLoading,
                         OnPrerenderStopLoading)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderDomContentLoaded,
+                        OnPrerenderDomContentLoaded)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderAddAlias, OnPrerenderAddAlias)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderRemoveAliases,
                         OnPrerenderRemoveAliases)

@@ -1309,6 +1309,19 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return load_event_count;
   }
 
+  int GetPrerenderDomContentLoadedEventCountForLinkNumber(int index) const {
+    int dom_content_loaded_event_count;
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send("
+            "receivedPrerenderDomContentLoadedEvents[%d] || 0)", index);
+
+    CHECK(content::ExecuteScriptAndExtractInt(
+        GetActiveWebContents(),
+        expression,
+        &dom_content_loaded_event_count));
+    return dom_content_loaded_event_count;
+  }
+
   bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
     bool received_prerender_stopped;
     std::string expression = base::StringPrintf(
@@ -1618,6 +1631,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   UMAHistogramHelper histograms;
 
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
   histograms.Fetch();
   histograms.ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
   histograms.ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
@@ -3659,6 +3673,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
           "files/prerender/prerender_deferred_image.html",
           FINAL_STATUS_USED, 0);
   WaitForASCIITitle(prerender->contents()->prerender_contents(), kReadyTitle);
+  EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
   EXPECT_TRUE(DidPrerenderPass(prerender->contents()->prerender_contents()));
   EXPECT_EQ(0, prerender->number_of_loads());
   histograms.Fetch();

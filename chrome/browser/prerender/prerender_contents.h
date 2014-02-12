@@ -77,6 +77,9 @@ class PrerenderContents : public content::NotificationObserver,
     // Signals that the prerender has had its load event.
     virtual void OnPrerenderStopLoading(PrerenderContents* contents);
 
+    // Signals that the prerender has had its 'DOMContentLoaded' event.
+    virtual void OnPrerenderDomContentLoaded(PrerenderContents* contents);
+
     // Signals that the prerender has stopped running. A PrerenderContents with
     // an unset final status will always call OnPrerenderStop before being
     // destroyed.
@@ -200,6 +203,8 @@ class PrerenderContents : public content::NotificationObserver,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentLoadedInFrame(
+      int64 frame_id, content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       int64 parent_frame_id,
@@ -207,6 +212,13 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      const base::string16& frame_unique_name,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,
@@ -308,6 +320,7 @@ class PrerenderContents : public content::NotificationObserver,
   // that NotifyPrerenderStop() also clears the observer list.
   void NotifyPrerenderStart();
   void NotifyPrerenderStopLoading();
+  void NotifyPrerenderDomContentLoaded();
   void NotifyPrerenderStop();
   void NotifyPrerenderCreatedMatchCompleteReplacement(
       PrerenderContents* replacement);
@@ -424,6 +437,9 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The process that created the child id.
   int creator_child_id_;
+
+  // Main frame ID of last committed page.
+  int64 main_frame_id_;
 
   // The size of the WebView from the launching page.
   gfx::Size size_;

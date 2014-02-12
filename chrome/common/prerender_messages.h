@@ -58,6 +58,10 @@ IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStopLoading,
                      int /* prerender_id */)
 
+// Signals to launcher that a prerender has had it's 'domcontentloaded' event.
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderDomContentLoaded,
+                     int /* prerender_id */)
+
 // Signals to a launcher that a new alias has been added to a prerender.
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderAddAlias,
                      GURL /* url */)

@@ -115,6 +115,15 @@ void PrerenderHandle::OnPrerenderStopLoading(
     observer_->OnPrerenderStopLoading(this);
 }
 
+void PrerenderHandle::OnPrerenderDomContentLoaded(
+    PrerenderContents* prerender_contents) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(prerender_data_.get());
+  DCHECK_EQ(prerender_data_->contents(), prerender_contents);
+  if (observer_)
+    observer_->OnPrerenderDomContentLoaded(this);
+}
+
 void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
   DCHECK(CalledOnValidThread());
   if (observer_)

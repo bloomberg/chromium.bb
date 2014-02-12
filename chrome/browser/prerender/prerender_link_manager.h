@@ -150,6 +150,8 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) OVERRIDE;
   virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
       OVERRIDE;
+  virtual void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle)
+      OVERRIDE;
   virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
   virtual void OnPrerenderCreatedMatchCompleteReplacement(
       PrerenderHandle* handle) OVERRIDE;

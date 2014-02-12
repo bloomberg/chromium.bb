@@ -183,6 +183,10 @@ void PrerenderContents::Observer::OnPrerenderStopLoading(
     PrerenderContents* contents) {
 }
 
+void PrerenderContents::Observer::OnPrerenderDomContentLoaded(
+    PrerenderContents* contents) {
+}
+
 void PrerenderContents::Observer::OnPrerenderCreatedMatchCompleteReplacement(
     PrerenderContents* contents, PrerenderContents* replacement) {
 }
@@ -217,6 +221,7 @@ PrerenderContents::PrerenderContents(
       origin_(origin),
       experiment_id_(experiment_id),
       creator_child_id_(-1),
+      main_frame_id_(0),
       cookie_status_(0) {
   DCHECK(prerender_manager != NULL);
 }
@@ -477,6 +482,11 @@ void PrerenderContents::NotifyPrerenderStopLoading() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStopLoading(this));
 }
 
+void PrerenderContents::NotifyPrerenderDomContentLoaded() {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnPrerenderDomContentLoaded(this));
+}
+
 void PrerenderContents::NotifyPrerenderStop() {
   DCHECK_NE(FINAL_STATUS_MAX, final_status_);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStop(this));
@@ -564,6 +574,13 @@ void PrerenderContents::DidStopLoading(
   NotifyPrerenderStopLoading();
 }
 
+void PrerenderContents::DocumentLoadedInFrame(
+    int64 frame_id,
+    RenderViewHost* render_view_host) {
+  if (frame_id == main_frame_id_)
+    NotifyPrerenderDomContentLoaded();
+}
+
 void PrerenderContents::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     int64 parent_frame_id,
@@ -583,6 +600,18 @@ void PrerenderContents::DidStartProvisionalLoadForFrame(
     // has_stopped_loading_ so that the spinner won't be stopped.
     has_stopped_loading_ = false;
     has_finished_loading_ = false;
+  }
+}
+
+void PrerenderContents::DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      const base::string16& frame_unique_name,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
+      RenderViewHost* render_view_host) {
+  if (is_main_frame) {
+    main_frame_id_ = frame_id;
   }
 }
 

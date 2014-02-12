@@ -12,6 +12,7 @@ var hadPrerenderEventErrors = false;
 
 var receivedPrerenderStartEvents = [];
 var receivedPrerenderLoadEvents = [];
+var receivedPrerenderDomContentLoadedEvents = [];
 var receivedPrerenderStopEvents = [];
 
 function PrerenderStartHandler(index) {
@@ -35,6 +36,17 @@ function PrerenderLoadHandler(index) {
   receivedPrerenderLoadEvents[index]++;
 }
 
+function PrerenderDomContentLoadedHandler(index) {
+  if (!receivedPrerenderStartEvents[index] ||
+      receivedPrerenderStopEvents[index]) {
+    hadPrerenderEventErrors = true;
+    return;
+  }
+  if (!receivedPrerenderDomContentLoadedEvents[index])
+    receivedPrerenderDomContentLoadedEvents[index] = 0;
+  receivedPrerenderDomContentLoadedEvents[index]++;
+}
+
 function PrerenderStopHandler(index) {
   if (!receivedPrerenderStartEvents[index] ||
       receivedPrerenderStopEvents[index]) {
@@ -49,6 +61,9 @@ function AddEventHandlersToLinkElement(link, index) {
                         PrerenderStartHandler.bind(null, index), false);
   link.addEventListener('webkitprerenderload',
                         PrerenderLoadHandler.bind(null, index), false);
+  link.addEventListener('webkitprerenderdomcontentloaded',
+                        PrerenderDomContentLoadedHandler.bind(null, index),
+                        false);
   link.addEventListener('webkitprerenderstop',
                         PrerenderStopHandler.bind(null, index), false);
 }

@@ -470,6 +470,16 @@ void PrerenderLinkManager::OnPrerenderStopLoading(
        new PrerenderMsg_OnPrerenderStopLoading(prerender->prerender_id));
 }
 
+void PrerenderLinkManager::OnPrerenderDomContentLoaded(
+    PrerenderHandle* prerender_handle) {
+  LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
+  if (!prerender)
+    return;
+
+  Send(prerender->launcher_child_id,
+       new PrerenderMsg_OnPrerenderDomContentLoaded(prerender->prerender_id));
+}
+
 void PrerenderLinkManager::OnPrerenderStop(
     PrerenderHandle* prerender_handle) {
   LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
