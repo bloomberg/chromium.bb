@@ -48,9 +48,9 @@ const char kDisableMainThreadAudio[] = "disable-main-thread-audio";
 // http://crbug.com/288562 for both audio and video device monitoring and for
 // video capture. Being a dynamically loaded NSBundle and library, it hits the
 // Chrome startup time (http://crbug.com/311325 and http://crbug.com/311437);
-// until development is finished and the library load time issue is solved, the
-// usage of this library is hidden behind this flag.
-const char kEnableAVFoundation[] = "enable-avfoundation";
+// for experimentation purposes, in particular library load time issue, the
+// usage of this library can be hidden behind this flag.
+const char kDisableAVFoundation[] = "disable-avfoundation";
 #endif
 
 #if defined(OS_WIN)
