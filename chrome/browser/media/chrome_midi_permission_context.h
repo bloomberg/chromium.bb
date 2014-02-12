@@ -9,6 +9,10 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
+namespace content {
+class WebContents;
+}
+
 class GURL;
 class PermissionQueueController;
 class PermissionRequestID;
@@ -37,11 +41,21 @@ class ChromeMidiPermissionContext : public BrowserContextKeyedService {
                                         int bridge_id,
                                         const GURL& requesting_frame);
 
+  // Called when the permission decision is made. If a permissions prompt is
+  // shown to the user it will be called when the user selects an option
+  // from that prompt.
+  void NotifyPermissionSet(
+      const PermissionRequestID& id,
+      const GURL& requesting_frame,
+      const content::BrowserContext::MidiSysExPermissionCallback& callback,
+      bool allowed);
+
  private:
   // Decide whether the permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an infobar.
   void DecidePermission(
+      content::WebContents* web_contents,
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       const GURL& embedder,
@@ -52,14 +66,6 @@ class ChromeMidiPermissionContext : public BrowserContextKeyedService {
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       const GURL& embedder,
-      const content::BrowserContext::MidiSysExPermissionCallback& callback,
-      bool allowed);
-
-  // Called when the permission decision is made. It may be by the
-  // InfoBarDelegate to notify permission has been set.
-  void NotifyPermissionSet(
-      const PermissionRequestID& id,
-      const GURL& requesting_frame,
       const content::BrowserContext::MidiSysExPermissionCallback& callback,
       bool allowed);
 

@@ -11,8 +11,92 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
+#include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
+
+class MidiPermissionRequest : public PermissionBubbleRequest {
+ public:
+  MidiPermissionRequest(
+      ChromeMidiPermissionContext* context,
+      const PermissionRequestID& id,
+      const GURL& requesting_frame,
+      const std::string& display_languages,
+      const content::BrowserContext::MidiSysExPermissionCallback& callback);
+  virtual ~MidiPermissionRequest();
+
+  // PermissionBubbleDelegate:
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageTextFragment() const OVERRIDE;
+  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
+  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual void PermissionGranted() OVERRIDE;
+  virtual void PermissionDenied() OVERRIDE;
+  virtual void Cancelled() OVERRIDE;
+  virtual void RequestFinished() OVERRIDE;
+
+ private:
+  ChromeMidiPermissionContext* context_;
+  const PermissionRequestID id_;
+  GURL requesting_frame_;
+  std::string display_languages_;
+  const content::BrowserContext::MidiSysExPermissionCallback& callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MidiPermissionRequest);
+};
+
+MidiPermissionRequest::MidiPermissionRequest(
+    ChromeMidiPermissionContext* context,
+    const PermissionRequestID& id,
+    const GURL& requesting_frame,
+    const std::string& display_languages,
+    const content::BrowserContext::MidiSysExPermissionCallback& callback)
+    : context_(context),
+      id_(id),
+      requesting_frame_(requesting_frame),
+      display_languages_(display_languages),
+      callback_(callback) {}
+
+MidiPermissionRequest::~MidiPermissionRequest() {}
+
+base::string16 MidiPermissionRequest::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(
+      IDS_MIDI_SYSEX_INFOBAR_QUESTION,
+      net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
+}
+
+base::string16 MidiPermissionRequest::GetMessageTextFragment() const {
+  return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_PERMISSION_FRAGMENT);
+}
+
+base::string16 MidiPermissionRequest::GetAlternateAcceptButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_ALLOW_BUTTON);
+}
+
+base::string16 MidiPermissionRequest::GetAlternateDenyButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_DENY_BUTTON);
+}
+
+void MidiPermissionRequest::PermissionGranted() {
+  context_->NotifyPermissionSet(id_, requesting_frame_, callback_, true);
+}
+
+void MidiPermissionRequest::PermissionDenied() {
+  context_->NotifyPermissionSet(id_, requesting_frame_, callback_, false);
+}
+
+void MidiPermissionRequest::Cancelled() {
+  context_->NotifyPermissionSet(id_, requesting_frame_, callback_, false);
+}
+
+void MidiPermissionRequest::RequestFinished() {
+  delete this;
+}
 
 ChromeMidiPermissionContext::ChromeMidiPermissionContext(Profile* profile)
     : profile_(profile),
@@ -65,7 +149,7 @@ void ChromeMidiPermissionContext::RequestMidiSysExPermission(
     return;
   }
 
-  DecidePermission(id, requesting_frame, embedder, callback);
+  DecidePermission(web_contents, id, requesting_frame, embedder, callback);
 }
 
 void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
@@ -78,6 +162,7 @@ void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
 }
 
 void ChromeMidiPermissionContext::DecidePermission(
+    content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
@@ -98,6 +183,18 @@ void ChromeMidiPermissionContext::DecidePermission(
       PermissionDecided(id, requesting_frame, embedder, callback, true);
       break;
     default:
+      if (PermissionBubbleManager::Enabled()) {
+        PermissionBubbleManager* bubble_manager =
+            PermissionBubbleManager::FromWebContents(web_contents);
+        bubble_manager->AddRequest(new MidiPermissionRequest(
+            this, id, requesting_frame,
+            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+            callback));
+        return;
+      }
+
+      // TODO(gbillock): Delete this and the infobar delegate when
+      // we're using only bubbles. crbug.com/337458
       GetQueueController()->CreateInfoBarRequest(
           id, requesting_frame, embedder, base::Bind(
               &ChromeMidiPermissionContext::NotifyPermissionSet,
@@ -149,5 +246,6 @@ void ChromeMidiPermissionContext::CancelPendingInfobarRequest(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
     return;
+  // TODO(gbillock): Add support for cancellation to permission bubbles.
   GetQueueController()->CancelInfoBarRequest(id);
 }

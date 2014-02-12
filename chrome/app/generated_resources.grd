@@ -13435,6 +13435,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         $1<ex>www.google.com</ex>
       </ph> wants to get full control of your MIDI devices.
     </message>
+    <message name="IDS_MIDI_SYSEX_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to access MIDI devices with system exclusive messages, along with other permissions requests. Preceded by the prompt 'This site would like to:'">
+      fully control your MIDI devices.
+    </message>
     <message name="IDS_MIDI_SYSEX_ALLOW_BUTTON" desc="A button in MIDI access infobar for allowing full access to MIDI devices for a given domain.">
       Allow
     </message>
