@@ -33,7 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 #include "grit/keyboard_resources.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
@@ -132,9 +132,6 @@ void ComponentLoader::LoadAll() {
 
 base::DictionaryValue* ComponentLoader::ParseManifest(
     const std::string& manifest_contents) const {
-  if (manifest_contents.empty())
-    return NULL;
-
   JSONStringValueSerializer serializer(manifest_contents);
   scoped_ptr<base::Value> manifest(serializer.Deserialize(NULL, NULL));
 
@@ -382,7 +379,7 @@ void ComponentLoader::AddChromeApp() {
 }
 
 void ComponentLoader::AddKeyboardApp() {
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
   Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
 #endif
 }
