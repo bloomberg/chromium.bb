@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -103,7 +104,7 @@ TestProfileSyncService::TestProfileSyncService(
     ProfileSyncService::StartBehavior behavior)
         : ProfileSyncService(factory,
                              profile,
-                             signin,
+                             new ManagedUserSigninManagerWrapper(signin),
                              oauth2_token_service,
                              behavior) {
   SetSyncSetupCompleted();
