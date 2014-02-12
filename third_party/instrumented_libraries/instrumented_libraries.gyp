@@ -68,6 +68,7 @@
         '<(_sanitizer_type)-libasound2',
         '<(_sanitizer_type)-libcups2',
         '<(_sanitizer_type)-pango1.0',
+        '<(_sanitizer_type)-libcap2',
       ],
       'conditions': [
         ['asan==1', {
@@ -327,6 +328,11 @@
         '--enable-introspection=no',
         # More flags are set in download_build_install.py.
       ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libcap2',
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],

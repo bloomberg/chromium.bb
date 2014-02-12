@@ -123,18 +123,48 @@ def nss_make_and_copy(parsed_arguments, environment, install_prefix):
   make_args.append('ZDEFS_FLAG="-Wl,-z,nodefs %s"' % environment['LDFLAGS'])
   make_args.append('NSPR_INCLUDE_DIR=/usr/include/nspr')
   make_args.append('NSPR_LIB_DIR=%s/lib' % install_prefix)
-  # -j is not supported
-  shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
-      environment)
-  # 'make install' is not supported. Copy the DSOs manually.
-  install_dir = '%s/lib/' % install_prefix
-  for (dirpath, dirnames, filenames) in os.walk('./lib/'):
-    for filename in filenames:
-      if filename.endswith('.so'):
-        full_path = os.path.join(dirpath, filename)
-        if parsed_arguments.verbose:
-          print "download_build_install.py: installing %s" % full_path
-        shutil.copy(full_path, install_dir)
+  with ScopedChangeDirectory('nss') as cd_nss:
+    # -j is not supported
+    shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
+        environment)
+    # 'make install' is not supported. Copy the DSOs manually.
+    install_dir = '%s/lib/' % install_prefix
+    for (dirpath, dirnames, filenames) in os.walk('./lib/'):
+      for filename in filenames:
+        if filename.endswith('.so'):
+          full_path = os.path.join(dirpath, filename)
+          if parsed_arguments.verbose:
+            print "download_build_install.py: installing %s" % full_path
+          shutil.copy(full_path, install_dir)
+
+def libcap2_make_install(parsed_arguments, environment, install_prefix):
+  # libcap2 doesn't come with a configure script
+  shell_call('make -j%s' % parsed_arguments.jobs,
+      parsed_arguments.verbose, environment)
+  install_args = []
+  install_args.append('prefix=%s' % install_prefix)
+  # Do not install in lib64/.
+  install_args.append('lib=lib')
+  # Skip a step that requires sudo.
+  install_args.append('RAISE_SETFCAP=no')
+  shell_call('make -j%s install %s' % (parsed_arguments.jobs,
+    ' '.join(install_args)), parsed_arguments.verbose, environment)
+
+def build_and_install(parsed_arguments, environment, install_prefix):
+  if parsed_arguments.library == 'pango-1.0':
+    # This needs an absolute path and thus cannot be in GYP.
+    parsed_arguments.custom_configure_flags += \
+      ' --x-libraries=%s/lib' % install_prefix
+    parsed_arguments.custom_configure_flags += \
+      ' --x-includes=%s/include' % install_prefix
+
+  if parsed_arguments.library == 'nss':
+    nss_make_and_copy(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.library == 'libcap2':
+    libcap2_make_install(parsed_arguments, environment, install_prefix)
+  else:
+    configure_make_install(parsed_arguments, environment, install_prefix)
+
 
 def download_build_install(parsed_arguments):
   sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
@@ -184,18 +214,7 @@ def download_build_install(parsed_arguments):
         shell_call('%s/%s' % (os.path.relpath(cd_library.old_path),
             parsed_arguments.run_before_build), parsed_arguments.verbose)
       try:
-        if parsed_arguments.library == 'nss':
-          with ScopedChangeDirectory('nss') as cd_nss:
-            nss_make_and_copy(parsed_arguments, environment, install_prefix)
-        else:
-          if parsed_arguments.library == 'pango-1.0':
-            # This needs an absolute path and thus cannot be in GYP.
-            parsed_arguments.custom_configure_flags += \
-              ' --x-libraries=%s/lib' % install_prefix
-            parsed_arguments.custom_configure_flags += \
-              ' --x-includes=%s/include' % install_prefix
-
-          configure_make_install(parsed_arguments, environment, install_prefix)
+        build_and_install(parsed_arguments, environment, install_prefix)
       except Exception as exception:
         print exception
         print "Failed to build library %s." % parsed_arguments.library
