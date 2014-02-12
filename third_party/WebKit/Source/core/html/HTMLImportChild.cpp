@@ -202,7 +202,7 @@ bool HTMLImportChild::hasLoader() const
 
 bool HTMLImportChild::ownsLoader() const
 {
-    return m_loader->isOwnedBy(this);
+    return m_loader && m_loader->isOwnedBy(this);
 }
 
 bool HTMLImportChild::loaderHasError() const
