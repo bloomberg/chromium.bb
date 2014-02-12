@@ -147,7 +147,7 @@ OK
 
 
 === Stylesheet-for-inline-style modification result ===
-NotSupportedError
+null
 
 === All stylesheets ===
 

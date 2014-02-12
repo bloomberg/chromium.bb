@@ -183,8 +183,8 @@ public:
     virtual Document* ownerDocument() const;
     bool canBind() const { return m_origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && m_origin != TypeBuilder::CSS::StyleSheetOrigin::User; }
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
-    void reparseStyleSheet(const String&);
-    bool setText(const String&, ExceptionState&);
+    virtual void reparseStyleSheet(const String&);
+    virtual bool setText(const String&, ExceptionState&);
     String ruleSelector(const InspectorCSSId&, ExceptionState&);
     bool setRuleSelector(const InspectorCSSId&, const String& selector, ExceptionState&);
     CSSStyleRule* addRule(const String& selector, ExceptionState&);
@@ -258,6 +258,8 @@ public:
     static PassRefPtr<InspectorStyleSheetForInlineStyle> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<Element>, TypeBuilder::CSS::StyleSheetOrigin::Enum, Listener*);
 
     void didModifyElementAttribute();
+    virtual void reparseStyleSheet(const String&) OVERRIDE;
+    virtual bool setText(const String&, ExceptionState&) OVERRIDE;
     virtual bool getText(String* result) const OVERRIDE;
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId& id) const OVERRIDE { ASSERT_UNUSED(id, !id.ordinal()); return inlineStyle(); }
     virtual TypeBuilder::CSS::StyleSheetOrigin::Enum origin() const OVERRIDE { return TypeBuilder::CSS::StyleSheetOrigin::Regular; }

@@ -1028,8 +1028,10 @@ void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String
 void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
-    if (!inspectorStyleSheet)
+    if (!inspectorStyleSheet) {
+        *errorString = "Style sheet with id " + styleSheetId + " not found.";
         return;
+    }
 
     TrackExceptionState exceptionState;
     m_domAgent->history()->perform(adoptPtr(new SetStyleSheetTextAction(inspectorStyleSheet, text)), exceptionState);

@@ -1,0 +1,78 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    var inlineStyleSheetId;
+    function sendCommand(command, properties, callback) {
+        InspectorTest.sendCommand(command, properties || {}, commandCallback);
+        function commandCallback(msg)
+        {
+            if (msg.error) {
+                InspectorTest.log(msg.error.message);
+                InspectorTest.completeTest();
+                return;
+            }
+            callback(msg.result);
+        }
+    }
+
+    InspectorTest.sendCommand("CSS.enable", {}, cssWasEnabled);
+
+    function cssWasEnabled()
+    {
+        sendCommand("DOM.getDocument", {}, onGotDocument);
+    }
+
+    function onGotDocument(result)
+    {
+        var root = result.root;
+        sendCommand("DOM.querySelector", {
+            nodeId: root.nodeId,
+            selector: "#inliner"
+        }, onGotNode);
+    }
+
+    function onGotNode(node)
+    {
+        sendCommand("CSS.getInlineStylesForNode", { nodeId: node.nodeId }, onGotInlineStyles);
+    }
+
+    function onGotInlineStyles(result)
+    {
+        inlineStyleSheetId = result.inlineStyle.styleId.styleSheetId;
+        sendCommand("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onReceiveStyleSheetText);
+    }
+
+    function onReceiveStyleSheetText(result)
+    {
+        InspectorTest.log(result.text);
+        sendCommand("CSS.setStyleSheetText", {
+            styleSheetId: inlineStyleSheetId,
+            text: "border: 1px solid black;"
+        }, onSetStyleSheetBody);
+    }
+
+    function onSetStyleSheetBody(result)
+    {
+        sendCommand("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onCheckStyleSheetBody);
+    }
+
+    function onCheckStyleSheetBody(result)
+    {
+        InspectorTest.log(result.text);
+        InspectorTest.completeTest();
+    }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+
+<div id="inliner" style="color: red;">
+</div>
+
+</body>
+</html>

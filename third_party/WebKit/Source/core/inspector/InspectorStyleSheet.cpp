@@ -1651,6 +1651,19 @@ void InspectorStyleSheetForInlineStyle::didModifyElementAttribute()
     m_ruleSourceData.clear();
 }
 
+void InspectorStyleSheetForInlineStyle::reparseStyleSheet(const String& text)
+{
+    fireStyleSheetChanged();
+}
+
+bool InspectorStyleSheetForInlineStyle::setText(const String& text, ExceptionState& exceptionState)
+{
+    bool success = setStyleText(inlineStyle(), text);
+    if (!success)
+        exceptionState.throwDOMException(SyntaxError, "Style sheet text is invalid.");
+    return success;
+}
+
 bool InspectorStyleSheetForInlineStyle::getText(String* result) const
 {
     if (!m_isStyleTextValid) {
