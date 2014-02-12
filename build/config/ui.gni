@@ -1,0 +1,61 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file contains UI-related build flags. It should theoretically be in the
+# src/ui directory and only things that depend on the ui module should get the
+# definitions.
+#
+# However, today we have many "bad" dependencies on some of these flags from,
+# e.g. base, so they need to be global.
+
+declare_args() {
+  # True means the UI is built useing the "views" framework.
+  toolkit_views = false
+
+  # Indicates if Ash is enabled. Ash is the Aura SHell which provides a
+  # desktop-like environment for Aura. Requires use_aura = true
+  use_ash = false
+
+  # Indicates if Aura is enabled. Aura is a low-level windowing library, sort
+  # of a replacement for GDI or GTK.
+  use_aura = false
+
+  # Indicates if Ozone is enabled. Ozone is a low-level library layer for Linux
+  # that does not require X11.
+  use_ozone = false
+}
+
+if (is_win || is_chromeos) {
+  # Windows currelty implies Aura.
+  # TODO(brettw) bug 342937 move to declare_args block.
+  use_ash = true
+  use_aura = true
+}
+
+if (is_linux || use_ozone) {
+  use_aura = true
+}
+
+if (!use_aura) {
+  use_ash = false  # Ash needs Aura.
+}
+
+# TODO(brettw) bug 342937 move this to the declare_args block above when this
+# is supported. It would look like:
+#  toolkit_views = is_win || is_chromeos || use_aura
+if (is_win || is_chromeos || use_aura) {
+  toolkit_views = true
+}
+
+# Additional dependent variables -----------------------------------------------
+#
+# These variables depend on other variables and can't be set externally.
+
+# Indicates if the UI toolkit depends on GTK.
+toolkit_uses_gtk = is_linux && !is_chromeos && !use_aura && !use_ozone
+
+# Indicates if the UI toolkit depends on X11.
+use_x11 = is_linux && !use_ozone
+
+use_glib = is_linux

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 component("base") {
   external = true
   sources = [
@@ -313,8 +315,6 @@ component("base") {
     "message_loop/message_pump.h",
     "message_loop/message_pump_android.cc",
     "message_loop/message_pump_android.h",
-    "message_loop/message_pump_aurax11.cc",
-    "message_loop/message_pump_aurax11.h",
     "message_loop/message_pump_default.cc",
     "message_loop/message_pump_default.h",
     "message_loop/message_pump_glib.cc",
@@ -686,12 +686,6 @@ component("base") {
   sources -= [ "files/file_path_watcher_stub.cc" ]
 
   sources -= [
-    # TODO(brettw) do these properly.
-    "message_loop/message_pump_aurax11.cc",
-    "message_loop/message_pump_aurax11.h",
-    "message_loop/message_pump_ozone.cc",
-    "message_loop/message_pump_ozone.h",
-
     "process/process_handle_freebsd.cc",
     "process/process_handle_openbsd.cc",
     "process/process_iterator_freebsd.cc",
@@ -781,12 +775,26 @@ component("base") {
 
   # Linux.
   if (is_linux) {
-    # TODO(brettw) these will need to be parameterized at some point.
+    # TODO(brettw) this will need to be parameterized at some point.
     linux_configs = [
       "//build/config/linux:glib",
-      "//build/config/linux:gtk",
-      "//build/config/linux:x11",
     ]
+    if (toolkit_uses_gtk) {
+      linux_configs += [ "//build/config/linux:gtk" ]
+    }
+    if (use_x11) {
+      linux_configs += [
+        "//build/config/linux:x11",
+      ]
+    } else {
+      # On non-Linux platforms, the X11 files will already have been filtered
+      # out using the sources assignment filter.
+      sources -= [
+        "message_loop/message_pump_x11.cc",
+        "message_loop/message_pump_x11.h",
+      ]
+    }
+
     configs += linux_configs
     all_dependent_configs = linux_configs
 
@@ -802,14 +810,29 @@ component("base") {
   } else {
     # Non-Linux.
     sources -= [
-      "message_loop/message_pump_glib.cc",
-      "message_loop/message_pump_glib.h",
-      "message_loop/message_pump_gtk.cc",
-      "message_loop/message_pump_gtk.h",
       "nix/mime_util_xdg.cc",
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
+    ]
+  }
+
+  if (!use_glib) {
+    sources -= [
+      "message_loop/message_pump_glib.cc",
+      "message_loop/message_pump_glib.h",
+    ]
+  }
+  if (!use_ozone) {
+    sources -= [
+      "message_loop/message_pump_ozone.cc",
+      "message_loop/message_pump_ozone.h",
+    ]
+  }
+  if (!toolkit_uses_gtk) {
+    sources -= [
+      "message_loop/message_pump_gtk.cc",
+      "message_loop/message_pump_gtk.h",
     ]
   }
 }

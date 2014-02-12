@@ -33,16 +33,6 @@ declare_args() {
   # to configure warnings.
   is_clang = false
 
-  # ASH is enabled.
-  # TODO(brettw) this should be moved out of the main build config file.
-  use_ash = false
-  # Aura is enabled.
-  # TODO(brettw) this should be moved out of the main build config file.
-  use_aura = false
-  # Ozone is enabled.
-  # TODO(brettw) this should be moved out of the main build config file.
-  use_ozone = false
-
   # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
   # we build 32-bit on Windows regardless of the current host OS bit depth.
   # Setting this flag will override this logic and generate 64-bit toolchains.
@@ -113,9 +103,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = false
   is_win = true
-
-  # Windows currelty implies Aura.
-  use_aura = true
 } else if (os == "mac") {
   is_android = false
   is_chromeos = false
@@ -313,8 +300,6 @@ if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
   is_clang = true
 }
 
-toolkit_uses_gtk = is_linux
-
 # =============================================================================
 # TARGET DEFAULTS
 # =============================================================================
@@ -327,7 +312,7 @@ toolkit_uses_gtk = is_linux
 # Holds all configs used for making native executables and libraries, to avoid
 # duplication in each target below.
 native_compiler_configs = [
-  "//build/config:my_msvs",  # TODO(brettw) eraseme
+  "//build/config:feature_flags",
 
   "//build/config/compiler:compiler",
   "//build/config/compiler:chromium_code",

@@ -45,7 +45,6 @@ pkg_config("gtk") {
   # Gtk requires gmodule, but it does not list it as a dependency in some
   # misconfigured systems.
   packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
-  defines = [ "TOOLKIT_GTK" ]
 }
 
 pkg_config("pangocairo") {
@@ -59,7 +58,6 @@ pkg_config("udev") {
 config("x11") {
   # Don't bother running pkg-config for these X related libraries since it just
   # returns the same libs, and forking pkg-config is slow.
-  defines = [ "USE_X11" ]
   libs = [
     "X11",
     "Xcomposite",

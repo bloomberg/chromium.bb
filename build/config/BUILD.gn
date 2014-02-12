@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 declare_args() {
   # When set, turns off the (normally-on) iterator debugging and related stuff
   # that is normall turned on for Debug builds. These are generally useful for
@@ -9,11 +11,17 @@ declare_args() {
   disable_iterator_debugging = false
 }
 
-# TODO(brettw) this is a hack to set the feature flags we use.
-config("my_msvs") {
+# TODO(brettw) Most of these should be removed. Instead of global feature
+# flags, we should have more modular flags that apply only to a target and its
+# dependents. For example, depending on the "x11" meta-target should define
+# USE_X11 for all dependents so that everything that could use X11 gets the
+# define, but anything that doesn't depend on X11 doesn't see it.
+#
+# For now we define these globally to match the current GYP build.
+config("feature_flags") {
+  # TODO(brettw) most of these need to be parameterized.
   defines = [
       "CHROMIUM_BUILD",
-      "TOOLKIT_VIEWS=1",
       "USE_LIBJPEG_TURBO=1",
       "ENABLE_ONE_CLICK_SIGNIN",
       "ENABLE_REMOTING=1",
@@ -40,12 +48,24 @@ config("my_msvs") {
       "ENABLE_MANAGED_USERS=1",
   ]
 
+  if (toolkit_views) {
+    defines += [ "TOOLKIT_VIEWS=1" ]
+  }
+  if (use_ash) {
+    defines += [ "USE_ASH=1" ]
+  }
   if (use_aura) {
     defines += [ "USE_AURA=1" ]
   }
-}
-
-config("feature_flags") {
+  if (use_glib) {
+    defines += [ "USE_GLIB=1" ]
+  }
+  if (use_ozone) {
+    defines += [ "USE_OZONE=1" ]
+  }
+  if (use_x11) {
+    defines += [ "USE_X11=1" ]
+  }
 }
 
 # Debug/release ----------------------------------------------------------------
