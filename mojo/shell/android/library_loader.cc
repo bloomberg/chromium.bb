@@ -5,6 +5,7 @@
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/logging.h"
 #include "mojo/services/native_viewport/native_viewport_android.h"
 #include "mojo/shell/android/mojo_main.h"
@@ -28,6 +29,9 @@ bool RegisterMojoJni(JNIEnv* env) {
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  if (!base::android::RegisterLibraryLoaderEntryHook(env))
+    return -1;
 
   if (!base::android::RegisterJni(env))
     return -1;

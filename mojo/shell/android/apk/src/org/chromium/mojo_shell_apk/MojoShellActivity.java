@@ -12,8 +12,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 
-import org.chromium.mojo_shell_apk.LibraryLoader;
-import org.chromium.mojo_shell_apk.MojoMain;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.ProcessInitException;
 
 /**
  * Activity for managing the Mojo Shell.
@@ -27,7 +27,7 @@ public class MojoShellActivity extends Activity {
 
         try {
             LibraryLoader.ensureInitialized();
-        } catch (UnsatisfiedLinkError e) {
+        } catch (ProcessInitException e) {
             Log.e(TAG, "libmojo_shell initialization failed.", e);
             finish();
             return;
@@ -44,6 +44,7 @@ public class MojoShellActivity extends Activity {
             final EditText input = new EditText(this);
             alert.setView(input);
             alert.setPositiveButton("Load", new DialogInterface.OnClickListener() {
+                @Override
                 public void onClick(DialogInterface dialog, int button) {
                     String url = input.getText().toString();
                     startWithURL(url);

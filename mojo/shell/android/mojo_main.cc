@@ -26,8 +26,6 @@ namespace mojo {
 
 namespace {
 
-base::AtExitManager* g_at_exit = 0;
-
 LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -58,11 +56,6 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
 
   base::android::InitApplicationContext(env, scoped_context);
-
-  if (g_at_exit)
-    return;
-  g_at_exit = new base::AtExitManager();
-  // TODO(abarth): Currently we leak g_at_exit.
 
   CommandLine::Init(0, 0);
   mojo::shell::InitializeLogging();
