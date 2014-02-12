@@ -53,8 +53,8 @@ typedef struct HFONT__ *HFONT;
 namespace WebCore {
 
 // Return a typeface associated with the hfont, and return its size and
-// lfQuality from the hfont's LOGFONT.
-PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size, int* paintTextFlags);
+// from the hfont's LOGFONT.
+PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size);
 
 class FontDescription;
 class GraphicsContext;
