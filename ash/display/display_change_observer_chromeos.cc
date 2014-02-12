@@ -37,52 +37,46 @@ const unsigned int kHighDensityDPIThreshold = 160;
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
 
-// Display mode list is sorted by (in descending priority):
-//  * the area in pixels.
-//  * refresh rate.
-struct DisplayModeSorter {
-  bool operator()(const DisplayMode& a, const DisplayMode& b) {
-    if (a.size.GetArea() == b.size.GetArea())
-      return (a.refresh_rate > b.refresh_rate);
-    return (a.size.GetArea() > b.size.GetArea());
+// Resolution list are sorted by the area in pixels and the larger
+// one comes first.
+struct ResolutionSorter {
+  bool operator()(const Resolution& a, const Resolution& b) {
+    return a.size.width() * a.size.height() > b.size.width() * b.size.height();
   }
 };
 
 }  // namespace
 
 // static
-std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
+std::vector<Resolution> DisplayChangeObserver::GetResolutionList(
     const OutputConfigurator::OutputSnapshot& output) {
-  typedef std::map<std::pair<int, int>, DisplayMode> DisplayModeMap;
-  DisplayModeMap display_mode_map;
+  typedef std::map<std::pair<int,int>, Resolution> ResolutionMap;
+  ResolutionMap resolution_map;
 
   for (std::map<RRMode, OutputConfigurator::ModeInfo>::const_iterator it =
        output.mode_infos.begin(); it != output.mode_infos.end(); ++it) {
     const OutputConfigurator::ModeInfo& mode_info = it->second;
     const std::pair<int, int> size(mode_info.width, mode_info.height);
-    const DisplayMode display_mode(gfx::Size(mode_info.width, mode_info.height),
-                                   mode_info.refresh_rate,
-                                   mode_info.interlaced,
-                                   output.native_mode == it->first);
+    const Resolution resolution(gfx::Size(mode_info.width, mode_info.height),
+                                mode_info.interlaced);
 
-    // Add the display mode if it isn't already present and override interlaced
-    // display modes with non-interlaced ones.
-    DisplayModeMap::iterator display_mode_it = display_mode_map.find(size);
-    if (display_mode_it == display_mode_map.end())
-      display_mode_map.insert(std::make_pair(size, display_mode));
-    else if (display_mode_it->second.interlaced && !display_mode.interlaced)
-      display_mode_it->second = display_mode;
+    // Add the resolution if it isn't already present and override interlaced
+    // resolutions with non-interlaced ones.
+    ResolutionMap::iterator resolution_it = resolution_map.find(size);
+    if (resolution_it == resolution_map.end())
+      resolution_map.insert(std::make_pair(size, resolution));
+    else if (resolution_it->second.interlaced && !resolution.interlaced)
+      resolution_it->second = resolution;
   }
 
-  std::vector<DisplayMode> display_mode_list;
-  for (DisplayModeMap::const_iterator iter = display_mode_map.begin();
-       iter != display_mode_map.end();
+  std::vector<Resolution> resolution_list;
+  for (ResolutionMap::const_iterator iter = resolution_map.begin();
+       iter != resolution_map.end();
        ++iter) {
-    display_mode_list.push_back(iter->second);
+    resolution_list.push_back(iter->second);
   }
-  std::sort(
-      display_mode_list.begin(), display_mode_list.end(), DisplayModeSorter());
-  return display_mode_list;
+  std::sort(resolution_list.begin(), resolution_list.end(), ResolutionSorter());
+  return resolution_list;
 }
 
 DisplayChangeObserver::DisplayChangeObserver() {
@@ -111,13 +105,14 @@ ui::OutputState DisplayChangeObserver::GetStateForDisplayIds(
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
                                                       int* width,
                                                       int* height) const {
-  DisplayMode mode;
-  if (!Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
-           display_id, &mode))
+  gfx::Size resolution;
+  if (!Shell::GetInstance()->display_manager()->
+      GetSelectedResolutionForDisplayId(display_id, &resolution)) {
     return false;
+  }
 
-  *width = mode.size.width();
-  *height = mode.size.height();
+  *width = resolution.width();
+  *height = resolution.height();
   return true;
 }
 
@@ -150,7 +145,9 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     gfx::Rect display_bounds(
         output.x, output.y, mode_info->width, mode_info->height);
 
-    std::vector<DisplayMode> display_modes = GetDisplayModeList(output);
+    std::vector<Resolution> resolutions;
+    if (output.type != chromeos::OUTPUT_TYPE_INTERNAL)
+      resolutions = GetResolutionList(output);
 
     std::string name =
         output.type == ui::OUTPUT_TYPE_INTERNAL
@@ -171,7 +168,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     displays.back().set_device_scale_factor(device_scale_factor);
     displays.back().SetBounds(display_bounds);
     displays.back().set_native(true);
-    displays.back().set_display_modes(display_modes);
+    displays.back().set_resolutions(resolutions);
     displays.back().set_touch_support(
         output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
                                       gfx::Display::TOUCH_SUPPORT_AVAILABLE);

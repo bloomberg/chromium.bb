@@ -15,11 +15,13 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    base::MessageLoopProxy* compositor_message_loop,
+    base::WeakPtr<ui::Compositor> compositor)
     : BrowserCompositorOutputSurface(context,
                                      surface_id,
                                      output_surface_map,
-                                     vsync_manager) {}
+                                     compositor_message_loop,
+                                     compositor) {}
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}
 

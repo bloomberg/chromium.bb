@@ -122,6 +122,11 @@ class BenchCompositorObserver : public ui::CompositorObserver {
   virtual void OnCompositingLockStateChanged(
       Compositor* compositor) OVERRIDE {}
 
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE {
+  }
+
   virtual void Draw() {}
 
   int frames() const { return frames_; }

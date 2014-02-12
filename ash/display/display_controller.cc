@@ -34,7 +34,6 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -121,14 +120,6 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
   scoped_ptr<aura::RootWindowTransformer> transformer(
       internal::CreateRootWindowTransformerForDisplay(root->window(), display));
   root->host()->SetRootWindowTransformer(transformer.Pass());
-
-  internal::DisplayMode mode;
-  if (GetDisplayManager()->GetSelectedModeForDisplayId(display.id(), &mode) &&
-      mode.refresh_rate > 0.0f) {
-    root->host()->compositor()->vsync_manager()->SetAuthoritativeVSyncInterval(
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          mode.refresh_rate));
-  }
 }
 
 }  // namespace

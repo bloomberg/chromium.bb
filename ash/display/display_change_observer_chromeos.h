@@ -13,7 +13,7 @@
 namespace ash {
 namespace internal {
 
-struct DisplayMode;
+struct Resolution;
 
 // An object that observes changes in display configuration and
 // update DisplayManagers.
@@ -23,7 +23,7 @@ class DisplayChangeObserver
       public ShellObserver {
  public:
   // Returns the resolution list.
-  ASH_EXPORT static std::vector<DisplayMode> GetDisplayModeList(
+  ASH_EXPORT static std::vector<Resolution> GetResolutionList(
       const chromeos::OutputConfigurator::OutputSnapshot& output);
 
   DisplayChangeObserver();

@@ -53,6 +53,6 @@ BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParametersOnCompositorThread(
     base::TimeDelta interval) {
   BrowserCompositorOutputSurface* surface = surface_map_->Lookup(surface_id);
   if (surface)
-    surface->OnUpdateVSyncParametersFromGpu(timebase, interval);
+    surface->OnUpdateVSyncParameters(timebase, interval);
 }
 }  // namespace content

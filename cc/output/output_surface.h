@@ -159,8 +159,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   // The FrameRateController is deprecated.
   // Platforms should move to native BeginImplFrames instead.
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
+  void OnVSyncParametersChanged(base::TimeTicks timebase,
+                                base::TimeDelta interval);
   virtual void FrameRateControllerTick(bool throttled,
                                        const BeginFrameArgs& args) OVERRIDE;
   scoped_ptr<FrameRateController> frame_rate_controller_;

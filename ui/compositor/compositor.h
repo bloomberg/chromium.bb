@@ -43,7 +43,6 @@ class Size;
 namespace ui {
 
 class Compositor;
-class CompositorVSyncManager;
 class Layer;
 class PostedSwapQueue;
 class Reflector;
@@ -164,7 +163,8 @@ class COMPOSITOR_EXPORT CompositorLock
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
+      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
+      public base::SupportsWeakPtr<Compositor> {
  public:
   explicit Compositor(gfx::AcceleratedWidget widget);
   virtual ~Compositor();
@@ -222,9 +222,6 @@ class COMPOSITOR_EXPORT Compositor
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }
 
-  // Returns the vsync manager for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager() const;
-
   // Compositor does not own observers. It is the responsibility of the
   // observer to remove itself when it is done observing.
   void AddObserver(CompositorObserver* observer);
@@ -246,6 +243,9 @@ class COMPOSITOR_EXPORT Compositor
 
   // Signals swap has aborted (e.g. lost context).
   void OnSwapBuffersAborted();
+
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
@@ -301,9 +301,6 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget widget_;
   scoped_refptr<cc::Layer> root_web_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
-
-  // The manager of vsync parameters for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager_;
 
   // Used to verify that we have at most one draw swap in flight.
   scoped_ptr<PostedSwapQueue> posted_swaps_;

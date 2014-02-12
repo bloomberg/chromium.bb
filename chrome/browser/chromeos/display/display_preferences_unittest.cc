@@ -231,7 +231,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(1, rotation);
   EXPECT_EQ(1250, ui_scale);
 
-  // Internal display never registered the resolution.
+  // Internal display never registere the resolution.
   int width = 0, height = 0;
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
@@ -271,11 +271,11 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id1), &property));
   width = 0;
   height = 0;
-  // Internal display shouldn't store its resolution.
+  // Internal dispaly shouldn't store its resolution.
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  // External display's resolution must be stored this time because
+  // External dispaly's resolution must be stored this time because
   // it's not best.
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("width", &width));
@@ -320,7 +320,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  // External display's selected resolution must not change
+  // External dispaly's selected resolution must not change
   // by mirroring.
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("width", &width));
@@ -329,8 +329,11 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(200, height);
 
   // Set new display's selected resolution.
-  display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400));
+  display_manager->RegisterDisplayProperty(id2 + 1,
+                                           gfx::Display::ROTATE_0,
+                                           1.0f,
+                                           NULL,
+                                           gfx::Size(500, 400));
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
@@ -354,11 +357,14 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("height", &height));
 
   // Set yet another new display's selected resolution.
-  display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400));
+  display_manager->RegisterDisplayProperty(id2 + 1,
+                                           gfx::Display::ROTATE_0,
+                                           1.0f,
+                                           NULL,
+                                           gfx::Size(500, 400));
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
-  UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
+  UpdateDisplay("200x200*2, 500x400#600x500|500x400");
   // Update key as the 2nd display gets new id.
   id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
@@ -373,7 +379,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::Int64ToString(id1), primary_id_str);
 
-  // External display's selected resolution must be updated.
+  // External dispaly's selected resolution must be updated.
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("width", &width));
   EXPECT_TRUE(property->GetInteger("height", &height));

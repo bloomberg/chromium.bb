@@ -125,23 +125,16 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     if (relative_change < kRelativeIntervalDifferenceThreshold) {
       if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
           new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
-#if defined(USE_ASH)
-        // On ash platforms (ChromeOS essentially), the real refresh interval is
-        // queried from XRandR, regardless of the value calculated here, and
-        // this value is overriden by ui::CompositorVSyncManager.  The log
-        // should not be fatal in this case. Reconsider all this when XRandR
-        // support is added to non-ash platforms.
-        // http://crbug.com/340851
-        LOG(ERROR)
-#else
-        LOG(FATAL)
-#endif  // USE_ASH
-            << "Calculated bogus refresh interval="
-            << new_interval.InMicroseconds()
-            << " us., last_timebase_=" << last_timebase_.ToInternalValue()
-            << " us., timebase=" << timebase.ToInternalValue()
-            << " us., last_media_stream_counter_=" << last_media_stream_counter_
-            << ", media_stream_counter=" << media_stream_counter;
+        LOG(FATAL) << "Calculated bogus refresh interval of "
+                   << new_interval.InMicroseconds() << " us. "
+                   << "Last time base of " << last_timebase_.ToInternalValue()
+                   << " us. "
+                   << "Current time base of " << timebase.ToInternalValue()
+                   << " us. "
+                   << "Last media stream count of "
+                   << last_media_stream_counter_ << ". "
+                   << "Current media stream count of " << media_stream_counter
+                   << ".";
       } else {
         last_good_interval_ = new_interval;
       }

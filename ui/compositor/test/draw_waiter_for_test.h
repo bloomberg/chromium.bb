@@ -38,6 +38,9 @@ class DrawWaiterForTest : public CompositorObserver {
   virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE;
   virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE;
   virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE;
+  virtual void OnUpdateVSyncParameters(Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE;
 
   scoped_ptr<base::RunLoop> wait_run_loop_;
 

@@ -27,8 +27,6 @@
         'compositor.h',
         'compositor_export.h',
         'compositor_observer.h',
-        'compositor_vsync_manager.cc',
-        'compositor_vsync_manager.h',
         'compositor_switches.cc',
         'compositor_switches.h',
         'debug_utils.cc',
