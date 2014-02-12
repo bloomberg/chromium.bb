@@ -602,11 +602,6 @@ void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
 
   SDVLOG(1) << "Got snapshot " << snapshot.ToString();
 
-  const syncer::ModelTypeSet to_migrate =
-      snapshot.model_neutral_state().types_needing_local_migration;
-  if (!to_migrate.Empty())
-    frontend_->OnMigrationNeededForTypes(to_migrate);
-
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
   if (initialized())
@@ -639,6 +634,14 @@ void SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop(
     return;
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnActionableError(sync_error);
+}
+
+void SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop(
+    syncer::ModelTypeSet types) {
+  if (!frontend_)
+    return;
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
+  frontend_->OnMigrationNeededForTypes(types);
 }
 
 void SyncBackendHostImpl::OnInvalidatorStateChange(

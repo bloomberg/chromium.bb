@@ -116,6 +116,8 @@ void DebugInfoEventListener::OnActionableError(
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
 }
 
+void DebugInfoEventListener::OnMigrationRequested(ModelTypeSet types) {}
+
 void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_pb::DebugEventInfo event_info;

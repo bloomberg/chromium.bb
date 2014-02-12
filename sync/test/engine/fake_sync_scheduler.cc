@@ -89,4 +89,7 @@ void FakeSyncScheduler::OnReceivedGuRetryDelay(
     const base::TimeDelta& delay) {
 }
 
+void FakeSyncScheduler::OnReceivedMigrationRequest(ModelTypeSet types) {
+}
+
 }  // namespace syncer

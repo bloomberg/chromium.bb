@@ -140,6 +140,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE;
   virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE;
   virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE;
+  virtual void OnMigrationRequested(ModelTypeSet types) OVERRIDE;
 
   // ServerConnectionEventListener implementation.
   virtual void OnServerConnectionEvent(

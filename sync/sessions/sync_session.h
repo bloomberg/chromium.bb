@@ -86,6 +86,9 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     // Called when server wants to schedule a retry GU.
     virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) = 0;
 
+    // Called when server requests a migration.
+    virtual void OnReceivedMigrationRequest(ModelTypeSet types) = 0;
+
    protected:
     virtual ~Delegate() {}
   };

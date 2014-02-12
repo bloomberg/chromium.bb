@@ -35,10 +35,6 @@ struct SYNC_EXPORT ModelNeutralState {
   int num_tombstone_updates_downloaded_total;
   int num_reflected_updates_downloaded_total;
 
-  // If the syncer encountered a MIGRATION_DONE code, these are the types that
-  // the client must now "migrate", by purging and re-downloading all updates.
-  ModelTypeSet types_needing_local_migration;
-
   // Update application and conflicts.
   int num_updates_applied;
   int num_encryption_conflicts;

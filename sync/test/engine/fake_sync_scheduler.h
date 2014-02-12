@@ -59,6 +59,7 @@ class FakeSyncScheduler : public SyncScheduler {
       const SyncProtocolError& error) OVERRIDE;
   virtual void OnReceivedGuRetryDelay(
       const base::TimeDelta& delay) OVERRIDE;
+  virtual void OnReceivedMigrationRequest(ModelTypeSet types) OVERRIDE;
 };
 
 }  // namespace syncer

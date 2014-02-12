@@ -222,6 +222,8 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
     virtual void OnActionableError(
         const SyncProtocolError& sync_protocol_error) = 0;
 
+    virtual void OnMigrationRequested(ModelTypeSet types) = 0;
+
    protected:
     virtual ~Observer();
   };

@@ -22,10 +22,6 @@ void StatusController::increment_num_updates_downloaded_by(int value) {
   model_neutral_.num_updates_downloaded_total += value;
 }
 
-void StatusController::set_types_needing_local_migration(ModelTypeSet types) {
-  model_neutral_.types_needing_local_migration = types;
-}
-
 void StatusController::increment_num_tombstone_updates_downloaded_by(
     int value) {
   model_neutral_.num_tombstone_updates_downloaded_total += value;

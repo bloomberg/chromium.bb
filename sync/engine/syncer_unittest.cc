@@ -151,6 +151,7 @@ class SyncerTest : public testing::Test,
     last_client_invalidation_hint_buffer_size_ = size;
   }
   virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE {}
+  virtual void OnReceivedMigrationRequest(ModelTypeSet types) OVERRIDE {}
   virtual void OnSyncProtocolError(const SyncProtocolError& error) OVERRIDE {}
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
@@ -179,6 +180,7 @@ class SyncerTest : public testing::Test,
   virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE {}
   virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE {}
   virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE {}
+  virtual void OnMigrationRequested(ModelTypeSet types) OVERRIDE {}
 
   void ResetSession() {
     session_.reset(SyncSession::Build(context_.get(), this));

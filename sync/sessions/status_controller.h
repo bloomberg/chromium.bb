@@ -96,9 +96,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
   void set_last_download_updates_result(const SyncerError result);
   void set_commit_result(const SyncerError result);
 
-  // A very important flag used to inform frontend of need to migrate.
-  void set_types_needing_local_migration(ModelTypeSet types);
-
   void UpdateStartTime();
 
  private:

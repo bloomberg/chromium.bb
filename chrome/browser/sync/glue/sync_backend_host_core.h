@@ -101,6 +101,7 @@ class SyncBackendHostCore
       syncer::ConnectionStatus status) OVERRIDE;
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
+  virtual void OnMigrationRequested(syncer::ModelTypeSet types) OVERRIDE;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(

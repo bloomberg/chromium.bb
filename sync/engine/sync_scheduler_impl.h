@@ -90,6 +90,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual void OnSyncProtocolError(
       const SyncProtocolError& sync_protocol_error) OVERRIDE;
   virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE;
+  virtual void OnReceivedMigrationRequest(syncer::ModelTypeSet types) OVERRIDE;
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

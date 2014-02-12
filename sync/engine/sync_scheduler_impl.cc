@@ -908,6 +908,12 @@ void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {
                      &SyncSchedulerImpl::RetryTimerCallback);
 }
 
+void SyncSchedulerImpl::OnReceivedMigrationRequest(ModelTypeSet types) {
+    FOR_EACH_OBSERVER(SyncEngineEventListener,
+                      *session_context_->listeners(),
+                      OnMigrationRequested(types));
+}
+
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {
   DCHECK(CalledOnValidThread());
   session_context_->set_notifications_enabled(notifications_enabled);

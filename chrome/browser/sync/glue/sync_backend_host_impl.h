@@ -202,6 +202,9 @@ class SyncBackendHostImpl
   void HandleActionableErrorEventOnFrontendLoop(
       const syncer::SyncProtocolError& sync_error);
 
+  // Handle a migration request.
+  void HandleMigrationRequestedOnFrontendLoop(const syncer::ModelTypeSet types);
+
   // Checks if |passphrase| can be used to decrypt the cryptographer's pending
   // keys that were cached during NotifyPassphraseRequired. Returns true if
   // decryption was successful. Returns false otherwise. Must be called with a

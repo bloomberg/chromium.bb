@@ -648,6 +648,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
   MOCK_METHOD1(OnActionableError,
                void(const SyncProtocolError&));  // NOLINT
+  MOCK_METHOD1(OnMigrationRequested,
+               void(syncer::ModelTypeSet));  // NOLINT
 };
 
 class SyncEncryptionHandlerObserverMock

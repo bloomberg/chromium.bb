@@ -462,9 +462,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     case MIGRATION_DONE:
       LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
           << "MIGRATION_DONE but no types specified.";
-      // TODO(akalin): This should be a set union.
-      session->mutable_status_controller()->
-          set_types_needing_local_migration(GetTypesToMigrate(*response));
+      session->delegate()->OnReceivedMigrationRequest(
+          GetTypesToMigrate(*response));
       return SERVER_RETURN_MIGRATION_DONE;
     case CLEAR_PENDING:
       return SERVER_RETURN_CLEAR_PENDING;

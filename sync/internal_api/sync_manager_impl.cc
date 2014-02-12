@@ -945,6 +945,12 @@ void SyncManagerImpl::OnRetryTimeChanged(base::Time) {}
 
 void SyncManagerImpl::OnThrottledTypesChanged(ModelTypeSet) {}
 
+void SyncManagerImpl::OnMigrationRequested(ModelTypeSet types) {
+  FOR_EACH_OBSERVER(
+      SyncManager::Observer, observers_,
+      OnMigrationRequested(types));
+}
+
 void SyncManagerImpl::SetJsEventHandler(
     const WeakHandle<JsEventHandler>& event_handler) {
   js_event_handler_ = event_handler;

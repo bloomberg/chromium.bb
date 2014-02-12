@@ -308,6 +308,14 @@ void SyncBackendHostCore::OnActionableError(
       sync_error);
 }
 
+void SyncBackendHostCore::OnMigrationRequested(syncer::ModelTypeSet types) {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop,
+      types);
+}
+
 void SyncBackendHostCore::DoOnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
