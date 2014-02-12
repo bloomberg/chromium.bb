@@ -37,11 +37,59 @@
   return deviceNames;
 }
 
++ (void)getDevice:(const media::VideoCaptureDevice::Name&)name
+ supportedFormats:(media::VideoCaptureFormats*)formats{
+  NSArray* devices = [AVCaptureDeviceGlue devices];
+  CrAVCaptureDevice* device = nil;
+  for (device in devices) {
+    if ([[device uniqueID] UTF8String] == name.id())
+      break;
+  }
+  if (device == nil)
+    return;
+  for (CrAVCaptureDeviceFormat* format in device.formats) {
+    // MediaSubType comes is a CMPixelFormatType but can be used as
+    // CVPixelFormatType as well according to CMFormatDescription.h
+    media::VideoPixelFormat pixelFormat = media::PIXEL_FORMAT_UNKNOWN;
+    switch (CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+                [format formatDescription])) {
+      case kCVPixelFormatType_422YpCbCr8:  // Typical.
+        pixelFormat = media::PIXEL_FORMAT_UYVY;
+        break;
+      case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
+        pixelFormat = media::PIXEL_FORMAT_YUY2;
+        break;
+      case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
+        pixelFormat = media::PIXEL_FORMAT_MJPEG;
+      default:
+        break;
+    }
+
+  CoreMediaGlue::CMVideoDimensions dimensions =
+        CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(
+            [format formatDescription]);
+
+  for (CrAVFrameRateRange* frameRate in
+           [format videoSupportedFrameRateRanges]) {
+      media::VideoCaptureFormat format(
+          gfx::Size(dimensions.width, dimensions.height),
+          static_cast<int>(frameRate.maxFrameRate),
+          pixelFormat);
+      formats->push_back(format);
+      DVLOG(2) << name.name() << " resolution: "
+               << format.frame_size.ToString() << ", fps: "
+               << format.frame_rate << ", pixel format: "
+               << format.pixel_format;
+    }
+  }
+
+}
+
 #pragma mark Public methods
 
 - (id)initWithFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver {
   if ((self = [super init])) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(main_thread_checker_.CalledOnValidThread());
     DCHECK(frameReceiver);
     [self setFrameReceiver:frameReceiver];
     captureSession_.reset(
@@ -62,7 +110,7 @@
 
 - (BOOL)setCaptureDevice:(NSString*)deviceId {
   DCHECK(captureSession_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (!deviceId) {
     // First stop the capture session, if it's running.
@@ -115,7 +163,13 @@
 }
 
 - (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // Check if either of VideoCaptureDeviceMac::AllocateAndStart() or
+  // VideoCaptureDeviceMac::ReceiveFrame() is calling here, depending on the
+  // running state. VCDM::ReceiveFrame() calls here to change aspect ratio.
+  DCHECK((![captureSession_ isRunning] &&
+      main_thread_checker_.CalledOnValidThread()) ||
+      callback_thread_checker_.CalledOnValidThread());
+
   frameWidth_ = width;
   frameHeight_ = height;
   frameRate_ = frameRate;
@@ -164,8 +218,8 @@
 
   CrAVCaptureConnection* captureConnection = [captureVideoDataOutput_
       connectionWithMediaType:AVFoundationGlue::AVMediaTypeVideo()];
-  // TODO(mcasas): Check selector existence, related to bugs
-  // http://crbug.com/327532 and http://crbug.com/328096.
+  // Check selector existence, related to bugs http://crbug.com/327532 and
+  // http://crbug.com/328096.
   if ([captureConnection
            respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
       [captureConnection isVideoMinFrameDurationSupported]) {
@@ -182,7 +236,7 @@
 }
 
 - (BOOL)startCapture {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!captureSession_) {
     DLOG(ERROR) << "Video capture session not initialized.";
     return NO;
@@ -198,7 +252,7 @@
 }
 
 - (void)stopCapture {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if ([captureSession_ isRunning])
     [captureSession_ stopRunning];  // Synchronous.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -210,6 +264,10 @@
 - (void)captureOutput:(CrAVCaptureOutput*)captureOutput
     didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
            fromConnection:(CrAVCaptureConnection*)connection {
+  // AVFoundation calls from a number of threads, depending on, at least, if
+  // Chrome is on foreground or background. Sample the actual thread here.
+  callback_thread_checker_.DetachFromThread();
+  callback_thread_checker_.CalledOnValidThread();
   CVImageBufferRef videoFrame =
       CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
   // Lock the frame and calculate frame size.

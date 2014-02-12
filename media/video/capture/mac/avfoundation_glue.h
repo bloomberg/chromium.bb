@@ -64,6 +64,24 @@ MEDIA_EXPORT
 - (NSString*)uniqueID;
 - (NSString*)localizedName;
 - (BOOL)supportsAVCaptureSessionPreset:(NSString*)preset;
+- (NSArray*)formats;
+
+@end
+
+// Originally AVCaptureDeviceFormat and coming from AVCaptureDevice.h.
+MEDIA_EXPORT
+@interface CrAVCaptureDeviceFormat : NSObject
+
+- (CoreMediaGlue::CMFormatDescriptionRef)formatDescription;
+- (NSArray*)videoSupportedFrameRateRanges;
+
+@end
+
+// Originally AVFrameRateRange and coming from AVCaptureDevice.h.
+MEDIA_EXPORT
+@interface CrAVFrameRateRange : NSObject
+
+- (Float64)maxFrameRate;
 
 @end
 

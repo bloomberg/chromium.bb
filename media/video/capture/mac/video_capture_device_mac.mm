@@ -85,7 +85,13 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
     VideoCaptureFormats* formats) {
-  NOTIMPLEMENTED();
+  if (AVFoundationGlue::IsAVFoundationSupported()) {
+    DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
+    [VideoCaptureDeviceAVFoundation getDevice:device
+                             supportedFormats:formats];
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {
@@ -175,8 +181,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   // out if the request is larger than the camera's native resolution.
 
   // If the resolution is HD, start capturing without setting a resolution.
-  // QTKit will produce frames at the native resolution, allowing us to
-  // identify cameras whose native resolution is too low for HD.  This
+  // QTKit/AVFoundation will produce frames at the native resolution, allowing
+  // us to identify cameras whose native resolution is too low for HD.  This
   // additional information comes at a cost in startup latency, because the
   // webcam will need to be reopened if its default resolution is not HD or VGA.
 
@@ -239,7 +245,7 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     int aspect_numerator,
     int aspect_denominator) {
   // This method is safe to call from a device capture thread,
-  // i.e. any thread controlled by QTKit.
+  // i.e. any thread controlled by QTKit/AVFoundation.
 
   if (!sent_frame_info_) {
     // Final resolution has not yet been selected.

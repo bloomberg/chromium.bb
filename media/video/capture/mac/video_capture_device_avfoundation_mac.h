@@ -10,6 +10,8 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "media/video/capture/video_capture_device.h"
+#include "media/video/capture/video_capture_types.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
 
@@ -74,11 +76,16 @@ class VideoCaptureDeviceMac;
   CrAVCaptureDeviceInput* captureDeviceInput_;
   base::scoped_nsobject<CrAVCaptureVideoDataOutput> captureVideoDataOutput_;
 
-  base::ThreadChecker thread_checker_;
+  base::ThreadChecker main_thread_checker_;
+  base::ThreadChecker callback_thread_checker_;
 }
 
 // Returns a dictionary of capture devices with friendly name and unique id.
 + (NSDictionary*)deviceNames;
+
+// Retrieve the capture supported formats for a given device |name|.
++ (void)getDevice:(const media::VideoCaptureDevice::Name&)name
+    supportedFormats:(media::VideoCaptureFormats*)formats;
 
 // Initializes the instance and the underlying capture session and registers the
 // frame receiver.

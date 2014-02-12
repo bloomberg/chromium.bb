@@ -29,6 +29,20 @@ class MEDIA_EXPORT CoreMediaGlue {
     CMTimeEpoch epoch;
   } CMTime;
 
+  // Originally from CMFormatDescription.h.
+  typedef const struct opaqueCMFormatDescription* CMFormatDescriptionRef;
+  typedef CMFormatDescriptionRef CMVideoFormatDescriptionRef;
+  typedef struct {
+    int32_t width;
+    int32_t height;
+  } CMVideoDimensions;
+  enum {
+    kCMPixelFormat_422YpCbCr8_yuvs = 'yuvs',
+  };
+  enum {
+    kCMVideoCodecType_JPEG_OpenDML = 'dmb1',
+  };
+
   // Originally from CMSampleBuffer.h.
   typedef struct OpaqueCMSampleBuffer* CMSampleBufferRef;
 
@@ -38,6 +52,12 @@ class MEDIA_EXPORT CoreMediaGlue {
   // Originally from CMSampleBuffer.h.
   static CVImageBufferRef CMSampleBufferGetImageBuffer(
       CMSampleBufferRef buffer);
+
+  // Originally from CMFormatDescription.h.
+  static FourCharCode CMFormatDescriptionGetMediaSubType(
+      CMFormatDescriptionRef desc);
+  static CMVideoDimensions CMVideoFormatDescriptionGetDimensions(
+      CMVideoFormatDescriptionRef videoDesc);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(CoreMediaGlue);
