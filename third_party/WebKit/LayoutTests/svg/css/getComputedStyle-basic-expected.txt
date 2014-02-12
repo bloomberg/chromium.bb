@@ -90,6 +90,8 @@ rect: style.getPropertyValue(font-style) : normal
 rect: style.getPropertyCSSValue(font-style) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(font-variant) : normal
 rect: style.getPropertyCSSValue(font-variant) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(font-variant-ligatures) : normal
+rect: style.getPropertyCSSValue(font-variant-ligatures) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(font-weight) : normal
 rect: style.getPropertyCSSValue(font-weight) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(height) : auto
@@ -298,8 +300,6 @@ rect: style.getPropertyValue(justify-content) : flex-start
 rect: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-font-smoothing) : auto
 rect: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(-webkit-font-variant-ligatures) : normal
-rect: style.getPropertyCSSValue(-webkit-font-variant-ligatures) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-highlight) : none
 rect: style.getPropertyCSSValue(-webkit-highlight) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-hyphenate-character) : auto
@@ -564,6 +564,8 @@ g: style.getPropertyValue(font-style) : normal
 g: style.getPropertyCSSValue(font-style) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(font-variant) : normal
 g: style.getPropertyCSSValue(font-variant) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(font-variant-ligatures) : normal
+g: style.getPropertyCSSValue(font-variant-ligatures) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(font-weight) : normal
 g: style.getPropertyCSSValue(font-weight) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(height) : auto
@@ -772,8 +774,6 @@ g: style.getPropertyValue(justify-content) : flex-start
 g: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-font-smoothing) : auto
 g: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(-webkit-font-variant-ligatures) : normal
-g: style.getPropertyCSSValue(-webkit-font-variant-ligatures) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-highlight) : none
 g: style.getPropertyCSSValue(-webkit-highlight) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-hyphenate-character) : auto

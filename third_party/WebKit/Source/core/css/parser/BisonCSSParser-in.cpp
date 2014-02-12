@@ -2678,7 +2678,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
             return parseFontFeatureSettings(important);
         break;
 
-    case CSSPropertyWebkitFontVariantLigatures:
+    case CSSPropertyFontVariantLigatures:
         if (id == CSSValueNormal)
             validPrimitive = true;
         else
@@ -9316,7 +9316,7 @@ bool BisonCSSParser::parseFontVariantLigatures(bool important)
     if (!ligatureValues->length())
         return false;
 
-    addProperty(CSSPropertyWebkitFontVariantLigatures, ligatureValues.release(), important);
+    addProperty(CSSPropertyFontVariantLigatures, ligatureValues.release(), important);
     return true;
 }
 

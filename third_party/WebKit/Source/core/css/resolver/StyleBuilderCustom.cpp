@@ -701,17 +701,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
     }
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyWebkitFontVariantLigatures(StyleResolverState& state)
+void StyleBuilderFunctions::applyInitialCSSPropertyFontVariantLigatures(StyleResolverState& state)
 {
     state.fontBuilder().setFontVariantLigaturesInitial();
 }
 
-void StyleBuilderFunctions::applyInheritCSSPropertyWebkitFontVariantLigatures(StyleResolverState& state)
+void StyleBuilderFunctions::applyInheritCSSPropertyFontVariantLigatures(StyleResolverState& state)
 {
     state.fontBuilder().setFontVariantLigaturesInherit(state.parentFontDescription());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontVariantLigatures(StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyFontVariantLigatures(StyleResolverState& state, CSSValue* value)
 {
     state.fontBuilder().setFontVariantLigaturesValue(value);
 }
@@ -1769,6 +1769,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFontSize:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
+    case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontWeight:
     case CSSPropertyHeight:
     case CSSPropertyImageRendering:
@@ -1885,7 +1886,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitFlowFrom:
     case CSSPropertyWebkitFlowInto:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitFontVariantLigatures:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLineAlign:

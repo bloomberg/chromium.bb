@@ -132,6 +132,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontSize,
     CSSPropertyFontStyle,
     CSSPropertyFontVariant,
+    CSSPropertyFontVariantLigatures,
     CSSPropertyFontWeight,
     CSSPropertyHeight,
     CSSPropertyImageRendering,
@@ -263,7 +264,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFlexWrap,
     CSSPropertyJustifyContent,
     CSSPropertyWebkitFontSmoothing,
-    CSSPropertyWebkitFontVariantLigatures,
     CSSPropertyGridAutoColumns,
     CSSPropertyGridAutoFlow,
     CSSPropertyGridAutoRows,
@@ -2284,7 +2284,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->fontDescription().kerning());
         case CSSPropertyWebkitFontSmoothing:
             return cssValuePool().createValue(style->fontDescription().fontSmoothing());
-        case CSSPropertyWebkitFontVariantLigatures: {
+        case CSSPropertyFontVariantLigatures: {
             FontDescription::LigaturesState commonLigaturesState = style->fontDescription().commonLigaturesState();
             FontDescription::LigaturesState discretionaryLigaturesState = style->fontDescription().discretionaryLigaturesState();
             FontDescription::LigaturesState historicalLigaturesState = style->fontDescription().historicalLigaturesState();

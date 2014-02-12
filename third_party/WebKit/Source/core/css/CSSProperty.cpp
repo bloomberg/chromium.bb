@@ -325,7 +325,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitFontFeatureSettings:
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitFontVariantLigatures:
+    case CSSPropertyFontVariantLigatures:
     case CSSPropertyWebkitLocale:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:

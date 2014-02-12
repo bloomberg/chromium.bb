@@ -49,11 +49,11 @@ font-kerning
 font-size
 font-style
 font-variant
+font-variant-ligatures
 font-weight
 text-rendering
 -webkit-font-feature-settings
 -webkit-font-smoothing
--webkit-font-variant-ligatures
 -webkit-locale
 -webkit-text-orientation
 -epub-text-orientation alias_for=-webkit-text-orientation

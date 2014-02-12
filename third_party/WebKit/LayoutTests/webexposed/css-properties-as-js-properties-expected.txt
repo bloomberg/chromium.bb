@@ -107,6 +107,7 @@ fontSize
 fontStretch
 fontStyle
 fontVariant
+fontVariantLigatures
 fontWeight
 glyphOrientationHorizontal
 glyphOrientationVertical
@@ -320,7 +321,6 @@ webkitFlowInto
 webkitFontFeatureSettings
 webkitFontSizeDelta
 webkitFontSmoothing
-webkitFontVariantLigatures
 webkitHighlight
 webkitHyphenateCharacter
 webkitLineAlign

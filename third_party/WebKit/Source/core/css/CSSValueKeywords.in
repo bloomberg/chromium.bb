@@ -52,7 +52,7 @@ all
 //normal
 small-caps
 
-// -webkit-font-variant-ligatures:
+// font-variant-ligatures:
 //
 // normal
 common-ligatures

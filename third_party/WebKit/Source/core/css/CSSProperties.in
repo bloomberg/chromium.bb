@@ -60,6 +60,7 @@ font-kerning custom_all
 font-size custom_all
 font-style custom_all
 font-variant custom_all
+font-variant-ligatures custom_all
 font-weight custom_all
 grid-auto-flow type_name=GridAutoFlow
 height type_name=Length, initial=initialSize, converter=convertLengthSizing
@@ -189,7 +190,6 @@ column-fill type_name=ColumnFill
 -webkit-flow-from type_name=AtomicString, name_for_methods=RegionThread, converter=convertString<CSSValueNone>
 -webkit-flow-into type_name=AtomicString, name_for_methods=FlowThread, converter=convertString<CSSValueNone>
 -webkit-font-smoothing custom_all
--webkit-font-variant-ligatures custom_all
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-align type_name=LineAlign
