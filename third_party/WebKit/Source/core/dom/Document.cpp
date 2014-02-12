@@ -1891,7 +1891,11 @@ void Document::clearFocusedElementSoon()
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
 {
-    setFocusedElement(0);
+    updateStyleIfNeeded();
+    m_clearFocusedElementTimer.stop();
+
+    if (m_focusedElement && !m_focusedElement->isFocusable())
+        setFocusedElement(0);
 }
 
 void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
