@@ -86,7 +86,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
                        const BoundNetLog& net_log)
     : type_(type),
       weak_ptr_factory_(this),
-      continue_buffering_data_(type_ == SPDY_PUSH_STREAM),
       stream_id_(0),
       url_(url),
       priority_(priority),
@@ -96,12 +95,10 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       unacked_recv_window_bytes_(0),
       session_(session),
       delegate_(NULL),
-      pending_send_status_(
-          (type_ == SPDY_PUSH_STREAM) ?
-          NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND),
+      pending_send_status_(MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_headers_status_(RESPONSE_HEADERS_ARE_INCOMPLETE),
-      io_state_((type_ == SPDY_PUSH_STREAM) ? STATE_IDLE : STATE_NONE),
+      io_state_(STATE_IDLE),
       response_status_(OK),
       net_log_(net_log),
       raw_received_bytes_(0),
@@ -123,8 +120,11 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   CHECK(delegate);
   delegate_ = delegate;
 
-  if (type_ == SPDY_PUSH_STREAM) {
-    DCHECK(continue_buffering_data_);
+  CHECK(io_state_ == STATE_IDLE ||
+        io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED);
+
+  if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
+    DCHECK_EQ(type_, SPDY_PUSH_STREAM);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
@@ -134,9 +134,10 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
 void SpdyStream::PushedStreamReplay() {
   DCHECK_EQ(type_, SPDY_PUSH_STREAM);
   DCHECK_NE(stream_id_, 0u);
-  DCHECK(continue_buffering_data_);
+  CHECK_EQ(stream_id_ % 2, 0u);
 
-  continue_buffering_data_ = false;
+  CHECK_EQ(io_state_, STATE_HALF_CLOSED_LOCAL_UNCLAIMED);
+  io_state_ = STATE_HALF_CLOSED_LOCAL;
 
   // The delegate methods called below may delete |this|, so use
   // |weak_this| to detect that.
@@ -190,7 +191,7 @@ void SpdyStream::PushedStreamReplay() {
 }
 
 scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
-  CHECK_EQ(io_state_, STATE_SEND_REQUEST_HEADERS);
+  CHECK_EQ(io_state_, STATE_IDLE);
   CHECK(request_headers_);
   CHECK_GT(stream_id_, 0u);
 
@@ -393,7 +394,7 @@ int SpdyStream::OnInitialResponseHeadersReceived(
     case SPDY_BIDIRECTIONAL_STREAM:
       // For a bidirectional stream, we're ready for the response
       // headers once we've finished sending the request headers.
-      if (io_state_ < STATE_IDLE) {
+      if (io_state_ == STATE_IDLE) {
         session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
                               "Response received before request sent");
         return ERR_SPDY_PROTOCOL_ERROR;
@@ -404,9 +405,7 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       // For a request/response stream, we're ready for the response
       // headers once we've finished sending the request headers and
       // the request body (if we have one).
-      if ((io_state_ < STATE_IDLE) ||
-          (pending_send_status_ == MORE_DATA_TO_SEND) ||
-          pending_send_data_.get()) {
+      if (io_state_ != STATE_HALF_CLOSED_LOCAL) {
         session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
                               "Response received before request sent");
         return ERR_SPDY_PROTOCOL_ERROR;
@@ -414,15 +413,20 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       break;
 
     case SPDY_PUSH_STREAM:
-      // For a push stream, we're ready immediately.
-      DCHECK_EQ(pending_send_status_, NO_MORE_DATA_TO_SEND);
-      DCHECK_EQ(io_state_, STATE_IDLE);
+      // Push streams transition to a locally half-closed state upon headers.
+      // We must continue to buffer data while waiting for a call to
+      // SetDelegate() (which may not ever happen).
+      // TODO(jgraettinger): When PUSH_PROMISE is added, Handle RESERVED_REMOTE
+      // cases here depending on whether the delegate is already set.
+      CHECK_EQ(io_state_, STATE_IDLE);
+      DCHECK(!delegate_);
+      io_state_ = STATE_HALF_CLOSED_LOCAL_UNCLAIMED;
       break;
   }
 
   metrics_.StartStream();
 
-  DCHECK_EQ(io_state_, STATE_IDLE);
+  DCHECK_NE(io_state_, STATE_IDLE);
 
   response_time_ = response_time;
   recv_first_byte_time_ = recv_first_byte_time;
@@ -452,8 +456,9 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // If we're still buffering data for a push stream, we will do the
   // check for data received with incomplete headers in
   // PushedStreamReplayData().
-  if (!delegate_ || continue_buffering_data_) {
+  if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
     DCHECK_EQ(type_, SPDY_PUSH_STREAM);
+    CHECK(!delegate_);
     // It should be valid for this to happen in the server push case.
     // We'll return received data when delegate gets attached to the stream.
     if (buffer) {
@@ -480,8 +485,16 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   if (!buffer) {
     metrics_.StopStream();
-    // Deletes |this|.
-    session_->CloseActiveStream(stream_id_, OK);
+    // TODO(jgraettinger): Closing from OPEN preserves current SpdyStream
+    // behavior, but is incorrect HTTP/2 behavior. |io_state_| should be
+    // HALF_CLOSED_REMOTE. To be changed in a subsequent CL.
+    if (io_state_ == STATE_OPEN || io_state_ == STATE_HALF_CLOSED_LOCAL) {
+      io_state_ = STATE_CLOSED;
+      // Deletes |this|.
+      session_->CloseActiveStream(stream_id_, OK);
+      return;
+    }
+    NOTREACHED() << io_state_;
     return;
   }
 
@@ -521,6 +534,13 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
     return;
   }
 
+  if (pending_send_status_ == NO_MORE_DATA_TO_SEND) {
+    // TODO(jgraettinger): Once HALF_CLOSED_REMOTE is added,
+    // we'll need to handle transitions to fully closed here.
+    CHECK_EQ(io_state_, STATE_OPEN);
+    io_state_ = STATE_HALF_CLOSED_LOCAL;
+  }
+
   // Notify delegate of write completion. May destroy |this|.
   CHECK(delegate_);
   if (frame_type == SYN_STREAM) {
@@ -531,15 +551,15 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
 }
 
 int SpdyStream::OnRequestHeadersSent() {
-  CHECK_EQ(io_state_, STATE_SEND_REQUEST_HEADERS);
+  CHECK_EQ(io_state_, STATE_IDLE);
   CHECK_NE(stream_id_, 0u);
 
-  io_state_ = STATE_IDLE;
+  io_state_ = STATE_OPEN;
   return OK;
 }
 
 int SpdyStream::OnDataSent(size_t frame_size) {
-  CHECK_EQ(io_state_, STATE_IDLE);
+  CHECK_EQ(io_state_, STATE_OPEN);
 
   size_t frame_payload_size = frame_size - session_->GetDataFrameMinimumSize();
 
@@ -571,6 +591,8 @@ void SpdyStream::LogStreamError(int status, const std::string& description) {
 }
 
 void SpdyStream::OnClose(int status) {
+  // In most cases, the stream should already be CLOSED. The exception is when a
+  // SpdySession is shutting down while the stream is in an intermediate state.
   io_state_ = STATE_CLOSED;
   response_status_ = status;
   Delegate* delegate = delegate_;
@@ -617,10 +639,9 @@ int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> request_headers,
   CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
   CHECK(!request_headers_);
   CHECK(!pending_send_data_.get());
-  CHECK_EQ(io_state_, STATE_NONE);
+  CHECK_EQ(io_state_, STATE_IDLE);
   request_headers_ = request_headers.Pass();
   pending_send_status_ = send_status;
-  io_state_ = STATE_SEND_REQUEST_HEADERS;
   session_->EnqueueStreamWrite(
       GetWeakPtr(), SYN_STREAM,
       scoped_ptr<SpdyBufferProducer>(
@@ -633,7 +654,7 @@ void SpdyStream::SendData(IOBuffer* data,
                           SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
-  CHECK_GE(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
+  CHECK_EQ(io_state_, STATE_OPEN);
   CHECK(!pending_send_data_.get());
   pending_send_data_ = new DrainableIOBuffer(data, length);
   pending_send_status_ = send_status;
@@ -652,8 +673,9 @@ bool SpdyStream::GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) {
 }
 
 void SpdyStream::PossiblyResumeIfSendStalled() {
-  DCHECK(!IsClosed());
-
+  if (IsLocallyClosed()) {
+    return;
+  }
   if (send_stalled_by_flow_control_ && !session_->IsSendStalled() &&
       send_window_size_ > 0) {
     net_log_.AddEvent(
@@ -668,8 +690,18 @@ bool SpdyStream::IsClosed() const {
   return io_state_ == STATE_CLOSED;
 }
 
-bool SpdyStream::IsIdle() const {
+bool SpdyStream::IsLocallyClosed() const {
+  return io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED ||
+      io_state_ == STATE_HALF_CLOSED_LOCAL ||
+      io_state_ == STATE_CLOSED;
+}
+
+bool SpdyStream::IsIdleTemporaryRename() const {
   return io_state_ == STATE_IDLE;
+}
+
+bool SpdyStream::IsOpen() const {
+  return io_state_ == STATE_OPEN;
 }
 
 NextProto SpdyStream::GetProtocol() const {
@@ -730,7 +762,7 @@ void SpdyStream::UpdateHistograms() {
 void SpdyStream::QueueNextDataFrame() {
   // Until the request has been completely sent, we cannot be sure
   // that our stream_id is correct.
-  DCHECK_GT(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
+  CHECK_EQ(io_state_, STATE_OPEN);
   CHECK_GT(stream_id_, 0u);
   CHECK(pending_send_data_.get());
   CHECK_GT(pending_send_data_->BytesRemaining(), 0);
@@ -824,5 +856,28 @@ int SpdyStream::MergeWithResponseHeaders(
 
   return OK;
 }
+
+#define STATE_CASE(s) \
+  case s: \
+    description = base::StringPrintf("%s (0x%08X)", #s, s); \
+    break
+
+std::string SpdyStream::DescribeState(State state) {
+  std::string description;
+  switch (state) {
+    STATE_CASE(STATE_IDLE);
+    STATE_CASE(STATE_OPEN);
+    STATE_CASE(STATE_HALF_CLOSED_LOCAL_UNCLAIMED);
+    STATE_CASE(STATE_HALF_CLOSED_LOCAL);
+    STATE_CASE(STATE_CLOSED);
+    default:
+      description = base::StringPrintf("Unknown state 0x%08X (%u)", state,
+                                       state);
+      break;
+  }
+  return description;
+}
+
+#undef STATE_CASE
 
 }  // namespace net

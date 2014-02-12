@@ -389,9 +389,19 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // OnClose() method.
   bool IsClosed() const;
 
-  // Returns whether or not this stream has finished sending its
-  // request headers and is ready to send/receive more data.
-  bool IsIdle() const;
+  // Returns whether the streams local endpoint is closed.
+  // The remote endpoint may still be active.
+  bool IsLocallyClosed() const;
+
+  // Returns whether this stream is IDLE: request and response headers
+  // have neither been sent nor receieved.
+  // TODO(jgraettinger): Renamed to force compilation error & semantics
+  // update at call sites. Undo this.
+  bool IsIdleTemporaryRename() const;
+
+  // Returns whether or not this stream is fully open: that request and
+  // response headers are complete, and it is not in a half-closed state.
+  bool IsOpen() const;
 
   // Returns the protocol used by this stream. Always between
   // kProtoSPDYMinimumVersion and kProtoSPDYMaximumVersion.
@@ -427,12 +437,21 @@ class NET_EXPORT_PRIVATE SpdyStream {
   class SynStreamBufferProducer;
   class HeaderBufferProducer;
 
+  // SpdyStream states and transitions are modeled
+  // on the HTTP/2 stream state machine. All states and transitions
+  // are modeled, with the exceptions of RESERVED_LOCAL (the client
+  // cannot initate push streams), and the transition to OPEN due to
+  // a remote SYN_STREAM (the client can only initate streams).
+  // TODO(jgraettinger): RESERVED_REMOTE must be added to the state
+  // machine when PUSH_PROMISE is implemented.
+  // TODO(jgraettinger): HALF_CLOSED_REMOTE must be added to the state
+  // machine to support remotely closed, ongoing sends.
   enum State {
-    STATE_NONE,
-    STATE_SEND_REQUEST_HEADERS,
-    STATE_SEND_REQUEST_HEADERS_COMPLETE,
     STATE_IDLE,
-    STATE_CLOSED
+    STATE_OPEN,
+    STATE_HALF_CLOSED_LOCAL_UNCLAIMED,
+    STATE_HALF_CLOSED_LOCAL,
+    STATE_CLOSED,
   };
 
   // Update the histograms.  Can safely be called repeatedly, but should only
@@ -468,14 +487,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // by this function.
   int MergeWithResponseHeaders(const SpdyHeaderBlock& new_response_headers);
 
+  static std::string DescribeState(State state);
+
   const SpdyStreamType type_;
 
   base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
-
-  // There is a small period of time between when a server pushed stream is
-  // first created, and the pushed data is replayed. Any data received during
-  // this time should continue to be buffered.
-  bool continue_buffering_data_;
 
   SpdyStreamId stream_id_;
   const GURL url_;

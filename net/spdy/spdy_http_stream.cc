@@ -110,7 +110,7 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
   // Check if we already have the response headers. If so, return synchronously.
   if (response_headers_status_ == RESPONSE_HEADERS_ARE_COMPLETE) {
-    CHECK(stream_->IsIdle());
+    CHECK(!stream_->IsIdleTemporaryRename());
     return OK;
   }
 
@@ -123,7 +123,7 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 int SpdyHttpStream::ReadResponseBody(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   if (stream_.get())
-    CHECK(stream_->IsIdle());
+    CHECK(!stream_->IsIdleTemporaryRename());
 
   CHECK(buf);
   CHECK(buf_len);
