@@ -104,6 +104,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosStickyKeys" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Sticky Keys feature is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosVirtualKeyboard" enum="BooleanEnabled">
   <summary>
     Whether the Chrome OS Virtual Keyboard feature is on (checked once 45 secs
