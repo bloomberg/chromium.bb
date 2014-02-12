@@ -606,7 +606,7 @@ void BrowserMediaPlayerManager::OnInitializeCDM(
 void BrowserMediaPlayerManager::OnCreateSession(
     int media_keys_id,
     uint32 session_id,
-    MediaKeysHostMsg_CreateSession_Type type,
+    MediaKeysHostMsg_CreateSession_Type content_type,
     const std::vector<uint8>& init_data) {
   if (init_data.size() > kEmeInitDataMaximum) {
     LOG(WARNING) << "InitData for ID: " << media_keys_id
@@ -616,11 +616,12 @@ void BrowserMediaPlayerManager::OnCreateSession(
     return;
   }
 
-  // Convert the session type into a MIME type. "audio" and "video" don't
-  // matter, so using "video" for the MIME type.
-  // Ref: https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html#dom-createsession
+  // Convert the session content type into a MIME type. "audio" and "video"
+  // don't matter, so using "video" for the MIME type.
+  // Ref:
+  // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession
   std::string mime_type;
-  switch (type) {
+  switch (content_type) {
     case CREATE_SESSION_TYPE_WEBM:
       mime_type = "video/webm";
       break;
@@ -822,7 +823,7 @@ void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
 void BrowserMediaPlayerManager::CreateSessionIfPermitted(
     int media_keys_id,
     uint32 session_id,
-    const std::string& type,
+    const std::string& content_type,
     const std::vector<uint8>& init_data,
     bool permitted) {
   if (!permitted) {
@@ -840,7 +841,13 @@ void BrowserMediaPlayerManager::CreateSessionIfPermitted(
   }
   media_keys_ids_pending_approval_.erase(media_keys_id);
   media_keys_ids_approved_.insert(media_keys_id);
-  drm_bridge->CreateSession(session_id, type, &init_data[0], init_data.size());
+
+  if (!drm_bridge->CreateSession(
+           session_id, content_type, &init_data[0], init_data.size())) {
+    return;
+  }
+
+  // TODO(xhwang): Move the following code to OnSessionReady.
 
   // TODO(qinmin): currently |media_keys_id| and player ID are identical.
   // This might not be true in the future.

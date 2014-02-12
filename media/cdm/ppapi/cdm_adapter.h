@@ -54,8 +54,10 @@ class CdmAdapter : public pp::Instance,
   // PPB_ContentDecryptor_Private interface.
   virtual void Initialize(const std::string& key_system) OVERRIDE;
   virtual void CreateSession(uint32_t session_id,
-                             const std::string& type,
+                             const std::string& content_type,
                              pp::VarArrayBuffer init_data) OVERRIDE;
+  virtual void LoadSession(uint32_t session_id,
+                           const std::string& web_session_id) OVERRIDE;
   virtual void UpdateSession(uint32_t session_id,
                              pp::VarArrayBuffer response) OVERRIDE;
   virtual void ReleaseSession(uint32_t session_id) OVERRIDE;

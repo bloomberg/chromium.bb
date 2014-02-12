@@ -60,6 +60,22 @@ void CreateSession(PP_Instance instance,
       ->CreateSession(session_id, type_var.AsString(), init_data_array_buffer);
 }
 
+void LoadSession(PP_Instance instance,
+                 uint32_t session_id,
+                 PP_Var web_session_id_arg) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+
+  pp::Var web_session_id_var(pp::PASS_REF, web_session_id_arg);
+  if (!web_session_id_var.is_string())
+    return;
+
+  static_cast<ContentDecryptor_Private*>(object)
+      ->LoadSession(session_id, web_session_id_var.AsString());
+}
+
 void UpdateSession(PP_Instance instance,
                    uint32_t session_id,
                    PP_Var response_arg) {
@@ -177,6 +193,7 @@ void DecryptAndDecode(PP_Instance instance,
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
   &Initialize,
   &CreateSession,
+  &LoadSession,
   &UpdateSession,
   &ReleaseSession,
   &Decrypt,

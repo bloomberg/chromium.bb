@@ -97,21 +97,33 @@ PpapiDecryptor::~PpapiDecryptor() {
 }
 
 bool PpapiDecryptor::CreateSession(uint32 session_id,
-                                   const std::string& type,
+                                   const std::string& content_type,
                                    const uint8* init_data,
                                    int init_data_length) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(plugin_cdm_delegate_);
 
   if (!plugin_cdm_delegate_ ||
       !plugin_cdm_delegate_->CreateSession(
-           session_id, type, init_data, init_data_length)) {
+           session_id, content_type, init_data, init_data_length)) {
     ReportFailureToCallPlugin(session_id);
     return false;
   }
 
   return true;
+}
+
+void PpapiDecryptor::LoadSession(uint32 session_id,
+                                 const std::string& web_session_id) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  if (!plugin_cdm_delegate_) {
+    ReportFailureToCallPlugin(session_id);
+    return;
+  }
+
+  plugin_cdm_delegate_->LoadSession(session_id, web_session_id);
 }
 
 void PpapiDecryptor::UpdateSession(uint32 session_id,
@@ -123,6 +135,7 @@ void PpapiDecryptor::UpdateSession(uint32 session_id,
   if (!plugin_cdm_delegate_ || !plugin_cdm_delegate_->UpdateSession(
                                     session_id, response, response_length)) {
     ReportFailureToCallPlugin(session_id);
+    return;
   }
 
   if (!new_audio_key_cb_.is_null())
@@ -139,6 +152,7 @@ void PpapiDecryptor::ReleaseSession(uint32 session_id) {
   if (!plugin_cdm_delegate_ ||
       !plugin_cdm_delegate_->ReleaseSession(session_id)) {
     ReportFailureToCallPlugin(session_id);
+    return;
   }
 }
 

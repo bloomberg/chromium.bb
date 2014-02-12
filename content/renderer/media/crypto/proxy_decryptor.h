@@ -105,12 +105,12 @@ class ProxyDecryptor {
                       int system_code);
 
   // Helper function to determine session_id for the provided |web_session_id|.
-  uint32 LookupSessionId(const std::string& web_session_id);
+  uint32 LookupSessionId(const std::string& web_session_id) const;
 
   // Helper function to determine web_session_id for the provided |session_id|.
   // The returned web_session_id is only valid on the main thread, and should be
   // stored by copy.
-  const std::string& LookupWebSessionId(uint32 session_id);
+  const std::string& LookupWebSessionId(uint32 session_id) const;
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 

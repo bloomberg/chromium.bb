@@ -231,7 +231,7 @@ AesDecryptor::~AesDecryptor() {
 }
 
 bool AesDecryptor::CreateSession(uint32 session_id,
-                                 const std::string& type,
+                                 const std::string& content_type,
                                  const uint8* init_data,
                                  int init_data_length) {
   // Validate that this is a new session.
@@ -240,7 +240,7 @@ bool AesDecryptor::CreateSession(uint32 session_id,
 
   std::string web_session_id_string(base::UintToString(next_web_session_id_++));
 
-  // For now, the AesDecryptor does not care about |type|;
+  // For now, the AesDecryptor does not care about |content_type|;
   // just fire the event with the |init_data| as the request.
   std::vector<uint8> message;
   if (init_data && init_data_length)
@@ -249,6 +249,13 @@ bool AesDecryptor::CreateSession(uint32 session_id,
   session_created_cb_.Run(session_id, web_session_id_string);
   session_message_cb_.Run(session_id, message, std::string());
   return true;
+}
+
+void AesDecryptor::LoadSession(uint32 session_id,
+                               const std::string& web_session_id) {
+  // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
+  // that do not support loadSession. See http://crbug.com/342481
+  session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
 }
 
 void AesDecryptor::UpdateSession(uint32 session_id,

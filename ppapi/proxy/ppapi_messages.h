@@ -661,8 +661,12 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_Initialize,
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_CreateSession,
                     PP_Instance /* instance */,
                     uint32_t /* session_id */,
-                    ppapi::proxy::SerializedVar /* type, String */,
+                    ppapi::proxy::SerializedVar /* content_type, String */,
                     ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_LoadSession,
+                    PP_Instance /* instance */,
+                    uint32_t /* session_id */,
+                    ppapi::proxy::SerializedVar /* web_session_id, String */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_UpdateSession,
                     PP_Instance /* instance */,
                     uint32_t /* session_id */,

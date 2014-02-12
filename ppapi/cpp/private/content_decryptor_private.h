@@ -33,8 +33,10 @@ class ContentDecryptor_Private {
   // replying to the browser.
   virtual void Initialize(const std::string& key_system) = 0;
   virtual void CreateSession(uint32_t session_id,
-                             const std::string& type,
+                             const std::string& content_type,
                              pp::VarArrayBuffer init_data) = 0;
+  virtual void LoadSession(uint32_t session_id,
+                           const std::string& web_session_id) = 0;
   virtual void UpdateSession(uint32_t session_id,
                              pp::VarArrayBuffer response) = 0;
   virtual void ReleaseSession(uint32_t session_id) = 0;

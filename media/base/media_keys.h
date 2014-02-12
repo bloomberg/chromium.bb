@@ -42,15 +42,22 @@ class MEDIA_EXPORT MediaKeys {
   MediaKeys();
   virtual ~MediaKeys();
 
-  // Generates a key request with the |type| and |init_data| provided.
-  // Returns true if generating key request succeeded, false otherwise.
+  // Creates a session with the |content_type| and |init_data| provided.
+  // Returns true if a session is successfully created, false otherwise.
   // Note: UpdateSession() and ReleaseSession() should only be called after
-  // CreateSession() returns true.
+  // SessionCreatedCB is fired.
   // TODO(jrummell): Remove return value when prefixed API is removed.
+  // See http://crbug.com/342510
   virtual bool CreateSession(uint32 session_id,
-                             const std::string& type,
+                             const std::string& content_type,
                              const uint8* init_data,
                              int init_data_length) = 0;
+
+  // Loads a session with the |web_session_id| provided.
+  // Note: UpdateSession() and ReleaseSession() should only be called after
+  // SessionCreatedCB is fired.
+  virtual void LoadSession(uint32 session_id,
+                           const std::string& web_session_id) = 0;
 
   // Updates a session specified by |session_id| with |response|.
   virtual void UpdateSession(uint32 session_id,

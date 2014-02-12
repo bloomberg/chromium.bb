@@ -142,6 +142,22 @@ void CreateSession(PP_Instance instance,
       SerializedVarSendInput(dispatcher, init_data)));
 }
 
+void LoadSession(PP_Instance instance,
+                 uint32_t session_id,
+                 PP_Var web_session_id) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_LoadSession(
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+      instance,
+      session_id,
+      SerializedVarSendInput(dispatcher, web_session_id)));
+}
+
 void UpdateSession(PP_Instance instance, uint32_t session_id, PP_Var response) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
@@ -357,6 +373,7 @@ void DecryptAndDecode(PP_Instance instance,
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &Initialize,
   &CreateSession,
+  &LoadSession,
   &UpdateSession,
   &ReleaseSession,
   &Decrypt,
@@ -401,6 +418,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgInitialize)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_CreateSession,
                         OnMsgCreateSession)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_LoadSession,
+                        OnMsgLoadSession)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_UpdateSession,
                         OnMsgUpdateSession)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_ReleaseSession,
@@ -445,6 +464,19 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSession(
                       session_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &type),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgLoadSession(
+    PP_Instance instance,
+    uint32_t session_id,
+    SerializedVarReceiveInput web_session_id) {
+  if (ppp_decryptor_impl_) {
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->LoadSession,
+        instance,
+        session_id,
+        ExtractReceivedVarAndAddRef(dispatcher(), &web_session_id));
   }
 }
 

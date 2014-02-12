@@ -43,9 +43,11 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
 
   // media::MediaKeys implementation.
   virtual bool CreateSession(uint32 session_id,
-                             const std::string& type,
+                             const std::string& content_type,
                              const uint8* init_data,
                              int init_data_length) OVERRIDE;
+  virtual void LoadSession(uint32 session_id,
+                           const std::string& web_session_id) OVERRIDE;
   virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
                              int response_length) OVERRIDE;

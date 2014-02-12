@@ -83,17 +83,32 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
   return true;
 }
 
-bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
+bool ProxyDecryptor::GenerateKeyRequest(const std::string& content_type,
                                         const uint8* init_data,
                                         int init_data_length) {
   // Use a unique reference id for this request.
   uint32 session_id = next_session_id_++;
-  if (!media_keys_->CreateSession(
-           session_id, type, init_data, init_data_length)) {
-    return false;
+
+  const uint8 kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
+  const int kPrefixedApiLoadSessionHeaderLength =
+      sizeof(kPrefixedApiLoadSessionHeader) - 1;
+
+  if (init_data_length > kPrefixedApiLoadSessionHeaderLength &&
+      std::equal(init_data,
+                 init_data + kPrefixedApiLoadSessionHeaderLength,
+                 kPrefixedApiLoadSessionHeader)) {
+    // TODO(xhwang): Track loadable session to handle OnSessionClosed().
+    // See: http://crbug.com/340859.
+    media_keys_->LoadSession(
+        session_id,
+        std::string(reinterpret_cast<const char*>(
+                        init_data + kPrefixedApiLoadSessionHeaderLength),
+                    init_data_length - kPrefixedApiLoadSessionHeaderLength));
+    return true;
   }
 
-  return true;
+  return media_keys_->CreateSession(
+      session_id, content_type, init_data, init_data_length);
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,
@@ -214,8 +229,8 @@ void ProxyDecryptor::OnSessionError(uint32 session_id,
   key_error_cb_.Run(LookupWebSessionId(session_id), error_code, system_code);
 }
 
-uint32 ProxyDecryptor::LookupSessionId(const std::string& session_id) {
-  for (SessionIdMap::iterator it = sessions_.begin();
+uint32 ProxyDecryptor::LookupSessionId(const std::string& session_id) const {
+  for (SessionIdMap::const_iterator it = sessions_.begin();
        it != sessions_.end();
        ++it) {
     if (it->second == session_id)
@@ -229,11 +244,11 @@ uint32 ProxyDecryptor::LookupSessionId(const std::string& session_id) {
   return kInvalidSessionId;
 }
 
-const std::string& ProxyDecryptor::LookupWebSessionId(uint32 session_id) {
+const std::string& ProxyDecryptor::LookupWebSessionId(uint32 session_id) const {
   DCHECK_NE(session_id, kInvalidSessionId);
 
   // Session may not exist if error happens during GenerateKeyRequest().
-  SessionIdMap::iterator it = sessions_.find(session_id);
+  SessionIdMap::const_iterator it = sessions_.find(session_id);
   return (it != sessions_.end()) ? it->second : base::EmptyString();
 }
 

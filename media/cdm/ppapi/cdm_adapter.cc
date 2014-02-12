@@ -248,9 +248,13 @@ bool CdmAdapter::CreateCdmInstance(const std::string& key_system) {
   return success;
 }
 
-// No KeyErrors should be reported in this function because they cannot be
-// bubbled up in the WD EME API. Those errors will be reported during session
-// creation (CreateSession).
+// No errors should be reported in this function because the spec says:
+// "Store this new error object internally with the MediaKeys instance being
+// created. This will be used to fire an error against any session created for
+// this instance." These errors will be reported during session creation
+// (CreateSession()) or session loading (LoadSession()).
+// TODO(xhwang): If necessary, we need to store the error here if we want to
+// support more specific error reporting (other than "Unknown").
 void CdmAdapter::Initialize(const std::string& key_system) {
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
@@ -263,7 +267,7 @@ void CdmAdapter::Initialize(const std::string& key_system) {
 }
 
 void CdmAdapter::CreateSession(uint32_t session_id,
-                               const std::string& type,
+                               const std::string& content_type,
                                pp::VarArrayBuffer init_data) {
   // Initialize() doesn't report an error, so CreateSession() can be called
   // even if Initialize() failed.
@@ -288,10 +292,24 @@ void CdmAdapter::CreateSession(uint32_t session_id,
 #endif  // defined(CHECK_DOCUMENT_URL)
 
   cdm_->CreateSession(session_id,
-                      type.data(),
-                      type.size(),
+                      content_type.data(),
+                      content_type.size(),
                       static_cast<const uint8_t*>(init_data.Map()),
                       init_data.ByteLength());
+}
+
+void CdmAdapter::LoadSession(uint32_t session_id,
+                             const std::string& web_session_id) {
+  // Initialize() doesn't report an error, so LoadSession() can be called
+  // even if Initialize() failed.
+  if (!cdm_) {
+    OnSessionError(session_id, cdm::kUnknownError, 0);
+    return;
+  }
+
+  if (!cdm_->LoadSession(
+           session_id, web_session_id.data(), web_session_id.size()))
+    OnSessionError(session_id, cdm::kUnknownError, 0);
 }
 
 void CdmAdapter::UpdateSession(uint32_t session_id,

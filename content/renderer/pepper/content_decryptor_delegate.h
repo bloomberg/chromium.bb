@@ -53,9 +53,10 @@ class ContentDecryptorDelegate {
 
   // Provides access to PPP_ContentDecryptor_Private.
   bool CreateSession(uint32 session_id,
-                     const std::string& type,
+                     const std::string& content_type,
                      const uint8* init_data,
                      int init_data_length);
+  void LoadSession(uint32 session_id, const std::string& web_session_id);
   bool UpdateSession(uint32 session_id,
                      const uint8* response,
                      int response_length);

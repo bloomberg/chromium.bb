@@ -260,7 +260,7 @@ bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
 }
 
 bool MediaDrmBridge::CreateSession(uint32 session_id,
-                                   const std::string& type,
+                                   const std::string& content_type,
                                    const uint8* init_data,
                                    int init_data_length) {
   std::vector<uint8> pssh_data;
@@ -270,10 +270,17 @@ bool MediaDrmBridge::CreateSession(uint32 session_id,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_pssh_data =
       base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
-  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, type);
+  ScopedJavaLocalRef<jstring> j_mime =
+      ConvertUTF8ToJavaString(env, content_type);
   Java_MediaDrmBridge_createSession(
       env, j_media_drm_.obj(), session_id, j_pssh_data.obj(), j_mime.obj());
   return true;
+}
+
+void MediaDrmBridge::LoadSession(uint32 session_id,
+                                 const std::string& web_session_id) {
+  // MediaDrmBridge doesn't support loading sessions.
+  NOTREACHED();
 }
 
 void MediaDrmBridge::UpdateSession(uint32 session_id,

@@ -286,18 +286,25 @@ void ContentDecryptorDelegate::InstanceCrashed() {
 }
 
 bool ContentDecryptorDelegate::CreateSession(uint32 session_id,
-                                             const std::string& type,
+                                             const std::string& content_type,
                                              const uint8* init_data,
                                              int init_data_length) {
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
 
-  plugin_decryption_interface_->CreateSession(pp_instance_,
-                                              session_id,
-                                              StringVar::StringToPPVar(type),
-                                              init_data_array);
+  plugin_decryption_interface_->CreateSession(
+      pp_instance_,
+      session_id,
+      StringVar::StringToPPVar(content_type),
+      init_data_array);
   return true;
+}
+
+void ContentDecryptorDelegate::LoadSession(uint32 session_id,
+                                           const std::string& web_session_id) {
+  plugin_decryption_interface_->LoadSession(
+      pp_instance_, session_id, StringVar::StringToPPVar(web_session_id));
 }
 
 bool ContentDecryptorDelegate::UpdateSession(uint32 session_id,

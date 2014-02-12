@@ -143,7 +143,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        const GURL& frame_url);
   void OnCreateSession(int media_keys_id,
                        uint32 session_id,
-                       MediaKeysHostMsg_CreateSession_Type type,
+                       MediaKeysHostMsg_CreateSession_Type content_type,
                        const std::vector<uint8>& init_data);
   void OnUpdateSession(int media_keys_id,
                        uint32 session_id,
@@ -188,7 +188,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // bar or from the saved preference.
   void CreateSessionIfPermitted(int media_keys_id,
                                 uint32 session_id,
-                                const std::string& type,
+                                const std::string& content_type,
                                 const std::vector<uint8>& init_data,
                                 bool permitted);
 
