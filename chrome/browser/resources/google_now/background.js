@@ -84,9 +84,9 @@ var DEFAULT_OPTIN_CHECK_PERIOD_SECONDS = 60 * 60 * 24 * 7; // 1 week
 var SETTINGS_URL = 'https://support.google.com/chrome/?p=ib_google_now_welcome';
 
 /**
- * Number of location cards that need an explanatory link.
+ * Number of cards that need an explanatory link.
  */
-var LOCATION_CARDS_LINK_THRESHOLD = 10;
+var EXPLANATORY_CARDS_LINK_THRESHOLD = 4;
 
 /**
  * Names for tasks that can be created by the extension.
@@ -551,14 +551,10 @@ function processServerResponse(response, onCardShown) {
 }
 
 /**
- * Update Location Cards Shown Count.
- * @param {ReceivedNotification} receivedNotification Notification as it was
- *     received from the server.
+ * Update the Explanatory Total Cards Shown Count.
  */
-function countLocationCard(receivedNotification) {
-  if (receivedNotification.locationBased) {
-    localStorage['locationCardsShown']++;
-  }
+function countExplanatoryCard() {
+  localStorage['explanatoryCardsShown']++;
 }
 
 /**
@@ -575,9 +571,11 @@ function requestNotificationGroups(groupNames) {
     (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
 
   var cardShownCallback = undefined;
-  if (localStorage['locationCardsShown'] < LOCATION_CARDS_LINK_THRESHOLD) {
-    requestParameters += '&locationExplanation=true';
-    cardShownCallback = countLocationCard;
+  var belowExplanatoryThreshold =
+      localStorage['explanatoryCardsShown'] < EXPLANATORY_CARDS_LINK_THRESHOLD;
+  if (belowExplanatoryThreshold) {
+    requestParameters += '&cardExplanation=true';
+    cardShownCallback = countExplanatoryCard;
   }
 
   groupNames.forEach(function(groupName) {

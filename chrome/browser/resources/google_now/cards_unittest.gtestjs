@@ -44,8 +44,8 @@ var testActionUrlsA = {testField: 'TEST VALUE A'};
 var testActionUrlsB = {testField: 'TEST VALUE B'};
 var testDismissalA = {testDismissalField: 'TEST DISMISSAL VALUE A'};
 var testDismissalB = {testDismissalField: 'TEST DISMISSAL VALUE B'};
-var LOCATION_CARDS_LINK_THRESHOLD = 10;
-var localStorage = {locationCardsShown: 0};
+var EXPLANATORY_CARDS_LINK_THRESHOLD = 4;
+var localStorage = {explanatoryCardsShown: 0};
 var notificationUpdateSuccessful = true;
 var notificationUpdateFailed = false;
 
@@ -55,7 +55,7 @@ function setUpCardManagerTest(fixture) {
       'chrome.alarms.create',
       'instrumented.notifications.clear',
       'chrome.storage.local.set',
-      'countLocationCard',
+      'countExplanatoryCard',
       'instrumented.alarms.onAlarm.addListener',
       'instrumented.notifications.create',
       'instrumented.notifications.update',

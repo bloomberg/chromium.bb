@@ -342,9 +342,9 @@ function buildCardSet() {
                  items.notificationsData[cardId].combinedCard) || [];
 
               var cardShownCallback = undefined;
-              if (localStorage['locationCardsShown'] <
-                  LOCATION_CARDS_LINK_THRESHOLD) {
-                 cardShownCallback = countLocationCard;
+              if (localStorage['explanatoryCardsShown'] <
+                  EXPLANATORY_CARDS_LINK_THRESHOLD) {
+                 cardShownCallback = countExplanatoryCard;
               }
 
               items.notificationsData[cardId] =

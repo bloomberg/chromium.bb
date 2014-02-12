@@ -64,10 +64,16 @@ console.log = function() {
 }();
 
 /**
- * Location Card Storage.
+ * Explanation Card Storage.
  */
-if (localStorage['locationCardsShown'] === undefined)
-  localStorage['locationCardsShown'] = 0;
+if (localStorage['explanatoryCardsShown'] === undefined)
+  localStorage['explanatoryCardsShown'] = 0;
+
+/**
+ * Location Card Count Cleanup.
+ */
+if (localStorage.locationCardsShown !== undefined)
+  localStorage.removeItem('locationCardsShown');
 
 /**
  * Builds an error object with a message that may be sent to the server.
