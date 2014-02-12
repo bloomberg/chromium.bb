@@ -56,5 +56,17 @@
         'GCC_PRECOMPILE_PREFIX_HEADER': 'YES',
       },
     },
+    # This does not compile but should not cause generation errors.
+    {
+      'target_name': 'exe_32_64_no_sources',
+      'type': 'executable',
+      'dependencies': [
+        ':static_32_64',
+      ],
+      'sources': [],
+      'xcode_settings': {
+        'ARCHS': ['i386', 'x86_64'],
+      },
+    },
   ]
 }

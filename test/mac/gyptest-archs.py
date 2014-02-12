@@ -53,8 +53,16 @@ if sys.platform == 'darwin':
   CheckFileType(result_file, '^Mach-O 64-bit executable x86_64$')
 
   if test.format != 'make':
+    # Build all targets except 'exe_32_64_no_sources' that does build
+    # but should not cause error when generating ninja files
+    targets = [
+        'static_32_64', 'shared_32_64', 'module_32_64', 'exe_32_64',
+        'exe_32_64_bundle', 'precompiled_prefix_header_mm_32_64',
+    ]
+
     test.run_gyp('test-archs-multiarch.gyp', chdir='archs')
-    test.build('test-archs-multiarch.gyp', test.ALL, chdir='archs')
+    for target in targets:
+      test.build('test-archs-multiarch.gyp', target=target, chdir='archs')
 
     result_file = test.built_file_path(
         'static_32_64', chdir='archs', type=test.STATIC_LIB)

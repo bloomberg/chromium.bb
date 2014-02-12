@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import copy
 import hashlib
 import json
@@ -472,6 +473,8 @@ class NinjaWriter:
         else:
           print "Warning: Actions/rules writing object files don't work with " \
                 "multiarch targets, dropping. (target %s)" % spec['target_name']
+    elif self.flavor == 'mac' and len(self.archs) > 1:
+      link_deps = collections.defaultdict(list)
 
 
     if self.flavor == 'win' and self.target.type == 'static_library':
