@@ -41,9 +41,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#endif
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -84,6 +81,13 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gdk/gdk.h>
+#endif
+#if defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
 
 using content::BrowserThread;
 
@@ -816,6 +820,13 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // window, GTK will not automatically call this for us.
     gdk_notify_startup_complete();
 #endif
+#if defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)
+    // Likely NULL in unit tests.
+    views::LinuxUI* linux_ui = views::LinuxUI::instance();
+    if (linux_ui)
+      linux_ui->NotifyWindowManagerStartupComplete();
+#endif
+
     // Assume the other process is handling the request.
     return PROCESS_NOTIFIED;
   }

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_LINUX_UI_LINUX_UI_H_
 #define UI_VIEWS_LINUX_UI_LINUX_UI_H_
 
+#include <string>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/gfx/linux_font_delegate.h"
@@ -118,6 +120,12 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Determines whether the user's window manager is Unity.
   virtual bool UnityIsRunning() = 0;
+
+  // Notifies the window manager that start up has completed.
+  // Normally Chromium opens a new window on startup and GTK does this
+  // automatically. In case Chromium does not open a new window on startup,
+  // e.g. an existing browser window already exists, this should be called.
+  virtual void NotifyWindowManagerStartupComplete() = 0;
 };
 
 }  // namespace views

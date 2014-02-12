@@ -661,6 +661,12 @@ bool Gtk2UI::UnityIsRunning() {
   return unity::IsRunning();
 }
 
+void Gtk2UI::NotifyWindowManagerStartupComplete() {
+  // TODO(port) Implement this using _NET_STARTUP_INFO_BEGIN/_NET_STARTUP_INFO
+  // from http://standards.freedesktop.org/startup-notification-spec/ instead.
+  gdk_notify_startup_complete();
+}
+
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
                                 GdkColor* thumb_inactive_color,
                                 GdkColor* track_color) {
