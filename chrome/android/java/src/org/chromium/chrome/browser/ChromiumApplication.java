@@ -30,4 +30,8 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     @CalledByNative
     protected abstract boolean areParentalControlsEnabled();
+
+    // TODO(yfriedman): This is too widely available. Plumb this through ChromeNetworkDelegate
+    // instead.
+    protected abstract PKCS11AuthenticationManager getPKCS11AuthenticationManager();
 }

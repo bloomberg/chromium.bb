@@ -5,6 +5,7 @@
 package org.chromium.chrome.unit_tests_apk;
 
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 
 /**
  * A stub implementation of the chrome application to be used in chrome unit_tests.
@@ -26,5 +27,10 @@ public class ChromeNativeTestApplication extends ChromiumApplication {
     @Override
     protected boolean areParentalControlsEnabled() {
         return false;
+    }
+
+    @Override
+    protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
+        return null;
     }
 }

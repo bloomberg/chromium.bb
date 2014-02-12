@@ -9,6 +9,7 @@ import android.content.Intent;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.content.browser.ResourceExtractor;
@@ -86,5 +87,10 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
     @Override
     protected boolean areParentalControlsEnabled() {
         return false;
+    }
+
+    @Override
+    protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
+        return new TestShellPKCS11AuthenticationManager();
     }
 }
