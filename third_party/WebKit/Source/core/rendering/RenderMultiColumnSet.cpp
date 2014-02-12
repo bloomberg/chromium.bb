@@ -40,8 +40,8 @@ RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
     , m_computedColumnCount(1)
     , m_computedColumnWidth(0)
     , m_computedColumnHeight(0)
-    , m_maxColumnHeight(LayoutUnit::max())
-    , m_minSpaceShortage(LayoutUnit::max())
+    , m_maxColumnHeight(RenderFlowThread::maxLogicalHeight())
+    , m_minSpaceShortage(RenderFlowThread::maxLogicalHeight())
     , m_minimumColumnHeight(0)
 {
 }
@@ -148,8 +148,8 @@ LayoutUnit RenderMultiColumnSet::calculateBalancedHeight(bool initial) const
     // amount of space shortage found during layout.
 
     ASSERT(m_minSpaceShortage > 0); // We should never _shrink_ the height!
-    ASSERT(m_minSpaceShortage != LayoutUnit::max()); // If this happens, we probably have a bug.
-    if (m_minSpaceShortage == LayoutUnit::max())
+    ASSERT(m_minSpaceShortage != RenderFlowThread::maxLogicalHeight()); // If this happens, we probably have a bug.
+    if (m_minSpaceShortage == RenderFlowThread::maxLogicalHeight())
         return m_computedColumnHeight; // So bail out rather than looping infinitely.
 
     return m_computedColumnHeight + m_minSpaceShortage;
@@ -191,7 +191,7 @@ bool RenderMultiColumnSet::recalculateBalancedHeight(bool initial)
     if (m_computedColumnHeight == oldColumnHeight)
         return false; // No change. We're done.
 
-    m_minSpaceShortage = LayoutUnit::max();
+    m_minSpaceShortage = RenderFlowThread::maxLogicalHeight();
     clearForcedBreaks();
     return true; // Need another pass.
 }
@@ -244,12 +244,15 @@ void RenderMultiColumnSet::prepareForLayout()
 
     if (multicolBlock->requiresBalancing()) {
         // Set maximum column height. We will not stretch beyond this.
-        m_maxColumnHeight = LayoutUnit::max();
-        if (!multicolStyle->logicalHeight().isAuto())
+        m_maxColumnHeight = RenderFlowThread::maxLogicalHeight();
+        if (!multicolStyle->logicalHeight().isAuto()) {
             m_maxColumnHeight = multicolBlock->computeContentLogicalHeight(multicolStyle->logicalHeight(), -1);
+            if (m_maxColumnHeight == -1)
+                m_maxColumnHeight = RenderFlowThread::maxLogicalHeight();
+        }
         if (!multicolStyle->logicalMaxHeight().isUndefined()) {
             LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle->logicalMaxHeight(), -1);
-            if (m_maxColumnHeight > logicalMaxHeight)
+            if (logicalMaxHeight != -1 && m_maxColumnHeight > logicalMaxHeight)
                 m_maxColumnHeight = logicalMaxHeight;
         }
         m_maxColumnHeight = heightAdjustedForSetOffset(m_maxColumnHeight);
