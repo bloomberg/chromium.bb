@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_scan_result_dialog_views.h"
 
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -271,6 +272,16 @@ bool MediaGalleriesScanResultDialogViews::Accept() {
   accepted_ = true;
 
   return true;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView*
+MediaGalleriesScanResultDialogViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(
+      widget,
+      controller_->web_contents()->GetBrowserContext());
 }
 
 void MediaGalleriesScanResultDialogViews::ButtonPressed(

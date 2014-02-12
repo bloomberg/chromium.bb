@@ -7,9 +7,15 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace views {
 class DialogDelegate;
+class NonClientFrameView;
 class Widget;
+class WidgetDelegate;
 }
 
 namespace web_modal {
@@ -31,5 +37,9 @@ void UpdateBrowserModalDialogPosition(
 // This places the dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent);
+
+views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
+    views::Widget* widget,
+    content::BrowserContext* browser_context);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
