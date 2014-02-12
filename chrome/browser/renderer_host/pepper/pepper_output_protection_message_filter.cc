@@ -30,46 +30,40 @@ namespace chrome {
 namespace {
 
 #if defined(OS_CHROMEOS)
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_NONE),
-    PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE) ==
+                   static_cast<int>(ui::OUTPUT_TYPE_NONE),
+               PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_UNKNOWN) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_UNKNOWN),
+        static_cast<int>(ui::OUTPUT_TYPE_UNKNOWN),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_UNKNOWN);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_INTERNAL) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_INTERNAL),
+        static_cast<int>(ui::OUTPUT_TYPE_INTERNAL),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_INTERNAL);
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_VGA),
-    PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA);
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_HDMI),
-    PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI);
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_DVI),
-    PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA) ==
+                   static_cast<int>(ui::OUTPUT_TYPE_VGA),
+               PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI) ==
+                   static_cast<int>(ui::OUTPUT_TYPE_HDMI),
+               PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI) ==
+                   static_cast<int>(ui::OUTPUT_TYPE_DVI),
+               PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_DISPLAYPORT),
+        static_cast<int>(ui::OUTPUT_TYPE_DISPLAYPORT),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK) ==
-    static_cast<int>(chromeos::OUTPUT_TYPE_NETWORK),
+        static_cast<int>(ui::OUTPUT_TYPE_NETWORK),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK);
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE) ==
-    static_cast<int>(chromeos::OUTPUT_PROTECTION_METHOD_NONE),
-    PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE);
-COMPILE_ASSERT(
-    static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP) ==
-    static_cast<int>(chromeos::OUTPUT_PROTECTION_METHOD_HDCP),
-    PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE) ==
+                   static_cast<int>(ui::OUTPUT_PROTECTION_METHOD_NONE),
+               PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE);
+COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP) ==
+                   static_cast<int>(ui::OUTPUT_PROTECTION_METHOD_HDCP),
+               PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP);
 
 bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -188,7 +182,7 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
         MediaCaptureDevicesDispatcher::GetInstance()
             ->IsDesktopCaptureInProgress();
     if (capture_detected)
-      *link_mask |= chromeos::OUTPUT_TYPE_NETWORK;
+      *link_mask |= ui::OUTPUT_TYPE_NETWORK;
   }
 
   return result ? PP_OK : PP_ERROR_FAILED;
@@ -221,16 +215,14 @@ void PepperOutputProtectionMessageFilter::Delegate::OnWindowHierarchyChanged(
   if (display_id_ == new_display_id)
     return;
 
-  if (desired_method_mask_ != chromeos::OUTPUT_PROTECTION_METHOD_NONE) {
+  if (desired_method_mask_ != ui::OUTPUT_PROTECTION_METHOD_NONE) {
     // Display changed and should enable output protections on new display.
     chromeos::OutputConfigurator* configurator =
         ash::Shell::GetInstance()->output_configurator();
     configurator->EnableOutputProtection(GetClientId(), new_display_id,
                                          desired_method_mask_);
     configurator->EnableOutputProtection(
-        GetClientId(),
-        display_id_,
-        chromeos::OUTPUT_PROTECTION_METHOD_NONE);
+        GetClientId(), display_id_, ui::OUTPUT_PROTECTION_METHOD_NONE);
   }
   display_id_ = new_display_id;
 }

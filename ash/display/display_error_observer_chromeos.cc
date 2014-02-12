@@ -31,13 +31,13 @@ DisplayErrorObserver::~DisplayErrorObserver() {
 }
 
 void DisplayErrorObserver::OnDisplayModeChangeFailed(
-    chromeos::OutputState new_state) {
+    ui::OutputState new_state) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
   message_center::MessageCenter::Get()->RemoveNotification(
       kDisplayErrorNotificationId, false /* by_user */);
 
-  int message_id = (new_state == chromeos::STATE_DUAL_MIRROR) ?
+  int message_id = (new_state == ui::OUTPUT_STATE_DUAL_MIRROR) ?
       IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING :
       IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING;
 

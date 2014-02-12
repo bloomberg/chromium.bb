@@ -93,19 +93,19 @@ DisplayChangeObserver::~DisplayChangeObserver() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-chromeos::OutputState DisplayChangeObserver::GetStateForDisplayIds(
+ui::OutputState DisplayChangeObserver::GetStateForDisplayIds(
     const std::vector<int64>& display_ids) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshForceMirrorMode)) {
-    return chromeos::STATE_DUAL_MIRROR;
+    return ui::OUTPUT_STATE_DUAL_MIRROR;
   }
 
   CHECK_EQ(2U, display_ids.size());
   DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
   DisplayLayout layout = Shell::GetInstance()->display_manager()->
       layout_store()->GetRegisteredDisplayLayout(pair);
-  return layout.mirrored ?
-      chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
+  return layout.mirrored ? ui::OUTPUT_STATE_DUAL_MIRROR :
+                           ui::OUTPUT_STATE_DUAL_EXTENDED;
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
@@ -128,7 +128,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   for (size_t i = 0; i < outputs.size(); ++i) {
     const OutputConfigurator::OutputSnapshot& output = outputs[i];
 
-    if (output.type == chromeos::OUTPUT_TYPE_INTERNAL &&
+    if (output.type == ui::OUTPUT_TYPE_INTERNAL &&
         gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
       // Fall back to output index. crbug.com/180100
       gfx::Display::SetInternalDisplayId(
@@ -152,9 +152,10 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     std::vector<DisplayMode> display_modes = GetDisplayModeList(output);
 
-    std::string name = output.type == chromeos::OUTPUT_TYPE_INTERNAL ?
-        l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-        chromeos::GetDisplayName(output.output);
+    std::string name =
+        output.type == ui::OUTPUT_TYPE_INTERNAL
+            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME)
+            : chromeos::GetDisplayName(output.output);
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 

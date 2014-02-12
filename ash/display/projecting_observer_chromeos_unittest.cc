@@ -16,13 +16,13 @@ namespace {
 
 chromeos::OutputConfigurator::OutputSnapshot CreateInternalSnapshot() {
   chromeos::OutputConfigurator::OutputSnapshot output;
-  output.type = chromeos::OUTPUT_TYPE_INTERNAL;
+  output.type = ui::OUTPUT_TYPE_INTERNAL;
   return output;
 }
 
 chromeos::OutputConfigurator::OutputSnapshot CreateVGASnapshot() {
   chromeos::OutputConfigurator::OutputSnapshot output;
-  output.type = chromeos::OUTPUT_TYPE_VGA;
+  output.type = ui::OUTPUT_TYPE_VGA;
   return output;
 }
 

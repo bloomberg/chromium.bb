@@ -43,17 +43,17 @@ std::string DisplayPowerStateToString(DisplayPowerState state) {
 }
 
 // Returns a string describing |state|.
-std::string OutputStateToString(OutputState state) {
+std::string OutputStateToString(ui::OutputState state) {
   switch (state) {
-    case STATE_INVALID:
+    case ui::OUTPUT_STATE_INVALID:
       return "INVALID";
-    case STATE_HEADLESS:
+    case ui::OUTPUT_STATE_HEADLESS:
       return "HEADLESS";
-    case STATE_SINGLE:
+    case ui::OUTPUT_STATE_SINGLE:
       return "SINGLE";
-    case STATE_DUAL_MIRROR:
+    case ui::OUTPUT_STATE_DUAL_MIRROR:
       return "DUAL_MIRROR";
-    case STATE_DUAL_EXTENDED:
+    case ui::OUTPUT_STATE_DUAL_EXTENDED:
       return "DUAL_EXTENDED";
   }
   NOTREACHED() << "Unknown state " << state;
@@ -95,7 +95,7 @@ int GetOutputPower(
     output_power->resize(outputs.size());
 
   for (size_t i = 0; i < outputs.size(); ++i) {
-    bool internal = outputs[i].type == OUTPUT_TYPE_INTERNAL;
+    bool internal = outputs[i].type == ui::OUTPUT_TYPE_INTERNAL;
     bool on = state == DISPLAY_POWER_ALL_ON ||
         (state == DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON && !internal) ||
         (state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF && internal);
@@ -142,7 +142,7 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       width_mm(0),
       height_mm(0),
       is_aspect_preserving_scaling(false),
-      type(OUTPUT_TYPE_UNKNOWN),
+      type(ui::OUTPUT_TYPE_UNKNOWN),
       touch_device_id(0),
       display_id(0),
       has_display_id(false),
@@ -237,7 +237,7 @@ OutputConfigurator::OutputConfigurator()
       is_panel_fitting_enabled_(false),
       configure_display_(base::SysInfo::IsRunningOnChromeOS()),
       xrandr_event_base_(0),
-      output_state_(STATE_INVALID),
+      output_state_(ui::OUTPUT_STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON),
       next_output_protection_client_id_(1) {}
 
@@ -255,7 +255,7 @@ void OutputConfigurator::SetTouchscreenDelegateForTesting(
 }
 
 void OutputConfigurator::SetInitialDisplayPower(DisplayPowerState power_state) {
-  DCHECK_EQ(output_state_, STATE_INVALID);
+  DCHECK_EQ(output_state_, ui::OUTPUT_STATE_INVALID);
   power_state_ = power_state;
 }
 
@@ -281,7 +281,7 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   UpdateCachedOutputs();
   if (cached_outputs_.size() > 1 && background_color_argb)
     native_display_delegate_->SetBackgroundColor(background_color_argb);
-  const OutputState new_state = ChooseOutputState(power_state_);
+  const ui::OutputState new_state = ChooseOutputState(power_state_);
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_);
 
@@ -302,25 +302,26 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
     if (request_it != requests.end())
       all_desired = request_it->second;
     switch (it->type) {
-      case OUTPUT_TYPE_UNKNOWN:
+      case ui::OUTPUT_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
-      case OUTPUT_TYPE_DISPLAYPORT:
-      case OUTPUT_TYPE_DVI:
-      case OUTPUT_TYPE_HDMI: {
-        HDCPState new_desired_state =
-            (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
-            HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
+      case ui::OUTPUT_TYPE_DISPLAYPORT:
+      case ui::OUTPUT_TYPE_DVI:
+      case ui::OUTPUT_TYPE_HDMI: {
+        ui::HDCPState new_desired_state =
+            (all_desired & ui::OUTPUT_PROTECTION_METHOD_HDCP)
+                ? ui::HDCP_STATE_DESIRED
+                : ui::HDCP_STATE_UNDESIRED;
         if (!native_display_delegate_->SetHDCPState(this_id, new_desired_state))
           return false;
         break;
       }
-      case OUTPUT_TYPE_INTERNAL:
-      case OUTPUT_TYPE_VGA:
-      case OUTPUT_TYPE_NETWORK:
+      case ui::OUTPUT_TYPE_INTERNAL:
+      case ui::OUTPUT_TYPE_VGA:
+      case ui::OUTPUT_TYPE_NETWORK:
         // No protections for these types. Do nothing.
         break;
-      case OUTPUT_TYPE_NONE:
+      case ui::OUTPUT_TYPE_NONE:
         NOTREACHED();
         break;
     }
@@ -373,27 +374,27 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
       continue;
     *link_mask |= it->type;
     switch (it->type) {
-      case OUTPUT_TYPE_UNKNOWN:
+      case ui::OUTPUT_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
-      case OUTPUT_TYPE_DISPLAYPORT:
-      case OUTPUT_TYPE_DVI:
-      case OUTPUT_TYPE_HDMI: {
-        HDCPState state;
+      case ui::OUTPUT_TYPE_DISPLAYPORT:
+      case ui::OUTPUT_TYPE_DVI:
+      case ui::OUTPUT_TYPE_HDMI: {
+        ui::HDCPState state;
         if (!native_display_delegate_->GetHDCPState(this_id, &state))
           return false;
-        if (state == HDCP_STATE_ENABLED)
-          enabled |= OUTPUT_PROTECTION_METHOD_HDCP;
+        if (state == ui::HDCP_STATE_ENABLED)
+          enabled |= ui::OUTPUT_PROTECTION_METHOD_HDCP;
         else
-          unfulfilled |= OUTPUT_PROTECTION_METHOD_HDCP;
+          unfulfilled |= ui::OUTPUT_PROTECTION_METHOD_HDCP;
         break;
       }
-      case OUTPUT_TYPE_INTERNAL:
-      case OUTPUT_TYPE_VGA:
-      case OUTPUT_TYPE_NETWORK:
+      case ui::OUTPUT_TYPE_INTERNAL:
+      case ui::OUTPUT_TYPE_VGA:
+      case ui::OUTPUT_TYPE_NETWORK:
         // No protections for these types. Do nothing.
         break;
-      case OUTPUT_TYPE_NONE:
+      case ui::OUTPUT_TYPE_NONE:
         NOTREACHED();
         break;
     }
@@ -436,7 +437,7 @@ bool OutputConfigurator::EnableOutputProtection(
   if (!ApplyProtections(protections))
     return false;
 
-  if (desired_method_mask == OUTPUT_PROTECTION_METHOD_NONE) {
+  if (desired_method_mask == ui::OUTPUT_PROTECTION_METHOD_NONE) {
     if (client_protection_requests_.find(client_id) !=
         client_protection_requests_.end()) {
       client_protection_requests_[client_id].erase(display_id);
@@ -470,7 +471,7 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   native_display_delegate_->GrabServer();
   UpdateCachedOutputs();
 
-  const OutputState new_state = ChooseOutputState(power_state);
+  const ui::OutputState new_state = ChooseOutputState(power_state);
   bool attempted_change = false;
   bool success = false;
 
@@ -478,7 +479,7 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display =
       cached_outputs_.size() == 1 &&
-      cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
+      cached_outputs_[0].type == ui::OUTPUT_TYPE_INTERNAL;
   if (single_internal_display || !only_if_single_internal_display) {
     success = EnterStateOrFallBackToSoftwareMirroring(new_state, power_state);
     attempted_change = true;
@@ -495,15 +496,15 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   return true;
 }
 
-bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
+bool OutputConfigurator::SetDisplayMode(ui::OutputState new_state) {
   if (!configure_display_)
     return false;
 
   VLOG(1) << "SetDisplayMode: state=" << OutputStateToString(new_state);
   if (output_state_ == new_state) {
     // Cancel software mirroring if the state is moving from
-    // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED.
-    if (mirroring_controller_ && new_state == STATE_DUAL_EXTENDED)
+    // OUTPUT_STATE_DUAL_EXTENDED to OUTPUT_STATE_DUAL_EXTENDED.
+    if (mirroring_controller_ && new_state == ui::OUTPUT_STATE_DUAL_EXTENDED)
       mirroring_controller_->SetSoftwareMirroring(false);
     NotifyObservers(true, new_state);
     return true;
@@ -660,8 +661,8 @@ void OutputConfigurator::UpdateCachedOutputs() {
 
   // Set |mirror_mode| fields.
   if (cached_outputs_.size() == 2) {
-    bool one_is_internal = cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
-    bool two_is_internal = cached_outputs_[1].type == OUTPUT_TYPE_INTERNAL;
+    bool one_is_internal = cached_outputs_[0].type == ui::OUTPUT_TYPE_INTERNAL;
+    bool two_is_internal = cached_outputs_[1].type == ui::OUTPUT_TYPE_INTERNAL;
     int internal_outputs = (one_is_internal ? 1 : 0) +
         (two_is_internal ? 1 : 0);
     DCHECK_LT(internal_outputs, 2);
@@ -766,7 +767,7 @@ void OutputConfigurator::ConfigureOutputs() {
 
   native_display_delegate_->GrabServer();
   UpdateCachedOutputs();
-  const OutputState new_state = ChooseOutputState(power_state_);
+  const ui::OutputState new_state = ChooseOutputState(power_state_);
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_);
   native_display_delegate_->UngrabServer();
@@ -775,7 +776,7 @@ void OutputConfigurator::ConfigureOutputs() {
 }
 
 void OutputConfigurator::NotifyObservers(bool success,
-                                         OutputState attempted_state) {
+                                         ui::OutputState attempted_state) {
   if (success) {
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnDisplayModeChanged(cached_outputs_));
@@ -786,25 +787,25 @@ void OutputConfigurator::NotifyObservers(bool success,
 }
 
 bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(
-    OutputState output_state,
+    ui::OutputState output_state,
     DisplayPowerState power_state) {
   bool success = EnterState(output_state, power_state);
   if (mirroring_controller_) {
     bool enable_software_mirroring = false;
-    if (!success && output_state == STATE_DUAL_MIRROR) {
-      if (output_state_ != STATE_DUAL_EXTENDED || power_state_ != power_state)
-        EnterState(STATE_DUAL_EXTENDED, power_state);
+    if (!success && output_state == ui::OUTPUT_STATE_DUAL_MIRROR) {
+      if (output_state_ != ui::OUTPUT_STATE_DUAL_EXTENDED ||
+          power_state_ != power_state)
+        EnterState(ui::OUTPUT_STATE_DUAL_EXTENDED, power_state);
       enable_software_mirroring = success =
-          output_state_ == STATE_DUAL_EXTENDED;
+          output_state_ == ui::OUTPUT_STATE_DUAL_EXTENDED;
     }
     mirroring_controller_->SetSoftwareMirroring(enable_software_mirroring);
   }
   return success;
 }
 
-bool OutputConfigurator::EnterState(
-    OutputState output_state,
-    DisplayPowerState power_state) {
+bool OutputConfigurator::EnterState(ui::OutputState output_state,
+                                    DisplayPowerState power_state) {
   std::vector<bool> output_power;
   int num_on_outputs = GetOutputPower(
       cached_outputs_, power_state, &output_power);
@@ -816,18 +817,18 @@ bool OutputConfigurator::EnterState(
   std::vector<OutputSnapshot> updated_outputs = cached_outputs_;
 
   switch (output_state) {
-    case STATE_INVALID:
+    case ui::OUTPUT_STATE_INVALID:
       NOTREACHED() << "Ignoring request to enter invalid state with "
                    << updated_outputs.size() << " connected output(s)";
       return false;
-    case STATE_HEADLESS:
+    case ui::OUTPUT_STATE_HEADLESS:
       if (updated_outputs.size() != 0) {
         LOG(WARNING) << "Ignoring request to enter headless mode with "
                      << updated_outputs.size() << " connected output(s)";
         return false;
       }
       break;
-    case STATE_SINGLE: {
+    case ui::OUTPUT_STATE_SINGLE: {
       // If there are multiple outputs connected, only one should be turned on.
       if (updated_outputs.size() != 1 && num_on_outputs != 1) {
         LOG(WARNING) << "Ignoring request to enter single mode with "
@@ -862,7 +863,7 @@ bool OutputConfigurator::EnterState(
       }
       break;
     }
-    case STATE_DUAL_MIRROR: {
+    case ui::OUTPUT_STATE_DUAL_MIRROR: {
       if (updated_outputs.size() != 2 ||
           (num_on_outputs != 0 && num_on_outputs != 2)) {
         LOG(WARNING) << "Ignoring request to enter mirrored mode with "
@@ -898,7 +899,7 @@ bool OutputConfigurator::EnterState(
       }
       break;
     }
-    case STATE_DUAL_EXTENDED: {
+    case ui::OUTPUT_STATE_DUAL_EXTENDED: {
       if (updated_outputs.size() != 2 ||
           (num_on_outputs != 0 && num_on_outputs != 2)) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
@@ -993,8 +994,7 @@ bool OutputConfigurator::EnterState(
       // If we are trying to set mirror mode and one of the modesets fails,
       // then the two monitors will be mis-matched.  In this case, return
       // false to let the observers be aware.
-      if (output_state == STATE_DUAL_MIRROR &&
-          output_power[i] &&
+      if (output_state == ui::OUTPUT_STATE_DUAL_MIRROR && output_power[i] &&
           output.current_mode != output.mirror_mode)
         all_succeeded = false;
 
@@ -1008,19 +1008,19 @@ bool OutputConfigurator::EnterState(
   return all_succeeded;
 }
 
-OutputState OutputConfigurator::ChooseOutputState(
+ui::OutputState OutputConfigurator::ChooseOutputState(
     DisplayPowerState power_state) const {
   int num_on_outputs = GetOutputPower(cached_outputs_, power_state, NULL);
   switch (cached_outputs_.size()) {
     case 0:
-      return STATE_HEADLESS;
+      return ui::OUTPUT_STATE_HEADLESS;
     case 1:
-      return STATE_SINGLE;
+      return ui::OUTPUT_STATE_SINGLE;
     case 2: {
       if (num_on_outputs == 1) {
         // If only one output is currently turned on, return the "single"
         // state so that its native mode will be used.
-        return STATE_SINGLE;
+        return ui::OUTPUT_STATE_SINGLE;
       } else {
         // With either both outputs on or both outputs off, use one of the
         // dual modes.
@@ -1028,7 +1028,7 @@ OutputState OutputConfigurator::ChooseOutputState(
         for (size_t i = 0; i < cached_outputs_.size(); ++i) {
           // If display id isn't available, switch to extended mode.
           if (!cached_outputs_[i].has_display_id)
-            return STATE_DUAL_EXTENDED;
+            return ui::OUTPUT_STATE_DUAL_EXTENDED;
           display_ids.push_back(cached_outputs_[i].display_id);
         }
         return state_controller_->GetStateForDisplayIds(display_ids);
@@ -1037,7 +1037,7 @@ OutputState OutputConfigurator::ChooseOutputState(
     default:
       NOTREACHED();
   }
-  return STATE_INVALID;
+  return ui::OUTPUT_STATE_INVALID;
 }
 
 OutputConfigurator::CoordinateTransformation

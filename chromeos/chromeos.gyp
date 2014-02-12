@@ -25,6 +25,7 @@
         '../dbus/dbus.gyp:dbus',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../ui/display/display.gyp:display',
         '../url/url.gyp:url_lib',
         'ime/input_method.gyp:gencode',
         'power_manager_proto',

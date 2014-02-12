@@ -841,8 +841,8 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
 
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::OutputState new_state = mirrored ?
-        chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
+    ui::OutputState new_state = mirrored ? ui::OUTPUT_STATE_DUAL_MIRROR :
+                                           ui::OUTPUT_STATE_DUAL_EXTENDED;
     Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
     return;
   }

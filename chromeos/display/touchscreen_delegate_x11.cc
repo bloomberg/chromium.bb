@@ -117,9 +117,9 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
        it != no_match_touchscreen.end();
        it++) {
     for (size_t i = 0; i < outputs->size(); i++) {
-      if ((*outputs)[i].type != OUTPUT_TYPE_INTERNAL &&
+      if ((*outputs)[i].type != ui::OUTPUT_TYPE_INTERNAL &&
           (*outputs)[i].native_mode != None &&
-          (*outputs)[i].touch_device_id == None ) {
+          (*outputs)[i].touch_device_id == None) {
         (*outputs)[i].touch_device_id = *it;
         VLOG(2) << "Arbitrarily matching touchscreen "
                 << (*outputs)[i].touch_device_id << " to output #" << i;

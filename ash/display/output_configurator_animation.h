@@ -46,8 +46,8 @@ class ASH_EXPORT OutputConfiguratorAnimation
   virtual void OnDisplayModeChanged(
       const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs)
       OVERRIDE;
-  virtual void OnDisplayModeChangeFailed(
-      chromeos::OutputState failed_new_state) OVERRIDE;
+  virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state)
+      OVERRIDE;
 
  private:
   // Clears all hiding layers.  Note that in case that this method is called

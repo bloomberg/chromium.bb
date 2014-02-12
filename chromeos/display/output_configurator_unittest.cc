@@ -76,7 +76,7 @@ std::string GetCTMAction(
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::SetHDCPState() call.
-std::string GetSetHDCPStateAction(RROutput id, HDCPState state) {
+std::string GetSetHDCPStateAction(RROutput id, ui::HDCPState state) {
   return base::StringPrintf("set_hdcp(id=%lu,state=%d)", id, state);
 }
 
@@ -162,7 +162,7 @@ class TestNativeDisplayDelegate
   // Ownership of |log| remains with the caller.
   explicit TestNativeDisplayDelegate(ActionLogger* log)
       : max_configurable_pixels_(0),
-        hdcp_state_(HDCP_STATE_UNDESIRED),
+        hdcp_state_(ui::HDCP_STATE_UNDESIRED),
         log_(log) {}
   virtual ~TestNativeDisplayDelegate() {}
 
@@ -178,7 +178,7 @@ class TestNativeDisplayDelegate
     max_configurable_pixels_ = pixels;
   }
 
-  void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
+  void set_hdcp_state(ui::HDCPState state) { hdcp_state_ = state; }
 
   // OutputConfigurator::Delegate overrides:
   virtual void InitXRandRExtension(int* event_base) OVERRIDE {
@@ -235,12 +235,12 @@ class TestNativeDisplayDelegate
                              outputs.size() >= 1 ? outputs[0].crtc : 0,
                              outputs.size() >= 2 ? outputs[1].crtc : 0));
   }
-  virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE {
+  virtual bool GetHDCPState(RROutput id, ui::HDCPState* state) OVERRIDE {
     *state = hdcp_state_;
     return true;
   }
 
-  virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE {
+  virtual bool SetHDCPState(RROutput id, ui::HDCPState state) OVERRIDE {
     log_->AppendAction(GetSetHDCPStateAction(id, state));
     return true;
   }
@@ -266,7 +266,7 @@ class TestNativeDisplayDelegate
   int  max_configurable_pixels_;
 
   // Result value of GetHDCPState().
-  HDCPState hdcp_state_;
+  ui::HDCPState hdcp_state_;
 
   ActionLogger* log_;  // Not owned.
 
@@ -290,13 +290,13 @@ class TestObserver : public OutputConfigurator::Observer {
       const {
     return latest_outputs_;
   }
-  OutputState latest_failed_state() const { return latest_failed_state_; }
+  ui::OutputState latest_failed_state() const { return latest_failed_state_; }
 
   void Reset() {
     num_changes_ = 0;
     num_failures_ = 0;
     latest_outputs_.clear();
-    latest_failed_state_ = STATE_INVALID;
+    latest_failed_state_ = ui::OUTPUT_STATE_INVALID;
   }
 
   // OutputConfigurator::Observer overrides:
@@ -306,7 +306,7 @@ class TestObserver : public OutputConfigurator::Observer {
     latest_outputs_ = outputs;
   }
 
-  virtual void OnDisplayModeChangeFailed(OutputState failed_new_state)
+  virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state)
       OVERRIDE {
     num_failures_++;
     latest_failed_state_ = failed_new_state;
@@ -321,21 +321,23 @@ class TestObserver : public OutputConfigurator::Observer {
 
   // Parameters most recently passed to OnDisplayMode*().
   std::vector<OutputConfigurator::OutputSnapshot> latest_outputs_;
-  OutputState latest_failed_state_;
+  ui::OutputState latest_failed_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class TestStateController : public OutputConfigurator::StateController {
  public:
-  TestStateController() : state_(STATE_DUAL_EXTENDED) {}
+  TestStateController() : state_(ui::OUTPUT_STATE_DUAL_EXTENDED) {}
   virtual ~TestStateController() {}
 
-  void set_state(OutputState state) { state_ = state; }
+  void set_state(ui::OutputState state) { state_ = state; }
 
   // OutputConfigurator::StateController overrides:
-  virtual OutputState GetStateForDisplayIds(
-      const std::vector<int64>& outputs) const OVERRIDE { return state_; }
+  virtual ui::OutputState GetStateForDisplayIds(
+      const std::vector<int64>& outputs) const OVERRIDE {
+    return state_;
+  }
   virtual bool GetResolutionForDisplayId(
       int64 display_id,
       int *width,
@@ -344,7 +346,7 @@ class TestStateController : public OutputConfigurator::StateController {
   }
 
  private:
-  OutputState state_;
+  ui::OutputState state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStateController);
 };
@@ -415,7 +417,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 10;
     o->current_mode = kSmallModeId;
     o->native_mode = kSmallModeId;
-    o->type = OUTPUT_TYPE_INTERNAL;
+    o->type = ui::OUTPUT_TYPE_INTERNAL;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
     o->has_display_id = true;
@@ -427,7 +429,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 11;
     o->current_mode = kBigModeId;
     o->native_mode = kBigModeId;
-    o->type = OUTPUT_TYPE_HDMI;
+    o->type = ui::OUTPUT_TYPE_HDMI;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
     o->mode_infos[kBigModeId] = big_mode_info;
@@ -577,7 +579,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   // Connect a second output and check that the configurator enters
   // extended mode.
   observer_.Reset();
-  state_controller_.set_state(STATE_DUAL_EXTENDED);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   const int kDualHeight =
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
@@ -602,7 +604,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(1, observer_.num_changes());
 
   observer_.Reset();
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -639,7 +641,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
 
   // Get rid of shared modes to force software mirroring.
   outputs_[1].mode_infos.erase(kSmallModeId);
-  state_controller_.set_state(STATE_DUAL_EXTENDED);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
@@ -661,24 +663,24 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
 
   observer_.Reset();
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
-  // Setting STATE_DUAL_MIRROR should try to reconfigure.
+  // Setting OUTPUT_STATE_DUAL_MIRROR should try to reconfigure.
   observer_.Reset();
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_EXTENDED));
   EXPECT_EQ(JoinActions(NULL), log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Set back to software mirror mode.
   observer_.Reset();
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -703,7 +705,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
 TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   InitWithSingleOutput();
 
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
   EXPECT_EQ(
@@ -742,7 +744,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_SINGLE, configurator_.output_state());
   EXPECT_EQ(1, observer_.num_changes());
 
   // When all displays are turned off, the framebuffer should switch back
@@ -762,7 +764,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -785,13 +787,13 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
   outputs_[1].mode_infos.erase(kSmallModeId);
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
   const int kDualHeight =
@@ -813,7 +815,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -835,7 +837,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_SINGLE, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -859,7 +861,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
@@ -884,7 +886,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 }
@@ -953,7 +955,7 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
 
   // If a second, external display is connected, the displays shouldn't be
   // powered back on before suspending.
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
@@ -1046,7 +1048,7 @@ TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
   configurator_.Init(false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   configurator_.Start(0);
   EXPECT_EQ(
       JoinActions(
@@ -1072,29 +1074,29 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   configurator_.Init(false);
   configurator_.Start(0);
   observer_.Reset();
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_HEADLESS));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_HEADLESS));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_SINGLE));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_EXTENDED));
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(3, observer_.num_failures());
 
   UpdateOutputs(1, true);
   observer_.Reset();
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_HEADLESS));
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_SINGLE));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_HEADLESS));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_SINGLE));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_EXTENDED));
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(3, observer_.num_failures());
 
-  state_controller_.set_state(STATE_DUAL_EXTENDED);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   observer_.Reset();
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_HEADLESS));
-  EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_HEADLESS));
+  EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_SINGLE));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_MIRROR));
+  EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_DUAL_EXTENDED));
   EXPECT_EQ(2, observer_.num_changes());
   EXPECT_EQ(2, observer_.num_failures());
 }
@@ -1103,18 +1105,18 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
   outputs_[0].has_display_id = false;
   UpdateOutputs(2, false);
   configurator_.Init(false);
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   configurator_.Start(0);
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
 }
 
 TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
   outputs_[0].has_display_id = true;
   UpdateOutputs(2, false);
   configurator_.Init(false);
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   configurator_.Start(0);
-  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
 }
 
 TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
@@ -1135,7 +1137,7 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
 
   // Send an event stating that the second output is connected and check
   // that it gets updated.
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   UpdateOutputs(2, false);
   test_api_.SendOutputChangeEvent(
       outputs_[1].output, outputs_[1].crtc, outputs_[1].current_mode, true);
@@ -1264,7 +1266,7 @@ TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
 
   // After connecting a second output, check that it shows up in
   // |cached_outputs_| even if an invalid state is requested.
-  state_controller_.set_state(STATE_SINGLE);
+  state_controller_.set_state(ui::OUTPUT_STATE_SINGLE);
   UpdateOutputs(2, true);
   cached = &test_api_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(2), cached->size());
@@ -1290,10 +1292,10 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
   // The small mode should be added to the internal output when requesting
   // mirrored mode.
   UpdateOutputs(2, false);
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   configurator_.Init(true /* is_panel_fitting_enabled */);
   configurator_.Start(0);
-  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
+  EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -1347,8 +1349,8 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
                                                         outputs_[0].display_id,
                                                         &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL), link_mask);
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_TYPE_INTERNAL), link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
@@ -1359,33 +1361,30 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
                                                         outputs_[1].display_id,
                                                         &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI),
-            link_mask);
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_TYPE_HDMI), link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
-  EXPECT_TRUE(
-      configurator_.EnableOutputProtection(id,
-                                           outputs_[1].display_id,
-                                           OUTPUT_PROTECTION_METHOD_HDCP));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED),
+  EXPECT_TRUE(configurator_.EnableOutputProtection(
+      id, outputs_[1].display_id, ui::OUTPUT_PROTECTION_METHOD_HDCP));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, ui::HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
 
   // Enable protection.
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  native_display_delegate_->set_hdcp_state(ui::HDCP_STATE_ENABLED);
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
                                                         outputs_[1].display_id,
                                                         &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_HDCP),
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_TYPE_HDMI), link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_PROTECTION_METHOD_HDCP),
             protection_mask);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Protections should be disabled after unregister.
   configurator_.UnregisterOutputProtectionClient(id);
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED),
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, ui::HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
 }
 
@@ -1402,14 +1401,12 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
   // Clients never know state enableness for methods that they didn't request.
-  EXPECT_TRUE(
-      configurator_.EnableOutputProtection(client1,
-                                           outputs_[1].display_id,
-                                           OUTPUT_PROTECTION_METHOD_HDCP));
+  EXPECT_TRUE(configurator_.EnableOutputProtection(
+      client1, outputs_[1].display_id, ui::OUTPUT_PROTECTION_METHOD_HDCP));
   EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
+      GetSetHDCPStateAction(outputs_[1].output, ui::HDCP_STATE_DESIRED).c_str(),
       log_->GetActionsAndClear());
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  native_display_delegate_->set_hdcp_state(ui::HDCP_STATE_ENABLED);
 
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
@@ -1417,31 +1414,27 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
                                                         outputs_[1].display_id,
                                                         &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
-  EXPECT_EQ(OUTPUT_PROTECTION_METHOD_HDCP, protection_mask);
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_TYPE_HDMI), link_mask);
+  EXPECT_EQ(ui::OUTPUT_PROTECTION_METHOD_HDCP, protection_mask);
 
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(client2,
                                                         outputs_[1].display_id,
                                                         &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
-  EXPECT_EQ(OUTPUT_PROTECTION_METHOD_NONE, protection_mask);
+  EXPECT_EQ(static_cast<uint32_t>(ui::OUTPUT_TYPE_HDMI), link_mask);
+  EXPECT_EQ(ui::OUTPUT_PROTECTION_METHOD_NONE, protection_mask);
 
   // Protections will be disabled only if no more clients request them.
-  EXPECT_TRUE(
-      configurator_.EnableOutputProtection(client2,
-                                           outputs_[1].display_id,
-                                           OUTPUT_PROTECTION_METHOD_NONE));
+  EXPECT_TRUE(configurator_.EnableOutputProtection(
+      client2, outputs_[1].display_id, ui::OUTPUT_PROTECTION_METHOD_NONE));
   EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
+      GetSetHDCPStateAction(outputs_[1].output, ui::HDCP_STATE_DESIRED).c_str(),
       log_->GetActionsAndClear());
-  EXPECT_TRUE(
-      configurator_.EnableOutputProtection(client1,
-                                           outputs_[1].display_id,
-                                           OUTPUT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED).c_str(),
-      log_->GetActionsAndClear());
+  EXPECT_TRUE(configurator_.EnableOutputProtection(
+      client1, outputs_[1].display_id, ui::OUTPUT_PROTECTION_METHOD_NONE));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, ui::HDCP_STATE_UNDESIRED)
+                .c_str(),
+            log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
@@ -1450,7 +1443,7 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
 
   UpdateOutputs(2, false);
   configurator_.Init(false);
-  state_controller_.set_state(STATE_DUAL_EXTENDED);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_EXTENDED);
   configurator_.Start(0);
 
   const int kDualHeight =
@@ -1507,13 +1500,13 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
 
   configurator_.Init(false);
 
-  // First test simply fails in STATE_SINGLE mode.   This is probably
+  // First test simply fails in OUTPUT_STATE_SINGLE mode.   This is probably
   // unrealistic but the want to make sure any assumptions don't
   // creep in.
   native_display_delegate_->set_max_configurable_pixels(
       outputs_[0].mode_infos[kFirstMode + 2].width *
       outputs_[0].mode_infos[kFirstMode + 2].height);
-  state_controller_.set_state(STATE_SINGLE);
+  state_controller_.set_state(ui::OUTPUT_STATE_SINGLE);
   UpdateOutputs(1, true);
 
   EXPECT_EQ(
@@ -1538,7 +1531,7 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   native_display_delegate_->set_max_configurable_pixels(
       outputs_[0].mode_infos[kFirstMode + 3].width *
       outputs_[0].mode_infos[kFirstMode + 3].height);
-  state_controller_.set_state(STATE_DUAL_MIRROR);
+  state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
 
   EXPECT_EQ(

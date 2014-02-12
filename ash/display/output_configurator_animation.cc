@@ -210,7 +210,7 @@ void OutputConfiguratorAnimation::OnDisplayModeChanged(
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChangeFailed(
-    chromeos::OutputState failed_new_state) {
+    ui::OutputState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

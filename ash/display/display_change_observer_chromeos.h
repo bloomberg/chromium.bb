@@ -30,7 +30,7 @@ class DisplayChangeObserver
   virtual ~DisplayChangeObserver();
 
   // chromeos::OutputConfigurator::StateController overrides:
-  virtual chromeos::OutputState GetStateForDisplayIds(
+  virtual ui::OutputState GetStateForDisplayIds(
       const std::vector<int64>& outputs) const OVERRIDE;
   virtual bool GetResolutionForDisplayId(int64 display_id,
                                          int* width,

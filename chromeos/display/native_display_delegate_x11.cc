@@ -254,24 +254,24 @@ OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
 
   std::string name(info->name);
   if (is_internal) {
-    output.type = OUTPUT_TYPE_INTERNAL;
+    output.type = ui::OUTPUT_TYPE_INTERNAL;
   } else if (name.find(kOutputName_VGA) == 0) {
-    output.type = OUTPUT_TYPE_VGA;
+    output.type = ui::OUTPUT_TYPE_VGA;
   } else if (name.find(kOutputName_HDMI) == 0) {
-    output.type = OUTPUT_TYPE_HDMI;
+    output.type = ui::OUTPUT_TYPE_HDMI;
   } else if (name.find(kOutputName_DVI) == 0) {
-    output.type = OUTPUT_TYPE_DVI;
+    output.type = ui::OUTPUT_TYPE_DVI;
   } else if (name.find(kOutputName_DisplayPort) == 0) {
-    output.type = OUTPUT_TYPE_DISPLAYPORT;
+    output.type = ui::OUTPUT_TYPE_DISPLAYPORT;
   } else {
     LOG(ERROR) << "Unknown link type: " << name;
-    output.type = OUTPUT_TYPE_UNKNOWN;
+    output.type = ui::OUTPUT_TYPE_UNKNOWN;
   }
 
   return output;
 }
 
-bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, HDCPState* state) {
+bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, ui::HDCPState* state) {
   unsigned char* values = NULL;
   int actual_format = 0;
   unsigned long nitems = 0;
@@ -305,13 +305,13 @@ bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, HDCPState* state) {
              actual_format == 32 && nitems == 1) {
     Atom value = reinterpret_cast<Atom*>(values)[0];
     if (value == XInternAtom(display_, kProtectionUndesiredAtomName, False)) {
-      *state = HDCP_STATE_UNDESIRED;
+      *state = ui::HDCP_STATE_UNDESIRED;
     } else if (value ==
                XInternAtom(display_, kProtectionDesiredAtomName, False)) {
-      *state = HDCP_STATE_DESIRED;
+      *state = ui::HDCP_STATE_DESIRED;
     } else if (value ==
                XInternAtom(display_, kProtectionEnabledAtomName, False)) {
-      *state = HDCP_STATE_ENABLED;
+      *state = ui::HDCP_STATE_ENABLED;
     } else {
       LOG(ERROR) << "Unknown " << kContentProtectionAtomName
                  << " value: " << value;
@@ -328,14 +328,14 @@ bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, HDCPState* state) {
   return ok;
 }
 
-bool NativeDisplayDelegateX11::SetHDCPState(RROutput id, HDCPState state) {
+bool NativeDisplayDelegateX11::SetHDCPState(RROutput id, ui::HDCPState state) {
   Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
   Atom value = None;
   switch (state) {
-    case HDCP_STATE_UNDESIRED:
+    case ui::HDCP_STATE_UNDESIRED:
       value = XInternAtom(display_, kProtectionUndesiredAtomName, False);
       break;
-    case HDCP_STATE_DESIRED:
+    case ui::HDCP_STATE_DESIRED:
       value = XInternAtom(display_, kProtectionDesiredAtomName, False);
       break;
     default:

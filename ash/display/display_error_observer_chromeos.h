@@ -22,8 +22,8 @@ class ASH_EXPORT DisplayErrorObserver
   virtual ~DisplayErrorObserver();
 
   // chromeos::OutputConfigurator::Observer overrides:
-  virtual void OnDisplayModeChangeFailed(
-      chromeos::OutputState failed_new_state) OVERRIDE;
+  virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state)
+      OVERRIDE;
 
  private:
   friend class DisplayErrorObserverTest;

@@ -48,8 +48,8 @@ class NativeDisplayDelegateX11
       int width,
       int height,
       const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
-  virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE;
-  virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE;
+  virtual bool GetHDCPState(RROutput id, ui::HDCPState* state) OVERRIDE;
+  virtual bool SetHDCPState(RROutput id, ui::HDCPState state) OVERRIDE;
 
  private:
   // Initializes |mode_info| to contain details corresponding to |mode|. Returns

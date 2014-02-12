@@ -24,7 +24,7 @@ void ProjectingObserver::OnDisplayModeChanged(
   output_count_ = outputs.size();
 
   for (size_t i = 0; i < outputs.size(); ++i) {
-    if (outputs[i].type == chromeos::OUTPUT_TYPE_INTERNAL) {
+    if (outputs[i].type == ui::OUTPUT_TYPE_INTERNAL) {
       has_internal_output_ = true;
       break;
     }

@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/display_constants.h"
 
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
@@ -27,40 +28,6 @@ typedef XID RRCrtc;
 typedef XID RRMode;
 
 namespace chromeos {
-
-// Used to describe the state of a multi-display configuration.
-enum OutputState {
-  STATE_INVALID,
-  STATE_HEADLESS,
-  STATE_SINGLE,
-  STATE_DUAL_MIRROR,
-  STATE_DUAL_EXTENDED,
-};
-
-// Video output types.
-enum OutputType {
-  OUTPUT_TYPE_NONE = 0,
-  OUTPUT_TYPE_UNKNOWN = 1 << 0,
-  OUTPUT_TYPE_INTERNAL = 1 << 1,
-  OUTPUT_TYPE_VGA = 1 << 2,
-  OUTPUT_TYPE_HDMI = 1 << 3,
-  OUTPUT_TYPE_DVI = 1 << 4,
-  OUTPUT_TYPE_DISPLAYPORT = 1 << 5,
-  OUTPUT_TYPE_NETWORK = 1 << 6,
-};
-
-// Content protection methods applied on video output.
-enum OutputProtectionMethod {
-  OUTPUT_PROTECTION_METHOD_NONE = 0,
-  OUTPUT_PROTECTION_METHOD_HDCP = 1 << 0,
-};
-
-// HDCP protection state.
-enum HDCPState {
-  HDCP_STATE_UNDESIRED,
-  HDCP_STATE_DESIRED,
-  HDCP_STATE_ENABLED
-};
 
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
@@ -127,7 +94,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     bool is_aspect_preserving_scaling;
 
     // The type of output.
-    OutputType type;
+    ui::OutputType type;
 
     // Map from mode IDs to details about the corresponding modes.
     ModeInfoMap mode_infos;
@@ -160,7 +127,7 @@ class CHROMEOS_EXPORT OutputConfigurator
 
     // Called after a display mode change attempt failed. |failed_new_state| is
     // the new state which the system failed to enter.
-    virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
+    virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state) {}
   };
 
   // Interface for classes that make decisions about which output state
@@ -170,7 +137,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     virtual ~StateController() {}
 
     // Called when displays are detected.
-    virtual OutputState GetStateForDisplayIds(
+    virtual ui::OutputState GetStateForDisplayIds(
         const std::vector<int64>& display_ids) const = 0;
 
     // Queries the resolution (|width|x|height|) in pixels
@@ -245,10 +212,10 @@ class CHROMEOS_EXPORT OutputConfigurator
         const std::vector<OutputConfigurator::OutputSnapshot>& outputs) = 0;
 
     // Gets HDCP state of output.
-    virtual bool GetHDCPState(RROutput id, HDCPState* state) = 0;
+    virtual bool GetHDCPState(RROutput id, ui::HDCPState* state) = 0;
 
     // Sets HDCP state of output.
-    virtual bool SetHDCPState(RROutput id, HDCPState state) = 0;
+    virtual bool SetHDCPState(RROutput id, ui::HDCPState state) = 0;
   };
 
   class TouchscreenDelegate {
@@ -336,7 +303,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
-  OutputState output_state() const { return output_state_; }
+  ui::OutputState output_state() const { return output_state_; }
   DisplayPowerState power_state() const { return power_state_; }
 
   void set_state_controller(StateController* controller) {
@@ -379,7 +346,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Force switching the display mode to |new_state|. Returns false if
   // switching failed (possibly because |new_state| is invalid for the
   // current set of connected outputs).
-  bool SetDisplayMode(OutputState new_state);
+  bool SetDisplayMode(ui::OutputState new_state);
 
   // Called when an RRNotify event is received.  The implementation is
   // interested in the cases of RRNotify events which correspond to output
@@ -473,7 +440,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   void ConfigureOutputs();
 
   // Notifies observers about an attempted state change.
-  void NotifyObservers(bool success, OutputState attempted_state);
+  void NotifyObservers(bool success, ui::OutputState attempted_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // If the hardware mirroring failed and |mirroring_controller_| is set,
@@ -481,18 +448,17 @@ class CHROMEOS_EXPORT OutputConfigurator
   // to enable software based mirroring.
   // On success, updates |output_state_|, |power_state_|, and |cached_outputs_|
   // and returns true.
-  bool EnterStateOrFallBackToSoftwareMirroring(
-      OutputState output_state,
-      DisplayPowerState power_state);
+  bool EnterStateOrFallBackToSoftwareMirroring(ui::OutputState output_state,
+                                               DisplayPowerState power_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // On success, updates |output_state_|, |power_state_|, and
   // |cached_outputs_| and returns true.
-  bool EnterState(OutputState output_state, DisplayPowerState power_state);
+  bool EnterState(ui::OutputState output_state, DisplayPowerState power_state);
 
   // Returns the output state that should be used with |cached_outputs_| while
   // in |power_state|.
-  OutputState ChooseOutputState(DisplayPowerState power_state) const;
+  ui::OutputState ChooseOutputState(DisplayPowerState power_state) const;
 
   // Computes the relevant transformation for mirror mode.
   // |output| is the output on which mirror mode is being applied.
@@ -545,7 +511,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   int xrandr_event_base_;
 
   // The current display state.
-  OutputState output_state_;
+  ui::OutputState output_state_;
 
   // The current power state.
   DisplayPowerState power_state_;
