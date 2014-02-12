@@ -399,8 +399,6 @@ void NavigatorImpl::DidNavigate(
   if (use_site_per_process) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
-    DCHECK_EQ(params.frame_id,
-              render_frame_host->frame_tree_node()->frame_id());
 
     // TODO(creis): In the short term, cross-process subframe navigations are
     // happening in the pending RenderViewHost's top-level frame.  (We need to

@@ -161,16 +161,33 @@ void RedirectNotificationObserver::Observe(
 
 class SitePerProcessBrowserTest : public ContentBrowserTest {
  protected:
+  // Start at a data URL so each extra navigation creates a navigation entry.
+  // (The first navigation will silently be classified as AUTO_SUBFRAME.)
+  // TODO(creis): This won't be necessary when we can wait for LOAD_STOP.
+  void StartFrameAtDataURL() {
+    std::string data_url_script =
+      "var iframes = document.getElementById('test');iframes.src="
+      "'data:text/html,dataurl';";
+    ASSERT_TRUE(ExecuteScript(shell()->web_contents(), data_url_script));
+  }
+
   bool NavigateIframeToURL(Shell* window,
                            const GURL& url,
                            std::string iframe_id) {
+    // TODO(creis): This should wait for LOAD_STOP, but cross-site subframe
+    // navigations generate extra DidStartLoading and DidStopLoading messages.
+    // Until we replace swappedout:// with frame proxies, we need to listen for
+    // something else.  For now, we trigger NEW_SUBFRAME navigations and listen
+    // for commit.
     std::string script = base::StringPrintf(
-        "var iframes = document.getElementById('%s');iframes.src='%s';",
+        "setTimeout(\""
+        "var iframes = document.getElementById('%s');iframes.src='%s';"
+        "\",0)",
         iframe_id.c_str(), url.spec().c_str());
     WindowedNotificationObserver load_observer(
-        NOTIFICATION_LOAD_STOP,
+        NOTIFICATION_NAV_ENTRY_COMMITTED,
         Source<NavigationController>(
-            &shell()->web_contents()->GetController()));
+            &window->web_contents()->GetController()));
     bool result = ExecuteScript(window->web_contents(), script);
     load_observer.Wait();
     return result;
@@ -192,36 +209,39 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSitePerProcess);
+
+    // TODO(creis): Remove this when GTK is no longer a supported platform.
+    command_line->AppendSwitch(switches::kForceCompositingMode);
   }
 };
 
 // Ensure that we can complete a cross-process subframe navigation.
-// TODO(nasko): Disable this test for now, since enabling swapping out of
-// RenderFrameHosts causes this to break. Fix this test once
-// didFailProvisionalLoad is moved from RenderView to RenderFrame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
+  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
-  ASSERT_TRUE(https_server.Start());
   GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
-
   NavigateToURL(shell(), main_url);
+
+  StartFrameAtDataURL();
 
   SitePerProcessWebContentsObserver observer(shell()->web_contents());
 
   // Load same-site page into iframe.
   GURL http_url(test_server()->GetURL("files/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(shell(), http_url, "test"));
-  EXPECT_EQ(observer.navigation_url(), http_url);
+  EXPECT_EQ(http_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
 
+  // These must stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  std::string foo_com("foo.com");
+
   // Load cross-site page into iframe.
-  GURL https_url(https_server.GetURL("files/title1.html"));
-  EXPECT_TRUE(NavigateIframeToURL(shell(), https_url, "test"));
-  EXPECT_EQ(observer.navigation_url(), https_url);
+  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
+  replace_host.SetHostStr(foo_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  EXPECT_TRUE(NavigateIframeToURL(shell(), cross_site_url, "test"));
+  EXPECT_EQ(cross_site_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
 
   // Ensure that we have created a new process for the subframe.
@@ -240,6 +260,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
+// TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run
+// on Android (http://crbug.com/187570).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectOnce) {
   ASSERT_TRUE(test_server()->Start());
@@ -364,6 +386,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
+// TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run
+// on Android (http://crbug.com/187570).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectTwice) {
   ASSERT_TRUE(test_server()->Start());
@@ -447,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Tests that the |should_replace_current_entry| flag persists correctly across
 // request transfers that began with a cross-process navigation.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ReplaceEntryCrossProcessThenTranfers) {
+                       ReplaceEntryCrossProcessThenTransfer) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
   host_resolver()->AddRule("*", "127.0.0.1");
