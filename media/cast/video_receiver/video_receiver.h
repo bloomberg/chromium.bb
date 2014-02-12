@@ -53,7 +53,8 @@ class VideoReceiver : public base::NonThreadSafe,
   void IncomingPacket(scoped_ptr<Packet> packet);
 
  protected:
-  void IncomingParsedRtpPacket(const uint8* payload_data, size_t payload_size,
+  void IncomingParsedRtpPacket(const uint8* payload_data,
+                               size_t payload_size,
                                const RtpCastHeader& rtp_header);
 
   void DecodeVideoFrameThread(

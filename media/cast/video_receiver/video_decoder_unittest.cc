@@ -23,17 +23,21 @@ using testing::_;
 static const int64 kStartMillisecond = GG_INT64_C(1245);
 
 namespace {
-class DecodeTestFrameCallback :
-  public base::RefCountedThreadSafe<DecodeTestFrameCallback> {
+class DecodeTestFrameCallback
+    : public base::RefCountedThreadSafe<DecodeTestFrameCallback> {
  public:
   DecodeTestFrameCallback() {}
 
   void DecodeComplete(const scoped_refptr<media::VideoFrame>& decoded_frame,
                       const base::TimeTicks& render_time) {}
+
  protected:
   virtual ~DecodeTestFrameCallback() {}
+
  private:
   friend class base::RefCountedThreadSafe<DecodeTestFrameCallback>;
+
+  DISALLOW_COPY_AND_ASSIGN(DecodeTestFrameCallback);
 };
 }  // namespace
 
@@ -42,10 +46,15 @@ class VideoDecoderTest : public ::testing::Test {
   VideoDecoderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_), task_runner_,
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastReceiverLoggingConfig())),
+        cast_environment_(
+            new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+                                task_runner_,
+                                task_runner_,
+                                task_runner_,
+                                task_runner_,
+                                task_runner_,
+                                task_runner_,
+                                GetDefaultCastReceiverLoggingConfig())),
         test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.
     config_.codec = transport::kVp8;
@@ -63,6 +72,8 @@ class VideoDecoderTest : public ::testing::Test {
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<DecodeTestFrameCallback> test_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderTest);
 };
 
 // TODO(pwestin): EXPECT_DEATH tests can not pass valgrind.
@@ -72,7 +83,8 @@ TEST_F(VideoDecoderTest, DISABLED_SizeZero) {
   encoded_frame.codec = transport::kVp8;
   EXPECT_DEATH(
       decoder_->DecodeVideoFrame(
-          &encoded_frame, render_time,
+          &encoded_frame,
+          render_time,
           base::Bind(&DecodeTestFrameCallback::DecodeComplete, test_callback_)),
       "Empty frame");
 }

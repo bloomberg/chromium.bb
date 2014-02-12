@@ -28,8 +28,10 @@ void LogFrameDecodedEvent(CastEnvironment* const cast_environment,
 Vp8Decoder::Vp8Decoder(scoped_refptr<CastEnvironment> cast_environment)
     : cast_environment_(cast_environment) {
   // Make sure that we initialize the decoder from the correct thread.
-  cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
-        base::Bind(&Vp8Decoder::InitDecoder, base::Unretained(this)));
+  cast_environment_->PostTask(
+      CastEnvironment::VIDEO_DECODER,
+      FROM_HERE,
+      base::Bind(&Vp8Decoder::InitDecoder, base::Unretained(this)));
 }
 
 Vp8Decoder::~Vp8Decoder() {
@@ -47,10 +49,8 @@ void Vp8Decoder::InitDecoder() {
 
   DCHECK(!decoder_);
   decoder_.reset(new vpx_dec_ctx_t());
-  vpx_codec_err_t ret = vpx_codec_dec_init(decoder_.get(),
-                                           vpx_codec_vp8_dx(),
-                                           &cfg,
-                                           flags);
+  vpx_codec_err_t ret =
+      vpx_codec_dec_init(decoder_.get(), vpx_codec_vp8_dx(), &cfg, flags);
   if (ret != VPX_CODEC_OK) {
     DCHECK(false) << "vpx_codec_dec_init() failed.";
     decoder_.reset();
@@ -65,16 +65,18 @@ bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
   VLOG(1) << "VP8 decode frame:" << frame_id_int
           << " sized:" << encoded_frame->data.size();
 
-  if (encoded_frame->data.empty()) return false;
+  if (encoded_frame->data.empty())
+    return false;
 
   vpx_codec_iter_t iter = NULL;
   vpx_image_t* img;
+  const int real_time_decoding = 1;
   if (vpx_codec_decode(
-      decoder_.get(),
-      reinterpret_cast<const uint8*>(encoded_frame->data.data()),
-      static_cast<unsigned int>(encoded_frame->data.size()),
-      0,
-      1 /* real time*/)) {
+          decoder_.get(),
+          reinterpret_cast<const uint8*>(encoded_frame->data.data()),
+          static_cast<unsigned int>(encoded_frame->data.size()),
+          0,
+          real_time_decoding)) {
     VLOG(1) << "Failed to decode VP8 frame.";
     return false;
   }
@@ -87,21 +89,33 @@ bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
 
   gfx::Size visible_size(img->d_w, img->d_h);
   gfx::Size full_size(img->stride[VPX_PLANE_Y], img->d_h);
-  DCHECK(VideoFrame::IsValidConfig(VideoFrame::I420, visible_size,
-                                   gfx::Rect(visible_size), full_size));
+  DCHECK(VideoFrame::IsValidConfig(
+      VideoFrame::I420, visible_size, gfx::Rect(visible_size), full_size));
   // Temp timing setting - will sort out timing in a follow up cl.
   scoped_refptr<VideoFrame> decoded_frame =
-      VideoFrame::CreateFrame(VideoFrame::I420, visible_size,
-      gfx::Rect(visible_size), full_size, base::TimeDelta());
+      VideoFrame::CreateFrame(VideoFrame::I420,
+                              visible_size,
+                              gfx::Rect(visible_size),
+                              full_size,
+                              base::TimeDelta());
 
   // Copy each plane individually (need to account for stride).
   // TODO(mikhal): Eliminate copy once http://crbug.com/321856 is resolved.
-  CopyPlane(VideoFrame::kYPlane, img->planes[VPX_PLANE_Y],
-            img->stride[VPX_PLANE_Y], img->d_h, decoded_frame.get());
-  CopyPlane(VideoFrame::kUPlane, img->planes[VPX_PLANE_U],
-            img->stride[VPX_PLANE_U], (img->d_h + 1) / 2, decoded_frame.get());
-  CopyPlane(VideoFrame::kVPlane, img->planes[VPX_PLANE_V],
-            img->stride[VPX_PLANE_V], (img->d_h + 1) / 2, decoded_frame.get());
+  CopyPlane(VideoFrame::kYPlane,
+            img->planes[VPX_PLANE_Y],
+            img->stride[VPX_PLANE_Y],
+            img->d_h,
+            decoded_frame.get());
+  CopyPlane(VideoFrame::kUPlane,
+            img->planes[VPX_PLANE_U],
+            img->stride[VPX_PLANE_U],
+            (img->d_h + 1) / 2,
+            decoded_frame.get());
+  CopyPlane(VideoFrame::kVPlane,
+            img->planes[VPX_PLANE_V],
+            img->stride[VPX_PLANE_V],
+            (img->d_h + 1) / 2,
+            decoded_frame.get());
 
   VLOG(1) << "Decoded frame " << frame_id_int;
 
@@ -113,7 +127,9 @@ bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
                                          encoded_frame->rtp_timestamp,
                                          encoded_frame->frame_id));
   // Frame decoded - return frame to the user via callback.
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+  cast_environment_->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
       base::Bind(frame_decoded_cb, decoded_frame, render_time));
 
   return true;

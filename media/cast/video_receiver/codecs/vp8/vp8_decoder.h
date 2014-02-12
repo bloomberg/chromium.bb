@@ -38,6 +38,8 @@ class Vp8Decoder : public base::NonThreadSafe {
   void InitDecoder();
   scoped_ptr<vpx_dec_ctx_t> decoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(Vp8Decoder);
 };
 
 }  // namespace cast

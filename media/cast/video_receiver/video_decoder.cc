@@ -14,8 +14,7 @@ namespace cast {
 
 VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config,
                            scoped_refptr<CastEnvironment> cast_environment)
-    : codec_(video_config.codec),
-      vp8_decoder_() {
+    : codec_(video_config.codec), vp8_decoder_() {
   switch (video_config.codec) {
     case transport::kVp8:
       vp8_decoder_.reset(new Vp8Decoder(cast_environment));
@@ -31,8 +30,7 @@ VideoDecoder::~VideoDecoder() {}
 bool VideoDecoder::DecodeVideoFrame(
     const transport::EncodedVideoFrame* encoded_frame,
     const base::TimeTicks render_time,
-    const VideoFrameDecodedCallback&
-    frame_decoded_cb) {
+    const VideoFrameDecodedCallback& frame_decoded_cb) {
   DCHECK(encoded_frame->codec == codec_) << "Invalid codec";
   DCHECK_GT(encoded_frame->data.size(), GG_UINT64_C(0)) << "Empty video frame";
   return vp8_decoder_->Decode(encoded_frame, render_time, frame_decoded_cb);
