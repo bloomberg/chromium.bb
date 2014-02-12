@@ -337,7 +337,6 @@
       'fonts/FontFallbackList.h',
       'fonts/FontFamily.cpp',
       'fonts/FontFamily.h',
-      'fonts/FontFastPath.cpp',
       'fonts/FontFeatureSettings.cpp',
       'fonts/FontFeatureSettings.h',
       'fonts/FontPlatformData.cpp',
