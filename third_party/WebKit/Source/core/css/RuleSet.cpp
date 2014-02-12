@@ -40,6 +40,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/html/track/TextTrackCue.h"
+#include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -399,6 +400,8 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
 
 void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
+    TRACE_EVENT0("webkit", "RuleSet::addRulesFromSheet");
+
     ASSERT(sheet);
 
     addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector);
