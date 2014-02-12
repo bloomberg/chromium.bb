@@ -112,7 +112,7 @@ bool ContainerNode::isChildTypeAllowed(const Node& child) const
 
 bool ContainerNode::containsConsideringHostElements(const Node& newChild) const
 {
-    if (isInShadowTree() || document() == document().templateDocument())
+    if (isInShadowTree() || document().isTemplateDocument())
         return newChild.containsIncludingHostElements(*this);
     return newChild.contains(this);
 }

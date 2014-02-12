@@ -521,7 +521,7 @@ Document::~Document()
     ASSERT(m_visibilityObservers.isEmpty());
 
     if (m_templateDocument)
-        m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
+        m_templateDocument->m_templateDocumentHost = 0; // balanced in ensureTemplateDocument().
 
     m_scriptRunner.clear();
 
@@ -5322,8 +5322,11 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
 
 Document& Document::ensureTemplateDocument()
 {
-    if (const Document* document = templateDocument())
-        return *const_cast<Document*>(document);
+    if (isTemplateDocument())
+        return *this;
+
+    if (m_templateDocument)
+        return *m_templateDocument;
 
     if (isHTMLDocument()) {
         DocumentInit init = DocumentInit::fromContext(contextDocument(), blankURL()).withNewRegistrationContext();
@@ -5332,7 +5335,7 @@ Document& Document::ensureTemplateDocument()
         m_templateDocument = Document::create(DocumentInit(blankURL()));
     }
 
-    m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
+    m_templateDocument->m_templateDocumentHost = this; // balanced in dtor.
 
     return *m_templateDocument.get();
 }

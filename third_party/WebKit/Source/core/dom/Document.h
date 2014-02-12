@@ -1014,9 +1014,9 @@ public:
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
     HTMLDialogElement* activeModalDialog() const;
 
-    const Document* templateDocument() const;
+    // A non-null m_templateDocumentHost implies that |this| was created by ensureTemplateDocument().
+    bool isTemplateDocument() const { return !!m_templateDocumentHost; }
     Document& ensureTemplateDocument();
-    void setTemplateDocumentHost(Document* templateDocumentHost) { m_templateDocumentHost = templateDocumentHost; }
     Document* templateDocumentHost() { return m_templateDocumentHost; }
 
     void didAssociateFormControl(Element*);
@@ -1358,15 +1358,6 @@ inline void Document::notifyRemovePendingSheetIfNeeded()
 {
     if (m_needsNotifyRemoveAllPendingStylesheet)
         didRemoveAllPendingStylesheet();
-}
-
-inline const Document* Document::templateDocument() const
-{
-    // If DOCUMENT does not have a browsing context, Let TEMPLATE CONTENTS OWNER be DOCUMENT and abort these steps.
-    if (!m_frame)
-        return this;
-
-    return m_templateDocument.get();
 }
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)

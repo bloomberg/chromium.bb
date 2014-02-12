@@ -831,6 +831,11 @@ crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Time
 crbug.com/315321 compositing/squashing/squash-transform.html [ Crash ]
 crbug.com/315321 virtual/softwarecompositing/squashing/squash-transform.html [ Crash ]
 
+# Template tests that need a merge from upstream to match spec (and subsequent Blink) changes
+crbug.com/325442 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-test-001.html [ Failure ]
+crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/node-document-changes.html [ Failure ]
+crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/template-content-node-document.html [ Failure ]
+
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
