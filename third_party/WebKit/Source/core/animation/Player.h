@@ -71,7 +71,7 @@ public:
 
     bool hasStartTime() const { return !isNull(m_startTime); }
     double startTime() const { return m_startTime; }
-    void setStartTime(double);
+    void setStartTime(double, bool serviceAnimations = true);
 
     TimedItem* source() { return m_content.get(); }
     TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
@@ -84,9 +84,6 @@ public:
     void pauseForTesting(double pauseTime);
     // This should only be used for CSS
     void unpause();
-
-    void setNeedsUpdate();
-    bool needsUpdate() { return m_needsUpdate; }
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
@@ -112,8 +109,6 @@ private:
     bool m_paused;
     bool m_held;
     bool m_isPausedForTesting;
-
-    bool m_needsUpdate;
 };
 
 } // namespace

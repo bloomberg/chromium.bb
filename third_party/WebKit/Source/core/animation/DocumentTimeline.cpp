@@ -66,14 +66,15 @@ Player* DocumentTimeline::createPlayer(TimedItem* child)
     RefPtr<Player> player = Player::create(*this, child);
     Player* result = player.get();
     m_players.append(player.release());
-    setHasPlayerNeedingUpdate();
+    if (m_document->view())
+        m_timing->serviceOnNextFrame();
     return result;
 }
 
 Player* DocumentTimeline::play(TimedItem* child)
 {
     Player* player = createPlayer(child);
-    player->setStartTime(currentTime());
+    player->setStartTime(currentTime(), false);
     return player;
 }
 
@@ -107,7 +108,6 @@ bool DocumentTimeline::serviceAnimations()
             m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
     }
 
-    m_hasPlayerNeedingUpdate = false;
     return didTriggerStyleRecalc;
 }
 
@@ -145,13 +145,6 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
     for (size_t i = 0; i < m_players.size(); i++)
         m_players[i]->pauseForTesting(pauseTime);
     serviceAnimations();
-}
-
-void DocumentTimeline::setHasPlayerNeedingUpdate()
-{
-    m_hasPlayerNeedingUpdate = true;
-    if (m_document->view() && !m_document->view()->isServicingAnimations())
-        m_timing->serviceOnNextFrame();
 }
 
 void DocumentTimeline::dispatchEvents()

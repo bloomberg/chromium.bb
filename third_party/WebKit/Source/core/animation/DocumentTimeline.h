@@ -77,9 +77,6 @@ public:
     size_t numberOfActiveAnimationsForTesting() const;
     const Vector<RefPtr<Player> >& players() const { return m_players; }
 
-    void setHasPlayerNeedingUpdate();
-    bool hasPlayerNeedingUpdate() const { return m_hasPlayerNeedingUpdate; }
-
     void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
     {
         m_events.append(EventToDispatch(target, event));
@@ -96,7 +93,6 @@ private:
     Document* m_document;
     Timer<DocumentTimeline> m_eventDistpachTimer;
     Vector<RefPtr<Player> > m_players;
-    bool m_hasPlayerNeedingUpdate;
 
     void eventDispatchTimerFired(Timer<DocumentTimeline>*);
     void wake();

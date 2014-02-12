@@ -319,6 +319,7 @@ void Animation::clearEffects()
     m_activeInAnimationStack = false;
     m_compositableValues.clear();
     m_target->setNeedsAnimationStyleRecalc();
+    invalidate();
 }
 
 bool Animation::updateChildrenAndEffects() const
