@@ -26,7 +26,7 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class LoggingImplTest : public ::testing::Test {
  protected:
-  LoggingImplTest() : config_(false) {
+  LoggingImplTest() {
     // Enable all logging types.
     config_.enable_raw_data_collection = true;
     config_.enable_stats_data_collection = true;

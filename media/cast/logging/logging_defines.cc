@@ -13,26 +13,23 @@
 namespace media {
 namespace cast {
 
-CastLoggingConfig::CastLoggingConfig(bool sender)
-    : is_sender(sender),
-      enable_raw_data_collection(false),
+CastLoggingConfig::CastLoggingConfig()
+    : enable_raw_data_collection(false),
       enable_stats_data_collection(false),
       enable_tracing(false) {}
 
 CastLoggingConfig::~CastLoggingConfig() {}
 
 CastLoggingConfig GetDefaultCastSenderLoggingConfig() {
-  CastLoggingConfig config(true);
-  return config;
+  return CastLoggingConfig();
 }
 
 CastLoggingConfig GetDefaultCastReceiverLoggingConfig() {
-  CastLoggingConfig config(false);
-  return config;
+  return CastLoggingConfig();
 }
 
 CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled() {
-  CastLoggingConfig config(true);
+  CastLoggingConfig config;
   config.enable_raw_data_collection = true;
   config.enable_stats_data_collection = true;
   return config;

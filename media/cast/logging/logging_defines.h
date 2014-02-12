@@ -17,19 +17,20 @@ namespace cast {
 static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 
 struct CastLoggingConfig {
-  explicit CastLoggingConfig(bool sender);
+  // Constructs default config - all logging is disabled.
+  CastLoggingConfig();
   ~CastLoggingConfig();
 
-  // TODO(imcheng): get rid of this field.
-  bool is_sender;
   bool enable_raw_data_collection;
   bool enable_stats_data_collection;
   bool enable_tracing;
 };
 
-// By default, enable raw and stats data collection. Disable tracing.
+// Currently these are the same as the default config.
 CastLoggingConfig GetDefaultCastSenderLoggingConfig();
 CastLoggingConfig GetDefaultCastReceiverLoggingConfig();
+
+// Enable raw and stats data collection. Disable tracing.
 CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled();
 
 enum CastLoggingEvent {
