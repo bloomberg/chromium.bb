@@ -296,6 +296,7 @@ const MojoReadDataFlags MOJO_READ_DATA_FLAG_QUERY = 1 << 2;
 //
 // TODO(vtl): Maybe add a flag to indicate whether the memory should be
 // executable or not?
+// TODO(vtl): Also a flag for discardable (ashmem-style) buffers.
 
 typedef uint32_t MojoCreateSharedBufferOptionsFlags;
 
@@ -360,6 +361,13 @@ const MojoMapBufferFlags MOJO_MAP_BUFFER_FLAG_NONE = 0;
 #endif
 
 // Functions -------------------------------------------------------------------
+
+// Note: Pointer parameters that are labeled "optional" may be null (at least
+// under some circumstances). Non-const pointer parameters are also labelled
+// "in", "out", or "in/out", to indicate how they are used. (Note that how/if
+// such a parameter is used may depend on other parameters or the requested
+// operation's success/failure. E.g., a separate |flags| parameter may control
+// whether a given "in/out" parameter is used for input, output, or both.)
 
 #ifdef __cplusplus
 extern "C" {
@@ -436,8 +444,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWaitMany(const MojoHandle* handles,
 //
 // TODO(vtl): Add an options struct pointer argument.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
-    MojoHandle* message_pipe_handle0,
-    MojoHandle* message_pipe_handle1);
+    MojoHandle* message_pipe_handle0,  // Out.
+    MojoHandle* message_pipe_handle1);  // Out.
 
 // Writes a message to the message pipe endpoint given by |message_pipe_handle|,
 // with message data specified by |bytes| of size |num_bytes| and attached
@@ -466,12 +474,13 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
 //
 // TODO(vtl): Add a notion of capacity for message pipes, and return
 // |MOJO_RESULT_SHOULD_WAIT| if the message pipe is full.
-MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
-                                               const void* bytes,
-                                               uint32_t num_bytes,
-                                               const MojoHandle* handles,
-                                               uint32_t num_handles,
-                                               MojoWriteMessageFlags flags);
+MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(
+    MojoHandle message_pipe_handle,
+    const void* bytes,  // Optional.
+    uint32_t num_bytes,
+    const MojoHandle* handles,  // Optional.
+    uint32_t num_handles,
+    MojoWriteMessageFlags flags);
 
 // Reads a message from the message pipe endpoint given by
 // |message_pipe_handle|; also usable to query the size of the next message or
@@ -504,12 +513,13 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 //       error code; should distinguish this from the hitting-system-limits
 //       case.)
 //   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
-MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
-                                              void* bytes,
-                                              uint32_t* num_bytes,
-                                              MojoHandle* handles,
-                                              uint32_t* num_handles,
-                                              MojoReadMessageFlags flags);
+MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(
+    MojoHandle message_pipe_handle,
+    void* bytes,  // Optional out.
+    uint32_t* num_bytes,  // Optional in/out.
+    MojoHandle* handles,  // Optional out.
+    uint32_t* num_handles,  // Optional in/out.
+    MojoReadMessageFlags flags);
 
 // Data pipe:
 
@@ -535,9 +545,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 //       been reached (e.g., if the requested capacity was too large, or if the
 //       maximum number of handles was exceeded).
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
-    const struct MojoCreateDataPipeOptions* options,
-    MojoHandle* data_pipe_producer_handle,
-    MojoHandle* data_pipe_consumer_handle);
+    const struct MojoCreateDataPipeOptions* options,  // Optional.
+    MojoHandle* data_pipe_producer_handle,  // Out.
+    MojoHandle* data_pipe_consumer_handle);  // Out.
 
 // Writes the given data to the data pipe producer given by
 // |data_pipe_producer_handle|. |elements| points to data of size |*num_bytes|;
@@ -578,7 +588,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
 MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
     MojoHandle data_pipe_producer_handle,
     const void* elements,
-    uint32_t* num_bytes,
+    uint32_t* num_bytes,  // In/out.
     MojoWriteDataFlags flags);
 
 // Begins a two-phase write to the data pipe producer given by
@@ -623,8 +633,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
 //       consumer is still open).
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
     MojoHandle data_pipe_producer_handle,
-    void** buffer,
-    uint32_t* buffer_num_bytes,
+    void** buffer,  // Out.
+    uint32_t* buffer_num_bytes,  // In/out.
     MojoWriteDataFlags flags);
 
 // Ends a two-phase write to the data pipe producer given by
@@ -697,8 +707,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoEndWriteData(
 //       |MOJO_READ_DATA_FLAG_ALL_OR_NONE| set.
 MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
     MojoHandle data_pipe_consumer_handle,
-    void* elements,
-    uint32_t* num_bytes,
+    void* elements,  // Out.
+    uint32_t* num_bytes,  // In/out.
     MojoReadDataFlags flags);
 
 // Begins a two-phase read from the data pipe consumer given by
@@ -740,8 +750,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
 //       producer is still open).
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginReadData(
     MojoHandle data_pipe_consumer_handle,
-    const void** buffer,
-    uint32_t* buffer_num_bytes,
+    const void** buffer,  // Out.
+    uint32_t* buffer_num_bytes,  // In/out.
     MojoReadDataFlags flags);
 
 // Ends a two-phase read from the data pipe consumer given by
@@ -776,9 +786,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
 // pipe). To access the buffer, one must call |MojoMapBuffer()|.
 // TODO(vtl): More.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
-    const struct MojoCreateSharedBufferOptions* options,
-    uint64_t* num_bytes,
-    MojoHandle* shared_buffer_handle);
+    const struct MojoCreateSharedBufferOptions* options,  // Optional.
+    uint64_t* num_bytes,  // In/out.
+    MojoHandle* shared_buffer_handle);  // Out.
 
 // Duplicates the handle |shared_buffer_handle| to a shared buffer. This creates
 // another handle (returned in |*new_shared_buffer_handle| on success), which
@@ -787,8 +797,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
 // TODO(vtl): More.
 MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateSharedBuffer(
     MojoHandle shared_buffer_handle,
-    const struct MojoDuplicateSharedBufferOptions* options,
-    MojoHandle* new_shared_buffer_handle);
+    const struct MojoDuplicateSharedBufferOptions* options,  // Optional.
+    MojoHandle* new_shared_buffer_handle);  // Out.
 
 // Map the part (at offset |offset| of length |num_bytes|) of the buffer given
 // by |buffer_handle| into memory. |offset + num_bytes| must be less than or
@@ -802,12 +812,12 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateSharedBuffer(
 MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                                             uint64_t offset,
                                             uint64_t num_bytes,
-                                            void** buffer,
+                                            void** buffer,  // Out.
                                             MojoMapBufferFlags flags);
 
 // Unmap a buffer pointer that was mapped by |MojoMapBuffer()|.
 // TODO(vtl): More.
-MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);
+MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
 
 #ifdef __cplusplus
 }  // extern "C"
