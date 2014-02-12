@@ -45,6 +45,14 @@ WebstoreStartupInstaller::CreateInstallPrompt() const {
   return prompt.Pass();
 }
 
+scoped_ptr<ExtensionInstallPrompt> WebstoreStartupInstaller::CreateInstallUI() {
+  // The WebContents passed to ExtensionInstallPrompt is used to find a parent
+  // window for the dialog. This class uses a dummy WebContents and has no
+  // associated browser window. Pass NULL so the dialog is placed in the middle
+  // of the screen.
+  return make_scoped_ptr(new ExtensionInstallPrompt(NULL));
+}
+
 bool WebstoreStartupInstaller::ShouldShowPostInstallUI() const {
   return false;
 }

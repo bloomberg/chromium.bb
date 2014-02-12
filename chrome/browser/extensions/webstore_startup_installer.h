@@ -45,6 +45,7 @@ class WebstoreStartupInstaller
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual scoped_ptr<ExtensionInstallPrompt::Prompt>
       CreateInstallPrompt() const OVERRIDE;
+  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
   virtual bool CheckInlineInstallPermitted(
       const base::DictionaryValue& webstore_data,
       std::string* error) const OVERRIDE;
@@ -55,6 +56,8 @@ class WebstoreStartupInstaller
  private:
   bool show_prompt_;
   GURL dummy_requestor_url_;
+
+  // A non-visible WebContents used to download data from the webstore.
   scoped_ptr<content::WebContents> dummy_web_contents_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreStartupInstaller);

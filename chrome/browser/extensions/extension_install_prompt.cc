@@ -535,12 +535,12 @@ scoped_refptr<Extension>
       error);
 }
 
-ExtensionInstallPrompt::ExtensionInstallPrompt(
-    content::WebContents* contents)
+ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
     : OAuth2TokenService::Consumer("extensions_install"),
       record_oauth2_grant_(false),
       ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
+      bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
       show_params_(contents),
       delegate_(NULL),
@@ -556,6 +556,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(
       record_oauth2_grant_(false),
       ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
+      bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(profile)),
       show_params_(native_window, navigator),
       delegate_(NULL),
