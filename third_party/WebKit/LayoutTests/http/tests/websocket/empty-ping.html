@@ -7,11 +7,11 @@
 <div id="description"></div>
 <div id="console"></div>
 <script>
-description("Test whether WebSocket correctly responds to a ping message sent from the server.");
+description("Test whether WebSocket correctly responds to an empty ping message sent from the server.");
 
 window.jsTestIsAsync = true;
 
-var url = "ws://localhost:8880/pong?payload=Hello,%20World%21";
+var url = "ws://localhost:8880/pong?payload=";
 var ws = new WebSocket(url);
 var closeEvent;
 var message;
