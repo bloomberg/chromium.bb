@@ -22,7 +22,7 @@
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
@@ -52,9 +52,8 @@ namespace plugin {
 
 class ErrorInfo;
 class Manifest;
-class ScriptablePlugin;
 
-class Plugin : public pp::InstancePrivate {
+class Plugin : public pp::Instance {
  public:
   // Factory method for creation.
   static Plugin* New(PP_Instance instance);
@@ -68,10 +67,6 @@ class Plugin : public pp::InstancePrivate {
 
   // Handles document load, when the plugin is a MIME type handler.
   virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
-
-  // Returns a scriptable reference to this plugin element.
-  // Called by JavaScript document.getElementById(plugin_id).
-  virtual pp::Var GetInstanceObject();
 
   // ----- Plugin interface support.
 
@@ -262,11 +257,6 @@ class Plugin : public pp::InstancePrivate {
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
-  ScriptablePlugin* scriptable_plugin() const { return scriptable_plugin_; }
-  void set_scriptable_plugin(ScriptablePlugin* scriptable_plugin) {
-    scriptable_plugin_ = scriptable_plugin;
-  }
-
   // Access the service runtime for the main NaCl subprocess.
   ServiceRuntime* main_service_runtime() const {
     return main_subprocess_.service_runtime();
@@ -390,8 +380,6 @@ class Plugin : public pp::InstancePrivate {
   void set_nacl_ready_state(ReadyState state);
 
   void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
-
-  ScriptablePlugin* scriptable_plugin_;
 
   int argc_;
   char** argn_;

@@ -44,7 +44,6 @@
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/scriptable_plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
@@ -537,14 +536,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
   HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
-
-  ScriptablePlugin* scriptable_plugin = ScriptablePlugin::NewPlugin(this);
-  if (scriptable_plugin == NULL)
-    return false;
-
-  set_scriptable_plugin(scriptable_plugin);
-  PLUGIN_PRINTF(("Plugin::Init (scriptable_handle=%p)\n",
-                 static_cast<void*>(scriptable_plugin_)));
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
     return false;
@@ -607,8 +598,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 }
 
 Plugin::Plugin(PP_Instance pp_instance)
-    : pp::InstancePrivate(pp_instance),
-      scriptable_plugin_(NULL),
+    : pp::Instance(pp_instance),
       argc_(-1),
       argn_(NULL),
       argv_(NULL),
@@ -641,9 +631,8 @@ Plugin::Plugin(PP_Instance pp_instance)
 Plugin::~Plugin() {
   int64_t shutdown_start = NaClGetTimeOfDayMicroseconds();
 
-  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, scriptable_plugin=%p)\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(scriptable_plugin())));
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n",
+                 static_cast<void*>(this)));
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
 
@@ -660,9 +649,6 @@ Plugin::~Plugin() {
     delete it->second;
   }
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
-
-  ScriptablePlugin* scriptable_plugin_ = scriptable_plugin();
-  ScriptablePlugin::Unref(&scriptable_plugin_);
 
   // ShutDownSubprocesses shuts down the main subprocess, which shuts
   // down the main ServiceRuntime object, which kills the subprocess.
@@ -709,18 +695,6 @@ bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   // We don't know if the plugin will handle the document load, but return
   // true in order to give it a chance to respond once the proxy is started.
   return true;
-}
-
-pp::Var Plugin::GetInstanceObject() {
-  PLUGIN_PRINTF(("Plugin::GetInstanceObject (this=%p)\n",
-                 static_cast<void*>(this)));
-  // The browser will unref when it discards the var for this object.
-  ScriptablePlugin* handle =
-      static_cast<ScriptablePlugin*>(scriptable_plugin()->AddRef());
-  pp::Var* handle_var = handle->var();
-  PLUGIN_PRINTF(("Plugin::GetInstanceObject (handle=%p, handle_var=%p)\n",
-                 static_cast<void*>(handle), static_cast<void*>(handle_var)));
-  return *handle_var;  // make a copy
 }
 
 void Plugin::HistogramStartupTimeSmall(const std::string& name, float dt) {

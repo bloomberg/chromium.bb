@@ -17,7 +17,6 @@
       'pnacl_options.cc',
       'pnacl_resources.cc',
       'pnacl_translate_thread.cc',
-      'scriptable_plugin.cc',
       'sel_ldr_launcher_chrome.cc',
       'service_runtime.cc',
       'srpc_client.cc',
