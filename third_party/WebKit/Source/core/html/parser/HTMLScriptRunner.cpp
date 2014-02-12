@@ -286,6 +286,8 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         if (!scriptLoader)
             return;
 
+        ASSERT(scriptLoader->isParserInserted());
+
         Microtask::performCheckpoint();
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
