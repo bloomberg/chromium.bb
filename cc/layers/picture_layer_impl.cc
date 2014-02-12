@@ -762,10 +762,6 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     twin_low_res = NULL;
   }
 
-  // TODO(enne): temporarily disable this optimization: http://crbug.com/335289
-  twin_high_res = NULL;
-  twin_low_res = NULL;
-
   // As a second pass, mark as required any visible high res tiles not filled in
   // by acceptable non-ideal tiles from the first pass.
   if (MarkVisibleTilesAsRequired(
