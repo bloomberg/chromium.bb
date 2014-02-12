@@ -11,6 +11,35 @@
  */
 
 cr.define('chrome.sync', function() {
+  'use strict';
+
+  var eventsByCategory = {
+    notifier: [
+      'onIncomingNotification',
+      'onNotificationStateChange',
+    ],
+
+    manager: [
+      'onActionableError',
+      'onChangesApplied',
+      'onChangesComplete',
+      'onClearServerDataFailed',
+      'onClearServerDataSucceeded',
+      'onConnectionStatusChange',
+      'onEncryptedTypesChanged',
+      'onEncryptionComplete',
+      'onInitializationComplete',
+      'onPassphraseAccepted',
+      'onPassphraseRequired',
+      'onStopSyncingPermanently',
+      'onSyncCycleCompleted',
+    ],
+
+    transaction: [
+      'onTransactionWrite',
+    ],
+  };
+
   /**
    * Creates a new log object which then immediately starts recording
    * sync events.  Recorded entries are available in the 'entries'
@@ -21,21 +50,24 @@ cr.define('chrome.sync', function() {
   var Log = function() {
     var self = this;
 
-    var makeListener = function(service, event) {
-      return function(details) {
-        self.log_(service, event, details);
+    /**
+     * Creates a callback function to be invoked when an event arrives.
+     */
+    var makeCallback = function(categoryName, eventName) {
+      return function(e) {
+        self.log_(categoryName, eventName, e.details);
       };
     };
 
-    for (var eventType in chrome.sync.events) {
-      var events = chrome.sync.events[eventType];
-      for (var i = 0; i < events.length; ++i) {
-        var eventName = events[i];
-        var event = chrome.sync[eventName];
-        event.addListener(makeListener(eventType, eventName));
+    for (var categoryName in eventsByCategory) {
+      for (var i = 0; i < eventsByCategory[categoryName].length; ++i) {
+        var eventName = eventsByCategory[categoryName][i];
+        chrome.sync.events.addEventListener(
+            eventName,
+            makeCallback(categoryName, eventName));
       }
     }
-  };
+  }
 
   Log.prototype = {
     __proto__: cr.EventTarget.prototype,

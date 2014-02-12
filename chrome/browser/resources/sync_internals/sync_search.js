@@ -97,7 +97,7 @@ cr.define('chrome.sync', function() {
         } else {
           statusControl.textContent =
             'Found ' + nodes.length + ' nodes in ' +
-            timer.elapsedSeconds + 's';
+            timer.getElapsedSeconds() + 's';
           queryControl.removeAttribute('error');
 
           // TODO(akalin): Write a nicer list display.

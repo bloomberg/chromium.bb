@@ -18,6 +18,12 @@ SyncInternalsWebUITest.prototype = {
    */
   browsePreload: 'chrome://sync-internals',
 
+  /**
+   * Disable accessibility testing for this page.
+   * @override
+   */
+  runAccessibilityChecks: false,
+
   /** @override */
   preLoad: function() {
     this.makeAndRegisterMockHandler([
@@ -50,7 +56,10 @@ SyncInternalsWebUITest.prototype = {
   }
 };
 
-/** Constant hard-coded value to return from mock getAllNodes */
+/**
+ * Constant hard-coded value to return from mock getAllNodes.
+ * @const
+ */
 var HARD_CODED_ALL_NODES = [
 {
   "BASE_SERVER_SPECIFICS": {},
@@ -158,10 +167,83 @@ var HARD_CODED_ALL_NODES = [
 }
 ];
 
+/**
+ * Constant hard-coded value to return from mock getAboutInfo.
+ * @const
+ */
+HARD_CODED_ABOUT_INFO = {
+  "actionable_error": [
+    {
+      "is_valid": false,
+      "stat_name": "Error Type",
+      "stat_value": "Uninitialized"
+    },
+    {
+      "is_valid": false,
+      "stat_name": "Action",
+      "stat_value": "Uninitialized"
+    },
+    {
+      "is_valid": false,
+      "stat_name": "URL",
+      "stat_value": "Uninitialized"
+    },
+    {
+      "is_valid": false,
+      "stat_name": "Error Description",
+      "stat_value": "Uninitialized"
+    }
+  ],
+  "actionable_error_detected": false,
+  "details": [
+    {
+      "data": [
+        {
+          "is_valid": true,
+          "stat_name": "Summary",
+          "stat_value": "Sync service initialized"
+        }
+      ],
+      "is_sensitive": false,
+      "title": "Summary"
+    },
+  ],
+  "type_status": [
+    {
+      "name": "Model Type",
+      "num_entries": "Total Entries",
+      "num_live": "Live Entries",
+      "status": "header",
+      "value": "Group Type"
+    },
+    {
+      "name": "Bookmarks",
+      "num_entries": 2793,
+      "num_live": 2793,
+      "status": "ok",
+      "value": "Active: GROUP_UI"
+    },
+  ],
+  "unrecoverable_error_detected": false
+};
+
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
   expectTrue(this.hasInDetails(true, 'Username', ''));
   expectTrue(this.hasInDetails(false, 'Summary', 'Uninitialized'));
+});
+
+TEST_F('SyncInternalsWebUITest', 'LoadPastedAboutInfo', function() {
+  // Expose the text field.
+  $('import-status').click();
+
+  // Fill it with fake data.
+  $('status-text').value = JSON.stringify(HARD_CODED_ABOUT_INFO);
+
+  // Trigger the import.
+  $('import-status').click();
+
+  expectTrue(this.hasInDetails(true, 'Summary', 'Sync service initialized'));
 });
 
 TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
@@ -240,4 +322,46 @@ TEST_F('SyncInternalsWebUITest', 'NodeBrowserRefreshOnTabSelect', function() {
   $('sync-browser-tab').selected = false;
   $('sync-browser-tab').selected = true;
   expectEquals($('node-browser-refresh-time').textContent, 'TestCanary');
+});
+
+// Tests that the events log page correctly receives and displays an event.
+TEST_F('SyncInternalsWebUITest', 'EventLogTest', function() {
+  // Dispatch an event.
+  var connectionEvent = new Event('onConnectionStatusChange');
+  connectionEvent.details = {'status': 'CONNECTION_OK'};
+  chrome.sync.events.dispatchEvent(connectionEvent);
+
+  // Verify that it is displayed in the events log.
+  var syncEventsTable = $('sync-events');
+  var firstRow = syncEventsTable.children[0];
+
+  // Makes some assumptions about column ordering.  We'll need re-think this if
+  // it turns out to be a maintenance burden.
+  assertEquals(4, firstRow.children.length);
+  var submoduleName = firstRow.children[1].textContent;
+  var eventName = firstRow.children[2].textContent;
+  var detailsText = firstRow.children[3].textContent;
+
+  expectGE(submoduleName.indexOf('manager'), 0,
+      'submoduleName=' + submoduleName);
+  expectGE(eventName.indexOf('onConnectionStatusChange'), 0,
+      'eventName=' + eventName);
+  expectGE(detailsText.indexOf('CONNECTION_OK'), 0,
+      'detailsText=' + detailsText);
+});
+
+TEST_F('SyncInternalsWebUITest', 'DumpSyncEventsToText', function() {
+  // Dispatch an event.
+  var connectionEvent = new Event('onConnectionStatusChange');
+  connectionEvent.details = {'status': 'CONNECTION_OK'}
+  chrome.sync.events.dispatchEvent(connectionEvent);
+
+  // Click the dump-to-text button.
+  $('dump-to-text').click();
+
+  // Verify our event is among the results.
+  var eventDumpText = $('data-dump').textContent;
+
+  expectGE(eventDumpText.indexOf('onConnectionStatusChange'), 0);
+  expectGE(eventDumpText.indexOf('CONNECTION_OK'), 0);
 });

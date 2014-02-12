@@ -34,9 +34,11 @@ function onLoad() {
   $('status-data').hidden = true;
   chrome.sync.getAboutInfo(refreshAboutInfo);
 
-  chrome.sync.onServiceStateChanged.addListener(function() {
-    chrome.sync.getAboutInfo(refreshAboutInfo);
-  });
+  chrome.sync.events.addEventListener(
+      'onServiceStateChanged',
+      function(e) {
+        chrome.sync.getAboutInfo(refreshAboutInfo);
+      });
 
   var dumpStatusButton = $('dump-status');
   dumpStatusButton.addEventListener('click', function(event) {
@@ -75,7 +77,9 @@ function onLoad() {
     data = data.substr(firstBrace);
 
     // Remove listeners to prevent sync events from overwriting imported data.
-    chrome.sync.onServiceStateChanged.removeListeners();
+    chrome.sync.events.removeEventListener(
+        'onServiceStateChanged',
+        refreshAboutInfo);
 
     var aboutInfo = JSON.parse(data);
     refreshAboutInfo(aboutInfo);

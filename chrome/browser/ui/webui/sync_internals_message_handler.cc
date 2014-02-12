@@ -95,9 +95,9 @@ void SyncInternalsMessageHandler::HandleJsEvent(
     const JsEventDetails& details) {
   DVLOG(1) << "Handling event: " << name
            << " with details " << details.ToString();
-  const std::string& event_handler = "chrome.sync." + name + ".fire";
-  std::vector<const base::Value*> arg_list(1, &details.Get());
-  web_ui()->CallJavascriptFunction(event_handler, arg_list);
+  web_ui()->CallJavascriptFunction("chrome.sync.dispatchEvent",
+                                   base::StringValue(name),
+                                   details.Get());
 }
 
 void SyncInternalsMessageHandler::RegisterJsControllerCallback(

@@ -78,11 +78,15 @@ function updateNotificationInfo(notificationInfo) {
 function onLoad() {
   chrome.sync.getNotificationState(updateNotificationStateInfo);
   chrome.sync.getNotificationInfo(updateNotificationInfo);
-  chrome.sync.onNotificationStateChange.addListener(
-      function(details) { updateNotificationStateInfo(details.state); });
 
-  chrome.sync.onIncomingNotification.addListener(function(details) {
-    var changedTypes = details.changedTypes;
+  chrome.sync.events.addEventListener(
+      'onNotificationStateChange',
+      function(e) {
+        updateNotificationStateInfo(e.details.state);
+      });
+
+  chrome.sync.events.addEventListener('onIncomingNotification', function(e) {
+    var changedTypes = e.details.changedTypes;
     for (var i = 0; i < changedTypes.length; ++i) {
       incrementSessionNotificationCount(changedTypes[i]);
     }
