@@ -257,10 +257,8 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
         mailboxInfo->mailbox.syncPoint = 0;
     }
 
-    m_context->bindTexture(GL_TEXTURE_2D, mailboxInfo->textureId);
-    m_context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo->mailbox.name);
-
     if (mailboxInfo->size != m_size) {
+        m_context->bindTexture(GL_TEXTURE_2D, mailboxInfo->textureId);
         texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, m_size.width(), m_size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
         mailboxInfo->size = m_size;
     }
