@@ -30,6 +30,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
@@ -499,6 +500,22 @@ void WebViewGuest::Observe(int type,
   }
 }
 
+void WebViewGuest::SetZoom(double zoom_factor) {
+  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
+  guest_web_contents()->SetZoomLevel(zoom_level);
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
+  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
+  DispatchEvent(new GuestView::Event(webview::kEventZoomChange, args.Pass()));
+
+  current_zoom_factor_ = zoom_factor;
+}
+
+double WebViewGuest::GetZoom() {
+  return current_zoom_factor_;
+}
+
 void WebViewGuest::Go(int relative_index) {
   guest_web_contents()->GetController().GoToOffset(relative_index);
 }
@@ -599,6 +616,11 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetInteger(webview::kInternalProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
+
+  // Update the current zoom factor for the new page.
+  current_zoom_factor_ = content::ZoomLevelToZoomFactor(
+      guest_web_contents()->GetZoomLevel());
+
   if (is_main_frame) {
     chromevox_injected_ = false;
     main_frame_id_ = frame_id;

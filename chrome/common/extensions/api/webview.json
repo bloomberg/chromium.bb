@@ -173,6 +173,52 @@
         ]
       },
       {
+	"name": "setZoom",
+	"type": "function",
+	"parameters": [
+          {
+	    "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "number",
+            "name": "zoomFactor",
+            "description" : "The new zoom factor."
+          },
+	  {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the zoom message has been sent to the guest process.",
+            "optional": true,
+            "parameters": []
+	  }
+        ]
+      },
+      {
+	"name": "getZoom",
+	"type": "function",
+	"parameters": [
+          {
+	    "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+	  {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the current zoom factor is retreived.",
+            "parameters": [
+              {
+                "type": "number",
+                "name": "zoomFactor",
+                "description": "The current zoom factor."
+              }
+            ]
+	  }
+        ]
+      },
+      {
         "name": "go",
         "type": "function",
         "parameters": [

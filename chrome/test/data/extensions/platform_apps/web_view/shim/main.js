@@ -1262,6 +1262,83 @@ function testScreenshotCapture() {
   document.body.appendChild(webview);
 }
 
+function testZoomAPI() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+  webview.addEventListener('loadstop', function(e) {
+    // getZoom() should work initially.
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertFalse(zoomFactor == undefined);
+    });
+
+    // Two consecutive calls to getZoom() should return the same result.
+    var zoomFactor1;
+    webview.getZoom(function(zoomFactor) {
+      zoomFactor1 = zoomFactor;
+    });
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertEq(zoomFactor1, zoomFactor);
+    });
+
+    // Test setZoom()'s callback.
+    var callbackTest = false;
+    webview.setZoom(0.95, function() {
+      callbackTest = true;
+    });
+
+    // getZoom() should return the same zoom factor as is set in setZoom().
+    webview.setZoom(1.53);
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertEq(zoomFactor, 1.53);
+    });
+    webview.setZoom(0.835847);
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertEq(zoomFactor, 0.835847);
+    });
+    webview.setZoom(0.3795);
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertEq(zoomFactor, 0.3795);
+    });
+
+    // setZoom() should really zoom the page (thus changing window.innerWidth).
+    webview.setZoom(0.45, function() {
+      webview.executeScript({code: 'window.innerWidth'},
+        function(result) {
+          var width1 = result[0];
+          webview.setZoom(1.836);
+          webview.executeScript({code: 'window.innerWidth'},
+            function(result) {
+              var width2 = result[0];
+              embedder.test.assertTrue(width2 < width1);
+              webview.setZoom(0.73);
+              webview.executeScript({code: 'window.innerWidth'},
+                function(result) {
+                  var width3 = result[0];
+                  embedder.test.assertTrue(width3 < width1);
+                  embedder.test.assertTrue(width2 < width3);
+
+                  // Test the onzoomchange event.
+                  webview.addEventListener('zoomchange', function(e) {
+                    embedder.test.assertEq(event.oldZoomFactor, 0.73);
+                    embedder.test.assertEq(event.newZoomFactor, 0.25325);
+
+                    embedder.test.assertTrue(callbackTest);
+
+                    embedder.test.succeed();
+                  });
+                  webview.setZoom(0.25325);
+                }
+              );
+            }
+          );
+        }
+      );
+    });
+  });
+
+  document.body.appendChild(webview);
+};
+
 embedder.test.testList = {
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
@@ -1313,7 +1390,8 @@ embedder.test.testList = {
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
   'testPostMessageCommChannel': testPostMessageCommChannel,
-  'testScreenshotCapture' : testScreenshotCapture
+  'testScreenshotCapture' : testScreenshotCapture,
+  'testZoomAPI' : testZoomAPI
 };
 
 onload = function() {

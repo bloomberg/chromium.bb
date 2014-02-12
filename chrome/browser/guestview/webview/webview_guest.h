@@ -72,6 +72,12 @@ class WebViewGuest : public GuestView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Set the zoom factor.
+  virtual void SetZoom(double zoom_factor) OVERRIDE;
+
+  // Returns the current zoom factor.
+  double GetZoom();
+
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
   void Go(int relative_index);
@@ -209,6 +215,9 @@ class WebViewGuest : public GuestView,
 
   // Set to |true| if ChromeVox was already injected in main frame.
   bool chromevox_injected_;
+
+  // Stores the current zoom factor.
+  double current_zoom_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

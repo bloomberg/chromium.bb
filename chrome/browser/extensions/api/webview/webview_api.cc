@@ -228,6 +228,39 @@ void WebviewCaptureVisibleRegionFunction::OnCaptureFailure(
   SendResponse(false);
 }
 
+WebviewSetZoomFunction::WebviewSetZoomFunction() {
+}
+
+WebviewSetZoomFunction::~WebviewSetZoomFunction() {
+}
+
+bool WebviewSetZoomFunction::RunImplSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::SetZoom::Params> params(
+      webview::SetZoom::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  guest->SetZoom(params->zoom_factor);
+
+  SendResponse(true);
+  return true;
+}
+
+WebviewGetZoomFunction::WebviewGetZoomFunction() {
+}
+
+WebviewGetZoomFunction::~WebviewGetZoomFunction() {
+}
+
+bool WebviewGetZoomFunction::RunImplSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::GetZoom::Params> params(
+      webview::GetZoom::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  double zoom_factor = guest->GetZoom();
+  SetResult(base::Value::CreateDoubleValue(zoom_factor));
+  SendResponse(true);
+  return true;
+}
+
 WebviewGoFunction::WebviewGoFunction() {
 }
 

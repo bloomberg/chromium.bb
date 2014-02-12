@@ -35,6 +35,10 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
     },
     evt: CreateEvent('webview.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
+  },
+  'zoomchange': {
+    evt: CreateEvent('webview.onZoomChange'),
+    fields: ['oldZoomFactor', 'newZoomFactor']
   }
 };
 
@@ -51,6 +55,16 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject =
         enumerable: true
       }
   );
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.setZoom = function(zoomFactor) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.setZoom(this.instanceId, zoomFactor);
 };
 
 /**
@@ -131,13 +145,19 @@ WebViewInternal.prototype.handleDialogEvent =
   }
 };
 
-/** @private */
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
   return WEB_VIEW_EXPERIMENTAL_EVENTS;
 };
 
+/** @private */
 WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
   return [];
+};
+
+/** @private */
+WebViewInternal.prototype.maybeSetCurrentZoomFactor =
+    function(zoomFactor) {
+  this.currentZoomFactor = zoomFactor;
 };
 
 /** @private */
@@ -150,6 +170,21 @@ WebViewInternal.prototype.clearData = function(var_args) {
 };
 
 /** @private */
+WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.setZoom(this.instanceId, zoomFactor, callback);
+};
+
+WebViewInternal.prototype.getZoom = function(callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.getZoom(this.instanceId, callback);
+};
+
+/** @private */
 WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.instanceId, spec, callback);
 };
@@ -158,6 +193,14 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.clearData = function(var_args) {
     var internal = privates(this).internal;
     $Function.apply(internal.clearData, internal, arguments);
+  };
+
+  proto.setZoom = function(zoomFactor, callback) {
+    privates(this).internal.setZoom(zoomFactor, callback);
+  };
+
+  proto.getZoom = function(callback) {
+    return privates(this).internal.getZoom(callback);
   };
 
   proto.captureVisibleRegion = function(spec, callback) {

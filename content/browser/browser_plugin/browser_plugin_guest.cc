@@ -821,6 +821,11 @@ void BrowserPluginGuest::HandleKeyboardEvent(
       web_contents(), event);
 }
 
+void BrowserPluginGuest::SetZoom(double zoom_factor) {
+  if (delegate_)
+    delegate_->SetZoom(zoom_factor);
+}
+
 WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
                                                 const OpenURLParams& params) {
   // If the guest wishes to navigate away prior to attachment then we save the

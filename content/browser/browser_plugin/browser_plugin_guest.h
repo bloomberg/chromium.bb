@@ -316,6 +316,8 @@ class CONTENT_EXPORT BrowserPluginGuest
     BrowserPluginGuest::factory_ = factory;
   }
 
+  void SetZoom(double zoom_factor);
+
  private:
   class EmbedderWebContentsObserver;
   friend class TestBrowserPluginGuest;

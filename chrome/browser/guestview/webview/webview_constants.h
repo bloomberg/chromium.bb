@@ -26,6 +26,7 @@ extern const char kEventPermissionRequest[];
 extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
+extern const char kEventZoomChange[];
 
 // Parameters/properties on events.
 extern const char kLevel[];
@@ -50,6 +51,8 @@ extern const char kProgress[];
 extern const char kReason[];
 extern const char kRequestId[];
 extern const char kSourceId[];
+extern const char kOldZoomFactor[];
+extern const char kNewZoomFactor[];
 
 // Internal parameters/properties on events.
 extern const char kInternalCurrentEntryIndex[];
@@ -65,4 +68,3 @@ extern const unsigned int kMaxOutstandingPermissionRequests;
 }  // namespace webview
 
 #endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_CONSTANTS_H_
-

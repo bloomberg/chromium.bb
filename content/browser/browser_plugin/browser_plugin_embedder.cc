@@ -115,7 +115,8 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
 
 bool BrowserPluginEmbedder::SetZoomLevelCallback(
     double level, BrowserPluginGuest* guest) {
-  guest->GetWebContents()->SetZoomLevel(level);
+  double zoom_factor = content::ZoomLevelToZoomFactor(level);
+  guest->SetZoom(zoom_factor);
   // Not handled => Iterate over all guests.
   return false;
 }

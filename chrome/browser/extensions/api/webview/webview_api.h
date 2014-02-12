@@ -136,6 +136,36 @@ class WebviewCaptureVisibleRegionFunction
   DISALLOW_COPY_AND_ASSIGN(WebviewCaptureVisibleRegionFunction);
 };
 
+class WebviewSetZoomFunction : public WebviewExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.setZoom", WEBVIEW_SETZOOM);
+
+  WebviewSetZoomFunction();
+
+ protected:
+  virtual ~WebviewSetZoomFunction();
+
+ private:
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewSetZoomFunction);
+};
+
+class WebviewGetZoomFunction : public WebviewExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.getZoom", WEBVIEW_GETZOOM);
+
+  WebviewGetZoomFunction();
+
+ protected:
+  virtual ~WebviewGetZoomFunction();
+
+ private:
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewGetZoomFunction);
+};
+
 class WebviewGoFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.go", WEBVIEW_GO);

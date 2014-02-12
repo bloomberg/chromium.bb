@@ -47,6 +47,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  // Requests setting the zoom level to the provided |zoom_level|.
+  virtual void SetZoom(double zoom_factor) {}
+
   virtual bool IsDragAndDropEnabled();
 
   // Returns whether the user agent for the guest is being overridden.

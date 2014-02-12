@@ -23,6 +23,7 @@ const char kEventPermissionRequest[] = "webview.onPermissionRequest";
 const char kEventResponsive[] = "webview.onResponsive";
 const char kEventSizeChanged[] = "webview.onSizeChanged";
 const char kEventUnresponsive[] = "webview.onUnresponsive";
+const char kEventZoomChange[] = "webview.onZoomChange";
 
 // Parameters/properties on events.
 const char kLevel[] = "level";
@@ -47,6 +48,8 @@ const char kProgress[] = "progress";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
 const char kSourceId[] = "sourceId";
+const char kOldZoomFactor[] = "oldZoomFactor";
+const char kNewZoomFactor[] = "newZoomFactor";
 
 // Internal parameters/properties on events.
 const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
