@@ -214,6 +214,17 @@ remoting.ClientSession.State = {
   FAILED: 5
 };
 
+/**
+ * @param {string} state The state name.
+ * @return {remoting.ClientSession.State} The session state enum value.
+ */
+remoting.ClientSession.State.fromString = function(state) {
+  if (!remoting.ClientSession.State.hasOwnProperty(state)) {
+    throw "Invalid ClientSession.State: " + state;
+  }
+  return remoting.ClientSession.State[state];
+}
+
 /** @enum {number} */
 remoting.ClientSession.ConnectionError = {
   UNKNOWN: -1,
@@ -224,6 +235,18 @@ remoting.ClientSession.ConnectionError = {
   NETWORK_FAILURE: 4,
   HOST_OVERLOAD: 5
 };
+
+/**
+ * @param {string} error The connection error name.
+ * @return {remoting.ClientSession.ConnectionError} The connection error enum.
+ */
+remoting.ClientSession.ConnectionError.fromString = function(error) {
+  if (!remoting.ClientSession.ConnectionError.hasOwnProperty(error)) {
+    console.error('Unexpected ClientSession.ConnectionError string: ', error);
+    return remoting.ClientSession.ConnectionError.UNKNOWN;
+  }
+  return remoting.ClientSession.ConnectionError[error];
+}
 
 // The mode of this session.
 /** @enum {number} */

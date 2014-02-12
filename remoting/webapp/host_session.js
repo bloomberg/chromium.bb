@@ -44,9 +44,9 @@ remoting.HostSession.State = {
  * @return {remoting.HostSession.State} The HostSession.State enum value
  *     corresponding to stateString.
  */
-remoting.HostSession.stateFromString = function(stateString) {
+remoting.HostSession.State.fromString = function(stateString) {
   if (!remoting.HostSession.State.hasOwnProperty(stateString)) {
-    console.error('NativeMessaging: unexpected state string: ', stateString);
+    console.error('Unexpected HostSession.State string: ', stateString);
     return remoting.HostSession.State.UNKNOWN;
   }
   return remoting.HostSession.State[stateString];

@@ -47,6 +47,17 @@ remoting.HostController.State = {
   UNKNOWN: 6
 };
 
+/**
+ * @param {string} state The host controller state name.
+ * @return {remoting.HostController.State} The state enum value.
+ */
+remoting.HostController.State.fromString = function(state) {
+  if (!remoting.HostController.State.hasOwnProperty(state)) {
+    throw "Invalid HostController.State: " + state;
+  }
+  return remoting.HostController.State[state];
+}
+
 /** @enum {number} */
 remoting.HostController.AsyncResult = {
   OK: 0,
@@ -54,6 +65,17 @@ remoting.HostController.AsyncResult = {
   CANCELLED: 2,
   FAILED_DIRECTORY: 3
 };
+
+/**
+ * @param {string} result The async result name.
+ * @return {remoting.HostController.AsyncResult} The result enum value.
+ */
+remoting.HostController.AsyncResult.fromString = function(result) {
+  if (!remoting.HostController.AsyncResult.hasOwnProperty(result)) {
+    throw "Invalid HostController.AsyncResult: " + result;
+  }
+  return remoting.HostController.AsyncResult[result];
+}
 
 /**
  * Set of features for which hasFeature() can be used to test.

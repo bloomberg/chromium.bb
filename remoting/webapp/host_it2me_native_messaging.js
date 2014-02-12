@@ -146,107 +146,80 @@ remoting.HostIt2MeNativeMessaging.prototype.postMessage_ =
  */
 remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
     function(message) {
-  /** @type {string} */
-  var type = message['type'];
-  if (!checkType_('type', type, 'string')) {
+  try {
+    this.handleIncomingMessage_(message);
+  } catch (e) {
+    console.error(/** @type {*} */ (e));
     this.onError_(remoting.Error.UNEXPECTED);
-    return;
   }
+}
+
+/**
+ * Handler for incoming Native Messages.
+ *
+ * @param {Object} message The received message.
+ * @return {void}
+ * @private
+ */
+remoting.HostIt2MeNativeMessaging.prototype.handleIncomingMessage_ =
+    function(message) {
+  var type = getStringAttr(message, 'type');
 
   switch (type) {
     case 'helloResponse':
-      /** @type {string} */
-      var version = message['version'];
-      if (checkType_('version', version, 'string')) {
-        console.log('Host version: ', version);
-        this.initialized_ = true;
-        // A "hello" request is sent immediately after the native messaging host
-        // is started. We can proceed to the next task once we receive the
-        // "helloReponse".
-        this.onHostStarted_();
-      } else {
-        this.onError_(remoting.Error.UNEXPECTED);
-      }
+      var version = getStringAttr(message, 'version');
+      console.log('Host version: ', version);
+      this.initialized_ = true;
+      // A "hello" request is sent immediately after the native messaging host
+      // is started. We can proceed to the next task once we receive the
+      // "helloReponse".
+      this.onHostStarted_();
       break;
 
     case 'connectResponse':
       console.log('connectResponse received');
       // Response to the "connect" request. No action is needed until we
-      // receive the corresponding "hostStateChagned" message.
+      // receive the corresponding "hostStateChanged" message.
       break;
 
     case 'disconnectResponse':
       console.log('disconnectResponse received');
       // Response to the "disconnect" request. No action is needed until we
-      // receive the corresponding "hostStateChagned" message.
+      // receive the corresponding "hostStateChanged" message.
       break;
 
     case 'hostStateChanged':
-      /** @type {string} */
-      var stateString = message['state'];
-      if (!checkType_('stateString', stateString, 'string')) {
-        this.onError_(remoting.Error.UNEXPECTED);
-        break;
-      }
-
+      var stateString = getStringAttr(message, 'state');
       console.log('hostStateChanged received: ', stateString);
-
-      /** @type {remoting.HostSession.State} */
-      var state = remoting.HostSession.stateFromString(stateString);
+      var state = remoting.HostSession.State.fromString(stateString);
 
       switch (state) {
         case remoting.HostSession.State.RECEIVED_ACCESS_CODE:
-          /** @type {string} */
-          var accessCode = message['accessCode'];
-          if (!checkType_('accessCode', accessCode, 'string')) {
-            this.onError_(remoting.Error.UNEXPECTED);
-            break;
-          }
-
-          /** @type {number} */
-          var accessCodeLifetime = message['accessCodeLifetime'];
-          if (!checkType_('accessCodeLifetime', accessCodeLifetime, 'number')) {
-            this.onError_(remoting.Error.UNEXPECTED);
-            break;
-          }
-
+          var accessCode = getStringAttr(message, 'accessCode');
+          var accessCodeLifetime = getNumberAttr(message, 'accessCodeLifetime');
           this.onReceivedAccessCode_(accessCode, accessCodeLifetime);
           break;
 
         case remoting.HostSession.State.CONNECTED:
-          /** @type {string} */
-          var client = message['client'];
-          if (checkType_('client', client, 'string')) {
-            this.onConnected_(client);
-          } else {
-            this.onError_(remoting.Error.UNEXPECTED);
-          }
+          var client = getStringAttr(message, 'client');
+          this.onConnected_(client);
           break;
       }
       this.onStateChanged_(state);
       break;
 
     case 'natPolicyChanged':
-          /** @type {boolean} */
-      var natTraversalEnabled = message['natTraversalEnabled'];
-      if (checkType_('natTraversalEnabled', natTraversalEnabled, 'boolean')) {
-        this.onNatPolicyChanged_(natTraversalEnabled);
-      } else {
-        this.onError_(remoting.Error.UNEXPECTED);
-      }
+      var natTraversalEnabled = getBooleanAttr(message, 'natTraversalEnabled');
+      this.onNatPolicyChanged_(natTraversalEnabled);
       break;
 
     case 'error':
-      /** @type {string} */
-      var description = message['description'];
-      // Ignore the return value.
-      checkType_('description', description, 'string');
+      console.error(getStringAttr(message, 'description'));
       this.onError_(remoting.Error.UNEXPECTED);
       break;
 
     default:
-      console.error('Unexpected native message: ', message);
-      this.onError_(remoting.Error.UNEXPECTED);
+      throw 'Unexpected native message: ' + message;
   }
 };
 

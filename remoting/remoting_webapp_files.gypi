@@ -52,6 +52,7 @@
       'webapp/plugin_settings.js',
       # TODO(garykac) Split out UI client stuff from remoting.js.
       'webapp/remoting.js',
+      'webapp/typecheck.js',
       'webapp/xhr.js',
       'webapp/xhr_proxy.js',
     ],

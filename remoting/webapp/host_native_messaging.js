@@ -42,7 +42,7 @@ remoting.HostNativeMessaging = function() {
  * Type used for entries of |pendingReplies_| list.
  *
  * @param {string} type Type of the originating request.
- * @param {?function(...):void} onDone The callback, if any, to be triggered
+ * @param {function(...):void} onDone The callback, if any, to be triggered
  *     on response. The actual parameters depend on the original request type.
  * @param {function(remoting.Error):void} onError The callback to be triggered
  *     on error.
@@ -81,59 +81,6 @@ remoting.HostNativeMessaging.prototype.initialize = function(onDone, onError) {
 };
 
 /**
- * Verifies that |object| is of type |type|, logging an error if not.
- *
- * @param {string} name Name of the object, to be included in the error log.
- * @param {*} object Object to test.
- * @param {string} type Expected type of the object.
- * @return {boolean} Result of test.
- */
-function checkType_(name, object, type) {
-  if (typeof(object) !== type) {
-    console.error('NativeMessaging: "' + name + '" expected to be of type "' +
-                  type + '", got: ' + object);
-    return false;
-  }
-  return true;
-}
-
-/**
- * Returns |result| as an AsyncResult. If |result| is not valid, returns null
- * and logs an error.
- *
- * @param {*} result
- * @return {remoting.HostController.AsyncResult?} Converted result.
- */
-function asAsyncResult_(result) {
-  if (!checkType_('result', result, 'string')) {
-    return null;
-  }
-  if (!remoting.HostController.AsyncResult.hasOwnProperty(result)) {
-    console.error('NativeMessaging: unexpected result code: ', result);
-    return null;
-  }
-  return remoting.HostController.AsyncResult[result];
-}
-
-/**
- * Returns |result| as a HostController.State. If |result| is not valid,
- * returns null and logs an error.
- *
- * @param {*} result
- * @return {remoting.HostController.State?} Converted result.
- */
-function asHostState_(result) {
-  if (!checkType_('result', result, 'string')) {
-    return null;
-  }
-  if (!remoting.HostController.State.hasOwnProperty(result)) {
-    console.error('NativeMessaging: unexpected result code: ', result);
-    return null;
-  }
-  return remoting.HostController.State[result];
-}
-
-/**
  * @param {remoting.HostController.Feature} feature The feature to test for.
  * @return {boolean} True if the implementation supports the named feature.
  */
@@ -148,7 +95,7 @@ remoting.HostNativeMessaging.prototype.hasFeature = function(feature) {
  * depending on the message type.
  *
  * @param {{type: string}} message The message to post.
- * @param {?function(...):void} onDone The callback, if any, to be triggered
+ * @param {function(...):void} onDone The callback, if any, to be triggered
  *     on response.
  * @param {function(remoting.Error):void} onError The callback to be triggered
  *     on error.
@@ -185,126 +132,84 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
   }
   delete this.pendingReplies_[id];
 
-  var onDone = reply.onDone;
-  var onError = reply.onError;
+  try {
+    var type = getStringAttr(message, 'type');
+    if (type != reply.type) {
+      throw 'Expected reply type: ' + reply.type + ', got: ' + type;
+    }
 
-  /** @type {string} */
-  var type = message['type'];
-  if (!checkType_('type', type, 'string')) {
-    onError(remoting.Error.UNEXPECTED);
-    return;
+    this.handleIncomingMessage_(message, reply.onDone);
+  } catch (e) {
+    console.error('Error while processing native message' +
+                  /** @type {*} */ (e));
+    reply.onError(remoting.Error.UNEXPECTED);
   }
-  if (type != reply.type) {
-    console.error('NativeMessaging: expected reply type: ', reply.type,
-                  ', got: ', type);
-    onError(remoting.Error.UNEXPECTED);
-    return;
-  }
+}
+
+/**
+ * Handler for incoming Native Messages.
+ *
+ * @param {Object} message The received message.
+ * @param {function(...):void} onDone Function to call when we're done
+ *     processing the message.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostNativeMessaging.prototype.handleIncomingMessage_ =
+    function(message, onDone) {
+  var type = getStringAttr(message, 'type');
 
   switch (type) {
     case 'helloResponse':
-      /** @type {string} */
-      var version = message['version'];
-      if (checkType_('version', version, 'string')) {
-        this.version_ = version;
-        if (message['supportedFeatures'] instanceof Array) {
-          this.supportedFeatures_ = message['supportedFeatures'];
-        } else {
-          // Old versions of the native messaging host do not return this list.
-          // Those versions don't support any new feature.
-          this.supportedFeatures_ = [];
-        }
-        onDone();
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      this.version_ = getStringAttr(message, 'version');
+      // Old versions of the native messaging host do not return this list.
+      // Those versions default to the empty list of supported features.
+      getArrayAttr(message, 'supportedFeatures', []);
+      onDone();
       break;
 
     case 'getHostNameResponse':
-      /** @type {*} */
-      var hostname = message['hostname'];
-      if (checkType_('hostname', hostname, 'string')) {
-        onDone(hostname);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      onDone(getStringAttr(message, 'hostname'));
       break;
 
     case 'getPinHashResponse':
-      /** @type {*} */
-      var hash = message['hash'];
-      if (checkType_('hash', hash, 'string')) {
-        onDone(hash);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      onDone(getStringAttr(message, 'hash'));
       break;
 
     case 'generateKeyPairResponse':
-      /** @type {*} */
-      var privateKey = message['privateKey'];
-      /** @type {*} */
-      var publicKey = message['publicKey'];
-      if (checkType_('privateKey', privateKey, 'string') &&
-          checkType_('publicKey', publicKey, 'string')) {
-        onDone(privateKey, publicKey);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      var privateKey = getStringAttr(message, 'privateKey');
+      var publicKey = getStringAttr(message, 'publicKey');
+      onDone(privateKey, publicKey);
       break;
 
     case 'updateDaemonConfigResponse':
-      var result = asAsyncResult_(message['result']);
-      if (result != null) {
-        onDone(result);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      var result = remoting.HostController.AsyncResult.fromString(
+          getStringAttr(message, 'result'));
+      onDone(result);
       break;
 
     case 'getDaemonConfigResponse':
-      /** @type {*} */
-      var config = message['config'];
-      if (checkType_('config', config, 'object')) {
-        onDone(config);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      onDone(getObjectAttr(message, 'config'));
       break;
 
     case 'getUsageStatsConsentResponse':
-      /** @type {*} */
-      var supported = message['supported'];
-      /** @type {*} */
-      var allowed = message['allowed'];
-      /** @type {*} */
-      var setByPolicy = message['setByPolicy'];
-      if (checkType_('supported', supported, 'boolean') &&
-          checkType_('allowed', allowed, 'boolean') &&
-          checkType_('setByPolicy', setByPolicy, 'boolean')) {
-        onDone(supported, allowed, setByPolicy);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      var supported = getBooleanAttr(message, 'supported');
+      var allowed = getBooleanAttr(message, 'allowed');
+      var setByPolicy = getBooleanAttr(message, 'setByPolicy');
+      onDone(supported, allowed, setByPolicy);
       break;
 
     case 'startDaemonResponse':
     case 'stopDaemonResponse':
-      var result = asAsyncResult_(message['result']);
-      if (result != null) {
-        onDone(result);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      var result = remoting.HostController.AsyncResult.fromString(
+          getStringAttr(message, 'result'));
+      onDone(result);
       break;
 
     case 'getDaemonStateResponse':
-      var state = asHostState_(message['state']);
-      if (state != null) {
-        onDone(state);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      var state = remoting.HostController.State.fromString(
+        getStringAttr(message, 'state'));
+      onDone(state);
       break;
 
     case 'getPairedClientsResponse':
@@ -313,47 +218,31 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       if (pairedClients != null) {
         onDone(pairedClients);
       } else {
-        onError(remoting.Error.UNEXPECTED);
+        throw 'No paired clients!';
       }
       break;
 
     case 'clearPairedClientsResponse':
     case 'deletePairedClientResponse':
-      /** @type {boolean} */
-      var success = message['result'];
-      if (checkType_('success', success, 'boolean')) {
-        onDone(success);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      onDone(getBooleanAttr(message, 'result'));
       break;
 
     case 'getHostClientIdResponse':
-      /** @type {string} */
-      var clientId = message['clientId'];
-      if (checkType_('clientId', clientId, 'string')) {
-        onDone(clientId);
-      } else {
-        onError(remoting.Error.UNEXPECTED);
-      }
+      onDone(getStringAttr(message, 'clientId'));
       break;
 
     case 'getCredentialsFromAuthCodeResponse':
-      /** @type {string} */
-      var userEmail = message['userEmail'];
-      /** @type {string} */
-      var refreshToken = message['refreshToken'];
-      if (checkType_('userEmail', userEmail, 'string') && userEmail &&
-          checkType_('refreshToken', refreshToken, 'string') && refreshToken) {
+      var userEmail = getStringAttr(message, 'userEmail');
+      var refreshToken = getStringAttr(message, 'refreshToken');
+      if (userEmail && refreshToken) {
         onDone(userEmail, refreshToken);
       } else {
-        onError(remoting.Error.UNEXPECTED);
+        throw 'Missing userEmail or refreshToken';
       }
       break;
 
     default:
-      console.error('Unexpected native message: ', message);
-      onError(remoting.Error.UNEXPECTED);
+      throw 'Unexpected native message: ' + message;
   }
 };
 

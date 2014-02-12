@@ -141,6 +141,19 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(rawMessage) {
     return;
   }
 
+  try {
+    this.handleMessageMethod_(message);
+  } catch(e) {
+    console.error(/** @type {*} */ (e));
+  }
+}
+
+/**
+ * @param {{method:string, data:Object.<string,*>}}
+ *    message Parsed message from the plugin.
+ * @private
+ */
+remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
   /**
    * Splits a string into a list of words delimited by spaces.
    * @param {string} str String that should be split.
@@ -156,43 +169,27 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(rawMessage) {
     // Reset the size in case we had to enlarge it to support click-to-play.
     this.plugin.width = 0;
     this.plugin.height = 0;
-    if (typeof message.data['apiVersion'] != 'number' ||
-        typeof message.data['apiMinVersion'] != 'number') {
-      console.error('Received invalid hello message:', rawMessage);
-      return;
-    }
-    this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
+    this.pluginApiVersion_ = getNumberAttr(message.data, 'apiVersion');
+    this.pluginApiMinVersion_ = getNumberAttr(message.data, 'apiMinVersion');
 
     if (this.pluginApiVersion_ >= 7) {
-      if (typeof message.data['apiFeatures'] != 'string') {
-        console.error('Received invalid hello message:', rawMessage);
-        return;
-      }
       this.pluginApiFeatures_ =
-          tokenize((/** @type {string} */ message.data['apiFeatures']));
+          tokenize(getStringAttr(message.data, 'apiFeatures'));
 
       // Negotiate capabilities.
 
       /** @type {!Array.<string>} */
       var requestedCapabilities = [];
       if ('requestedCapabilities' in message.data) {
-        if (typeof message.data['requestedCapabilities'] != 'string') {
-          console.error('Received invalid hello message:', rawMessage);
-          return;
-        }
-        requestedCapabilities = tokenize(
-            (/** @type {string} */ message.data['requestedCapabilities']));
+        requestedCapabilities =
+            tokenize(getStringAttr(message.data, 'requestedCapabilities'));
       }
 
       /** @type {!Array.<string>} */
       var supportedCapabilities = [];
       if ('supportedCapabilities' in message.data) {
-        if (typeof message.data['supportedCapabilities'] != 'string') {
-          console.error('Received invalid hello message:', rawMessage);
-          return;
-        }
-        supportedCapabilities = tokenize(
-            (/** @type {string} */ message.data['requestedCapabilities']));
+        supportedCapabilities =
+            tokenize(getStringAttr(message.data, 'supportedCapabilities'));
       }
 
       // At the moment the webapp does not recognize any of
@@ -215,168 +212,106 @@ remoting.ClientPlugin.prototype.handleMessage_ = function(rawMessage) {
     } else {
       this.pluginApiFeatures_ = ['highQualityScaling'];
     }
-    this.pluginApiMinVersion_ =
-        /** @type {number} */ message.data['apiMinVersion'];
     this.helloReceived_ = true;
     if (this.onInitializedCallback_ != null) {
       this.onInitializedCallback_(true);
       this.onInitializedCallback_ = null;
     }
+
   } else if (message.method == 'sendOutgoingIq') {
-    if (typeof message.data['iq'] != 'string') {
-      console.error('Received invalid sendOutgoingIq message:', rawMessage);
-      return;
-    }
-    this.onOutgoingIqHandler((/** @type {string} */ message.data['iq']));
+    this.onOutgoingIqHandler(getStringAttr(message.data, 'iq'));
+
   } else if (message.method == 'logDebugMessage') {
-    if (typeof message.data['message'] != 'string') {
-      console.error('Received invalid logDebugMessage message:', rawMessage);
-      return;
-    }
-    this.onDebugMessageHandler((/** @type {string} */ message.data['message']));
+    this.onDebugMessageHandler(getStringAttr(message.data, 'message'));
+
   } else if (message.method == 'onConnectionStatus') {
-    if (typeof message.data['state'] != 'string' ||
-        !remoting.ClientSession.State.hasOwnProperty(message.data['state']) ||
-        typeof message.data['error'] != 'string') {
-      console.error('Received invalid onConnectionState message:',
-                    rawMessage);
-      return;
-    }
-
-    /** @type {remoting.ClientSession.State} */
-    var state = remoting.ClientSession.State[message.data['state']];
-    var error;
-    if (remoting.ClientSession.ConnectionError.hasOwnProperty(
-        message.data['error'])) {
-      error = /** @type {remoting.ClientSession.ConnectionError} */
-          remoting.ClientSession.ConnectionError[message.data['error']];
-    } else {
-      error = remoting.ClientSession.ConnectionError.UNKNOWN;
-    }
-
+    var state = remoting.ClientSession.State.fromString(
+        getStringAttr(message.data, 'state'))
+    var error = remoting.ClientSession.ConnectionError.fromString(
+        getStringAttr(message.data, 'error'));
     this.onConnectionStatusUpdateHandler(state, error);
+
   } else if (message.method == 'onDesktopSize') {
-    if (typeof message.data['width'] != 'number' ||
-        typeof message.data['height'] != 'number') {
-      console.error('Received invalid onDesktopSize message:', rawMessage);
-      return;
-    }
-    this.desktopWidth = /** @type {number} */ message.data['width'];
-    this.desktopHeight = /** @type {number} */ message.data['height'];
-    this.desktopXDpi = (typeof message.data['x_dpi'] == 'number') ?
-        /** @type {number} */ (message.data['x_dpi']) : 96;
-    this.desktopYDpi = (typeof message.data['y_dpi'] == 'number') ?
-        /** @type {number} */ (message.data['y_dpi']) : 96;
+    this.desktopWidth = getNumberAttr(message.data, 'width');
+    this.desktopHeight = getNumberAttr(message.data, 'height');
+    this.desktopXDpi = getNumberAttr(message.data, 'x_dpi', 96);
+    this.desktopYDpi = getNumberAttr(message.data, 'y_dpi', 96);
     this.onDesktopSizeUpdateHandler();
+
   } else if (message.method == 'onPerfStats') {
-    if (typeof message.data['videoBandwidth'] != 'number' ||
-        typeof message.data['videoFrameRate'] != 'number' ||
-        typeof message.data['captureLatency'] != 'number' ||
-        typeof message.data['encodeLatency'] != 'number' ||
-        typeof message.data['decodeLatency'] != 'number' ||
-        typeof message.data['renderLatency'] != 'number' ||
-        typeof message.data['roundtripLatency'] != 'number') {
-      console.error('Received incorrect onPerfStats message:', rawMessage);
-      return;
-    }
+    // Return value is ignored. These calls will throw an error if the value
+    // is not a number.
+    getNumberAttr(message.data, 'videoBandwidth');
+    getNumberAttr(message.data, 'videoFrameRate');
+    getNumberAttr(message.data, 'captureLatency');
+    getNumberAttr(message.data, 'encodeLatency');
+    getNumberAttr(message.data, 'decodeLatency');
+    getNumberAttr(message.data, 'renderLatency');
+    getNumberAttr(message.data, 'roundtripLatency');
     this.perfStats_ =
         /** @type {remoting.ClientSession.PerfStats} */ message.data;
+
   } else if (message.method == 'injectClipboardItem') {
-    if (typeof message.data['mimeType'] != 'string' ||
-        typeof message.data['item'] != 'string') {
-      console.error('Received incorrect injectClipboardItem message.');
-      return;
-    }
+    var mimetype = getStringAttr(message.data, 'mimeType');
+    var item = getStringAttr(message.data, 'item');
     if (remoting.clipboard) {
-      remoting.clipboard.fromHost(
-          (/** @type {string} */ message.data['mimeType']),
-          (/** @type {string} */ message.data['item']));
+      remoting.clipboard.fromHost(mimetype, item);
     }
+
   } else if (message.method == 'onFirstFrameReceived') {
     if (remoting.clientSession) {
       remoting.clientSession.onFirstFrameReceived();
     }
+
   } else if (message.method == 'onConnectionReady') {
-    if (typeof message.data['ready'] != 'boolean') {
-      console.error('Received incorrect onConnectionReady message.');
-      return;
-    }
-    var ready = /** @type {boolean} */ message.data['ready'];
+    var ready = getBooleanAttr(message.data, 'ready');
     this.onConnectionReadyHandler(ready);
+
   } else if (message.method == 'fetchPin') {
     // The pairingSupported value in the dictionary indicates whether both
     // client and host support pairing. If the client doesn't support pairing,
     // then the value won't be there at all, so give it a default of false.
-    /** @type {boolean} */
-    var pairingSupported = false;
-    if ('pairingSupported' in message.data) {
-      pairingSupported =
-          /** @type {boolean} */ message.data['pairingSupported'];
-      if (typeof pairingSupported != 'boolean') {
-        console.error('Received incorrect fetchPin message.');
-        return;
-      }
-    }
+    var pairingSupported = getBooleanAttr(message.data, 'pairingSupported',
+                                          false)
     this.fetchPinHandler(pairingSupported);
-  } else if (message.method == 'setCapabilities') {
-    if (typeof message.data['capabilities'] != 'string') {
-      console.error('Received incorrect setCapabilities message.');
-      return;
-    }
 
+  } else if (message.method == 'setCapabilities') {
     /** @type {!Array.<string>} */
-    var capabilities =
-        tokenize((/** @type {string} */ message.data['capabilities']));
+    var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
     this.onSetCapabilitiesHandler(capabilities);
+
   } else if (message.method == 'fetchThirdPartyToken') {
-    if (typeof message.data['tokenUrl'] != 'string' ||
-        typeof message.data['hostPublicKey'] != 'string' ||
-        typeof message.data['scope'] != 'string') {
-      console.error('Received incorrect fetchThirdPartyToken message.');
-      return;
-    }
-    var tokenUrl = /** @type {string} */ message.data['tokenUrl'];
-    var hostPublicKey =
-        /** @type {string} */ message.data['hostPublicKey'];
-    var scope = /** @type {string} */ message.data['scope'];
+    var tokenUrl = getStringAttr(message.data, 'tokenUrl');
+    var hostPublicKey = getStringAttr(message.data, 'hostPublicKey');
+    var scope = getStringAttr(message.data, 'scope');
     this.fetchThirdPartyTokenHandler(tokenUrl, hostPublicKey, scope);
+
   } else if (message.method == 'pairingResponse') {
-    var clientId = /** @type {string} */ message.data['clientId'];
-    var sharedSecret = /** @type {string} */ message.data['sharedSecret'];
-    if (typeof clientId != 'string' || typeof sharedSecret != 'string') {
-      console.error('Received incorrect pairingResponse message.');
-      return;
-    }
+    var clientId = getStringAttr(message.data, 'clientId');
+    var sharedSecret = getStringAttr(message.data, 'sharedSecret');
     this.onPairingComplete_(clientId, sharedSecret);
+
   } else if (message.method == 'extensionMessage') {
-    if (typeof(message.data['type']) != 'string' ||
-        typeof(message.data['data']) != 'string') {
-      console.error('Invalid extension message:', message.data);
-      return;
-    }
-    switch (message.data['type']) {
+    var extMsgType = getStringAttr(message, 'type');
+    var extMsgData = getStringAttr(message, 'data');
+    switch (extMsgType) {
       case 'test-echo-reply':
-        console.log('Got echo reply: ' + message.data['data']);
+        console.log('Got echo reply: ' + extMsgData);
         break;
       default:
-        if (!this.onExtensionMessage_(
-            (/** @type {string} */ message.data['type']),
-            (/** @type {string} */ message.data['data']))) {
+        if (!this.onExtensionMessage_(extMsgType, extMsgData)) {
           console.log('Unexpected message received: ' +
-                      message.data['type'] + ': ' + message.data['data']);
+                      extMsgType + ': ' + extMsgData);
         }
     }
+
   } else if (message.method == 'mediaSourceReset') {
-    if (typeof(message.data['format']) != 'string') {
-      console.error('Invalid mediaSourceReset message:', message.data);
-      return;
-    }
     if (!this.mediaSourceRenderer_) {
       console.error('Unexpected mediaSourceReset.');
       return;
     }
-    this.mediaSourceRenderer_.reset(
-        (/** @type {string} */ message.data['format']));
+    this.mediaSourceRenderer_.reset(getStringAttr(message.data, 'format'))
+
   } else if (message.method == 'mediaSourceData') {
     if (!(message.data['buffer'] instanceof ArrayBuffer)) {
       console.error('Invalid mediaSourceData message:', message.data);
