@@ -497,7 +497,7 @@ void OmniboxPopupContentsView::OpenSelectedLine(
   if (!HasMatchAt(index))
     return;
   omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
-                           GURL(), index);
+                           GURL(), base::string16(), index);
 }
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {

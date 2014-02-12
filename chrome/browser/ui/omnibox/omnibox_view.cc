@@ -87,12 +87,13 @@ OmniboxView::~OmniboxView() {
 void OmniboxView::OpenMatch(const AutocompleteMatch& match,
                             WindowOpenDisposition disposition,
                             const GURL& alternate_nav_url,
+                            const base::string16& pasted_text,
                             size_t selected_line) {
   // Invalid URLs such as chrome://history can end up here.
-  if (!match.destination_url.is_valid())
-    return;
-  if (model_.get())
-    model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
+  if (match.destination_url.is_valid() && model_) {
+    model_->OpenMatch(match, disposition, alternate_nav_url, pasted_text,
+                      selected_line);
+  }
 }
 
 bool OmniboxView::IsEditingOrEmpty() const {

@@ -396,7 +396,7 @@ void OmniboxEditModel::OnChanged() {
         break;
       // Ask for prerendering if the destination URL is different than the
       // current URL.
-      if (current_match.destination_url != PermanentURL())
+      if (current_match.destination_url != delegate_->GetURL())
         delegate_->DoPrerender(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_PRECONNECT:
@@ -413,8 +413,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
                                            base::string16* title,
                                            gfx::Image* favicon) {
   *url = CurrentMatch(NULL).destination_url;
-  if (*url == URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
-                                      std::string())) {
+  if (*url == delegate_->GetURL()) {
     content::WebContents* web_contents = controller_->GetWebContents();
     *title = web_contents->GetTitle();
     *favicon = FaviconTabHelper::FromWebContents(web_contents)->GetFavicon();
@@ -599,7 +598,7 @@ void OmniboxEditModel::PasteAndGo(const base::string16& text) {
   AutocompleteMatch match;
   GURL alternate_nav_url;
   ClassifyStringForPasteAndGo(text, &match, &alternate_nav_url);
-  view_->OpenMatch(match, CURRENT_TAB, alternate_nav_url,
+  view_->OpenMatch(match, CURRENT_TAB, alternate_nav_url, text,
                    OmniboxPopupModel::kNoMatch);
 }
 
@@ -652,9 +651,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     return;
 
   if ((match.transition == content::PAGE_TRANSITION_TYPED) &&
-      (match.destination_url ==
-       URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
-                               std::string()))) {
+      (match.destination_url == PermanentURL())) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
@@ -677,13 +674,14 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (template_url && template_url->url_ref().HasGoogleBaseURLs())
     GoogleURLTracker::GoogleURLSearchCommitted(profile_);
 
-  view_->OpenMatch(match, disposition, alternate_nav_url,
+  view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
                    OmniboxPopupModel::kNoMatch);
 }
 
 void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  WindowOpenDisposition disposition,
                                  const GURL& alternate_nav_url,
+                                 const base::string16& pasted_text,
                                  size_t index) {
   const base::TimeTicks& now(base::TimeTicks::Now());
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
@@ -691,14 +689,15 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   autocomplete_controller()->UpdateMatchDestinationURL(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
-  const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : permanent_text_;
+  base::string16 input_text(pasted_text);
+  if (input_text.empty())
+      input_text = user_input_in_progress_ ? user_text_ : permanent_text_;
   scoped_ptr<OmniboxNavigationObserver> observer(
       new OmniboxNavigationObserver(
-          profile_, user_text, match,
+          profile_, input_text, match,
           autocomplete_controller()->history_url_provider()->SuggestExactInput(
-              user_text, alternate_nav_url,
-              AutocompleteInput::HasHTTPScheme(user_text))));
+              input_text, alternate_nav_url,
+              AutocompleteInput::HasHTTPScheme(input_text))));
 
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
@@ -717,7 +716,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
           base::TimeDelta::FromMilliseconds(-1);
     }
     OmniboxLog log(
-        user_text,
+        input_text,
         just_deleted_text_,
         autocomplete_controller()->input().type(),
         popup_model()->selected_line(),
@@ -1086,8 +1085,8 @@ void OmniboxEditModel::OnPopupDataChanged(
   if (inline_autocomplete_text_.empty())
     view_->OnInlineAutocompleteTextCleared();
 
-  base::string16 user_text = user_input_in_progress_ ? user_text_
-                                                     : permanent_text_;
+  const base::string16& user_text =
+      user_input_in_progress_ ? user_text_ : permanent_text_;
   if (keyword_state_changed && KeywordIsSelected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or

@@ -30,6 +30,7 @@ class TestingOmniboxView : public OmniboxView {
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
+                         const base::string16& pasted_text,
                          size_t selected_line) OVERRIDE {}
   virtual base::string16 GetText() const OVERRIDE { return text_; }
   virtual void SetUserText(const base::string16& text,

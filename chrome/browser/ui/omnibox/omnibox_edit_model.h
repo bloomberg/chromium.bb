@@ -194,6 +194,11 @@ class OmniboxEditModel {
                    bool for_drop);
 
   // Asks the browser to load the item at |index|, with the given properties.
+  // OpenMatch() needs to know the original text that drove this action.  If
+  // |pasted_text| is non-empty, this is a Paste-And-Go/Search action, and
+  // that's the relevant input text.  Otherwise, the relevant input text is
+  // either the user text or the permanent text, depending on if user input is
+  // in progress.
   //
   // |match| is passed by value for two reasons:
   // (1) This function needs to modify |match|, so a const ref isn't
@@ -207,6 +212,7 @@ class OmniboxEditModel {
   void OpenMatch(AutocompleteMatch match,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
+                 const base::string16& pasted_text,
                  size_t index);
 
   OmniboxFocusState focus_state() const { return focus_state_; }

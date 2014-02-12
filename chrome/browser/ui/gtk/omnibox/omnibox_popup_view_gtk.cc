@@ -492,7 +492,7 @@ void OmniboxPopupViewGtk::StackWindow() {
 void OmniboxPopupViewGtk::AcceptLine(size_t line,
                                      WindowOpenDisposition disposition) {
   omnibox_view_->OpenMatch(GetResult().match_at(line), disposition, GURL(),
-                           line);
+                           base::string16(), line);
 }
 
 gfx::Image OmniboxPopupViewGtk::IconForMatch(

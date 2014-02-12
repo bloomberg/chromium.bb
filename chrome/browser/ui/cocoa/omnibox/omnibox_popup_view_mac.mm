@@ -498,5 +498,6 @@ void OmniboxPopupViewMac::OpenURLForRow(size_t row,
   size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
   row += start_match;
   DCHECK_LT(row, GetResult().size());
-  omnibox_view_->OpenMatch(GetResult().match_at(row), disposition, GURL(), row);
+  omnibox_view_->OpenMatch(GetResult().match_at(row), disposition, GURL(),
+                           base::string16(), row);
 }
