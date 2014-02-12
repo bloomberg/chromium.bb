@@ -196,7 +196,7 @@ void FrameView::reset()
     m_contentIsOpaque = false;
     m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
-    m_doFullRepaint = true;
+    m_doFullRepaint = false;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
     m_canRepaintDuringPerformLayout = false;
@@ -881,6 +881,7 @@ void FrameView::layout(bool allowSubtree)
     if (isPartialLayout)
         lifecycleScope.setFinalState(DocumentLifecycle::StyleClean);
 
+    bool shouldDoFullLayout = false;
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
     {
@@ -906,7 +907,7 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
 
-        m_doFullRepaint = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
+        shouldDoFullLayout = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
 
         if (!inSubtreeLayout && !isPartialLayout) {
             // Now set our scrollbar state for the layout.
@@ -940,7 +941,7 @@ void FrameView::layout(bool allowSubtree)
             m_size = LayoutSize(layoutSize().width(), layoutSize().height());
 
             if (oldSize != m_size) {
-                m_doFullRepaint = true;
+                shouldDoFullLayout = true;
                 if (!m_firstLayout) {
                     RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
                     RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
@@ -954,31 +955,17 @@ void FrameView::layout(bool allowSubtree)
 
         layer = rootForThisLayout->enclosingLayer();
 
+        // We need to set m_doFullRepaint before triggering layout as RenderObject::checkForRepaint
+        // checks the boolean to disable local repaints.
+        m_doFullRepaint |= shouldDoFullLayout;
+
         performLayout(rootForThisLayout, inSubtreeLayout);
 
         m_layoutSubtreeRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
-    bool neededFullRepaint = m_doFullRepaint;
-
     if (!inSubtreeLayout && !isPartialLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
-
-    m_doFullRepaint = neededFullRepaint;
-
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        if (m_doFullRepaint)
-            renderView()->setShouldDoFullRepaintAfterLayout(true);
-
-        if (m_doFullRepaint || !partialLayout().isStopping())
-            repaintTree(rootForThisLayout);
-
-    } else if (m_doFullRepaint) {
-        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
-        // the visibleContentRect(). It just happens to work out most of the time,
-        // since first layouts and printing don't have you scrolled anywhere.
-        renderView()->repaint();
-    }
 
     layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
 
@@ -1004,6 +991,22 @@ void FrameView::layout(bool allowSubtree)
     m_nestedLayoutCount--;
     if (m_nestedLayoutCount)
         return;
+
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        if (m_doFullRepaint)
+            renderView()->setShouldDoFullRepaintAfterLayout(true);
+
+        if (m_doFullRepaint || !partialLayout().isStopping())
+            repaintTree(rootForThisLayout);
+
+    } else if (m_doFullRepaint) {
+        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
+        // the visibleContentRect(). It just happens to work out most of the time,
+        // since first layouts and printing don't have you scrolled anywhere.
+        renderView()->repaint();
+    }
+
+    m_doFullRepaint = false;
 
     if (partialLayout().isStopping())
         return;
@@ -1031,6 +1034,9 @@ void FrameView::repaintTree(RenderObject* root)
 {
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!root->needsLayout());
+    // We should only repaint for the outer most layout. This works as
+    // we continue to track repaint rects until this function is called.
+    ASSERT(!m_nestedLayoutCount);
 
     // FIXME: really, we're in the repaint phase here, and the compositing queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
