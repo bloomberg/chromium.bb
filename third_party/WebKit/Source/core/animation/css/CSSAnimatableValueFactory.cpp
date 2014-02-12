@@ -175,6 +175,17 @@ inline static PassRefPtr<AnimatableValue> createFromFillSize(const FillSize& fil
     }
 }
 
+inline static PassRefPtr<AnimatableValue> createFromBackgroundPosition(const Length& length, bool originIsSet, BackgroundEdgeOrigin origin, const RenderStyle& style)
+{
+    if (!originIsSet || origin == LeftEdge || origin == TopEdge)
+        return createFromLength(length, style);
+
+    return AnimatableLength::create(CSSCalcValue::createExpressionNode(
+        CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(100, CSSPrimitiveValue::CSS_PERCENTAGE), true),
+        CSSCalcValue::createExpressionNode(length, style.effectiveZoom()),
+        CalcSubtract));
+}
+
 template<CSSPropertyID property>
 inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* fillLayer, const RenderStyle& style)
 {
@@ -188,11 +199,11 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* 
         } else if (property == CSSPropertyBackgroundPositionX || property == CSSPropertyWebkitMaskPositionX) {
             if (!fillLayer->isXPositionSet())
                 break;
-            values.append(createFromLength(fillLayer->xPosition(), style));
+            values.append(createFromBackgroundPosition(fillLayer->xPosition(), fillLayer->isBackgroundXOriginSet(), fillLayer->backgroundXOrigin(), style));
         } else if (property == CSSPropertyBackgroundPositionY || property == CSSPropertyWebkitMaskPositionY) {
             if (!fillLayer->isYPositionSet())
                 break;
-            values.append(createFromLength(fillLayer->yPosition(), style));
+            values.append(createFromBackgroundPosition(fillLayer->yPosition(), fillLayer->isBackgroundYOriginSet(), fillLayer->backgroundYOrigin(), style));
         } else if (property == CSSPropertyBackgroundSize || property == CSSPropertyWebkitMaskSize) {
             if (!fillLayer->isSizeSet())
                 break;
