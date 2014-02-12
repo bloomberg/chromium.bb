@@ -42,11 +42,6 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
-BEGIN
-    "#include ""setup_exe_version.rc""\r\0"
-END
-
 #endif    // APSTUDIO_INVOKED
 
 
@@ -120,19 +115,7 @@ IDR_OEMPG_ZH_TW.HTML    HTML   "eula\\oem_zh-TW.html"
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-#include "installer_util_strings.rc"
-
 #ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-#include "setup_exe_version.rc"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // GOOGLEUPDATEAPPLICATIONCOMMANDS is a "well-known" marker resource defined
