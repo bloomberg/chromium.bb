@@ -48,6 +48,10 @@ class AudioManagerAndroid {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     }
 
+    private static boolean runningOnJellyBeanMR2OrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+    }
+
     /** Simple container for device information. */
     private static class AudioDeviceName {
         private final int mId;
@@ -556,7 +560,7 @@ class AudioManagerAndroid {
         // higher, retrieve it through getSystemService(String) with
         // BLUETOOTH_SERVICE.
         BluetoothAdapter btAdapter = null;
-        if (runningOnJellyBeanMR1OrHigher()) {
+        if (runningOnJellyBeanMR2OrHigher()) {
             // Use BluetoothManager to get the BluetoothAdapter for
             // Android 4.3 and above.
             try {
