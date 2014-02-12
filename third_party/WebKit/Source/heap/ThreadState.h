@@ -539,6 +539,13 @@ public:
     static ThreadState* state() { return ThreadState::current(); }
 };
 
+// FIXME: Experiment if the threading affinity really matters for performance.
+// FIXME: Move these macros and other related structures to a separate file.
+USED_FROM_MULTIPLE_THREADS(DeprecatedStorageQuota);
+USED_FROM_MULTIPLE_THREADS(WorkerPerformance);
+USED_FROM_MULTIPLE_THREADS(TextDecoder);
+USED_FROM_MULTIPLE_THREADS(TextEncoder);
+
 }
 
 #endif // ThreadState_h

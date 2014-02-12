@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
-#include "heap/ThreadState.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -69,8 +68,6 @@ private:
     explicit DeprecatedStorageQuota(Type);
     Type m_type;
 };
-
-USED_FROM_MULTIPLE_THREADS(DeprecatedStorageQuota);
 
 } // namespace WebCore
 
