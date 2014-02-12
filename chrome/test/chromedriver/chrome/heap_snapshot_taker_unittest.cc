@@ -29,22 +29,12 @@ class DummyDevToolsClient : public StubDevToolsClient {
       : method_(method),
         error_after_events_(error_after_events),
         uid_(1),
-        cleared_(false),
         disabled_(false) {}
   virtual ~DummyDevToolsClient() {}
 
-  bool IsCleared() { return cleared_; }
-
   bool IsDisabled() { return disabled_; }
 
-  virtual Status SendAddProfileHeaderEvent() {
-    base::DictionaryValue event_params;
-    event_params.SetInteger("header.uid", uid_);
-    return listeners_.front()->OnEvent(
-        this, "HeapProfiler.addProfileHeader", event_params);
-  }
-
-  virtual Status SendAddHeapSnapshotChunkEvent() {
+  Status SendAddHeapSnapshotChunkEvent() {
     base::DictionaryValue event_params;
     event_params.SetInteger("uid", uid_);
     for (size_t i = 0; i < arraysize(chunks); ++i) {
@@ -60,18 +50,12 @@ class DummyDevToolsClient : public StubDevToolsClient {
   // Overridden from DevToolsClient:
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE {
-    if (!cleared_)
-      cleared_ = method == "HeapProfiler.clearProfiles";
     if (!disabled_)
       disabled_ = method == "Debugger.disable";
     if (method == method_ && !error_after_events_)
       return Status(kUnknownError);
 
     if (method == "HeapProfiler.takeHeapSnapshot") {
-      Status status = SendAddProfileHeaderEvent();
-      if (status.IsError())
-        return status;
-    } else if (method == "HeapProfiler.getHeapSnapshot") {
       Status status = SendAddHeapSnapshotChunkEvent();
       if (status.IsError())
         return status;
@@ -86,7 +70,6 @@ class DummyDevToolsClient : public StubDevToolsClient {
   std::string method_;  // Throw error on command with this method.
   bool error_after_events_;
   int uid_;
-  bool cleared_;  // True if HeapProfiler.clearProfiles was issued.
   bool disabled_;  // True if Debugger.disable was issued.
 };
 
@@ -99,7 +82,6 @@ TEST(HeapSnapshotTaker, SuccessfulCase) {
   Status status = taker.TakeSnapshot(&snapshot);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
-  ASSERT_TRUE(client.IsCleared());
   ASSERT_TRUE(client.IsDisabled());
 }
 
@@ -110,7 +92,6 @@ TEST(HeapSnapshotTaker, FailIfErrorOnDebuggerEnable) {
   Status status = taker.TakeSnapshot(&snapshot);
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
-  ASSERT_FALSE(client.IsCleared());
   ASSERT_TRUE(client.IsDisabled());
 }
 
@@ -121,103 +102,16 @@ TEST(HeapSnapshotTaker, FailIfErrorOnCollectGarbage) {
   Status status = taker.TakeSnapshot(&snapshot);
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
-  ASSERT_FALSE(client.IsCleared());
   ASSERT_TRUE(client.IsDisabled());
 }
 
-TEST(HeapSnapshotTaker, ErrorBeforeReceivingUid) {
+TEST(HeapSnapshotTaker, ErrorBeforeWhenReceivingSnapshot) {
   DummyDevToolsClient client("HeapProfiler.takeHeapSnapshot", false);
   HeapSnapshotTaker taker(&client);
   scoped_ptr<base::Value> snapshot;
   Status status = taker.TakeSnapshot(&snapshot);
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
-  ASSERT_FALSE(client.IsCleared());
   ASSERT_TRUE(client.IsDisabled());
 }
 
-TEST(HeapSnapshotTaker, ErrorAfterReceivingUid) {
-  DummyDevToolsClient client("HeapProfiler.takeHeapSnapshot", true);
-  HeapSnapshotTaker taker(&client);
-  scoped_ptr<base::Value> snapshot;
-  Status status = taker.TakeSnapshot(&snapshot);
-  ASSERT_TRUE(status.IsError());
-  ASSERT_FALSE(snapshot.get());
-  ASSERT_TRUE(client.IsCleared());
-  ASSERT_TRUE(client.IsDisabled());
-}
-
-namespace {
-
-class TwoUidEventClient : public DummyDevToolsClient {
- public:
-  TwoUidEventClient() : DummyDevToolsClient("", false) {}
-  virtual ~TwoUidEventClient() {}
-
-  // Overridden from DummyDevToolsClient:
-  virtual Status SendAddProfileHeaderEvent() OVERRIDE {
-    Status status = DummyDevToolsClient::SendAddProfileHeaderEvent();
-    if (status.IsError())
-      return status;
-    uid_ = 2;
-    status = DummyDevToolsClient::SendAddProfileHeaderEvent();
-    uid_ = 1;
-    return status;
-  }
-};
-
-}  // namespace
-
-TEST(HeapSnapshotTaker, MuiltipleUidEvents) {
-  TwoUidEventClient client;
-  HeapSnapshotTaker taker(&client);
-  scoped_ptr<base::Value> snapshot;
-  Status status = taker.TakeSnapshot(&snapshot);
-  ASSERT_EQ(kOk, status.code());
-  ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
-  ASSERT_TRUE(client.IsCleared());
-  ASSERT_TRUE(client.IsDisabled());
-}
-
-namespace {
-
-class ChunkWithDifferentUidClient : public DummyDevToolsClient {
- public:
-  ChunkWithDifferentUidClient() : DummyDevToolsClient("", false) {}
-  virtual ~ChunkWithDifferentUidClient() {}
-
-  // Overridden from DummyDevToolsClient:
-  virtual Status SendAddHeapSnapshotChunkEvent() OVERRIDE {
-    Status status = DummyDevToolsClient::SendAddHeapSnapshotChunkEvent();
-    if (status.IsError())
-      return status;
-    uid_ = 2;
-    status = DummyDevToolsClient::SendAddHeapSnapshotChunkEvent();
-    uid_ = 1;
-    return status;
-  }
-};
-
-}  // namespace
-
-TEST(HeapSnapshotTaker, IgnoreChunkWithDifferentUid) {
-  ChunkWithDifferentUidClient client;
-  HeapSnapshotTaker taker(&client);
-  scoped_ptr<base::Value> snapshot;
-  Status status = taker.TakeSnapshot(&snapshot);
-  ASSERT_EQ(kOk, status.code());
-  ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
-  ASSERT_TRUE(client.IsCleared());
-  ASSERT_TRUE(client.IsDisabled());
-}
-
-TEST(HeapSnapshotTaker, ErrorAfterFinishEvent) {
-  DummyDevToolsClient client("HeapProfiler.getHeapSnapshot", true);
-  HeapSnapshotTaker taker(&client);
-  scoped_ptr<base::Value> snapshot;
-  Status status = taker.TakeSnapshot(&snapshot);
-  ASSERT_TRUE(status.IsError());
-  ASSERT_FALSE(snapshot.get());
-  ASSERT_TRUE(client.IsCleared());
-  ASSERT_TRUE(client.IsDisabled());
-}

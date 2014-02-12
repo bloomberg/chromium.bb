@@ -11,7 +11,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 
 HeapSnapshotTaker::HeapSnapshotTaker(DevToolsClient* client)
-    : client_(client), snapshot_uid_(-1) {
+    : client_(client) {
   client_->AddListener(this);
 }
 
@@ -21,35 +21,25 @@ Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
   Status status1 = TakeSnapshotInternal();
   base::DictionaryValue params;
   Status status2 = client_->SendCommand("Debugger.disable", params);
-  Status status3(kOk);
-  if (snapshot_uid_ != -1) {  // Clear the snapshot cached in chrome.
-    status3 = client_->SendCommand("HeapProfiler.clearProfiles", params);
-  }
 
-  Status status4(kOk);
-  if (status1.IsOk() && status2.IsOk() && status3.IsOk()) {
+  Status status3(kOk);
+  if (status1.IsOk() && status2.IsOk()) {
     scoped_ptr<base::Value> value(base::JSONReader::Read(snapshot_));
     if (!value)
-      status4 = Status(kUnknownError, "heap snapshot not in JSON format");
+      status3 = Status(kUnknownError, "heap snapshot not in JSON format");
     else
       *snapshot = value.Pass();
   }
-  snapshot_uid_ = -1;
   snapshot_.clear();
   if (status1.IsError())
     return status1;
   else if (status2.IsError())
     return status2;
-  else if (status3.IsError())
-    return status3;
   else
-    return status4;
+    return status3;
 }
 
 Status HeapSnapshotTaker::TakeSnapshotInternal() {
-  if (snapshot_uid_ != -1)
-    return Status(kUnknownError, "unexpected heap snapshot was triggered");
-
   base::DictionaryValue params;
   const char* kMethods[] = {
       "Debugger.enable",
@@ -62,46 +52,19 @@ Status HeapSnapshotTaker::TakeSnapshotInternal() {
       return status;
   }
 
-  if (snapshot_uid_ == -1)
-    return Status(kUnknownError, "failed to receive snapshot uid");
-
-  base::DictionaryValue uid_params;
-  uid_params.SetInteger("uid", snapshot_uid_);
-  Status status = client_->SendCommand(
-      "HeapProfiler.getHeapSnapshot", uid_params);
-  if (status.IsError())
-    return status;
-
   return Status(kOk);
 }
 
 Status HeapSnapshotTaker::OnEvent(DevToolsClient* client,
                                   const std::string& method,
                                   const base::DictionaryValue& params) {
-  if (method == "HeapProfiler.addProfileHeader") {
-    if (snapshot_uid_ != -1) {
-      LOG(WARNING) << "multiple heap snapshot triggered";
-    } else if (!params.GetInteger("header.uid", &snapshot_uid_)) {
+  if (method == "HeapProfiler.addHeapSnapshotChunk") {
+    std::string chunk;
+    if (!params.GetString("chunk", &chunk)) {
       return Status(kUnknownError,
-                    "HeapProfiler.addProfileHeader has invalid 'header.uid'");
+                    "HeapProfiler.addHeapSnapshotChunk has no 'chunk'");
     }
-  } else if (method == "HeapProfiler.addHeapSnapshotChunk") {
-    int uid = -1;
-    if (!params.GetInteger("uid", &uid)) {
-      return Status(kUnknownError,
-                    "HeapProfiler.addHeapSnapshotChunk has no 'uid'");
-    } else if (uid == snapshot_uid_) {
-      std::string chunk;
-      if (!params.GetString("chunk", &chunk)) {
-        return Status(kUnknownError,
-                      "HeapProfiler.addHeapSnapshotChunk has no 'chunk'");
-      }
-
-      snapshot_.append(chunk);
-    } else {
-      LOG(WARNING) << "expect chunk event uid " << snapshot_uid_
-                   << ", but got " << uid;
-    }
+    snapshot_.append(chunk);
   }
   return Status(kOk);
 }
