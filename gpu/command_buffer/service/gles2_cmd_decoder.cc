@@ -566,6 +566,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual void RestoreFramebufferBindings() const OVERRIDE;
   virtual void RestoreTextureState(unsigned service_id) const OVERRIDE;
 
+  virtual void ClearAllAttributes() const OVERRIDE;
+  virtual void RestoreAllAttributes() const OVERRIDE;
+
   virtual QueryManager* GetQueryManager() OVERRIDE {
     return query_manager_.get();
   }
@@ -3785,6 +3788,20 @@ void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
         target, GL_TEXTURE_MAG_FILTER, texture->mag_filter());
     RestoreTextureUnitBindings(state_.active_texture_unit);
   }
+}
+
+void GLES2DecoderImpl::ClearAllAttributes() const {
+  for (uint32 i = 0; i < group_->max_vertex_attribs(); ++i) {
+    if (i != 0) // Never disable attribute 0
+      glDisableVertexAttribArray(i);
+    if(features().angle_instanced_arrays)
+      glVertexAttribDivisorANGLE(i, 0);
+  }
+}
+
+void GLES2DecoderImpl::RestoreAllAttributes() const {
+  for (uint32 i = 0; i < group_->max_vertex_attribs(); ++i)
+    RestoreAttribute(i);
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {

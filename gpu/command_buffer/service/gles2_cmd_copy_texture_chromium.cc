@@ -395,6 +395,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
   } else
 #endif
   {
+    decoder->ClearAllAttributes();
     glEnableVertexAttribArray(kVertexPositionAttrib);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
@@ -421,7 +422,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 
-  decoder->RestoreAttribute(kVertexPositionAttrib);
+  decoder->RestoreAllAttributes();
   decoder->RestoreTextureState(source_id);
   decoder->RestoreTextureState(dest_id);
   decoder->RestoreTextureUnitBindings(0);
