@@ -140,6 +140,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
                                 OnNavigate(msg))
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
   IPC_END_MESSAGE_MAP_EX()
@@ -311,6 +313,14 @@ void RenderFrameHostImpl::SwapOut() {
     // event.
     OnSwappedOut(true);
   }
+}
+
+void RenderFrameHostImpl::OnDidStartLoading() {
+  delegate_->DidStartLoading(this);
+}
+
+void RenderFrameHostImpl::OnDidStopLoading() {
+  delegate_->DidStopLoading(this);
 }
 
 void RenderFrameHostImpl::OnSwapOutACK() {

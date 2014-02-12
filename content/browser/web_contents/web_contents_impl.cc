@@ -2955,11 +2955,11 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
     delegate_->MoveContents(this, new_bounds);
 }
 
-void WebContentsImpl::DidStartLoading(RenderViewHost* render_view_host) {
-  SetIsLoading(render_view_host, true, NULL);
+void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host) {
+  SetIsLoading(render_frame_host->GetRenderViewHost(), true, NULL);
 }
 
-void WebContentsImpl::DidStopLoading(RenderViewHost* render_view_host) {
+void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {
   scoped_ptr<LoadNotificationDetails> details;
 
   // Use the last committed entry rather than the active one, in case a
@@ -2981,7 +2981,7 @@ void WebContentsImpl::DidStopLoading(RenderViewHost* render_view_host) {
         controller_.GetCurrentEntryIndex()));
   }
 
-  SetIsLoading(render_view_host, false, details.get());
+  SetIsLoading(render_frame_host->GetRenderViewHost(), false, details.get());
 }
 
 void WebContentsImpl::DidCancelLoading() {
@@ -3557,7 +3557,7 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
-    DidStopLoading(rvh);
+    DidStopLoading(rvh->GetMainFrame());
     controller_.DiscardNonCommittedEntries();
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,

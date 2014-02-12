@@ -1428,15 +1428,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,
                     int32,
                     GURL)
 
-// Sent when the renderer starts loading the page. This corresponds to
-// WebKit's notion of the throbber starting. Note that sometimes you may get
-// duplicates of these during a single load.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStartLoading)
-
-// Sent when the renderer is done loading a page. This corresponds to WebKit's
-// notion of the throbber stopping.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
-
 // Sent when the renderer main frame has made progress loading.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
                     double /* load_progress */)

@@ -89,6 +89,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // when the SwapOutACK is received.
   void SetPendingShutdown(const base::Closure& on_swap_out);
 
+  // TODO(nasko): This method is public so RenderViewHostImpl::Navigate can
+  // call it directly. It should be made private once Navigate moves here.
+  void OnDidStartLoading();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -124,6 +128,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                     const GURL& source_url,
                                     const GURL& target_url);
   void OnNavigate(const IPC::Message& msg);
+  void OnDidStopLoading();
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
 

@@ -1952,4 +1952,12 @@ void RenderFrameImpl::UpdateURL(WebFrame* frame) {
   navigation_state->set_transition_type(PAGE_TRANSITION_LINK);
 }
 
+void RenderFrameImpl::didStartLoading() {
+  Send(new FrameHostMsg_DidStartLoading(routing_id_));
+}
+
+void RenderFrameImpl::didStopLoading() {
+  Send(new FrameHostMsg_DidStopLoading(routing_id_));
+}
+
 }  // namespace content

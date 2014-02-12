@@ -563,8 +563,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateTargetURL(int32 page_id, const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
-  void OnDidStartLoading();
-  void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
   void OnDidDisownOpener();
   void OnDocumentAvailableInMainFrame();

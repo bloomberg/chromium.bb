@@ -626,8 +626,11 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   //
   // WebKit doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
-  if (!params.url.SchemeIs(kJavaScriptScheme))
-    delegate_->DidStartLoading(this);
+  if (!params.url.SchemeIs(kJavaScriptScheme)) {
+    RenderFrameHostImpl* rfh =
+        static_cast<RenderFrameHostImpl*>(GetMainFrame());
+    rfh->OnDidStartLoading();
+  }
 }
 
 void RenderViewHostImpl::NavigateToURL(const GURL& url) {
@@ -1247,8 +1250,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateInspectorSetting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnDidStartLoading)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
                         OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisownOpener, OnDidDisownOpener)
@@ -1512,14 +1513,6 @@ void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
   if (IsRVHStateActive(rvh_state_))
     delegate_->RequestMove(pos);
   Send(new ViewMsg_Move_ACK(GetRoutingID()));
-}
-
-void RenderViewHostImpl::OnDidStartLoading() {
-  delegate_->DidStartLoading(this);
-}
-
-void RenderViewHostImpl::OnDidStopLoading() {
-  delegate_->DidStopLoading(this);
 }
 
 void RenderViewHostImpl::OnDidChangeLoadProgress(double load_progress) {

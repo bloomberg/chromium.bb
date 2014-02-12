@@ -93,6 +93,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notification from RenderView.
   virtual void OnStop();
 
+  // Start/Stop loading notifications.
+  // TODO(nasko): Those are page-level methods at this time and come from
+  // WebViewClient. We should move them to be WebFrameClient calls and put
+  // logic in the browser side to balance starts/stops.
+  void didStartLoading();
+  void didStopLoading();
+
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);

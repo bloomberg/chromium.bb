@@ -2202,7 +2202,8 @@ void RenderViewImpl::didStartLoading() {
 
   is_loading_ = true;
 
-  Send(new ViewHostMsg_DidStartLoading(routing_id_));
+  // Send the IPC message through the top-level frame.
+  main_render_frame_->didStartLoading();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
 }
@@ -2220,7 +2221,8 @@ void RenderViewImpl::didStopLoading() {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-  Send(new ViewHostMsg_DidStopLoading(routing_id_));
+  // NOTE: Sending of the IPC message happens through the top-level frame.
+  main_render_frame_->didStopLoading();
 
   if (load_progress_tracker_ != NULL)
     load_progress_tracker_->DidStopLoading();

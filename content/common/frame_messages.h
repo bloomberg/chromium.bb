@@ -249,6 +249,15 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_DidFailLoadWithError,
                     int /* error_code */,
                     base::string16 /* error_description */)
 
+// Sent when the renderer starts loading the page. This corresponds to
+// Blink's notion of the throbber starting. Note that sometimes you may get
+// duplicates of these during a single load.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStartLoading)
+
+// Sent when the renderer is done loading a page. This corresponds to Blink's
+// notion of the throbber stopping.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

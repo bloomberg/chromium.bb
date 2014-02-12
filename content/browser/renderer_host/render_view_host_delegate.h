@@ -174,14 +174,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page is trying to move the RenderView's representation in the client.
   virtual void RequestMove(const gfx::Rect& new_bounds) {}
 
-  // The RenderView began loading a new page. This corresponds to WebKit's
-  // notion of the throbber starting.
-  virtual void DidStartLoading(RenderViewHost* render_view_host) {}
-
-  // The RenderView stopped loading a page. This corresponds to WebKit's
-  // notion of the throbber stopping.
-  virtual void DidStopLoading(RenderViewHost* render_view_host) {}
-
   // The pending page load was canceled.
   virtual void DidCancelLoading() {}
 

@@ -304,6 +304,8 @@ class CONTENT_EXPORT WebContentsImpl
                                  const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidStartLoading(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidStopLoading(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
@@ -341,8 +343,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
   virtual void SwappedOut(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DidDisownOpener(RenderViewHost* rvh) OVERRIDE;

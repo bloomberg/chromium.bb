@@ -30,6 +30,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Informs the delegate whenever a RenderFrameHost is deleted.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
 
+  // The top-level RenderFrame began loading a new page. This corresponds to
+  // Blink's notion of the throbber starting.
+  virtual void DidStartLoading(RenderFrameHost* render_frame_host) {}
+
+  // The top-level RenderFrame stopped loading a page. This corresponds to
+  // Blink's notion of the throbber stopping.
+  virtual void DidStopLoading(RenderFrameHost* render_frame_host) {}
+
   // Notification that a worker process has crashed.
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) {}
 
