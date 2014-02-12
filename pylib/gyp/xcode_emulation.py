@@ -1429,18 +1429,66 @@ def _HasIOSTarget(targets):
   return False
 
 
+def _IOSIsDeviceSDKROOT(sdkroot):
+  """Tests if |sdkroot| is a SDK for building for device."""
+  return 'iphoneos' in sdkroot.lower()
+
+
+def _IOSDefaultArchForSDKRoot(sdkroot):
+  """Returns the expansion of standard ARCHS macro depending on the version
+  of Xcode installed and configured, and which |sdkroot| to use (iphoneos or
+  simulator)."""
+  xcode_version, xcode_build = XcodeVersion()
+  if xcode_version < '0500':
+    if _IOSIsDeviceSDKROOT(sdkroot):
+      return {'$(ARCHS_STANDARD)': ['armv7']}
+    else:
+      return {'$(ARCHS_STANDARD)': ['i386']}
+  else:
+    if _IOSIsDeviceSDKROOT(sdkroot):
+      return {
+          '$(ARCHS_STANDARD)': ['armv7', 'armv7s'],
+          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['armv7', 'armv7s', 'arm64'],
+      }
+    else:
+      return {
+          '$(ARCHS_STANDARD)': ['i386'],
+          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['i386', 'x86_64'],
+      }
+
+
+def _FilterIOSArchitectureForSDKROOT(xcode_settings):
+  """Filter the ARCHS value from the |xcode_settings| dictionary to only
+  contains architectures valid for the sdk configured in SDKROOT value."""
+  defaults_archs = _IOSDefaultArchForSDKRoot(xcode_settings.get('SDKROOT', ''))
+  allowed_archs = set()
+  for archs in defaults_archs.itervalues():
+    allowed_archs.update(archs)
+  selected_archs = set()
+  for arch in (xcode_settings.get('ARCHS', []) or ['$(ARCHS_STANDARD)']):
+    if arch in defaults_archs:
+      selected_archs.update(defaults_archs[arch])
+    elif arch in allowed_archs:
+      selected_archs.add(arch)
+  valid_archs = set(xcode_settings.get('VALID_ARCHS', []))
+  if valid_archs:
+    selected_archs = selected_archs & valid_archs
+  xcode_settings['ARCHS'] = list(selected_archs)
+
+
 def _AddIOSDeviceConfigurations(targets):
   """Clone all targets and append -iphoneos to the name. Configure these targets
-  to build for iOS devices."""
-  for target_dict in targets.values():
-    for config_name in target_dict['configurations'].keys():
-      config = target_dict['configurations'][config_name]
-      new_config_name = config_name + '-iphoneos'
-      new_config_dict = copy.deepcopy(config)
-      if target_dict['toolset'] == 'target':
-        new_config_dict['xcode_settings']['ARCHS'] = ['armv7']
-        new_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
-      target_dict['configurations'][new_config_name] = new_config_dict
+  to build for iOS devices and use correct architectures for those builds."""
+  for target_dict in targets.itervalues():
+    toolset = target_dict['toolset']
+    configs = target_dict['configurations']
+    for config_name, config_dict in dict(configs).iteritems():
+      iphoneos_config_dict = copy.deepcopy(config_dict)
+      configs[config_name + '-iphoneos'] = iphoneos_config_dict
+      if toolset == 'target':
+        iphoneos_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
+      _FilterIOSArchitectureForSDKROOT(iphoneos_config_dict['xcode_settings'])
+      _FilterIOSArchitectureForSDKROOT(config_dict['xcode_settings'])
   return targets
 
 def CloneConfigurationForDeviceAndEmulator(target_dicts):
