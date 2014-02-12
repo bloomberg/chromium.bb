@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FORMATS_MP3_MP3_STREAM_PARSER_H_
-#define MEDIA_FORMATS_MP3_MP3_STREAM_PARSER_H_
+#ifndef MEDIA_FORMATS_MPEG_MPEG_AUDIO_STREAM_PARSER_BASE_H_
+#define MEDIA_FORMATS_MPEG_MPEG_AUDIO_STREAM_PARSER_BASE_H_
 
 #include <set>
 #include <vector>
@@ -12,21 +12,23 @@
 #include "base/callback.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/bit_reader.h"
 #include "media/base/byte_queue.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 
 namespace media {
 
-class BitReader;
-
-class MEDIA_EXPORT MP3StreamParser : public StreamParser {
+class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
  public:
-  MP3StreamParser();
-  virtual ~MP3StreamParser();
+  // |start_code_mask| is used to find the start of each frame header.  Also
+  // referred to as the sync code in the MP3 and ADTS header specifications.
+  MPEGAudioStreamParserBase(uint32 start_code_mask, AudioCodec audio_codec);
+  virtual ~MPEGAudioStreamParserBase();
 
   // StreamParser implementation.
-  virtual void Init(const InitCB& init_cb, const NewConfigCB& config_cb,
+  virtual void Init(const InitCB& init_cb,
+                    const NewConfigCB& config_cb,
                     const NewBuffersCB& new_buffers_cb,
                     bool ignore_text_tracks,
                     const NeedKeyCB& need_key_cb,
@@ -36,35 +38,13 @@ class MEDIA_EXPORT MP3StreamParser : public StreamParser {
   virtual void Flush() OVERRIDE;
   virtual bool Parse(const uint8* buf, int size) OVERRIDE;
 
- private:
-  enum State {
-    UNINITIALIZED,
-    INITIALIZED,
-    PARSE_ERROR
-  };
-
-  State state_;
-
-  InitCB init_cb_;
-  NewConfigCB config_cb_;
-  NewBuffersCB new_buffers_cb_;
-  NewMediaSegmentCB new_segment_cb_;
-  base::Closure end_of_segment_cb_;
-  LogCB log_cb_;
-
-  ByteQueue queue_;
-
-  AudioDecoderConfig config_;
-  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
-  bool in_media_segment_;
-
-  void ChangeState(State state);
-
-  // Parsing functions for various byte stream elements.
+ protected:
+  // Subclasses implement this method to parse format specific frame headers.
   // |data| & |size| describe the data available for parsing.
-  // These functions are expected to consume an entire frame/header.
-  // It should only return a value greater than 0 when |data| has
-  // enough bytes to successfully parse & consume the entire element.
+  //
+  // Implementations are expected to consume an entire frame header.  It should
+  // only return a value greater than 0 when |data| has enough bytes to
+  // successfully parse & consume the entire frame header.
   //
   // |frame_size| - Required parameter that is set to the size of the frame, in
   // bytes, including the frame header if the function returns a value > 0.
@@ -80,14 +60,34 @@ class MEDIA_EXPORT MP3StreamParser : public StreamParser {
   //
   // Returns:
   // > 0 : The number of bytes parsed.
+  //   0 : If more data is needed to parse the entire frame header.
+  // < 0 : An error was encountered during parsing.
+  virtual int ParseFrameHeader(const uint8* data,
+                               int size,
+                               int* frame_size,
+                               int* sample_rate,
+                               ChannelLayout* channel_layout,
+                               int* sample_count) const = 0;
+
+  const LogCB& log_cb() const { return log_cb_; }
+
+ private:
+  enum State {
+    UNINITIALIZED,
+    INITIALIZED,
+    PARSE_ERROR
+  };
+
+  void ChangeState(State state);
+
+  // Parsing functions for various byte stream elements.  |data| & |size|
+  // describe the data available for parsing.
+  //
+  // Returns:
+  // > 0 : The number of bytes parsed.
   //   0 : If more data is needed to parse the entire element.
   // < 0 : An error was encountered during parsing.
-  int ParseFrameHeader(const uint8* data, int size,
-                       int* frame_size,
-                       int* sample_rate,
-                       ChannelLayout* channel_layout,
-                       int* sample_count) const;
-  int ParseMP3Frame(const uint8* data, int size, BufferQueue* buffers);
+  int ParseFrame(const uint8* data, int size, BufferQueue* buffers);
   int ParseIcecastHeader(const uint8* data, int size);
   int ParseID3v1(const uint8* data, int size);
   int ParseID3v2(const uint8* data, int size);
@@ -118,9 +118,26 @@ class MEDIA_EXPORT MP3StreamParser : public StreamParser {
   // Returns true if the buffers are sent successfully.
   bool SendBuffers(BufferQueue* buffers, bool end_of_segment);
 
-  DISALLOW_COPY_AND_ASSIGN(MP3StreamParser);
+  State state_;
+
+  InitCB init_cb_;
+  NewConfigCB config_cb_;
+  NewBuffersCB new_buffers_cb_;
+  NewMediaSegmentCB new_segment_cb_;
+  base::Closure end_of_segment_cb_;
+  LogCB log_cb_;
+
+  ByteQueue queue_;
+
+  AudioDecoderConfig config_;
+  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
+  bool in_media_segment_;
+  const uint32 start_code_mask_;
+  const AudioCodec audio_codec_;
+
+  DISALLOW_COPY_AND_ASSIGN(MPEGAudioStreamParserBase);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FORMATS_MP3_MP3_STREAM_PARSER_H_
+#endif  // MEDIA_FORMATS_MPEG_MPEG_AUDIO_STREAM_PARSER_BASE_H_

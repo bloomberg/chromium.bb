@@ -1014,6 +1014,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableAcceleratedOverflowScroll,
     switches::kEnableAcceleratedScrollableFrames,
     switches::kEnableAccessibilityLogging,
+    switches::kEnableADTSStreamParser,
     switches::kEnableBeginFrameScheduling,
     switches::kEnableBrowserPluginForAllViewTypes,
     switches::kEnableCompositedScrollingForFrames,
