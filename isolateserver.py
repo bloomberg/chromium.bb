@@ -827,19 +827,24 @@ class StorageApi(object):
     raise NotImplementedError()
 
 
+class _PushState(object):
+  """State needed to call .push(), to be stored in Item.push_state.
+
+  Note this needs to be a global class to support pickling.
+  """
+
+  def __init__(self, upload_url, finalize_url):
+    self.upload_url = upload_url
+    self.finalize_url = finalize_url
+    self.uploaded = False
+    self.finalized = False
+
+
 class IsolateServer(StorageApi):
   """StorageApi implementation that downloads and uploads to Isolate Server.
 
   It uploads and downloads directly from Google Storage whenever appropriate.
   """
-
-  class _PushState(object):
-    """State needed to call .push(), to be stored in Item.push_state."""
-    def __init__(self, upload_url, finalize_url):
-      self.upload_url = upload_url
-      self.finalize_url = finalize_url
-      self.uploaded = False
-      self.finalized = False
 
   def __init__(self, base_url, namespace):
     super(IsolateServer, self).__init__()
@@ -960,7 +965,7 @@ class IsolateServer(StorageApi):
 
   def push(self, item, content):
     assert isinstance(item, Item)
-    assert isinstance(item.push_state, IsolateServer._PushState)
+    assert isinstance(item.push_state, _PushState)
     assert not item.push_state.finalized
 
     # TODO(vadimsh): Do not read from |content| generator when retrying push.
@@ -1052,7 +1057,7 @@ class IsolateServer(StorageApi):
         assert len(push_urls) == 2, str(push_urls)
         item = items[i]
         assert item.push_state is None
-        item.push_state = IsolateServer._PushState(push_urls[0], push_urls[1])
+        item.push_state = _PushState(push_urls[0], push_urls[1])
         missing_items.append(item)
     logging.info('Queried %d files, %d cache hit',
         len(items), len(items) - len(missing_items))
