@@ -420,6 +420,9 @@
         <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" type="BINDATA" />
         <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" type="BINDATA" />
       </if>
+      <include name="IDR_GCM_INTERNALS_HTML" file="resources\gcm_internals.html" type="BINDATA" />
+      <include name="IDR_GCM_INTERNALS_CSS" file="resources\gcm_internals.css" type="BINDATA" />
+      <include name="IDR_GCM_INTERNALS_JS" file="resources\gcm_internals.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

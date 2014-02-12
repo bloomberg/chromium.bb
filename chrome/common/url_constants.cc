@@ -46,6 +46,7 @@ const char kChromeUIFaviconURL[] = "chrome://favicon/";
 const char kChromeUIFeedbackURL[] = "chrome://feedback/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIFlashURL[] = "chrome://flash/";
+const char kChromeUIGCMInternalsURL[] = "chrome://gcm-internals/";
 const char kChromeUIHelpFrameURL[] = "chrome://help-frame/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
@@ -173,6 +174,7 @@ const char kChromeUIFaviconHost[] = "favicon";
 const char kChromeUIFeedbackHost[] = "feedback";
 const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIFlashHost[] = "flash";
+const char kChromeUIGCMInternalsHost[] = "gcm-internals";
 const char kChromeUIHangHost[] = "hang";
 const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
@@ -554,6 +556,7 @@ const char* const kChromeHostURLs[] = {
 #endif
   kChromeUIDNSHost,
   kChromeUIFlagsHost,
+  kChromeUIGCMInternalsHost,
   kChromeUIHelpHost,
   kChromeUIHistoryHost,
   kChromeUIInvalidationsHost,

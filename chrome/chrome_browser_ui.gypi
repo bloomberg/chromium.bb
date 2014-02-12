@@ -2359,6 +2359,8 @@
         'browser/ui/webui/flags_ui.h',
         'browser/ui/webui/flash_ui.cc',
         'browser/ui/webui/flash_ui.h',
+        'browser/ui/webui/gcm_internals_ui.cc',
+        'browser/ui/webui/gcm_internals_ui.h',
         'browser/ui/webui/gesture_config_ui.cc',
         'browser/ui/webui/gesture_config_ui.h',
         'browser/ui/webui/chromeos/salsa_ui.cc',
