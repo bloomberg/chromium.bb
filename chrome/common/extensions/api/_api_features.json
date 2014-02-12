@@ -82,7 +82,7 @@
     "contexts": ["blessed_extension"]
   },
   "bluetooth": {
-    "dependencies": ["permission:bluetooth"],
+    "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
   "bookmarkManagerPrivate": {

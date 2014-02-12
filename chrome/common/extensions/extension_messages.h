@@ -11,7 +11,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/messaging/message.h"
-#include "chrome/common/extensions/permissions/bluetooth_permission_data.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "chrome/common/extensions/permissions/usb_device_permission_data.h"
@@ -199,10 +198,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::MediaGalleriesPermissionData)
   IPC_STRUCT_TRAITS_MEMBER(permission())
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(extensions::BluetoothPermissionData)
-  IPC_STRUCT_TRAITS_MEMBER(uuid())
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::Message)

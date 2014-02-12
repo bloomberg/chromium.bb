@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 
+#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_handler.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
@@ -44,6 +45,7 @@ void RegisterChromeManifestHandlers() {
 #if defined(ENABLE_EXTENSIONS)
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
+  (new BluetoothManifestHandler)->Register();
   (new BrowserActionHandler)->Register();
   (new CommandsHandler)->Register();
   (new ContentScriptsHandler)->Register();

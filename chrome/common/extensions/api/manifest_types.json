@@ -206,6 +206,22 @@
             }
           }
         }
+      },
+      {
+        "id": "bluetooth",
+        "type": "object",
+        "description": "The <code>bluetooth</code> manifest property give permission to an app to use the $ref:bluetooth API. A list of profile IDs can be optionally specified to enable communication with specific device types",
+        "properties": {
+          "profiles": {
+            "description": "The <code>profiles</code> manifest property declares the list of profiles an app can register.",
+            "optional": true,
+            "type": "array",
+            "items": {
+              "description": "<p>The list of profiles specified as UUID strings.</p>",
+              "type": "string"
+            }
+          }
+        }
       }
     ]
   }

@@ -18,6 +18,7 @@ extern const char kBackgroundPage[];
 extern const char kBackgroundPageLegacy[];
 extern const char kBackgroundPersistent[];
 extern const char kBackgroundScripts[];
+extern const char kBluetooth[];
 extern const char kBookmarkUI[];
 extern const char kBrowserAction[];
 extern const char kBrowseURLs[];

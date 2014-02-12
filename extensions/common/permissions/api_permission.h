@@ -44,7 +44,6 @@ class APIPermission {
     kAudioCapture,
     kAutoTestPrivate,
     kBackground,
-    kBluetooth,
     kBookmark,
     kBookmarkManagerPrivate,
     kBrailleDisplayPrivate,

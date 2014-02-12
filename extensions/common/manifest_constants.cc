@@ -16,6 +16,7 @@ const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
+const char kBluetooth[] = "bluetooth";
 const char kBookmarkUI[] = "chrome_settings_overrides.bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";

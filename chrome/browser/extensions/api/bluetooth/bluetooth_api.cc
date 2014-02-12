@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
-#include "chrome/common/extensions/permissions/bluetooth_permission.h"
+#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -125,10 +125,9 @@ bool BluetoothAddProfileFunction::RunImpl() {
     return false;
   }
 
-  BluetoothPermission::CheckParam param(params->profile.uuid);
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(), APIPermission::kBluetooth, &param)) {
-    SetError(kPermissionDenied);
+  BluetoothPermissionRequest param(params->profile.uuid);
+  if (!BluetoothManifestData::CheckRequest(GetExtension(), param)) {
+    error_ = kPermissionDenied;
     return false;
   }
 

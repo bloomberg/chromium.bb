@@ -15,7 +15,6 @@
      "audioCapture",
      "autotestPrivate",
      "background",
-     "bluetooth",
      "bookmarkManagerPrivate",
      "bookmarks",
      "browsingData",
@@ -78,5 +77,6 @@
      "webRequest",
      "webRequestBlocking",
      "webview"
-  ]
+  ],
+  "bluetooth": {}
 }

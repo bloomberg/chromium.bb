@@ -7,5 +7,5 @@
       "scripts": ["background.js"]
     }
   },
-  "permissions": ["bluetooth"]
+  "bluetooth": {}
 }

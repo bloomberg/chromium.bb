@@ -746,7 +746,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDevtools);
 
   // Platform apps.
-  skip.insert(APIPermission::kBluetooth);
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kFileSystemProvider);
   skip.insert(APIPermission::kFileSystemRetainEntries);

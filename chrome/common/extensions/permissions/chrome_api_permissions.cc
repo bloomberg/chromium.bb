@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 
-#include "chrome/common/extensions/permissions/bluetooth_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
@@ -334,13 +333,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       &CreateAPIPermission<MediaGalleriesPermission> },
     { APIPermission::kPushMessaging, "pushMessaging",
       APIPermissionInfo::kFlagCannotBeOptional },
-    // Because warning messages for the "bluetooth" permission vary based on
-    // the permissions parameters, no message ID or message text is specified
-    // here. The message ID and text used will be determined at run-time in the
-    // |BluetoothPermission| class.
-    { APIPermission::kBluetooth, "bluetooth", APIPermissionInfo::kFlagNone,
-      0, PermissionMessage::kNone,
-      &CreateAPIPermission<BluetoothPermission> },
     { APIPermission::kUsb, "usb", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_USB,
       PermissionMessage::kUsb },

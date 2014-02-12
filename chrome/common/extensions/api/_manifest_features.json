@@ -67,6 +67,10 @@
     ],
     "max_manifest_version": 1
   },
+  "bluetooth": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "browser_action": {
     "channel": "stable",
     "extension_types": ["extension"]

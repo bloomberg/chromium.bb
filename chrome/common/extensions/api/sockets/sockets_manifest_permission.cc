@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/api/sockets/sockets_manifest_permission.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/manifest_types.h"
@@ -232,11 +233,8 @@ ManifestPermission* SocketsManifestPermission::Diff(
       static_cast<const SocketsManifestPermission*>(rhs);
 
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
-  std::set_difference(
-      permissions_.begin(), permissions_.end(),
-      other->permissions_.begin(), other->permissions_.end(),
-      std::inserter<SocketPermissionEntrySet>(
-          result->permissions_, result->permissions_.begin()));
+  result->permissions_ = base::STLSetDifference<SocketPermissionEntrySet>(
+      permissions_, other->permissions_);
   return result.release();
 }
 
@@ -246,11 +244,8 @@ ManifestPermission* SocketsManifestPermission::Union(
       static_cast<const SocketsManifestPermission*>(rhs);
 
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
-  std::set_union(
-      permissions_.begin(), permissions_.end(),
-      other->permissions_.begin(), other->permissions_.end(),
-      std::inserter<SocketPermissionEntrySet>(
-          result->permissions_, result->permissions_.begin()));
+  result->permissions_ = base::STLSetUnion<SocketPermissionEntrySet>(
+      permissions_, other->permissions_);
   return result.release();
 }
 
@@ -260,11 +255,8 @@ ManifestPermission* SocketsManifestPermission::Intersect(
       static_cast<const SocketsManifestPermission*>(rhs);
 
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
-  std::set_intersection(
-      permissions_.begin(), permissions_.end(),
-      other->permissions_.begin(), other->permissions_.end(),
-      std::inserter<SocketPermissionEntrySet>(
-          result->permissions_, result->permissions_.begin()));
+  result->permissions_ = base::STLSetIntersection<SocketPermissionEntrySet>(
+      permissions_, other->permissions_);
   return result.release();
 }
 
@@ -272,9 +264,8 @@ bool SocketsManifestPermission::Contains(const ManifestPermission* rhs) const {
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  return std::includes(
-      permissions_.begin(), permissions_.end(),
-      other->permissions_.begin(), other->permissions_.end());
+  return base::STLIncludes<SocketPermissionEntrySet>(permissions_,
+                                                     other->permissions_);
 }
 
 bool SocketsManifestPermission::Equal(const ManifestPermission* rhs) const {

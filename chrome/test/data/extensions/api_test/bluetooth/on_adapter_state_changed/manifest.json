@@ -8,5 +8,5 @@
       "scripts": ["runtest.js"]
     }
   },
-  "permissions": ["bluetooth"]
+  "bluetooth": {}
 }

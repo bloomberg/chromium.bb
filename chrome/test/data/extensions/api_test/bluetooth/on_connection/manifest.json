@@ -8,9 +8,5 @@
       "scripts": ["runtest.js"]
     }
   },
-  "permissions": [
-    {"bluetooth": [
-      {"uuid": "1234"}
-    ]}
-  ]
+  "bluetooth": { "profiles": ["1234"] }
 }
