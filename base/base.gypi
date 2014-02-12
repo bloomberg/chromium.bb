@@ -63,8 +63,6 @@
           'android/jni_string.h',
           'android/library_loader/library_loader_hooks.cc',
           'android/library_loader/library_loader_hooks.h',
-          'android/library_loader/results_codes.h',
-          'android/library_loader/results_codes_list.h',
           'android/memory_pressure_listener_android.cc',
           'android/memory_pressure_listener_android.h',
           'android/java_handler_thread.cc',
