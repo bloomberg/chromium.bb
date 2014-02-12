@@ -41,6 +41,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
+#include "core/rendering/RenderLayer.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -302,7 +303,14 @@ void Animation::clearEffects()
     ASSERT(player());
     ASSERT(m_activeInAnimationStack);
     ensureAnimationStack(m_target.get()).remove(this);
-    cancelAnimationOnCompositor();
+
+    {
+        // FIXME: clearEffects is called from withins style recalc.
+        // This queries compositingState, which is not necessarily up to date.
+        DisableCompositingQueryAsserts disabler;
+        cancelAnimationOnCompositor();
+    }
+
     m_activeInAnimationStack = false;
     m_compositableValues.clear();
     m_target->setNeedsAnimationStyleRecalc();

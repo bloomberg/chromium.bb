@@ -763,7 +763,13 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
         return;
 
     removeViewportConstrainedLayer(child);
-    repaintInCompositedAncestor(child, child->compositedLayerMapping()->compositedBounds());
+
+    {
+        // FIXME: This is called from within RenderLayer::removeChild, which is called from RenderObject::RemoveChild.
+        // There's no guarantee that compositor state is up to date.
+        DisableCompositingQueryAsserts disabler;
+        repaintInCompositedAncestor(child, child->compositedLayerMapping()->compositedBounds());
+    }
 
     setCompositingParent(child, 0);
     setCompositingLayersNeedRebuild();

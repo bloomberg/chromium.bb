@@ -1241,6 +1241,10 @@ bool FrameView::useSlowRepaintsIfNotOverlapped() const
 
 void FrameView::updateCanBlitOnScrollRecursively()
 {
+    // FIXME: useSlowRepaints reads compositing state in nested frames. Compositing state on the nested
+    // frames is not necessarily up to date.
+    DisableCompositingQueryAsserts disabler;
+
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
         if (FrameView* view = frame->view())
             view->setCanBlitOnScroll(!view->useSlowRepaints());
@@ -1353,6 +1357,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         return true;
     }
 
+    DisableCompositingQueryAsserts disabler;
     const bool isCompositedContentLayer = contentsInCompositedLayer();
 
     // Get the rects of the fixed objects visible in the rectToScroll
@@ -1433,6 +1438,10 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
 void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 {
+    // FIXME: This is called when JS calls scrollTo, at which point there's no guarantee that
+    // compositing state is up to date.
+    DisableCompositingQueryAsserts disabler;
+
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
@@ -1617,8 +1626,10 @@ void FrameView::scrollPositionChanged()
     m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
 
     if (RenderView* renderView = document->renderView()) {
-        if (renderView->usesCompositing())
+        if (renderView->usesCompositing()) {
+            DisableCompositingQueryAsserts disabler;
             renderView->compositor()->frameViewDidScroll();
+        }
     }
 
     if (m_didScrollTimer.isActive())
@@ -2228,10 +2239,13 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
 
     // Apply the clip from the layer.
     IntRect clipRect;
-    if (clipToLayerContents)
+    if (clipToLayerContents) {
+        // FIXME: childrenClipRect relies on compositingState, which is not necessarily up to date.
+        DisableCompositingQueryAsserts disabler;
         clipRect = pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect());
-    else
+    } else {
         clipRect = pixelSnappedIntRect(enclosingLayer->clipper().selfClipRect());
+    }
     clipRect = contentsToWindow(clipRect);
     return intersection(clipRect, windowClipRect());
 }

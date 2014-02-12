@@ -486,6 +486,9 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
     }
 
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        // FIXME: pauseAnimationsForTesting queries compositingState, which is not necessarily up to date.
+        DisableCompositingQueryAsserts disabler;
+
         frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
         frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
     }
@@ -1072,6 +1075,9 @@ void Internals::paintControlTints(Document* document, ExceptionState& exceptionS
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's view cannot be retrieved." : "The document provided is invalid.");
         return;
     }
+
+    // FIXME: paint depends on compositingState, which is  not necessarily up to date here.
+    DisableCompositingQueryAsserts disabler;
 
     FrameView* frameView = document->view();
     frameView->paintControlTints();

@@ -34,6 +34,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/frame/FrameView.h"
+#include "core/rendering/RenderLayer.h"
 
 namespace WebCore {
 
@@ -49,6 +50,9 @@ void CSSPendingAnimations::add(Player* player)
 
 bool CSSPendingAnimations::startPendingAnimations()
 {
+    // FIXME: This is called from within style recalc, at which point compositor state is not up to date.
+    DisableCompositingQueryAsserts disabler;
+
     bool startedOnCompositor = false;
     for (size_t i = 0; i < m_pending.size(); ++i) {
         if (m_pending[i].first->maybeStartAnimationOnCompositor())

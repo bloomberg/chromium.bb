@@ -56,6 +56,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderLayer.h"
 
 namespace WebCore {
 
@@ -677,6 +678,10 @@ void FocusController::setActive(bool active)
 
     if (FrameView* view = m_page->mainFrame()->view()) {
         view->updateLayoutAndStyleIfNeededRecursive();
+
+        // FIXME: updateControlTints calls paint, which depends on compositingState, which is
+        // not necessarily up to date after layout.
+        DisableCompositingQueryAsserts disabler;
         view->updateControlTints();
     }
 

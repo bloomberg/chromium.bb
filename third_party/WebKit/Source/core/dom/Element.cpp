@@ -91,6 +91,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/rendering/FlowThreadController.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
@@ -1469,6 +1470,9 @@ void Element::detach(const AttachContext& context)
         if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
                 if (context.performingReattach) {
+                    // FIXME: We call detach from withing style recalc, so compositingState is not up to date.
+                    DisableCompositingQueryAsserts disabler;
+
                     // FIXME: restart compositor animations rather than pull back to the main thread
                     activeAnimations->cancelAnimationOnCompositor();
                 } else {

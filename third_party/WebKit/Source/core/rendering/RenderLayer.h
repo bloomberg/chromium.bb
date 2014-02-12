@@ -86,11 +86,8 @@ enum CompositedScrollingHistogramBuckets {
 
 enum CompositingQueryMode {
     CompositingQueriesAreAllowed,
-    CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases,
-    CompositingQueriesAreDisallowed
+    CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases
 };
-
-#define STRICT_STATE_MACHINE 0
 
 // FIXME: remove this once the compositing query ASSERTS are no longer hit.
 class DisableCompositingQueryAsserts {
@@ -348,7 +345,7 @@ public:
     void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
 
-    bool paintsWithBlendMode() const { return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking; }
+    bool paintsWithBlendMode() const;
 
     void* operator new(size_t);
     // Only safe to call from RenderLayerModelObject::destroyLayer()

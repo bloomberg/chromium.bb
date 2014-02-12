@@ -292,6 +292,9 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, i
 
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
 {
+    // FIXME: canStartAnimationOnCompositor queries compositingState, which is not necessarily up to date.
+    DisableCompositingQueryAsserts disabler;
+
     if (!canStartAnimationOnCompositor(element)) {
         ASSERT_NOT_REACHED();
         return;

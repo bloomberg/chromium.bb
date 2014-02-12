@@ -47,6 +47,7 @@
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/animation/CSSPropertyAnimation.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/animation/TimingFunction.h"
@@ -441,6 +442,10 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
 
     m_previousCompositableValuesForAnimations.swap(update->compositableValuesForAnimations());
+
+    // FIXME: cancelling, pausing, unpausing animations all query compositingState, which is not necessarily up to date here
+    // since we call this from recalc style.
+    DisableCompositingQueryAsserts disabler;
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
         const HashSet<RefPtr<Player> >& players = m_animations.take(*iter);

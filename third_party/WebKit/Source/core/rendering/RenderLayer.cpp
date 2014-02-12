@@ -193,6 +193,8 @@ RenderLayerCompositor* RenderLayer::compositor() const
 
 void RenderLayer::contentChanged(ContentChangeType changeType)
 {
+    DisableCompositingQueryAsserts disabler;
+
     // This can get called when video becomes accelerated, so the layers may change.
     if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
         compositor()->updateLayerCompositingState(this);
@@ -211,6 +213,8 @@ bool RenderLayer::paintsWithFilters() const
     if (!renderer()->hasFilter())
         return false;
 
+    // FIXME: This is called from a bunch of places where compositingState is not necessarily up to date.
+    DisableCompositingQueryAsserts disabler;
     if (compositingState() != PaintsIntoOwnBacking)
         return true;
 
@@ -261,11 +265,6 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
 
 void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLayerPositionsFlags flags)
 {
-    // FIXME: really, we're in the 'update layer positions phase' here, and in this phase
-    // compositing state queries are illegal. Until those states are fully fledged, I will
-    // explicitly disallow compositing state queries.
-    TemporaryChange<CompositingQueryMode> enforcer(gCompositingQueryMode, CompositingQueriesAreDisallowed);
-
     updateLayerPosition(); // For relpositioned layers or non-positioned layers,
                            // we need to keep in sync, since we may have shifted relative
                            // to our parent layer.
@@ -494,6 +493,8 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
 
     if (flags & HasSeenViewportConstrainedAncestor
         || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip && !m_canSkipRepaintRectsUpdateOnScroll)) {
+        // FIXME: containerForRepaint queries compositingState, which is not necessarily up to date here.
+        DisableCompositingQueryAsserts disabler;
         // FIXME: We could track the repaint container as we walk down the tree.
         repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
     } else {
@@ -3373,6 +3374,7 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
     }
 
     LayoutRect unionBounds = boundingBoxRect;
+
     bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (transform() && flags & PretendLayerHasOwnBacking);
 
     if (flags & UseLocalClipRectIfPossible) {
@@ -3473,18 +3475,11 @@ CompositingState RenderLayer::compositingState() const
 
 bool RenderLayer::isAllowedToQueryCompositingState() const
 {
-#if STRICT_STATE_MACHINE
     if (gCompositingQueryMode == CompositingQueriesAreAllowed)
         return true;
 
-    if (gCompositingQueryMode == CompositingQueriesAreDisallowed)
-        return false;
-
-    return !renderer()->document().inStyleRecalc()
-        && !renderer()->frameView()->isInPerformLayout();
-#else
-    return true;
-#endif
+    // FIXME: This should be asserting that we're >= IncompositingUpdate.
+    return renderer()->document().lifecycle().state() > DocumentLifecycle::InPreLayout;
 }
 
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
@@ -3530,6 +3525,13 @@ bool RenderLayer::clipsCompositingDescendantsWithBorderRadius() const
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
     return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
+}
+
+bool RenderLayer::paintsWithBlendMode() const
+{
+    // FIXME: This is called from contexts where compositingState is not up to date.
+    DisableCompositingQueryAsserts disabler;
+    return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
 }
 
 bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
@@ -3835,9 +3837,14 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     bool didPaintWithFilters = false;
 
-    if (paintsWithFilters())
-        didPaintWithFilters = true;
-    updateFilters(oldStyle, renderer()->style());
+    {
+        // FIXME: We call this from within style recalc, but we read compositingState below!
+        DisableCompositingQueryAsserts disabler;
+        if (paintsWithFilters())
+            didPaintWithFilters = true;
+        updateFilters(oldStyle, renderer()->style());
+    }
+
 
     // FIXME: I assume that these geometry updates are done because they issue
     // invalidations as a side effect? It doesn't make sense that we would do

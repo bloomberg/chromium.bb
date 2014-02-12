@@ -1333,6 +1333,9 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
 
     if (v->usesCompositing()) {
         if (RenderLayer* parentLayer = enclosingLayer()) {
+            // FIXME: CompositingState is not necessarily up to date for many callers of this function.
+            DisableCompositingQueryAsserts disabler;
+
             RenderLayer* compLayer = parentLayer->enclosingCompositingLayerForRepaint();
             if (compLayer)
                 repaintContainer = compLayer->renderer();
@@ -1372,6 +1375,8 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         return;
     }
 
+    // FIXME: Don't read compositing state here since we do this in the middle of recalc/layout.
+    DisableCompositingQueryAsserts disabler;
     if (repaintContainer->compositingState() == PaintsIntoGroupedBacking) {
         ASSERT(repaintContainer->groupedMapping());
 
@@ -1786,6 +1791,9 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
+    // FIXME: We call this from within style recalc, but we read compositingState below!
+    DisableCompositingQueryAsserts disabler;
+
     // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
     // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
     // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding

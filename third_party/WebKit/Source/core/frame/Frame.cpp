@@ -58,6 +58,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -690,6 +691,9 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
+    // FIXME: updateControlTints calls paint, which depends on compositingState, which is
+    // not necessarily up to date after layout.
+    DisableCompositingQueryAsserts disabler;
     m_view->paintContents(buffer->context(), paintingRect);
 
     RefPtr<Image> image = buffer->copyImage();

@@ -64,6 +64,7 @@
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
 #include "core/page/Page.h"
+#include "core/rendering/RenderLayer.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
@@ -287,6 +288,8 @@ void InspectorController::evaluateForTestInFrontend(long callId, const String& s
 
 void InspectorController::drawHighlight(GraphicsContext& context) const
 {
+    // FIXME: paint depends on compositingState, which is  not necessarily up to date here.
+    DisableCompositingQueryAsserts disabler;
     m_overlay->paint(context);
 }
 

@@ -136,6 +136,9 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (!node())
         return false;
 
+    // FIXME: We call this when compositing state is not necessarily up to date.
+    DisableCompositingQueryAsserts disabler;
+
     IntRect clipRect = roundedIntRect(enclosingLayer()->clipper().childrenClipRect());
     IntRect newFrame = roundedIntRect(frame);
     bool clipChanged = m_clipRect != clipRect;
