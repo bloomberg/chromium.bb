@@ -112,9 +112,9 @@ void DebugRectHistory::SavePropertyChangedRects(
       if (layer->LayerPropertyChanged()) {
         debug_rects_.push_back(
             DebugRect(PROPERTY_CHANGED_RECT_TYPE,
-                      MathUtil::MapClippedRect(
+                      MathUtil::MapEnclosingClippedRect(
                           layer->screen_space_transform(),
-                          gfx::RectF(gfx::PointF(), layer->content_bounds()))));
+                          gfx::Rect(layer->content_bounds()))));
       }
     }
   }

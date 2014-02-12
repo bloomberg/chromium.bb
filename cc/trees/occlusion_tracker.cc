@@ -62,8 +62,8 @@ static gfx::Rect ScreenSpaceClipRectInTargetSurface(
           &inverse_screen_space_transform))
     return target_surface->content_rect();
 
-  return gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-      inverse_screen_space_transform, screen_space_clip_rect));
+  return MathUtil::ProjectEnclosingClippedRect(inverse_screen_space_transform,
+                                               screen_space_clip_rect);
 }
 
 template <typename RenderSurfaceType>
@@ -248,8 +248,8 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
   if (surface_rect.IsEmpty())
     return;
 
-  gfx::Rect affected_area_in_target = gfx::ToEnclosingRect(
-      MathUtil::MapClippedRect(surface_transform, gfx::RectF(surface_rect)));
+  gfx::Rect affected_area_in_target =
+      MathUtil::MapEnclosingClippedRect(surface_transform, surface_rect);
   if (contributing_layer->render_surface()->is_clipped()) {
     affected_area_in_target.Intersect(
         contributing_layer->render_surface()->clip_rect());
@@ -529,8 +529,8 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::Occluded(
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
+  Region unoccluded_region_in_target_surface =
+      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_inside_target);
   gfx::RectF unoccluded_rect_in_target_surface_without_outside_occlusion =
@@ -578,18 +578,17 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
+  Region unoccluded_region_in_target_surface =
+      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_inside_target);
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_outside_target);
 
-  gfx::RectF unoccluded_rect_in_target_surface =
+  gfx::Rect unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
-  gfx::Rect unoccluded_rect = gfx::ToEnclosingRect(
-      MathUtil::ProjectClippedRect(inverse_draw_transform,
-                                   unoccluded_rect_in_target_surface));
+  gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
+      inverse_draw_transform, unoccluded_rect_in_target_surface);
   unoccluded_rect.Intersect(content_rect);
 
   return unoccluded_rect;
@@ -636,8 +635,8 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
+  Region unoccluded_region_in_target_surface =
+      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
   // Layers can't clip across surfaces, so count this as internal occlusion.
   if (surface->is_clipped())
     unoccluded_region_in_target_surface.Intersect(surface->clip_rect());
@@ -657,11 +656,10 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
           contributing_surface_render_target->render_surface(),
           screen_space_clip_rect_));
 
-  gfx::RectF unoccluded_rect_in_target_surface =
+  gfx::Rect unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
-  gfx::Rect unoccluded_rect = gfx::ToEnclosingRect(
-      MathUtil::ProjectClippedRect(inverse_draw_transform,
-                                   unoccluded_rect_in_target_surface));
+  gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
+      inverse_draw_transform, unoccluded_rect_in_target_surface);
   unoccluded_rect.Intersect(content_rect);
 
   return unoccluded_rect;

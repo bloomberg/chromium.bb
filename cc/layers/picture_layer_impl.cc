@@ -340,9 +340,8 @@ void PictureLayerImpl::UpdateTilePriorities() {
   gfx::Rect viewport_in_content_space;
   gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
   if (screen_space_transform().GetInverse(&screen_to_layer)) {
-    viewport_in_content_space =
-        gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-            screen_to_layer, gfx::Rect(viewport_size)));
+    viewport_in_content_space = MathUtil::ProjectEnclosingClippedRect(
+        screen_to_layer, gfx::Rect(viewport_size));
   }
 
   WhichTree tree =

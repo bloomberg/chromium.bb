@@ -300,6 +300,7 @@
         'test/run_all_perftests.cc',
         'trees/layer_tree_host_common_perftest.cc',
         'trees/layer_tree_host_perftest.cc',
+        'trees/occlusion_tracker_perftest.cc',
       ],
       'include_dirs': [
         'test',

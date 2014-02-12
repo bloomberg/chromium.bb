@@ -665,8 +665,8 @@ static void AppendQuadsToFillScreen(
        fill_rects.next()) {
     // The root layer transform is composed of translations and scales only,
     // no perspective, so mapping is sufficient (as opposed to projecting).
-    gfx::Rect layer_rect =
-        MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
+    gfx::Rect layer_rect = MathUtil::MapEnclosingClippedRect(
+        transform_to_layer_space, fill_rects.rect());
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -678,8 +678,8 @@ static void AppendQuadsToFillScreen(
        fill_rects.has_rect();
        fill_rects.next()) {
     DCHECK(overhang_resource_id);
-    gfx::Rect layer_rect =
-        MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
+    gfx::Rect layer_rect = MathUtil::MapEnclosingClippedRect(
+        transform_to_layer_space, fill_rects.rect());
     scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
     const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
     tex_quad->SetNew(

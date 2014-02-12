@@ -1172,7 +1172,7 @@ class OcclusionTrackerTestSurfaceRotatedOffAxis
                                  typename Types::RenderSurfaceType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
-    gfx::Rect clipped_layer_in_child = MathUtil::MapClippedRect(
+    gfx::Rect clipped_layer_in_child = MathUtil::MapEnclosingClippedRect(
         layer_transform, layer->visible_content_rect());
 
     this->VisitLayer(layer, &occlusion);

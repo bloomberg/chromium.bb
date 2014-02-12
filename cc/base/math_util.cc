@@ -101,8 +101,15 @@ static inline void AddVertexToClippedQuad(const gfx::PointF& new_vertex,
   (*num_vertices_in_clipped_quad)++;
 }
 
-gfx::Rect MathUtil::MapClippedRect(const gfx::Transform& transform,
-                                   const gfx::Rect& src_rect) {
+gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
+                                            const gfx::Rect& src_rect) {
+  if (transform.IsIdentityOrIntegerTranslation()) {
+    return src_rect +
+           gfx::Vector2d(
+               static_cast<int>(SkMScalarToFloat(transform.matrix().get(0, 3))),
+               static_cast<int>(
+                   SkMScalarToFloat(transform.matrix().get(1, 3))));
+  }
   return gfx::ToEnclosingRect(MapClippedRect(transform, gfx::RectF(src_rect)));
 }
 
@@ -134,6 +141,19 @@ gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
   HomogeneousCoordinate hc2(result[8], result[9], result[10], result[11]);
   HomogeneousCoordinate hc3(result[12], result[13], result[14], result[15]);
   return ComputeEnclosingClippedRect(hc0, hc1, hc2, hc3);
+}
+
+gfx::Rect MathUtil::ProjectEnclosingClippedRect(const gfx::Transform& transform,
+                                                const gfx::Rect& src_rect) {
+  if (transform.IsIdentityOrIntegerTranslation()) {
+    return src_rect +
+           gfx::Vector2d(
+               static_cast<int>(SkMScalarToFloat(transform.matrix().get(0, 3))),
+               static_cast<int>(
+                   SkMScalarToFloat(transform.matrix().get(1, 3))));
+  }
+  return gfx::ToEnclosingRect(
+      ProjectClippedRect(transform, gfx::RectF(src_rect)));
 }
 
 gfx::RectF MathUtil::ProjectClippedRect(const gfx::Transform& transform,

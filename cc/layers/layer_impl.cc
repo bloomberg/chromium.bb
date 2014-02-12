@@ -253,9 +253,8 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
     gfx::Rect request_in_layer_space = request->area();
     gfx::Rect request_in_content_space =
         LayerRectToContentRect(request_in_layer_space);
-    request->set_area(
-        MathUtil::MapClippedRect(draw_properties_.target_space_transform,
-                                 request_in_content_space));
+    request->set_area(MathUtil::MapEnclosingClippedRect(
+        draw_properties_.target_space_transform, request_in_content_space));
   }
 
   layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);

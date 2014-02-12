@@ -360,9 +360,8 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   if (!root_scroll_layer || root_scroll_layer->children().empty())
     return gfx::Rect();
   LayerImpl* layer = root_scroll_layer->children()[0];
-  return MathUtil::MapClippedRect(
-      layer->screen_space_transform(),
-      gfx::Rect(layer->content_bounds()));
+  return MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
+                                           gfx::Rect(layer->content_bounds()));
 }
 
 static void ApplySentScrollDeltasFromAbortedCommitTo(LayerImpl* layer) {

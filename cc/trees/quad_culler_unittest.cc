@@ -84,7 +84,7 @@ class QuadCullerTest : public testing::Test {
       }
     }
 
-    gfx::Rect rect_in_target = MathUtil::MapClippedRect(
+    gfx::Rect rect_in_target = MathUtil::MapEnclosingClippedRect(
         layer->draw_transform(), layer->visible_content_rect());
     if (!parent) {
       layer->CreateRenderSurface();
@@ -94,7 +94,7 @@ class QuadCullerTest : public testing::Test {
     } else {
       layer->draw_properties().render_target = parent->render_target();
       parent->render_surface()->layer_list().push_back(layer.get());
-      rect_in_target.Union(MathUtil::MapClippedRect(
+      rect_in_target.Union(MathUtil::MapEnclosingClippedRect(
           parent->draw_transform(), parent->visible_content_rect()));
       parent->render_surface()->SetContentRect(rect_in_target);
     }

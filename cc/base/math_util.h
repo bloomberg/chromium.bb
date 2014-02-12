@@ -99,10 +99,12 @@ class CC_EXPORT MathUtil {
   //
   // These functions return the axis-aligned rect that encloses the correctly
   // clipped, transformed polygon.
-  static gfx::Rect MapClippedRect(const gfx::Transform& transform,
-                                  const gfx::Rect& rect);
+  static gfx::Rect MapEnclosingClippedRect(const gfx::Transform& transform,
+                                           const gfx::Rect& rect);
   static gfx::RectF MapClippedRect(const gfx::Transform& transform,
                                    const gfx::RectF& rect);
+  static gfx::Rect ProjectEnclosingClippedRect(const gfx::Transform& transform,
+                                               const gfx::Rect& rect);
   static gfx::RectF ProjectClippedRect(const gfx::Transform& transform,
                                        const gfx::RectF& rect);
 

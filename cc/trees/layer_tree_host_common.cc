@@ -97,8 +97,8 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
     return layer_bound_rect;
   }
 
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-      surface_to_layer, gfx::RectF(minimal_surface_rect)));
+  gfx::Rect layer_rect = MathUtil::ProjectEnclosingClippedRect(
+      surface_to_layer, minimal_surface_rect);
   layer_rect.Intersect(layer_bound_rect);
   return layer_rect;
 }
@@ -108,7 +108,7 @@ gfx::Rect LayerTreeHostCommon::CalculateVisibleRect(
     const gfx::Rect& layer_bound_rect,
     const gfx::Transform& transform) {
   gfx::Rect layer_in_surface_space =
-      MathUtil::MapClippedRect(transform, layer_bound_rect);
+      MathUtil::MapEnclosingClippedRect(transform, layer_bound_rect);
   return CalculateVisibleRectWithCachedLayerRect(
       target_surface_rect, layer_bound_rect, layer_in_surface_space, transform);
 }
@@ -1739,9 +1739,8 @@ static void CalculateDrawPropertiesInternal(
         // here, or DCHECK that the transform is invertible.
       }
 
-      gfx::Rect projected_surface_rect = gfx::ToEnclosingRect(
-          MathUtil::ProjectClippedRect(inverse_surface_draw_transform,
-                                       ancestor_clip_rect_in_target_space));
+      gfx::Rect projected_surface_rect = MathUtil::ProjectEnclosingClippedRect(
+          inverse_surface_draw_transform, ancestor_clip_rect_in_target_space);
 
       if (layer_draw_properties.num_unclipped_descendants > 0) {
         // If we have unclipped descendants, we cannot count on the render
