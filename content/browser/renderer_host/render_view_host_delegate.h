@@ -24,7 +24,7 @@ class GURL;
 class SkBitmap;
 class WebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_FrameNavigate_Params;
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct ViewMsg_PostMessage_Params;
 struct WebPreferences;
 
@@ -146,10 +146,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
-
-  // The RenderView was navigated to a different page.
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params) {}
 
   // The state for the page changed and should be updated.
   virtual void UpdateState(RenderViewHost* render_view_host,

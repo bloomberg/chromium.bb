@@ -8,8 +8,11 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_param.h"
+#include "content/common/navigation_gesture.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/page_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 
@@ -84,6 +87,71 @@ IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // True if the failure is the result of navigating to a POST again
   // and we're going to show the POST interstitial.
   IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
+IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
+  IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(base_url)
+  IPC_STRUCT_TRAITS_MEMBER(referrer)
+  IPC_STRUCT_TRAITS_MEMBER(transition)
+  IPC_STRUCT_TRAITS_MEMBER(redirects)
+  IPC_STRUCT_TRAITS_MEMBER(should_update_history)
+  IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
+  IPC_STRUCT_TRAITS_MEMBER(searchable_form_encoding)
+  IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(socket_address)
+IPC_STRUCT_TRAITS_END()
+
+// Parameters structure for FrameHostMsg_DidCommitProvisionalLoad, which has
+// too many data parameters to be reasonably put in a predefined IPC message.
+IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
+                             content::FrameNavigateParams)
+  IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
+  // The frame ID for this navigation. The frame ID uniquely identifies the
+  // frame the navigation happened in for a given renderer.
+  IPC_STRUCT_MEMBER(int64, frame_id)
+
+  // The WebFrame's uniqueName().
+  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
+
+  // Information regarding the security of the connection (empty if the
+  // connection was not secure).
+  IPC_STRUCT_MEMBER(std::string, security_info)
+
+  // The gesture that initiated this navigation.
+  IPC_STRUCT_MEMBER(content::NavigationGesture, gesture)
+
+  // True if this was a post request.
+  IPC_STRUCT_MEMBER(bool, is_post)
+
+  // The POST body identifier. -1 if it doesn't exist.
+  IPC_STRUCT_MEMBER(int64, post_id)
+
+  // Whether the frame navigation resulted in no change to the documents within
+  // the page. For example, the navigation may have just resulted in scrolling
+  // to a named anchor.
+  IPC_STRUCT_MEMBER(bool, was_within_same_page)
+
+  // The status code of the HTTP request.
+  IPC_STRUCT_MEMBER(int, http_status_code)
+
+  // True if the connection was proxied.  In this case, socket_address
+  // will represent the address of the proxy, rather than the remote host.
+  IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)
+
+  // Serialized history item state to store in the navigation entry.
+  IPC_STRUCT_MEMBER(content::PageState, page_state)
+
+  // Original request's URL.
+  IPC_STRUCT_MEMBER(GURL, original_request_url)
+
+  // User agent override used to navigate.
+  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
+
+  // Notifies the browser that for this navigation, the session history was
+  // successfully cleared.
+  IPC_STRUCT_MEMBER(bool, history_list_was_cleared)
 IPC_STRUCT_END()
 
 // -----------------------------------------------------------------------------
@@ -163,6 +231,12 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRedirectProvisionalLoad,
                     int /* page_id */,
                     GURL /* source_url*/,
                     GURL /* target_url */)
+
+// Notifies the browser that a frame in the view has changed. This message
+// has a lot of parameters and is packed/unpacked by functions defined in
+// render_messages.h.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidCommitProvisionalLoad,
+                    FrameHostMsg_DidCommitProvisionalLoad_Params)
 
 // Notifies the browser that a document has been loaded.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishDocumentLoad,

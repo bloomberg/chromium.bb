@@ -5,9 +5,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -971,7 +973,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
       pending_render_view_host());
 
   // Before that RVH has committed, the evil page reloads itself.
-  ViewHostMsg_FrameNavigate_Params params;
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 1;
   params.url = kUrl2;
   params.transition = PAGE_TRANSITION_CLIENT_REDIRECT;
@@ -980,7 +982,11 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
   params.was_within_same_page = false;
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(kUrl2);
-  contents()->DidNavigate(evil_rvh, params);
+
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(evil_rvh);
+  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
+      rvh->GetProcess()->GetID(), rvh->main_frame_routing_id());
+  contents()->GetFrameTree()->root()->navigator()->DidNavigate(rfh, params);
 
   // That should have cancelled the pending RVH, and the evil RVH should be the
   // current one.

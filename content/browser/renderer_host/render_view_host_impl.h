@@ -460,6 +460,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   int64 main_frame_id() const {
     return main_frame_id_;
   }
+  int main_frame_routing_id() const {
+    return main_frame_routing_id_;
+  }
 
   // Set the opener to null in the renderer process.
   void DisownOpener();
@@ -494,11 +497,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Whether the RVH is waiting for the unload ack from the renderer.
   bool IsWaitingForUnloadACK() const;
-
-  // Returns whether the given URL is allowed to commit in the current process.
-  // This is a more conservative check than RenderProcessHost::FilterURL, since
-  // it will be used to kill processes that commit unauthorized URLs.
-  bool CanCommitURL(const GURL& url);
 
   // Update the FrameTree to use this RenderViewHost's main frame
   // RenderFrameHost. Called when the RenderViewHost is committed.
@@ -640,6 +638,10 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
  private:
+  // TODO(nasko): Temporarily friend RenderFrameHostImpl, so we don't duplicate
+  // utility functions and state needed in both classes, while we move frame
+  // specific code away from this class.
+  friend class RenderFrameHostImpl;
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);

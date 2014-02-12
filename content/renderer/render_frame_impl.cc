@@ -11,6 +11,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/i18n/char_iterator.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/child/appcache/appcache_dispatcher.h"
@@ -30,6 +31,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
@@ -55,6 +57,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebGlyphCache.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -81,6 +84,7 @@ using blink::WebContextMenuData;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
+using blink::WebHistoryItem;
 using blink::WebNavigationPolicy;
 using blink::WebPluginParams;
 using blink::WebReferrerPolicy;
@@ -107,6 +111,36 @@ namespace {
 
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
+
+int64 ExtractPostId(const WebHistoryItem& item) {
+  if (item.isNull())
+    return -1;
+
+  if (item.httpBody().isNull())
+    return -1;
+
+  return item.httpBody().identifier();
+}
+
+WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
+    const WebURLResponse& response) {
+  return static_cast<WebURLResponseExtraDataImpl*>(
+      response.extraData());
+}
+
+void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
+  // Replace any occurrences of swappedout:// with about:blank.
+  const WebURL& blank_url = GURL(kAboutBlankURL);
+  WebVector<WebURL> urls;
+  ds->redirectChain(urls);
+  result->reserve(urls.size());
+  for (size_t i = 0; i < urls.size(); ++i) {
+    if (urls[i] != GURL(kSwappedOutURL))
+      result->push_back(urls[i]);
+    else
+      result->push_back(blank_url);
+  }
+}
 
 }  // namespace
 
@@ -944,7 +978,7 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     return;
   }
   std::vector<GURL> redirects;
-  RenderViewImpl::GetRedirectChain(data_source, &redirects);
+  GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
     Send(new FrameHostMsg_DidRedirectProvisionalLoad(
         routing_id_,
@@ -1057,20 +1091,94 @@ void RenderFrameImpl::didFailProvisionalLoad(
 
 void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
                                                bool is_new_navigation) {
-  // TODO(nasko): Move implementation here. Needed state:
-  // * page_id_
-  // * next_page_id_
-  // * history_list_offset_
-  // * history_list_length_
-  // * history_page_ids_
-  // Needed methods
-  // * webview
-  // * UpdateSessionHistory
-  // * GetLoadingUrl
-  render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  NavigationState* navigation_state = document_state->navigation_state();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
 
+  if (document_state->commit_load_time().is_null())
+    document_state->set_commit_load_time(Time::Now());
+
+  if (internal_data->must_reset_scroll_and_scale_state()) {
+    render_view_->webview()->resetScrollAndScaleState();
+    internal_data->set_must_reset_scroll_and_scale_state(false);
+  }
+  internal_data->set_use_error_page(false);
+
+  if (is_new_navigation) {
+    // When we perform a new navigation, we need to update the last committed
+    // session history entry with state for the page we are leaving.
+    render_view_->UpdateSessionHistory(frame);
+
+    // We bump our Page ID to correspond with the new session history entry.
+    render_view_->page_id_ = render_view_->next_page_id_++;
+
+    // Don't update history_page_ids_ (etc) for kSwappedOutURL, since
+    // we don't want to forget the entry that was there, and since we will
+    // never come back to kSwappedOutURL.  Note that we have to call
+    // UpdateSessionHistory and update page_id_ even in this case, so that
+    // the current entry gets a state update and so that we don't send a
+    // state update to the wrong entry when we swap back in.
+    if (render_view_->GetLoadingUrl(frame) != GURL(kSwappedOutURL)) {
+      // Advance our offset in session history, applying the length limit.
+      // There is now no forward history.
+      render_view_->history_list_offset_++;
+      if (render_view_->history_list_offset_ >= kMaxSessionHistoryEntries)
+        render_view_->history_list_offset_ = kMaxSessionHistoryEntries - 1;
+      render_view_->history_list_length_ =
+          render_view_->history_list_offset_ + 1;
+      render_view_->history_page_ids_.resize(
+          render_view_->history_list_length_, -1);
+      render_view_->history_page_ids_[render_view_->history_list_offset_] =
+          render_view_->page_id_;
+    }
+  } else {
+    // Inspect the navigation_state on this frame to see if the navigation
+    // corresponds to a session history navigation...  Note: |frame| may or
+    // may not be the toplevel frame, but for the case of capturing session
+    // history, the first committed frame suffices.  We keep track of whether
+    // we've seen this commit before so that only capture session history once
+    // per navigation.
+    //
+    // Note that we need to check if the page ID changed. In the case of a
+    // reload, the page ID doesn't change, and UpdateSessionHistory gets the
+    // previous URL and the current page ID, which would be wrong.
+    if (navigation_state->pending_page_id() != -1 &&
+        navigation_state->pending_page_id() != render_view_->page_id_ &&
+        !navigation_state->request_committed()) {
+      // This is a successful session history navigation!
+      render_view_->UpdateSessionHistory(frame);
+      render_view_->page_id_ = navigation_state->pending_page_id();
+
+      render_view_->history_list_offset_ =
+          navigation_state->pending_history_list_offset();
+
+      // If the history list is valid, our list of page IDs should be correct.
+      DCHECK(render_view_->history_list_length_ <= 0 ||
+             render_view_->history_list_offset_ < 0 ||
+             render_view_->history_list_offset_ >=
+                 render_view_->history_list_length_ ||
+             render_view_->history_page_ids_[render_view_->history_list_offset_]
+                  == render_view_->page_id_);
+    }
+  }
+
+  render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidCommitProvisionalLoad(is_new_navigation));
+
+  // Remember that we've already processed this request, so we don't update
+  // the session history again.  We do this regardless of whether this is
+  // a session history navigation, because if we attempted a session history
+  // navigation without valid HistoryItem state, WebCore will think it is a
+  // new navigation.
+  navigation_state->set_request_committed(true);
+
+  UpdateURL(frame);
+
+  // Check whether we have new encoding name.
+  render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame,
@@ -1169,9 +1277,21 @@ void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
 
 void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
                                             bool is_new_navigation) {
-  // TODO(nasko): Move implementation here. No state needed, just observers
-  // notification before sending message to the browser process.
-  render_view_->didNavigateWithinPage(frame, is_new_navigation);
+  // If this was a reference fragment navigation that we initiated, then we
+  // could end up having a non-null pending navigation params.  We just need to
+  // update the ExtraData on the datasource so that others who read the
+  // ExtraData will get the new NavigationState.  Similarly, if we did not
+  // initiate this navigation, then we need to take care to reset any pre-
+  // existing navigation state to a content-initiated navigation state.
+  // DidCreateDataSource conveniently takes care of this for us.
+  didCreateDataSource(frame, frame->dataSource());
+
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  NavigationState* new_state = document_state->navigation_state();
+  new_state->set_was_within_same_page(true);
+
+  didCommitProvisionalLoad(frame, is_new_navigation);
 }
 
 void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
@@ -1348,8 +1468,7 @@ void RenderFrameImpl::didReceiveResponse(
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
-  WebURLResponseExtraDataImpl* extra_data =
-      RenderViewImpl::GetExtraDataFromResponse(response);
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
   if (extra_data) {
     document_state->set_was_fetched_via_spdy(
         extra_data->was_fetched_via_spdy());
@@ -1658,6 +1777,179 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 
 void RenderFrameImpl::OnStop() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
+}
+
+// Tell the embedding application that the URL of the active page has changed.
+void RenderFrameImpl::UpdateURL(WebFrame* frame) {
+  WebDataSource* ds = frame->dataSource();
+  DCHECK(ds);
+
+  const WebURLRequest& request = ds->request();
+  const WebURLRequest& original_request = ds->originalRequest();
+  const WebURLResponse& response = ds->response();
+
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  NavigationState* navigation_state = document_state->navigation_state();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.http_status_code = response.httpStatusCode();
+  params.is_post = false;
+  params.post_id = -1;
+  params.page_id = render_view_->page_id_;
+  params.frame_id = frame->identifier();
+  params.frame_unique_name = frame->uniqueName();
+  params.socket_address.set_host(response.remoteIPAddress().utf8());
+  params.socket_address.set_port(response.remotePort());
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
+  if (extra_data)
+    params.was_fetched_via_proxy = extra_data->was_fetched_via_proxy();
+  params.was_within_same_page = navigation_state->was_within_same_page();
+  params.security_info = response.securityInfo();
+
+  // Set the URL to be displayed in the browser UI to the user.
+  params.url = render_view_->GetLoadingUrl(frame);
+  DCHECK(!is_swapped_out_ || params.url == GURL(kSwappedOutURL));
+
+  if (frame->document().baseURL() != params.url)
+    params.base_url = frame->document().baseURL();
+
+  GetRedirectChain(ds, &params.redirects);
+  params.should_update_history = !ds->hasUnreachableURL() &&
+      !response.isMultipartPayload() && (response.httpStatusCode() != 404);
+
+  params.searchable_form_url = internal_data->searchable_form_url();
+  params.searchable_form_encoding = internal_data->searchable_form_encoding();
+
+  params.gesture = render_view_->navigation_gesture_;
+  render_view_->navigation_gesture_ = NavigationGestureUnknown;
+
+  // Make navigation state a part of the DidCommitProvisionalLoad message so
+  // that commited entry has it at all times.
+  WebHistoryItem item = frame->currentHistoryItem();
+  if (item.isNull()) {
+    item.initialize();
+    item.setURLString(request.url().spec().utf16());
+  }
+  params.page_state = HistoryItemToPageState(item);
+
+  if (!frame->parent()) {
+    // Top-level navigation.
+
+    // Reset the zoom limits in case a plugin had changed them previously. This
+    // will also call us back which will cause us to send a message to
+    // update WebContentsImpl.
+    render_view_->webview()->zoomLimitsChanged(
+        ZoomFactorToZoomLevel(kMinimumZoomFactor),
+        ZoomFactorToZoomLevel(kMaximumZoomFactor));
+
+    // Set zoom level, but don't do it for full-page plugin since they don't use
+    // the same zoom settings.
+    HostZoomLevels::iterator host_zoom =
+        render_view_->host_zoom_levels_.find(GURL(request.url()));
+    if (render_view_->webview()->mainFrame()->document().isPluginDocument()) {
+      // Reset the zoom levels for plugins.
+      render_view_->webview()->setZoomLevel(0);
+    } else {
+      if (host_zoom != render_view_->host_zoom_levels_.end())
+        render_view_->webview()->setZoomLevel(host_zoom->second);
+    }
+
+    if (host_zoom != render_view_->host_zoom_levels_.end()) {
+      // This zoom level was merely recorded transiently for this load.  We can
+      // erase it now.  If at some point we reload this page, the browser will
+      // send us a new, up-to-date zoom level.
+      render_view_->host_zoom_levels_.erase(host_zoom);
+    }
+
+    // Update contents MIME type for main frame.
+    params.contents_mime_type = ds->response().mimeType().utf8();
+
+    params.transition = navigation_state->transition_type();
+    if (!PageTransitionIsMainFrame(params.transition)) {
+      // If the main frame does a load, it should not be reported as a subframe
+      // navigation.  This can occur in the following case:
+      // 1. You're on a site with frames.
+      // 2. You do a subframe navigation.  This is stored with transition type
+      //    MANUAL_SUBFRAME.
+      // 3. You navigate to some non-frame site, say, google.com.
+      // 4. You navigate back to the page from step 2.  Since it was initially
+      //    MANUAL_SUBFRAME, it will be that same transition type here.
+      // We don't want that, because any navigation that changes the toplevel
+      // frame should be tracked as a toplevel navigation (this allows us to
+      // update the URL bar, etc).
+      params.transition = PAGE_TRANSITION_LINK;
+    }
+
+    // If the page contained a client redirect (meta refresh, document.loc...),
+    // set the referrer and transition appropriately.
+    if (ds->isClientRedirect()) {
+      params.referrer =
+          Referrer(params.redirects[0], ds->request().referrerPolicy());
+      params.transition = static_cast<PageTransition>(
+          params.transition | PAGE_TRANSITION_CLIENT_REDIRECT);
+    } else {
+      params.referrer = RenderViewImpl::GetReferrerFromRequest(
+          frame, ds->request());
+    }
+
+    base::string16 method = request.httpMethod();
+    if (EqualsASCII(method, "POST")) {
+      params.is_post = true;
+      params.post_id = ExtractPostId(item);
+    }
+
+    // Send the user agent override back.
+    params.is_overriding_user_agent = internal_data->is_overriding_user_agent();
+
+    // Track the URL of the original request.  We use the first entry of the
+    // redirect chain if it exists because the chain may have started in another
+    // process.
+    if (params.redirects.size() > 0)
+      params.original_request_url = params.redirects.at(0);
+    else
+      params.original_request_url = original_request.url();
+
+    params.history_list_was_cleared =
+        navigation_state->history_list_was_cleared();
+
+    // Save some histogram data so we can compute the average memory used per
+    // page load of the glyphs.
+    UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
+                               blink::WebGlyphCache::pageCount());
+
+    // This message needs to be sent before any of allowScripts(),
+    // allowImages(), allowPlugins() is called for the new page, so that when
+    // these functions send a ViewHostMsg_ContentBlocked message, it arrives
+    // after the FrameHostMsg_DidCommitProvisionalLoad message.
+    Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
+  } else {
+    // Subframe navigation: the type depends on whether this navigation
+    // generated a new session history entry. When they do generate a session
+    // history entry, it means the user initiated the navigation and we should
+    // mark it as such. This test checks if this is the first time UpdateURL
+    // has been called since WillNavigateToURL was called to initiate the load.
+    if (render_view_->page_id_ > render_view_->last_page_id_sent_to_browser_)
+      params.transition = PAGE_TRANSITION_MANUAL_SUBFRAME;
+    else
+      params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
+
+    DCHECK(!navigation_state->history_list_was_cleared());
+    params.history_list_was_cleared = false;
+
+    // Don't send this message while the subframe is swapped out.
+    if (!is_swapped_out())
+      Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
+  }
+
+  render_view_->last_page_id_sent_to_browser_ =
+      std::max(render_view_->last_page_id_sent_to_browser_,
+               render_view_->page_id_);
+
+  // If we end up reusing this WebRequest (for example, due to a #ref click),
+  // we don't want the transition type to persist.  Just clear it.
+  navigation_state->set_transition_type(PAGE_TRANSITION_LINK);
 }
 
 }  // namespace content

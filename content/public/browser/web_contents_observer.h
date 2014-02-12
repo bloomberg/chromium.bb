@@ -9,6 +9,7 @@
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"

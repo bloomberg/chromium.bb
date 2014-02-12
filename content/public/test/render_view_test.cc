@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -334,7 +335,7 @@ void RenderViewTest::Reload(const GURL& url) {
 }
 
 uint32 RenderViewTest::GetNavigationIPCType() {
-  return ViewHostMsg_FrameNavigate::ID;
+  return FrameHostMsg_DidCommitProvisionalLoad::ID;
 }
 
 void RenderViewTest::Resize(gfx::Size new_size,

@@ -14,6 +14,7 @@ namespace content {
 
 class NavigationControllerImpl;
 class NavigatorDelegate;
+struct LoadCommittedDetails;
 
 // This class is an implementation of Navigator, responsible for managing
 // navigations in regular browser tabs.
@@ -44,6 +45,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) OVERRIDE;
+  virtual void DidNavigate(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params&
+          input_params) OVERRIDE;
   virtual bool NavigateToEntry(
       RenderFrameHostImpl* render_frame_host,
       const NavigationEntryImpl& entry,
@@ -55,6 +60,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
 
  private:
   virtual ~NavigatorImpl() {}
+
+  bool ShouldAssignSiteForURL(const GURL& url);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.
