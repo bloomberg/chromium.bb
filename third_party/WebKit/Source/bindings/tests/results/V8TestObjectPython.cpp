@@ -1458,7 +1458,7 @@ static void staticLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8
 static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    EventListener* jsValue = imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
+    EventListener* jsValue = imp->eventHandlerAttribute();
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -1472,8 +1472,8 @@ static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    moveEventListenerToNewWrapper(info.Holder(), imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
-    imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+    moveEventListenerToNewWrapper(info.Holder(), imp->eventHandlerAttribute(), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+    imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

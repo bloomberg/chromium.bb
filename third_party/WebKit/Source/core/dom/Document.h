@@ -80,7 +80,6 @@ class DOMImplementation;
 class DOMNamedFlowCollection;
 class DOMSelection;
 class DOMWindow;
-class DOMWrapperWorld;
 class Database;
 class DatabaseThread;
 class DocumentFragment;
@@ -676,8 +675,8 @@ public:
     DOMWindow* domWindow() const { return m_domWindow; }
 
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
-    void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
-    EventListener* getWindowAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
+    void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
+    EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
     PassRefPtr<Event> createEvent(const String& eventType, ExceptionState&);
     PassRefPtr<Event> createEvent(ExceptionState&);

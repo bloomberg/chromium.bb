@@ -179,6 +179,11 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ExecutionContex
     return v8::Local<v8::Object>::New(isolate, v8::Handle<v8::Object>::Cast(value));
 }
 
+bool V8AbstractEventListener::belongsToTheCurrentWorld() const
+{
+    return m_isolate->InContext() && m_world == DOMWrapperWorld::current(m_isolate);
+}
+
 void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackData<v8::Object, V8AbstractEventListener> &data)
 {
     data.GetParameter()->m_listener.clear();

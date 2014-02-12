@@ -116,8 +116,8 @@ public:
     virtual void uncaughtExceptionInEventHandler();
 
     // Used for legacy "onEvent" attribute APIs.
-    bool setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
-    EventListener* getAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld = 0);
+    bool setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
+    EventListener* getAttributeEventListener(const AtomicString& eventType);
 
     bool hasEventListeners() const;
     bool hasEventListeners(const AtomicString& eventType) const;
@@ -143,7 +143,7 @@ private:
     void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 
-    bool clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
+    bool clearAttributeEventListener(const AtomicString& eventType);
 
     friend class EventListenerIterator;
 };
@@ -159,47 +159,47 @@ private:
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.
 #define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(EventTypeNames::attribute, isolatedWorld); } \
-    void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld = 0) { setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); } \
+    EventListener* on##attribute() { return getAttributeEventListener(EventTypeNames::attribute); } \
+    void setOn##attribute(PassRefPtr<EventListener> listener) { setAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    static EventListener* on##attribute(EventTarget* eventTarget, DOMWrapperWorld* isolatedWorld) { return eventTarget->getAttributeEventListener(EventTypeNames::attribute, isolatedWorld); } \
-    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld = 0) { eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); } \
+    static EventListener* on##attribute(EventTarget* eventTarget) { return eventTarget->getAttributeEventListener(EventTypeNames::attribute); } \
+    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener) { eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return document().getWindowAttributeEventListener(EventTypeNames::attribute, isolatedWorld); } \
-    void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { document().setWindowAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); } \
+    EventListener* on##attribute() { return document().getWindowAttributeEventListener(EventTypeNames::attribute); } \
+    void setOn##attribute(PassRefPtr<EventListener> listener) { document().setWindowAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    static EventListener* on##attribute(EventTarget* eventTarget, DOMWrapperWorld* isolatedWorld) { \
+    static EventListener* on##attribute(EventTarget* eventTarget) { \
         if (Node* node = eventTarget->toNode()) \
-            return node->document().getWindowAttributeEventListener(EventTypeNames::attribute, isolatedWorld); \
+            return node->document().getWindowAttributeEventListener(EventTypeNames::attribute); \
         ASSERT(eventTarget->toDOMWindow()); \
-        return eventTarget->getAttributeEventListener(EventTypeNames::attribute, isolatedWorld); \
+        return eventTarget->getAttributeEventListener(EventTypeNames::attribute); \
     } \
-    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { \
+    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener) { \
         if (Node* node = eventTarget->toNode()) \
-            node->document().setWindowAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
+            node->document().setWindowAttributeEventListener(EventTypeNames::attribute, listener); \
         else { \
             ASSERT(eventTarget->toDOMWindow()); \
-            eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
+            eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener); \
         } \
     }
 
 #define DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(attribute, eventName) \
-    EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(EventTypeNames::eventName, isolatedWorld); } \
-    void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { setAttributeEventListener(EventTypeNames::eventName, listener, isolatedWorld); } \
+    EventListener* on##attribute() { return getAttributeEventListener(EventTypeNames::eventName); } \
+    void setOn##attribute(PassRefPtr<EventListener> listener) { setAttributeEventListener(EventTypeNames::eventName, listener); } \
 
 #define DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(recipient, attribute) \
-    EventListener* on##attribute(DOMWrapperWorld* isolatedWorld); \
-    void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld);
+    EventListener* on##attribute(); \
+    void setOn##attribute(PassRefPtr<EventListener> listener);
 
 #define DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(type, recipient, attribute) \
-    EventListener* type::on##attribute(DOMWrapperWorld* isolatedWorld) { return recipient ? recipient->getAttributeEventListener(EventTypeNames::attribute, isolatedWorld) : 0; } \
-    void type::setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) \
+    EventListener* type::on##attribute() { return recipient ? recipient->getAttributeEventListener(EventTypeNames::attribute) : 0; } \
+    void type::setOn##attribute(PassRefPtr<EventListener> listener) \
     { \
         if (recipient) \
-            recipient->setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
+            recipient->setAttributeEventListener(EventTypeNames::attribute, listener); \
     }
 
 inline bool EventTarget::hasEventListeners() const

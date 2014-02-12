@@ -502,7 +502,7 @@ static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSe
 static void eventHandlerAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    EventListener* jsValue = imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate()));
+    EventListener* jsValue = imp->eventHandlerAttr();
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -516,8 +516,8 @@ static void eventHandlerAttrAttributeGetterCallback(v8::Local<v8::String>, const
 static void eventHandlerAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    moveEventListenerToNewWrapper(info.Holder(), imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
-    imp->setEventHandlerAttr(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+    moveEventListenerToNewWrapper(info.Holder(), imp->eventHandlerAttr(), jsValue, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
+    imp->setEventHandlerAttr(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void eventHandlerAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

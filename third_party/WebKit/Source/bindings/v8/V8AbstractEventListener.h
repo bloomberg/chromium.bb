@@ -109,6 +109,7 @@ namespace WebCore {
             m_listener.clear();
         }
 
+        virtual bool belongsToTheCurrentWorld() const OVERRIDE FINAL;
         virtual DOMWrapperWorld* world() const OVERRIDE FINAL { return m_world.get(); }
         v8::Isolate* isolate() const { return m_isolate; }
 

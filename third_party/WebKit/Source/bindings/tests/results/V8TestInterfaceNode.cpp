@@ -119,7 +119,7 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local
 static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
-    EventListener* jsValue = imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
+    EventListener* jsValue = imp->eventHandlerAttribute();
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -133,7 +133,7 @@ static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
-    imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+    imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

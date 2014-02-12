@@ -1782,7 +1782,6 @@ END
         } else {
             $functionName = "imp->${functionName}";
         }
-        push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
         $code .= "    EventListener* jsValue = ${functionName}(" . join(", ", @arguments) . ");\n";
         $code .= "    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
     } else {
@@ -2134,7 +2133,6 @@ END
             } else {
                 $attrImplName = "imp->${attrImplName}";
             }
-            push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
             $code .= "    moveEventListenerToNewWrapper(info.Holder(), ${attrImplName}(" . join(", ", @arguments) . "), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
         }
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
@@ -2150,7 +2148,6 @@ END
         } else {
             push(@arguments, "V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)");
         }
-        push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
         $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
     } else {
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);

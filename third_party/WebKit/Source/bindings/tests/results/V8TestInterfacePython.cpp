@@ -307,7 +307,7 @@ static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>
 static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(imp, isolatedWorldForIsolate(info.GetIsolate()));
+    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(imp);
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -321,8 +321,8 @@ static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8:
 static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(imp, isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestInterfacePython::eventListenerCacheIndex, info.GetIsolate());
-    TestImplements::setImplementsEventHandlerAttribute(imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(imp), jsValue, V8TestInterfacePython::eventListenerCacheIndex, info.GetIsolate());
+    TestImplements::setImplementsEventHandlerAttribute(imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

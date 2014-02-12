@@ -90,12 +90,12 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE { close(); }
 
-    void setOnmessage(PassRefPtr<EventListener> listener, DOMWrapperWorld* world)
+    void setOnmessage(PassRefPtr<EventListener> listener)
     {
-        setAttributeEventListener(EventTypeNames::message, listener, world);
+        setAttributeEventListener(EventTypeNames::message, listener);
         start();
     }
-    EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(EventTypeNames::message, world); }
+    EventListener* onmessage() { return getAttributeEventListener(EventTypeNames::message); }
 
     // A port starts out its life entangled, and remains entangled until it is closed or is cloned.
     bool isEntangled() const { return !m_closed && !isNeutered(); }

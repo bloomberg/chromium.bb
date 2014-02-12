@@ -33,7 +33,6 @@
 #include "core/events/EventTarget.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
@@ -123,38 +122,28 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
     return true;
 }
 
-bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld)
+bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
 {
-    clearAttributeEventListener(eventType, isolatedWorld);
+    clearAttributeEventListener(eventType);
     if (!listener)
         return false;
     return addEventListener(eventType, listener, false);
 }
 
-EventListener* EventTarget::getAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld)
+EventListener* EventTarget::getAttributeEventListener(const AtomicString& eventType)
 {
     const EventListenerVector& entry = getEventListeners(eventType);
     for (size_t i = 0; i < entry.size(); ++i) {
         EventListener* listener = entry[i].listener.get();
-        if (listener->isAttribute()) {
-            DOMWrapperWorld* listenerWorld = listener->world();
-            // Worker listener
-            if (!listenerWorld) {
-                ASSERT(!isolatedWorld);
-                return listener;
-            }
-            if (listenerWorld->isMainWorld() && !isolatedWorld)
-                return listener;
-            if (listenerWorld == isolatedWorld)
-                return listener;
-        }
+        if (listener->isAttribute() && listener->belongsToTheCurrentWorld())
+            return listener;
     }
     return 0;
 }
 
-bool EventTarget::clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld)
+bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
 {
-    EventListener* listener = getAttributeEventListener(eventType, isolatedWorld);
+    EventListener* listener = getAttributeEventListener(eventType);
     if (!listener)
         return false;
     return removeEventListener(eventType, listener, false);

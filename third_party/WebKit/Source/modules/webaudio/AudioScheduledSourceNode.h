@@ -77,8 +77,8 @@ public:
     bool isPlayingOrScheduled() const { return m_playbackState == PLAYING_STATE || m_playbackState == SCHEDULED_STATE; }
     bool hasFinished() const { return m_playbackState == FINISHED_STATE; }
 
-    EventListener* onended(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(EventTypeNames::ended, isolatedWorld); }
-    void setOnended(PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
+    EventListener* onended() { return getAttributeEventListener(EventTypeNames::ended); }
+    void setOnended(PassRefPtr<EventListener>);
 
 protected:
     // Get frame information for the current time quantum.

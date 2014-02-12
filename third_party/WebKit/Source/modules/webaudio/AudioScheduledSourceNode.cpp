@@ -169,10 +169,10 @@ void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
     }
 }
 
-void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld)
+void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
 {
     m_hasEndedListener = listener;
-    setAttributeEventListener(EventTypeNames::ended, listener, isolatedWorld);
+    setAttributeEventListener(EventTypeNames::ended, listener);
 }
 
 void AudioScheduledSourceNode::finish()
