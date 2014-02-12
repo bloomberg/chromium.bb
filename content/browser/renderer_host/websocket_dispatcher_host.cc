@@ -125,8 +125,7 @@ WebSocketHostState WebSocketDispatcherHost::SendFlowControl(int routing_id,
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendClosing(int routing_id) {
-  // TODO(ricea): Implement the SendClosing IPC.
-  return WEBSOCKET_HOST_ALIVE;
+  return SendOrDrop(new WebSocketMsg_NotifyClosing(routing_id));
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendStartOpeningHandshake(

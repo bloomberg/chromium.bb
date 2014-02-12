@@ -68,6 +68,8 @@ bool WebSocketBridge::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(WebSocketMsg_SendFrame, DidReceiveData)
     IPC_MESSAGE_HANDLER(WebSocketMsg_FlowControl, DidReceiveFlowControl)
     IPC_MESSAGE_HANDLER(WebSocketMsg_DropChannel, DidClose)
+    IPC_MESSAGE_HANDLER(WebSocketMsg_NotifyClosing,
+                        DidStartClosingHandshake)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -186,6 +188,15 @@ void WebSocketBridge::DidClose(bool was_clean,
 
   WebString reason_to_pass = WebString::fromUTF8(reason);
   client->didClose(this, was_clean, code, reason_to_pass);
+  // |this| can be deleted here.
+}
+
+void WebSocketBridge::DidStartClosingHandshake() {
+  DVLOG(1) << "WebSocketBridge::DidStartClosingHandshake()";
+  if (!client_)
+    return;
+
+  client_->didStartClosingHandshake(this);
   // |this| can be deleted here.
 }
 

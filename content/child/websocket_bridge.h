@@ -55,6 +55,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
                       const std::vector<char>& data);
   void DidReceiveFlowControl(int64_t quota);
   void DidClose(bool was_clean, unsigned short code, const std::string& reason);
+  void DidStartClosingHandshake();
 
   int channel_id_;
   blink::WebSocketHandleClient* client_;

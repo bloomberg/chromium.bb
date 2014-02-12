@@ -150,3 +150,7 @@ IPC_MESSAGE_ROUTED3(WebSocketMsg_DropChannel,
                     bool /* was_clean */,
                     unsigned short /* code */,
                     std::string /* reason */)
+
+// Notify the renderer that a closing handshake has been initiated by the
+// server, so that it can set the Javascript readyState to CLOSING.
+IPC_MESSAGE_ROUTED0(WebSocketMsg_NotifyClosing)

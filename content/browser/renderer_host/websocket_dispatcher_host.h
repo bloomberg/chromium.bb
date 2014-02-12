@@ -81,7 +81,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   WebSocketHostState SendFlowControl(int routing_id,
                                      int64 quota) WARN_UNUSED_RESULT;
 
-  // Sends a WebSocketMsg_SendClosing IPC
+  // Sends a WebSocketMsg_NotifyClosing IPC
   WebSocketHostState SendClosing(int routing_id) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_NotifyStartOpeningHandshake IPC.

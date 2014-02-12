@@ -43,6 +43,7 @@ bool WebSocketDispatcher::OnMessageReceived(const IPC::Message& msg) {
     case WebSocketMsg_SendFrame::ID:
     case WebSocketMsg_FlowControl::ID:
     case WebSocketMsg_DropChannel::ID:
+    case WebSocketMsg_NotifyClosing::ID:
       break;
     default:
       return false;
