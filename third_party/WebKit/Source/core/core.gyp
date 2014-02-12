@@ -119,7 +119,6 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorCanvasInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorDatabaseInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
