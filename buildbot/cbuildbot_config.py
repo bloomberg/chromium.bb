@@ -1323,6 +1323,7 @@ internal_paladin.add_config('pre-cq-launcher',
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
   description='Launcher for Pre-CQ builders',
   trybot_list=False,
+  manifest_version=False,
 )
 
 internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
