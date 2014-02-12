@@ -152,7 +152,12 @@ void DefaultSystemTrayDelegate::ShowLocallyManagedUserInfo() {
 void DefaultSystemTrayDelegate::ShowUserLogin() {
 }
 
-void DefaultSystemTrayDelegate::ShowSpringChargerReplacementDialog() {
+bool DefaultSystemTrayDelegate::ShowSpringChargerReplacementDialog() {
+  return false;
+}
+
+bool DefaultSystemTrayDelegate::IsSpringChargerReplacementDialogVisible() {
+  return false;
 }
 
 bool DefaultSystemTrayDelegate::HasUserConfirmedSafeSpringCharger() {

@@ -49,7 +49,8 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowEnterpriseInfo() OVERRIDE;
   virtual void ShowLocallyManagedUserInfo() OVERRIDE;
   virtual void ShowUserLogin() OVERRIDE;
-  virtual void ShowSpringChargerReplacementDialog() OVERRIDE;
+  virtual bool ShowSpringChargerReplacementDialog() OVERRIDE;
+  virtual bool IsSpringChargerReplacementDialogVisible() OVERRIDE;
   virtual bool HasUserConfirmedSafeSpringCharger() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;

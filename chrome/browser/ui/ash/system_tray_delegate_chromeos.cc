@@ -647,13 +647,18 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
   }
 }
 
-void SystemTrayDelegateChromeOS::ShowSpringChargerReplacementDialog() {
+bool SystemTrayDelegateChromeOS::ShowSpringChargerReplacementDialog() {
   if (!ChargerReplacementDialog::ShouldShowDialog())
-    return;
+    return false;
 
   ChargerReplacementDialog* dialog =
       new ChargerReplacementDialog(GetNativeWindow());
   dialog->Show();
+  return true;
+}
+
+bool SystemTrayDelegateChromeOS::IsSpringChargerReplacementDialogVisible() {
+  return ChargerReplacementDialog::IsDialogVisible();
 }
 
 bool SystemTrayDelegateChromeOS::HasUserConfirmedSafeSpringCharger() {

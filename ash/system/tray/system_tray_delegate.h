@@ -207,7 +207,11 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual void ShowUserLogin() = 0;
 
   // Shows the spring charger replacement dialog if necessary.
-  virtual void ShowSpringChargerReplacementDialog() = 0;
+  // Returns true if the dialog is shown by the call.
+  virtual bool ShowSpringChargerReplacementDialog() = 0;
+
+  // True if the spring charger replacement dialog is visible.
+  virtual bool IsSpringChargerReplacementDialogVisible() = 0;
 
   // True if user has confirmed using safe spring charger.
   virtual bool HasUserConfirmedSafeSpringCharger() = 0;

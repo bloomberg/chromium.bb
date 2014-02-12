@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/power/tray_power.h"
 
+#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status_view.h"
@@ -15,6 +16,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/icu/source/i18n/unicode/fieldpos.h"
@@ -39,10 +41,19 @@ namespace ash {
 namespace internal {
 namespace tray {
 
+namespace {
+
+const int kMaxSpringChargerAccessibilityNotifyCount = 3;
+const int kSpringChargerAccessibilityTimerFirstTimeNotifyInSeconds = 30;
+const int kSpringChargerAccessibilityTimerRepeatInMinutes = 5;
+
+}
+
 // This view is used only for the tray.
 class PowerTrayView : public views::ImageView {
  public:
-  PowerTrayView() {
+  PowerTrayView()
+      : spring_charger_spoken_notification_count_(0) {
     UpdateImage();
   }
 
@@ -65,12 +76,57 @@ class PowerTrayView : public views::ImageView {
     }
   }
 
+  void SetupNotifyBadCharger() {
+    // Poll with a shorter duration timer to notify the charger issue
+    // for the first time after the charger dialog is displayed.
+    spring_charger_accessility_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(
+            kSpringChargerAccessibilityTimerFirstTimeNotifyInSeconds),
+        this, &PowerTrayView::NotifyChargerIssue);
+  }
+
  private:
   void UpdateImage() {
     SetImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_LIGHT));
   }
 
+  void NotifyChargerIssue() {
+    if (!Shell::GetInstance()->accessibility_delegate()->
+            IsSpokenFeedbackEnabled())
+      return;
+
+    if (!Shell::GetInstance()->system_tray_delegate()->
+            IsSpringChargerReplacementDialogVisible()) {
+      spring_charger_accessility_timer_.Stop();
+      return;
+    }
+
+    accessible_name_ =  ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_CHARGER_REPLACEMENT_ACCESSIBILTY_NOTIFICATION);
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    ++spring_charger_spoken_notification_count_;
+
+    if (spring_charger_spoken_notification_count_ == 1) {
+      // After notify the charger issue for the first time, repeat the
+      // notification with a longer duration timer.
+      spring_charger_accessility_timer_.Stop();
+      spring_charger_accessility_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMinutes(
+              kSpringChargerAccessibilityTimerRepeatInMinutes),
+          this, &PowerTrayView::NotifyChargerIssue);
+    } else if (spring_charger_spoken_notification_count_ >=
+        kMaxSpringChargerAccessibilityNotifyCount) {
+      spring_charger_accessility_timer_.Stop();
+    }
+  }
+
   base::string16 accessible_name_;
+
+  // Tracks how many times the original spring charger accessibility
+  // notification has been spoken.
+  int spring_charger_spoken_notification_count_;
+
+  base::RepeatingTimer<PowerTrayView> spring_charger_accessility_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };
@@ -169,8 +225,10 @@ void TrayPower::OnPowerStatusChanged() {
   RecordChargerType();
 
   if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
-    ash::Shell::GetInstance()->system_tray_delegate()->
-        ShowSpringChargerReplacementDialog();
+    if (ash::Shell::GetInstance()->system_tray_delegate()->
+            ShowSpringChargerReplacementDialog()) {
+      power_tray_->SetupNotifyBadCharger();
+    }
   }
 
   bool battery_alert = UpdateNotificationState();

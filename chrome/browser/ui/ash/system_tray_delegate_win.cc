@@ -154,7 +154,12 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   virtual void ShowUserLogin() OVERRIDE {
   }
 
-  virtual void ShowSpringChargerReplacementDialog() OVERRIDE {
+  virtual bool ShowSpringChargerReplacementDialog() OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsSpringChargerReplacementDialogVisible() OVERRIDE {
+    return false;
   }
 
   virtual bool HasUserConfirmedSafeSpringCharger() OVERRIDE {

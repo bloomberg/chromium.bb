@@ -21,6 +21,9 @@ class ChargerReplacementDialog : public ui::WebDialogDelegate {
   // True if ChargerReplacementDialog should be shown.
   static bool ShouldShowDialog();
 
+  // True if ChargerReplacementDialog is visible.
+  static bool IsDialogVisible();
+
   static void SetFocusOnChargerDialogIfVisible();
 
   void Show();

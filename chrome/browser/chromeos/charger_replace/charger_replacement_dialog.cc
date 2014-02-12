@@ -49,6 +49,7 @@ ChargerReplacementDialog::~ChargerReplacementDialog() {
   current_window_ = NULL;
 }
 
+// static
 bool ChargerReplacementDialog::ShouldShowDialog() {
   if (is_window_visible_)
     return false;
@@ -61,6 +62,11 @@ bool ChargerReplacementDialog::ShouldShowDialog() {
           ChargerReplacementHandler::CONFIRM_NEW_CHARGER_ORDERED_ONLINE ||
       charger_status ==
           ChargerReplacementHandler::CONFIRM_ORDER_NEW_CHARGER_BY_PHONE);
+}
+
+// static
+bool ChargerReplacementDialog::IsDialogVisible() {
+  return is_window_visible_;
 }
 
 void ChargerReplacementDialog::SetFocusOnChargerDialogIfVisible() {
