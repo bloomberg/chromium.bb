@@ -178,6 +178,7 @@ v8.log
 /sdch/open-vcdiff
 /seccompsandbox
 /skia/tools/clusterfuzz-data/
+/sync_testserver.log
 /testing/gmock
 /testing/gtest
 /testing/iossim/third_party/
