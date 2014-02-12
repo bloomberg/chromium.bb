@@ -28,6 +28,10 @@ class SpeedIndexMetric(Metric):
     with open(os.path.join(os.path.dirname(__file__), 'speedindex.js')) as f:
       self._js = f.read()
 
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
+    options.AppendExtraBrowserArgs('--disable-infobars')
+
   def Start(self, _, tab):
     """Start recording events.
 

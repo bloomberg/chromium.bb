@@ -107,6 +107,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
     if options.report_speed_index:
       self._report_speed_index = True
+      self._speedindex_metric.CustomizeBrowserOptions(options)
 
     cold_runs_percent_set = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
