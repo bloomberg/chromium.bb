@@ -22,7 +22,7 @@ using content::BrowserThread;
 namespace {
 
 const char kPrecacheFieldTrialName[] = "Precache";
-const char kPrecacheFieldTrialEnabledGroup[] = "PrecacheEnabled";
+const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
 
 }  // namespace
 
