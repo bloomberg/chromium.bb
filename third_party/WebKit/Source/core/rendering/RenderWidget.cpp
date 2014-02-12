@@ -153,9 +153,6 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     RefPtr<Node> protectedNode(node());
     m_widget->setFrameRect(newFrame);
 
-    if (clipChanged && !frameRectChanged)
-        m_widget->clipRectChanged();
-
     if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
         layer()->compositedLayerMapping()->updateAfterWidgetResize();
 

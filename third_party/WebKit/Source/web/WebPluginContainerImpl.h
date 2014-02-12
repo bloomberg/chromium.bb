@@ -93,7 +93,6 @@ public:
     virtual void setParentVisible(bool) OVERRIDE;
     virtual void setParent(WebCore::Widget*) OVERRIDE;
     virtual void widgetPositionsUpdated() OVERRIDE;
-    virtual void clipRectChanged() OVERRIDE;
     virtual bool isPluginContainer() const OVERRIDE { return true; }
     virtual void eventListenersRemoved() OVERRIDE;
 

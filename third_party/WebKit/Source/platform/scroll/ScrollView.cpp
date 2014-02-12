@@ -716,13 +716,6 @@ void ScrollView::frameRectsChanged()
         (*current)->frameRectsChanged();
 }
 
-void ScrollView::clipRectChanged()
-{
-    HashSet<RefPtr<Widget> >::const_iterator end = m_children.end();
-    for (HashSet<RefPtr<Widget> >::const_iterator current = m_children.begin(); current != end; ++current)
-        (*current)->clipRectChanged();
-}
-
 static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scrollbar)
 {
     if (!graphicsLayer || !scrollbar)

@@ -216,11 +216,6 @@ void WebPluginContainerImpl::widgetPositionsUpdated()
     reportGeometry();
 }
 
-void WebPluginContainerImpl::clipRectChanged()
-{
-    reportGeometry();
-}
-
 void WebPluginContainerImpl::eventListenersRemoved()
 {
     // We're no longer registered to receive touch events, so don't try to remove
