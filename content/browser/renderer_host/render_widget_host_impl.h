@@ -395,8 +395,18 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return accessibility_mode_;
   }
 
-  // Send a message to the renderer process to change the accessibility mode.
-  void SetAccessibilityMode(AccessibilityMode mode);
+  // Adds the given accessibility mode to the current accessibility mode bitmap.
+  void AddAccessibilityMode(AccessibilityMode mode);
+
+  // Removes the given accessibility mode from the current accessibility mode
+  // bitmap, managing the bits that are shared with other modes such that a
+  // bit will only be turned off when all modes that depend on it have been
+  // removed.
+  void RemoveAccessibilityMode(AccessibilityMode mode);
+
+  // Resets the accessibility mode to the default setting in
+  // BrowserStateAccessibilityImpl.
+  void ResetAccessibilityMode();
 
   // Relay a request from assistive technology to perform the default action
   // on a given node.
@@ -750,6 +760,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void DelayedAutoResized();
 
   void WindowSnapshotReachedScreen(int snapshot_id);
+
+  // Send a message to the renderer process to change the accessibility mode.
+  void SetAccessibilityMode(AccessibilityMode AccessibilityMode);
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.

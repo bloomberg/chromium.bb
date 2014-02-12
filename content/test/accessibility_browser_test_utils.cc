@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/view_message_enums.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -32,7 +33,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
   view_host_->SetAccessibilityCallbackForTesting(
       base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));
-  view_host_->SetAccessibilityMode(accessibility_mode);
+  view_host_->AddAccessibilityMode(accessibility_mode);
 }
 
 AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {

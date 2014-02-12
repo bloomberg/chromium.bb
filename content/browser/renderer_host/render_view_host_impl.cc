@@ -1985,7 +1985,8 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 
 void RenderViewHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  if (view_ && IsRVHStateActive(rvh_state_)) {
+  if ((accessibility_mode() & AccessibilityModeFlagPlatform) && view_ &&
+      IsRVHStateActive(rvh_state_)) {
     view_->CreateBrowserAccessibilityManagerIfNeeded();
     BrowserAccessibilityManager* manager =
         view_->GetBrowserAccessibilityManager();

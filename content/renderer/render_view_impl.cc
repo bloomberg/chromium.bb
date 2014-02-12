@@ -1042,7 +1042,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool hidden,
     int32 next_page_id,
     const blink::WebScreenInfo& screen_info,
-    AccessibilityMode accessibility_mode,
+    unsigned int accessibility_mode,
     bool allow_partial_swap) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(
@@ -4846,7 +4846,7 @@ void RenderViewImpl::OnSetBackground(const SkBitmap& background) {
   SetBackground(background);
 }
 
-void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
+void RenderViewImpl::OnSetAccessibilityMode(unsigned int new_mode) {
   if (accessibility_mode_ == new_mode)
     return;
   accessibility_mode_ = new_mode;
@@ -4854,10 +4854,13 @@ void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     delete renderer_accessibility_;
     renderer_accessibility_ = NULL;
   }
-  if (accessibility_mode_ == AccessibilityModeComplete)
+  if (accessibility_mode_ == AccessibilityModeOff)
+    return;
+
+  if (accessibility_mode_ & AccessibilityModeFlagPlatformFullTree)
     renderer_accessibility_ = new RendererAccessibilityComplete(this);
 #if !defined(OS_ANDROID)
-  else if (accessibility_mode_ == AccessibilityModeEditableTextOnly)
+  else
     renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
 #endif
 }
@@ -5624,7 +5627,10 @@ bool RenderViewImpl::didTapMultipleTargets(
     const WebVector<WebRect>& target_rects) {
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
-  if (accessibility_mode_ == AccessibilityModeComplete)
+  bool matchesAccessibilityModeComplete =
+      (accessibility_mode_ & AccessibilityModeComplete) ==
+      AccessibilityModeComplete;
+  if (matchesAccessibilityModeComplete)
     return false;
 
   gfx::Rect finger_rect(

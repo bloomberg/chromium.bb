@@ -192,7 +192,7 @@ class CONTENT_EXPORT RenderViewImpl
       bool hidden,
       int32 next_page_id,
       const blink::WebScreenInfo& screen_info,
-      AccessibilityMode accessibility_mode,
+      unsigned int accessibility_mode,
       bool allow_partial_swap);
 
   // Used by content_layouttest_support to hook into the creation of
@@ -936,7 +936,7 @@ class CONTENT_EXPORT RenderViewImpl
                            const base::string16& jscript,
                            int id,
                            bool notify_result);
-  void OnSetAccessibilityMode(AccessibilityMode new_mode);
+  void OnSetAccessibilityMode(unsigned int new_mode);
   void OnSetActive(bool active);
   void OnSetBackground(const SkBitmap& background);
   void OnSetCompositionFromExistingText(
@@ -1330,7 +1330,7 @@ class CONTENT_EXPORT RenderViewImpl
   DevToolsAgent* devtools_agent_;
 
   // The current accessibility mode.
-  AccessibilityMode accessibility_mode_;
+  unsigned int accessibility_mode_;
 
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.

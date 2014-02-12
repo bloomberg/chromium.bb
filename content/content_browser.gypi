@@ -205,6 +205,8 @@
     'public/browser/worker_service.h',
     'public/browser/worker_service_observer.h',
     'public/browser/zygote_host_linux.h',
+    'browser/accessibility/accessibility_mode_helper.cc',
+    'browser/accessibility/accessibility_mode_helper.h',
     'browser/accessibility/accessibility_tree_formatter.cc',
     'browser/accessibility/accessibility_tree_formatter.h',
     'browser/accessibility/accessibility_tree_formatter_android.cc',

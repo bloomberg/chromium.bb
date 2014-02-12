@@ -53,19 +53,29 @@ struct ViewMsg_Navigate_Type {
   };
 };
 
+enum AccessibilityModeFlag {
+  // Accessibility updates are processed to create platform trees and events are
+  // passed to platform APIs in the browser.
+  AccessibilityModeFlagPlatform = 1 << 0,
+
+  // Accessibility is on, and the full tree is computed. If this flag is off,
+  // only limited information about editable text nodes is sent to the browser
+  // process. Useful for implementing limited UIA on tablets.
+  AccessibilityModeFlagPlatformFullTree = 1 << 1,
+};
+
 enum AccessibilityMode {
-  // WebKit accessibility is off and no accessibility information is
-  // sent from the renderer to the browser process.
-  AccessibilityModeOff,
+  // All accessibility is off.
+  AccessibilityModeOff = 0,
 
-  // WebKit accessibility is on, but only limited information about
-  // editable text nodes is sent to the browser process. Useful for
-  // implementing limited UIA on tablets.
-  AccessibilityModeEditableTextOnly,
+  // Renderer accessibility is on, and platform APIs are called. Note that this
+  // is different to AccessibilityModeAll, which is defined to be all bits on.
+  AccessibilityModeComplete =
+      AccessibilityModeFlagPlatform | AccessibilityModeFlagPlatformFullTree,
 
-  // WebKit accessibility is on, and the full accessibility tree is synced
-  // to the browser process. Useful for screen readers and magnifiers.
-  AccessibilityModeComplete,
+  // Renderer accessibility is on, platform APIs are called, but only limited
+  // information is available (see AccessibilityModeFlagEditableTextOnly).
+  AccessibilityModeEditableTextOnly = AccessibilityModeFlagPlatform
 };
 
 #endif  // CONTENT_COMMON_VIEW_MESSAGES_ENUMS_H_

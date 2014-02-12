@@ -109,7 +109,7 @@ void SendTargetsData(
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->Set("list", rvh_list.release());
-  scoped_ptr<base::FundamentalValue> a11y_mode(new base::FundamentalValue(
+  scoped_ptr<base::FundamentalValue> a11y_mode(base::Value::CreateIntegerValue(
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()));
   data->Set("global_a11y_mode", a11y_mode.release());
 
@@ -186,19 +186,19 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
     return;
   AccessibilityMode mode = rwhi->accessibility_mode();
   if (mode == AccessibilityModeOff)
-    rwhi->SetAccessibilityMode(AccessibilityModeComplete);
+    rwhi->AddAccessibilityMode(AccessibilityModeComplete);
   else
-    rwhi->SetAccessibilityMode(AccessibilityModeOff);
+    rwhi->ResetAccessibilityMode();
 }
 
 void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
   BrowserAccessibilityStateImpl* state =
       BrowserAccessibilityStateImpl::GetInstance();
   AccessibilityMode mode = state->accessibility_mode();
-  AccessibilityMode new_mode = (mode == AccessibilityModeOff
-                                ? AccessibilityModeComplete
-                                : AccessibilityModeOff);
-  state->SetAccessibilityMode(new_mode);
+  if (mode == AccessibilityModeOff)
+    state->EnableAccessibility();
+  else
+    state->DisableAccessibility();
 }
 
 void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {

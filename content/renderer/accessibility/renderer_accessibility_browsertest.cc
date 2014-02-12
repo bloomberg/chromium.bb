@@ -67,7 +67,7 @@ class RendererAccessibilityTest : public RenderViewTest {
     sink_ = &render_thread_->sink();
   }
 
-  void SetMode(AccessibilityMode mode) {
+  void SetMode(unsigned int mode) {
     view()->OnSetAccessibilityMode(mode);
   }
 

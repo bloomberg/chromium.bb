@@ -15,6 +15,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_tree.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>

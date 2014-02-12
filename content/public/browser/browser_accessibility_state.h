@@ -24,8 +24,14 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Enables accessibility for all running tabs.
   virtual void EnableAccessibility() = 0;
 
-  // Disables accessibility for all running tabs.
+  // Disables accessibility for all running tabs. (Only if accessibility is not
+  // required by a command line flag or by a platform requirement.)
   virtual void DisableAccessibility() = 0;
+
+  // Resets accessibility to the platform default for all running tabs.
+  // This is probably off, but may be on, if --force_renderer_accessibility is
+  // passed, or EditableTextOnly if this is Win7.
+  virtual void ResetAccessibilityMode() = 0;
 
   // Called when screen reader client is detected.
   virtual void OnScreenReaderDetected() = 0;

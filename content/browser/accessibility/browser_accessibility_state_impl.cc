@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/timer.h"
+#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,21 +38,7 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
       accessibility_mode_(AccessibilityModeOff) {
-#if defined(OS_WIN)
-  // On Windows 8, always enable accessibility for editable text controls
-  // so we can show the virtual keyboard when one is enabled.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRendererAccessibility)) {
-    accessibility_mode_ = AccessibilityModeEditableTextOnly;
-  }
-#endif  // defined(OS_WIN)
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = AccessibilityModeComplete;
-  }
-
+  ResetAccessibilityModeValue();
 #if defined(OS_WIN)
   // On Windows, UpdateHistograms calls some system functions with unknown
   // runtime, so call it on the file thread to ensure there's no jank.
@@ -76,24 +63,58 @@ BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
 }
 
 void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRendererAccessibility)) {
-    return;
-  }
-  SetAccessibilityMode(AccessibilityModeComplete);
+  AddAccessibilityMode(AccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::EnableAccessibility() {
   // We may want to do something different with this later.
-  SetAccessibilityMode(AccessibilityModeComplete);
+  AddAccessibilityMode(AccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::DisableAccessibility() {
-  SetAccessibilityMode(AccessibilityModeOff);
+  ResetAccessibilityMode();
+}
+
+void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
+  accessibility_mode_ = AccessibilityModeOff;
+#if defined(OS_WIN)
+  // On Windows 8, always enable accessibility for editable text controls
+  // so we can show the virtual keyboard when one is enabled.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    accessibility_mode_ = AccessibilityModeEditableTextOnly;
+  }
+#endif  // defined(OS_WIN)
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceRendererAccessibility)) {
+    accessibility_mode_ = AccessibilityModeComplete;
+  }
+}
+
+void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
+  ResetAccessibilityModeValue();
+
+  // Iterate over all RenderWidgetHosts, even swapped out ones in case
+  // they become active again.
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+    // Ignore processes that don't have a connection, such as crashed tabs.
+    if (!widget->GetProcess()->HasConnection())
+      continue;
+    if (!widget->IsRenderView())
+      continue;
+
+    RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
+    rwhi->ResetAccessibilityMode();
+  }
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
-  return (accessibility_mode_ == AccessibilityModeComplete);
+  return ((accessibility_mode_ & AccessibilityModeComplete) ==
+          AccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::AddHistogramCallback(
@@ -124,12 +145,36 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif
 
-void BrowserAccessibilityStateImpl::SetAccessibilityMode(
+void BrowserAccessibilityStateImpl::AddAccessibilityMode(
     AccessibilityMode mode) {
-  if (accessibility_mode_ == mode)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
     return;
-  accessibility_mode_ = mode;
+  }
 
+  accessibility_mode_ =
+      content::AddAccessibilityModeTo(accessibility_mode_, mode);
+
+  AddOrRemoveFromRenderWidgets(mode, true);
+}
+
+void BrowserAccessibilityStateImpl::RemoveAccessibilityMode(
+    AccessibilityMode mode) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceRendererAccessibility) &&
+      mode == AccessibilityModeComplete) {
+    return;
+  }
+
+  accessibility_mode_ =
+      content::RemoveAccessibilityModeFrom(accessibility_mode_, mode);
+
+  AddOrRemoveFromRenderWidgets(mode, false);
+}
+
+void BrowserAccessibilityStateImpl::AddOrRemoveFromRenderWidgets(
+    AccessibilityMode mode,
+    bool add) {
   // Iterate over all RenderWidgetHosts, even swapped out ones in case
   // they become active again.
   scoped_ptr<RenderWidgetHostIterator> widgets(
@@ -141,7 +186,11 @@ void BrowserAccessibilityStateImpl::SetAccessibilityMode(
     if (!widget->IsRenderView())
       continue;
 
-    RenderWidgetHostImpl::From(widget)->SetAccessibilityMode(mode);
+    RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
+    if (add)
+      rwhi->AddAccessibilityMode(mode);
+    else
+      rwhi->RemoveAccessibilityMode(mode);
   }
 }
 

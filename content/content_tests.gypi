@@ -336,6 +336,7 @@
         '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems_unittest.cc.
       ],
       'sources': [
+        'browser/accessibility/accessibility_mode_helper_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',

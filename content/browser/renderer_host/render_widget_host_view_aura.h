@@ -342,7 +342,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Method to indicate if this instance is shutting down or closing.
   // TODO(shrikant): Discuss around to see if it makes sense to add this method
   // as part of RenderWidgetHostView.
-  bool IsClosing() const { return in_shutdown_; };
+  bool IsClosing() const { return in_shutdown_; }
 
  protected:
   friend class RenderWidgetHostView;

@@ -24,6 +24,7 @@
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -937,7 +938,7 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
 }
 
 void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
-  SetAccessibilityMode(AccessibilityModeComplete);
+  AddAccessibilityMode(AccessibilityModeComplete);
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -2146,6 +2147,21 @@ void RenderWidgetHostImpl::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& commands) {
   Send(new InputMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
+}
+
+void RenderWidgetHostImpl::AddAccessibilityMode(AccessibilityMode mode) {
+  SetAccessibilityMode(
+      content::AddAccessibilityModeTo(accessibility_mode_, mode));
+}
+
+void RenderWidgetHostImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
+  SetAccessibilityMode(
+      content::RemoveAccessibilityModeFrom(accessibility_mode_, mode));
+}
+
+void RenderWidgetHostImpl::ResetAccessibilityMode() {
+  SetAccessibilityMode(
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
 }
 
 void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {

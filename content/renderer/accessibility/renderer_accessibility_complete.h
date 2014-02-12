@@ -131,9 +131,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // is fixed.
   gfx::Size last_scroll_offset_;
 
-  // The current accessibility mode.
-  AccessibilityMode mode_;
-
   // Set if we are waiting for an accessibility event ack.
   bool ack_pending_;
 
