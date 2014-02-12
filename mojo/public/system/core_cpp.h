@@ -190,37 +190,19 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedMessagePipeHandle) ==
                         sizeof(MessagePipeHandle),
                     bad_size_for_cpp_ScopedMessagePipeHandle);
 
-// TODO(vtl): In C++11, we could instead return a pair of
-// |ScopedMessagePipeHandle|s.
-inline void CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
-                              ScopedMessagePipeHandle* message_pipe1) {
+inline MojoResult CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
+                                    ScopedMessagePipeHandle* message_pipe1) {
   assert(message_pipe0);
   assert(message_pipe1);
-  MessagePipeHandle h0;
-  MessagePipeHandle h1;
-  MojoResult result MOJO_ALLOW_UNUSED =
-      MojoCreateMessagePipe(h0.mutable_value(), h1.mutable_value());
-  assert(result == MOJO_RESULT_OK);
-  message_pipe0->reset(h0);
-  message_pipe1->reset(h1);
-}
-
-// A wrapper class that automatically creates a message pipe and owns both
-// handles.
-class MessagePipe {
- public:
-  MessagePipe();
-  ~MessagePipe();
-
-  ScopedMessagePipeHandle handle0;
-  ScopedMessagePipeHandle handle1;
-};
-
-inline MessagePipe::MessagePipe() {
-  CreateMessagePipe(&handle0, &handle1);
-}
-
-inline MessagePipe::~MessagePipe() {
+  MessagePipeHandle handle0;
+  MessagePipeHandle handle1;
+  MojoResult rv = MojoCreateMessagePipe(handle0.mutable_value(),
+                                        handle1.mutable_value());
+  // Reset even on failure (reduces the chances that a "stale"/incorrect handle
+  // will be used).
+  message_pipe0->reset(handle0);
+  message_pipe1->reset(handle1);
+  return rv;
 }
 
 // These "raw" versions fully expose the underlying API, but don't help with
@@ -244,6 +226,25 @@ inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
                                  MojoReadMessageFlags flags) {
   return MojoReadMessage(message_pipe.value(), bytes, num_bytes, handles,
                          num_handles, flags);
+}
+
+// A wrapper class that automatically creates a message pipe and owns both
+// handles.
+class MessagePipe {
+ public:
+  MessagePipe();
+  ~MessagePipe();
+
+  ScopedMessagePipeHandle handle0;
+  ScopedMessagePipeHandle handle1;
+};
+
+inline MessagePipe::MessagePipe() {
+  MojoResult result MOJO_ALLOW_UNUSED = CreateMessagePipe(&handle0, &handle1);
+  assert(result == MOJO_RESULT_OK);
+}
+
+inline MessagePipe::~MessagePipe() {
 }
 
 // DataPipeProducerHandle and DataPipeConsumerHandle ---------------------------
@@ -353,11 +354,15 @@ class DataPipe {
 };
 
 inline DataPipe::DataPipe() {
-  CreateDataPipe(NULL, &producer_handle, &consumer_handle);
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateDataPipe(NULL, &producer_handle, &consumer_handle);
+  assert(result == MOJO_RESULT_OK);
 }
 
 inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
-  CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  assert(result == MOJO_RESULT_OK);
 }
 
 inline DataPipe::~DataPipe() {
