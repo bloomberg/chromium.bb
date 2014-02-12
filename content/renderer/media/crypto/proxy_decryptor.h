@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -140,6 +141,8 @@ class ProxyDecryptor {
   static uint32 next_session_id_;
 
   SessionIdMap sessions_;
+
+  std::set<uint32> persistent_sessions_;
 
   bool is_clear_key_;
 

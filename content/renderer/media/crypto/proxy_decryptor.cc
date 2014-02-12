@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 
+#include <cstring>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -24,6 +26,11 @@ namespace content {
 uint32 ProxyDecryptor::next_session_id_ = 100000;
 
 const uint32 kInvalidSessionId = 0;
+
+// Special system code to signal a closed persistent session in a SessionError()
+// call. This is needed because there is no SessionClosed() call in the prefixed
+// EME API.
+const int kSessionClosedSystemCode = 7 * 1024 * 1024 + 7;
 
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
@@ -83,29 +90,35 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
   return true;
 }
 
+// Returns true if |data| is prefixed with |header| and has data after the
+// |header|.
+bool HasHeader(const uint8* data, int data_length, const std::string& header) {
+  return static_cast<size_t>(data_length) > header.size() &&
+         std::equal(data, data + header.size(), header.begin());
+}
+
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& content_type,
                                         const uint8* init_data,
                                         int init_data_length) {
   // Use a unique reference id for this request.
   uint32 session_id = next_session_id_++;
 
-  const uint8 kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
-  const int kPrefixedApiLoadSessionHeaderLength =
-      sizeof(kPrefixedApiLoadSessionHeader) - 1;
+  const char kPrefixedApiPersistentSessionHeader[] = "PERSISTENT|";
+  const char kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
 
-  if (init_data_length > kPrefixedApiLoadSessionHeaderLength &&
-      std::equal(init_data,
-                 init_data + kPrefixedApiLoadSessionHeaderLength,
-                 kPrefixedApiLoadSessionHeader)) {
-    // TODO(xhwang): Track loadable session to handle OnSessionClosed().
-    // See: http://crbug.com/340859.
+  if (HasHeader(init_data, init_data_length, kPrefixedApiLoadSessionHeader)) {
+    persistent_sessions_.insert(session_id);
     media_keys_->LoadSession(
         session_id,
         std::string(reinterpret_cast<const char*>(
-                        init_data + kPrefixedApiLoadSessionHeaderLength),
-                    init_data_length - kPrefixedApiLoadSessionHeaderLength));
+                        init_data + strlen(kPrefixedApiLoadSessionHeader)),
+                    init_data_length - strlen(kPrefixedApiLoadSessionHeader)));
     return true;
   }
+
+  if (HasHeader(
+          init_data, init_data_length, kPrefixedApiPersistentSessionHeader))
+    persistent_sessions_.insert(session_id);
 
   return media_keys_->CreateSession(
       session_id, content_type, init_data, init_data_length);
@@ -219,7 +232,14 @@ void ProxyDecryptor::OnSessionReady(uint32 session_id) {
 }
 
 void ProxyDecryptor::OnSessionClosed(uint32 session_id) {
-  // No closed event in EME v0.1b.
+  std::set<uint32>::iterator it = persistent_sessions_.find(session_id);
+  if (it != persistent_sessions_.end()) {
+    persistent_sessions_.erase(it);
+    OnSessionError(
+        session_id, media::MediaKeys::kUnknownError, kSessionClosedSystemCode);
+  }
+
+  sessions_.erase(session_id);
 }
 
 void ProxyDecryptor::OnSessionError(uint32 session_id,
