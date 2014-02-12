@@ -57,7 +57,7 @@ class LayerScrollOffsetDelegateProxy : public LayerScrollOffsetDelegate {
     NOTIMPLEMENTED();
   }
 
-  virtual void SetTotalPageScaleFactor(float scale) OVERRIDE {
+  virtual void SetTotalPageScaleFactorAndLimits(float, float, float) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
@@ -303,8 +303,10 @@ void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
   page_scale_factor_ = page_scale_factor;
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
-        total_page_scale_factor());
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+        total_page_scale_factor(),
+        this->min_page_scale_factor(),
+        this->max_page_scale_factor());
   }
 
   ForceScrollbarParameterUpdateAfterScaleChange(page_scale_layer());
@@ -335,8 +337,10 @@ void LayerTreeImpl::SetPageScaleDelta(float delta) {
   set_needs_update_draw_properties();
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
-        total_page_scale_factor());
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+        total_page_scale_factor(),
+        min_page_scale_factor(),
+        max_page_scale_factor());
   }
 }
 
@@ -777,8 +781,10 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
     root_layer_scroll_offset_delegate_->SetMaxScrollOffset(
         TotalMaxScrollOffset());
     root_layer_scroll_offset_delegate_->SetScrollableSize(ScrollableSize());
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
-        total_page_scale_factor());
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+        total_page_scale_factor(),
+        min_page_scale_factor(),
+        max_page_scale_factor());
 
     if (inner_viewport_scroll_layer_) {
       inner_viewport_scroll_delegate_proxy_ = make_scoped_ptr(

@@ -182,9 +182,11 @@ public class AwContents {
     private boolean mContainerViewFocused;
     private boolean mWindowFocused;
 
-    // These come from the compositor and are updated immediately (in contrast to the values in
+    // These come from the compositor and are updated synchronously (in contrast to the values in
     // ContentViewCore, which are updated at end of every frame).
     private float mPageScaleFactor = 1.0f;
+    private float mMinPageScaleFactor = 1.0f;
+    private float mMaxPageScaleFactor = 1.0f;
     private float mContentWidthDip;
     private float mContentHeightDip;
 
@@ -1398,8 +1400,7 @@ public class AwContents {
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomIn() {
-        final float zoomInExtent = mContentViewCore.getRenderCoordinates().getMaxPageScaleFactor()
-                - mPageScaleFactor;
+        final float zoomInExtent = mMaxPageScaleFactor - mPageScaleFactor;
         return zoomInExtent > ZOOM_CONTROLS_EPSILON;
     }
 
@@ -1409,8 +1410,7 @@ public class AwContents {
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomOut() {
-        final float zoomOutExtent = mPageScaleFactor
-                - mContentViewCore.getRenderCoordinates().getMinPageScaleFactor();
+        final float zoomOutExtent = mPageScaleFactor - mMinPageScaleFactor;
         return zoomOutExtent > ZOOM_CONTROLS_EPSILON;
     }
 
@@ -1899,13 +1899,21 @@ public class AwContents {
     }
 
     @CalledByNative
-    private void setPageScaleFactor(float pageScaleFactor) {
-        if (mPageScaleFactor == pageScaleFactor)
+    private void setPageScaleFactorAndLimits(
+            float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
+        if (mPageScaleFactor == pageScaleFactor &&
+            mMinPageScaleFactor == minPageScaleFactor &&
+            mMaxPageScaleFactor == maxPageScaleFactor)
             return;
-        float oldPageScaleFactor = mPageScaleFactor;
-        mPageScaleFactor = pageScaleFactor;
-        mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
-                (float) (oldPageScaleFactor * mDIPScale), (float) (mPageScaleFactor * mDIPScale));
+        mMinPageScaleFactor = minPageScaleFactor;
+        mMaxPageScaleFactor = maxPageScaleFactor;
+        if (mPageScaleFactor != pageScaleFactor) {
+          float oldPageScaleFactor = mPageScaleFactor;
+          mPageScaleFactor = pageScaleFactor;
+          mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
+              (float)(oldPageScaleFactor * mDIPScale),
+              (float)(mPageScaleFactor * mDIPScale));
+        }
     }
 
     @CalledByNative

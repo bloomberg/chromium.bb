@@ -39,8 +39,11 @@ class LayerScrollOffsetDelegate {
   virtual bool IsExternalFlingActive() const = 0;
 
   // This is called by the compositor to notify the delegate what is the current
-  // page scale factor is.
-  virtual void SetTotalPageScaleFactor(float page_scale_factor) = 0;
+  // page scale factor and limits are.
+  virtual void SetTotalPageScaleFactorAndLimits(
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) = 0;
 
   // This is called by the compositor to notify the delegate what is the layer's
   // scrollable size is.

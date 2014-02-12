@@ -899,13 +899,20 @@ bool AwContents::IsFlingActive() const {
   return Java_AwContents_isFlingActive(env, obj.obj());
 }
 
-void AwContents::SetPageScaleFactor(float page_scale_factor) {
+void AwContents::SetPageScaleFactorAndLimits(
+    float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwContents_setPageScaleFactor(env, obj.obj(), page_scale_factor);
+  Java_AwContents_setPageScaleFactorAndLimits(env,
+                                              obj.obj(),
+                                              page_scale_factor,
+                                              min_page_scale_factor,
+                                              max_page_scale_factor);
 }
 
 void AwContents::SetContentsSize(gfx::SizeF contents_size_dip) {

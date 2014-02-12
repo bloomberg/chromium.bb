@@ -239,11 +239,14 @@ bool SynchronousCompositorImpl::IsExternalFlingActive() const {
   return false;
 }
 
-void SynchronousCompositorImpl::SetTotalPageScaleFactor(
-    float page_scale_factor) {
+void SynchronousCompositorImpl::SetTotalPageScaleFactorAndLimits(
+    float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
-    compositor_client_->SetRootLayerPageScaleFactor(page_scale_factor);
+    compositor_client_->SetRootLayerPageScaleFactorAndLimits(
+        page_scale_factor, min_page_scale_factor, max_page_scale_factor);
 }
 
 void SynchronousCompositorImpl::SetScrollableSize(

@@ -206,21 +206,6 @@ public class ContentViewCore
     }
 
     /**
-     * An interface that allows the embedder to be notified of changes to the parameters of the
-     * currently displayed contents.
-     * These notifications are consistent with respect to the UI thread (the size is the size of
-     * the contents currently displayed on screen).
-     */
-    public interface UpdateFrameInfoListener {
-        /**
-         * Called each time any of the parameters are changed.
-         *
-         * @param pageScaleFactor The page scale.
-         */
-        void onFrameInfoUpdated(float pageScaleFactor);
-    }
-
-    /**
      * An interface that allows the embedder to be notified when the results of
      * extractSmartClipData are available.
      */

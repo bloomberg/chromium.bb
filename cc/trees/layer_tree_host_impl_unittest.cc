@@ -2686,7 +2686,10 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
 
 class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
  public:
-  TestScrollOffsetDelegate() : page_scale_factor_(0.f) {}
+  TestScrollOffsetDelegate()
+      : page_scale_factor_(0.f),
+        min_page_scale_factor_(-1.f),
+        max_page_scale_factor_(-1.f) {}
 
   virtual ~TestScrollOffsetDelegate() {}
 
@@ -2705,8 +2708,13 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
   virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
 
-  virtual void SetTotalPageScaleFactor(float page_scale_factor) OVERRIDE {
+  virtual void SetTotalPageScaleFactorAndLimits(
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) OVERRIDE {
     page_scale_factor_ = page_scale_factor;
+    min_page_scale_factor_ = min_page_scale_factor;
+    max_page_scale_factor_ = max_page_scale_factor;
   }
 
   virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE {
@@ -2733,12 +2741,22 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     return page_scale_factor_;
   }
 
+  float min_page_scale_factor() const {
+    return min_page_scale_factor_;
+  }
+
+  float max_page_scale_factor() const {
+    return max_page_scale_factor_;
+  }
+
  private:
   gfx::Vector2dF last_set_scroll_offset_;
   gfx::Vector2dF getter_return_value_;
   gfx::Vector2dF max_scroll_offset_;
   gfx::SizeF scrollable_size_;
   float page_scale_factor_;
+  float min_page_scale_factor_;
+  float max_page_scale_factor_;
 };
 
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
@@ -2756,20 +2774,28 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(initial_scroll_delta.ToString(),
             scroll_delegate.last_set_scroll_offset().ToString());
 
-  // Setting the delegate results in the scrollable_size, max_scroll_offset and
-  // page_scale being set.
+  // Setting the delegate results in the scrollable_size, max_scroll_offset,
+  // page_scale_factor and {min|max}_page_scale_factor being set.
   EXPECT_EQ(gfx::SizeF(100, 100), scroll_delegate.scrollable_size());
   EXPECT_EQ(gfx::Vector2dF(90, 80), scroll_delegate.max_scroll_offset());
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(0.f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(0.f, scroll_delegate.max_page_scale_factor());
 
   // Updating page scale immediately updates the delegate.
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 0.5f, 4.f);
   EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
   host_impl_->active_tree()->SetPageScaleDelta(1.5f);
   EXPECT_EQ(3.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
   host_impl_->active_tree()->SetPageScaleDelta(1.f);
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
 
   // Scrolling should be relative to the offset as returned by the delegate.
   gfx::Vector2dF scroll_delta(0.f, 10.f);

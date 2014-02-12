@@ -30,7 +30,10 @@ class SynchronousCompositorClient {
   virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value) = 0;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() = 0;
   virtual bool IsExternalFlingActive() const = 0;
-  virtual void SetRootLayerPageScaleFactor(float page_scale_factor) = 0;
+  virtual void SetRootLayerPageScaleFactorAndLimits(
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) = 0;
   virtual void SetRootLayerScrollableSize(gfx::SizeF scrollable_size) = 0;
 
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
