@@ -262,7 +262,10 @@ inline void CSSParserValue::setFromNumber(double value, int unit)
 {
     id = CSSValueInvalid;
     isInt = false;
-    fValue = value;
+    if (std::isfinite(value))
+        fValue = value;
+    else
+        fValue = 0;
     this->unit = unit;
 }
 
