@@ -70,6 +70,8 @@ PassRefPtr<RenderStyle> PseudoElement::customStyleForRenderer()
 
 void PseudoElement::dispose()
 {
+    ASSERT(parentOrShadowHostElement());
+
     InspectorInstrumentation::pseudoElementDestroyed(this);
 
     ASSERT(!nextSibling());

@@ -413,7 +413,10 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     RefPtr<Node> protect(this);
 
     // NotFoundError: Raised if oldChild is not a child of this node.
-    if (!oldChild || oldChild->parentNode() != this) {
+    // FIXME: We should never really get PseudoElements in here, but editing will sometimes
+    // attempt to remove them still. We should fix that and enable this ASSERT.
+    // ASSERT(!oldChild->isPseudoElement())
+    if (!oldChild || oldChild->parentNode() != this || oldChild->isPseudoElement()) {
         exceptionState.throwDOMException(NotFoundError, "The node to be removed is not a child of this node.");
         return;
     }

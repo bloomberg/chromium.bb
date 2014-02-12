@@ -874,6 +874,9 @@ crbug.com/328749 virtual/threaded/transitions/position-background-transition.htm
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
+# ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
+crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
+
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
