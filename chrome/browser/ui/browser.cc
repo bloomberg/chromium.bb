@@ -2161,8 +2161,16 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (is_type_tabbed())
       features |= FEATURE_TOOLBAR;
 
-    if (!is_app() || ((app_type() == APP_TYPE_HOST ||
-                       app_name() == DevToolsWindow::kDevToolsApp) &&
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    const extensions::Extension* extension =
+        service ? service->GetInstalledExtension(
+                      web_app::GetExtensionIdFromApplicationName(app_name()))
+                : NULL;
+
+    if (!is_app() || (app_type() == APP_TYPE_HOST &&
+                      app_name() != DevToolsWindow::kDevToolsApp &&
+                      (!extension || !extension->is_legacy_packaged_app()) &&
                       CommandLine::ForCurrentProcess()->HasSwitch(
                           switches::kEnableStreamlinedHostedApps))) {
       features |= FEATURE_LOCATIONBAR;
