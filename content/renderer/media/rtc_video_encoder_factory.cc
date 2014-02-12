@@ -5,8 +5,8 @@
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/rtc_video_encoder.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace content {
@@ -59,7 +59,7 @@ media::VideoCodecProfile WebRTCCodecToVideoCodecProfile(
 }  // anonymous namespace
 
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
-    const scoped_refptr<RendererGpuVideoAcceleratorFactories>& gpu_factories)
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : gpu_factories_(gpu_factories) {
   // Query media::VideoEncodeAccelerator (statically) for our supported codecs.
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles =
@@ -84,11 +84,8 @@ webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
   }
   if (!found)
     return NULL;
-  // GpuVideoAcceleratorFactories is not thread safe. It cannot be shared
-  // by different encoders. Since we aren't running on the child thread and
-  // cannot create a new factory, clone one instead.
   return new RTCVideoEncoder(
-      type, WebRTCCodecToVideoCodecProfile(type), gpu_factories_->Clone());
+      type, WebRTCCodecToVideoCodecProfile(type), gpu_factories_);
 }
 
 void RTCVideoEncoderFactory::AddObserver(Observer* observer) {
