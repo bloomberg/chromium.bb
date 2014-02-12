@@ -95,11 +95,20 @@ define i32 @main() {
           self.platform,
           [],
           expected_triple_cpu)
+      # Test that StreamInit is used with a single module.
       self.checkLLCTranslateFlags(
           pexe,
           self.platform,
-          ['--pnacl-sb'],
+          ['--pnacl-sb', '-split-module=1'],
           ['StreamInit h'])
+      # Test that StreamInitWithSplit is used with module splitting.
+      # In the tests below, we don't care whether StreamInitWithSplit or
+      # StreamInitWithOverrides
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '-split-module=4'],
+          ['StreamInitWithSplit i.*h\\(objfile\\).*h\\(invalid\\)'])
 
   def test_overrideO0(self):
     if driver_test_utils.CanRunHost():
@@ -115,7 +124,7 @@ define i32 @main() {
           pexe,
           self.platform,
           ['-O0', '--pnacl-sb'],
-          ['StreamInitWithOverrides.*-O0.*-disable-fp-elim.*-mcpu=.*'])
+          ['StreamInitWith.*-O0.*-disable-fp-elim.*-mcpu=.*'])
 
   def test_overrideTranslateFast(self):
     if driver_test_utils.CanRunHost():
@@ -131,7 +140,7 @@ define i32 @main() {
           pexe,
           self.platform,
           ['-translate-fast', '--pnacl-sb'],
-          ['StreamInitWithOverrides.*-O0.*-mcpu=.*'])
+          ['StreamInitWith.*-O0.*-mcpu=.*'])
 
   def test_overrideTLSUseCall(self):
     if driver_test_utils.CanRunHost():
@@ -147,7 +156,7 @@ define i32 @main() {
           self.platform,
           ['-mtls-use-call', '-fdata-sections', '-ffunction-sections',
            '--pnacl-sb'],
-          ['StreamInitWithOverrides.*-mtls-use-call' +
+          ['StreamInitWith.*-mtls-use-call' +
            '.*-fdata-sections.*-ffunction-sections'])
 
   def test_overrideMCPU(self):
@@ -171,7 +180,7 @@ define i32 @main() {
           pexe,
           self.platform,
           [mcpu_pattern, '--pnacl-sb'],
-          ['StreamInitWithOverrides.*' + mcpu_pattern])
+          ['StreamInitWith.*' + mcpu_pattern])
 
   def test_overrideMAttr(self):
     if driver_test_utils.CanRunHost():
@@ -192,7 +201,7 @@ define i32 @main() {
           pexe,
           self.platform,
           [mattr_flags, '--pnacl-sb'],
-          ['StreamInitWithOverrides.*' + mattr_pat + '.*-mcpu=.*'])
+          ['StreamInitWith.*' + mattr_pat + '.*-mcpu=.*'])
 
 
 if __name__ == '__main__':

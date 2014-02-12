@@ -163,6 +163,10 @@ EXTRA_ENV = {
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
                     '${input} -o ${output} ',
+  # Whether to stream the bitcode from a single FD in unsandboxed mode
+  # (otherwise it will use concurrent file reads when using multithreaded module
+  # splitting)
+  'STREAM_BITCODE' : '1',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
@@ -226,6 +230,7 @@ TranslatorPatterns = [
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
   ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)"),
+  ( '-no-stream-bitcode', "env.set('STREAM_BITCODE', '0')"),
 
   # Treat general linker flags as inputs so they don't get re-ordered
   ( '-Wl,(.*)',        "env.append('INPUTS', *($0).split(','))"),
@@ -270,17 +275,20 @@ def main(argv):
   elif int(env.getone('SPLIT_MODULE')) < 1:
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
-    env.getone('ARCH') == 'LINUX_X8632' or
-    env.getbool('SANDBOXED')):
+    env.getone('ARCH') == 'LINUX_X8632'):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
-    # split it. For now also do not support threading non-SFI baremetal mode,
-    # or for the sandboxed translator. Non-ABI-stable pexes may have symbol
-    # naming and visibility issues that the current splitting scheme doesn't
-    # account for.
+    # split it. For now also do not support threading non-SFI baremetal mode.
+    # Non-ABI-stable pexes may have symbol naming and visibility issues that the
+    # current splitting scheme doesn't account for.
     env.set('SPLIT_MODULE', '1')
   else:
-    env.append('LLC_FLAGS_EXTRA', '-split-module=' + env.getone('SPLIT_MODULE'))
-    env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
+    if env.getone('SPLIT_MODULE') != '1':
+      env.append('LLC_FLAGS_EXTRA', '-split-module=' +
+                 env.getone('SPLIT_MODULE'))
+    if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
+      # Do not set -streaming-bitcode for sandboxed mode, because it is already
+      # in the default command line.
+      env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
@@ -462,14 +470,21 @@ def BuildOverrideLLCCommandLine():
 def MakeSelUniversalScriptForLLC(infile, outfile):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
+  modules = int(env.getone('SPLIT_MODULE'))
+  if modules > 1:
+    script.extend(['readwrite_file objfile%d %s.module%d' % (m, outfile, m)
+                   for m in range(1, modules)])
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
   assert stream_rate != 0
   if UseDefaultCommandlineLLC():
     script.append('rpc StreamInit h(objfile) * s()')
   else:
     cmdline_len, cmdline_escaped = BuildOverrideLLCCommandLine()
-    script.append('rpc StreamInitWithOverrides h(objfile) C(%d,%s) * s()' %
-                  (cmdline_len, cmdline_escaped))
+    assert modules in range(1, 17)
+    script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % modules +
+                  ' '.join(['h(objfile%d)' % m for m in range(1, modules)] +
+                           ['h(invalid)' for x in range(modules, 16)]) +
+                  ' C(%d,%s) * s()' % (cmdline_len, cmdline_escaped))
   # specify filename, chunk size and rate in bits/s
   script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
   script.append('rpc StreamEnd * i() s() s() s()')
