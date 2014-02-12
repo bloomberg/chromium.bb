@@ -136,28 +136,24 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (!node())
         return false;
 
-    // FIXME: We call this when compositing state is not necessarily up to date.
-    DisableCompositingQueryAsserts disabler;
-
-    IntRect clipRect = roundedIntRect(enclosingLayer()->clipper().childrenClipRect());
     IntRect newFrame = roundedIntRect(frame);
-    bool clipChanged = m_clipRect != clipRect;
-    bool frameRectChanged = m_widget->frameRect() != newFrame;
 
-    if (!frameRectChanged && !clipChanged)
+    if (m_widget->frameRect() == newFrame)
         return false;
-
-    m_clipRect = clipRect;
 
     RefPtr<RenderWidget> protector(this);
     RefPtr<Node> protectedNode(node());
     m_widget->setFrameRect(newFrame);
 
-    if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
-        layer()->compositedLayerMapping()->updateAfterWidgetResize();
+    {
+        // FIXME: Once we resolve the chicken/egg problems, we can likely remove this
+        // incremental update of composing state.
+        DisableCompositingQueryAsserts disabler;
+        if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
+            layer()->compositedLayerMapping()->updateAfterWidgetResize();
+    }
 
-    bool boundsChanged = m_widget->frameRect().size() != newFrame.size();
-    return boundsChanged;
+    return m_widget->frameRect().size() != newFrame.size();
 }
 
 bool RenderWidget::updateWidgetGeometry()

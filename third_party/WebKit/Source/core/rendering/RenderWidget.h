@@ -71,7 +71,6 @@ private:
     bool updateWidgetGeometry();
 
     RefPtr<Widget> m_widget;
-    IntRect m_clipRect; // The rectangle needs to remain correct after scrolling, so it is stored in content view coordinates, and not clipped to window.
     int m_refCount;
 };
 
