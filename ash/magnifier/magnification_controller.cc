@@ -554,7 +554,8 @@ void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
 
   if (root_bounds.Contains(event->root_location())) {
     // This must be before |SwitchTargetRootWindow()|.
-    point_of_interest_ = event->root_location();
+    if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
+      point_of_interest_ = event->root_location();
 
     if (current_root != root_window_) {
       DCHECK(current_root);
