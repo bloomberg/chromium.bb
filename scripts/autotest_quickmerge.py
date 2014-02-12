@@ -284,6 +284,14 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
   """
   command = ['rsync', '-a']
 
+  # For existing files, preserve destination permissions. This ensures that
+  # existing files end up with the file permissions set by the ebuilds.
+  # If this script copies over a file that does not exist in the destination
+  # tree, it will set the least restrictive permissions allowed in the
+  # destination tree. This could happen if the file copied is not installed by
+  # *any* ebuild, or if the ebuild that installs the file was never emerged.
+  command += ['--no-p', '--chmod=ugo=rwX']
+
   if pretend:
     command += ['-n']
 
