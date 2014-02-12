@@ -70,11 +70,6 @@ enum shell_surface_type {
 	SHELL_SURFACE_XWAYLAND
 };
 
-struct ping_timer {
-	struct wl_event_source *source;
-	uint32_t serial;
-};
-
 /*
  * Surface stacking and ordering.
  *
@@ -160,8 +155,6 @@ struct shell_surface {
 		struct weston_view *black_view;
 	} fullscreen;
 
-	struct ping_timer *ping_timer;
-
 	struct weston_transform workspace_transform;
 
 	struct weston_output *fullscreen_output;
@@ -243,6 +236,9 @@ set_alpha_if_fullscreen(struct shell_surface *shsurf)
 	if (shsurf && shsurf->state.fullscreen)
 		shsurf->fullscreen.black_view->alpha = 0.25;
 }
+
+static struct shell_client *
+get_shell_client(struct wl_client *client);
 
 static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf);
@@ -1837,64 +1833,6 @@ end_busy_cursor(struct weston_compositor *compositor, struct wl_client *client)
 }
 
 static void
-ping_timer_destroy(struct shell_surface *shsurf)
-{
-	if (!shsurf || !shsurf->ping_timer)
-		return;
-
-	if (shsurf->ping_timer->source)
-		wl_event_source_remove(shsurf->ping_timer->source);
-
-	free(shsurf->ping_timer);
-	shsurf->ping_timer = NULL;
-}
-
-static int
-ping_timeout_handler(void *data)
-{
-	struct shell_surface *shsurf = data;
-	struct weston_seat *seat;
-
-	/* Client is not responding */
-	shsurf->unresponsive = 1;
-
-	wl_list_for_each(seat, &shsurf->surface->compositor->seat_list, link)
-		if (seat->pointer && seat->pointer->focus &&
-		    seat->pointer->focus->surface == shsurf->surface)
-			set_busy_cursor(shsurf, seat->pointer);
-
-	return 1;
-}
-
-static const int ping_timeout = 200;
-
-static void
-handle_wl_shell_ping(struct shell_surface *shsurf, uint32_t serial)
-{
-	struct wl_event_loop *loop;
-	struct weston_compositor *compositor = shsurf->shell->compositor;
-
-	if (shsurf->ping_timer)
-		return;
-	if (shsurf->unresponsive) {
-		ping_timeout_handler(shsurf);
-		return;
-	}
-
-	shsurf->ping_timer = malloc(sizeof *shsurf->ping_timer);
-	if (!shsurf->ping_timer)
-		return;
-
-	shsurf->ping_timer->serial = serial;
-	loop = wl_display_get_event_loop(compositor->wl_display);
-	shsurf->ping_timer->source =
-		wl_event_loop_add_timer(loop, ping_timeout_handler, shsurf);
-	wl_event_source_timer_update(shsurf->ping_timer->source, ping_timeout);
-
-	wl_shell_surface_send_ping(shsurf->resource, serial);
-}
-
-static void
 handle_shell_client_destroy(struct wl_listener *listener, void *data);
 
 static int
@@ -1906,7 +1844,6 @@ xdg_ping_timeout_handler(void *data)
 
 	/* Client is not responding */
 	sc->unresponsive = 1;
-
 	wl_list_for_each(seat, &sc->shell->compositor->seat_list, link) {
 		if (seat->pointer == NULL || seat->pointer->focus == NULL)
 			continue;
@@ -1926,15 +1863,12 @@ static void
 handle_xdg_ping(struct shell_surface *shsurf, uint32_t serial)
 {
 	struct weston_compositor *compositor = shsurf->shell->compositor;
-	struct wl_listener *listener;
 	struct wl_client *client = wl_resource_get_client(shsurf->resource);
 	struct shell_client *sc;
 	struct wl_event_loop *loop;
+	static const int ping_timeout = 200;
 
-	listener = wl_client_get_destroy_listener(client,
-						  handle_shell_client_destroy);
-	sc = container_of(listener, struct shell_client, destroy_listener);
-
+	sc = get_shell_client(client);
 	if (sc->unresponsive) {
 		xdg_ping_timeout_handler(sc);
 		return;
@@ -1951,7 +1885,11 @@ handle_xdg_ping(struct shell_surface *shsurf, uint32_t serial)
 
 	wl_event_source_timer_update(sc->ping_timer, ping_timeout);
 
-	xdg_shell_send_ping(sc->resource, serial);
+	if (shell_surface_is_xdg_surface(shsurf) ||
+	    shell_surface_is_xdg_popup(shsurf))
+		xdg_shell_send_ping(sc->resource, serial);
+	else if (shell_surface_is_wl_shell_surface(shsurf))
+		wl_shell_surface_send_ping(shsurf->resource, serial);
 }
 
 static void
@@ -1966,11 +1904,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 	if (shsurf->surface == shsurf->shell->grab_surface)
 		return;
 
-	if (shell_surface_is_xdg_surface(shsurf) ||
-	    shell_surface_is_xdg_popup(shsurf))
-		handle_xdg_ping(shsurf, serial);
-	else if (shell_surface_is_wl_shell_surface(shsurf))
-		handle_wl_shell_ping(shsurf, serial);
+	handle_xdg_ping(shsurf, serial);
 }
 
 static void
@@ -2068,29 +2002,43 @@ xdg_surface_set_transient_for(struct wl_client *client,
 	shell_surface_set_parent(shsurf, parent);
 }
 
-static void
-surface_pong(struct shell_surface *shsurf, uint32_t serial)
+static struct shell_client *
+get_shell_client(struct wl_client *client)
 {
-	struct weston_compositor *ec = shsurf->surface->compositor;
+	struct wl_listener *listener;
 
-	if (shsurf->ping_timer == NULL)
-		/* Just ignore unsolicited pong. */
-		return;
+	listener = wl_client_get_destroy_listener(client,
+						  handle_shell_client_destroy);
+	if (listener == NULL)
+		return NULL;
 
-	if (shsurf->ping_timer->serial == serial) {
-		shsurf->unresponsive = 0;
-		end_busy_cursor(ec, wl_resource_get_client(shsurf->resource));
-	}
+	return container_of(listener, struct shell_client, destroy_listener);
 }
 
 static void
-shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
-							uint32_t serial)
+shell_client_pong(struct shell_client *sc, uint32_t serial)
 {
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	if (sc->ping_serial != serial)
+		return;
 
-	surface_pong(shsurf, serial);
+	sc->unresponsive = 0;
+	end_busy_cursor(sc->shell->compositor, sc->client);
 
+	if (sc->ping_timer) {
+		wl_event_source_remove(sc->ping_timer);
+		sc->ping_timer = NULL;
+	}
+
+}
+
+static void
+shell_surface_pong(struct wl_client *client,
+		   struct wl_resource *resource, uint32_t serial)
+{
+	struct shell_client *sc;
+
+	sc = get_shell_client(client);
+	shell_client_pong(sc, serial);
 }
 
 static void
@@ -3056,7 +3004,6 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	 */
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
 	shsurf->surface->configure = NULL;
-	ping_timer_destroy(shsurf);
 	free(shsurf->title);
 
 	weston_view_destroy(shsurf->view);
@@ -3138,7 +3085,6 @@ create_common_surface(void *shell, struct weston_surface *surface,
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
 	shsurf->fullscreen.black_view = NULL;
-	shsurf->ping_timer = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
 	wl_signal_init(&shsurf->destroy_signal);
@@ -3587,18 +3533,8 @@ xdg_pong(struct wl_client *client,
 	 struct wl_resource *resource, uint32_t serial)
 {
 	struct shell_client *sc = wl_resource_get_user_data(resource);
-	struct weston_compositor *ec = sc->shell->compositor;
 
-	if (sc->ping_serial != serial)
-		return;
-
-	sc->unresponsive = 0;
-	end_busy_cursor(ec, client);
-
-	if (sc->ping_timer) {
-		wl_event_source_remove(sc->ping_timer);
-		sc->ping_timer = NULL;
-	}
+	shell_client_pong(sc, serial);
 }
 
 static bool
@@ -5017,18 +4953,6 @@ launch_desktop_shell_process(void *data)
 }
 
 static void
-bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
-{
-	struct desktop_shell *shell = data;
-	struct wl_resource *resource;
-
-	resource = wl_resource_create(client, &wl_shell_interface, 1, id);
-	if (resource)
-		wl_resource_set_implementation(resource, &shell_implementation,
-					       shell, NULL);
-}
-
-static void
 handle_shell_client_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_client *sc =
@@ -5039,23 +4963,23 @@ handle_shell_client_destroy(struct wl_listener *listener, void *data)
 	free(sc);
 }
 
-static void
-bind_xdg_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+static struct shell_client *
+shell_client_create(struct wl_client *client, struct desktop_shell *shell,
+		    const struct wl_interface *interface, uint32_t id)
 {
-	struct desktop_shell *shell = data;
 	struct shell_client *sc;
 
 	sc = zalloc(sizeof *sc);
 	if (sc == NULL) {
 		wl_client_post_no_memory(client);
-		return;
+		return NULL;
 	}
-		
-	sc->resource = wl_resource_create(client, &xdg_shell_interface, 1, id);
+
+	sc->resource = wl_resource_create(client, interface, 1, id);
 	if (sc->resource == NULL) {
 		free(sc);
 		wl_client_post_no_memory(client);
-		return;
+		return NULL;
 	}
 
 	sc->client = client;
@@ -5063,9 +4987,33 @@ bind_xdg_shell(struct wl_client *client, void *data, uint32_t version, uint32_t 
 	sc->destroy_listener.notify = handle_shell_client_destroy;
 	wl_client_add_destroy_listener(client, &sc->destroy_listener);
 
-	wl_resource_set_dispatcher(sc->resource,
-				   xdg_shell_unversioned_dispatch,
-				   NULL, sc, NULL);
+	return sc;
+}
+
+static void
+bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct shell_client *sc;
+
+	sc = shell_client_create(client, shell, &wl_shell_interface, id);
+	if (sc)
+		wl_resource_set_implementation(sc->resource,
+					       &shell_implementation,
+					       shell, NULL);
+}
+
+static void
+bind_xdg_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct shell_client *sc;
+
+	sc = shell_client_create(client, shell, &xdg_shell_interface, id);
+	if (sc)
+		wl_resource_set_dispatcher(sc->resource,
+					   xdg_shell_unversioned_dispatch,
+					   NULL, sc, NULL);
 }
 
 static void
