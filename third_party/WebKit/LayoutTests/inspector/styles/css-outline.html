@@ -1,0 +1,93 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<style id="styler">
+@import url("some-url-to-load-css.css") print;
+@charset "ISO-8859-15";
+@namespace svg url(http://www.w3.org/2000/svg);
+@font-face {
+    font-family: "Example Font";
+    src: url("http://www.example.com/fonts/example");
+}
+
+@page {
+    margin: 1in 1.5in;
+}
+@page :right {
+    margin-right: 5cm; /* right pages only */
+}
+@page :first {
+    margin-top: 8cm; /* extra top margin on the first page */
+}
+
+div { color: red }
+#fluffy {
+    border: 1px solid black;
+    z-index: 1;
+}
+input:-moz-placeholder { text-overflow: ellipsis; }
+.class-name, p /* style all paragraphs as well */ {
+    border-color: blue;
+    -lol-cats: "dogs" /* unexisting property */
+}
+
+@keyframes identifier {
+    0% { top: 0; left: 0; }
+    30% { top: 50px; }
+    68%, 72% { left: 50px; }
+    100% { top: 100px; left: 100%; }
+}
+
+svg|a {
+    text-decoration: underline;
+}
+
+@media (max-width:500px) {
+    span {
+        -webkit-border-radius: 10px;
+        font-family: "Example Font"
+    }
+}
+</style>
+<script>
+
+function getCSS()
+{
+    return document.querySelector("#styler").textContent;
+}
+
+function test()
+{
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 1000);
+    var worker = new Worker("ScriptFormatterWorker.js");
+    worker.onmessage = onWorkerMessage;
+    worker.onerror = onWorkerError;
+
+    function onWorkerMessage(event)
+    {
+        InspectorTest.addObject(event.data);
+        InspectorTest.completeTest();
+    }
+
+    function onWorkerError(event)
+    {
+        InspectorTest.addResult("Error in worker: " + event.data);
+        InspectorTest.completeTest();
+    }
+
+    function onStyleFetched(result)
+    {
+        worker.postMessage({ method: "cssOutline", params: { content: result.value } });
+    }
+
+    InspectorTest.evaluateInPage("getCSS()", onStyleFetched);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>The test verifies the CSS outline functionality.</p>
+</body>
+</html>

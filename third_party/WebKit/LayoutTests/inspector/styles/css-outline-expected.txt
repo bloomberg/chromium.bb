@@ -1,0 +1,84 @@
+The test verifies the CSS outline functionality.
+
+{
+    chunk : [
+        {
+            atRule : "@import url("some-url-to-load-css.css") print"
+            columNumber : 0
+            lineNumber : 1
+        }
+        {
+            atRule : "@charset "ISO-8859-15""
+            columNumber : 0
+            lineNumber : 2
+        }
+        {
+            atRule : "@namespace svg url(http://www.w3.org/2000/svg)"
+            columNumber : 0
+            lineNumber : 3
+        }
+        {
+            atRule : "@font-face"
+            columNumber : 0
+            lineNumber : 4
+        }
+        {
+            atRule : "@page"
+            columNumber : 0
+            lineNumber : 9
+        }
+        {
+            atRule : "@page :right"
+            columNumber : 0
+            lineNumber : 12
+        }
+        {
+            atRule : "@page :first"
+            columNumber : 0
+            lineNumber : 15
+        }
+        {
+            columNumber : 0
+            lineNumber : 19
+            selectorText : "div"
+        }
+        {
+            columNumber : 0
+            lineNumber : 20
+            selectorText : "#fluffy"
+        }
+        {
+            columNumber : 0
+            lineNumber : 24
+            selectorText : "input:-moz-placeholder"
+        }
+        {
+            columNumber : 0
+            lineNumber : 25
+            selectorText : ".class-name, p /* style all paragraphs as well */"
+        }
+        {
+            atRule : "@keyframes identifier"
+            columNumber : 0
+            lineNumber : 30
+        }
+        {
+            columNumber : 0
+            lineNumber : 37
+            selectorText : "svg|a"
+        }
+        {
+            atRule : "@media (max-width:500px)"
+            columNumber : 0
+            lineNumber : 41
+        }
+        {
+            columNumber : 4
+            lineNumber : 42
+            selectorText : "span"
+        }
+    ]
+    index : 0
+    total : 1
+}
+

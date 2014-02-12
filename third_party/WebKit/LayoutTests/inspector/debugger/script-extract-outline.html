@@ -22,7 +22,7 @@ var test = function()
         InspectorTest.completeTest();
     };
 
-    worker.postMessage({ method: "outline", params: { content: parsedScript } });
+    worker.postMessage({ method: "javaScriptOutline", params: { content: parsedScript } });
 }
 
 </script>
