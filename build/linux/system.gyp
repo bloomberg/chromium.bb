@@ -296,9 +296,6 @@
       'target_name': 'glib',
       'type': 'none',
       'toolsets': ['host', 'target'],
-      'dependencies': [
-        'xtst'
-      ],
       'variables': {
         'glib_packages': 'glib-2.0 gmodule-2.0 gobject-2.0 gthread-2.0',
       },

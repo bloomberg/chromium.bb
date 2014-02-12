@@ -263,6 +263,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
+            '../build/linux/system.gyp:xtst',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
