@@ -14,6 +14,7 @@
               (children 1
                 (GraphicsLayer
                   (bounds 305.00 1224.00)
+                  (shouldFlattenTransform 0)
                   (drawsContent 1)
                 )
               )

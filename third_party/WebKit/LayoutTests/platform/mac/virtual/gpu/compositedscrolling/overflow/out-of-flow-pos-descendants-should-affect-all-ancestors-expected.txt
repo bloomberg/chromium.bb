@@ -17,6 +17,7 @@
               (children 1
                 (GraphicsLayer
                   (bounds 511.00 1969.00)
+                  (shouldFlattenTransform 0)
                   (drawsContent 1)
                   (children 1
                     (GraphicsLayer
@@ -30,6 +31,7 @@
                           (children 1
                             (GraphicsLayer
                               (bounds 511.00 1919.00)
+                              (shouldFlattenTransform 0)
                               (drawsContent 1)
                               (children 1
                                 (GraphicsLayer
@@ -43,6 +45,7 @@
                                       (children 1
                                         (GraphicsLayer
                                           (bounds 511.00 1869.00)
+                                          (shouldFlattenTransform 0)
                                           (drawsContent 1)
                                           (children 1
                                             (GraphicsLayer
@@ -56,6 +59,7 @@
                                                   (children 1
                                                     (GraphicsLayer
                                                       (bounds 511.00 1827.00)
+                                                      (shouldFlattenTransform 0)
                                                       (drawsContent 1)
                                                       (children 2
                                                         (GraphicsLayer
@@ -69,6 +73,7 @@
                                                               (children 1
                                                                 (GraphicsLayer
                                                                   (bounds 511.00 1511.00)
+                                                                  (shouldFlattenTransform 0)
                                                                   (drawsContent 1)
                                                                 )
                                                               )
@@ -99,6 +104,7 @@
                                                               (children 1
                                                                 (GraphicsLayer
                                                                   (bounds 511.00 1619.00)
+                                                                  (shouldFlattenTransform 0)
                                                                   (drawsContent 1)
                                                                 )
                                                               )
@@ -221,6 +227,7 @@
                   (children 1
                     (GraphicsLayer
                       (bounds 511.00 1619.00)
+                      (shouldFlattenTransform 0)
                       (drawsContent 1)
                     )
                   )
@@ -269,6 +276,7 @@
                   (children 1
                     (GraphicsLayer
                       (bounds 511.00 1511.00)
+                      (shouldFlattenTransform 0)
                       (drawsContent 1)
                     )
                   )
@@ -313,6 +321,7 @@
               (children 1
                 (GraphicsLayer
                   (bounds 511.00 1969.00)
+                  (shouldFlattenTransform 0)
                   (drawsContent 1)
                   (children 1
                     (GraphicsLayer
@@ -326,6 +335,7 @@
                           (children 1
                             (GraphicsLayer
                               (bounds 511.00 1919.00)
+                              (shouldFlattenTransform 0)
                               (drawsContent 1)
                               (children 1
                                 (GraphicsLayer
@@ -339,6 +349,7 @@
                                       (children 1
                                         (GraphicsLayer
                                           (bounds 511.00 1869.00)
+                                          (shouldFlattenTransform 0)
                                           (drawsContent 1)
                                           (children 1
                                             (GraphicsLayer
@@ -352,6 +363,7 @@
                                                   (children 1
                                                     (GraphicsLayer
                                                       (bounds 511.00 1827.00)
+                                                      (shouldFlattenTransform 0)
                                                       (drawsContent 1)
                                                       (children 2
                                                         (GraphicsLayer
@@ -365,6 +377,7 @@
                                                               (children 1
                                                                 (GraphicsLayer
                                                                   (bounds 511.00 1511.00)
+                                                                  (shouldFlattenTransform 0)
                                                                   (drawsContent 1)
                                                                 )
                                                               )
@@ -395,6 +408,7 @@
                                                               (children 1
                                                                 (GraphicsLayer
                                                                   (bounds 511.00 1619.00)
+                                                                  (shouldFlattenTransform 0)
                                                                   (drawsContent 1)
                                                                 )
                                                               )

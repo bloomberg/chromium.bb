@@ -19,6 +19,7 @@ This test ensures that the descendants of children of non-stacking context overf
               (children 1
                 (GraphicsLayer
                   (bounds 385.00 950.00)
+                  (shouldFlattenTransform 0)
                 )
               )
             )

@@ -19,6 +19,7 @@ This test ensures that a stacking context overflow-scroll div's unclipped descen
               (children 1
                 (GraphicsLayer
                   (bounds 190.00 185.00)
+                  (shouldFlattenTransform 0)
                   (drawsContent 1)
                   (children 1
                     (GraphicsLayer
