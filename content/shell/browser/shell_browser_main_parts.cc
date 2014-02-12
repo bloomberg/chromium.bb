@@ -131,7 +131,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
   }
 #endif
-  net_log_.reset(new ShellNetLog());
+  net_log_.reset(new ShellNetLog("content_shell"));
   browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
   off_the_record_browser_context_.reset(
       new ShellBrowserContext(true, net_log_.get()));

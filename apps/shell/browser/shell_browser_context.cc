@@ -10,8 +10,6 @@ namespace apps {
 // then app_shell would also have to create a normal context and manage both.
 ShellBrowserContext::ShellBrowserContext()
     : content::ShellBrowserContext(false, NULL) {
-  // TODO(jamescook): Could initialize NetLog here to get logs from the
-  // networking stack.
 }
 
 ShellBrowserContext::~ShellBrowserContext() {

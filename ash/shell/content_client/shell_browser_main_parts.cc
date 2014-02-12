@@ -102,7 +102,7 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  net_log_.reset(new content::ShellNetLog());
+  net_log_.reset(new content::ShellNetLog("ash_shell"));
   browser_context_.reset(new content::ShellBrowserContext(
       false, net_log_.get()));
 

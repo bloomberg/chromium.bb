@@ -14,7 +14,7 @@ namespace content {
 
 class ShellNetLog : public net::NetLog {
  public:
-  ShellNetLog();
+  explicit ShellNetLog(const std::string& app_name);
   virtual ~ShellNetLog();
 
  private:

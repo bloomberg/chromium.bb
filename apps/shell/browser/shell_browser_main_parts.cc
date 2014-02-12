@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
+#include "content/shell/browser/shell_net_log.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "ui/aura/env.h"
@@ -94,6 +95,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
 
   // TODO(jamescook): Initialize chromeos::UserManager.
+
+  net_log_.reset(new content::ShellNetLog("app_shell"));
 
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);

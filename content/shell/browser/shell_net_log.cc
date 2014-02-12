@@ -16,13 +16,13 @@ namespace content {
 
 namespace {
 
-base::DictionaryValue* GetShellConstants() {
+base::DictionaryValue* GetShellConstants(const std::string& app_name) {
   base::DictionaryValue* constants_dict = net::NetLogLogger::GetConstants();
 
   // Add a dictionary with client information
   base::DictionaryValue* dict = new base::DictionaryValue();
 
-  dict->SetString("name", "content_shell");
+  dict->SetString("name", app_name);
   dict->SetString("command_line",
                   CommandLine::ForCurrentProcess()->GetCommandLineString());
 
@@ -33,7 +33,7 @@ base::DictionaryValue* GetShellConstants() {
 
 }  // namespace
 
-ShellNetLog::ShellNetLog() {
+ShellNetLog::ShellNetLog(const std::string& app_name) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
@@ -56,7 +56,7 @@ ShellNetLog::ShellNetLog() {
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
-      scoped_ptr<base::Value> constants(GetShellConstants());
+      scoped_ptr<base::Value> constants(GetShellConstants(app_name));
       net_log_logger_.reset(new net::NetLogLogger(file, *constants));
       net_log_logger_->StartObserving(this);
     }

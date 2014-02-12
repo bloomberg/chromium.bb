@@ -29,6 +29,10 @@ namespace views {
 class Widget;
 }
 
+namespace net {
+class NetLog;
+}
+
 namespace wm {
 class WMTestHelper;
 }
@@ -85,6 +89,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<extensions::ShellExtensionsBrowserClient>
       extensions_browser_client_;
+  scoped_ptr<net::NetLog> net_log_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
