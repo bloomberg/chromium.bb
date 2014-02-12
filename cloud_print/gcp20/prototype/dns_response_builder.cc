@@ -37,19 +37,24 @@ DnsResponseBuilder::DnsResponseBuilder(uint16 id) {
 DnsResponseBuilder::~DnsResponseBuilder() {
 }
 
-void DnsResponseBuilder::AppendPtr(const std::string& service_type, uint32 ttl,
-                                   const std::string& service_name) {
+void DnsResponseBuilder::AppendPtr(const std::string& service_type,
+                                   uint32 ttl,
+                                   const std::string& service_name,
+                                   bool answer) {
   std::string rdata;
   bool success = net::DNSDomainFromDot(service_name, &rdata);
   DCHECK(success);
 
-  AddResponse(service_type, net::dns_protocol::kTypePTR, ttl, rdata);
+  AddResponse(service_type, net::dns_protocol::kTypePTR, ttl, rdata, answer);
 }
 
-void DnsResponseBuilder::AppendSrv(const std::string& service_name, uint32 ttl,
-                                   uint16 priority, uint16 weight,
+void DnsResponseBuilder::AppendSrv(const std::string& service_name,
+                                   uint32 ttl,
+                                   uint16 priority,
+                                   uint16 weight,
                                    uint16 http_port,
-                                   const std::string& service_domain_name) {
+                                   const std::string& service_domain_name,
+                                   bool answer) {
   std::string domain_name;
   bool success = net::DNSDomainFromDot(service_domain_name, &domain_name);
   DCHECK(success);
@@ -65,11 +70,13 @@ void DnsResponseBuilder::AppendSrv(const std::string& service_name, uint32 ttl,
   DCHECK_EQ(writer.remaining(), 0);  // For warranty of correct size allocation.
 
   AddResponse(service_name, net::dns_protocol::kTypeSRV, ttl,
-              std::string(rdata.begin(), rdata.end()));
+              std::string(rdata.begin(), rdata.end()), answer);
 }
 
 void DnsResponseBuilder::AppendA(const std::string& service_domain_name,
-                                 uint32 ttl, net::IPAddressNumber http_ipv4) {
+                                 uint32 ttl,
+                                 net::IPAddressNumber http_ipv4,
+                                 bool answer) {
   // TODO(maksymb): IP to send must depends on interface from where query was
   // received.
   if (http_ipv4.empty()) {
@@ -78,11 +85,28 @@ void DnsResponseBuilder::AppendA(const std::string& service_domain_name,
   }
 
   AddResponse(service_domain_name, net::dns_protocol::kTypeA, ttl,
-              std::string(http_ipv4.begin(), http_ipv4.end()));
+              std::string(http_ipv4.begin(), http_ipv4.end()), answer);
 }
 
-void DnsResponseBuilder::AppendTxt(const std::string& service_name, uint32 ttl,
-                                   const std::vector<std::string>& metadata) {
+void DnsResponseBuilder::AppendAAAA(const std::string& service_domain_name,
+                                    uint32 ttl,
+                                    net::IPAddressNumber http_ipv6,
+                                    bool answer) {
+  // TODO(maksymb): IP to send must depends on interface from where query was
+  // received.
+  if (http_ipv6.empty()) {
+    LOG(ERROR) << "Invalid IP";
+    return;
+  }
+
+  AddResponse(service_domain_name, net::dns_protocol::kTypeAAAA, ttl,
+              std::string(http_ipv6.begin(), http_ipv6.end()), answer);
+}
+
+void DnsResponseBuilder::AppendTxt(const std::string& service_name,
+                                   uint32 ttl,
+                                   const std::vector<std::string>& metadata,
+                                   bool answer) {
   std::string rdata;
   for (std::vector<std::string>::const_iterator str = metadata.begin();
        str != metadata.end(); ++str) {
@@ -92,7 +116,7 @@ void DnsResponseBuilder::AppendTxt(const std::string& service_name, uint32 ttl,
     rdata += *str;
   }
 
-  AddResponse(service_name, net::dns_protocol::kTypeTXT, ttl, rdata);
+  AddResponse(service_name, net::dns_protocol::kTypeTXT, ttl, rdata, answer);
 }
 
 scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
@@ -108,8 +132,8 @@ scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
   if (responses_.empty())
     return NULL;  // No answer.
 
-  header_.ancount = static_cast<uint16>(responses_.size());
-
+  DCHECK_EQ(static_cast<size_t>(header_.ancount + header_.arcount),
+            responses_.size());
   scoped_refptr<net::IOBufferWithSize> message(
       new net::IOBufferWithSize(static_cast<int>(size)));
   net::BigEndianWriter writer(message->data(), message->size());
@@ -143,14 +167,24 @@ scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
   return message;
 }
 
-void DnsResponseBuilder::AddResponse(const std::string& name, uint16 type,
-                                     uint32 ttl, const std::string& rdata) {
+void DnsResponseBuilder::AddResponse(const std::string& name,
+                                     uint16 type,
+                                     uint32 ttl,
+                                     const std::string& rdata,
+                                     bool answer) {
   DnsResponseRecord response;
   response.name = name;
   response.klass = klass;
   response.ttl = ttl;
   response.type = type;
   response.rdata = rdata;
-  responses_.push_back(response);
+
+  if (answer) {
+    responses_.insert(responses_.begin() + header_.ancount,  response);
+    ++header_.ancount;
+  } else {
+    responses_.push_back(response);
+    ++header_.arcount;
+  }
 }
 

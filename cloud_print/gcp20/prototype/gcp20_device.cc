@@ -26,6 +26,7 @@ const char kHelpMessage[] =
                                  "HTTP header\n"
     "  -h, --help                 prints this message\n"
     "  --no-announcement          disables DNS announcements\n"
+    "  --extended-response        responds to PTR with additional records\n"
     "  --simulate-printing-errors simulates some errors for local printing\n"
     "  --unicast-respond          DNS responses will be sent in unicast "
                                  "instead of multicast\n"

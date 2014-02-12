@@ -40,23 +40,43 @@ class DnsResponseBuilder {
   ~DnsResponseBuilder();
 
   // Methods for appending different types of responses to packet.
-  void AppendPtr(const std::string& service_type, uint32 ttl,
-                 const std::string& service_name);
-  void AppendSrv(const std::string& service_name, uint32 ttl, uint16 priority,
+  void AppendPtr(const std::string& service_type,
+                 uint32 ttl,
+                 const std::string& service_name,
+                 bool answer);
+
+  void AppendSrv(const std::string& service_name,
+                 uint32 ttl,
+                 uint16 priority,
                  uint16 weight, uint16 http_port,
-                 const std::string& service_domain_name);
-  void AppendA(const std::string& service_domain_name, uint32 ttl,
-               net::IPAddressNumber http_ipv4);
-  void AppendTxt(const std::string& service_name, uint32 ttl,
-                 const std::vector<std::string>& metadata);
+                 const std::string& service_domain_name,
+                 bool answer);
+
+  void AppendA(const std::string& service_domain_name,
+               uint32 ttl,
+               net::IPAddressNumber http_ipv4,
+               bool answer);
+
+  void AppendAAAA(const std::string& service_domain_name,
+                  uint32 ttl,
+                  net::IPAddressNumber http_ipv6,
+                  bool answer);
+
+  void AppendTxt(const std::string& service_name,
+                 uint32 ttl,
+                 const std::vector<std::string>& metadata,
+                 bool answer);
 
   // Serializes packet to byte sequence.
   scoped_refptr<net::IOBufferWithSize> Build();
 
  private:
   // Appends response to packet.
-  void AddResponse(const std::string& name, uint16 type, uint32 ttl,
-                   const std::string& rdata);
+  void AddResponse(const std::string& name,
+                   uint16 type,
+                   uint32 ttl,
+                   const std::string& rdata,
+                   bool answer);
 
   std::vector<DnsResponseRecord> responses_;
 
