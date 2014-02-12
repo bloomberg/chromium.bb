@@ -1415,7 +1415,7 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSS
     // user agent stylesheets. To work around this issue, we use CSSOM wrapper created by inspector.
     if (!rule->parentStyleSheet()) {
         if (!m_inspectorUserAgentStyleSheet)
-            m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(CSSDefaultStyleSheets::defaultStyleSheet);
+            m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(CSSDefaultStyleSheets::instance().defaultStyleSheet());
         rule->setParentStyleSheet(m_inspectorUserAgentStyleSheet.get());
     }
     return bindStyleSheet(rule->parentStyleSheet())->buildObjectForRule(rule, buildMediaListChain(rule));

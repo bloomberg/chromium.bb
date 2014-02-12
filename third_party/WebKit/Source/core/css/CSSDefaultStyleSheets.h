@@ -31,31 +31,42 @@ class StyleSheetContents;
 
 class CSSDefaultStyleSheets {
 public:
-    static RuleSet* defaultStyle;
-    static RuleSet* defaultViewportStyle;
-    static RuleSet* defaultQuirksStyle;
-    static RuleSet* defaultPrintStyle;
-    static RuleSet* defaultViewSourceStyle;
-    static RuleSet* defaultXHTMLMobileProfileStyle;
+    static CSSDefaultStyleSheets& instance();
 
-    static StyleSheetContents* defaultStyleSheet;
-    static StyleSheetContents* viewportStyleSheet;
-    static StyleSheetContents* quirksStyleSheet;
-    static StyleSheetContents* svgStyleSheet;
-    static StyleSheetContents* mediaControlsStyleSheet;
-    static StyleSheetContents* fullscreenStyleSheet;
+    void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
 
-    static void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
-    // FIXME: defaultStyleSheet should have an accessor which incorporates this branch:
-    static void loadDefaultStylesheetIfNecessary();
-
-    static RuleSet* viewSourceStyle();
+    RuleSet* defaultStyle() { return m_defaultStyle;}
+    RuleSet* defaultViewportStyle() { return m_defaultViewportStyle;}
+    RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle;}
+    RuleSet* defaultPrintStyle() { return m_defaultPrintStyle;}
+    RuleSet* defaultViewSourceStyle();
 
     // FIXME: Remove WAP support.
-    static RuleSet* xhtmlMobileProfileStyle();
+    RuleSet* defaultXHTMLMobileProfileStyle();
+
+    StyleSheetContents* defaultStyleSheet() { return m_viewportStyleSheet; }
+    StyleSheetContents* viewportStyleSheet() { return m_viewportStyleSheet; }
+    StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet; }
+    StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet; }
+    StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet; }
+    StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet; }
 
 private:
-    static void loadDefaultStyle();
+    CSSDefaultStyleSheets();
+
+    RuleSet* m_defaultStyle;
+    RuleSet* m_defaultViewportStyle;
+    RuleSet* m_defaultQuirksStyle;
+    RuleSet* m_defaultPrintStyle;
+    RuleSet* m_defaultViewSourceStyle;
+    RuleSet* m_defaultXHTMLMobileProfileStyle;
+
+    StyleSheetContents* m_defaultStyleSheet;
+    StyleSheetContents* m_viewportStyleSheet;
+    StyleSheetContents* m_quirksStyleSheet;
+    StyleSheetContents* m_svgStyleSheet;
+    StyleSheetContents* m_mediaControlsStyleSheet;
+    StyleSheetContents* m_fullscreenStyleSheet;
 };
 
 } // namespace WebCore

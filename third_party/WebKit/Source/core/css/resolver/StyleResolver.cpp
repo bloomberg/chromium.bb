@@ -135,9 +135,6 @@ StyleResolver::StyleResolver(Document& document)
     , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
-    // FIXME: Why do this here instead of as part of resolving style on the root?
-    CSSDefaultStyleSheets::loadDefaultStylesheetIfNecessary();
-
     // Construct document root element default style. This is needed
     // to evaluate media queries that contain relative constraints, like "screen and (max-width: 10em)"
     // This is here instead of constructor because when constructor is run,
@@ -312,11 +309,12 @@ void StyleResolver::collectFeatures()
     // Collect all ids and rules using sibling selectors (:first-child and similar)
     // in the current set of stylesheets. Style sharing code uses this information to reject
     // sharing candidates.
-    if (CSSDefaultStyleSheets::defaultStyle)
-        m_features.add(CSSDefaultStyleSheets::defaultStyle->features());
+    CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
+    if (defaultStyleSheets.defaultStyle())
+        m_features.add(defaultStyleSheets.defaultStyle()->features());
 
     if (document().isViewSource())
-        m_features.add(CSSDefaultStyleSheets::viewSourceStyle()->features());
+        m_features.add(defaultStyleSheets.defaultViewSourceStyle()->features());
 
     if (m_watchedSelectorsRules)
         m_features.add(m_watchedSelectorsRules->features());
@@ -523,17 +521,18 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
 {
     collector.setMatchingUARules(true);
 
+    CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
     RuleSet* userAgentStyleSheet = m_medium->mediaTypeMatchSpecific("print")
-        ? CSSDefaultStyleSheets::defaultPrintStyle : CSSDefaultStyleSheets::defaultStyle;
+        ? defaultStyleSheets.defaultPrintStyle() : defaultStyleSheets.defaultStyle();
     matchUARules(collector, userAgentStyleSheet);
 
     // In quirks mode, we match rules from the quirks user agent sheet.
     if (document().inQuirksMode())
-        matchUARules(collector, CSSDefaultStyleSheets::defaultQuirksStyle);
+        matchUARules(collector, defaultStyleSheets.defaultQuirksStyle());
 
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
     if (document().isViewSource())
-        matchUARules(collector, CSSDefaultStyleSheets::viewSourceStyle());
+        matchUARules(collector, defaultStyleSheets.defaultViewSourceStyle());
 
     collector.setMatchingUARules(false);
 
@@ -688,7 +687,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     bool needsCollection = false;
-    CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(element, needsCollection);
+    CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(element, needsCollection);
     if (needsCollection)
         collectFeatures();
 
@@ -997,7 +996,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     PageRuleCollector collector(rootElementStyle, pageIndex);
 
-    collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
+    collector.matchPageRules(CSSDefaultStyleSheets::instance().defaultPrintStyle());
 
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->matchPageRules(collector);
@@ -1031,13 +1030,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
 void StyleResolver::collectViewportRules()
 {
-    viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::defaultStyle, ViewportStyleResolver::UserAgentOrigin);
+    CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
+    viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultStyle(), ViewportStyleResolver::UserAgentOrigin);
 
     if (!InspectorInstrumentation::applyViewportStyleOverride(&document(), this))
-        viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::defaultViewportStyle, ViewportStyleResolver::UserAgentOrigin);
+        viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultViewportStyle(), ViewportStyleResolver::UserAgentOrigin);
 
     if (document().isMobileDocument())
-        viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
+        viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->collectViewportRulesTo(this);

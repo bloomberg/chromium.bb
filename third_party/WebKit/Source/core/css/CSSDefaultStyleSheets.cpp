@@ -42,19 +42,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RuleSet* CSSDefaultStyleSheets::defaultStyle;
-RuleSet* CSSDefaultStyleSheets::defaultViewportStyle;
-RuleSet* CSSDefaultStyleSheets::defaultQuirksStyle;
-RuleSet* CSSDefaultStyleSheets::defaultPrintStyle;
-RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle;
-RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle;
-
-StyleSheetContents* CSSDefaultStyleSheets::defaultStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::viewportStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::quirksStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::svgStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::fullscreenStyleSheet;
+CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
+{
+    DEFINE_STATIC_LOCAL(CSSDefaultStyleSheets, cssDefaultStyleSheets, ());
+    return cssDefaultStyleSheets;
+}
 
 static const MediaQueryEvaluator& screenEval()
 {
@@ -80,88 +72,93 @@ static StyleSheetContents* parseUASheet(const char* characters, unsigned size)
     return parseUASheet(String(characters, size));
 }
 
-void CSSDefaultStyleSheets::loadDefaultStylesheetIfNecessary()
+CSSDefaultStyleSheets::CSSDefaultStyleSheets()
+    : m_defaultStyle(0)
+    , m_defaultViewportStyle(0)
+    , m_defaultQuirksStyle(0)
+    , m_defaultPrintStyle(0)
+    , m_defaultViewSourceStyle(0)
+    , m_defaultXHTMLMobileProfileStyle(0)
+    , m_defaultStyleSheet(0)
+    , m_viewportStyleSheet(0)
+    , m_quirksStyleSheet(0)
+    , m_svgStyleSheet(0)
+    , m_mediaControlsStyleSheet(0)
+    , m_fullscreenStyleSheet(0)
 {
-    if (!defaultStyle)
-        loadDefaultStyle();
-}
-
-void CSSDefaultStyleSheets::loadDefaultStyle()
-{
-    ASSERT(!defaultStyle);
-    defaultStyle = RuleSet::create().leakPtr();
-    defaultViewportStyle = RuleSet::create().leakPtr();
-    defaultPrintStyle = RuleSet::create().leakPtr();
-    defaultQuirksStyle = RuleSet::create().leakPtr();
+    m_defaultStyle = RuleSet::create().leakPtr();
+    m_defaultViewportStyle = RuleSet::create().leakPtr();
+    m_defaultPrintStyle = RuleSet::create().leakPtr();
+    m_defaultQuirksStyle = RuleSet::create().leakPtr();
 
     // Strict-mode rules.
     String defaultRules = String(htmlUserAgentStyleSheet, sizeof(htmlUserAgentStyleSheet)) + RenderTheme::theme().extraDefaultStyleSheet();
-    defaultStyleSheet = parseUASheet(defaultRules);
-    defaultStyle->addRulesFromSheet(defaultStyleSheet, screenEval());
+    m_defaultStyleSheet = parseUASheet(defaultRules);
+    m_defaultStyle->addRulesFromSheet(m_defaultStyleSheet, screenEval());
 #if OS(ANDROID)
     String viewportRules(viewportAndroidUserAgentStyleSheet, sizeof(viewportAndroidUserAgentStyleSheet));
 #else
     String viewportRules;
 #endif
-    viewportStyleSheet = parseUASheet(viewportRules);
-    defaultViewportStyle->addRulesFromSheet(viewportStyleSheet, screenEval());
-    defaultPrintStyle->addRulesFromSheet(defaultStyleSheet, printEval());
+    m_viewportStyleSheet = parseUASheet(viewportRules);
+    m_defaultViewportStyle->addRulesFromSheet(m_viewportStyleSheet, screenEval());
+    m_defaultPrintStyle->addRulesFromSheet(m_defaultStyleSheet, printEval());
 
     // Quirks-mode rules.
     String quirksRules = String(quirksUserAgentStyleSheet, sizeof(quirksUserAgentStyleSheet)) + RenderTheme::theme().extraQuirksStyleSheet();
-    quirksStyleSheet = parseUASheet(quirksRules);
-    defaultQuirksStyle->addRulesFromSheet(quirksStyleSheet, screenEval());
+    m_quirksStyleSheet = parseUASheet(quirksRules);
+    m_defaultQuirksStyle->addRulesFromSheet(m_quirksStyleSheet, screenEval());
 }
 
-RuleSet* CSSDefaultStyleSheets::viewSourceStyle()
+RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
 {
-    if (!defaultViewSourceStyle) {
-        defaultViewSourceStyle = RuleSet::create().leakPtr();
-        defaultViewSourceStyle->addRulesFromSheet(parseUASheet(sourceUserAgentStyleSheet, sizeof(sourceUserAgentStyleSheet)), screenEval());
+    if (!m_defaultViewSourceStyle) {
+        m_defaultViewSourceStyle = RuleSet::create().leakPtr();
+        m_defaultViewSourceStyle->addRulesFromSheet(parseUASheet(sourceUserAgentStyleSheet, sizeof(sourceUserAgentStyleSheet)), screenEval());
     }
-    return defaultViewSourceStyle;
+    return m_defaultViewSourceStyle;
 }
 
-RuleSet* CSSDefaultStyleSheets::xhtmlMobileProfileStyle()
+RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
 {
-    if (!defaultXHTMLMobileProfileStyle) {
-        defaultXHTMLMobileProfileStyle = RuleSet::create().leakPtr();
-        defaultXHTMLMobileProfileStyle->addRulesFromSheet(parseUASheet(xhtmlmpUserAgentStyleSheet, sizeof(xhtmlmpUserAgentStyleSheet)), screenEval());
+    if (!m_defaultXHTMLMobileProfileStyle) {
+        m_defaultXHTMLMobileProfileStyle = RuleSet::create().leakPtr();
+        m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(parseUASheet(xhtmlmpUserAgentStyleSheet, sizeof(xhtmlmpUserAgentStyleSheet)), screenEval());
     }
-    return defaultXHTMLMobileProfileStyle;
+    return m_defaultXHTMLMobileProfileStyle;
 }
 
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element, bool& changedDefaultStyle)
 {
     // FIXME: We should assert that the sheet only styles SVG elements.
-    if (element->isSVGElement() && !svgStyleSheet) {
-        svgStyleSheet = parseUASheet(svgUserAgentStyleSheet, sizeof(svgUserAgentStyleSheet));
-        defaultStyle->addRulesFromSheet(svgStyleSheet, screenEval());
-        defaultPrintStyle->addRulesFromSheet(svgStyleSheet, printEval());
+    if (element->isSVGElement() && !m_svgStyleSheet) {
+        m_svgStyleSheet = parseUASheet(svgUserAgentStyleSheet, sizeof(svgUserAgentStyleSheet));
+        m_defaultStyle->addRulesFromSheet(m_svgStyleSheet, screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(m_svgStyleSheet, printEval());
         changedDefaultStyle = true;
     }
 
     // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
-    if (!mediaControlsStyleSheet && (element->hasTagName(videoTag) || element->hasTagName(audioTag))) {
+    if (!m_mediaControlsStyleSheet && (element->hasTagName(videoTag) || element->hasTagName(audioTag))) {
         String mediaRules = String(mediaControlsUserAgentStyleSheet, sizeof(mediaControlsUserAgentStyleSheet)) + RenderTheme::theme().extraMediaControlsStyleSheet();
-        mediaControlsStyleSheet = parseUASheet(mediaRules);
-        defaultStyle->addRulesFromSheet(mediaControlsStyleSheet, screenEval());
-        defaultPrintStyle->addRulesFromSheet(mediaControlsStyleSheet, printEval());
+        m_mediaControlsStyleSheet = parseUASheet(mediaRules);
+        m_defaultStyle->addRulesFromSheet(m_mediaControlsStyleSheet, screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(m_mediaControlsStyleSheet, printEval());
         changedDefaultStyle = true;
     }
 
     // FIXME: This only works because we Force recalc the entire document so the new sheet
     // is loaded for <html> and the correct styles apply to everyone.
-    if (!fullscreenStyleSheet && FullscreenElementStack::isFullScreen(&element->document())) {
+    if (!m_fullscreenStyleSheet && FullscreenElementStack::isFullScreen(&element->document())) {
         String fullscreenRules = String(fullscreenUserAgentStyleSheet, sizeof(fullscreenUserAgentStyleSheet)) + RenderTheme::theme().extraFullScreenStyleSheet();
-        fullscreenStyleSheet = parseUASheet(fullscreenRules);
-        defaultStyle->addRulesFromSheet(fullscreenStyleSheet, screenEval());
-        defaultQuirksStyle->addRulesFromSheet(fullscreenStyleSheet, screenEval());
+        m_fullscreenStyleSheet = parseUASheet(fullscreenRules);
+        m_defaultStyle->addRulesFromSheet(m_fullscreenStyleSheet, screenEval());
+        m_defaultQuirksStyle->addRulesFromSheet(m_fullscreenStyleSheet, screenEval());
         changedDefaultStyle = true;
     }
 
-    ASSERT(!defaultStyle->features().hasIdsInSelectors());
-    ASSERT(defaultStyle->features().siblingRules.isEmpty());
+    ASSERT(!m_defaultStyle->features().hasIdsInSelectors());
+    ASSERT(m_defaultStyle->features().siblingRules.isEmpty());
 }
 
 } // namespace WebCore
