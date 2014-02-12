@@ -1,7 +1,7 @@
 Name: libsrtp
 URL: http://srtp.sourceforge.net/srtp.html
 Version: 1.4.4
-License: BSD-based license
+License: 3-clause BSD
 License File: srtp/LICENSE
 Security Critical: Yes
 
