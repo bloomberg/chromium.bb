@@ -497,9 +497,9 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   // In immersive fullscreen, the infobar always starts near the top of the
   // screen, just under the "light bar" rectangular stripes.
   if (immersive_mode_controller_->IsEnabled()) {
-    top = immersive_mode_controller_->ShouldHideTabIndicators()
-              ? browser_view_->y()
-              : browser_view_->y() + TabStrip::GetImmersiveHeight();
+    top = browser_view_->y();
+    if (!immersive_mode_controller_->ShouldHideTabIndicators())
+      top += TabStrip::GetImmersiveHeight();
   }
   // Raise the |infobar_container_| by its vertical overlap.
   infobar_container_->SetVisible(InfobarVisible());

@@ -46,7 +46,7 @@ void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
 
     for (size_t i = 0; i < infobar_service_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
-      // OnInfoBarAnimated() for each infobar.
+      // OnInfoBarStateChanged() for each infobar.
       AddInfoBar(infobar_service_->infobar_at(i), i, false, NO_CALLBACK);
     }
   }
