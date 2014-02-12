@@ -698,17 +698,8 @@ fi
 
 "$@"
 
-# Emit a summary step for three reasons:
-# - The annotator will attribute non-zero exit status to the last build step.
-#   This can misattribute failures to the last build step.
-# - runtest.py wraps the builds to scrape perf data. It emits an annotator
-#   tag on exit which misattributes perf results to the last build step.
-# - Provide a label step in which to show summary result.
-#   Otherwise these go back to the preamble.
-echo "@@@BUILD_STEP summary@@@"
 if [[ ${RETCODE} != 0 ]]; then
-  echo "There were failed stages."
+  echo "@@@BUILD_STEP summary@@@"
+  echo There were failed stages.
   exit ${RETCODE}
-else
-  echo "Success."
 fi
