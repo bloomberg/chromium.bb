@@ -181,7 +181,8 @@ void WindowState::Deactivate() {
 }
 
 void WindowState::Restore() {
-  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  if (!IsNormalShowType())
+    SetWindowShowType(SHOW_TYPE_NORMAL);
 }
 
 void WindowState::ToggleFullscreen() {

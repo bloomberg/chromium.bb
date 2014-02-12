@@ -130,7 +130,10 @@ class AcceleratorCommandsFullscreenBrowserTest
 
   // Returns true if |window_state|'s show state is |initial_show_state_|.
   bool IsInitialShowState(const ash::wm::WindowState* window_state) const {
-    return window_state->GetShowState() == initial_show_state_;
+    if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
+      return window_state->IsMaximized();
+    else
+      return window_state->IsNormalShowState();
   }
 
   bool put_browser_in_immersive() const {
