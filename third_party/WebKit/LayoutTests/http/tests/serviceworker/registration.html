@@ -8,7 +8,7 @@
 
       function test_registerBasics() {
           debug("Registering normal pattern");
-          return navigator.registerServiceWorker("/*", "serviceworker.js").then(
+          return navigator.serviceWorker.register("serviceworker.js", {scope:"/*"}).then(
               function(worker) {
                   debug("Successfully registered");
                   return worker;
@@ -20,7 +20,7 @@
       }
       function test_registerPatternOutsideDomain() {
           debug("Registering pattern outside domain");
-          return navigator.registerServiceWorker("http://foo.com/*", "serviceworker.js")
+          return navigator.serviceWorker.register("serviceworker.js", {scope:"http://foo.com/*"})
               .catch(function(e) {
                   regError = e;
                   shouldBe("'SecurityError'", "regError.name");
@@ -28,7 +28,7 @@
       }
       function test_registerScriptOutsideDomain() {
           debug("Registering pattern outside domain");
-          return navigator.registerServiceWorker("/*", "http://foo.com/serviceworker.js")
+          return navigator.serviceWorker.register("http://foo.com/serviceworker.js")
               .catch(function(e) {
                   regError = e;
                   shouldBe("'SecurityError'", "regError.name");
