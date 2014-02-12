@@ -51,6 +51,7 @@ class MEDIA_EXPORT UsbMidiDevice {
     // Otherwise |callback| will be called with |false| and empty devices.
     // When this factory is destroyed during the operation, the operation
     // will be canceled silently (i.e. |callback| will not be called).
+    // This function can be called at most once per instance.
     virtual void EnumerateDevices(UsbMidiDeviceDelegate* delegate,
                                   Callback callback) = 0;
   };

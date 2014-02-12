@@ -9,7 +9,8 @@
 
 namespace media {
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA)
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
+    !defined(OS_ANDROID)
 // TODO(toyoshim): implement MidiManager for other platforms.
 MidiManager* MidiManager::Create() {
   return new MidiManager;
