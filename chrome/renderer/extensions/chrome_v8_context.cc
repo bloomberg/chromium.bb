@@ -16,6 +16,7 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_urls.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -117,6 +118,17 @@ Feature::Availability ChromeV8Context::GetAvailability(
                                                         extension,
                                                         context_type_,
                                                         GetURL());
+}
+
+void ChromeV8Context::DispatchEvent(const char* event_name,
+                                    v8::Handle<v8::Array> args) const {
+  v8::HandleScope handle_scope(isolate());
+  v8::Context::Scope context_scope(v8_context());
+
+  v8::Handle<v8::Value> argv[] = {
+      v8::String::NewFromUtf8(isolate(), event_name), args};
+  module_system_->CallModuleMethod(
+      kEventBindings, "dispatchEvent", arraysize(argv), argv);
 }
 
 void ChromeV8Context::DispatchOnUnloadEvent() {

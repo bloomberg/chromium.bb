@@ -13,6 +13,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/audio_bus.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
@@ -114,9 +115,13 @@ void DeleteAudioBus(scoped_ptr<media::AudioBus> audio_bus) {
 class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
-  explicit CastVideoSink(const blink::WebMediaStreamTrack& track)
+  // |track| provides data for this sink.
+  // |error_callback| is called if video formats don't match.
+  CastVideoSink(const blink::WebMediaStreamTrack& track,
+                const CastRtpStream::ErrorCallback& error_callback)
       : track_(track),
         sink_added_(false),
+        error_callback_(error_callback),
         render_thread_task_runner_(content::RenderThread::Get()
                                        ->GetMessageLoop()
                                        ->message_loop_proxy()) {}
@@ -153,6 +158,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::FrameInput> frame_input_;
   bool sink_added_;
+  CastRtpStream::ErrorCallback error_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
@@ -165,9 +171,13 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
                       public content::MediaStreamAudioSink {
  public:
-  explicit CastAudioSink(const blink::WebMediaStreamTrack& track)
+  // |track| provides data for this sink.
+  // |error_callback| is called if audio formats don't match.
+  CastAudioSink(const blink::WebMediaStreamTrack& track,
+                const CastRtpStream::ErrorCallback& error_callback)
       : track_(track),
         sink_added_(false),
+        error_callback_(error_callback),
         weak_factory_(this),
         render_thread_task_runner_(content::RenderThread::Get()
                                        ->GetMessageLoop()
@@ -191,6 +201,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio / video sync.
 
+    // TODO(hclam): We shouldn't hop through the render thread.
     // Bounce the call from the real-time audio thread to the render thread.
     // Needed since frame_input_ can be changed runtime by the render thread.
     media::AudioBus* const audio_bus_ptr = audio_bus.get();
@@ -230,6 +241,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::FrameInput> frame_input_;
   bool sink_added_;
+  CastRtpStream::ErrorCallback error_callback_;
   base::WeakPtrFactory<CastAudioSink> weak_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
@@ -264,12 +276,9 @@ CastRtpParams::CastRtpParams() {
 CastRtpParams::~CastRtpParams() {
 }
 
-CastRtpStream::CastRtpStream(
-    const blink::WebMediaStreamTrack& track,
-    const scoped_refptr<CastSession>& session)
-    : track_(track),
-      cast_session_(session) {
-}
+CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
+                             const scoped_refptr<CastSession>& session)
+    : track_(track), cast_session_(session), weak_factory_(this) {}
 
 CastRtpStream::~CastRtpStream() {
 }
@@ -285,35 +294,60 @@ CastRtpParams CastRtpStream::GetParams() {
   return params_;
 }
 
-void CastRtpStream::Start(const CastRtpParams& params) {
+void CastRtpStream::Start(const CastRtpParams& params,
+                          const base::Closure& start_callback,
+                          const base::Closure& stop_callback,
+                          const ErrorCallback& error_callback) {
+  stop_callback_ = stop_callback;
+  error_callback_ = error_callback;
+
   if (IsAudio()) {
     AudioSenderConfig config;
     if (!ToAudioSenderConfig(params, &config)) {
-      DVLOG(1) << "Invalid parameters for audio.";
+      DidEncounterError("Invalid parameters for audio.");
+      return;
     }
-    audio_sink_.reset(new CastAudioSink(track_));
+    // In case of error we have to go through DidEncounterError() to stop
+    // the streaming after reporting the error.
+    audio_sink_.reset(new CastAudioSink(
+        track_,
+        media::BindToCurrentLoop(base::Bind(&CastRtpStream::DidEncounterError,
+                                            weak_factory_.GetWeakPtr()))));
     cast_session_->StartAudio(
         config,
         base::Bind(&CastAudioSink::AddToTrack,
                    audio_sink_->AsWeakPtr()));
+    start_callback.Run();
   } else {
     VideoSenderConfig config;
     if (!ToVideoSenderConfig(params, &config)) {
-      DVLOG(1) << "Invalid parameters for video.";
+      DidEncounterError("Invalid parameters for video.");
+      return;
     }
-    video_sink_.reset(new CastVideoSink(track_));
+    // See the code for audio above for explanation of callbacks.
+    video_sink_.reset(new CastVideoSink(
+        track_,
+        media::BindToCurrentLoop(base::Bind(&CastRtpStream::DidEncounterError,
+                                            weak_factory_.GetWeakPtr()))));
     cast_session_->StartVideo(
         config,
         base::Bind(&CastVideoSink::AddToTrack,
                    video_sink_->AsWeakPtr()));
+    start_callback.Run();
   }
 }
 
 void CastRtpStream::Stop() {
   audio_sink_.reset();
   video_sink_.reset();
+  stop_callback_.Run();
 }
 
 bool CastRtpStream::IsAudio() const {
   return track_.source().type() == blink::WebMediaStreamSource::TypeAudio;
+}
+
+void CastRtpStream::DidEncounterError(const std::string& message) {
+  error_callback_.Run(message);
+  Stop();
 }

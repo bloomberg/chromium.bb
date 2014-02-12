@@ -54,6 +54,10 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
                           scoped_ptr<CastRtpStream> stream2,
                           scoped_ptr<CastUdpTransport> udp_transport);
 
+  void CallStartCallback(int stream_id);
+  void CallStopCallback(int stream_id);
+  void CallErrorCallback(int stream_id, const std::string& message);
+
   // Gets the RTP stream or UDP transport indexed by an ID.
   // If not found, returns NULL and throws a V8 exception.
   CastRtpStream* GetRtpStreamOrThrow(int stream_id) const;

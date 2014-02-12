@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 class CastAudioSink;
@@ -90,6 +92,8 @@ struct CastRtpParams {
 // stream.
 class CastRtpStream {
  public:
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
+
   CastRtpStream(const blink::WebMediaStreamTrack& track,
                 const scoped_refptr<CastSession>& session);
   ~CastRtpStream();
@@ -102,7 +106,13 @@ class CastRtpStream {
 
   // Begin encoding of media stream and then submit the encoded streams
   // to underlying transport.
-  void Start(const CastRtpParams& params);
+  // When the stream is started |start_callback| is called.
+  // When the stream is stopped |stop_callback| is called.
+  // When there is an error |error_callback| is called with a message.
+  void Start(const CastRtpParams& params,
+             const base::Closure& start_callback,
+             const base::Closure& stop_callback,
+             const ErrorCallback& error_callback);
 
   // Stop encoding.
   void Stop();
@@ -112,11 +122,16 @@ class CastRtpStream {
   // track is a video track.
   bool IsAudio() const;
 
+  void DidEncounterError(const std::string& message);
+
   blink::WebMediaStreamTrack track_;
   const scoped_refptr<CastSession> cast_session_;
   scoped_ptr<CastAudioSink> audio_sink_;
   scoped_ptr<CastVideoSink> video_sink_;
   CastRtpParams params_;
+  base::WeakPtrFactory<CastRtpStream> weak_factory_;
+  base::Closure stop_callback_;
+  ErrorCallback error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRtpStream);
 };

@@ -99,6 +99,8 @@ class ChromeV8Context : public RequestSender::Source {
                                     int argc,
                                     v8::Handle<v8::Value> argv[]) const;
 
+  void DispatchEvent(const char* event_name, v8::Handle<v8::Array> args) const;
+
   // Fires the onunload event on the unload_event module.
   void DispatchOnUnloadEvent();
 
