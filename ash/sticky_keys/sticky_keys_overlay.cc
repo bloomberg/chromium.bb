@@ -32,12 +32,9 @@ const int kHorizontalOverlayOffset = 18;
 // Vertical offset of the overlay from the top left of the screen.
 const int kVerticalOverlayOffset = 18;
 
-// Spacing between overlay contents and border.
-const int kHorizontalBorderSpacing = 9;
-const int kVerticalBorderSpacing = 4;
-
-// Spacing between modifier key labels.
-const int kKeyLabelSpacing = 7;
+// Font style used for modifier key labels.
+const ui::ResourceBundle::FontStyle kKeyLabelFontStyle =
+    ui::ResourceBundle::LargeFont;
 
 // Duration of slide animation when overlay is shown or hidden.
 const int kSlideAnimationDurationMs = 100;
@@ -74,7 +71,7 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
 
   SetText(base::UTF8ToUTF16(key_name));
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  SetFontList(rb->GetFontList(ui::ResourceBundle::LargeFont));
+  SetFontList(rb->GetFontList(kKeyLabelFontStyle));
   SetAutoColorReadabilityEnabled(false);
   SetFocusable(false);
   SetEnabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
@@ -143,10 +140,21 @@ class StickyKeysOverlayView : public views::WidgetDelegateView {
 };
 
 StickyKeysOverlayView::StickyKeysOverlayView() {
+  const gfx::Font& font =
+      ui::ResourceBundle::GetSharedInstance().GetFont(kKeyLabelFontStyle);
+  int font_size = font.GetFontSize();
+  int font_padding = font.GetHeight() - font.GetBaseline();
+
+  // Text should have a margin of 0.5 times the font size on each side, so
+  // the spacing between two labels will be the same as the font size.
+  int horizontal_spacing = font_size / 2;
+  int vertical_spacing = font_size / 2 - font_padding;
+  int child_spacing = font_size - 2 * font_padding;
+
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        kHorizontalBorderSpacing,
-                                        kVerticalBorderSpacing,
-                                        kKeyLabelSpacing));
+                                        horizontal_spacing,
+                                        vertical_spacing,
+                                        child_spacing));
   AddKeyLabel(ui::EF_CONTROL_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_CONTROL_KEY));
   AddKeyLabel(ui::EF_ALT_DOWN,
