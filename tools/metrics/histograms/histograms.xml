@@ -15427,6 +15427,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.RelTypesLinkAdded" enum="PrerenderRelTypes">
+  <summary>
+    For each prerender link added to a document, records the rel types present
+    on the link element.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.RelTypesLinkStarted" enum="PrerenderRelTypes">
+  <summary>
+    For each prerender in a document which starts prerendering, records the rel
+    types present on the link element.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.RendererIdleTime" units="milliseconds">
   <obsolete>
     deprecated Nov 16 2012
@@ -30143,6 +30157,13 @@ other types of suffix sets.
   <int value="1" label="PAGEVIEW_EVENT_TOP_SITE_NEW_URL"/>
   <int value="2" label="PAGEVIEW_EVENT_LOAD_START"/>
   <int value="3" label="PAGEVIEW_EVENT_TOP_SITE_LOAD_START"/>
+</enum>
+
+<enum name="PrerenderRelTypes" type="int">
+  <int value="0" label="PRERENDER_REL_TYPE_NONE"/>
+  <int value="1" label="PRERENDER_REL_TYPE_PRERENDER"/>
+  <int value="2" label="PRERENDER_REL_TYPE_NEXT"/>
+  <int value="3" label="PRERENDER_REL_TYPE_PRERENDER_AND_NEXT"/>
 </enum>
 
 <enum name="PrerenderSchemeCancelReason" type="int">

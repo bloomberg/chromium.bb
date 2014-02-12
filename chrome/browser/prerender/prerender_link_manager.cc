@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -42,7 +43,7 @@ bool ShouldStartRelNextPrerenders() {
   return experiment_name.find("Yes") != std::string::npos;
 }
 
-bool ShouldStartPrerender(uint32 rel_types) {
+bool ShouldStartPrerender(const uint32 rel_types) {
   const bool should_start_rel_next_prerenders =
       ShouldStartRelNextPrerenders();
 
@@ -53,6 +54,31 @@ bool ShouldStartPrerender(uint32 rel_types) {
     return true;
   }
   return false;
+}
+
+COMPILE_ASSERT(PrerenderRelTypePrerender == 0x1,
+               RelTypeHistogramEnum_must_match_PrerenderRelType);
+COMPILE_ASSERT(PrerenderRelTypeNext == 0x2,
+               RelTypeHistogramEnum_must_match_PrerenderRelType);
+enum RelTypeHistogramEnum {
+  RelTypeHistogramEnumNone = 0,
+  RelTypeHistogramEnumPrerender = PrerenderRelTypePrerender,
+  RelTypeHistogramEnumNext = PrerenderRelTypeNext,
+  RelTypeHistogramEnumPrerenderAndNext =
+      PrerenderRelTypePrerender | PrerenderRelTypeNext,
+  RelTypeHistogramEnumMax,
+};
+
+void RecordLinkManagerAdded(const uint32 rel_types) {
+  const uint32 enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded", enum_value,
+                            RelTypeHistogramEnumMax);
+}
+
+void RecordLinkManagerStarting(const uint32 rel_types) {
+  const uint32 enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkStarted", enum_value,
+                            RelTypeHistogramEnumMax);
 }
 
 void Send(int child_id, IPC::Message* raw_message) {
@@ -163,6 +189,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
                 render_view_route_id, manager_->GetCurrentTimeTicks(),
                 prerender_contents);
   prerenders_.push_back(prerender);
+  RecordLinkManagerAdded(rel_types);
   if (prerender_contents)
     pending_prerender_manager_->ObserveLauncher(prerender_contents);
   else
@@ -360,6 +387,7 @@ void PrerenderLinkManager::StartPrerenders() {
     handle->SetObserver(this);
     if (handle->IsPrerendering())
       OnPrerenderStart(handle);
+    RecordLinkManagerStarting((*i)->rel_types);
 
     running_launcher_and_render_view_routes.insert(
         launcher_and_render_view_route);
