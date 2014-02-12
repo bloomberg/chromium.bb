@@ -2468,6 +2468,7 @@ sub GenerateFunction
     #   - takes a parameter that might raise an exception on conversion.
     #
     my $isEventListener = $name eq "addEventListener" || $name eq "removeEventListener";
+    my $isEventDispatcher = $name eq "dispatchEvent";
     my $isSecurityCheckNecessary = $interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"};
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
@@ -2478,11 +2479,7 @@ sub GenerateFunction
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
-    if ($isEventListener) {
-        my $lookupType = ($name eq "addEventListener") ? "OrCreate" : "Only";
-        my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
-        my $hiddenValueAction = ($name eq "addEventListener") ? "addHiddenValueToArray" : "removeHiddenValueFromArray";
-
+    if ($isEventListener || $isEventDispatcher) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
         AddToImplIncludes("core/frame/DOMWindow.h");
@@ -2496,6 +2493,14 @@ sub GenerateFunction
         if (!window->document())
             return;
     }
+END
+    }
+    if ($isEventListener) {
+        my $lookupType = ($name eq "addEventListener") ? "OrCreate" : "Only";
+        my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
+        my $hiddenValueAction = ($name eq "addEventListener") ? "addHiddenValueToArray" : "removeHiddenValueFromArray";
+
+        $code .= <<END;
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFind${lookupType});
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
