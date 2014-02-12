@@ -284,6 +284,12 @@ class CastSocket : public ApiResource,
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
 
+  // CertVerifier is owned by us but should be deleted AFTER SSLClientSocket
+  // since in some cases the destructor of SSLClientSocket may call a method
+  // to cancel a cert verification request.
+  scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
+
   // Owned ptr to the underlying TCP socket.
   scoped_ptr<net::TCPClientSocket> tcp_socket_;
   // Owned ptr to the underlying SSL socket.
@@ -291,8 +297,6 @@ class CastSocket : public ApiResource,
   // Certificate of the peer. This field may be empty if the peer
   // certificate is not yet fetched.
   std::string peer_cert_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
   // Reply received from the receiver to a challenge request.
   scoped_ptr<CastMessage> challenge_reply_;
 
