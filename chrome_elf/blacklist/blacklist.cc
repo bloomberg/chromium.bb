@@ -138,8 +138,14 @@ class OSInfo {
 };
 
 bool IsNonBrowserProcess() {
-  wchar_t* command_line = GetCommandLine();
-  return (command_line && wcsstr(command_line, L"--type"));
+  typedef bool (*IsSandboxedProcessFunc)();
+  IsSandboxedProcessFunc is_sandboxed_process =
+      reinterpret_cast<IsSandboxedProcessFunc>(
+          GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
+  if (is_sandboxed_process && is_sandboxed_process())
+    return true;
+
+  return false;
 }
 
 // Record that the thunk setup completed succesfully and close the registry
