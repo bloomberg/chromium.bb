@@ -94,10 +94,7 @@ VideoSender::VideoSender(
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       transport_sender_(transport_sender),
-      event_subscriber_(
-          cast_environment_->GetMessageSingleThreadTaskRunnerForThread(
-              CastEnvironment::MAIN),
-          kMaxEventSubscriberEntries),
+      event_subscriber_(kMaxEventSubscriberEntries),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),

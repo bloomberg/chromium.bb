@@ -393,8 +393,7 @@ class End2EndTest : public ::testing::Test {
         receiver_to_sender_(cast_environment_),
         sender_to_receiver_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
-        test_receiver_video_callback_(new TestReceiverVideoCallback()),
-        event_subscriber_(task_runner_) {
+        test_receiver_video_callback_(new TestReceiverVideoCallback()) {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);

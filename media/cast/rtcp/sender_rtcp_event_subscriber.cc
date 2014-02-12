@@ -6,28 +6,25 @@
 
 #include <utility>
 
-#include "base/single_thread_task_runner.h"
-#include "media/cast/cast_environment.h"
+#include "base/logging.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 
 namespace media {
 namespace cast {
 
 SenderRtcpEventSubscriber::SenderRtcpEventSubscriber(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_proxy,
     const size_t max_size_to_retain)
     : max_size_to_retain_(max_size_to_retain) {
-  DCHECK(main_thread_proxy->RunsTasksOnCurrentThread());
   DCHECK(max_size_to_retain_ > 0u);
 }
 
 SenderRtcpEventSubscriber::~SenderRtcpEventSubscriber() {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void SenderRtcpEventSubscriber::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (frame_event.type != kVideoFrameCaptured &&
       frame_event.type != kVideoFrameSentToEncoder &&
       frame_event.type != kVideoFrameEncoded) {
@@ -68,19 +65,19 @@ void SenderRtcpEventSubscriber::OnReceiveFrameEvent(
 
 void SenderRtcpEventSubscriber::OnReceivePacketEvent(
     const PacketEvent& packet_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing as RTP sender is not interested in packet events for RTCP.
 }
 
 void SenderRtcpEventSubscriber::OnReceiveGenericEvent(
     const GenericEvent& generic_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing as RTP sender is not interested in generic events for RTCP.
 }
 
 void SenderRtcpEventSubscriber::GetRtcpEventsAndReset(
     RtcpEventMap* rtcp_events) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
   rtcp_events->swap(rtcp_events_);
   rtcp_events_.clear();
 }

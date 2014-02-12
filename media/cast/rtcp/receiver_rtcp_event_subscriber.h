@@ -7,14 +7,12 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/raw_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 
 namespace base {
-
 class SingleThreadTaskRunner;
 }
 
@@ -39,17 +37,13 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
     kVideoEventSubscriber   // Only processes video events
   };
 
-  // |main_thread_proxy|: Check that the object is created in main thread.
-  // This object does not hold a reference on it.
   // |max_size_to_retain|: The object will keep up to |max_size_to_retain|
   // events
   // in the map. Once threshold has been reached, an event with the smallest
   // RTP timestamp will be removed.
   // |type|: Determines whether the subscriber will process only audio or video
   // events.
-  ReceiverRtcpEventSubscriber(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_proxy,
-      const size_t max_size_to_retain, Type type);
+  ReceiverRtcpEventSubscriber(const size_t max_size_to_retain, Type type);
 
   virtual ~ReceiverRtcpEventSubscriber();
 

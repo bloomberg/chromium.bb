@@ -17,7 +17,7 @@ namespace cast {
 
 namespace {
 
-const size_t kSizeThreshold = 10u;
+const size_t kMaxEventEntries = 10u;
 const int64 kDelayMs = 20L;
 
 }  // namespace
@@ -43,7 +43,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
 
   void Init(ReceiverRtcpEventSubscriber::Type type) {
     event_subscriber_.reset(
-        new ReceiverRtcpEventSubscriber(task_runner_, kSizeThreshold, type));
+        new ReceiverRtcpEventSubscriber(kMaxEventEntries, type));
     cast_environment_->Logging()->AddRawEventSubscriber(
         event_subscriber_.get());
   }

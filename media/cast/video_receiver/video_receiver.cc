@@ -103,8 +103,6 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              transport::PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
       event_subscriber_(
-          cast_environment->GetMessageSingleThreadTaskRunnerForThread(
-              CastEnvironment::MAIN),
           kMaxEventSubscriberEntries,
           ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
       codec_(video_config.codec),

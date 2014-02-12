@@ -36,19 +36,18 @@ class LoggingImplTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
     logging_.reset(new LoggingImpl(task_runner_, config_));
-    event_subscriber_.reset(new SimpleEventSubscriber(task_runner_));
-    logging_->AddRawEventSubscriber(event_subscriber_.get());
+    logging_->AddRawEventSubscriber(&event_subscriber_);
   }
 
   virtual ~LoggingImplTest() {
-    logging_->RemoveRawEventSubscriber(event_subscriber_.get());
+    logging_->RemoveRawEventSubscriber(&event_subscriber_);
   }
 
   CastLoggingConfig config_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<LoggingImpl> logging_;
   base::SimpleTestTickClock testing_clock_;
-  scoped_ptr<SimpleEventSubscriber> event_subscriber_;
+  SimpleEventSubscriber event_subscriber_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingImplTest);
 };
@@ -73,7 +72,7 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
 
   // Get logging data.
   std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
+  event_subscriber_.GetFrameEventsAndReset(&frame_events);
   // Size of vector should be equal to the number of events logged,
   // which equals to number of frames in this case.
   EXPECT_EQ(frame_id, frame_events.size());
@@ -115,7 +114,7 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
   } while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
   std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
+  event_subscriber_.GetFrameEventsAndReset(&frame_events);
   // Size of vector should be equal to the number of events logged, which
   // equals to number of frames in this case.
   EXPECT_EQ(frame_id, frame_events.size());
@@ -152,7 +151,7 @@ TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
   } while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
   std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
+  event_subscriber_.GetFrameEventsAndReset(&frame_events);
   // Size of vector should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_events.size());
   // Verify stats.
@@ -198,7 +197,7 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
   } while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
   std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
+  event_subscriber_.GetFrameEventsAndReset(&frame_events);
   // Size of vector should be equal to the number of frames logged.
   EXPECT_EQ(num_events, frame_events.size());
   // Multiple events captured per frame.
@@ -226,7 +225,7 @@ TEST_F(LoggingImplTest, PacketLogging) {
   } while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
   std::vector<PacketEvent> packet_events;
-  event_subscriber_->GetPacketEventsAndReset(&packet_events);
+  event_subscriber_.GetPacketEventsAndReset(&packet_events);
   // Size of vector should be equal to the number of packets logged.
   EXPECT_EQ(frame_id * kNumPacketsPerFrame, packet_events.size());
   // Verify stats.
@@ -287,7 +286,7 @@ TEST_F(LoggingImplTest, GenericLogging) {
 
   // Size of generic event vector = number of generic events logged.
   std::vector<GenericEvent> generic_events;
-  event_subscriber_->GetGenericEventsAndReset(&generic_events);
+  event_subscriber_.GetGenericEventsAndReset(&generic_events);
   EXPECT_EQ(num_events, generic_events.size());
 
   // Verify each type of event has expected number of events logged.
@@ -326,7 +325,7 @@ TEST_F(LoggingImplTest, GenericLogging) {
 }
 
 TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
-  SimpleEventSubscriber event_subscriber_2(task_runner_);
+  SimpleEventSubscriber event_subscriber_2;
 
   // Now logging_ has two subscribers.
   logging_->AddRawEventSubscriber(&event_subscriber_2);
@@ -336,7 +335,7 @@ TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
                              /*frame_id*/ 0u);
 
   std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
+  event_subscriber_.GetFrameEventsAndReset(&frame_events);
   EXPECT_EQ(1u, frame_events.size());
   frame_events.clear();
   event_subscriber_2.GetFrameEventsAndReset(&frame_events);

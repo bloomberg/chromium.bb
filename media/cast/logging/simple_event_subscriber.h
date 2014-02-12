@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/raw_event_subscriber.h"
 
@@ -21,17 +19,13 @@ namespace cast {
 // list of events that have acccumulated since last inovcation.
 class SimpleEventSubscriber : public RawEventSubscriber {
  public:
-  // |main_thread_proxy|: Only used for ensuring the subscriber is only called
-  // on the main thread. This object does not keep a reference on it.
-  explicit SimpleEventSubscriber(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_proxy);
+  SimpleEventSubscriber();
 
   virtual ~SimpleEventSubscriber();
 
+  // RawEventSubscriber implementations.
   virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) OVERRIDE;
-
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) OVERRIDE;
-
   virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
       OVERRIDE;
 

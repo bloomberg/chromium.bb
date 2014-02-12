@@ -7,16 +7,10 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/raw_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_defines.h"
-
-namespace base {
-
-class SingleThreadTaskRunner;
-}
 
 namespace media {
 namespace cast {
@@ -37,15 +31,12 @@ typedef std::map<RtpTimestamp, RtcpEvent> RtcpEventMap;
 //   timestamp) up to the size limit.
 class SenderRtcpEventSubscriber : public RawEventSubscriber {
  public:
-  // |main_thread_proxy|: Check that the object is created in main thread.
-  // This object does not hold a reference on it.
   // |max_size_to_retain|: The object will keep up to |max_size_to_retain|
   // events
   // in the map. Once threshold has been reached, an event with the smallest
   // RTP timestamp will be removed.
-  SenderRtcpEventSubscriber(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_proxy,
-      const size_t max_size_to_retain);
+  SenderRtcpEventSubscriber(const size_t max_size_to_retain);
+
   virtual ~SenderRtcpEventSubscriber();
 
   // RawEventSubscriber implementation.

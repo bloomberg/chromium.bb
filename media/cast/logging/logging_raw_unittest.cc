@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
 #include "media/cast/logging/simple_event_subscriber.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -15,17 +12,13 @@ namespace cast {
 
 class LoggingRawTest : public ::testing::Test {
  protected:
-  LoggingRawTest()
-      : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
-        event_subscriber_(task_runner_) {
+  LoggingRawTest() {
     raw_.AddSubscriber(&event_subscriber_);
   }
 
   virtual ~LoggingRawTest() { raw_.RemoveSubscriber(&event_subscriber_); }
 
   LoggingRaw raw_;
-  base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   SimpleEventSubscriber event_subscriber_;
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
@@ -153,7 +146,7 @@ TEST_F(LoggingRawTest, GenericEvent) {
 }
 
 TEST_F(LoggingRawTest, MultipleSubscribers) {
-  SimpleEventSubscriber event_subscriber_2(task_runner_);
+  SimpleEventSubscriber event_subscriber_2;
 
   // Now raw_ has two subscribers.
   raw_.AddSubscriber(&event_subscriber_2);

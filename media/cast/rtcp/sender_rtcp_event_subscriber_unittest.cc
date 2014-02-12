@@ -17,7 +17,7 @@ namespace cast {
 
 namespace {
 
-const size_t kSizeThreshold = 10u;
+const size_t kMaxEventEntries = 10u;
 
 }  // namespace
 
@@ -30,21 +30,18 @@ class SenderRtcpEventSubscriberTest : public ::testing::Test {
             scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             task_runner_, GetLoggingConfigWithRawEventsAndStatsEnabled())),
-        event_subscriber_(
-            new SenderRtcpEventSubscriber(task_runner_, kSizeThreshold)) {
-    cast_environment_->Logging()->AddRawEventSubscriber(
-        event_subscriber_.get());
+        event_subscriber_(kMaxEventEntries) {
+    cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }
 
   virtual ~SenderRtcpEventSubscriberTest() {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(
-        event_subscriber_.get());
+    cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<SenderRtcpEventSubscriber> event_subscriber_;
+  SenderRtcpEventSubscriber event_subscriber_;
 };
 
 TEST_F(SenderRtcpEventSubscriberTest, InsertEntry) {
@@ -62,7 +59,7 @@ TEST_F(SenderRtcpEventSubscriberTest, InsertEntry) {
       testing_clock_->NowTicks(), kVideoFrameSentToEncoder, 300u, 3u);
 
   RtcpEventMap events;
-  event_subscriber_->GetRtcpEventsAndReset(&events);
+  event_subscriber_.GetRtcpEventsAndReset(&events);
 
   ASSERT_EQ(3u, events.size());
 
@@ -84,11 +81,11 @@ TEST_F(SenderRtcpEventSubscriberTest, MapReset) {
                                                  kVideoFrameCaptured, 100u, 1u);
 
   RtcpEventMap events;
-  event_subscriber_->GetRtcpEventsAndReset(&events);
+  event_subscriber_.GetRtcpEventsAndReset(&events);
   EXPECT_EQ(1u, events.size());
 
   // Call again without any logging in between, should return empty map.
-  event_subscriber_->GetRtcpEventsAndReset(&events);
+  event_subscriber_.GetRtcpEventsAndReset(&events);
   EXPECT_TRUE(events.empty());
 }
 
@@ -99,7 +96,7 @@ TEST_F(SenderRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
   }
 
   RtcpEventMap events;
-  event_subscriber_->GetRtcpEventsAndReset(&events);
+  event_subscriber_.GetRtcpEventsAndReset(&events);
 
   ASSERT_EQ(10u, events.size());
   EXPECT_EQ(10u, events.begin()->first);
@@ -110,7 +107,7 @@ TEST_F(SenderRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
         testing_clock_->NowTicks(), kVideoFrameCaptured, i * 10, i);
   }
 
-  event_subscriber_->GetRtcpEventsAndReset(&events);
+  event_subscriber_.GetRtcpEventsAndReset(&events);
 
   // Event with RTP timestamp 10 should have been dropped when 110 is inserted.
   ASSERT_EQ(10u, events.size());

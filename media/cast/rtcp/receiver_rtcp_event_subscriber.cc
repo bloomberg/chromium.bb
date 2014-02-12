@@ -6,28 +6,23 @@
 
 #include <utility>
 
-#include "base/single_thread_task_runner.h"
-#include "media/cast/cast_environment.h"
-
 namespace media {
 namespace cast {
 
 ReceiverRtcpEventSubscriber::ReceiverRtcpEventSubscriber(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_proxy,
     const size_t max_size_to_retain, Type type)
     : max_size_to_retain_(max_size_to_retain), type_(type) {
-  DCHECK(main_thread_proxy->RunsTasksOnCurrentThread());
   DCHECK(max_size_to_retain_ > 0u);
   DCHECK(type_ == kAudioEventSubscriber || type_ == kVideoEventSubscriber);
 }
 
 ReceiverRtcpEventSubscriber::~ReceiverRtcpEventSubscriber() {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void ReceiverRtcpEventSubscriber::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (ShouldProcessEvent(frame_event.type)) {
     RtcpEvent rtcp_event;
@@ -59,7 +54,7 @@ void ReceiverRtcpEventSubscriber::OnReceiveFrameEvent(
 
 void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
     const PacketEvent& packet_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (ShouldProcessEvent(packet_event.type)) {
     RtcpEvent rtcp_event;
@@ -80,13 +75,13 @@ void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
 
 void ReceiverRtcpEventSubscriber::OnReceiveGenericEvent(
     const GenericEvent& generic_event) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing as RTP receiver is not interested in generic events for RTCP.
 }
 
 void ReceiverRtcpEventSubscriber::GetReceiverLogMessageAndReset(
     RtcpReceiverLogMessage* receiver_log) {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   receiver_log->clear();
 

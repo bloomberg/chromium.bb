@@ -23,8 +23,7 @@ class SimpleEventSubscriberTest : public ::testing::Test {
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetLoggingConfigWithRawEventsAndStatsEnabled())),
-        event_subscriber_(task_runner_) {
+            task_runner_, GetLoggingConfigWithRawEventsAndStatsEnabled())) {
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }
 
