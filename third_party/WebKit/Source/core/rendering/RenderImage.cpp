@@ -160,10 +160,6 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (newImage != m_imageResource->imagePtr())
         return;
 
-    // FIXME: this is a quick fix for crbug.com/328069. Perhaps this is reasonable to keep for the long term, or
-    // perhaps it's too aggressive, and we need to identify when the image *really* changed before issuing this call?
-    document().view()->scheduleAnimation();
-
     // Per the spec, we let the server-sent header override srcset/other sources of dpr.
     // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
     if (m_imageResource->cachedImage() && m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue())

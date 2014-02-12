@@ -292,8 +292,11 @@ bool RenderLayerCompositor::canRender3DTransforms() const
 
 void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
 {
+    // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
     if (inCompositingMode())
         m_compositingLayersNeedRebuild = needRebuild;
+
+    m_renderView->frameView()->scheduleAnimation();
 }
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
@@ -381,10 +384,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     }
 
-    // FIXME: some senior devs are suggesting that we need to always schedule a frame here.
-    // but we do seem to reach this point in code when frames are unnecessary and
-    // we need to resolve those instances before initiating a frame here, otherwise
-    // performance will regress by forcing unnecessary frames.
+    m_renderView->frameView()->scheduleAnimation();
 }
 
 void RenderLayerCompositor::updateCompositingLayers()

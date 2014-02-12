@@ -305,6 +305,8 @@ public:
 
     void forceCompositingUpdate(Document*, ExceptionState&);
 
+    bool isCompositorFramePending(Document*, ExceptionState&);
+
     void setZoomFactor(float);
 
     void setShouldRevealPassword(Element*, bool, ExceptionState&);

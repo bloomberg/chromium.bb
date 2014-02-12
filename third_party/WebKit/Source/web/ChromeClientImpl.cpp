@@ -479,6 +479,11 @@ void ChromeClientImpl::scheduleAnimation()
     m_webView->scheduleAnimation();
 }
 
+bool ChromeClientImpl::isCompositorFramePending() const
+{
+    return m_webView->client()->isCompositorFramePending();
+}
+
 void ChromeClientImpl::scroll(
     const IntSize& scrollDelta, const IntRect& scrollRect,
     const IntRect& clipRect)

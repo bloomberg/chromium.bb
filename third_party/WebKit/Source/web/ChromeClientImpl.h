@@ -116,6 +116,7 @@ public:
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
+    virtual bool isCompositorFramePending() const OVERRIDE;
     virtual void scroll(
         const WebCore::IntSize& scrollDelta, const WebCore::IntRect& rectToScroll,
         const WebCore::IntRect& clipRect) OVERRIDE;
