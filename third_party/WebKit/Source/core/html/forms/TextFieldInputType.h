@@ -93,7 +93,6 @@ private:
     virtual bool shouldSpinButtonRespondToWheelEvents() OVERRIDE FINAL;
     virtual void spinButtonStepDown() OVERRIDE FINAL;
     virtual void spinButtonStepUp() OVERRIDE FINAL;
-    virtual void spinButtonDidReleaseMouseCapture() OVERRIDE FINAL;
 
     SpinButtonElement* spinButtonElement() const;
 };
