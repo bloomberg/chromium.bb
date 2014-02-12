@@ -96,8 +96,13 @@ class Manifest {
   // policy.
   static inline bool IsPolicyLocation(Location location) {
     return location == EXTERNAL_POLICY ||
-           location == EXTERNAL_POLICY_DOWNLOAD ||
-           location == EXTERNAL_COMPONENT;
+           location == EXTERNAL_POLICY_DOWNLOAD;
+  }
+
+  // Whether the |location| is an extension intended to be an internal part of
+  // Chrome.
+  static inline bool IsComponentLocation(Location location) {
+    return location == COMPONENT || location == EXTERNAL_COMPONENT;
   }
 
   // Unpacked extensions start off with file access since they are a developer

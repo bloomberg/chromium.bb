@@ -371,8 +371,7 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
 bool Extension::ShouldNotBeVisible() const {
   // Don't show component extensions because they are only extensions as an
   // implementation detail of Chrome.
-  if ((location() == Manifest::COMPONENT ||
-       location() == Manifest::EXTERNAL_COMPONENT) &&
+  if (extensions::Manifest::IsComponentLocation(location()) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kShowComponentExtensionOptions)) {
     return true;

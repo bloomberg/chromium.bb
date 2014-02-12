@@ -16,7 +16,7 @@ bool ManagementPolicyImpl(const extensions::Extension* extension,
                           base::string16* error,
                           bool modifiable_value) {
   bool modifiable =
-      extension->location() != extensions::Manifest::COMPONENT &&
+      !extensions::Manifest::IsComponentLocation(extension->location()) &&
       !extensions::Manifest::IsPolicyLocation(extension->location());
   // Some callers equate "no restriction" to true, others to false.
   if (modifiable)

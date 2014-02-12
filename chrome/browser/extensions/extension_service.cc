@@ -2178,7 +2178,8 @@ void ExtensionService::OnExtensionInstalled(
 
   // Certain extension locations are specific enough that we can
   // auto-acknowledge any extension that came from one of them.
-  if (Manifest::IsPolicyLocation(extension->location()))
+  if (Manifest::IsPolicyLocation(extension->location()) ||
+      extension->location() == Manifest::EXTERNAL_COMPONENT)
     AcknowledgeExternalExtension(extension->id());
   const Extension::State initial_state =
       initial_enable ? Extension::ENABLED : Extension::DISABLED;

@@ -433,6 +433,7 @@ void BackgroundContentsService::Observe(
         break;
 
       const bool force_installed =
+          extensions::Manifest::IsComponentLocation(extension->location()) ||
           extensions::Manifest::IsPolicyLocation(extension->location());
       if (!force_installed) {
         ShowBalloon(extension, profile);
