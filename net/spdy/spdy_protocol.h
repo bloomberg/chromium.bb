@@ -365,7 +365,7 @@ typedef uint8 SpdyPriority;
 
 typedef std::map<std::string, std::string> SpdyNameValueBlock;
 
-typedef uint32 SpdyPingId;
+typedef uint64 SpdyPingId;
 
 class SpdyFrame;
 typedef SpdyFrame SpdySerializedFrame;

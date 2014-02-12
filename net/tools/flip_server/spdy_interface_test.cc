@@ -60,7 +60,7 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
                                        bool));
   MOCK_METHOD1(OnSettings, void(bool clear_persisted));
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds, uint8, uint32));
-  MOCK_METHOD1(OnPing, void(uint32 unique_id));
+  MOCK_METHOD1(OnPing, void(SpdyPingId unique_id));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId, SpdyRstStreamStatus));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId, SpdyGoAwayStatus));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, uint32));

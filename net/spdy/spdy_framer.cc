@@ -232,9 +232,16 @@ size_t SpdyFramer::GetSettingsMinimumSize() const {
 }
 
 size_t SpdyFramer::GetPingSize() const {
-  // Size, in bytes, of this PING frame. Calculated as:
-  // control frame header + 4 (id)
-  return GetControlFrameHeaderSize() + 4;
+  // Size, in bytes, of this PING frame.
+  if (spdy_version_ < 4) {
+    // Calculated as:
+    // control frame header + 4 (id)
+    return GetControlFrameHeaderSize() + 4;
+  } else {
+    // Calculated as:
+    // control frame header + 8 (id)
+    return GetControlFrameHeaderSize() + 8;
+  }
 }
 
 size_t SpdyFramer::GetGoAwayMinimumSize() const {
@@ -1474,7 +1481,14 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
         break;
       case PING: {
           SpdyPingId id = 0;
-          bool successful_read = reader.ReadUInt32(&id);
+          bool successful_read = true;
+          if (spdy_version_ < 4) {
+            uint32 id32 = 0;
+            successful_read = reader.ReadUInt32(&id32);
+            id = id32;
+          } else {
+            successful_read = reader.ReadUInt64(&id);
+          }
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());
           visitor_->OnPing(id);
@@ -1938,10 +1952,11 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
   SpdyFrameBuilder builder(GetPingSize());
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(*this, PING, kNoFlags);
+    builder.WriteUInt32(static_cast<uint32>(ping.id()));
   } else {
     builder.WriteFramePrefix(*this, PING, 0, 0);
+    builder.WriteUInt64(ping.id());
   }
-  builder.WriteUInt32(ping.id());
   DCHECK_EQ(GetPingSize(), builder.length());
   return builder.take();
 }

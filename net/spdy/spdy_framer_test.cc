@@ -151,7 +151,7 @@ class SpdyFramerTestUtil {
                            uint32 value) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnPing(uint32 unique_id) OVERRIDE {
+    virtual void OnPing(uint64 unique_id) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -343,7 +343,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     setting_count_++;
   }
 
-  virtual void OnPing(uint32 unique_id) OVERRIDE {
+  virtual void OnPing(uint64 unique_id) OVERRIDE {
     DLOG(FATAL);
   }
 
@@ -2350,14 +2350,17 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       0x12, 0x34, 0x56, 0x78,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0c, 0x06, 0x00,
+      0x00, 0x10, 0x06, 0x00,
       0x00, 0x00, 0x00, 0x00,
       0x12, 0x34, 0x56, 0x78,
+      0x9a, 0xbc, 0xde, 0xff,
     };
-    scoped_ptr<SpdyFrame> frame(framer.SerializePing(SpdyPingIR(0x12345678u)));
+    scoped_ptr<SpdyFrame> frame;
     if (IsSpdy4()) {
+      frame.reset(framer.SerializePing(SpdyPingIR(0x123456789abcdeffull)));
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
+      frame.reset(framer.SerializePing(SpdyPingIR(0x12345678ull)));
       CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
     }
   }
@@ -3428,7 +3431,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(8u, framer.GetSynReplyMinimumSize());
     EXPECT_EQ(12u, framer.GetRstStreamMinimumSize());
     EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
-    EXPECT_EQ(12u, framer.GetPingSize());
+    EXPECT_EQ(16u, framer.GetPingSize());
     EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());

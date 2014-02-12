@@ -34,29 +34,34 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   ~SpdyFrameReader() {}
 
   // Reads an 8-bit unsigned integer into the given output parameter.
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadUInt8(uint8* result);
 
   // Reads a 16-bit unsigned integer into the given output parameter.
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadUInt16(uint16* result);
 
   // Reads a 32-bit unsigned integer into the given output parameter.
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadUInt32(uint32* result);
+
+  // Reads a 64-bit unsigned integer into the given output parameter.
+  // Forwards the internal iterator on success.
+  // Returns true on success, false otherwise.
+  bool ReadUInt64(uint64* result);
 
   // Reads a 31-bit unsigned integer into the given output parameter. This is
   // equivalent to ReadUInt32() above except that the highest-order bit is
   // discarded.
-  // Forwards the internal iterater (by 4B) on success.
+  // Forwards the internal iterator (by 4B) on success.
   // Returns true on success, false otherwise.
   bool ReadUInt31(uint32* result);
 
   // Reads a 24-bit unsigned integer into the given output parameter.
-  // Forwards the internal iterater (by 3B) on success.
+  // Forwards the internal iterator (by 3B) on success.
   // Returns true on success, false otherwise.
   bool ReadUInt24(uint32* result);
 
@@ -65,7 +70,7 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadStringPiece16(base::StringPiece* result);
 
@@ -74,13 +79,13 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadStringPiece32(base::StringPiece* result);
 
   // Reads a given number of bytes into the given buffer. The buffer
   // must be of adequate size.
-  // Forwards the internal iterater on success.
+  // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
   bool ReadBytes(void* result, size_t size);
 

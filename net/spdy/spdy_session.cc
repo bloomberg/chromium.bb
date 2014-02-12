@@ -205,7 +205,7 @@ base::Value* NetLogSpdyRstCallback(SpdyStreamId stream_id,
   return dict;
 }
 
-base::Value* NetLogSpdyPingCallback(uint32 unique_id,
+base::Value* NetLogSpdyPingCallback(SpdyPingId unique_id,
                                     const char* type,
                                     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -2390,7 +2390,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
   MaybeFinishGoingAway();
 }
 
-void SpdySession::OnPing(uint32 unique_id) {
+void SpdySession::OnPing(SpdyPingId unique_id) {
   CHECK(in_io_loop_);
 
   if (availability_state_ == STATE_CLOSED)

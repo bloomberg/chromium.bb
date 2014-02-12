@@ -64,6 +64,24 @@ bool SpdyFrameReader::ReadUInt32(uint32* result) {
   return true;
 }
 
+bool SpdyFrameReader::ReadUInt64(uint64* result) {
+  // Make sure that we have the whole uint64.
+  if (!CanRead(8)) {
+    OnFailure();
+    return false;
+  }
+
+  // Read into result. Network byte order is big-endian.
+  uint64 upper = ntohl(*(reinterpret_cast<const uint32*>(data_ + ofs_)));
+  uint64 lower = ntohl(*(reinterpret_cast<const uint32*>(data_ + ofs_ + 4)));
+  *result = (upper << 32) + lower;
+
+  // Iterate.
+  ofs_ += 8;
+
+  return true;
+}
+
 bool SpdyFrameReader::ReadUInt31(uint32* result) {
   bool success = ReadUInt32(result);
 

@@ -186,7 +186,7 @@ void BufferedSpdyFramer::OnSetting(SpdySettingsIds id,
   visitor_->OnSetting(id, flags, value);
 }
 
-void BufferedSpdyFramer::OnPing(uint32 unique_id) {
+void BufferedSpdyFramer::OnPing(SpdyPingId unique_id) {
   visitor_->OnPing(unique_id);
 }
 

@@ -237,7 +237,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnSettings(bool clear_persisted) OVERRIDE {}
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE {}
-  virtual void OnPing(uint32 unique_id) OVERRIDE {}
+  virtual void OnPing(SpdyPingId unique_id) OVERRIDE {}
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE {}
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,

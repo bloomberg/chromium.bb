@@ -784,7 +784,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE;
   virtual void OnStreamError(SpdyStreamId stream_id,
                              const std::string& description) OVERRIDE;
-  virtual void OnPing(uint32 unique_id) OVERRIDE;
+  virtual void OnPing(SpdyPingId unique_id) OVERRIDE;
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
