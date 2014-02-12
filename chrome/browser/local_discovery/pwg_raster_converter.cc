@@ -76,7 +76,7 @@ void FileHandlers::Init(base::RefCountedMemory* data) {
 
   if (static_cast<int>(data->size()) !=
       file_util::WriteFile(GetPdfPath(),
-                           reinterpret_cast<const char*>(data->front()),
+                           data->front_as<char>(),
                            data->size())) {
     return;
   }

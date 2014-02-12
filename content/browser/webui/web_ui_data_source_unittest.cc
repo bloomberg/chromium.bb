@@ -37,12 +37,10 @@ class TestClient : public TestContentClient {
     base::RefCountedStaticMemory* bytes = NULL;
     if (resource_id == kDummyDefaultResourceId) {
       bytes = new base::RefCountedStaticMemory(
-          reinterpret_cast<const unsigned char*>(kDummyDefaultResource),
-          arraysize(kDummyDefaultResource));
+          kDummyDefaultResource, arraysize(kDummyDefaultResource));
     } else if (resource_id == kDummyResourceId) {
       bytes = new base::RefCountedStaticMemory(
-          reinterpret_cast<const unsigned char*>(kDummytResource),
-          arraysize(kDummytResource));
+          kDummytResource, arraysize(kDummytResource));
     }
     return bytes;
   }
@@ -92,8 +90,7 @@ class WebUIDataSourceTest : public testing::Test {
 TEST_F(WebUIDataSourceTest, EmptyStrings) {
   source()->SetJsonPath("strings.js");
   StartDataRequest("strings.js");
-  std::string result(reinterpret_cast<const char*>(
-      result_data_->front()), result_data_->size());
+  std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find("var templateData = {"), std::string::npos);
   EXPECT_NE(result.find("};"), std::string::npos);
 }
@@ -103,8 +100,7 @@ TEST_F(WebUIDataSourceTest, SomeStrings) {
   source()->AddString("planet", base::ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", kDummyStringId);
   StartDataRequest("strings.js");
-  std::string result(reinterpret_cast<const char*>(
-      result_data_->front()), result_data_->size());
+  std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
   EXPECT_NE(result.find("\"button\":\"foo\""), std::string::npos);
 }
@@ -112,14 +108,10 @@ TEST_F(WebUIDataSourceTest, SomeStrings) {
 TEST_F(WebUIDataSourceTest, DefaultResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   StartDataRequest("foobar" );
-  std::string result(
-      reinterpret_cast<const char*>(result_data_->front()),
-      result_data_->size());
+  std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
   StartDataRequest("strings.js");
-  result = std::string(
-      reinterpret_cast<const char*>(result_data_->front()),
-      result_data_->size());
+  result = std::string(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
@@ -127,14 +119,10 @@ TEST_F(WebUIDataSourceTest, NamedResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest("foobar");
-  std::string result(
-      reinterpret_cast<const char*>(result_data_->front()),
-      result_data_->size());
+  std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummytResource), std::string::npos);
   StartDataRequest("strings.js");
-  result = std::string(
-      reinterpret_cast<const char*>(result_data_->front()),
-      result_data_->size());
+  result = std::string(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 

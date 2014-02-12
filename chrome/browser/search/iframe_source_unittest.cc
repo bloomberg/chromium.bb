@@ -86,8 +86,7 @@ class IframeSourceTest : public testing::Test {
 
   std::string response_string() {
     if (response_.get()) {
-      return std::string(reinterpret_cast<const char*>(response_->front()),
-                         response_->size());
+      return std::string(response_->front_as<char>(), response_->size());
     }
     return "";
   }

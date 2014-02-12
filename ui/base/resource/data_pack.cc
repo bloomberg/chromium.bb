@@ -200,8 +200,7 @@ base::RefCountedStaticMemory* DataPack::GetStaticMemory(
   if (!GetStringPiece(resource_id, &piece))
     return NULL;
 
-  return new base::RefCountedStaticMemory(
-      reinterpret_cast<const unsigned char*>(piece.data()), piece.length());
+  return new base::RefCountedStaticMemory(piece.data(), piece.length());
 }
 
 ResourceHandle::TextEncodingType DataPack::GetTextEncodingType() const {

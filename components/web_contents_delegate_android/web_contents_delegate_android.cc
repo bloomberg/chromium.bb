@@ -97,8 +97,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
         params.browser_initiated_post_data.get()->size()) {
       post_data = base::android::ToJavaByteArray(
           env,
-          reinterpret_cast<const uint8*>(
-              params.browser_initiated_post_data.get()->front()),
+          params.browser_initiated_post_data.get()->front_as<uint8>(),
           params.browser_initiated_post_data.get()->size());
     }
     Java_WebContentsDelegateAndroid_openNewTab(env,

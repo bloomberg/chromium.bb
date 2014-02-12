@@ -254,8 +254,7 @@ void CloudPrintDataSender::SendPrintData() {
 
   std::string base64_data;
   base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(data_->front()),
-                        data_->size()),
+      base::StringPiece(data_->front_as<char>(), data_->size()),
       &base64_data);
   std::string header("data:");
   header.append(file_type_);

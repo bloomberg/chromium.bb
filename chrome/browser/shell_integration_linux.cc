@@ -104,7 +104,8 @@ std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
       continue;
     }
     int bytes_written = file_util::WriteFile(temp_file_path,
-        reinterpret_cast<const char*>(png_data->front()), png_data->size());
+                                             png_data->front_as<char>(),
+                                             png_data->size());
 
     if (bytes_written != static_cast<int>(png_data->size()))
       return std::string();

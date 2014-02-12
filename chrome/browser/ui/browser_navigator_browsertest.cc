@@ -89,7 +89,7 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
   param.is_renderer_initiated = !is_browser_initiated;
   param.uses_post = true;
   param.browser_initiated_post_data = new base::RefCountedStaticMemory(
-      reinterpret_cast<const uint8*>(post_data.data()), post_data.size());
+      post_data.data(), post_data.size());
 
   ui_test_utils::NavigateToURL(&param);
   if (!param.target_contents)

@@ -285,8 +285,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     if (top_sites) {
       scoped_refptr<base::RefCountedMemory> data;
       if (top_sites->GetPageThumbnail(url, false, &data))
-        return std::string(reinterpret_cast<const char*>(data->front()),
-                           data->size());
+        return std::string(data->front_as<char>(), data->size());
     }
     return "";
   }

@@ -30,6 +30,11 @@ class BASE_EXPORT RefCountedMemory
   // Returns true if |other| is byte for byte equal.
   bool Equals(const scoped_refptr<RefCountedMemory>& other) const;
 
+  // Handy method to simplify calling front() with a reinterpret_cast.
+  template<typename T> const T* front_as() const {
+    return reinterpret_cast<const T*>(front());
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<RefCountedMemory>;
   RefCountedMemory();
@@ -42,8 +47,9 @@ class BASE_EXPORT RefCountedStaticMemory : public RefCountedMemory {
  public:
   RefCountedStaticMemory()
       : data_(NULL), length_(0) {}
-  RefCountedStaticMemory(const unsigned char* data, size_t length)
-      : data_(length ? data : NULL), length_(length) {}
+  RefCountedStaticMemory(const void* data, size_t length)
+      : data_(static_cast<const unsigned char*>(length ? data : NULL)),
+        length_(length) {}
 
   // Overridden from RefCountedMemory:
   virtual const unsigned char* front() const OVERRIDE;

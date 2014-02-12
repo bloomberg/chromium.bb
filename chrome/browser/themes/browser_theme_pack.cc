@@ -1494,7 +1494,7 @@ void BrowserThemePack::AddRawImagesTo(const RawImages& images,
   for (RawImages::const_iterator it = images.begin(); it != images.end();
        ++it) {
     (*out)[it->first] = base::StringPiece(
-        reinterpret_cast<const char*>(it->second->front()), it->second->size());
+        it->second->front_as<char>(), it->second->size());
   }
 }
 

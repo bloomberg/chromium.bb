@@ -406,8 +406,7 @@ base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytesForScale(
     base::StringPiece data =
         GetRawDataResourceForScale(resource_id, scale_factor);
     if (!data.empty()) {
-      bytes = new base::RefCountedStaticMemory(
-          reinterpret_cast<const unsigned char*>(data.data()), data.length());
+      bytes = new base::RefCountedStaticMemory(data.data(), data.length());
     }
   }
 
