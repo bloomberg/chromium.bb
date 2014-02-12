@@ -691,7 +691,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+    if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
@@ -755,7 +755,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    if (info.Length() > 1 && !info[1]->IsUndefined() && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
+    if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
         exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
         exceptionState.throwIfNeeded();
         return;

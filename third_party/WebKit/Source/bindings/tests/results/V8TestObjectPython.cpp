@@ -7137,7 +7137,7 @@ static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::Fu
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+    if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
         throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }

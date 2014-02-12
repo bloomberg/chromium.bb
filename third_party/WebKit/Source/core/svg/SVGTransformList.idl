@@ -37,7 +37,7 @@
     [RaisesException] SVGTransform removeItem(unsigned long index);
     [RaisesException] SVGTransform appendItem(SVGTransform item);
 
-    [RaisesException] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
+    SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
 
     [RaisesException] SVGTransform consolidate();
 };

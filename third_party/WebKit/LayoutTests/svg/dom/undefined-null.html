@@ -24,14 +24,14 @@ debug('SVGGeometryElement');
 debug('');
 debug('isPointInFill(SVGPoint point)');
 shouldNotThrow('circle.isPointInFill(point)');
-// shouldThrow('circle.isPointInFill(undefined)'); // CRASH
-// shouldThrow('circle.isPointInFill(null)'); // CRASH
+shouldThrow('circle.isPointInFill(undefined)');
+shouldThrow('circle.isPointInFill(null)');
 
 debug('');
 debug('isPointInStroke(SVGPoint point)');
 shouldNotThrow('circle.isPointInStroke(point)');
-// shouldThrow('circle.isPointInStroke(undefined)'); // CRASH
-// shouldThrow('circle.isPointInStroke(null)'); // CRASH
+shouldThrow('circle.isPointInStroke(undefined)');
+shouldThrow('circle.isPointInStroke(null)');
 
 
 debug('');
@@ -41,7 +41,7 @@ debug('SVGSVGElement');
 debug('');
 debug('getIntersectionList(SVGRect rect, SVGElement? referenceElement)');
 shouldNotThrow('svg.getIntersectionList(rect, svg)');
-// shouldThrow('svg.getIntersectionList(undefined, svg)'); // CRASH
+shouldThrow('svg.getIntersectionList(undefined, svg)');
 shouldThrow('svg.getIntersectionList(null, svg)');
 shouldNotThrow('svg.getIntersectionList(rect, undefined)');
 shouldNotThrow('svg.getIntersectionList(rect, null)');
@@ -49,7 +49,7 @@ shouldNotThrow('svg.getIntersectionList(rect, null)');
 debug('');
 debug('getEnclosureList(SVGRect rect, SVGElement? referenceElement)');
 shouldNotThrow('svg.getEnclosureList(rect, svg)');
-// shouldThrow('svg.getEnclosureList(undefined, svg)'); // CRASH
+shouldThrow('svg.getEnclosureList(undefined, svg)');
 shouldThrow('svg.getEnclosureList(null, svg)');
 shouldNotThrow('svg.getEnclosureList(rect, undefined)');
 shouldNotThrow('svg.getEnclosureList(rect, null)');
@@ -57,17 +57,17 @@ shouldNotThrow('svg.getEnclosureList(rect, null)');
 debug('');
 debug('checkIntersection(SVGElement element, SVGRect rect)');
 shouldNotThrow('svg.checkIntersection(svg, rect)');
-// shouldThrow('svg.checkIntersection(undefined, rect)'); // FAIL
+shouldThrow('svg.checkIntersection(undefined, rect)');
 shouldThrow('svg.checkIntersection(null, rect)');
-// shouldThrow('svg.checkIntersection(svg, undefined)'); // CRASH
+shouldThrow('svg.checkIntersection(svg, undefined)');
 shouldThrow('svg.checkIntersection(svg, null)');
 
 debug('');
 debug('checkEnclosure(SVGElement element, SVGRect rect)');
 shouldNotThrow('svg.checkEnclosure(svg, rect)');
-// shouldThrow('svg.checkEnclosure(undefined, rect)'); // FAIL
+shouldThrow('svg.checkEnclosure(undefined, rect)');
 shouldThrow('svg.checkEnclosure(null, rect)');
-// shouldThrow('svg.checkEnclosure(svg, undefined)'); // CRASH
+shouldThrow('svg.checkEnclosure(svg, undefined)');
 shouldThrow('svg.checkEnclosure(svg, null)');
 
 debug('');
@@ -85,7 +85,7 @@ debug('SVGTextContentElement');
 debug('');
 debug('getCharNumAtPosition(SVGPoint point)');
 shouldNotThrow('text.getCharNumAtPosition(point)');
-// shouldThrow('text.getCharNumAtPosition(undefined)'); // CRASH
+shouldThrow('text.getCharNumAtPosition(undefined)');
 shouldThrow('text.getCharNumAtPosition(null)');
 
 </script>

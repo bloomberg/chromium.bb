@@ -2784,18 +2784,25 @@ END
                 $parameterCheckString .= "    }\n";
             }
         } else {
-            # If the "StrictTypeChecking" extended attribute is present, and the argument's type is an
-            # interface type, then if the incoming value does not implement that interface, a TypeError
-            # is thrown rather than silently passing NULL to the C++ code.
-            # Per the Web IDL and ECMAScript specifications, incoming values can always be converted
-            # to both strings and numbers, so do not throw TypeError if the argument is of these
-            # types.
+            # If the [StrictTypeChecking] extended attribute is present, type
+            # check interface type arguments for correct type and nullability.
+            #
+            # If the argument is passed, and is not |undefined| or |null|, then
+            # it must implement the interface type, otherwise throw a TypeError
+            # If the parameter is nullable, then both |undefined| and |null|
+            # pass a NULL pointer to the C++ code, otherwise these also throw.
+            # Without [StrictTypeChecking], in all these cases NULL is silently
+            # passed to the C++ code.
+            #
+            # Per the Web IDL and ECMAScript specifications, incoming values
+            # can always be converted to primitive types and strings (including
+            # |undefined| and |null|), so do not throw TypeError for these.
             if ($function->extendedAttributes->{"StrictTypeChecking"} || $interface->extendedAttributes->{"StrictTypeChecking"}) {
                 my $argValue = "info[$paramIndex]";
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
-                    my $undefinedNullCheck = $parameter->isNullable ? "isUndefinedOrNull($argValue)" : "${argValue}->IsUndefined()";
-                    $parameterCheckString .= "    if (info.Length() > $paramIndex && !$undefinedNullCheck && !V8${argType}::hasInstance($argValue, info.GetIsolate())) {\n";
+                    my $undefinedNullCheck = $parameter->isNullable ? " !isUndefinedOrNull($argValue) &&" : "";
+                    $parameterCheckString .= "    if (info.Length() > $paramIndex &&$undefinedNullCheck !V8${argType}::hasInstance($argValue, info.GetIsolate())) {\n";
                     if ($hasExceptionState) {
                         $parameterCheckString .= "        exceptionState.throwTypeError(\"parameter $humanFriendlyIndex is not of type \'$argType\'.\");\n";
                         $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";

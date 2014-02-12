@@ -227,7 +227,7 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8SVGPoint::hasInstance(info[0], info.GetIsolate())) {
+    if (info.Length() > 0 && !V8SVGPoint::hasInstance(info[0], info.GetIsolate())) {
         exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
         exceptionState.throwIfNeeded();
         return;
