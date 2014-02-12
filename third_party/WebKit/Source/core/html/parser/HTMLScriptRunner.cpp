@@ -286,7 +286,12 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         if (!scriptLoader)
             return;
 
-        Microtask::performCheckpoint();
+        // FIXME: This may be too agressive as we always deliver mutations at
+        // every script element, even if it's not ready to execute yet. There's
+        // unfortuantely no obvious way to tell if prepareScript is going to
+        // execute the script from out here.
+        if (!isExecutingScript())
+            Microtask::performCheckpoint();
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
