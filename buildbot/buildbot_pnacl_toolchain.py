@@ -34,6 +34,43 @@ host_os = buildbot_lib.GetHostPlatform()
 context = buildbot_lib.BuildContext()
 status = buildbot_lib.BuildStatus(context)
 
+
+toolchain_build_cmd = [
+    sys.executable,
+    os.path.join(
+        NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
+    '--verbose', '--sync', '--clobber', '--build-64bit-host']
+
+# Sync the git repos used by build.sh
+with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
+  buildbot_lib.Command(context, toolchain_build_cmd + ['--legacy-repo-sync'])
+
+# Run toolchain_build.py first. Its outputs are not actually being used yet.
+# toolchain_build outputs its own buildbot annotations, so don't use
+# buildbot_lib.Step to run it here.
+try:
+  gsd_arg = []
+  if args.buildbot:
+    gsd_arg = ['--buildbot']
+  elif args.trybot:
+    gsd_arg = ['--trybot']
+
+  cmd = toolchain_build_cmd + gsd_arg
+  logging.info('Running: ' + ' '.join(cmd))
+  subprocess.check_call(cmd)
+
+  with buildbot_lib.Step('LLVM Regression (toolchain_build)', status):
+    llvm_test = [sys.executable,
+                 os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
+                 '--llvm-regression',
+                 '--verbose']
+    buildbot_lib.Command(context, llvm_test)
+
+except subprocess.CalledProcessError:
+  # Ignore any failures and keep going (but make the bot stage red).
+  print '@@@STEP_FAILURE@@@'
+sys.stdout.flush()
+
 with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
   # Update cygwin if necessary.
   if host_os == 'win':
@@ -61,38 +98,6 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
   except subprocess.CalledProcessError:
     print 'Bash not found in path!'
     raise buildbot_lib.StepFailed()
-
-toolchain_build_cmd = [
-    sys.executable,
-    os.path.join(
-        NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-    '--verbose', '--sync', '--clobber', '--build-64bit-host']
-
-# Sync the git repos used by build.sh
-with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
-  buildbot_lib.Command(context, toolchain_build_cmd + ['--legacy-repo-sync'])
-
-# Run toolchain_build.py first. Its outputs are not actually being used yet.
-# toolchain_build outputs its own buildbot annotations, so don't use
-# buildbot_lib.Step to run it here.
-try:
-  gsd_arg = []
-  if args.buildbot:
-    gsd_arg = ['--buildbot']
-  elif args.trybot:
-    gsd_arg = ['--trybot']
-
-  cmd = toolchain_build_cmd + gsd_arg
-  logging.info('Running: ' + ' '.join(cmd))
-  subprocess.check_call(cmd)
-except subprocess.CalledProcessError:
-  # Ignore any failures and keep going (but make the bot stage red).
-  if host_os == 'win':
-    print '@@@STEP_WARNINGS@@@'
-  else:
-    print '@@@STEP_FAILURE@@@'
-  sys.stdout.flush()
-
 
 # Now we run the PNaCl buildbot script. It in turn runs the PNaCl build.sh
 # script and runs scons tests.

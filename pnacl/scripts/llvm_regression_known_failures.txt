@@ -9,12 +9,32 @@ Clang::CodeGenObjC/arc-captured-32bit-block-var-layout-2.m mac
 ###
 ### Windows-only failures
 ###
+# For now we have both cygwin and msys failures in here.
+# TODO(dschuff): once we switch to msys only, remove the cygwin failures.
+# also run the script with --check-excludes (however some failures seem flaky on
+# msys)
+# These seem specific to cygwin
 Clang::Driver/crash-report.c win
 Clang::Driver/output-file-cleanup.c win
+LLVM::ExecutionEngine/MCJIT/eh.ll win
+
+# These seem specific to msys; however they are flaky
+Clang::PCH/case-insensitive-include.c win
+Clang::Index/complete-exprs.c win
+Clang::Index/complete-macros.c win
+Clang::Index/complete-macro-args.c win
+
+# These are specific to msys but do not seem flaky
+LLVM::BugPoint/crash-narrowfunctiontest.ll win
+LLVM::BugPoint/metadata.ll win
+LLVM::BugPoint/remove_arguments_test.ll win
+
+# These seem broken in both
 LLVM::Analysis/Profiling/load-branch-weights-switches.ll win
 LLVM::Analysis/Profiling/load-branch-weights-loops.ll win
 LLVM::Analysis/Profiling/load-branch-weights-ifs.ll win
-LLVM::ExecutionEngine/MCJIT/eh.ll win
+
+
 
 # Fixed in upstream r183033 (I cherry-picked the code change but not the
 # test because the test will cause a merge conflict).

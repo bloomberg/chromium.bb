@@ -227,8 +227,6 @@ def Report(options, filename=None, filecontents=None):
   loglevel = logging.INFO
   if options['verbose']:
     loglevel = logging.DEBUG
-    if options['buildpath'] is None:
-      Fatal('ERROR: must specify build path if verbose output is desired')
   logging.basicConfig(level=loglevel, format='%(message)s')
 
   if not (filename or filecontents):
@@ -242,6 +240,8 @@ def Report(options, filename=None, filecontents=None):
       filecontents = f.read();
   # get the set of tests and failures
   if options['testsuite']:
+    if options['verbose'] and options['buildpath'] is None:
+      Fatal('ERROR: must specify build path if verbose output is desired')
     alltests, failures = ParseTestsuiteCSV(filecontents)
     check_test_names = True
   elif options['lit']:

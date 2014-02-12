@@ -372,7 +372,8 @@ scons-stage-noirt() {
 
 llvm-regression() {
   echo "@@@BUILD_STEP llvm_regression@@@"
-  ${LLVM_TEST} --llvm-regression --check-excludes || handle-error
+  ${LLVM_TEST} --llvm-regression \
+    --llvm-buildpath="pnacl/build/llvm_${HOST_ARCH}" || handle-error
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -562,7 +563,7 @@ mode-buildbot-tc-x8664-linux() {
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
   tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} true
-  tc-tests-all ${is_try}
+  HOST_ARCH=x86_64 tc-tests-all ${is_try}
 }
 
 mode-buildbot-tc-x8632-linux() {
@@ -572,7 +573,7 @@ mode-buildbot-tc-x8632-linux() {
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
   # For now, just use this bot to test a pure 32 bit build but don't upload
   tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false
-  tc-tests-fast "x86-32"
+  HOST_ARCH=x86_32 tc-tests-fast "x86-32"
 
   echo "@@@BUILD_STEP test unsandboxed mode@@@"
   # Test translation to an unsandboxed executable.
@@ -595,7 +596,7 @@ mode-buildbot-tc-x8632-mac() {
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
-  tc-tests-fast "x86-32"
+  HOST_ARCH=x86_32 tc-tests-fast "x86-32"
 }
 
 mode-buildbot-tc-x8664-win() {
@@ -606,7 +607,7 @@ mode-buildbot-tc-x8664-win() {
   tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
 
   # We can't test ARM because we do not have QEMU for Win.
-  tc-tests-fast "x86-64"
+  HOST_ARCH=x86_32 tc-tests-fast "x86-64"
 }
 
 

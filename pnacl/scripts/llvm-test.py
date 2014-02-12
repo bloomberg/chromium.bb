@@ -89,6 +89,13 @@ The default set is {O3f,O2b}, other options are {O0f,O0b}.
   parser.add_option('--testsuite-all', dest='testsuite_all',
                     action='store_true', default=False,
                     help='Run all testsuite steps (requires <arch> argument)')
+  parser.add_option('--llvm-buildpath', dest='llvm_buildpath',
+                    help='Path to the LLVM build directory')
+  parser.add_option('-v', '--verbose', action='store_true',
+                    default=False, dest='verbose',
+                    help=('[--testsuite-report/regression option] ' +
+                          'Print compilation/run logs of failing tests in'
+                          'testsuite report and print all regression output'))
   # The following options are specific to parse_llvm_test_report.
   parser.add_option('-x', '--exclude', action='append', dest='excludes',
                     default=[],
@@ -98,10 +105,6 @@ The default set is {O3f,O2b}, other options are {O0f,O0b}.
                     default=False, dest='check_excludes',
                     help=('[--testsuite-report option] ' +
                           'Report tests which unexpectedly pass'))
-  parser.add_option('-v', '--verbose', action='store_true',
-                    default=False, dest='verbose',
-                    help=('[--testsuite-report option] ' +
-                          'Print compilation/run logs of failing tests'))
   parser.add_option('-p', '--build-path', dest='buildpath',
                     help=('[--testsuite-report option] ' +
                           'Path to test-suite build directory'))
@@ -165,37 +168,49 @@ def GetConfigSuffix(config):
   """
   return config['frontend_attr'] + '_' + config['backend_attr']
 
-def SetupEnvironment():
+def SetupEnvironment(options):
   """Create an environment.
 
   This is based on the current system, various defaults, and various
   environment variables.
 
+  Args:
+    options: The result of OptionParser.parse_args()
   Returns:
     A dict with various string->string mappings.
   """
   env = {}
   pwd = os.getcwd()
-  if not pwd.endswith('/native_client'):
+  if not pwd.endswith(os.sep + 'native_client'):
     Fatal("ERROR: must be run in native_client/ directory!\n" +
           "       (Current directory is " + pwd + ")")
   # Simulate what's needed from common-tools.sh.
   # We need PNACL_BUILDBOT, BUILD_PLATFORM, and HOST_ARCH.
+  # TODO(dschuff): This should come from toolchain_build or the upcoming common
+  # python infrastructure.
   env['PNACL_BUILDBOT'] = os.environ.get('PNACL_BUILDBOT', 'false')
   if sys.platform == 'linux2':
     env['BUILD_PLATFORM'] = 'linux'
     env['BUILD_ARCH'] = os.environ.get('BUILD_ARCH', os.uname()[4])
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', env['BUILD_ARCH'])
+    env['HOST_TRIPLE'] = 'i686_linux'
   elif sys.platform == 'cygwin':
     env['BUILD_PLATFORM'] = 'win'
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_32')
+    env['HOST_TRIPLE'] = 'i686_pc_cygwin'
   elif sys.platform == 'darwin':
     env['BUILD_PLATFORM'] = 'mac'
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_64')
+    env['HOST_TRIPLE'] = 'x86_64_apple_darwin'
+  elif sys.platform == 'win32':
+    env['BUILD_PLATFORM'] = 'win'
+    env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_64')
+    env['HOST_TRIPLE'] = 'i686_w64_mingw32'
   else:
     Fatal("Unknown system " + sys.platform)
   if env['HOST_ARCH'] in ['i386', 'i686']:
     env['HOST_ARCH'] = 'x86_32'
+
 
   # Set up the rest of the environment.
   env['NACL_ROOT'] = pwd
@@ -205,8 +220,8 @@ def SetupEnvironment():
     '{NACL_ROOT}/pnacl/build/llvm-test-suite'.format(**env))
   env['TC_SRC_LLVM'] = (
     '{NACL_ROOT}/pnacl/git/llvm'.format(**env))
-  env['TC_BUILD_LLVM'] = (
-    '{NACL_ROOT}/pnacl/build/llvm_{HOST_ARCH}'.format(**env))
+  env['TC_BUILD_LLVM'] = options.llvm_buildpath or (
+    '{NACL_ROOT}/toolchain_build/out/llvm_{HOST_TRIPLE}_work'.format(**env))
   env['TC_BUILD_LIBCXX'] = (
     ('{NACL_ROOT}/pnacl/build/' +
      'c++-stdlib-newlib-portable-libc++/pnacl-target').format(**env))
@@ -245,6 +260,15 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     0 always
   """
   with remember_cwd():
+    if not os.path.exists(testdir) or len(os.listdir(testdir)) == 0:
+      # TODO(dschuff): Because this script is run directly from the buildbot
+      # script and not as part of a toolchain_build rule, we do not know
+      # whether the llvm target was actually built (in which case the working
+      # directory is still there) or whether it was just retrieved from cache
+      # (in which case it was clobbered, since the bots run with --clobber).
+      # So we have to just exit rather than fail here.
+      print 'Working directory %s is empty. Not running tests' % testdir
+      return 0
     os.chdir(testdir)
 
     sub_env = os.environ.copy()
@@ -268,7 +292,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     # output).  The readline avoids buffering when reading from a
     # pipe in Python 2, which may be complicit in the problem.
     for line in iter(make_pipe.stdout.readline, ''):
-      if env['PNACL_BUILDBOT'] != 'false':
+      if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
         # The buildbots need to be fully verbose and print all output.
         print str(datetime.datetime.now()) + ' ' + line,
       lines.append(line)
@@ -440,11 +464,11 @@ def TestsuiteReport(env, config, options):
 
 
 def main(argv):
-  env = SetupEnvironment()
   options, args = ParseCommandLine(argv[1:])
   if len(args):
     Fatal("Unknown arguments: " + ', '.join(args))
   config = ParseConfig(options)
+  env = SetupEnvironment(options)
   result = 0
   # Run each specified test in sequence, and return on the first failure.
   if options.run_llvm_regression:
