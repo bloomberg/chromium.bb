@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/api/system_storage.h"
 #include "ui/gfx/display_observer.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "ui/gfx/screen.h"
 #endif
@@ -37,7 +37,7 @@ namespace system_storage = api::system_storage;
 
 namespace {
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 bool IsDisplayChangedEvent(const std::string& event_name) {
   return event_name == system_display::OnDisplayChanged::kEventName;
 }
@@ -115,8 +115,8 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   if (watching_event_set_.count(event_name) > 1)
     return;
 
-  // For systemInfo.display event.
-#if defined(USE_ASH)
+  // For system.display event.
+#if defined(OS_CHROMEOS)
   if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->AddObserver(this);
 #endif
@@ -141,7 +141,7 @@ void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
       return;
   }
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
