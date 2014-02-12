@@ -29,6 +29,10 @@ namespace gcm {
 // be authorized to address the application using it's assigned registration ID.
 class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
  public:
+  // This enum is also used in an UMA histogram (GCMRegistrationRequestStatus
+  // enum defined in tools/metrics/histograms/histogram.xml). Hence the entries
+  // here shouldn't be deleted or re-ordered and new ones should be added to
+  // the end.
   enum Status {
     SUCCESS,                    // Registration completed successfully.
     INVALID_PARAMETERS,         // One of request paramteres was invalid.
@@ -36,6 +40,10 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     AUTHENTICATION_FAILED,      // Authentication failed.
     DEVICE_REGISTRATION_ERROR,  // Chrome is not properly registered.
     UNKNOWN_ERROR,              // Unknown error.
+    // NOTE: always keep this entry at the end. Add new status types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    STATUS_COUNT
   };
 
   // Callback completing the registration request.

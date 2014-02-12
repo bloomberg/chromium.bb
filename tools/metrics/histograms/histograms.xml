@@ -5476,6 +5476,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.RegistrationRequestStatus"
+    enum="GCMRegistrationRequestStatus">
+  <summary>Status code of the outcome of a GCM registration request.</summary>
+</histogram>
+
 <histogram name="GCM.RestoredIncomingMessages">
   <summary>
     Number of unacknowledged incoming messages restored from the persistent
@@ -26351,6 +26356,15 @@ other types of suffix sets.
   <int value="6" label="ListAccounts call failed"/>
   <int value="7" label="No restore needed, fresh cookies found"/>
   <int value="8" label="Overflow"/>
+</enum>
+
+<enum name="GCMRegistrationRequestStatus" type="int">
+  <int value="0" label="Success (this is not logged currently)"/>
+  <int value="1" label="Invalid parameters"/>
+  <int value="2" label="Invalid sender"/>
+  <int value="3" label="Authentication failed"/>
+  <int value="4" label="Device registration error"/>
+  <int value="5" label="Unknown error"/>
 </enum>
 
 <enum name="GDataAuthResult" type="int">

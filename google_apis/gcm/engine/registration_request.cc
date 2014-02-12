@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -213,6 +214,8 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
         response.substr(error_pos + arraysize(kErrorPrefix) - 1);
     status = GetStatusFromError(error);
   }
+  UMA_HISTOGRAM_ENUMERATION("GCM.RegistrationRequestStatus", status,
+                            RegistrationRequest::STATUS_COUNT);
 
   if (ShouldRetryWithStatus(status)) {
     RetryWithBackoff(true);
