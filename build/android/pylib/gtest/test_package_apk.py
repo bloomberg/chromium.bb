@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """Defines TestPackageApk to help run APK-based native tests."""
+# pylint: disable=W0212
 
 import logging
 import os
@@ -12,12 +13,10 @@ import tempfile
 import time
 
 from pylib import android_commands
-from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
 from pylib.android_commands import errors
-
-from test_package import TestPackage
+from pylib.gtest.test_package import TestPackage
 
 
 class TestPackageApk(TestPackage):

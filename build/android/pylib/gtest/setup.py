@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """Generates test runner factory and tests for GTests."""
+# pylint: disable=W0212
 
 import fnmatch
 import glob
@@ -14,16 +15,14 @@ import sys
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
-from pylib import ports
-
-import test_package_apk
-import test_package_exe
-import test_runner
+from pylib.gtest import test_package_apk
+from pylib.gtest import test_package_exe
+from pylib.gtest import test_runner
 
 sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))
-import unittest_util
+import unittest_util # pylint: disable=F0401
 
 
 _ISOLATE_FILE_PATHS = {
@@ -63,8 +62,8 @@ _WEBRTC_ISOLATE_FILE_PATHS = {
 }
 
 # Append the WebRTC tests with the full path from Chromium's src/ root.
-for test, isolate_path in _WEBRTC_ISOLATE_FILE_PATHS.items():
-  _ISOLATE_FILE_PATHS[test] = 'third_party/webrtc/%s' % isolate_path
+for webrtc_test, isolate_path in _WEBRTC_ISOLATE_FILE_PATHS.items():
+  _ISOLATE_FILE_PATHS[webrtc_test] = 'third_party/webrtc/%s' % isolate_path
 
 # Used for filtering large data deps at a finer grain than what's allowed in
 # isolate files since pushing deps to devices is expensive.
@@ -300,7 +299,7 @@ def Setup(test_options, devices):
   _GenerateDepsDirUsingIsolate(test_options.suite_name)
 
   # Constructs a new TestRunner with the current options.
-  def TestRunnerFactory(device, shard_index):
+  def TestRunnerFactory(device, _shard_index):
     return test_runner.TestRunner(
         test_options,
         device,
