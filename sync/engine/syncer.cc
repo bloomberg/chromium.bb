@@ -15,6 +15,7 @@
 #include "sync/engine/commit_processor.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/download.h"
+#include "sync/engine/get_updates_delegate.h"
 #include "sync/engine/get_updates_processor.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer_types.h"
@@ -58,26 +59,20 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              const NudgeTracker& nudge_tracker,
                              SyncSession* session) {
   HandleCycleBegin(session);
-  GetUpdatesProcessor get_updates_processor(
-      session->context()->model_type_registry()->update_handler_map());
-  VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
   if (nudge_tracker.IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
-    if (!DownloadUpdates(
+    VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
+    NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
+    GetUpdatesProcessor get_updates_processor(
+        session->context()->model_type_registry()->update_handler_map(),
+        normal_delegate);
+    if (!DownloadAndApplyUpdates(
             request_types,
             session,
             &get_updates_processor,
-            base::Bind(&download::BuildNormalDownloadUpdates,
-                       session,
-                       &get_updates_processor,
-                       kCreateMobileBookmarksFolder,
-                       request_types,
-                       base::ConstRef(nudge_tracker)))) {
+            kCreateMobileBookmarksFolder)) {
       return HandleCycleEnd(session, nudge_tracker.updates_source());
     }
-    ApplyUpdates(session, &get_updates_processor);
-    if (ExitRequested())
-      return HandleCycleEnd(session, nudge_tracker.updates_source());
   }
 
   VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
@@ -94,104 +89,67 @@ bool Syncer::ConfigureSyncShare(
     ModelTypeSet request_types,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncSession* session) {
-  HandleCycleBegin(session);
-  GetUpdatesProcessor get_updates_processor(
-      session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
-  if (!DownloadUpdates(
+  HandleCycleBegin(session);
+  ConfigureGetUpdatesDelegate configure_delegate(source);
+  GetUpdatesProcessor get_updates_processor(
+      session->context()->model_type_registry()->update_handler_map(),
+      configure_delegate);
+  DownloadAndApplyUpdates(
       request_types,
       session,
       &get_updates_processor,
-      base::Bind(&download::BuildDownloadUpdatesForConfigure,
-                 session,
-                 &get_updates_processor,
-                 kCreateMobileBookmarksFolder,
-                 source,
-                 request_types))) {
-    return HandleCycleEnd(session, source);
-  }
-
-  {
-    TRACE_EVENT0("sync", "ApplyUpdatesPassively");
-
-    ApplyControlDataUpdates(session->context()->directory());
-
-    get_updates_processor.PassiveApplyUpdatesForAllTypes(
-        session->mutable_status_controller());
-    session->context()->set_hierarchy_conflict_detected(
-        session->status_controller().num_hierarchy_conflicts() > 0);
-  }
-
+      kCreateMobileBookmarksFolder);
   return HandleCycleEnd(session, source);
 }
 
 bool Syncer::PollSyncShare(ModelTypeSet request_types,
                            SyncSession* session) {
-  HandleCycleBegin(session);
-  GetUpdatesProcessor get_updates_processor(
-      session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Polling types " << ModelTypeSetToString(request_types);
-  if (!DownloadUpdates(
+  HandleCycleBegin(session);
+  PollGetUpdatesDelegate poll_delegate;
+  GetUpdatesProcessor get_updates_processor(
+      session->context()->model_type_registry()->update_handler_map(),
+      poll_delegate);
+  DownloadAndApplyUpdates(
       request_types,
       session,
       &get_updates_processor,
-      base::Bind(&download::BuildDownloadUpdatesForPoll,
-                 session,
-                 &get_updates_processor,
-                 kCreateMobileBookmarksFolder,
-                 request_types))) {
-    return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
-  }
-  ApplyUpdates(session, &get_updates_processor);
+      kCreateMobileBookmarksFolder);
   return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
 }
 
 bool Syncer::RetrySyncShare(ModelTypeSet request_types,
                             SyncSession* session) {
-  HandleCycleBegin(session);
-  GetUpdatesProcessor get_updates_processor(
-      session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Retrying types " << ModelTypeSetToString(request_types);
-  if (!DownloadUpdates(
+  HandleCycleBegin(session);
+  RetryGetUpdatesDelegate retry_delegate;
+  GetUpdatesProcessor get_updates_processor(
+      session->context()->model_type_registry()->update_handler_map(),
+      retry_delegate);
+  DownloadAndApplyUpdates(
       request_types,
       session,
       &get_updates_processor,
-      base::Bind(&download::BuildDownloadUpdatesForRetry,
-                 session,
-                 &get_updates_processor,
-                 kCreateMobileBookmarksFolder,
-                 request_types))) {
-    return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
-  }
-  ApplyUpdates(session, &get_updates_processor);
-  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
+      kCreateMobileBookmarksFolder);
+  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
 }
 
-void Syncer::ApplyUpdates(SyncSession* session,
-                          GetUpdatesProcessor* get_updates_processor) {
-  TRACE_EVENT0("sync", "ApplyUpdates");
-
-  ApplyControlDataUpdates(session->context()->directory());
-
-  get_updates_processor->ApplyUpdatesForAllTypes(
-      session->mutable_status_controller());
-
-  session->context()->set_hierarchy_conflict_detected(
-      session->status_controller().num_hierarchy_conflicts() > 0);
-
-  session->SendEventNotification(SyncCycleEvent::STATUS_CHANGED);
-}
-
-bool Syncer::DownloadUpdates(
+bool Syncer::DownloadAndApplyUpdates(
     ModelTypeSet request_types,
     SyncSession* session,
     GetUpdatesProcessor* get_updates_processor,
-    base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn) {
+    bool create_mobile_bookmarks_folder) {
   SyncerError download_result = UNSET;
   do {
     TRACE_EVENT0("sync", "DownloadUpdates");
     sync_pb::ClientToServerMessage msg;
-    build_fn.Run(&msg);
+    sync_pb::GetUpdatesMessage* gu_msg = msg.mutable_get_updates();
+
+    download::InitDownloadUpdatesContext(
+        session, create_mobile_bookmarks_folder, &msg);
+    get_updates_processor->PrepareGetUpdates(request_types, gu_msg);
+
     download_result = download::ExecuteDownloadUpdates(request_types,
                                                        session,
                                                        get_updates_processor,
@@ -200,10 +158,30 @@ bool Syncer::DownloadUpdates(
         download_result);
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
 
-  // Report failure if something unusual happened.
-  if (download_result != SYNCER_OK || ExitRequested())
+  // Exit without applying if we're shutting down or an error was detected.
+  if (download_result != SYNCER_OK)
+    return false;
+  if (ExitRequested())
     return false;
 
+  {
+    TRACE_EVENT0("sync", "ApplyUpdates");
+
+    // Control type updates always get applied first.
+    ApplyControlDataUpdates(session->context()->directory());
+
+    // Apply upates to the other types.  May or may not involve cross-thread
+    // traffic, depending on the underlying update handlers and the GU type's
+    // delegate.
+    get_updates_processor->ApplyUpdates(session->mutable_status_controller());
+
+    session->context()->set_hierarchy_conflict_detected(
+        session->status_controller().num_hierarchy_conflicts() > 0);
+    session->SendEventNotification(SyncCycleEvent::STATUS_CHANGED);
+  }
+
+  if (ExitRequested())
+    return false;
   return true;
 }
 

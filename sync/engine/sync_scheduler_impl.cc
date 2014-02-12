@@ -247,8 +247,10 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
 ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
   ModelTypeSet enabled_types = session_context_->enabled_types();
+  ModelTypeSet enabled_protocol_types =
+      Intersection(ProtocolTypes(), enabled_types);
   ModelTypeSet throttled_types = nudge_tracker_.GetThrottledTypes();
-  return Difference(enabled_types, throttled_types);
+  return Difference(enabled_protocol_types, throttled_types);
 }
 
 void SyncSchedulerImpl::SendInitialSnapshot() {

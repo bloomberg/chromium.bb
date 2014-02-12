@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "sync/engine/get_updates_delegate.h"
 #include "sync/engine/sync_directory_update_handler.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -72,8 +73,9 @@ void PartitionProgressMarkersByType(
 
 }  // namespace
 
-GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map)
-    : update_handler_map_(update_handler_map) {}
+GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
+                                         const GetUpdatesDelegate& delegate)
+    : update_handler_map_(update_handler_map), delegate_(delegate) {}
 
 GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
@@ -87,6 +89,7 @@ void GetUpdatesProcessor::PrepareGetUpdates(
         get_updates->add_from_progress_marker();
     handler_it->second->GetDownloadProgress(progress_marker);
   }
+  delegate_.HelpPopulateGuMessage(get_updates);
 }
 
 bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
@@ -137,20 +140,9 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
   return true;
 }
 
-void GetUpdatesProcessor::ApplyUpdatesForAllTypes(
+void GetUpdatesProcessor::ApplyUpdates(
     sessions::StatusController* status_controller) {
-  for (UpdateHandlerMap::iterator it = update_handler_map_->begin();
-       it != update_handler_map_->end(); ++it) {
-    it->second->ApplyUpdates(status_controller);
-  }
-}
-
-void GetUpdatesProcessor::PassiveApplyUpdatesForAllTypes(
-    sessions::StatusController* status_controller) {
-  for (UpdateHandlerMap::iterator it = update_handler_map_->begin();
-       it != update_handler_map_->end(); ++it) {
-    it->second->PassiveApplyUpdates(status_controller);
-  }
+  delegate_.ApplyUpdates(status_controller, update_handler_map_);
 }
 
 }  // namespace syncer

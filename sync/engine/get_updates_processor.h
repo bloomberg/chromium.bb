@@ -29,6 +29,7 @@ namespace syncable {
 class Directory;
 }  // namespace syncable
 
+class GetUpdatesDelegate;
 class SyncDirectoryUpdateHandler;
 
 typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
@@ -42,7 +43,8 @@ typedef std::map<ModelType, SyncEntityList> TypeSyncEntityMap;
 // contains a type which was not previously registered with the manager.
 class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
  public:
-  explicit GetUpdatesProcessor(UpdateHandlerMap* update_handler_map);
+  explicit GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
+                               const GetUpdatesDelegate& delegate);
   ~GetUpdatesProcessor();
 
   // Populates a GetUpdates request message with per-type information.
@@ -55,19 +57,16 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
       const sync_pb::GetUpdatesResponse& gu_response,
       sessions::StatusController* status_controller);
 
-  // Applies pending updates for all sync types known to the manager.  Work is
-  // delegated to their model threads.
-  void ApplyUpdatesForAllTypes(sessions::StatusController* status_controller);
-
-  // Applies updates on the sync thread.  Safe only in configure cycles.
-  void PassiveApplyUpdatesForAllTypes(
-      sessions::StatusController* status_controller);
+  // Hands off control to the delegate so it can apply updates.
+  void ApplyUpdates(sessions::StatusController* status_controller);
 
  private:
   // A map of 'update handlers', one for each enabled type.
   // This must be kept in sync with the routing info.  Our temporary solution to
   // that problem is to initialize this map in set_routing_info().
   UpdateHandlerMap* update_handler_map_;
+
+  const GetUpdatesDelegate& delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUpdatesProcessor);
 };

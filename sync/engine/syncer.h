@@ -71,13 +71,11 @@ class SYNC_EXPORT_PRIVATE Syncer {
                               sessions::SyncSession* session);
 
  private:
-  void ApplyUpdates(sessions::SyncSession* session,
-                    GetUpdatesProcessor* get_updates_processor);
-  bool DownloadUpdates(
+  bool DownloadAndApplyUpdates(
       ModelTypeSet request_types,
       sessions::SyncSession* session,
       GetUpdatesProcessor* get_updates_processor,
-      base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn);
+      bool create_mobile_bookmarks_folder);
 
   // This function will commit batches of unsynced items to the server until the
   // number of unsynced and ready to commit items reaches zero or an error is

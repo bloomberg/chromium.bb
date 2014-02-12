@@ -48,6 +48,8 @@
     'engine/download.h',
     'engine/get_commit_ids.cc',
     'engine/get_commit_ids.h',
+    'engine/get_updates_delegate.cc',
+    'engine/get_updates_delegate.h',
     'engine/get_updates_processor.cc',
     'engine/get_updates_processor.h',
     'engine/net/server_connection_manager.cc',

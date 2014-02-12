@@ -6,10 +6,9 @@
 
 #include <string>
 
-#include "base/command_line.h"
-#include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/sessions/nudge_tracker.h"
+#include "sync/sessions/sync_session.h"
+#include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/syncable_read_transaction.h"
@@ -21,11 +20,7 @@ using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using std::string;
 
-namespace download {
-
 namespace {
-
-typedef std::map<ModelType, size_t> TypeToIndexMap;
 
 SyncerError HandleGetEncryptionKeyResponse(
     const sync_pb::ClientToServerResponse& update_response,
@@ -48,24 +43,6 @@ SyncerError HandleGetEncryptionKeyResponse(
   return (success ? SYNCER_OK : SERVER_RESPONSE_VALIDATION_FAILED);
 }
 
-sync_pb::SyncEnums::GetUpdatesOrigin ConvertConfigureSourceToOrigin(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-  switch (source) {
-    // Configurations:
-    case sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
-      return sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE;
-    case sync_pb::GetUpdatesCallerInfo::MIGRATION:
-      return sync_pb::SyncEnums::MIGRATION;
-    case sync_pb::GetUpdatesCallerInfo::RECONFIGURATION:
-      return sync_pb::SyncEnums::RECONFIGURATION;
-    case sync_pb::GetUpdatesCallerInfo::NEW_CLIENT:
-      return sync_pb::SyncEnums::NEW_CLIENT;
-    default:
-      NOTREACHED();
-      return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
-  }
-}
-
 bool ShouldRequestEncryptionKey(
     SyncSessionContext* context) {
   bool need_encryption_key = false;
@@ -77,6 +54,10 @@ bool ShouldRequestEncryptionKey(
   }
   return need_encryption_key;
 }
+
+}  // namespace
+
+namespace download {
 
 void InitDownloadUpdatesContext(
     SyncSession* session,
@@ -100,180 +81,6 @@ void InitDownloadUpdatesContext(
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
-}
-
-}  // namespace
-
-void BuildNormalDownloadUpdates(
-    SyncSession* session,
-    GetUpdatesProcessor* get_updates_processor,
-    bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types,
-    const sessions::NudgeTracker& nudge_tracker,
-    sync_pb::ClientToServerMessage* client_to_server_message) {
-  // Request updates for all requested types.
-  DVLOG(1) << "Getting updates for types "
-           << ModelTypeSetToString(request_types);
-  DCHECK(!request_types.Empty());
-
-  InitDownloadUpdatesContext(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message);
-
-  BuildNormalDownloadUpdatesImpl(
-      Intersection(request_types, ProtocolTypes()),
-      get_updates_processor,
-      nudge_tracker,
-      client_to_server_message->mutable_get_updates());
-}
-
-void BuildNormalDownloadUpdatesImpl(
-    ModelTypeSet proto_request_types,
-    GetUpdatesProcessor* get_updates_processor,
-    const sessions::NudgeTracker& nudge_tracker,
-    sync_pb::GetUpdatesMessage* get_updates) {
-  DCHECK(!proto_request_types.Empty());
-
-  // Get progress markers and other data for requested types.
-  get_updates_processor->PrepareGetUpdates(proto_request_types, get_updates);
-
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(
-      nudge_tracker.updates_source());
-
-  // Set the new and improved version of source, too.
-  get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
-  get_updates->set_is_retry(nudge_tracker.IsRetryRequired());
-
-  // Fill in the notification hints.
-  for (int i = 0; i < get_updates->from_progress_marker_size(); ++i) {
-    sync_pb::DataTypeProgressMarker* progress_marker =
-        get_updates->mutable_from_progress_marker(i);
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
-        progress_marker->data_type_id());
-
-    DCHECK(!nudge_tracker.IsTypeThrottled(type))
-        << "Throttled types should have been removed from the request_types.";
-
-    nudge_tracker.SetLegacyNotificationHint(type, progress_marker);
-    nudge_tracker.FillProtoMessage(
-        type,
-        progress_marker->mutable_get_update_triggers());
-  }
-}
-
-void BuildDownloadUpdatesForConfigure(
-    SyncSession* session,
-    GetUpdatesProcessor* get_updates_processor,
-    bool create_mobile_bookmarks_folder,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    ModelTypeSet request_types,
-    sync_pb::ClientToServerMessage* client_to_server_message) {
-  // Request updates for all enabled types.
-  DVLOG(1) << "Initial download for types "
-           << ModelTypeSetToString(request_types);
-
-  InitDownloadUpdatesContext(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message);
-  BuildDownloadUpdatesForConfigureImpl(
-      Intersection(request_types, ProtocolTypes()),
-      get_updates_processor,
-      source,
-      client_to_server_message->mutable_get_updates());
-}
-
-void BuildDownloadUpdatesForConfigureImpl(
-    ModelTypeSet proto_request_types,
-    GetUpdatesProcessor* get_updates_processor,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    sync_pb::GetUpdatesMessage* get_updates) {
-  DCHECK(!proto_request_types.Empty());
-
-  // Get progress markers and other data for requested types.
-  get_updates_processor->PrepareGetUpdates(proto_request_types, get_updates);
-
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(source);
-
-  // Set the new and improved version of source, too.
-  sync_pb::SyncEnums::GetUpdatesOrigin origin =
-      ConvertConfigureSourceToOrigin(source);
-  get_updates->set_get_updates_origin(origin);
-}
-
-void BuildDownloadUpdatesForPoll(
-    SyncSession* session,
-    GetUpdatesProcessor* get_updates_processor,
-    bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types,
-    sync_pb::ClientToServerMessage* client_to_server_message) {
-  DVLOG(1) << "Polling for types "
-           << ModelTypeSetToString(request_types);
-
-  InitDownloadUpdatesContext(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message);
-  BuildDownloadUpdatesForPollImpl(
-      Intersection(request_types, ProtocolTypes()),
-      get_updates_processor,
-      client_to_server_message->mutable_get_updates());
-}
-
-void BuildDownloadUpdatesForPollImpl(
-    ModelTypeSet proto_request_types,
-    GetUpdatesProcessor* get_updates_processor,
-    sync_pb::GetUpdatesMessage* get_updates) {
-  DCHECK(!proto_request_types.Empty());
-
-  // Get progress markers and other data for requested types.
-  get_updates_processor->PrepareGetUpdates(proto_request_types, get_updates);
-
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::PERIODIC);
-
-  // Set the new and improved version of source, too.
-  get_updates->set_get_updates_origin(sync_pb::SyncEnums::PERIODIC);
-}
-
-void BuildDownloadUpdatesForRetry(
-    SyncSession* session,
-    GetUpdatesProcessor* get_updates_processor,
-    bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types,
-    sync_pb::ClientToServerMessage* client_to_server_message) {
-  DVLOG(1) << "Retrying for types "
-           << ModelTypeSetToString(request_types);
-
-  InitDownloadUpdatesContext(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message);
-  BuildDownloadUpdatesForRetryImpl(
-      Intersection(request_types, ProtocolTypes()),
-      get_updates_processor,
-      client_to_server_message->mutable_get_updates());
-}
-
-void BuildDownloadUpdatesForRetryImpl(
-    ModelTypeSet proto_request_types,
-    GetUpdatesProcessor* get_updates_processor,
-    sync_pb::GetUpdatesMessage* get_updates) {
-  DCHECK(!proto_request_types.Empty());
-
-  get_updates_processor->PrepareGetUpdates(proto_request_types, get_updates);
-
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::RETRY);
-
-  // Set the new and improved version of source, too.
-  get_updates->set_get_updates_origin(sync_pb::SyncEnums::RETRY);
-  get_updates->set_is_retry(true);
 }
 
 SyncerError ExecuteDownloadUpdates(
@@ -322,18 +129,15 @@ SyncerError ExecuteDownloadUpdates(
         HandleGetEncryptionKeyResponse(update_response, dir));
   }
 
-  const ModelTypeSet proto_request_types =
-      Intersection(request_types, ProtocolTypes());
-
   return ProcessResponse(update_response.get_updates(),
-                         proto_request_types,
+                         request_types,
                          get_updates_processor,
                          status);
 }
 
 SyncerError ProcessResponse(
     const sync_pb::GetUpdatesResponse& gu_response,
-    ModelTypeSet proto_request_types,
+    ModelTypeSet request_types,
     GetUpdatesProcessor* get_updates_processor,
     StatusController* status) {
   status->increment_num_updates_downloaded_by(gu_response.entries_size());
@@ -346,7 +150,7 @@ SyncerError ProcessResponse(
   status->set_num_server_changes_remaining(gu_response.changes_remaining());
 
 
-  if (!get_updates_processor->ProcessGetUpdatesResponse(proto_request_types,
+  if (!get_updates_processor->ProcessGetUpdatesResponse(request_types,
                                                         gu_response,
                                                         status)) {
     return SERVER_RESPONSE_VALIDATION_FAILED;
