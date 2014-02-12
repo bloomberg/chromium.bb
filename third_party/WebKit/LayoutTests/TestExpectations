@@ -79,9 +79,6 @@ crbug.com/331572 http/tests/inspector/styles/selector-line-deprecated.html [ Fai
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-# CSS Regions tests for <dialog>
-crbug.com/244792 [ Mac ] fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
-
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
@@ -296,29 +293,6 @@ crbug.com/331583 [ Mavericks ] fast/line-grid/line-align-right-edges.html [ Pass
 crbug.com/331583 [ Mavericks ] fast/line-grid/line-grid-contains-value.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/line-grid/line-grid-into-columns.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-allregions-nobreaks.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-allregions.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-break-after.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-breakafteralways-maxheight.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-breakbeforealways.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-definedheight-changenotdetected.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-dynamic-update.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-firstregion-breakalways.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-flexbox.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-lastregion-overflowauto-breaksignored.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-middleregion.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-secondregion-breakoutside.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-secondregion.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-breakafteralways-maxheight.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-breakafteralways.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-breakaftermargin.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-breakbeforealways.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-multiplebreaks.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autoheight-singleregion-overflowauto-breaksignored.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/auto-size/autowidth-normalflow-minwidth.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/shape-inside/shape-inside-on-first-region-inline-content.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/shape-inside/shape-inside-on-regions-inline-content.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/float-overflow-right.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/float-overflow.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/inline-horizontal-bt-overflow.html [ Pass ImageOnlyFailure ]
@@ -337,7 +311,6 @@ crbug.com/331583 [ Mavericks ] fast/shapes/shape-inside/shape-inside-rectangle-p
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-002.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-003.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-floats-layout-after-initial-layout-pass.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-floats-outermost.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/table/table-before-child-style-update.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/table/table-cell-before-after-content-around-table-block.html [ Pass ImageOnlyFailure ]
@@ -638,8 +611,6 @@ crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html
 # worked on actively. Rebaseline after impl-side painting becomes stable.
 crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Failure Pass Slow ]
 crbug.com/298188 [ Linux Debug ] virtual/implsidepainting/inspector/timeline/timeline-dom-content-loaded-event.html [ Pass Crash ]
-
-crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)

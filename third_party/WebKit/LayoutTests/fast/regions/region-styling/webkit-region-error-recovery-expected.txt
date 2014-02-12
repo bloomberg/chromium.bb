@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS One invalid and one valid rule 
-PASS One invalid @-rule of allowed type and one valid rule 
-PASS One invalid @-rule of disallowed type and one valid rule 
-Harness: the test ran to completion.
-

@@ -44,10 +44,6 @@ webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-w
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
 
-# Ref-tests can't have platform specific results.
-webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ WontFix ]
-webkit.org/b/87175 [ Win Linux ] fast/regions/overflow-in-uniform-regions.html [ WontFix ]
-
 # Fails since creation in 122663
 webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ WontFix ]
 
