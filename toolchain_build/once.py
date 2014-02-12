@@ -150,11 +150,12 @@ class Once(object):
           logging.info('Computed fresh result and cached it.')
         else:
           # Cached version is present. Replace the current output with that.
-          file_tools.RemoveDirectoryIfPresent(output)
-          shutil.move(temp_output, output)
-          logging.info(
-              'Recomputed result matches cached value, '
-              'using cached value instead.')
+          if self._use_cached_results:
+            file_tools.RemoveDirectoryIfPresent(output)
+            shutil.move(temp_output, output)
+            logging.info(
+                'Recomputed result matches cached value, '
+                'using cached value instead.')
       # Upload an entry mapping from computation input to output hash.
       self._storage.PutData(
           out_hash, self.KeyForBuildSignature(build_signature))
