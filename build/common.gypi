@@ -3852,6 +3852,7 @@
                   '-Wno-extra', # Enabled by -Wextra, but no specific flag
                   '-Wno-ignored-qualifiers',
                   '-Wno-type-limits',
+                  '-Wno-unused-but-set-variable',
                 ],
                 'cflags_cc': [
                   # Other things unrelated to -Wextra:
