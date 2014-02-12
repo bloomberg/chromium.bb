@@ -7101,7 +7101,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable "Ok Google" to start a voice search
       </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword  search preference">
-        Important: When you say "Ok Google," Chrome will send the sound of the next thing you say (plus a few seconds before) to Google.
+        Important: When you say "Ok Google," Chrome will send the sound of the next thing you say to Google.
       </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE" desc="The button text that allows the hotword voice search trigger.">
         Enable "Ok Google"
