@@ -37,8 +37,7 @@ PrintJob::PrintJob()
       settings_(),
       is_job_pending_(false),
       is_canceling_(false),
-      quit_factory_(this),
-      weak_ptr_factory_(this) {
+      quit_factory_(this) {
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
   // of the 'default' type.
@@ -329,14 +328,12 @@ void PrintJob::ControlledWorkerShutdown() {
   // thread because it may block.
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&PrintJobWorker::Stop,
-                 base::Unretained(worker_.get())),
+      base::Bind(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
       base::Bind(&PrintJob::HoldUntilStopIsCalled, this),
       false);
 
   is_job_pending_ = false;
-  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                    content::Source<PrintJob>(this));
+  registrar_.RemoveAll();
   UpdatePrintedDocument(NULL);
 }
 

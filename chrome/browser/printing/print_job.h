@@ -145,8 +145,6 @@ class PrintJob : public PrintJobWorkerOwner,
   // Used at shutdown so that we can quit a nested message loop.
   base::WeakPtrFactory<PrintJob> quit_factory_;
 
-  base::WeakPtrFactory<PrintJob> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PrintJob);
 };
 
