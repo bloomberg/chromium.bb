@@ -1,16 +1,7 @@
 include_rules = [
-  "!content/public/common/common_param_traits.h",
-
   # TODO(joi): Perhaps PrefRegistrySyncable should be a separate
   # component since it is currently in the same component as
   # UserPrefs, which uses content::BrowserContext.
   "+components/user_prefs/pref_registry_syncable.h",
   "+components/webdata/encryptor",
-
-  # TODO(blundell): Bring this list to zero.
-  #
-  # Do not add to the list of temporarily-allowed dependencies below,
-  # and please do not introduce more #includes of these files.
-  "!content/public/common/common_param_traits_macros.h",
-  "!third_party/WebKit/public/web/WebFormElement.h",
 ]

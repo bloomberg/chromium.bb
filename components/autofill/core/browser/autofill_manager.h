@@ -26,7 +26,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
 
 class GURL;
 
