@@ -25,6 +25,8 @@ CHROMEOS_EXPORT extern const char kAshWebUIInit[];
 CHROMEOS_EXPORT extern const char kAuthExtensionPath[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDefaultStubNetworkStateIdle[];
+CHROMEOS_EXPORT extern const char kDerelictDetectionTimeout[];
+CHROMEOS_EXPORT extern const char kDerelictIdleTimeout[];
 CHROMEOS_EXPORT extern const char kDisableBootAnimation[];
 CHROMEOS_EXPORT extern const char kDisableDrive[];
 CHROMEOS_EXPORT extern const char kDisableEnterpriseUserReporting[];

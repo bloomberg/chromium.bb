@@ -44,6 +44,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(OnPreferencesChanged, void(void));
   MOCK_METHOD0(PrewarmAuthentication, void(void));
   MOCK_METHOD2(StartAppLaunch, void(const std::string&, bool));
+  MOCK_METHOD0(StartDemoAppLaunch, void(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

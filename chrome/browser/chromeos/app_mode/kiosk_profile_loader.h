@@ -35,8 +35,8 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
     virtual ~Delegate() {}
   };
 
-  KioskProfileLoader(KioskAppManager* kiosk_app_manager,
-                     const std::string& app_id,
+  KioskProfileLoader(const std::string& app_user_id,
+                     bool force_ephemeral,
                      Delegate* delegate);
 
   virtual ~KioskProfileLoader();
@@ -61,9 +61,8 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
 
-  KioskAppManager* kiosk_app_manager_;
-  const std::string app_id_;
   std::string user_id_;
+  bool force_ephemeral_;
   Delegate* delegate_;
   scoped_ptr<CryptohomedChecker> cryptohomed_checker_;
   scoped_ptr<LoginPerformer> login_performer_;

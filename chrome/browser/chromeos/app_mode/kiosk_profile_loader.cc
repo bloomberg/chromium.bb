@@ -115,16 +115,12 @@ class KioskProfileLoader::CryptohomedChecker
 ////////////////////////////////////////////////////////////////////////////////
 // KioskProfileLoader
 
-KioskProfileLoader::KioskProfileLoader(KioskAppManager* kiosk_app_manager,
-                                       const std::string& app_id,
+KioskProfileLoader::KioskProfileLoader(const std::string& app_user_id,
+                                       bool force_ephemeral,
                                        Delegate* delegate)
-    : kiosk_app_manager_(kiosk_app_manager),
-      app_id_(app_id),
-      delegate_(delegate) {
-  KioskAppManager::App app;
-  CHECK(kiosk_app_manager_->GetApp(app_id_, &app));
-  user_id_ = app.user_id;
-}
+    : user_id_(app_user_id),
+      force_ephemeral_(force_ephemeral),
+      delegate_(delegate) {}
 
 KioskProfileLoader::~KioskProfileLoader() {}
 
@@ -137,7 +133,7 @@ void KioskProfileLoader::Start() {
 
 void KioskProfileLoader::LoginAsKioskAccount() {
   login_performer_.reset(new LoginPerformer(this));
-  login_performer_->LoginAsKioskAccount(user_id_);
+  login_performer_->LoginAsKioskAccount(user_id_, force_ephemeral_);
 }
 
 void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {

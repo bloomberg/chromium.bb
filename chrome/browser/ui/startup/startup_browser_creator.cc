@@ -74,8 +74,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -615,6 +617,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
     // Skip browser launch since app mode launches its app window.
     silent_launch = true;
+  }
+
+  // If we are a demo app session and we crashed, there is no safe recovery
+  // possible. We should instead cleanly exit and go back to the OOBE screen,
+  // where we will launch again after the timeout has expired.
+  if (chromeos::DemoAppLauncher::IsDemoAppSession(
+      command_line.GetSwitchValueASCII(chromeos::switches::kLoginUser))) {
+    chrome::AttemptUserExit();
+    return false;
   }
 #endif
 

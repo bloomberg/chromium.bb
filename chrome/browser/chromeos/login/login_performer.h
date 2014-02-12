@@ -82,7 +82,8 @@ class LoginPerformer : public LoginStatusConsumer,
   void LoginAsPublicAccount(const std::string& username);
 
   // Performs a login into the kiosk mode account with |app_user_id|.
-  void LoginAsKioskAccount(const std::string& app_user_id);
+  void LoginAsKioskAccount(const std::string& app_user_id,
+                           bool force_ephemeral);
 
   // Migrates cryptohome using |old_password| specified.
   void RecoverEncryptedData(const std::string& old_password);

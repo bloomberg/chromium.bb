@@ -892,6 +892,10 @@ const char kSAMLOfflineSigninTimeLimit[] = "saml.offline_signin_time_limit";
 // cleared. The time is expressed as the serialization obtained from
 // base::Time::ToInternalValue().
 const char kSAMLLastGAIASignInTime[] = "saml.last_gaia_sign_in_time";
+
+// Setting used to determine if the machine is in a 'derelict' state. This is
+// determined by the time a machine spends on OOBE without any activity.
+const char kDerelictMachine[] = "settings.is_machine_derelict";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

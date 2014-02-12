@@ -134,7 +134,8 @@ class ParallelAuthenticator : public Authenticator,
   // Initiates login into the kiosk mode account identified by |app_user_id|.
   // Mounts an public but non-ephemeral cryptohome and notifies consumer on the
   // success/failure.
-  virtual void LoginAsKioskAccount(const std::string& app_user_id) OVERRIDE;
+  virtual void LoginAsKioskAccount(
+      const std::string& app_user_id, bool force_ephemeral) OVERRIDE;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.

@@ -58,7 +58,9 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
   // Initiates login into kiosk mode account identified by |app_user_id|.
   // The |app_user_id| is a generated username for the account.
-  virtual void LoginAsKioskAccount(const std::string& app_user_id) = 0;
+  // |force_ephemeral| specifies whether to force the session to be ephemeral.
+  virtual void LoginAsKioskAccount(
+      const std::string& app_user_id, bool force_ephemeral) = 0;
 
   // Completes retail mode login.
   virtual void OnRetailModeLoginSuccess() = 0;

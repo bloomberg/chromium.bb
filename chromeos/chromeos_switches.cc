@@ -24,6 +24,12 @@ const char kDbusStub[] = "dbus-stub";
 // All stub networks are idle by default.
 const char kDefaultStubNetworkStateIdle[] = "default-stub-network-state-idle";
 
+// Time before a machine at OOBE is considered derelict
+const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
+
+// Time before a derelict machines starts demo mode.
+const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
+
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 

@@ -120,8 +120,11 @@ void AppLaunchController::StartAppLaunch() {
   app_launch_splash_screen_actor_->SetDelegate(this);
   app_launch_splash_screen_actor_->Show(app_id_);
 
+  KioskAppManager::App app;
+  CHECK(KioskAppManager::Get() &&
+        KioskAppManager::Get()->GetApp(app_id_, &app));
   kiosk_profile_loader_.reset(
-      new KioskProfileLoader(KioskAppManager::Get(), app_id_, this));
+      new KioskProfileLoader(app.user_id, false, this));
   kiosk_profile_loader_->Start();
 }
 

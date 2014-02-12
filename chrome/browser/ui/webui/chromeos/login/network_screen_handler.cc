@@ -6,19 +6,28 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/input_events_blocker.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -39,6 +48,9 @@ const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
 const char kUSlayout[] = "xkb:us::eng";
 
+const int64 kDerelectDetectionTimeoutSeconds = 8 * 60 * 60; // 8 hours.
+const int64 kDerelectIdleTimeoutSeconds = 5 * 60; // 5 minutes.
+
 }  // namespace
 
 namespace chromeos {
@@ -50,9 +62,11 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       screen_(NULL),
       core_oobe_actor_(core_oobe_actor),
       is_continue_enabled_(false),
+      is_derelict_(false),
       show_on_init_(false),
       weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
+  SetupTimeouts();
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
@@ -76,6 +90,7 @@ void NetworkScreenHandler::Show() {
   }
 
   ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
+  StartIdleDetection();
 }
 
 void NetworkScreenHandler::Hide() {
@@ -159,9 +174,16 @@ void NetworkScreenHandler::RegisterMessages() {
               &NetworkScreenHandler::HandleOnTimezoneChanged);
 }
 
+
+// static
+void NetworkScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDerelictMachine, false);
+}
+
 // NetworkScreenHandler, private: ----------------------------------------------
 
 void NetworkScreenHandler::HandleOnExit() {
+  detector_.reset();
   ClearErrors();
   if (screen_)
     screen_->OnContinuePressed();
@@ -235,6 +257,58 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   CallJS("setTimezone", current_timezone_id);
+}
+
+void NetworkScreenHandler::StartIdleDetection() {
+  if (!detector_.get()) {
+    detector_.reset(
+        new IdleDetector(base::Closure(),
+                         base::Bind(&NetworkScreenHandler::OnIdle,
+                                    weak_ptr_factory_.GetWeakPtr())));
+  }
+
+  detector_->Start(
+      is_derelict_ ? derelict_idle_timeout_ : derelict_detection_timeout_);
+}
+
+void NetworkScreenHandler::OnIdle() {
+  if (is_derelict_) {
+    LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+    host->StartDemoAppLaunch();
+  } else {
+    is_derelict_ = true;
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kDerelictMachine, true);
+
+    StartIdleDetection();
+  }
+}
+
+void NetworkScreenHandler::SetupTimeouts() {
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  DCHECK(cmdline);
+
+  PrefService* prefs = g_browser_process->local_state();
+  is_derelict_ = prefs->GetBoolean(prefs::kDerelictMachine);
+
+  int64 derelict_detection_timeout;
+  if (!cmdline->HasSwitch(switches::kDerelictDetectionTimeout) ||
+      !base::StringToInt64(
+          cmdline->GetSwitchValueASCII(switches::kDerelictDetectionTimeout),
+          &derelict_detection_timeout)) {
+    derelict_detection_timeout = kDerelectDetectionTimeoutSeconds;
+  }
+  derelict_detection_timeout_ =
+      base::TimeDelta::FromSeconds(derelict_detection_timeout);
+
+  int64 derelict_idle_timeout;
+  if (!cmdline->HasSwitch(switches::kDerelictIdleTimeout) ||
+      !base::StringToInt64(
+          cmdline->GetSwitchValueASCII(switches::kDerelictIdleTimeout),
+          &derelict_idle_timeout)) {
+    derelict_idle_timeout = kDerelectIdleTimeoutSeconds;
+  }
+  derelict_idle_timeout_ = base::TimeDelta::FromSeconds(derelict_idle_timeout);
 }
 
 // static

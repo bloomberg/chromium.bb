@@ -654,6 +654,14 @@ void LoginDisplayHostImpl::PrewarmAuthentication() {
                  pointer_factory_.GetWeakPtr()));
 }
 
+void LoginDisplayHostImpl::StartDemoAppLaunch() {
+  LOG(WARNING) << "Login WebUI >> starting demo app.";
+  SetStatusAreaVisible(false);
+
+  demo_app_launcher_.reset(new DemoAppLauncher());
+  demo_app_launcher_->StartDemoAppLaunch();
+}
+
 void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
                                           bool diagnostic_mode) {
   LOG(WARNING) << "Login WebUI >> start app launch.";

@@ -111,6 +111,9 @@ class LoginDisplayHost {
   // Starts app launch splash screen.
   virtual void StartAppLaunch(const std::string& app_id,
                               bool diagnostic_mode) = 0;
+
+  // Starts the demo app launch.
+  virtual void StartDemoAppLaunch() = 0;
 };
 
 }  // namespace chromeos

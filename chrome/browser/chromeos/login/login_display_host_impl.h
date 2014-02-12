@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/auth_prewarmer.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -81,6 +82,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void PrewarmAuthentication() OVERRIDE;
   virtual void StartAppLaunch(const std::string& app_id,
                               bool diagnostic_mode) OVERRIDE;
+  virtual void StartDemoAppLaunch() OVERRIDE;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();
@@ -202,6 +204,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // App launch controller.
   scoped_ptr<AppLaunchController> app_launch_controller_;
+
+  // Demo app launcher.
+  scoped_ptr<DemoAppLauncher> demo_app_launcher_;
 
   // Client for enterprise auto-enrollment check.
   scoped_ptr<policy::AutoEnrollmentClient> auto_enrollment_client_;
