@@ -14543,7 +14543,7 @@ Do you accept?
     </message>
 
     <!-- App List. -->
-    <if expr="enable_app_list">
+    <if expr="pp_ifdef('enable_app_list')">
       <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">
         Chat
       </message>
