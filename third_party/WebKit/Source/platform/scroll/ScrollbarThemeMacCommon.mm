@@ -41,7 +41,7 @@
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeMacNonOverlayAPI.h"
 #include "platform/scroll/ScrollbarThemeMacOverlayAPI.h"
-#include "public/platform/mac/WebThemeEngine.h"
+#include "public/platform/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "skia/ext/skia_utils_mac.h"

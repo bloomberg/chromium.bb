@@ -28,51 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebThemeEngine_h
-#define WebThemeEngine_h
+// FIXME: crbug.com/327471. Remove this header after we've updated all the
+// callers to use platform/WebThemeEngine.h directly.
 
-#include "../WebCanvas.h"
-
-namespace blink {
-
-struct WebRect;
-
-class WebThemeEngine {
-public:
-    enum State {
-        StateDisabled,
-        StateInactive,
-        StateActive,
-        StatePressed,
-    };
-
-    enum Size {
-        SizeRegular,
-        SizeSmall,
-    };
-
-    enum ScrollbarOrientation {
-        ScrollbarOrientationHorizontal,
-        ScrollbarOrientationVertical,
-    };
-
-    enum ScrollbarParent {
-        ScrollbarParentScrollView,
-        ScrollbarParentRenderLayer,
-    };
-
-    struct ScrollbarInfo {
-        ScrollbarOrientation orientation;
-        ScrollbarParent parent;
-        int maxValue;
-        int currentValue;
-        int visibleSize;
-        int totalSize;
-    };
-
-    virtual void paintScrollbarThumb(WebCanvas*, State, Size, const WebRect&, const ScrollbarInfo&) { }
-};
-
-} // namespace blink
-
-#endif
+#include "../WebThemeEngine.h"

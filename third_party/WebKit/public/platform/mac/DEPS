@@ -1,0 +1,4 @@
+# FIXME: crbug.com/327471. Remove this file when mac/WebThemeEngine.h is removed.
+include_rules = [
+    "+..",
+]

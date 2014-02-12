@@ -38,7 +38,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
-#include "public/platform/default/WebThemeEngine.h"
+#include "public/platform/WebThemeEngine.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

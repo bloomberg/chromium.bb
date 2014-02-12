@@ -29,6 +29,6 @@
  */
 
 // FIXME: crbug.com/327471. Remove this header after we've updated all the
-// callers to use platform/default/WebThemeEngine.h directly.
+// callers to use platform/WebThemeEngine.h directly.
 
-#include "../default/WebThemeEngine.h"
+#include "../WebThemeEngine.h"

@@ -34,9 +34,9 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "public/platform/default/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebThemeEngine.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
