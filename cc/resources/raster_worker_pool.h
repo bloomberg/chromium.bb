@@ -192,6 +192,13 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
   static int GetNumRasterThreads();
 
+  static internal::TaskGraphRunner* GetTaskGraphRunner();
+
+  static unsigned kOnDemandRasterTaskPriority;
+  static unsigned kRasterFinishedTaskPriority;
+  static unsigned kRasterRequiredForActivationFinishedTaskPriority;
+  static unsigned kRasterTaskPriorityBase;
+
   // TODO(vmpstr): Figure out an elegant way to not pass this many parameters.
   static RasterTask CreateRasterTask(
       const Resource* resource,
@@ -320,10 +327,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
       internal::WorkerPoolTask* task,
       const internal::Task::Vector& decode_tasks,
       unsigned priority);
-
-  static unsigned kRasterFinishedTaskPriority;
-  static unsigned kRasterRequiredForActivationFinishedTaskPriority;
-  static unsigned kRasterTaskPriorityBase;
 
  private:
   void OnRasterFinished(const internal::WorkerPoolTask* source);

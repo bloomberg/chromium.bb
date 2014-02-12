@@ -450,6 +450,15 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
       RasterRequiredForActivationFinishedWorkerPoolTaskImpl);
 };
 
+class RasterTaskGraphRunner : public internal::TaskGraphRunner {
+ public:
+  RasterTaskGraphRunner()
+      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
+                                  "CompositorRaster") {}
+};
+base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
+    LAZY_INSTANCE_INITIALIZER;
+
 const int kDefaultNumRasterThreads = 1;
 
 int g_num_raster_threads = 0;
@@ -554,12 +563,15 @@ void RasterWorkerPool::RasterTask::Reset() { internal_ = NULL; }
 
 RasterWorkerPool::RasterTask::~RasterTask() {}
 
+// This allows an external rasterize on-demand system to run raster tasks
+// with highest priority using the same task graph runner instance.
+unsigned RasterWorkerPool::kOnDemandRasterTaskPriority = 0u;
 // Task priorities that make sure raster finished tasks run before any
 // remaining raster tasks.
-unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 1u;
+unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 2u;
 unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
-    0u;
-unsigned RasterWorkerPool::kRasterTaskPriorityBase = 2u;
+    1u;
+unsigned RasterWorkerPool::kRasterTaskPriorityBase = 3u;
 
 RasterWorkerPool::RasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
                                    ResourceProvider* resource_provider,
@@ -587,6 +599,11 @@ int RasterWorkerPool::GetNumRasterThreads() {
     g_num_raster_threads = kDefaultNumRasterThreads;
 
   return g_num_raster_threads;
+}
+
+// static
+internal::TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
+  return g_task_graph_runner.Pointer();
 }
 
 // static

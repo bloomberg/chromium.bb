@@ -14,6 +14,7 @@
 #include "cc/base/math_util.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -415,6 +416,35 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   DCHECK(texture->id());
 
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
+}
+
+void DirectRenderer::RunOnDemandRasterTask(
+    internal::Task* on_demand_raster_task) {
+  internal::TaskGraphRunner* task_graph_runner =
+      RasterWorkerPool::GetTaskGraphRunner();
+  DCHECK(task_graph_runner);
+
+  // Make sure we have a unique task namespace token.
+  if (!on_demand_task_namespace_.IsValid())
+    on_demand_task_namespace_ = task_graph_runner->GetNamespaceToken();
+
+  // Construct a task graph that contains this single raster task.
+  internal::TaskGraph graph;
+  graph.nodes.push_back(
+      internal::TaskGraph::Node(on_demand_raster_task,
+                                RasterWorkerPool::kOnDemandRasterTaskPriority,
+                                0u));
+
+  // Schedule task and wait for task graph runner to finish running it.
+  task_graph_runner->SetTaskGraph(on_demand_task_namespace_, &graph);
+  task_graph_runner->WaitForTasksToFinishRunning(on_demand_task_namespace_);
+
+  // Collect task now that it has finished running.
+  internal::Task::Vector completed_tasks;
+  task_graph_runner->CollectCompletedTasks(on_demand_task_namespace_,
+                                           &completed_tasks);
+  DCHECK_EQ(1u, completed_tasks.size());
+  DCHECK_EQ(completed_tasks[0], on_demand_raster_task);
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPass::Id id)

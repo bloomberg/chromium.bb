@@ -25,15 +25,6 @@ bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
   return !task->HasFinishedRunning();
 }
 
-class RasterTaskGraphRunner : public internal::TaskGraphRunner {
- public:
-  RasterTaskGraphRunner()
-      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
-                                  "CompositorRaster") {}
-};
-base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // static
@@ -42,7 +33,7 @@ scoped_ptr<RasterWorkerPool> PixelBufferRasterWorkerPool::Create(
     ContextProvider* context_provider,
     size_t max_transfer_buffer_usage_bytes) {
   return make_scoped_ptr<RasterWorkerPool>(
-      new PixelBufferRasterWorkerPool(g_task_graph_runner.Pointer(),
+      new PixelBufferRasterWorkerPool(GetTaskGraphRunner(),
                                       resource_provider,
                                       context_provider,
                                       max_transfer_buffer_usage_bytes));

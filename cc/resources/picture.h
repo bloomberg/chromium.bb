@@ -57,8 +57,7 @@ class CC_EXPORT Picture
   gfx::Rect OpaqueRect() const { return opaque_rect_; }
 
   // Get thread-safe clone for rasterizing with on a specific thread.
-  scoped_refptr<Picture> GetCloneForDrawingOnThread(
-      unsigned thread_index) const;
+  Picture* GetCloneForDrawingOnThread(unsigned thread_index);
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }

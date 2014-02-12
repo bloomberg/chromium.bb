@@ -78,6 +78,41 @@ class SimpleSwapFence : public ResourceProvider::Fence {
   bool has_passed_;
 };
 
+class OnDemandRasterTaskImpl : public internal::Task {
+ public:
+  OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
+                         SkBitmap* bitmap,
+                         gfx::Rect content_rect,
+                         float contents_scale)
+      : picture_pile_(picture_pile),
+        bitmap_(bitmap),
+        content_rect_(content_rect),
+        contents_scale_(contents_scale) {
+    DCHECK(picture_pile_);
+    DCHECK(bitmap_);
+  }
+
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
+    SkBitmapDevice device(*bitmap_);
+    SkCanvas canvas(&device);
+    picture_pile_->RasterToBitmap(
+        &canvas, content_rect_, contents_scale_, NULL);
+  }
+
+ protected:
+  virtual ~OnDemandRasterTaskImpl() {}
+
+ private:
+  PicturePileImpl* picture_pile_;
+  SkBitmap* bitmap_;
+  const gfx::Rect content_rect_;
+  const float contents_scale_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnDemandRasterTaskImpl);
+};
+
 bool NeedsIOSurfaceReadbackWorkaround() {
 #if defined(OS_MACOSX)
   // This isn't strictly required in DumpRenderTree-mode when Mesa is used,
@@ -1717,11 +1752,13 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                             quad->texture_format);
   }
 
-  SkBitmapDevice device(on_demand_tile_raster_bitmap_);
-  SkCanvas canvas(&device);
-
-  quad->picture_pile->RasterToBitmap(
-      &canvas, quad->content_rect, quad->contents_scale, NULL);
+  // Create and run on-demand raster task for tile.
+  scoped_refptr<internal::Task> on_demand_raster_task(
+      new OnDemandRasterTaskImpl(quad->picture_pile,
+                                 &on_demand_tile_raster_bitmap_,
+                                 quad->content_rect,
+                                 quad->contents_scale));
+  RunOnDemandRasterTask(on_demand_raster_task.get());
 
   uint8_t* bitmap_pixels = NULL;
   SkBitmap on_demand_tile_raster_bitmap_dest;

@@ -35,6 +35,38 @@ namespace cc {
 
 namespace {
 
+class OnDemandRasterTaskImpl : public internal::Task {
+ public:
+  OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
+                         SkCanvas* canvas,
+                         gfx::Rect content_rect,
+                         float contents_scale)
+      : picture_pile_(picture_pile),
+        canvas_(canvas),
+        content_rect_(content_rect),
+        contents_scale_(contents_scale) {
+    DCHECK(picture_pile_);
+    DCHECK(canvas_);
+  }
+
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
+    picture_pile_->RasterDirect(canvas_, content_rect_, contents_scale_, NULL);
+  }
+
+ protected:
+  virtual ~OnDemandRasterTaskImpl() {}
+
+ private:
+  PicturePileImpl* picture_pile_;
+  SkCanvas* canvas_;
+  const gfx::Rect content_rect_;
+  const float contents_scale_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnDemandRasterTaskImpl);
+};
+
 static inline bool IsScalarNearlyInteger(SkScalar scalar) {
   return SkScalarNearlyZero(scalar - SkScalarRoundToScalar(scalar));
 }
@@ -349,8 +381,14 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   TRACE_EVENT0("cc",
                "SoftwareRenderer::DrawPictureQuad");
-  quad->picture_pile->RasterDirect(
-      current_canvas_, quad->content_rect, quad->contents_scale, NULL);
+
+  // Create and run on-demand raster task for tile.
+  scoped_refptr<internal::Task> on_demand_raster_task(
+      new OnDemandRasterTaskImpl(quad->picture_pile,
+                                 current_canvas_,
+                                 quad->content_rect,
+                                 quad->contents_scale));
+  RunOnDemandRasterTask(on_demand_raster_task.get());
 
   current_canvas_->setDrawFilter(NULL);
 }

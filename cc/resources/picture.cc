@@ -92,11 +92,7 @@ scoped_refptr<Picture> Picture::Create(
   picture->Record(client, tile_grid_info);
   if (gather_pixel_refs)
     picture->GatherPixelRefs(tile_grid_info);
-  if (num_raster_threads > 0)
-    picture->CloneForDrawing(num_raster_threads);
-
-  // This picture may be rasterized on a different thread.
-  picture->raster_thread_checker_.DetachFromThread();
+  picture->CloneForDrawing(num_raster_threads);
 
   return picture;
 }
@@ -192,12 +188,11 @@ Picture::~Picture() {
     TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::Picture", this);
 }
 
-scoped_refptr<Picture> Picture::GetCloneForDrawingOnThread(
-    unsigned thread_index) const {
+Picture* Picture::GetCloneForDrawingOnThread(unsigned thread_index) {
   // SkPicture is not thread-safe to rasterize with, this returns a clone
   // to rasterize with on a specific thread.
-  CHECK_GT(clones_.size(), thread_index);
-  return clones_[thread_index];
+  CHECK_GE(clones_.size(), thread_index);
+  return thread_index == clones_.size() ? this : clones_[thread_index].get();
 }
 
 void Picture::CloneForDrawing(int num_threads) {
@@ -206,19 +201,24 @@ void Picture::CloneForDrawing(int num_threads) {
   DCHECK(picture_);
   DCHECK(clones_.empty());
 
-  scoped_ptr<SkPicture[]> clones(new SkPicture[num_threads]);
-  picture_->clone(&clones[0], num_threads);
+  // We can re-use this picture for one raster worker thread.
+  raster_thread_checker_.DetachFromThread();
 
-  for (int i = 0; i < num_threads; i++) {
-    scoped_refptr<Picture> clone = make_scoped_refptr(
-        new Picture(skia::AdoptRef(new SkPicture(clones[i])),
-                    layer_rect_,
-                    opaque_rect_,
-                    pixel_refs_));
-    clones_.push_back(clone);
+  if (num_threads > 1) {
+    scoped_ptr<SkPicture[]> clones(new SkPicture[num_threads - 1]);
+    picture_->clone(&clones[0], num_threads - 1);
 
-    clone->EmitTraceSnapshotAlias(this);
-    clone->raster_thread_checker_.DetachFromThread();
+    for (int i = 0; i < num_threads - 1; i++) {
+      scoped_refptr<Picture> clone = make_scoped_refptr(
+          new Picture(skia::AdoptRef(new SkPicture(clones[i])),
+                      layer_rect_,
+                      opaque_rect_,
+                      pixel_refs_));
+      clones_.push_back(clone);
+
+      clone->EmitTraceSnapshotAlias(this);
+      clone->raster_thread_checker_.DetachFromThread();
+    }
   }
 }
 
