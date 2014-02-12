@@ -25,6 +25,12 @@ const char kSampleJSONWithError[] = "{ \"error\" : \"unittest_example\" }";
 
 class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
  public:
+  MockPrivetURLFetcherDelegate() : raw_mode_(false) {
+  }
+
+  virtual ~MockPrivetURLFetcherDelegate() {
+  }
+
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE {
     OnErrorInternal(error);
@@ -46,10 +52,35 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
       const PrivetURLFetcher::TokenCallback& callback) {
   }
 
+  bool OnRawData(PrivetURLFetcher* fetcher,
+                 bool response_is_file,
+                 const std::string& data,
+                 const base::FilePath& response_file) {
+    if (!raw_mode_) return false;
+
+    if (response_is_file) {
+      EXPECT_TRUE(response_file != base::FilePath());
+      OnFileInternal();
+    } else {
+      OnRawDataInternal(data);
+    }
+
+    return true;
+  }
+
+  MOCK_METHOD1(OnRawDataInternal, void(std::string data));
+
+  MOCK_METHOD0(OnFileInternal, void());
+
   const base::DictionaryValue* saved_value() { return saved_value_.get(); }
+
+  void SetRawMode(bool raw_mode) {
+    raw_mode_ = raw_mode;
+  }
 
  private:
   scoped_ptr<base::DictionaryValue> saved_value_;
+  bool raw_mode_;
 };
 
 class PrivetURLFetcherTest : public ::testing::Test {
@@ -203,6 +234,50 @@ TEST_F(PrivetURLFetcherTest, FetchHasError) {
   fetcher->set_response_code(200);
 
   EXPECT_CALL(delegate_, OnParsedJsonInternal(true));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(PrivetURLFetcherTest, FetcherRawData) {
+  delegate_.SetRawMode(true);
+  privet_urlfetcher_->Start();
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher != NULL);
+  fetcher->SetResponseString(kSampleJSONWithError);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(delegate_, OnRawDataInternal(kSampleJSONWithError));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(PrivetURLFetcherTest, RangeRequest) {
+  delegate_.SetRawMode(true);
+  privet_urlfetcher_->SetByteRange(200, 300);
+  privet_urlfetcher_->Start();
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher != NULL);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+
+  std::string header_range;
+  ASSERT_TRUE(headers.GetHeader("Range", &header_range));
+  EXPECT_EQ("bytes=200-300", header_range);
+}
+
+TEST_F(PrivetURLFetcherTest, FetcherToFile) {
+  delegate_.SetRawMode(true);
+  privet_urlfetcher_->SaveResponseToFile();
+  privet_urlfetcher_->Start();
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher != NULL);
+  fetcher->SetResponseFilePath(
+      base::FilePath(FILE_PATH_LITERAL("sample/file")));
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(delegate_, OnFileInternal());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 

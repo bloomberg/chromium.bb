@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,15 +21,32 @@ namespace local_discovery {
 
 namespace {
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
+const char kRangeHeaderFormat[] = "Range: bytes=%d-%d";
 const char kXPrivetEmptyToken[] = "\"\"";
 const int kPrivetMaxRetries = 20;
 const int kPrivetTimeoutOnError = 5;
+const int kHTTPErrorCodeInvalidXPrivetToken = 418;
+
+std::string MakeRangeHeader(int start, int end) {
+  DCHECK_GE(start, 0);
+  DCHECK_GT(end, 0);
+  DCHECK_GT(end, start);
+  return base::StringPrintf(kRangeHeaderFormat, start, end);
 }
+
+}  // namespace
 
 void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
     PrivetURLFetcher* fetcher,
     const TokenCallback& callback) {
   OnError(fetcher, TOKEN_ERROR);
+}
+
+bool PrivetURLFetcher::Delegate::OnRawData(PrivetURLFetcher* fetcher,
+                                           bool response_is_file,
+                                           const std::string& data_string,
+                                           const base::FilePath& data_file) {
+  return false;
 }
 
 PrivetURLFetcher::PrivetURLFetcher(
@@ -37,21 +55,44 @@ PrivetURLFetcher::PrivetURLFetcher(
     net::URLFetcher::RequestType request_type,
     net::URLRequestContextGetter* request_context,
     PrivetURLFetcher::Delegate* delegate)
-    : privet_access_token_(token), url_(url), request_type_(request_type),
-      request_context_(request_context), delegate_(delegate),
-      do_not_retry_on_transient_error_(false), allow_empty_privet_token_(false),
-      tries_(0), weak_factory_(this) {
+    : privet_access_token_(token),
+      url_(url),
+      request_type_(request_type),
+      request_context_(request_context),
+      delegate_(delegate),
+      do_not_retry_on_transient_error_(false),
+      allow_empty_privet_token_(false),
+      has_byte_range_(false),
+      make_response_file_(false),
+      byte_range_start_(0),
+      byte_range_end_(0),
+      tries_(0),
+      weak_factory_(this) {
 }
 
 PrivetURLFetcher::~PrivetURLFetcher() {
 }
 
 void PrivetURLFetcher::DoNotRetryOnTransientError() {
+  DCHECK(tries_ == 0);
   do_not_retry_on_transient_error_ = true;
 }
 
 void PrivetURLFetcher::AllowEmptyPrivetToken() {
+  DCHECK(tries_ == 0);
   allow_empty_privet_token_ = true;
+}
+
+void PrivetURLFetcher::SaveResponseToFile() {
+  DCHECK(tries_ == 0);
+  make_response_file_ = true;
+}
+
+void PrivetURLFetcher::SetByteRange(int start, int end) {
+  DCHECK(tries_ == 0);
+  byte_range_start_ = start;
+  byte_range_end_ = end;
+  has_byte_range_ = true;
 }
 
 void PrivetURLFetcher::Try() {
@@ -66,6 +107,16 @@ void PrivetURLFetcher::Try() {
     url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
                                         token);
+    if (has_byte_range_) {
+      url_fetcher_->AddExtraRequestHeader(
+          MakeRangeHeader(byte_range_start_, byte_range_end_));
+    }
+
+    if (make_response_file_) {
+      url_fetcher_->SaveResponseToTemporaryFile(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE));
+    }
 
     // URLFetcher requires us to set upload data for POST requests.
     if (request_type_ == net::URLFetcher::POST) {
@@ -119,6 +170,56 @@ void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
+  if (!OnURLFetchCompleteDoNotParseData(source)) {
+    // Byte ranges should only be used when we're not parsing the data
+    // as JSON.
+    DCHECK(!has_byte_range_);
+
+    // We should only be saving raw data to a file.
+    DCHECK(!make_response_file_);
+
+    OnURLFetchCompleteParseData(source);
+  }
+}
+
+// Note that this function returns "true" in error cases to indicate
+// that it has fully handled the responses.
+bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
+    const net::URLFetcher* source) {
+  if (source->GetResponseCode() == kHTTPErrorCodeInvalidXPrivetToken) {
+    RequestTokenRefresh();
+    return true;
+  }
+
+  if (source->GetResponseCode() != net::HTTP_OK &&
+      source->GetResponseCode() != net::HTTP_PARTIAL_CONTENT) {
+    delegate_->OnError(this, RESPONSE_CODE_ERROR);
+    return true;
+  }
+
+  if (make_response_file_) {
+    base::FilePath response_file_path;
+
+    if (!source->GetResponseAsFilePath(true, &response_file_path)) {
+      delegate_->OnError(this, URL_FETCH_ERROR);
+      return true;
+    }
+
+    return delegate_->OnRawData(this, true, std::string(), response_file_path);
+  } else {
+    std::string response_str;
+
+    if (!source->GetResponseAsString(&response_str)) {
+      delegate_->OnError(this, URL_FETCH_ERROR);
+      return true;
+    }
+
+    return delegate_->OnRawData(this, false, response_str, base::FilePath());
+  }
+}
+
+void PrivetURLFetcher::OnURLFetchCompleteParseData(
+    const net::URLFetcher* source) {
   if (source->GetResponseCode() != net::HTTP_OK) {
     delegate_->OnError(this, RESPONSE_CODE_ERROR);
     return;

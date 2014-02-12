@@ -51,6 +51,14 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
                               const base::DictionaryValue* value,
                               bool has_error) = 0;
+
+    // If this method is returns true, the data will not be parsed as JSON, and
+    // |OnParsedJson| will not be called. Otherwise, |OnParsedJson| will be
+    // called.
+    virtual bool OnRawData(PrivetURLFetcher* fetcher,
+                           bool response_is_file,
+                           const std::string& data_string,
+                           const base::FilePath& data_file);
   };
 
   PrivetURLFetcher(
@@ -65,6 +73,14 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   void AllowEmptyPrivetToken();
 
+  // Set the contents of the Range header. |OnRawData| must return true if this
+  // is called.
+  void SetByteRange(int start, int end);
+
+  // Save the response to a file. |OnRawData| must return true if this is
+  // called.
+  void SaveResponseToFile();
+
   void Start();
 
   void SetUploadData(const std::string& upload_content_type,
@@ -74,6 +90,8 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
                          const base::FilePath& upload_file_path);
 
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  void OnURLFetchCompleteParseData(const net::URLFetcher* source);
+  bool OnURLFetchCompleteDoNotParseData(const net::URLFetcher* source);
 
   const GURL& url() const { return url_fetcher_->GetOriginalURL(); }
   int response_code() const { return url_fetcher_->GetResponseCode(); }
@@ -93,6 +111,11 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   bool do_not_retry_on_transient_error_;
   bool allow_empty_privet_token_;
+  bool has_byte_range_;
+  bool make_response_file_;
+
+  int byte_range_start_;
+  int byte_range_end_;
 
   int tries_;
   std::string upload_data_;
