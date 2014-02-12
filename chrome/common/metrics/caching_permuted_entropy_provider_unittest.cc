@@ -34,8 +34,8 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
                                                    kMaxLowEntropySize);
     const std::string trial_name =
         kTestTrialNames[i % arraysize(kTestTrialNames)];
-    EXPECT_EQ(provider.GetEntropyForTrial(trial_name, 0),
-              cached_provider.GetEntropyForTrial(trial_name, 0));
+    EXPECT_DOUBLE_EQ(provider.GetEntropyForTrial(trial_name, 0),
+                     cached_provider.GetEntropyForTrial(trial_name, 0));
   }
 
   // Now, do the same test re-using the same caching provider.
@@ -44,8 +44,8 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
     const std::string trial_name =
         kTestTrialNames[i % arraysize(kTestTrialNames)];
-    EXPECT_EQ(provider.GetEntropyForTrial(trial_name, 0),
-              cached_provider.GetEntropyForTrial(trial_name, 0));
+    EXPECT_DOUBLE_EQ(provider.GetEntropyForTrial(trial_name, 0),
+                     cached_provider.GetEntropyForTrial(trial_name, 0));
   }
 }
 
