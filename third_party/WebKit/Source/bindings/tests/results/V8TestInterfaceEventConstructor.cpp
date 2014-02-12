@@ -431,7 +431,6 @@ void V8TestInterfaceEventConstructor::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
-
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfaceEventConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

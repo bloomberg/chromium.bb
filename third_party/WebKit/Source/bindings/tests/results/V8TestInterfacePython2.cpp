@@ -161,7 +161,6 @@ void V8TestInterfacePython2::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
-
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

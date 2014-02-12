@@ -4887,13 +4887,16 @@ END
     GenerateSpecialWrap($interface, $v8ClassName);
     GenerateToV8Converters($interface, $v8ClassName);
 
-    $implementation{nameSpaceWebCore}->add(<<END);
-void ${v8ClassName}::derefObject(void* object)
-{
-    fromInternalPointer(object)->deref();
-}
-
-END
+    $implementation{nameSpaceWebCore}->add("void ${v8ClassName}::derefObject(void* object)\n");
+    $implementation{nameSpaceWebCore}->add("{\n");
+    if (IsWillBeGarbageCollectedType($interface->name)) {
+        $implementation{nameSpaceWebCore}->add("#if !ENABLE(OILPAN)\n");
+    }
+    $implementation{nameSpaceWebCore}->add("    fromInternalPointer(object)->deref();\n");
+    if (IsWillBeGarbageCollectedType($interface->name)) {
+        $implementation{nameSpaceWebCore}->add("#endif\n");
+    }
+    $implementation{nameSpaceWebCore}->add("}\n");
 
     $implementation{nameSpaceWebCore}->add(<<END);
 template<>

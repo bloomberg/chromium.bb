@@ -325,7 +325,6 @@ void V8TestSVG::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
-
 template<>
 v8::Handle<v8::Value> toV8NoInline(TestSVG* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
