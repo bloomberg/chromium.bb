@@ -456,7 +456,10 @@ if (is_win) {
 } else if (is_linux) {
   host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
   set_default_toolchain("//build/toolchain/linux:$cpu_arch")
-} else if (is_mac || is_ios) {
+} else if (is_mac) {
   host_toolchain = "//build/toolchain/mac:clang"
   set_default_toolchain(host_toolchain)
+} else if (is_ios) {
+  host_toolchain = "//build/toolchain/mac:host_clang"
+  set_default_toolchain("//build/toolchain/mac:clang")
 }

@@ -48,7 +48,7 @@ class Loader : public base::RefCountedThreadSafe<Loader> {
 
   // Returns information about the toolchain with the given label. Will return
   // false if we haven't processed this toolchain yet.
-  virtual const Settings* GetToolchainSettings(const Label& label) = 0;
+  virtual const Settings* GetToolchainSettings(const Label& label) const = 0;
 
   // Helper function that extracts the file and toolchain name from the given
   // label, and calls Load().
@@ -84,7 +84,8 @@ class LoaderImpl : public Loader {
                     const Label& toolchain_name) OVERRIDE;
   virtual void ToolchainLoaded(const Toolchain* toolchain) OVERRIDE;
   virtual Label GetDefaultToolchain() const OVERRIDE;
-  virtual const Settings* GetToolchainSettings(const Label& label) OVERRIDE;
+  virtual const Settings* GetToolchainSettings(
+      const Label& label) const OVERRIDE;
 
   // Sets the message loop corresponding to the main thread. By default this
   // class will use the thread active during construction, but there is not

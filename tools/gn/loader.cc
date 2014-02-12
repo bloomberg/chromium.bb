@@ -186,8 +186,8 @@ Label LoaderImpl::GetDefaultToolchain() const {
   return default_toolchain_label_;
 }
 
-const Settings* LoaderImpl::GetToolchainSettings(const Label& label) {
-  ToolchainRecordMap::iterator found_toolchain;
+const Settings* LoaderImpl::GetToolchainSettings(const Label& label) const {
+  ToolchainRecordMap::const_iterator found_toolchain;
   if (label.is_null()) {
     if (default_toolchain_label_.is_null())
       return NULL;

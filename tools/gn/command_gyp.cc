@@ -40,26 +40,18 @@ struct Setups {
   Setups()
       : debug(NULL),
         release(NULL),
-        host_debug(NULL),
-        host_release(NULL),
         debug64(NULL),
         release64(NULL),
         xcode_debug(NULL),
-        xcode_release(NULL),
-        xcode_host_debug(NULL),
-        xcode_host_release(NULL) {
+        xcode_release(NULL) {
   }
 
   Setup* debug;
   DependentSetup* release;
-  DependentSetup* host_debug;
-  DependentSetup* host_release;
   DependentSetup* debug64;
   DependentSetup* release64;
   DependentSetup* xcode_debug;
   DependentSetup* xcode_release;
-  DependentSetup* xcode_host_debug;
-  DependentSetup* xcode_host_release;
 };
 
 struct TargetVectors {
@@ -84,31 +76,24 @@ SourceDir AppendDirSuffix(const SourceDir& base, const std::string& suffix) {
   return SourceDir(DirectoryWithNoLastSlash(base) + suffix + "/");
 }
 
-// We need a "host" build when targeting a device (iOS, Android, ChromeOS). The
-// host build will correspond to the the system doing the building.
-bool NeedsHostBuild(CommonSetup* setup) {
-  Args& args = setup->build_settings().build_args();
-  const Value* os_override = args.GetArgOverride("os");
-  if (!os_override)
-    return false;  // Target OS is the default, which is always the host.
-  if (os_override->type() != Value::STRING)
-    return false;  // Build will likely fail later.
-  return os_override->string_value() == "android" ||
-         os_override->string_value() == "ios" ||
-         os_override->string_value() == "chromeos";
-}
+// Returns the empty label if there is no separate host build.
+Label GetHostToolchain(const Setups& setups) {
+  const Loader* loader = setups.debug->loader();
+  const Settings* default_settings =
+      loader->GetToolchainSettings(loader->GetDefaultToolchain());
 
-void SetupHostBuildParams(CommonSetup* setup) {
-  // Re-override the target OS to the default of the current system.
-#if defined(OS_WIN)
-  const char kDefaultOs[] = "win";
-#elif defined(OS_MACOSX)
-  const char kDefaultOs[] = "mac";
-#elif defined(OS_LINUX)
-  const char kDefaultOs[] = "linux";
-#endif
-  setup->build_settings().build_args().AddArgOverride(
-      "os", Value(NULL, kDefaultOs));
+  // Chrome's master build config file puts the host toolchain label into the
+  // variable "host_toolchain".
+  const Value* host_value =
+      default_settings->base_config()->GetValue("host_toolchain");
+  if (!host_value || host_value->type() != Value::STRING)
+    return Label();
+
+  Err err;
+  Label host_label = Label::Resolve(SourceDir(), Label(), *host_value, &err);
+  if (host_label == loader->GetDefaultToolchain())
+    return Label();  // Host and target matches, there is no host build.
+  return host_label;
 }
 
 std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
@@ -125,55 +110,73 @@ std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
   return result;
 }
 
+// Adds all targets to the map that match the given toolchain, writing them to
+// the given destiation vector of the record group. If toolchain is empty, it
+// indicates the default toolchain should be matched.
 void CorrelateRecordVector(const RecordVector& records,
+                           const Label& toolchain,
                            CorrelatedTargetsMap* correlated,
                            const BuilderRecord* TargetGroup::* record_ptr) {
+  if (records.empty())
+    return;
+
+  Label search_toolchain = toolchain;
+  if (search_toolchain.is_null()) {
+    // Find the default toolchain.
+    search_toolchain =
+        records[0]->item()->settings()->default_toolchain_label();
+  }
+
   for (size_t i = 0; i < records.size(); i++) {
     const BuilderRecord* record = records[i];
-    (*correlated)[record->label().GetWithNoToolchain()].*record_ptr = record;
+    if (record->label().GetToolchainLabel() == search_toolchain)
+      (*correlated)[record->label().GetWithNoToolchain()].*record_ptr = record;
   }
 }
 
-
 // Groups targets sharing the same label between debug and release.
 //
-// We strip the toolchain label because the 64-bit and 32-bit builds, for
-// example, will have different toolchains but we want to correlate them.
+// If the host toolchain is nonempty, we'll search for targets with this
+// alternate toolchain and assign them to the corresponding "host" groups.
 //
-// TODO(brettw) this assumes that everything in the build has the same
-// toolchain. To support cross-compiling and nacl, we'll need to differentiate
-// the 32-vs-64-bit case and the default-toolchain-vs-not case. When we find
-// a target not using hte default toolchain, we should probably just shell
-// out to ninja.
+// TODO(brettw) this doesn't handle any toolchains other than the target or
+// host ones. To support nacl, we'll need to differentiate the 32-vs-64-bit
+// case and the default-toolchain-vs-not case. When we find a target not using
+// hte default toolchain, we should probably just shell out to ninja.
 void CorrelateTargets(const TargetVectors& targets,
+                      const Label& host_toolchain,
                       CorrelatedTargetsMap* correlated) {
   // Normal.
-  CorrelateRecordVector(
-      targets.debug, correlated, &TargetGroup::debug);
-  CorrelateRecordVector(
-      targets.release, correlated, &TargetGroup::release);
-
-  // Host build.
-  CorrelateRecordVector(
-      targets.host_debug, correlated, &TargetGroup::host_debug);
-  CorrelateRecordVector(
-      targets.host_release, correlated, &TargetGroup::host_release);
+  CorrelateRecordVector(targets.debug, Label(), correlated,
+                        &TargetGroup::debug);
+  CorrelateRecordVector(targets.release, Label(), correlated,
+                        &TargetGroup::release);
 
   // 64-bit build.
-  CorrelateRecordVector(
-      targets.debug64, correlated, &TargetGroup::debug64);
-  CorrelateRecordVector(
-      targets.release64, correlated, &TargetGroup::release64);
+  CorrelateRecordVector(targets.debug64, Label(), correlated,
+                        &TargetGroup::debug64);
+  CorrelateRecordVector(targets.release64, Label(), correlated,
+                        &TargetGroup::release64);
 
   // XCode build.
-  CorrelateRecordVector(
-      targets.xcode_debug, correlated, &TargetGroup::xcode_debug);
-  CorrelateRecordVector(
-      targets.xcode_release, correlated, &TargetGroup::xcode_release);
-  CorrelateRecordVector(
-      targets.xcode_host_debug, correlated, &TargetGroup::xcode_host_debug);
-  CorrelateRecordVector(
-      targets.xcode_host_release, correlated, &TargetGroup::xcode_host_release);
+  CorrelateRecordVector(targets.xcode_debug, Label(), correlated,
+                        &TargetGroup::xcode_debug);
+  CorrelateRecordVector(targets.xcode_release, Label(), correlated,
+                        &TargetGroup::xcode_release);
+
+  if (!host_toolchain.is_null()) {
+    // Normal host build.
+    CorrelateRecordVector(targets.debug, host_toolchain, correlated,
+                          &TargetGroup::host_debug);
+    CorrelateRecordVector(targets.release, host_toolchain, correlated,
+                          &TargetGroup::host_release);
+
+    // XCode build.
+    CorrelateRecordVector(targets.xcode_debug, host_toolchain, correlated,
+                          &TargetGroup::xcode_host_debug);
+    CorrelateRecordVector(targets.xcode_release, host_toolchain, correlated,
+                          &TargetGroup::xcode_host_release);
+  }
 }
 
 // Verifies that both debug and release variants match. They can differ only
@@ -247,17 +250,8 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
 std::pair<int, int> WriteGypFiles(Setups& setups, Err* err) {
   TargetVectors targets;
 
-  // Group all targets by output GYP file name.
   targets.debug = GetAllResolvedTargetRecords(setups.debug->builder());
   targets.release = GetAllResolvedTargetRecords(setups.release->builder());
-
-  // Host build is optional.
-  if (setups.host_debug && setups.host_release) {
-    targets.host_debug =
-        GetAllResolvedTargetRecords(setups.host_debug->builder());
-    targets.host_release =
-        GetAllResolvedTargetRecords(setups.host_release->builder());
-  }
 
   // 64-bit build is optional.
   if (setups.debug64 && setups.release64) {
@@ -274,16 +268,10 @@ std::pair<int, int> WriteGypFiles(Setups& setups, Err* err) {
     targets.xcode_release =
         GetAllResolvedTargetRecords(setups.xcode_release->builder());
   }
-  if (setups.xcode_host_debug && setups.xcode_host_release) {
-    targets.xcode_host_debug =
-        GetAllResolvedTargetRecords(setups.xcode_host_debug->builder());
-    targets.xcode_host_release =
-        GetAllResolvedTargetRecords(setups.xcode_host_release->builder());
-  }
 
   // Match up the debug and release version of each target by label.
   CorrelatedTargetsMap correlated;
-  CorrelateTargets(targets, &correlated);
+  CorrelateTargets(targets, GetHostToolchain(setups), &correlated);
 
   GypHelper helper;
   GroupedTargetsMap grouped_targets;
@@ -421,19 +409,6 @@ int RunGyp(const std::vector<std::string>& args) {
   setups.release->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".Release"));
 
-  // Host build.
-  if (NeedsHostBuild(setups.debug)) {
-    setups.host_debug = new DependentSetup(setups.debug);
-    setups.host_debug->build_settings().SetBuildDir(
-        AppendDirSuffix(base_build_dir, ".HostDebug"));
-    SetupHostBuildParams(setups.host_debug);
-
-    setups.host_release = new DependentSetup(setups.release);
-    setups.host_release->build_settings().SetBuildDir(
-        AppendDirSuffix(base_build_dir, ".HostRelease"));
-    SetupHostBuildParams(setups.host_release);
-  }
-
   // 64-bit build (Windows only).
 #if defined(OS_WIN)
   static const char kForceWin64[] = "force_win64";
@@ -464,26 +439,10 @@ int RunGyp(const std::vector<std::string>& args) {
       kGypXCode, Value(NULL, true));
   setups.xcode_release->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".XCodeRelease"));
-
-  if (NeedsHostBuild(setups.debug)) {
-    setups.xcode_host_debug = new DependentSetup(setups.xcode_debug);
-    setups.xcode_host_debug->build_settings().SetBuildDir(
-        AppendDirSuffix(base_build_dir, ".XCodeHostDebug"));
-    SetupHostBuildParams(setups.xcode_host_debug);
-
-    setups.xcode_host_release = new DependentSetup(setups.xcode_release);
-    setups.xcode_host_release->build_settings().SetBuildDir(
-        AppendDirSuffix(base_build_dir, ".XCodeHostRelease"));
-    SetupHostBuildParams(setups.xcode_host_release);
-  }
 #endif
 
   // Run all the builds in parellel.
   setups.release->RunPreMessageLoop();
-  if (setups.host_debug && setups.host_release) {
-    setups.host_debug->RunPreMessageLoop();
-    setups.host_release->RunPreMessageLoop();
-  }
   if (setups.debug64 && setups.release64) {
     setups.debug64->RunPreMessageLoop();
     setups.release64->RunPreMessageLoop();
@@ -492,19 +451,11 @@ int RunGyp(const std::vector<std::string>& args) {
     setups.xcode_debug->RunPreMessageLoop();
     setups.xcode_release->RunPreMessageLoop();
   }
-  if (setups.xcode_host_debug && setups.xcode_host_release) {
-    setups.xcode_host_debug->RunPreMessageLoop();
-    setups.xcode_host_release->RunPreMessageLoop();
-  }
 
   if (!setups.debug->Run())
     return 1;
 
   if (!setups.release->RunPostMessageLoop())
-    return 1;
-  if (setups.host_debug && !setups.host_debug->RunPostMessageLoop())
-    return 1;
-  if (setups.host_release && !setups.host_release->RunPostMessageLoop())
     return 1;
   if (setups.debug64 && !setups.debug64->RunPostMessageLoop())
     return 1;
@@ -513,12 +464,6 @@ int RunGyp(const std::vector<std::string>& args) {
   if (setups.xcode_debug && !setups.xcode_debug->RunPostMessageLoop())
     return 1;
   if (setups.xcode_release && !setups.xcode_release->RunPostMessageLoop())
-    return 1;
-  if (setups.xcode_host_debug &&
-      !setups.xcode_host_debug->RunPostMessageLoop())
-    return 1;
-  if (setups.xcode_host_release &&
-      !setups.xcode_host_release->RunPostMessageLoop())
     return 1;
 
   Err err;

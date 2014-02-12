@@ -26,7 +26,8 @@ class MockLoader : public Loader {
   virtual Label GetDefaultToolchain() const OVERRIDE {
     return Label();
   }
-  virtual const Settings* GetToolchainSettings(const Label& label) OVERRIDE {
+  virtual const Settings* GetToolchainSettings(
+      const Label& label) const OVERRIDE {
     return NULL;
   }
 
