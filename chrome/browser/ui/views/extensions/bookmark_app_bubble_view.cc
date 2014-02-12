@@ -30,6 +30,8 @@ namespace {
 
 // Minimum width of the the bubble.
 const int kMinBubbleWidth = 300;
+// Minimum width of the the textfield.
+const int kMinTextfieldWidth = 200;
 
 }  // namespace
 
@@ -70,6 +72,7 @@ BookmarkAppBubbleView::BookmarkAppBubbleView(
       remove_app_(true) {
   const SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
+  set_arrow(views::BubbleBorder::TOP_CENTER);
   set_color(background_color);
   set_background(views::Background::CreateSolidBackground(background_color));
   set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
@@ -111,8 +114,12 @@ void BookmarkAppBubbleView::Init() {
   // The column layout used for the text box.
   cs = layout->AddColumnSet(TITLE_TEXT_COLUMN_SET_ID);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
-  cs->AddColumn(
-      GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(GridLayout::FILL,
+                GridLayout::FILL,
+                1,
+                GridLayout::USE_PREF,
+                0,
+                kMinTextfieldWidth);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
   // The column layout used for the row with buttons.
