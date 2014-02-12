@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Base class with common routines between the Apache, Lighttpd, and websocket servers."""
+"""Base class used to start servers used by the layout tests."""
 
 import errno
 import logging
@@ -46,15 +46,11 @@ class ServerError(Exception):
 class ServerBase(object):
     """A skeleton class for starting and stopping servers used by the layout tests."""
 
-    def __init__(self, port_obj, number_of_servers=None):
+    def __init__(self, port_obj, output_dir):
+        self._port_obj = port_obj
         self._executive = port_obj._executive
         self._filesystem = port_obj._filesystem
-        self._name = '<virtual>'
-        self._mappings = {}
-        self._pid = None
-        self._pid_file = None
-        self._port_obj = port_obj
-        self._number_of_servers = number_of_servers
+        self._output_dir = output_dir
 
         # We need a non-checkout-dependent place to put lock files, etc. We
         # don't use the Python default on the Mac because it defaults to a
@@ -66,6 +62,20 @@ class ServerBase(object):
 
         self._runtime_path = self._filesystem.join(tmpdir, "WebKit")
         self._filesystem.maybe_make_directory(self._runtime_path)
+
+        # Subclasses must override these fields.
+        self._name = '<virtual>'
+        self._log_prefixes = tuple()
+        self._mappings = {}
+        self._pid_file = None
+        self._start_cmd = None
+
+        # Subclasses may override these fields.
+        self._env = None
+        self._stdout = self._executive.PIPE
+        self._stderr = self._executive.PIPE
+        self._process = None
+        self._pid = None
 
     def start(self):
         """Starts the server. It is an error to start an already started server.
@@ -140,20 +150,31 @@ class ServerBase(object):
         left over from a prior run. This routine should log warnings if the
         files cannot be deleted, but should not fail unless failure to
         delete the logs will actually cause start() to fail."""
-        pass
+        # Sometimes logs are open in other processes but they should clear eventually.
+        for log_prefix in self._log_prefixes:
+            try:
+                self._remove_log_files(self._output_dir, log_prefix)
+            except OSError, e:
+                _log.warning('Failed to remove old %s %s files' % (self._name, log_prefix))
 
     def _spawn_process(self):
-        """This routine must be implemented by subclasses to actually start the server.
-
-        This routine returns the pid of the started process, and also ensures that that
-        pid has been written to self._pid_file."""
-        raise NotImplementedError()
+        _log.debug('Starting %s server, cmd="%s"' % (self._name, self._start_cmd))
+        process = self._executive.popen(self._start_cmd, env=self._env, stdout=self._stdout, stderr=self._stderr)
+        pid = process.pid
+        self._filesystem.write_text_file(self._pid_file, str(pid))
+        return pid
 
     def _stop_running_server(self):
-        """This routine must be implemented by subclasses to actually stop the running server listed in self._pid_file."""
-        raise NotImplementedError()
+        self._wait_for_action(self._check_and_kill)
+        if self._filesystem.exists(self._pid_file):
+            self._filesystem.remove(self._pid_file)
 
-    # Utility routines.
+    def _check_and_kill(self):
+        if self._executive.check_running_pid(self._pid):
+            host = self._port_obj.host
+            self._executive.kill_process(self._pid)
+            return False
+        return True
 
     def _remove_pid_file(self):
         if self._filesystem.exists(self._pid_file):

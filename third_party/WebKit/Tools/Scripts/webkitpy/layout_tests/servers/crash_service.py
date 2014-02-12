@@ -45,43 +45,11 @@ class CrashService(server_base.ServerBase):
           crash_dumps_dir: the absolute path to the directory where to store crash dumps
         """
         # Webkit tests
-        super(CrashService, self).__init__(port_obj)
+        super(CrashService, self).__init__(port_obj, port_obj.default_results_directory())
         self._name = 'CrashService'
         self._crash_dumps_dir = crash_dumps_dir
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
-
-    def _spawn_process(self):
-        start_cmd = [self._port_obj._path_to_crash_service(),
-                     '--dumps-dir=%s' % self._crash_dumps_dir,
-                     '--no-window']
-        _log.debug('Starting crash service, cmd = "%s"' % " ".join(start_cmd))
-        process = self._executive.popen(start_cmd, shell=False, stderr=self._executive.PIPE)
-        pid = process.pid
-        self._filesystem.write_text_file(self._pid_file, str(pid))
-        return pid
-
-    def _stop_running_server(self):
-        # FIXME: It would be nice if we had a cleaner way of killing this process.
-        # Currently we throw away the process object created in _spawn_process,
-        # since there doesn't appear to be any way to kill the server any more
-        # cleanly using it than just killing the pid, and we need to support
-        # killing a pid directly anyway for run-webkit-httpd and run-webkit-websocketserver.
-        self._wait_for_action(self._check_and_kill)
-        if self._filesystem.exists(self._pid_file):
-            self._filesystem.remove(self._pid_file)
-
-    def _check_and_kill(self):
-        if self._executive.check_running_pid(self._pid):
-            host = self._port_obj.host
-            if host.platform.is_win() and not host.platform.is_cygwin():
-                # FIXME: https://bugs.webkit.org/show_bug.cgi?id=106838
-                # We need to kill all of the child processes as well as the
-                # parent, so we can't use executive.kill_process().
-                #
-                # If this is actually working, we should figure out a clean API.
-                self._executive.run_command(["taskkill.exe", "/f", "/t", "/pid", self._pid], error_handler=self._executive.ignore_error)
-            else:
-                self._executive.kill_process(self._pid)
-            return False
-        return True
+        self._start_cmd = [self._port_obj._path_to_crash_service(),
+                           '--dumps-dir=%s' % self._crash_dumps_dir,
+                           '--no-window']

@@ -47,15 +47,14 @@ class ApacheHTTP(server_base.ServerBase):
           port_obj: handle to the platform-specific routines
           output_dir: the absolute path to the layout test result directory
         """
-        super(ApacheHTTP, self).__init__(port_obj, number_of_servers)
+        super(ApacheHTTP, self).__init__(port_obj, output_dir)
+        self._number_of_servers = number_of_servers
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
         self._mappings = [{'port': 8000},
                           {'port': 8080},
                           {'port': 8443, 'sslcert': True}]
-        self._output_dir = output_dir
-        self._filesystem.maybe_make_directory(output_dir)
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
 

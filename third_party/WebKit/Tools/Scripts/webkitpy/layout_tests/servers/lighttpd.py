@@ -49,6 +49,7 @@ class Lighttpd(server_base.ServerBase):
         # Webkit tests
         super(Lighttpd, self).__init__(port_obj, number_of_servers)
         self._name = 'lighttpd'
+        self._log_prefixes = ('access.log-', 'error.log-')
         self._output_dir = output_dir
         self._port = port
         self._root = root
@@ -186,43 +187,3 @@ class Lighttpd(server_base.ServerBase):
         self._start_cmd = start_cmd
         self._env = self._port_obj.setup_environ_for_server('lighttpd')
         self._mappings = mappings
-
-    def _remove_stale_logs(self):
-        # Sometimes logs are open in other processes but they should clear eventually.
-        for log_prefix in ('access.log-', 'error.log-'):
-            try:
-                self._remove_log_files(self._output_dir, log_prefix)
-            except OSError, e:
-                _log.warning('Failed to remove old %s %s files' % (self._name, log_prefix))
-
-    def _spawn_process(self):
-        _log.debug('Starting %s server, cmd="%s"' % (self._name, self._start_cmd))
-        process = self._executive.popen(self._start_cmd, env=self._env, shell=False, stderr=self._executive.PIPE)
-        pid = process.pid
-        self._filesystem.write_text_file(self._pid_file, str(pid))
-        return pid
-
-    def _stop_running_server(self):
-        # FIXME: It would be nice if we had a cleaner way of killing this process.
-        # Currently we throw away the process object created in _spawn_process,
-        # since there doesn't appear to be any way to kill the server any more
-        # cleanly using it than just killing the pid, and we need to support
-        # killing a pid directly anyway for run-webkit-httpd and run-webkit-websocketserver.
-        self._wait_for_action(self._check_and_kill)
-        if self._filesystem.exists(self._pid_file):
-            self._filesystem.remove(self._pid_file)
-
-    def _check_and_kill(self):
-        if self._executive.check_running_pid(self._pid):
-            host = self._port_obj.host
-            if host.platform.is_win() and not host.platform.is_cygwin():
-                # FIXME: https://bugs.webkit.org/show_bug.cgi?id=106838
-                # We need to kill all of the child processes as well as the
-                # parent, so we can't use executive.kill_process().
-                #
-                # If this is actually working, we should figure out a clean API.
-                self._executive.run_command(["taskkill.exe", "/f", "/t", "/pid", self._pid], error_handler=self._executive.ignore_error)
-            else:
-                self._executive.kill_process(self._pid)
-            return False
-        return True

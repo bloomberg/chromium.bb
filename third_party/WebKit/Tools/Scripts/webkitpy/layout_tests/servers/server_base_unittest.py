@@ -40,7 +40,7 @@ class TestServerBase(unittest.TestCase):
         host = MockHost()
         test_port = test.TestPort(host)
 
-        server = ServerBase(test_port)
+        server = ServerBase(test_port, test_port.default_results_directory())
         server._pid_file = '/tmp/pidfile'
         server._spawn_process = lambda: 4
         server._is_server_running_on_all_ports = lambda: True
