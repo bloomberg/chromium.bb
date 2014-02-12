@@ -11,9 +11,8 @@ import traceback
 
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.host_driven import test_case
 from pylib.instrumentation import test_result
-
-import test_case
 
 
 class HostDrivenExceptionTestResult(test_result.InstrumentationTestResult):

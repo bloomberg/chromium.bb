@@ -25,7 +25,6 @@ import os
 import time
 
 from pylib import android_commands
-from pylib import constants
 from pylib import forwarder
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -49,21 +48,28 @@ class HostDrivenTestCase(object):
       test_name: The name of the method to run as the test.
       instrumentation_options: An InstrumentationOptions object.
     """
-    self.test_name = test_name
     class_name = self.__class__.__name__
-    self.qualified_name = '%s.%s' % (class_name, self.test_name)
-    # Use tagged_name when creating results, so that we can identify host-driven
-    # tests in the overall results.
-    self.tagged_name = '%s_%s' % (self._HOST_DRIVEN_TAG, self.qualified_name)
-
+    self.adb = None
+    self.cleanup_test_files = False
+    self.device_id = ''
+    self.has_forwarded_ports = False
     self.instrumentation_options = instrumentation_options
     self.ports_to_forward = []
-    self.has_forwarded_ports = False
+    self.push_deps = False
+    self.shard_index = 0
+
+    # Use tagged_name when creating results, so that we can identify host-driven
+    # tests in the overall results.
+    self.test_name = test_name
+    self.qualified_name = '%s.%s' % (class_name, self.test_name)
+    self.tagged_name = '%s_%s' % (self._HOST_DRIVEN_TAG, self.qualified_name)
 
   # TODO(bulach): make ports_to_forward not optional and move the Forwarder
   # mapping here.
   def SetUp(self, device, shard_index, push_deps,
-            cleanup_test_files, ports_to_forward=[]):
+            cleanup_test_files, ports_to_forward=None):
+    if not ports_to_forward:
+      ports_to_forward = []
     self.device_id = device
     self.shard_index = shard_index
     self.adb = android_commands.AndroidCommands(self.device_id)
@@ -85,7 +91,8 @@ class HostDrivenTestCase(object):
     # Get the test method on the derived class and execute it
     return getattr(self, self.test_name)()
 
-  def __GetHostForwarderLog(self):
+  @staticmethod
+  def __GetHostForwarderLog():
     return ('-- Begin Full HostForwarder log\n'
             '%s\n'
             '--End Full HostForwarder log\n' % forwarder.Forwarder.GetHostLog())
