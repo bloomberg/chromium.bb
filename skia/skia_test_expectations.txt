@@ -50,25 +50,9 @@
 
 # Skia r13323 (Implement correct clipping for image filters) altered the 
 # images for the following layout tests:
-crbug.com/341448 css3/filters/effect-brightness-clamping-hw.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/effect-drop-shadow-hw.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/effect-reference-hidpi-hw.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/effect-reference-subregion.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/filter-change-repaint-composited.html [ ImageOnlyFailure ]
-crbug.com/341448 css3/filters/filter-change-repaint.html [ ImageOnlyFailure ]
 crbug.com/341448 svg/W3C-SVG-1.1/filters-gauss-01-b.svg [ ImageOnlyFailure ]
 crbug.com/341448 svg/W3C-SVG-1.1/filters-morph-01-f.svg [ ImageOnlyFailure ]
 crbug.com/341448 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
 crbug.com/341448 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-in-attr.html [ ImageOnlyFailure ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-stdDeviation-attr.html [ ImageOnlyFailure ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-dom-stdDeviation-call.html [ ImageOnlyFailure ]
-crbug.com/341448 svg/dynamic-updates/SVGFEGaussianBlurElement-svgdom-in-prop.html [ ImageOnlyFailure ]
-crbug.com/341448 svg/filters/feDropShadow-zero-deviation.svg [ ImageOnlyFailure ]
-crbug.com/341448 svg/filters/feDropShadow.svg [ ImageOnlyFailure ]
-crbug.com/341448 svg/filters/feGaussianBlur.svg [ ImageOnlyFailure ]
-crbug.com/341448 svg/filters/filterRes.svg [ ImageOnlyFailure ]
-crbug.com/341448 svg/filters/shadow-on-filter.svg [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
