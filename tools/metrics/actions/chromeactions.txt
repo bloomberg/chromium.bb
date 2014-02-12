@@ -1356,6 +1356,7 @@
 0xdcf1af37de1d8dd0	NativeUI_Applications
 0x08b0a573ad336d14	NavEntryCommitted
 0xcace6bb1e166082f	NavEntryCommitted.SRP
+0x17dee5b17b6cc8df	Net.URLRequest_StartJob_InvalidReferrer
 0x3c6e0d9310ba3a20	NewIncognitoWindow
 0xeddaa38a10bf8374	NewProfileWindowByIndex
 0x290eb683f96572f1	NewTab

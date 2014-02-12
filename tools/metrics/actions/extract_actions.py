@@ -508,6 +508,8 @@ def AddLiteralActions(actions):
   WalkDirectory(chrome_root, actions, EXTENSIONS, GrepForActions)
   content_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'content'))
   WalkDirectory(content_root, actions, EXTENSIONS, GrepForActions)
+  net_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'net'))
+  WalkDirectory(net_root, actions, EXTENSIONS, GrepForActions)
   webkit_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'webkit'))
   WalkDirectory(os.path.join(webkit_root, 'glue'), actions, EXTENSIONS,
                 GrepForActions)

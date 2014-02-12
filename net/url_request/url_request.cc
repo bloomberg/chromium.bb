@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -706,6 +707,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
     LOG(FATAL) << "Trying to send secure referrer for insecure load";
 #endif
     referrer_.clear();
+    base::RecordAction(
+        base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
   }
 
   // Don't allow errors to be sent from within Start().
