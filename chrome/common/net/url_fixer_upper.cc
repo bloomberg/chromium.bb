@@ -341,9 +341,11 @@ bool HasPort(const std::string& original_text,
 // If successful, set |scheme_component| to the text range where the scheme
 // was located, and fill |canon_scheme| with its canonicalized form.
 // Otherwise, return false and leave the outputs in an indeterminate state.
-bool GetValidScheme(const std::string &text,
+bool GetValidScheme(const std::string& text,
                     url_parse::Component* scheme_component,
                     std::string* canon_scheme) {
+  canon_scheme->clear();
+
   // Locate everything up to (but not including) the first ':'
   if (!url_parse::ExtractScheme(text.data(), static_cast<int>(text.length()),
                                 scheme_component)) {
@@ -419,8 +421,8 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
     if (!found_scheme) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
-      scheme.assign(StartsWithASCII(*text, "ftp.", false) ?
-                    content::kFtpScheme : content::kHttpScheme);
+      scheme = StartsWithASCII(*text, "ftp.", false) ?
+          content::kFtpScheme : content::kHttpScheme;
     }
   }
 
