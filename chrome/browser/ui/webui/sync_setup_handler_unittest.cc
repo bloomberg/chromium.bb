@@ -280,6 +280,10 @@ class SyncSetupHandlerTest : public testing::Test {
     error_ = GoogleServiceAuthError::AuthErrorNone();
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
 
+    mock_signin_ = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), FakeSigninManagerBase::Build));
+
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
@@ -294,9 +298,6 @@ class SyncSetupHandlerTest : public testing::Test {
 
     mock_pss_->Initialize();
 
-    mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
     handler_.reset(new TestingSyncSetupHandler(&web_ui_, profile_.get()));
   }
 

@@ -172,17 +172,14 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
      first_setup_in_progress_ = in_progress;
    }
 
-   // Override ProfileSyncService::Shutdown() to avoid CHECK on
-   // |invalidator_registrar_|.
-   virtual void Shutdown() OVERRIDE {};
-
   private:
    explicit OneClickTestProfileSyncService(Profile* profile)
-       : TestProfileSyncService(NULL,
-                                profile,
-                                NULL,
-                                NULL,
-                                ProfileSyncService::MANUAL_START),
+       : TestProfileSyncService(
+         NULL,
+         profile,
+         SigninManagerFactory::GetForProfile(profile),
+         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+         ProfileSyncService::MANUAL_START),
          first_setup_in_progress_(false) {}
 
    bool first_setup_in_progress_;
@@ -453,7 +450,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               static_cast<Profile*>(browser_context()),
               OneClickTestProfileSyncService::Build));
-
+  sync->Initialize();
   sync->set_first_setup_in_progress(true);
 
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
@@ -724,6 +721,9 @@ TEST_F(OneClickSigninHelperTest, RemoveObserverFromProfileSyncService) {
       OneClickSigninHelper::FromWebContents(contents);
   helper->SetDoNotClearPendingEmailForTesting();
 
+  // Need to expect two calls, because sync service also tears down observers.
+  // TODO(signin): gmock probably isn't the best solution here.
+  EXPECT_CALL(*sync_service, RemoveObserver(_));
   EXPECT_CALL(*sync_service, RemoveObserver(helper));
   SetContents(NULL);
 }

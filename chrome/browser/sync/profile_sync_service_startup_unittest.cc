@@ -136,7 +136,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncService* sync_;
   ProfileSyncServiceObserverMock observer_;
-  ProfileSyncComponentsFactoryMock* mock_components_factory_;
 };
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {

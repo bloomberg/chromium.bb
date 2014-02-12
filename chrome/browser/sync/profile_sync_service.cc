@@ -260,6 +260,25 @@ void ProfileSyncService::Initialize() {
 
   TrySyncDatatypePrefRecovery();
 
+  last_synced_time_ = sync_prefs_.GetLastSyncedTime();
+
+#if defined(OS_CHROMEOS)
+   std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
+   if (bootstrap_token.empty()) {
+     sync_prefs_.SetEncryptionBootstrapToken(
+         sync_prefs_.GetSpareBootstrapToken());
+   }
+#endif
+
+#if !defined(OS_ANDROID)
+   if (!sync_global_error_) {
+     sync_global_error_.reset(new SyncGlobalError(this, signin()));
+     GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+         sync_global_error_.get());
+     AddObserver(sync_global_error_.get());
+   }
+#endif
+
   TryStart();
 }
 
@@ -586,24 +605,6 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
 
   if (start_up_time_.is_null()) {
     start_up_time_ = base::Time::Now();
-    last_synced_time_ = sync_prefs_.GetLastSyncedTime();
-
-#if defined(OS_CHROMEOS)
-    std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
-    if (bootstrap_token.empty()) {
-      sync_prefs_.SetEncryptionBootstrapToken(
-          sync_prefs_.GetSpareBootstrapToken());
-    }
-#endif
-
-#if !defined(OS_ANDROID)
-    if (!sync_global_error_) {
-      sync_global_error_.reset(new SyncGlobalError(this, signin()));
-      GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-          sync_global_error_.get());
-      AddObserver(sync_global_error_.get());
-    }
-#endif
   } else {
     // We don't care to prevent multiple calls to StartUp in deferred mode
     // because it's fast and has no side effects.
@@ -788,6 +789,13 @@ void ProfileSyncService::Shutdown() {
 
 void ProfileSyncService::ShutdownImpl(
     browser_sync::SyncBackendHost::ShutdownOption option) {
+  if (sync_global_error_) {
+    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
+        sync_global_error_.get());
+    RemoveObserver(sync_global_error_.get());
+    sync_global_error_.reset(NULL);
+  }
+
   if (!backend_)
     return;
 
@@ -843,13 +851,6 @@ void ProfileSyncService::ShutdownImpl(
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
     UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
-
-  if (sync_global_error_) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-        sync_global_error_.get());
-    RemoveObserver(sync_global_error_.get());
-    sync_global_error_.reset(NULL);
-  }
 
   NotifyObservers();
 }
