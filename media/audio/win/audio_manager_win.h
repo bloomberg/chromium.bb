@@ -56,7 +56,6 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
 
  private:
   enum EnumerationType {
-    kUninitializedEnumeration = 0,
     kMMDeviceEnumeration,
     kWaveEnumeration,
   };
@@ -68,6 +67,10 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   EnumerationType enumeration_type() { return enumeration_type_; }
   void SetEnumerationType(EnumerationType type) {
     enumeration_type_ = type;
+  }
+
+  inline bool core_audio_supported() const {
+    return enumeration_type_ == kMMDeviceEnumeration;
   }
 
   // Returns a PCMWaveInAudioInputStream instance or NULL on failure.

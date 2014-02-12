@@ -37,6 +37,8 @@ class MEDIA_EXPORT CoreAudioUtil {
   // Returns true if Windows Core Audio is supported.
   // Always verify that this method returns true before using any of the
   // methods in this class.
+  // WARNING: This function must be called once from the main thread before
+  // it is safe to call from other threads.
   static bool IsSupported();
 
   // Converts between reference time to base::TimeDelta.

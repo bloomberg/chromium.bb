@@ -48,7 +48,8 @@ class MEDIA_EXPORT AudioParameters {
   // effects should be enabled.
   enum PlatformEffectsMask {
     NO_EFFECTS = 0x0,
-    ECHO_CANCELLER = 0x1
+    ECHO_CANCELLER = 0x1,
+    DUCKING = 0x2,  // Enables ducking if the OS supports it.
   };
 
   AudioParameters();

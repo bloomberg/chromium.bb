@@ -423,27 +423,6 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   aos->Close();
 }
 
-// Use a non-preferred packet size and verify that Open() fails.
-TEST(WASAPIAudioOutputStreamTest, InvalidPacketSize) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
-
-  if (ExclusiveModeIsEnabled())
-    return;
-
-  AudioParameters preferred_params;
-  EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
-      eRender, eConsole, &preferred_params)));
-  int too_large_packet_size = 2 * preferred_params.frames_per_buffer();
-
-  AudioOutputStreamWrapper aosw(audio_manager.get());
-  AudioOutputStream* aos = aosw.Create(too_large_packet_size);
-  EXPECT_FALSE(aos->Open());
-
-  aos->Close();
-}
-
 // This test is intended for manual tests and should only be enabled
 // when it is required to play out data from a local PCM file.
 // By default, GTest will print out YOU HAVE 1 DISABLED TEST.

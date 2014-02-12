@@ -160,14 +160,13 @@ class AudioInputStreamWrapper {
   explicit AudioInputStreamWrapper(AudioManager* audio_manager)
       : com_init_(ScopedCOMInitializer::kMTA),
         audio_man_(audio_manager),
-        format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
-        channel_layout_(CHANNEL_LAYOUT_STEREO),
-        bits_per_sample_(16) {
-    // Use native/mixing sample rate and 10ms frame size as default.
-    sample_rate_ = static_cast<int>(
-        WASAPIAudioInputStream::HardwareSampleRate(
-            AudioManagerBase::kDefaultDeviceId));
-    samples_per_packet_ = sample_rate_ / 100;
+        default_params_(
+            audio_manager->GetInputStreamParameters(
+                  AudioManagerBase::kDefaultDeviceId)) {
+    EXPECT_EQ(format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
+    frames_per_buffer_ = default_params_.frames_per_buffer();
+    // We expect the default buffer size to be a 10ms buffer.
+    EXPECT_EQ(frames_per_buffer_, sample_rate() / 100);
   }
 
   ~AudioInputStreamWrapper() {}
@@ -179,36 +178,35 @@ class AudioInputStreamWrapper {
 
   // Creates AudioInputStream object using non-default parameters where the
   // frame size is modified.
-  AudioInputStream* Create(int samples_per_packet) {
-    samples_per_packet_ = samples_per_packet;
+  AudioInputStream* Create(int frames_per_buffer) {
+    frames_per_buffer_ = frames_per_buffer;
     return CreateInputStream();
   }
 
-  AudioParameters::Format format() const { return format_; }
+  AudioParameters::Format format() const { return default_params_.format(); }
   int channels() const {
-    return ChannelLayoutToChannelCount(channel_layout_);
+    return ChannelLayoutToChannelCount(default_params_.channel_layout());
   }
-  int bits_per_sample() const { return bits_per_sample_; }
-  int sample_rate() const { return sample_rate_; }
-  int samples_per_packet() const { return samples_per_packet_; }
+  int bits_per_sample() const { return default_params_.bits_per_sample(); }
+  int sample_rate() const { return default_params_.sample_rate(); }
+  int frames_per_buffer() const { return frames_per_buffer_; }
 
  private:
   AudioInputStream* CreateInputStream() {
     AudioInputStream* ais = audio_man_->MakeAudioInputStream(
-        AudioParameters(format_, channel_layout_, sample_rate_,
-                        bits_per_sample_, samples_per_packet_),
-                        AudioManagerBase::kDefaultDeviceId);
+        AudioParameters(format(), default_params_.channel_layout(),
+                        default_params_.input_channels(),
+                        sample_rate(), bits_per_sample(), frames_per_buffer_,
+                        default_params_.effects()),
+        AudioManagerBase::kDefaultDeviceId);
     EXPECT_TRUE(ais);
     return ais;
   }
 
   ScopedCOMInitializer com_init_;
   AudioManager* audio_man_;
-  AudioParameters::Format format_;
-  ChannelLayout channel_layout_;
-  int bits_per_sample_;
-  int sample_rate_;
-  int samples_per_packet_;
+  const AudioParameters default_params_;
+  int frames_per_buffer_;
 };
 
 // Convenience method which creates a default AudioInputStream object.
@@ -269,10 +267,9 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   for (media::AudioDeviceNames::const_iterator it = device_names.begin();
        it != device_names.end(); ++it) {
     // Retrieve the hardware sample rate given a specified audio input device.
-    // TODO(tommi): ensure that we don't have to cast here.
-    int fs = static_cast<int>(WASAPIAudioInputStream::HardwareSampleRate(
-        it->unique_id));
-    EXPECT_GE(fs, 0);
+    AudioParameters params = WASAPIAudioInputStream::GetInputStreamParameters(
+        it->unique_id);
+    EXPECT_GE(params.sample_rate(), 0);
   }
 }
 
@@ -373,7 +370,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   MockAudioInputCallback sink;
 
   // Derive the expected size in bytes of each recorded packet.
-  uint32 bytes_per_packet = aisw.channels() * aisw.samples_per_packet() *
+  uint32 bytes_per_packet = aisw.channels() * aisw.frames_per_buffer() *
       (aisw.bits_per_sample() / 8);
 
   // We use 10ms packets and will run the test until ten packets are received.
@@ -388,16 +385,16 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   ais->Stop();
 
   // Store current packet size (to be used in the subsequent tests).
-  int samples_per_packet_10ms = aisw.samples_per_packet();
+  int frames_per_buffer_10ms = aisw.frames_per_buffer();
 
   ais.Close();
 
   // 20 ms packet size.
 
   count = 0;
-  ais.Reset(aisw.Create(2 * samples_per_packet_10ms));
+  ais.Reset(aisw.Create(2 * frames_per_buffer_10ms));
   EXPECT_TRUE(ais->Open());
-  bytes_per_packet = aisw.channels() * aisw.samples_per_packet() *
+  bytes_per_packet = aisw.channels() * aisw.frames_per_buffer() *
       (aisw.bits_per_sample() / 8);
 
   EXPECT_CALL(sink, OnData(
@@ -412,9 +409,9 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   // 5 ms packet size.
 
   count = 0;
-  ais.Reset(aisw.Create(samples_per_packet_10ms / 2));
+  ais.Reset(aisw.Create(frames_per_buffer_10ms / 2));
   EXPECT_TRUE(ais->Open());
-  bytes_per_packet = aisw.channels() * aisw.samples_per_packet() *
+  bytes_per_packet = aisw.channels() * aisw.frames_per_buffer() *
     (aisw.bits_per_sample() / 8);
 
   EXPECT_CALL(sink, OnData(
@@ -435,6 +432,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
 
   AudioParameters params = audio_manager->GetInputStreamParameters(
       AudioManagerBase::kLoopbackInputDeviceId);
+  EXPECT_EQ(params.effects(), 0);
 
   AudioParameters output_params =
       audio_manager->GetOutputStreamParameters(std::string());

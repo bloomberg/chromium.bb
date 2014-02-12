@@ -59,8 +59,10 @@ struct {
   const char* constraint;
   const media::AudioParameters::PlatformEffectsMask effect;
 } const kConstraintEffectMap[] = {
+  { content::kMediaStreamAudioDucking,
+    media::AudioParameters::DUCKING },
   { webrtc::MediaConstraintsInterface::kEchoCancellation,
-    media::AudioParameters::ECHO_CANCELLER},
+    media::AudioParameters::ECHO_CANCELLER },
 };
 
 // If any platform effects are available, check them against the constraints.

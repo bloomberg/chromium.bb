@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -41,6 +42,10 @@ struct {
     webrtc::MediaConstraintsInterface::kValueTrue },
   { webrtc::MediaConstraintsInterface::kTypingNoiseDetection,
     webrtc::MediaConstraintsInterface::kValueTrue },
+#if defined(OS_WIN)
+  { content::kMediaStreamAudioDucking,
+    webrtc::MediaConstraintsInterface::kValueTrue },
+#endif
 };
 
 } // namespace
