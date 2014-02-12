@@ -143,10 +143,10 @@ namespace WTF {
         static EmptyValueType emptyValue() { return nullptr; }
 
         typedef const OwnPtr<P>& PeekInType;
-        typedef P* IteratorGetType;
-        typedef const P* IteratorConstGetType;
-        typedef P& IteratorReferenceType;
-        typedef const P& IteratorConstReferenceType;
+        typedef typename OwnPtr<P>::PtrType IteratorGetType;
+        typedef const IteratorGetType IteratorConstGetType;
+        typedef typename OwnPtr<P>::ValueType& IteratorReferenceType;
+        typedef const IteratorReferenceType IteratorConstReferenceType;
         static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
         static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
         typedef PassOwnPtr<P> PassInType;
