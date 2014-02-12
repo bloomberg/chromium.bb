@@ -45,7 +45,7 @@ public:
     void setNumberOfChannels(unsigned);
 
     // Performs stereo-linked compression.
-    void process(float* sourceChannels[],
+    void process(const float* sourceChannels[],
                  float* destinationChannels[],
                  unsigned numberOfChannels,
                  unsigned framesToProcess,

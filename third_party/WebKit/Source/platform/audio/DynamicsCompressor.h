@@ -96,19 +96,8 @@ protected:
     float m_lastAnchor;
     float m_lastFilterStageGain;
 
-    typedef struct {
-        ZeroPole filters[4];
-    } ZeroPoleFilterPack4;
-
-    // Per-channel emphasis filters.
-    Vector<OwnPtr<ZeroPoleFilterPack4> > m_preFilterPacks;
-    Vector<OwnPtr<ZeroPoleFilterPack4> > m_postFilterPacks;
-
     OwnPtr<const float*[]> m_sourceChannels;
     OwnPtr<float*[]> m_destinationChannels;
-
-    void setEmphasisStageParameters(unsigned stageIndex, float gain, float normalizedFrequency /* 0 -> 1 */);
-    void setEmphasisParameters(float gain, float anchorFreq, float filterStageRatio);
 
     // The core compressor.
     DynamicsCompressorKernel m_compressor;

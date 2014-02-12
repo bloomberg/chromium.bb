@@ -95,38 +95,6 @@ float DynamicsCompressor::parameterValue(unsigned parameterID)
     return m_parameters[parameterID];
 }
 
-void DynamicsCompressor::setEmphasisStageParameters(unsigned stageIndex, float gain, float normalizedFrequency /* 0 -> 1 */)
-{
-    float gk = 1 - gain / 20;
-    float f1 = normalizedFrequency * gk;
-    float f2 = normalizedFrequency / gk;
-    float r1 = expf(-f1 * piFloat);
-    float r2 = expf(-f2 * piFloat);
-
-    ASSERT(m_numberOfChannels == m_preFilterPacks.size());
-
-    for (unsigned i = 0; i < m_numberOfChannels; ++i) {
-        // Set pre-filter zero and pole to create an emphasis filter.
-        ZeroPole& preFilter = m_preFilterPacks[i]->filters[stageIndex];
-        preFilter.setZero(r1);
-        preFilter.setPole(r2);
-
-        // Set post-filter with zero and pole reversed to create the de-emphasis filter.
-        // If there were no compressor kernel in between, they would cancel each other out (allpass filter).
-        ZeroPole& postFilter = m_postFilterPacks[i]->filters[stageIndex];
-        postFilter.setZero(r2);
-        postFilter.setPole(r1);
-    }
-}
-
-void DynamicsCompressor::setEmphasisParameters(float gain, float anchorFreq, float filterStageRatio)
-{
-    setEmphasisStageParameters(0, gain, anchorFreq);
-    setEmphasisStageParameters(1, gain, anchorFreq / filterStageRatio);
-    setEmphasisStageParameters(2, gain, anchorFreq / (filterStageRatio * filterStageRatio));
-    setEmphasisStageParameters(3, gain, anchorFreq / (filterStageRatio * filterStageRatio * filterStageRatio));
-}
-
 void DynamicsCompressor::process(const AudioBus* sourceBus, AudioBus* destinationBus, unsigned framesToProcess)
 {
     // Though numberOfChannels is retrived from destinationBus, we still name it numberOfChannels instead of numberOfDestinationChannels.
@@ -173,20 +141,6 @@ void DynamicsCompressor::process(const AudioBus* sourceBus, AudioBus* destinatio
         m_lastFilterStageRatio = filterStageRatio;
         m_lastAnchor = anchor;
 
-        setEmphasisParameters(filterStageGain, anchor, filterStageRatio);
-    }
-
-    // Apply pre-emphasis filter.
-    // Note that the final three stages are computed in-place in the destination buffer.
-    for (unsigned i = 0; i < numberOfChannels; ++i) {
-        const float* sourceData = m_sourceChannels[i];
-        float* destinationData = m_destinationChannels[i];
-        ZeroPole* preFilters = m_preFilterPacks[i]->filters;
-
-        preFilters[0].process(sourceData, destinationData, framesToProcess);
-        preFilters[1].process(destinationData, destinationData, framesToProcess);
-        preFilters[2].process(destinationData, destinationData, framesToProcess);
-        preFilters[3].process(destinationData, destinationData, framesToProcess);
     }
 
     float dbThreshold = parameterValue(ParamThreshold);
@@ -209,9 +163,8 @@ void DynamicsCompressor::process(const AudioBus* sourceBus, AudioBus* destinatio
     float releaseZone3 = parameterValue(ParamReleaseZone3);
     float releaseZone4 = parameterValue(ParamReleaseZone4);
 
-    // Apply compression to the pre-filtered signal.
-    // The processing is performed in place.
-    m_compressor.process(m_destinationChannels.get(),
+    // Apply compression to the source signal.
+    m_compressor.process(m_sourceChannels.get(),
                          m_destinationChannels.get(),
                          numberOfChannels,
                          framesToProcess,
@@ -234,16 +187,6 @@ void DynamicsCompressor::process(const AudioBus* sourceBus, AudioBus* destinatio
     // Update the compression amount.
     setParameterValue(ParamReduction, m_compressor.meteringGain());
 
-    // Apply de-emphasis filter.
-    for (unsigned i = 0; i < numberOfChannels; ++i) {
-        float* destinationData = m_destinationChannels[i];
-        ZeroPole* postFilters = m_postFilterPacks[i]->filters;
-
-        postFilters[0].process(destinationData, destinationData, framesToProcess);
-        postFilters[1].process(destinationData, destinationData, framesToProcess);
-        postFilters[2].process(destinationData, destinationData, framesToProcess);
-        postFilters[3].process(destinationData, destinationData, framesToProcess);
-    }
 }
 
 void DynamicsCompressor::reset()
@@ -252,28 +195,11 @@ void DynamicsCompressor::reset()
     m_lastAnchor = -1;
     m_lastFilterStageGain = -1;
 
-    for (unsigned channel = 0; channel < m_numberOfChannels; ++channel) {
-        for (unsigned stageIndex = 0; stageIndex < 4; ++stageIndex) {
-            m_preFilterPacks[channel]->filters[stageIndex].reset();
-            m_postFilterPacks[channel]->filters[stageIndex].reset();
-        }
-    }
-
     m_compressor.reset();
 }
 
 void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels)
 {
-    if (m_preFilterPacks.size() == numberOfChannels)
-        return;
-
-    m_preFilterPacks.clear();
-    m_postFilterPacks.clear();
-    for (unsigned i = 0; i < numberOfChannels; ++i) {
-        m_preFilterPacks.append(adoptPtr(new ZeroPoleFilterPack4()));
-        m_postFilterPacks.append(adoptPtr(new ZeroPoleFilterPack4()));
-    }
-
     m_sourceChannels = adoptArrayPtr(new const float* [numberOfChannels]);
     m_destinationChannels = adoptArrayPtr(new float* [numberOfChannels]);
 
