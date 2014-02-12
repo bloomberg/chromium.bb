@@ -421,6 +421,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
       // If certificates have not been loaded yet, queue the connect request.
       if (!certificates_loaded_) {
+        NET_LOG_EVENT("Certificates not loaded", "");
         ConnectRequest* request = GetPendingRequest(service_path);
         if (!request) {
           NET_LOG_ERROR("No pending request to queue", service_path);
