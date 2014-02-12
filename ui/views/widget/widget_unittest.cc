@@ -2385,5 +2385,51 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
 
   widget->CloseNow();
 }
+
+#if !defined(OS_CHROMEOS)
+namespace {
+
+// Trivial WidgetObserverTest that invokes Widget::IsActive() from
+// OnWindowDestroying.
+class IsActiveFromDestroyObserver : public WidgetObserver {
+ public:
+  IsActiveFromDestroyObserver() {}
+  virtual ~IsActiveFromDestroyObserver() {}
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+    widget->IsActive();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsActiveFromDestroyObserver);
+};
+
+}  // namespace
+
+// Verifies Widget::IsActive() invoked from
+// WidgetObserver::OnWidgetDestroying() in a child widget doesn't crash.
+TEST_F(WidgetTest, IsActiveFromDestroy) {
+  // Create two widgets, one a child of the other.
+  IsActiveFromDestroyObserver observer;
+  Widget parent_widget;
+  Widget::InitParams parent_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  parent_params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
+  parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  parent_widget.Init(parent_params);
+  parent_widget.Show();
+
+  Widget child_widget;
+  Widget::InitParams child_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  child_params.context = parent_widget.GetNativeView();
+  child_widget.Init(child_params);
+  child_widget.AddObserver(&observer);
+  child_widget.Show();
+
+  parent_widget.CloseNow();
+}
+#endif
+
 }  // namespace test
 }  // namespace views

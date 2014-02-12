@@ -523,14 +523,7 @@ void NativeWidgetAura::Deactivate() {
 }
 
 bool NativeWidgetAura::IsActive() const {
-  if (!window_)
-    return false;
-
-  // We may up here during destruction of the root, in which case
-  // GetRootWindow() returns NULL (~RootWindow() has run and we're in ~Window).
-  aura::Window* root = window_->GetRootWindow();
-  return root &&
-      aura::client::GetActivationClient(root)->GetActiveWindow() == window_;
+  return window_ && corewm::IsActiveWindow(window_);
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
