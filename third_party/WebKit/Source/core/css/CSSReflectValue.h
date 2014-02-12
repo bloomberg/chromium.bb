@@ -36,8 +36,8 @@ class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSReflectValue> create(PassRefPtr<CSSPrimitiveValue> direction,
-        PassRefPtr<CSSPrimitiveValue> offset, PassRefPtr<CSSValue> mask)
+    static PassRefPtrWillBeRawPtr<CSSReflectValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction,
+        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtr<CSSValue> mask)
     {
         return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSReflectValue(direction, offset, mask));
     }
@@ -53,7 +53,7 @@ public:
     void traceAfterDispatch(Visitor*);
 
 private:
-    CSSReflectValue(PassRefPtr<CSSPrimitiveValue> direction, PassRefPtr<CSSPrimitiveValue> offset, PassRefPtr<CSSValue> mask)
+    CSSReflectValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtr<CSSValue> mask)
         : CSSValue(ReflectClass)
         , m_direction(direction)
         , m_offset(offset)
@@ -61,8 +61,8 @@ private:
     {
     }
 
-    RefPtr<CSSPrimitiveValue> m_direction;
-    RefPtr<CSSPrimitiveValue> m_offset;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_direction;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_offset;
     RefPtr<CSSValue> m_mask;
 };
 

@@ -43,11 +43,11 @@ public:
 
     void traceAfterDispatch(Visitor*);
 
-    RefPtr<CSSPrimitiveValue> style;
-    RefPtr<CSSPrimitiveValue> variant;
-    RefPtr<CSSPrimitiveValue> weight;
-    RefPtr<CSSPrimitiveValue> size;
-    RefPtr<CSSPrimitiveValue> lineHeight;
+    RefPtrWillBeMember<CSSPrimitiveValue> style;
+    RefPtrWillBeMember<CSSPrimitiveValue> variant;
+    RefPtrWillBeMember<CSSPrimitiveValue> weight;
+    RefPtrWillBeMember<CSSPrimitiveValue> size;
+    RefPtrWillBeMember<CSSPrimitiveValue> lineHeight;
     RefPtrWillBeMember<CSSValueList> family;
 
 private:

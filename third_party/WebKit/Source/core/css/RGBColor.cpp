@@ -35,34 +35,34 @@ PassRefPtr<RGBColor> RGBColor::create(unsigned rgbColor)
     return adoptRef(new RGBColor(rgbColor));
 }
 
-PassRefPtr<CSSPrimitiveValue> RGBColor::red()
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::red()
 {
     unsigned value = (m_rgbColor >> 16) & 0xFF;
-    RefPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
     result->setCSSOMSafe();
     return result.release();
 }
 
-PassRefPtr<CSSPrimitiveValue> RGBColor::green()
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::green()
 {
     unsigned value = (m_rgbColor >> 8) & 0xFF;
-    RefPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
     result->setCSSOMSafe();
     return result.release();
 }
 
-PassRefPtr<CSSPrimitiveValue> RGBColor::blue()
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::blue()
 {
     unsigned value = m_rgbColor & 0xFF;
-    RefPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
     result->setCSSOMSafe();
     return result.release();
 }
 
-PassRefPtr<CSSPrimitiveValue> RGBColor::alpha()
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::alpha()
 {
     float value = static_cast<float>((m_rgbColor >> 24) & 0xFF) / 0xFF;
-    RefPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER);
     result->setCSSOMSafe();
     return result.release();
 }

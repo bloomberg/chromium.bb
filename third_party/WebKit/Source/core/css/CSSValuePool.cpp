@@ -53,9 +53,13 @@ CSSValuePool::CSSValuePool()
     , m_colorWhite(CSSPrimitiveValue::createColor(Color::white))
     , m_colorBlack(CSSPrimitiveValue::createColor(Color::black))
 {
+    m_identifierValueCache.resize(numCSSValueKeywords);
+    m_pixelValueCache.resize(maximumCacheableIntegerValue + 1);
+    m_percentValueCache.resize(maximumCacheableIntegerValue + 1);
+    m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
 {
     if (ident <= 0)
         return CSSPrimitiveValue::createIdentifier(ident);
@@ -65,12 +69,12 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ide
     return m_identifierValueCache[ident];
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
 {
     return CSSPrimitiveValue::createIdentifier(ident);
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigned rgbValue)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigned rgbValue)
 {
     // These are the empty and deleted values of the hash table.
     if (rgbValue == Color::transparent)
@@ -86,14 +90,14 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigned rgbValue)
     if (m_colorValueCache.size() > maximumColorCacheSize)
         m_colorValueCache.clear();
 
-    RefPtr<CSSPrimitiveValue> dummyValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> dummyValue;
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
         entry.iterator->value = CSSPrimitiveValue::createColor(rgbValue);
     return entry.iterator->value;
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitTypes type)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitTypes type)
 {
     if (value < 0 || value > maximumCacheableIntegerValue)
         return CSSPrimitiveValue::create(value, type);
@@ -102,34 +106,32 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimiti
     if (value != intValue)
         return CSSPrimitiveValue::create(value, type);
 
-    RefPtr<CSSPrimitiveValue>* cache;
     switch (type) {
     case CSSPrimitiveValue::CSS_PX:
-        cache = m_pixelValueCache;
-        break;
+        if (!m_pixelValueCache[intValue])
+            m_pixelValueCache[intValue] = CSSPrimitiveValue::create(value, type);
+        return m_pixelValueCache[intValue];
     case CSSPrimitiveValue::CSS_PERCENTAGE:
-        cache = m_percentValueCache;
-        break;
+        if (!m_percentValueCache[intValue])
+            m_percentValueCache[intValue] = CSSPrimitiveValue::create(value, type);
+        return m_percentValueCache[intValue];
     case CSSPrimitiveValue::CSS_NUMBER:
-        cache = m_numberValueCache;
-        break;
+        if (!m_numberValueCache[intValue])
+            m_numberValueCache[intValue] = CSSPrimitiveValue::create(value, type);
+        return m_numberValueCache[intValue];
     default:
         return CSSPrimitiveValue::create(value, type);
     }
-
-    if (!cache[intValue])
-        cache[intValue] = CSSPrimitiveValue::create(value, type);
-    return cache[intValue];
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle& style)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle& style)
 {
     return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& familyName)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& familyName)
 {
-    RefPtr<CSSPrimitiveValue>& value = m_fontFamilyValueCache.add(familyName, 0).iterator->value;
+    RefPtrWillBeMember<CSSPrimitiveValue>& value = m_fontFamilyValueCache.add(familyName, 0).iterator->value;
     if (!value)
         value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::CSS_STRING);
     return value;
@@ -153,7 +155,16 @@ void CSSValuePool::trace(Visitor* visitor)
     visitor->trace(m_inheritedValue);
     visitor->trace(m_implicitInitialValue);
     visitor->trace(m_explicitInitialValue);
+    visitor->trace(m_identifierValueCache);
+    visitor->trace(m_colorValueCache);
+    visitor->trace(m_colorTransparent);
+    visitor->trace(m_colorWhite);
+    visitor->trace(m_colorBlack);
+    visitor->trace(m_pixelValueCache);
+    visitor->trace(m_percentValueCache);
+    visitor->trace(m_numberValueCache);
     visitor->trace(m_fontFaceValueCache);
+    visitor->trace(m_fontFamilyValueCache);
 }
 
 }

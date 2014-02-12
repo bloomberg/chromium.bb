@@ -38,10 +38,10 @@ namespace WebCore {
     public:
         static PassRefPtr<RGBColor> create(unsigned rgbColor);
 
-        PassRefPtr<CSSPrimitiveValue> red();
-        PassRefPtr<CSSPrimitiveValue> green();
-        PassRefPtr<CSSPrimitiveValue> blue();
-        PassRefPtr<CSSPrimitiveValue> alpha();
+        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> red();
+        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> green();
+        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blue();
+        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> alpha();
 
         Color color() const { return Color(m_rgbColor); }
 
