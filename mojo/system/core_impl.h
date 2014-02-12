@@ -83,6 +83,20 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
                                    MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
                                  uint32_t num_bytes_read) OVERRIDE;
+  virtual MojoResult CreateSharedBuffer(
+      const MojoCreateSharedBufferOptions* options,
+      uint64_t* num_bytes,
+      MojoHandle* shared_buffer_handle) OVERRIDE;
+  virtual MojoResult DuplicateSharedBuffer(
+      MojoHandle shared_buffer_handle,
+      const MojoDuplicateSharedBufferOptions* options,
+      MojoHandle* new_shared_buffer_handle) OVERRIDE;
+  virtual MojoResult MapBuffer(MojoHandle buffer_handle,
+                               uint64_t offset,
+                               uint64_t num_bytes,
+                               void** buffer,
+                               MojoMapBufferFlags flags) OVERRIDE;
+  virtual MojoResult UnmapBuffer(void* buffer) OVERRIDE;
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(CoreImpl*);

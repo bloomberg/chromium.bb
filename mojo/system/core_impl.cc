@@ -486,6 +486,40 @@ MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
   return dispatcher->EndReadData(num_bytes_read);
 }
 
+MojoResult CoreImpl::CreateSharedBuffer(
+    const MojoCreateSharedBufferOptions* options,
+    uint64_t* num_bytes,
+    MojoHandle* shared_buffer_handle) {
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::DuplicateSharedBuffer(
+    MojoHandle shared_buffer_handle,
+    const MojoDuplicateSharedBufferOptions* options,
+    MojoHandle* new_shared_buffer_handle) {
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
+                               uint64_t offset,
+                               uint64_t num_bytes,
+                               void** buffer,
+                               MojoMapBufferFlags flags) {
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::UnmapBuffer(void* buffer) {
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
     return NULL;

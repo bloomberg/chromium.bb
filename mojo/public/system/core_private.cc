@@ -120,6 +120,37 @@ MojoResult MojoEndReadData(MojoHandle data_pipe_consumer_handle,
   return g_core->EndReadData(data_pipe_consumer_handle, num_elements_read);
 }
 
+MojoResult MojoCreateSharedBuffer(
+    const struct MojoCreateSharedBufferOptions* options,
+    uint64_t* num_bytes,
+    MojoHandle* shared_buffer_handle) {
+  assert(g_core);
+  return g_core->CreateSharedBuffer(options, num_bytes, shared_buffer_handle);
+}
+
+MojoResult MojoDuplicateSharedBuffer(
+    MojoHandle shared_buffer_handle,
+    const struct MojoDuplicateSharedBufferOptions* options,
+    MojoHandle* new_shared_buffer_handle) {
+  assert(g_core);
+  return g_core->DuplicateSharedBuffer(shared_buffer_handle, options,
+                                       new_shared_buffer_handle);
+}
+
+MojoResult MojoMapBuffer(MojoHandle buffer_handle,
+                         uint64_t offset,
+                         uint64_t num_bytes,
+                         void** buffer,
+                         MojoMapBufferFlags flags) {
+  assert(g_core);
+  return g_core->MapBuffer(buffer_handle, offset, num_bytes, buffer, flags);
+}
+
+MojoResult MojoUnmapBuffer(void* buffer) {
+  assert(g_core);
+  return g_core->UnmapBuffer(buffer);
+}
+
 }  // extern "C"
 
 namespace mojo {

@@ -66,6 +66,20 @@ class MOJO_SYSTEM_EXPORT Core {
                                    MojoReadDataFlags flags) = 0;
   virtual MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
                                  uint32_t num_elements_read) = 0;
+  virtual MojoResult CreateSharedBuffer(
+      const MojoCreateSharedBufferOptions* options,
+      uint64_t* num_bytes,
+      MojoHandle* shared_buffer_handle) = 0;
+  virtual MojoResult DuplicateSharedBuffer(
+      MojoHandle shared_buffer_handle,
+      const MojoDuplicateSharedBufferOptions* options,
+      MojoHandle* new_shared_buffer_handle) = 0;
+  virtual MojoResult MapBuffer(MojoHandle buffer_handle,
+                               uint64_t offset,
+                               uint64_t num_bytes,
+                               void** buffer,
+                               MojoMapBufferFlags flags) = 0;
+  virtual MojoResult UnmapBuffer(void* buffer) = 0;
 };
 
 }  // namespace mojo
