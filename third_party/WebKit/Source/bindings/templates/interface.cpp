@@ -277,11 +277,9 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if not is_override_builtins %}
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     {% endif %}
@@ -334,11 +332,9 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if not is_override_builtins %}
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
     if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     {% endif %}
