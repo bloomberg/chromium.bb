@@ -21,6 +21,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   InputMethodDescriptor();
   InputMethodDescriptor(const std::string& id,
                         const std::string& name,
+                        const std::string& indicator,
                         const std::vector<std::string>& keyboard_layouts,
                         const std::vector<std::string>& language_codes,
                         bool is_login_keyboard,
@@ -31,6 +32,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   // Accessors
   const std::string& id() const { return id_; }
   const std::string& name() const { return name_; }
+  const std::string& indicator() const { return indicator_; }
   const std::vector<std::string>& language_codes() const {
     return language_codes_;
   }
@@ -60,6 +62,10 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
 
   // Language code like "ko", "ja", "en-US", and "zh-CN".
   std::vector<std::string> language_codes_;
+
+  // A short indicator string that is displayed when the input method
+  // is selected, like "US".
+  std::string indicator_;
 
   // True if this input method can be used on login screen.
   bool is_login_keyboard_;

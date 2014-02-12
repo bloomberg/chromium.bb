@@ -16,6 +16,7 @@ namespace input_method {
 InputMethodDescriptor::InputMethodDescriptor(
     const std::string& id,
     const std::string& name,
+    const std::string& indicator,
     const std::vector<std::string>& keyboard_layouts,
     const std::vector<std::string>& language_codes,
     bool is_login_keyboard,
@@ -25,6 +26,7 @@ InputMethodDescriptor::InputMethodDescriptor(
       name_(name),
       keyboard_layouts_(keyboard_layouts),
       language_codes_(language_codes),
+      indicator_(indicator),
       is_login_keyboard_(is_login_keyboard),
       options_page_url_(options_page_url),
       input_view_url_(input_view_url) {

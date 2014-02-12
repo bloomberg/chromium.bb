@@ -136,6 +136,7 @@ input_method::InputMethodDescriptors
                   component_extension_imes_[i].id,
                   component_extension_imes_[i].engines[j].engine_id),
               component_extension_imes_[i].engines[j].display_name,
+              std::string(), // TODO(uekawa): Set short name.
               component_extension_imes_[i].engines[j].layouts,
               component_extension_imes_[i].engines[j].language_codes,
               false,  // Do not use IME on login screen.

@@ -1,7 +1,7 @@
 # The list of keyboard layouts that we support. The keyboard layout metadata is
 # also defined here.
 #
-# Each non-comment line contains the following tab-separated columns.
+# Each non-comment line contains the following tab-or-space-separated columns.
 #
 # 1) The input method ID used by Chrome. (ex. "xkb:ca::fra") You should *NEVER*
 #    change the ID since the ID might be written in user's ~/Preferences. For
@@ -16,9 +16,11 @@
 #    two-letter upper-case country code should be added (ex. "en-US", "zh-TW").
 #    See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
 #    We can specify multiple language code with comma separator.
-# 4) The additional attibution.
-#    no-login: Spcified keyboard layout will not be used on login screen or lock
-#              screen.
+# 4) The indicator string (ex. INTL for xkb:us:intl:eng). This string will be
+#    shown in system tray or indicator window.
+# 5) The additional attibution.
+#    login: Specified keyboard layout will be used on login screen or lock
+#    screen.
 #
 # Notes:
 #   When adding a line to this list, please also add a mapping from the input
@@ -39,76 +41,76 @@
 #
 
 # U.S. English
-xkb:us::eng	us	en-US,en-AU,id,fil,ms login
-xkb:us:intl:eng	us(intl)	en-US,nl,pt-BR login
-xkb:us:altgr-intl:eng	us(altgr-intl)	en-US login
-xkb:us:dvorak:eng	us(dvorak)	en-US login
-xkb:us:colemak:eng	us(colemak)	en-US login
+xkb:us::eng           us             en-US,en-AU,id,fil,ms US   login
+xkb:us:intl:eng       us(intl)       en-US,nl,pt-BR        INTL login
+xkb:us:altgr-intl:eng us(altgr-intl) en-US                 EXTD login
+xkb:us:dvorak:eng     us(dvorak)     en-US                 DV   login
+xkb:us:colemak:eng    us(colemak)    en-US                 CO   login
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nl login
+xkb:be::nld  be nl BE login
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
-xkb:fr::fra	fr	fr login
-xkb:be::fra	be	fr login
-xkb:ca::fra	ca	fr login
-xkb:ch:fr:fra	ch(fr)	fr login
-xkb:ca:multix:fra ca(multix) fr login
+xkb:fr::fra    fr     fr FR login
+xkb:be::fra    be     fr BE login
+xkb:ca::fra    ca     fr CA login
+xkb:ch:fr:fra  ch(fr) fr CH login
+xkb:ca:multix:fra ca(multix) fr CA login
 
 # German
-xkb:de::ger	de	de login
-xkb:de:neo:ger	de(neo)	de login
-xkb:be::ger	be	de login
-xkb:ch::ger	ch	de login
+xkb:de::ger     de      de DE  login
+xkb:de:neo:ger  de(neo) de NEO login
+xkb:be::ger     be      de BE  login
+xkb:ch::ger     ch      de CH  login
 
 # Japanese
 # |kMozcJaInputMethodIds| in ibus_ui_controller.cc should also be updated when
 # a new Mozc Japanese IME for another keyboard layout is added.
-xkb:jp::jpn	jp	ja login
+xkb:jp::jpn  jp ja JA login
 
 # Russian
-xkb:ru::rus	ru	ru
-xkb:ru:phonetic:rus	ru(phonetic)	ru
+xkb:ru::rus          ru           ru RU
+xkb:ru:phonetic:rus  ru(phonetic) ru RU
 
 # Keyboard layouts.
-xkb:br::por	br	pt-BR login
-xkb:bg::bul	bg	bg
-xkb:bg:phonetic:bul	bg(phonetic)	bg
-xkb:ca:eng:eng	ca(eng)	en-CA login
-xkb:cz::cze	cz	cs login
-xkb:cz:qwerty:cze	cz(qwerty)	cs login
-xkb:ee::est	ee	et login
-xkb:es::spa	es	es login
-xkb:es:cat:cat	es(cat)	ca login
-xkb:dk::dan	dk	da login
-xkb:gr::gre	gr	el
-xkb:il::heb	il	he
-xkb:latam::spa	latam	es,es-419 login
-xkb:lt::lit	lt	lt login
-xkb:lv:apostrophe:lav	lv(apostrophe)	lv login
-xkb:hr::scr	hr	hr login
-xkb:gb:extd:eng	gb(extd)	en-GB login
-xkb:gb:dvorak:eng	gb(dvorak)	en-GB login
-xkb:fi::fin	fi	fi login
-xkb:hu::hun	hu	hu login
-xkb:it::ita	it	it login
-xkb:is::ice	is	is login
-xkb:no::nob	no	nb login
-xkb:pl::pol	pl	pl login
-xkb:pt::por	pt	pt-PT login
-xkb:ro::rum	ro	ro login
-xkb:se::swe	se	sv login
-xkb:sk::slo	sk	sk
-xkb:si::slv	si	sl login
-xkb:rs::srp	rs	sr
-xkb:tr::tur	tr	tr login
-xkb:ua::ukr	ua	uk
-xkb:by::bel	by	be
-xkb:am:phonetic:arm	am	hy
-xkb:ge::geo	ge	ka
-xkb:mn::mon	mn	mn
+xkb:br::por           br             pt-BR     BR login
+xkb:bg::bul           bg             bg        BG
+xkb:bg:phonetic:bul   bg(phonetic)   bg        BG
+xkb:ca:eng:eng        ca(eng)        en-CA     CA login
+xkb:cz::cze           cz             cs        CZ login
+xkb:cz:qwerty:cze     cz(qwerty)     cs        CS login
+xkb:ee::est           ee             et        EE login
+xkb:es::spa           es             es        ES login
+xkb:es:cat:cat        es(cat)        ca        CAS login
+xkb:dk::dan           dk             da        DK login
+xkb:gr::gre           gr             el        GR
+xkb:il::heb           il             he        IL
+xkb:latam::spa        latam          es,es-419 LA login
+xkb:lt::lit           lt             lt        LT login
+xkb:lv:apostrophe:lav lv(apostrophe) lv        LV login
+xkb:hr::scr           hr             hr        HR login
+xkb:gb:extd:eng       gb(extd)       en-GB     GB login
+xkb:gb:dvorak:eng     gb(dvorak)     en-GB     DV login
+xkb:fi::fin           fi             fi        FI login
+xkb:hu::hun           hu             hu        HU login
+xkb:it::ita           it             it        IT login
+xkb:is::ice           is             is        IS login
+xkb:no::nob           no             nb        NO login
+xkb:pl::pol           pl             pl        PL login
+xkb:pt::por           pt             pt-PT     PT login
+xkb:ro::rum           ro             ro        RO login
+xkb:se::swe           se             sv        SE login
+xkb:sk::slo           sk             sk        SK
+xkb:si::slv           si             sl        SI login
+xkb:rs::srp           rs             sr        RS
+xkb:tr::tur           tr             tr        TR login
+xkb:ua::ukr           ua             uk        UA
+xkb:by::bel           by             be        BY
+xkb:am:phonetic:arm   am             hy        AM
+xkb:ge::geo           ge             ka        GE
+xkb:mn::mon           mn             mn        MN
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.

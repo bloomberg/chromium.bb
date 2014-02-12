@@ -44,6 +44,7 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
     input_methods->push_back(InputMethodDescriptor(
         kInputMethods[i].input_method_id,
         "",
+        kInputMethods[i].indicator,
         layouts,
         languages,
         kInputMethods[i].is_login_keyboard,

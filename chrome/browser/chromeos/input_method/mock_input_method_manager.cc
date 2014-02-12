@@ -134,6 +134,7 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
   if (!current_input_method_id_.empty()) {
     return InputMethodDescriptor(current_input_method_id_,
                                  descriptor.name(),
+                                 descriptor.indicator(),
                                  descriptor.keyboard_layouts(),
                                  descriptor.language_codes(),
                                  true,

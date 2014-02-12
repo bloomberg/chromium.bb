@@ -924,6 +924,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id");
   const InputMethodDescriptor descriptor1(ext1_id,
                                           "deadbeef input method",
+                                          "DB",
                                           layouts,
                                           languages,
                                           false,  // is_login_keyboard
@@ -952,6 +953,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       extension_ime_util::GetInputMethodID("cafebabe", "engine_id");
   const InputMethodDescriptor descriptor2(ext2_id,
                                           "cafebabe input method",
+                                          "CB",
                                           layouts,
                                           languages,
                                           false,  // is_login_keyboard
@@ -1003,6 +1005,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id");
   const InputMethodDescriptor descriptor(ext_id,
                                          "deadbeef input method",
+                                         "DB",
                                          layouts,
                                          languages,
                                          false,  // is_login_keyboard

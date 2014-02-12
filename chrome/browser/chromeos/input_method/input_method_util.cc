@@ -30,17 +30,6 @@ const struct {
   const char* input_method_id;
   const char* indicator_text;
 } kMappingFromIdToIndicatorText[] = {
-  // To distinguish from "xkb:us::eng"
-  { "xkb:us:altgr-intl:eng", "EXTD" },
-  { "xkb:us:dvorak:eng", "DV" },
-  { "xkb:us:intl:eng", "INTL" },
-  { "xkb:us:colemak:eng", "CO" },
-  { "english-m", "??" },
-  { "xkb:de:neo:ger", "NEO" },
-  // To distinguish from "xkb:es::spa"
-  { "xkb:es:cat:cat", "CAS" },
-  // To distinguish from "xkb:gb::eng"
-  { "xkb:gb:dvorak:eng", "DV" },
   // To distinguish from "xkb:jp::jpn"
   // TODO(nona): Make following variables configurable. http://crbug.com/232260.
   { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us", "\xe3\x81\x82" },
@@ -390,11 +379,17 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
     const InputMethodDescriptor& input_method) const {
   // For the status area, we use two-letter, upper-case language code like
   // "US" and "JP".
-  base::string16 text;
 
+  // Use the indicator string if set.
+  if (!input_method.indicator().empty()) {
+    return base::UTF8ToUTF16(input_method.indicator());
+  }
+
+  base::string16 text;
   // Check special cases first.
   for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
-    if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id()) {
+    if (kMappingFromIdToIndicatorText[i].input_method_id ==
+        input_method.id()) {
       text = base::UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
       break;
     }
@@ -423,7 +418,7 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
     text = StringToUpperASCII(base::UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
-  DCHECK(!text.empty());
+  DCHECK(!text.empty()) << input_method.id();
   return text;
 }
 
@@ -663,6 +658,7 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
   languages.push_back("en-US");
   return InputMethodDescriptor("xkb:us::eng",
                                "",
+                               "US",
                                layouts,
                                languages,
                                true,  // login keyboard.

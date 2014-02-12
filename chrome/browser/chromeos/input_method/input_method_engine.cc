@@ -96,13 +96,15 @@ void InputMethodEngine::Initialize(
   }
 
   input_view_url_ = input_view;
-  descriptor_ = input_method::InputMethodDescriptor(imm_id_,
-                                                    engine_name,
-                                                    layouts,
-                                                    languages,
-                                                    false,  // is_login_keyboard
-                                                    options_page,
-                                                    input_view);
+  descriptor_ = input_method::InputMethodDescriptor(
+      imm_id_,
+      engine_name,
+      std::string(), // TODO(uekawa): Set short name.
+      layouts,
+      languages,
+      false,  // is_login_keyboard
+      options_page,
+      input_view);
 
   // TODO(komatsu): It is probably better to call AddInputMethodExtension
   // out of Initialize.

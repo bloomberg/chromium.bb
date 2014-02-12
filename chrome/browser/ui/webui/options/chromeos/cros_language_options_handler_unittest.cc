@@ -77,7 +77,8 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
     std::vector<std::string> languages;
     languages.push_back(language_code);
     return InputMethodDescriptor(
-        id, std::string(), layouts, languages, true, GURL(), GURL());
+        id, std::string(), std::string(), layouts, languages, true,
+        GURL(), GURL());
   }
 };
 
