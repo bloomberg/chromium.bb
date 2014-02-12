@@ -26,11 +26,8 @@ if "%1" == "force" (
 
 
 :GIT_CHECK
-if "%DEPOT_TOOLS_GIT_1852%" == "1" goto :GIT_1852_CHECK
-:: Our new build of git doesn't work on some systems (e.g. uses newer APIs than
-:: available in XP), so force systems back to the old git while the failures
-:: are investigated, unless the new git was explicitly requested above.
-goto :GIT_180_FORCE
+if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_1852_UNINSTALL
+goto :GIT_1852_CHECK
 
 
 :GIT_1852_CHECK
@@ -53,7 +50,7 @@ ver
 goto :GIT_180_CHECK
 
 
-:GIT_180_FORCE
+:GIT_1852_UNINSTALL
 :: If the new git was installed, remove all installed git packages to trigger
 :: reinstallation of the old version.
 if exist "%WIN_TOOLS_ROOT_DIR%\git-1.8.5.2.chromium.1_bin" (
