@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 
 import hashlib
 import json
@@ -21,6 +21,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import file_path
 from utils import net
 from utils import threading_utils
 from utils import tools
@@ -294,9 +295,13 @@ def chromium_setup(manifest):
   run_cmd = [
     'python', run_test_name,
     '--hash', manifest.isolated_hash,
-    '--isolate-server', manifest.isolate_server,
     '--namespace', manifest.namespace,
   ]
+  if file_path.is_url(manifest.isolate_server):
+    run_cmd.extend(('--isolate-server', manifest.isolate_server))
+  else:
+    run_cmd.extend(('--indir', manifest.isolate_server))
+
   if manifest.verbose or manifest.profile:
     # Have it print the profiling section.
     run_cmd.append('--verbose')
@@ -319,12 +324,19 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
   logging.info('archive(%s, %s, %s)', isolate_server, namespace, isolated)
   tempdir = None
+  if file_path.is_url(isolate_server):
+    command = 'archive'
+    flag = '--isolate-server'
+  else:
+    command = 'hashtable'
+    flag = '--outdir'
+
   try:
     cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'isolate.py'),
-      'archive',
-      '--isolate-server', isolate_server,
+      command,
+      flag, isolate_server,
       '--namespace', namespace,
       '--isolated', isolated,
     ]
@@ -488,7 +500,7 @@ def collect(url, task_name, timeout, decorate):
 
 def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
-  isolateserver.add_isolate_server_options(parser)
+  isolateserver.add_isolate_server_options(parser, True)
 
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
   parser.filter_group.add_option(
@@ -581,7 +593,7 @@ def CMDrun(parser, args):
   try:
     result = trigger(
         swarming=options.swarming,
-        isolate_server=options.isolate_server,
+        isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
@@ -629,7 +641,7 @@ def CMDtrigger(parser, args):
   try:
     return trigger(
         swarming=options.swarming,
-        isolate_server=options.isolate_server,
+        isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,

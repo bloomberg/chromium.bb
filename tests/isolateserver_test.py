@@ -1060,6 +1060,41 @@ class TestArchive(TestCase):
       self.help_test_archive(['archive'])
 
 
+class OptionsTest(unittest.TestCase):
+  def test_isolate_server(self):
+    data = [
+      (['-I', 'http://foo.com/'], 'http://foo.com'),
+      (['-I', 'https://foo.com/'], 'https://foo.com'),
+      (['-I', 'https://foo.com'], 'https://foo.com'),
+      (['-I', 'https://foo.com/a'], 'https://foo.com/a'),
+      (['-I', 'https://foo.com/a/'], 'https://foo.com/a'),
+      (['-I', 'https://foo.com:8080/a/'], 'https://foo.com:8080/a'),
+      (['-I', 'foo.com'], 'https://foo.com'),
+      (['-I', 'foo.com:8080'], 'https://foo.com:8080'),
+      (['-I', 'foo.com/'], 'https://foo.com'),
+      (['-I', 'foo.com/a/'], 'https://foo.com/a'),
+    ]
+    for value, expected in data:
+      parser = isolateserver.OptionParserIsolateServer()
+      isolateserver.add_isolate_server_options(parser, False)
+      options, _ = parser.parse_args(value)
+      isolateserver.process_isolate_server_options(parser, options)
+      self.assertEqual(expected, options.isolate_server)
+
+  def test_indir(self):
+    data = [
+      (['-I', 'http://foo.com/'], ('http://foo.com', None)),
+      (['--indir', ROOT_DIR], ('', ROOT_DIR)),
+    ]
+    for value, (expected_isolate_server, expected_indir) in data:
+      parser = isolateserver.OptionParserIsolateServer()
+      isolateserver.add_isolate_server_options(parser, True)
+      options, _ = parser.parse_args(value)
+      isolateserver.process_isolate_server_options(parser, options)
+      self.assertEqual(expected_isolate_server, options.isolate_server)
+      self.assertEqual(expected_indir, options.indir)
+
+
 def clear_env_vars():
   for e in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
     os.environ.pop(e, None)

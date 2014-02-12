@@ -1055,7 +1055,7 @@ def CMDarchive(parser, args):
   cache via isolateserver.py.
   """
   add_subdir_option(parser)
-  isolateserver.add_isolate_server_options(parser)
+  isolateserver.add_isolate_server_options(parser, False)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
@@ -1115,7 +1115,7 @@ def CMDhashtable(parser, args):
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
-  isolateserver.process_outdir_options(parser, 'hashtable', options, cwd)
+  isolateserver.process_outdir_options(parser, options, cwd)
 
   success = False
   try:
@@ -1200,7 +1200,7 @@ def CMDremap(parser, args):
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
-  isolateserver.process_outdir_options(parser, 'remap', options, cwd)
+  isolateserver.process_outdir_options(parser, options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
   if not os.path.isdir(options.outdir):

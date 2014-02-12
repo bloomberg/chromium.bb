@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 import ctypes
 import logging
@@ -766,7 +766,7 @@ def main(args):
   data_group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
-  isolateserver.add_isolate_server_options(data_group)
+  isolateserver.add_isolate_server_options(data_group, True)
   parser.add_option_group(data_group)
 
   cache_group = optparse.OptionGroup(parser, 'Cache management')
@@ -814,8 +814,8 @@ def main(args):
   try:
     # |options.cache| may not exist until DiskCache() instance is created.
     cache = DiskCache(options.cache, policies, algo)
-    with isolateserver.get_storage(
-        options.isolate_server, options.namespace) as storage:
+    remote = options.isolate_server or options.indir
+    with isolateserver.get_storage(remote, options.namespace) as storage:
       return run_tha_test(
           options.isolated or options.hash, storage, cache, algo, args)
   except Exception as e:

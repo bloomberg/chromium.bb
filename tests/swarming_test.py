@@ -438,8 +438,8 @@ def chromium_tasks(retrieval_url):
       u'action': [
         u'python', u'run_isolated.zip',
         u'--hash', FILE_HASH,
-        u'--isolate-server', retrieval_url,
         u'--namespace', u'default-gzip',
+        u'--isolate-server', retrieval_url,
       ],
       u'decorate_output': False,
       u'test_name': u'Run Test',
@@ -713,7 +713,7 @@ class MainTest(TestCase):
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
-        'swarming.py: error: --isolate-server is required.'
+        'swarming.py: error: Use one of --indir or --isolate-server.'
         '\n')
 
   def test_trigger_env_var(self):

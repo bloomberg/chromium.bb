@@ -146,7 +146,7 @@ class RunIsolatedTest(unittest.TestCase):
     return [
       '--isolated', isolated,
       '--cache', self.cache,
-      '--isolate-server', self.table,
+      '--indir', self.table,
       '--namespace', 'default',
     ]
 
@@ -158,7 +158,7 @@ class RunIsolatedTest(unittest.TestCase):
     return [
       '--hash', hash_value,
       '--cache', self.cache,
-      '--isolate-server', self.table,
+      '--indir', self.table,
       '--namespace', 'default',
     ]
 
