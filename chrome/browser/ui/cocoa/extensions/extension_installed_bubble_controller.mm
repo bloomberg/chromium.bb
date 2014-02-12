@@ -440,9 +440,8 @@ class ExtensionLoadedNotificationObserver
     // First calculate the height of the sign-in promo.
     NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 
-    NSString* link(l10n_util::GetNSStringFWithFixup(
-        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK,
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+    NSString* link(l10n_util::GetNSStringWithFixup(
+        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK));
     NSString* message(l10n_util::GetNSStringWithFixup(
         IDS_EXTENSION_INSTALLED_SIGNIN_PROMO));
 

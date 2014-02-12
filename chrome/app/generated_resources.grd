@@ -4766,52 +4766,42 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING" desc="Text displayed in the extension bundle installed bubble when some extensions or apps failed to install. Instructs which extensions did not install.">
         We were unable to install:
       </message>
-      <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
-        Show me
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
-        This icon will be visible when the extension can act on the current page.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages. Also has a sentence describing how to activate it.">
-        This icon will be visible when the extension can act on the current page. Use this extension by clicking on the icon or by pressing <ph name="EXTENSION_SHORTCUT">$1<ex>Ctrl+E</ex></ph>.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Browser Action icon.">
-        Use this extension by clicking on this icon.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Browser Action icon. Also has a sentence describing how to activate it.">
-        Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT">$1<ex>Ctrl+E</ex></ph>.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO" desc="Text displayed in the InfoBubble which explains that this extension has an keyword that can be used with the omnibox.">
-        To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then TAB, then your command or search.
-      </message>
+      <if expr="enable_extensions">
+        <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
+          Show me
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
+          This icon will be visible when the extension can act on the current page.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages. Also has a sentence describing how to activate it.">
+          This icon will be visible when the extension can act on the current page. Use this extension by clicking on the icon or by pressing <ph name="EXTENSION_SHORTCUT">$1<ex>Ctrl+E</ex></ph>.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Browser Action icon.">
+          Use this extension by clicking on this icon.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Browser Action icon. Also has a sentence describing how to activate it.">
+          Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT">$1<ex>Ctrl+E</ex></ph>.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO" desc="Text displayed in the InfoBubble which explains that this extension has an keyword that can be used with the omnibox.">
+          To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then TAB, then your command or search.
+        </message>
 
-      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
-        Manage your extensions by clicking Extensions in the Tools menu.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_CHROMEOS" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on ChromeOS">
-        Manage your extensions by clicking Extensions in the "More tools" menu.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
-        Manage your extensions by clicking Extensions in the Window menu.
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
-        Manage shortcuts
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK" desc="The first part of the sign-in promo paragraph. This part will be converted to a link and will get more text appended to it (see IDS_EXTENSION_INSTALLED_SIGNIN_PROMO). Keep this text short.">
-        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above. The triple single quotes are needed to preserve the space before the word 'to' (which is handy when the language (Chrome is being translated to) uses space as word separator).">
-        ''' to get this extension, your history, and other Chrome settings on all your devices.'''
-      </message>
-      <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
-        Infobar Container
-      </message>
-      <message name="IDS_ACCNAME_INFOBAR_WARNING" desc="The accessible name for the warning infobar type.">
-        Warning
-      </message>
-      <message name="IDS_ACCNAME_INFOBAR_PAGE_ACTION" desc="The accessible name for page action infobar type.">
-        Page Action
-      </message>
+        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
+          Manage your extensions by clicking Extensions in the Tools menu.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_CHROMEOS" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on ChromeOS">
+          Manage your extensions by clicking Extensions in the "More tools" menu.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
+          Manage your extensions by clicking Extensions in the Window menu.
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
+          Manage shortcuts
+        </message>
+        <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above. The triple single quotes are needed to preserve the space before the word 'to' (which is handy when the language (Chrome is being translated to) uses space as word separator).">
+          ''' to get this extension, your history, and other Chrome settings on all your devices.'''
+        </message>
+      </if>
 
       <!-- Directory access confirmation dialog -->
       <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_TITLE" desc="Text of the title of the directory access confirmation dialog.">
@@ -4825,240 +4815,241 @@ Make sure you do not expose any sensitive information.
       </message>
 
       <!-- chrome://settings/extensions page -->
-      <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
-        Developer mode
-      </message>
-      <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
-        Load unpacked extension...
-      </message>
-      <message name="IDS_EXTENSIONS_PACK_BUTTON" desc="Text for the 'Pack Extension' button.">
-        Pack extension...
-      </message>
-      <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
-        Update extensions now
-      </message>
-      <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
-        Boo... You have no extensions :-(
-      </message>
-      <message name="IDS_EXTENSIONS_PERMISSIONS_HEADING" desc="Heading for permissions dialog in apps_devtools">
-        It can:
-      </message>
-      <message name="IDS_EXTENSIONS_PERMISSIONS_CLOSE" desc="Close button for permissions dialog in apps_devtools">
-        Close
-      </message>
-      <message name="IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load app/extension' button.">
-        Load unpacked...
-      </message>
-      <message name="IDS_APPS_DEVTOOL_PACK_BUTTON" desc="Text for the 'Pack app/extension' button.">
-        Pack...
-      </message>
-      <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
-        Update
-      </message>
-      <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
-        search
-      </message>
-      <message name="IDS_APPS_DEVTOOL_APPS_INSTALLED" desc="Text for the word 'Apps'.">
-        Apps
-      </message>
-      <message name="IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED" desc="Text for the word 'Extensions'.">
-        Extensions
-      </message>
-      <message name="IDS_APPS_DEVTOOL_NO_PACKED_APPS" desc="Text that lets the user know that no packed apps are installed.">
-        No installed applications.
-      </message>
-      <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_APPS" desc="Text that lets the user know that no unpacked apps are installed.">
-        No unpacked applications.
-      </message>
-      <message name="IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS" desc="Text that lets the user know that no packed extensions are installed.">
-        No installed extensions.
-      </message>
-      <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS" desc="Text that lets the user know that no unpacked extensions are installed.">
-        No unpacked extensions.
-      </message>
-      <message name="IDS_APPS_DEVTOOL_UNPACKED_INSTALLED" desc="Text for the word 'Unpacked' (unpacked app or extension).">
-        Unpacked
-      </message>
-      <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
-        Installed
-      </message>
-      <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updating...' when the user clicks on 'Update'.">
-        Updating...
-      </message>
-      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON" desc="Text of  the delete button in the apps/extension delete confirmation dialog.">
-        Delete
-      </message>
-      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_TITLE" desc="Text of the title of the apps/extension delete confirmation dialog.">
-        Delete
-      </message>
-      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_APP" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an app.">
-        Do you really want to delete this application?
-      </message>
-      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an extension.">
-        Do you really want to delete this extension?
-      </message>
-      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON" desc="Title of the button to close the dialog for managed profile.">
-        Close
-      </message>
-      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE" desc="Title of the dialog for managed profile.">
-        This user is supervised.
-      </message>
-      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION" desc="Content of the dialog for managed profile. It's informing a supervised user that extensions cannot be changed.">
-        Applications and extensions cannot be modified by supervised users. Apps Developer Tools will be closed.
-      </message>
-      <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
-        Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
-      </message>
-      <message name="IDS_EXTENSIONS_INSTALL_DROP_TARGET" desc="Text on drop target for installing extensions.">
-        Drop to install
-      </message>
-      <message name="IDS_EXTENSIONS_CRASHED_EXTENSION" desc="Text that signifies that the extension process was terminated, usually because it has crashed.">
-        (Crashed)
-      </message>
-      <message name="IDS_EXTENSIONS_IN_DEVELOPMENT" desc="Text that signifies that the extension is currently in development.">
-        (Unpacked)
-      </message>
-      <message name="IDS_EXTENSIONS_VIEW_INCOGNITO" desc="Text that signifies that the extension view is in an incognito process.">
-        (Incognito)
-      </message>
-      <message name="IDS_EXTENSIONS_VIEW_INACTIVE" desc="Text that signifies that the extension view is an inactive transient page.">
-        (Inactive)
-      </message>
-      <message name="IDS_EXTENSIONS_BACKGROUND_PAGE" desc="Display name for an autogenerated background page.">
-        background page
-      </message>
-      <message name="IDS_EXTENSIONS_ID" desc="The ID label in front of the extension ID.">
-        ID:
-      </message>
-      <message name="IDS_EXTENSIONS_PATH" desc="The label in front of the extension load path.">
-        Loaded from:
-      </message>
-      <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect views (some of which may not be loaded yet).">
-        Inspect views:
-      </message>
-      <message name="IDS_EXTENSIONS_INSTALL_WARNINGS" desc="The text which says that an extension has warnings when it was installed.">
-        There were warnings when trying to install this extension:
-      </message>
-      <message name="IDS_EXTENSIONS_ERRORS_SHOW_MORE" desc="The text which allows the user to display more errors for a given extension.">
-        Show more...
-      </message>
-      <message name="IDS_EXTENSIONS_ERRORS_SHOW_FEWER" desc="The text which allows the user to display fewer errors for a given extension.">
-        Show fewer...
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_VIEW_DETAILS" desc="The link to view the details of an extension error.">
-        View details
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_VIEW_MANIFEST" desc="The link to view the details of an extension error.">
-        View manifest.json
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_CONTEXT" desc="The label for the context of an extension's error.">
-        Context:
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
-        Stack Trace
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION" desc="The label indicating that an error was caused within an anonymous function in the code.">
-        anonymous function
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS" desc="The text for the button to view an extension error in the developer tools.">
-        View in Developer Tools
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN" desc="Text indicating that the context URL for an error is unknown.">
-        Unknown
-      </message>
-      <message name="IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY" desc="Text indicating that there is no code to be displayed for a given error.">
-        Sorry, we can't show the code for this error.
-      </message>
-      <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
-        Enable
-      </message>
-      <message name="IDS_EXTENSIONS_ENABLED" desc="The label for an enabled extension.">
-        Enabled
-      </message>
-      <message name="IDS_EXTENSIONS_REMOVE" desc="The label for uninstalling an extension.">
-        Remove
-      </message>
-      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling an extension in incognito.">
-        Allow in incognito
-      </message>
-      <message name="IDS_EXTENSIONS_ALLOW_FILE_ACCESS" desc="The checkbox for allowing an extension access to run scripts on file URLs.">
-        Allow access to file URLs
-      </message>
-      <message name="IDS_EXTENSIONS_VISIT_WEBSITE" desc="The link for visiting the extension's homepage.">
-        Visit website
-      </message>
-      <message name="IDS_EXTENSIONS_VISIT_WEBSTORE" desc="The link for visiting the extension's gallery page.">
-        View in Web Store
-      </message>
-      <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
-        Reload
-      </message>
-      <message name="IDS_EXTENSIONS_LAUNCH" desc="The link for launching apps.">
-        Launch
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
-          Reload (⌘R)
+      <if expr="enable_extensions">
+        <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
+          Developer mode
         </message>
-      </if>
-      <if expr="not is_macosx">
-        <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
-          Reload (Ctrl+R)
+        <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
+          Load unpacked extension...
         </message>
-      </if>
-      <if expr="is_macosx">
-        <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
+        <message name="IDS_EXTENSIONS_PACK_BUTTON" desc="Text for the 'Pack Extension' button.">
+          Pack extension...
+        </message>
+        <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
+          Update extensions now
+        </message>
+        <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
+          Boo... You have no extensions :-(
+        </message>
+        <message name="IDS_EXTENSIONS_PERMISSIONS_HEADING" desc="Heading for permissions dialog in apps_devtools">
+          It can:
+        </message>
+        <message name="IDS_EXTENSIONS_PERMISSIONS_CLOSE" desc="Close button for permissions dialog in apps_devtools">
+          Close
+        </message>
+        <message name="IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load app/extension' button.">
+          Load unpacked...
+        </message>
+        <message name="IDS_APPS_DEVTOOL_PACK_BUTTON" desc="Text for the 'Pack app/extension' button.">
+          Pack...
+        </message>
+        <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
+          Update
+        </message>
+        <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
+          search
+        </message>
+        <message name="IDS_APPS_DEVTOOL_APPS_INSTALLED" desc="Text for the word 'Apps'.">
+          Apps
+        </message>
+        <message name="IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED" desc="Text for the word 'Extensions'.">
+          Extensions
+        </message>
+        <message name="IDS_APPS_DEVTOOL_NO_PACKED_APPS" desc="Text that lets the user know that no packed apps are installed.">
+          No installed applications.
+        </message>
+        <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_APPS" desc="Text that lets the user know that no unpacked apps are installed.">
+          No unpacked applications.
+        </message>
+        <message name="IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS" desc="Text that lets the user know that no packed extensions are installed.">
+          No installed extensions.
+        </message>
+        <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS" desc="Text that lets the user know that no unpacked extensions are installed.">
+          No unpacked extensions.
+        </message>
+        <message name="IDS_APPS_DEVTOOL_UNPACKED_INSTALLED" desc="Text for the word 'Unpacked' (unpacked app or extension).">
+          Unpacked
+        </message>
+        <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
+          Installed
+        </message>
+        <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updating...' when the user clicks on 'Update'.">
+          Updating...
+        </message>
+        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON" desc="Text of  the delete button in the apps/extension delete confirmation dialog.">
+          Delete
+        </message>
+        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_TITLE" desc="Text of the title of the apps/extension delete confirmation dialog.">
+          Delete
+        </message>
+        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_APP" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an app.">
+          Do you really want to delete this application?
+        </message>
+        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an extension.">
+          Do you really want to delete this extension?
+        </message>
+        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON" desc="Title of the button to close the dialog for managed profile.">
+          Close
+        </message>
+        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE" desc="Title of the dialog for managed profile.">
+          This user is supervised.
+        </message>
+        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION" desc="Content of the dialog for managed profile. It's informing a supervised user that extensions cannot be changed.">
+          Applications and extensions cannot be modified by supervised users. Apps Developer Tools will be closed.
+        </message>
+        <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
+          Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
+        </message>
+        <message name="IDS_EXTENSIONS_INSTALL_DROP_TARGET" desc="Text on drop target for installing extensions.">
+          Drop to install
+        </message>
+        <message name="IDS_EXTENSIONS_CRASHED_EXTENSION" desc="Text that signifies that the extension process was terminated, usually because it has crashed.">
+          (Crashed)
+        </message>
+        <message name="IDS_EXTENSIONS_IN_DEVELOPMENT" desc="Text that signifies that the extension is currently in development.">
+          (Unpacked)
+        </message>
+        <message name="IDS_EXTENSIONS_VIEW_INCOGNITO" desc="Text that signifies that the extension view is in an incognito process.">
+          (Incognito)
+        </message>
+        <message name="IDS_EXTENSIONS_VIEW_INACTIVE" desc="Text that signifies that the extension view is an inactive transient page.">
+          (Inactive)
+        </message>
+        <message name="IDS_EXTENSIONS_BACKGROUND_PAGE" desc="Display name for an autogenerated background page.">
+          background page
+        </message>
+        <message name="IDS_EXTENSIONS_ID" desc="The ID label in front of the extension ID.">
+          ID:
+        </message>
+        <message name="IDS_EXTENSIONS_PATH" desc="The label in front of the extension load path.">
+          Loaded from:
+        </message>
+        <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect views (some of which may not be loaded yet).">
+          Inspect views:
+        </message>
+        <message name="IDS_EXTENSIONS_INSTALL_WARNINGS" desc="The text which says that an extension has warnings when it was installed.">
+          There were warnings when trying to install this extension:
+        </message>
+        <message name="IDS_EXTENSIONS_ERRORS_SHOW_MORE" desc="The text which allows the user to display more errors for a given extension.">
+          Show more...
+        </message>
+        <message name="IDS_EXTENSIONS_ERRORS_SHOW_FEWER" desc="The text which allows the user to display fewer errors for a given extension.">
+          Show fewer...
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_VIEW_DETAILS" desc="The link to view the details of an extension error.">
+          View details
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_VIEW_MANIFEST" desc="The link to view the details of an extension error.">
+          View manifest.json
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_CONTEXT" desc="The label for the context of an extension's error.">
+          Context:
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
+          Stack Trace
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION" desc="The label indicating that an error was caused within an anonymous function in the code.">
+          anonymous function
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS" desc="The text for the button to view an extension error in the developer tools.">
+          View in Developer Tools
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN" desc="Text indicating that the context URL for an error is unknown.">
+          Unknown
+        </message>
+        <message name="IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY" desc="Text indicating that there is no code to be displayed for a given error.">
+          Sorry, we can't show the code for this error.
+        </message>
+        <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
+          Enable
+        </message>
+        <message name="IDS_EXTENSIONS_ENABLED" desc="The label for an enabled extension.">
+          Enabled
+        </message>
+        <message name="IDS_EXTENSIONS_REMOVE" desc="The label for uninstalling an extension.">
+          Remove
+        </message>
+        <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling an extension in incognito.">
+          Allow in incognito
+        </message>
+        <message name="IDS_EXTENSIONS_ALLOW_FILE_ACCESS" desc="The checkbox for allowing an extension access to run scripts on file URLs.">
+          Allow access to file URLs
+        </message>
+        <message name="IDS_EXTENSIONS_VISIT_WEBSITE" desc="The link for visiting the extension's homepage.">
+          Visit website
+        </message>
+        <message name="IDS_EXTENSIONS_VISIT_WEBSTORE" desc="The link for visiting the extension's gallery page.">
+          View in Web Store
+        </message>
+        <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
           Reload
         </message>
-      </if>
-      <if expr="not is_macosx">
-        <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
-          Reload
+        <message name="IDS_EXTENSIONS_LAUNCH" desc="The link for launching apps.">
+          Launch
         </message>
-      </if>
-      <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The link text for the Options link.">
-        Options
-      </message>
-      <message name="IDS_EXTENSIONS_PERMISSIONS_LINK" desc="The link text for the Permissions link.">
-        Permissions
-      </message>
-      <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
-        Show button
-      </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
+        <if expr="is_macosx">
+          <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
+            Reload (⌘R)
+          </message>
+        </if>
+        <if expr="not is_macosx">
+          <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
+            Reload (Ctrl+R)
+          </message>
+        </if>
+        <if expr="is_macosx">
+          <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
+            Reload
+          </message>
+        </if>
+        <if expr="not is_macosx">
+          <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
+            Reload
+          </message>
+        </if>
+        <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The link text for the Options link.">
           Options
         </message>
-        <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (sentence case).">
-          Disable
+        <message name="IDS_EXTENSIONS_PERMISSIONS_LINK" desc="The link text for the Permissions link.">
+          Permissions
         </message>
-        <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (sentence case).">
-          Hide button
+        <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
+          Show button
         </message>
-        <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (sentence case).">
-          Manage
-        </message>
-        <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (sentence case).">
-          Inspect popup
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
-          Options
-        </message>
-        <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (title case).">
-          Disable
-        </message>
-        <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (title case).">
-          Hide Button
-        </message>
-        <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (title case).">
-          Manage
-        </message>
-        <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (title case).">
-          Inspect Popup
-        </message>
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
+            Options
+          </message>
+          <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (sentence case).">
+            Disable
+          </message>
+          <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (sentence case).">
+            Hide button
+          </message>
+          <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (sentence case).">
+            Manage
+          </message>
+          <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (sentence case).">
+            Inspect popup
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
+            Options
+          </message>
+          <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (title case).">
+            Disable
+          </message>
+          <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (title case).">
+            Hide Button
+          </message>
+          <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (title case).">
+            Manage
+          </message>
+          <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (title case).">
+            Inspect Popup
+          </message>
+        </if>
       </if>
 
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text in the extensions UI informing the user that an extension is policy controlled">
@@ -11003,6 +10994,19 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_COLLECTED_COOKIES_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
       </message>
+
+      <!-- Accessiblility strings for Inforbars in Views -->
+      <if expr="toolkit_views">
+        <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
+          Infobar Container
+        </message>
+        <message name="IDS_ACCNAME_INFOBAR_WARNING" desc="The accessible name for the warning infobar type.">
+          Warning
+        </message>
+        <message name="IDS_ACCNAME_INFOBAR_PAGE_ACTION" desc="The accessible name for page action infobar type.">
+          Page Action
+        </message>
+      </if>
 
       <!-- Autofill infobar -->
       <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">

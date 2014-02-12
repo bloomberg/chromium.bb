@@ -216,9 +216,7 @@ class InstalledBubbleContent : public views::View,
           l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO);
 
       signin_promo_link_text_ =
-          l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK,
-                l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK);
       sign_in_link_ = new views::Link(signin_promo_link_text_);
       sign_in_link_->SetFontList(font_list);
       sign_in_link_->set_listener(this);
