@@ -495,8 +495,10 @@
               this.classList.remove(modifier);
             break;
           case 'Invalid':
-            // Pressed a transition key. Resets control key states.
-            this.onNonControlKeyTyped();
+            // Not all Invalid keys are transition keys. Reset control keys if
+            // we pressed a transition key.
+            if (event.target.toKeyset || detail.relegateToShift)
+              this.onNonControlKeyTyped();
             break;
           default:
             // Notify shift key.
