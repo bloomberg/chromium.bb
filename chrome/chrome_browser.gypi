@@ -3717,6 +3717,7 @@
             'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBarDelegate.java',
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBarDelegate.java',
             'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
             'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationController.java',
             'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java'

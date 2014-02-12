@@ -154,6 +154,12 @@ void PasswordFormManager::PermanentlyBlacklist() {
   SaveAsNewLogin(false);
 }
 
+void PasswordFormManager::SetUseAdditionalPasswordAuthentication(
+    bool use_additional_authentication) {
+  pending_credentials_.use_additional_authentication =
+      use_additional_authentication;
+}
+
 bool PasswordFormManager::IsNewLogin() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   return is_new_login_;

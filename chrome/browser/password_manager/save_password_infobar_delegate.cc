@@ -39,23 +39,10 @@ void SavePasswordInfoBarDelegate::Create(
 #endif
 
   InfoBarService::FromWebContents(web_contents)->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new SavePasswordInfoBarDelegate(form_to_save,
-                                          uma_histogram_suffix))));
-}
-
-SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    PasswordFormManager* form_to_save,
-    const std::string& uma_histogram_suffix)
-    : ConfirmInfoBarDelegate(),
-      form_to_save_(form_to_save),
-      infobar_response_(NO_RESPONSE),
-      uma_histogram_suffix_(uma_histogram_suffix) {
-  if (!uma_histogram_suffix_.empty()) {
-    password_manager_metrics_util::LogUMAHistogramBoolean(
-        "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
-        true);
-  }
+      SavePasswordInfoBarDelegate::CreateInfoBar(
+          scoped_ptr<SavePasswordInfoBarDelegate>(
+              new SavePasswordInfoBarDelegate(form_to_save,
+                                              uma_histogram_suffix))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
@@ -78,6 +65,41 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
         timer_.Elapsed() < kMinimumPromptDisplayTime);
   }
 }
+
+void SavePasswordInfoBarDelegate::SetUseAdditionalPasswordAuthentication(
+    bool use_additional_authentication) {
+  form_to_save_->SetUseAdditionalPasswordAuthentication(
+      use_additional_authentication);
+}
+
+SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
+    PasswordFormManager* form_to_save,
+    const std::string& uma_histogram_suffix)
+    : ConfirmInfoBarDelegate(),
+      form_to_save_(form_to_save),
+      infobar_response_(NO_RESPONSE),
+      uma_histogram_suffix_(uma_histogram_suffix) {
+  if (!uma_histogram_suffix_.empty()) {
+    password_manager_metrics_util::LogUMAHistogramBoolean(
+        "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
+        true);
+  }
+}
+
+#if !defined(OS_ANDROID)
+// On Android, the save password infobar supports an additional checkbox to
+// require additional authentication before autofilling a saved password.
+// Because of this non-standard UI, the Android version is special cased and
+// constructed in:
+// chrome/browser/ui/android/infobars/save_password_infobar.cc
+
+// static
+scoped_ptr<InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
+    scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
+  return ConfirmInfoBarDelegate::CreateInfoBar(
+      delegate.PassAs<ConfirmInfoBarDelegate>());
+}
+#endif
 
 bool SavePasswordInfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {

@@ -110,6 +110,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // TODO: Make this private once we switch to the new UI.
   void PermanentlyBlacklist();
 
+  // Sets whether the password form should use additional password
+  // authentication if available before being used for autofill.
+  void SetUseAdditionalPasswordAuthentication(
+      bool use_additional_authentication);
+
   // If the user has submitted observed_form_, provisionally hold on to
   // the submitted credentials until we are told by PasswordManager whether
   // or not the login was successful. |action| describes how we deal with
