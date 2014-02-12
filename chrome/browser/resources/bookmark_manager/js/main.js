@@ -149,24 +149,24 @@ function updateHash() {
 /**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
- * @param {function()} callback Function called when list view loaded or
+ * @param {function()=} opt_callback Function called when list view loaded or
  *     displayed specified folder.
  */
-function navigateTo(id, callback) {
-  updateHash(id);
-
-  if (list.parentId == id) {
-    callback();
-    return;
-  }
+function navigateTo(id, opt_callback) {
+  window.location.hash = id;
+  updateAllCommands();
 
   var metricsId = folderMetricsNameMap[id.replace(/^q=.*/, 'q=')] ||
                   folderMetricsNameMap['subfolder'];
   chrome.metricsPrivate.recordUserAction(
       'BookmarkManager_NavigateTo_' + metricsId);
 
-  addOneShotEventListener(list, 'load', callback);
-  updateParentId(id);
+  if (opt_callback) {
+    if (list.parentId == id)
+      opt_callback();
+    else
+      addOneShotEventListener(list, 'load', opt_callback);
+  }
 }
 
 /**
@@ -281,8 +281,7 @@ function setSearch(searchText) {
     id = tree.selectedItem.bookmarkId;
   }
 
-  // Navigate now and update hash immediately.
-  navigateTo(id, updateHash);
+  navigateTo(id);
 }
 
 // Handle the logo button UI.
@@ -669,8 +668,7 @@ function updateEditingCommands() {
 }
 
 function handleChangeForTree(e) {
-  updateAllCommands();
-  navigateTo(tree.selectedItem.bookmarkId, updateHash);
+  navigateTo(tree.selectedItem.bookmarkId);
 }
 
 function handleOrganizeButtonClick(e) {
@@ -814,11 +812,10 @@ function openBookmarks(kind, opt_eventTarget) {
 function openItem() {
   var bookmarkNodes = getSelectedBookmarkNodes();
   // If we double clicked or pressed enter on a single folder, navigate to it.
-  if (bookmarkNodes.length == 1 && bmm.isFolder(bookmarkNodes[0])) {
-    navigateTo(bookmarkNodes[0].id, updateHash);
-  } else {
+  if (bookmarkNodes.length == 1 && bmm.isFolder(bookmarkNodes[0]))
+    navigateTo(bookmarkNodes[0].id);
+  else
     openBookmarks(LinkKind.FOREGROUND_TAB);
-  }
 }
 
 /**

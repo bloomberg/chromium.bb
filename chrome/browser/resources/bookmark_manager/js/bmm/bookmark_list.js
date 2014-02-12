@@ -83,7 +83,11 @@ cr.define('bmm', function() {
       return new BookmarkListItem(bookmarkNode);
     },
 
+    /** @private {string} */
     parentId_: '',
+
+    /** @private {number} */
+    loadCount_: 0,
 
     /**
      * Reloads the list from the bookmarks backend.
@@ -92,7 +96,8 @@ cr.define('bmm', function() {
       var parentId = this.parentId;
 
       var callback = this.handleBookmarkCallback_.bind(this);
-      this.loading_ = true;
+
+      this.loadCount_++;
 
       if (!parentId)
         callback([]);
@@ -108,17 +113,19 @@ cr.define('bmm', function() {
      * @private
      */
     handleBookmarkCallback_: function(items) {
+      this.loadCount_--;
+      if (this.loadCount_)
+        return;
+
       if (!items) {
         // Failed to load bookmarks. Most likely due to the bookmark being
         // removed.
         cr.dispatchSimpleEvent(this, 'invalidId');
-        this.loading_ = false;
         return;
       }
 
       this.dataModel = new BookmarksArrayDataModel(items);
 
-      this.loading_ = false;
       this.fixWidth_();
       cr.dispatchSimpleEvent(this, 'load');
     },
@@ -316,7 +323,7 @@ cr.define('bmm', function() {
      */
     fixWidth_: function() {
       var list = bmm.list;
-      if (this.loading_ || !list)
+      if (this.loadCount_ || !list)
         return;
 
       // The width of the list is wrong after its content has changed.
