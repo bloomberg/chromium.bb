@@ -15,6 +15,8 @@ class FrameIdWrapHelperTest : public ::testing::Test {
   virtual ~FrameIdWrapHelperTest() {}
 
   FrameIdWrapHelper frame_id_wrap_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameIdWrapHelperTest);
 };
 
 TEST_F(FrameIdWrapHelperTest, FirstFrame) {
@@ -24,8 +26,8 @@ TEST_F(FrameIdWrapHelperTest, FirstFrame) {
 TEST_F(FrameIdWrapHelperTest, Rollover) {
   uint32 new_frame_id = 0u;
   for (int i = 0; i <= 256; ++i) {
-    new_frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(
-        static_cast<uint8>(i));
+    new_frame_id =
+        frame_id_wrap_helper_.MapTo32bitsFrameId(static_cast<uint8>(i));
   }
   EXPECT_EQ(256u, new_frame_id);
 }
@@ -33,8 +35,8 @@ TEST_F(FrameIdWrapHelperTest, Rollover) {
 TEST_F(FrameIdWrapHelperTest, OutOfOrder) {
   uint32 new_frame_id = 0u;
   for (int i = 0; i < 255; ++i) {
-    new_frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(
-        static_cast<uint8>(i));
+    new_frame_id =
+        frame_id_wrap_helper_.MapTo32bitsFrameId(static_cast<uint8>(i));
   }
   EXPECT_EQ(254u, new_frame_id);
   new_frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(0u);

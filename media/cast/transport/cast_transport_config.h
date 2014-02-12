@@ -19,20 +19,13 @@ namespace cast {
 namespace transport {
 
 enum RtcpMode {
-  kRtcpCompound,  // Compound RTCP mode is described by RFC 4585.
+  kRtcpCompound,     // Compound RTCP mode is described by RFC 4585.
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
 };
 
-enum VideoCodec {
-  kVp8,
-  kH264,
-};
+enum VideoCodec { kVp8, kH264, };
 
-enum AudioCodec {
-  kOpus,
-  kPcm16,
-  kExternalAudio,
-};
+enum AudioCodec { kOpus, kPcm16, kExternalAudio, };
 
 struct RtpConfig {
   RtpConfig();
@@ -62,7 +55,7 @@ struct CastTransportConfig {
   int audio_frequency;
   int audio_channels;
 
-  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_key;      // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesBlockSize.
 };
 
@@ -93,8 +86,7 @@ struct EncodedAudioFrame {
 typedef std::vector<uint8> Packet;
 typedef std::vector<Packet> PacketList;
 
-typedef base::Callback<void(scoped_ptr<Packet> packet)>
-    PacketReceiverCallback;
+typedef base::Callback<void(scoped_ptr<Packet> packet)> PacketReceiverCallback;
 
 class PacketSender {
  public:
@@ -139,7 +131,7 @@ struct RtcpReportBlock {
   RtcpReportBlock();
   ~RtcpReportBlock();
   uint32 remote_ssrc;  // SSRC of sender of this report.
-  uint32 media_ssrc;  // SSRC of the RTP packet sender.
+  uint32 media_ssrc;   // SSRC of the RTP packet sender.
   uint8 fraction_lost;
   uint32 cumulative_lost;  // 24 bits valid.
   uint32 extended_high_sequence_number;
@@ -157,14 +149,14 @@ struct RtcpDlrrReportBlock {
 
 inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {
   return lhs.ntp_seconds == rhs.ntp_seconds &&
-      lhs.ntp_fraction == rhs.ntp_fraction &&
-      lhs.rtp_timestamp == rhs.rtp_timestamp &&
-      lhs.send_packet_count == rhs.send_packet_count &&
-      lhs.send_octet_count == rhs.send_octet_count;
+         lhs.ntp_fraction == rhs.ntp_fraction &&
+         lhs.rtp_timestamp == rhs.rtp_timestamp &&
+         lhs.send_packet_count == rhs.send_packet_count &&
+         lhs.send_octet_count == rhs.send_octet_count;
 }
 
 }  // namespace transport
 }  // namespace cast
 }  // namespace media
 
-#endif // MEDIA_CAST_TRANSPORT_CAST_TRANSPORT_CONFIG_H_
+#endif  // MEDIA_CAST_TRANSPORT_CAST_TRANSPORT_CONFIG_H_

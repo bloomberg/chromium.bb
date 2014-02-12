@@ -36,28 +36,27 @@ class CastTransportSenderImpl : public CastTransportSender {
   virtual ~CastTransportSenderImpl();
 
   // CastTransportSender implementation.
-  virtual void
-      SetPacketReceiver(const PacketReceiverCallback& packet_receiver) OVERRIDE;
+  virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver)
+      OVERRIDE;
 
-  virtual void InsertCodedAudioFrame(
-      const EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time) OVERRIDE;
+  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
+                                     const base::TimeTicks& recorded_time)
+      OVERRIDE;
 
-  virtual void InsertCodedVideoFrame(
-      const EncodedVideoFrame* video_frame,
-      const base::TimeTicks& capture_time) OVERRIDE;
+  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
+                                     const base::TimeTicks& capture_time)
+      OVERRIDE;
 
-  virtual void SendRtcpFromRtpSender(
-      uint32 packet_type_flags,
-      const RtcpSenderInfo& sender_info,
-      const RtcpDlrrReportBlock& dlrr,
-      const RtcpSenderLogMessage& sender_log,
-      uint32 sending_ssrc,
-      const std::string& c_name) OVERRIDE;
+  virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
+                                     const RtcpSenderInfo& sender_info,
+                                     const RtcpDlrrReportBlock& dlrr,
+                                     const RtcpSenderLogMessage& sender_log,
+                                     uint32 sending_ssrc,
+                                     const std::string& c_name) OVERRIDE;
 
-  virtual void ResendPackets(
-      bool is_audio,
-      const MissingFramesAndPacketsMap& missing_packets) OVERRIDE;
+  virtual void ResendPackets(bool is_audio,
+                             const MissingFramesAndPacketsMap& missing_packets)
+      OVERRIDE;
 
   virtual void SubscribeAudioRtpStatsCallback(
       const CastTransportRtpStatistics& callback) OVERRIDE;

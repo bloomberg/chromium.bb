@@ -38,9 +38,9 @@ namespace transport {
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
-typedef base::Callback<
-    void(RtcpSenderInfo& sender_info, base::TimeTicks time_sent,
-         uint32 rtp_timestamp)> CastTransportRtpStatistics;
+typedef base::Callback<void(RtcpSenderInfo& sender_info,
+                            base::TimeTicks time_sent,
+                            uint32 rtp_timestamp)> CastTransportRtpStatistics;
 
 // The application should only trigger this class from the transport thread.
 class CastTransportSender : public base::NonThreadSafe {

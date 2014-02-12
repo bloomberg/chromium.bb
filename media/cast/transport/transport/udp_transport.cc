@@ -26,18 +26,15 @@ const int kMaxPacketSize = 1500;
 
 bool IsEmpty(const net::IPEndPoint& addr) {
   net::IPAddressNumber empty_addr(addr.address().size());
-  return std::equal(empty_addr.begin(),
-                    empty_addr.end(),
-                    addr.address().begin());
+  return std::equal(
+      empty_addr.begin(), empty_addr.end(), addr.address().begin());
 }
 
 bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
-  return addr1.port() == addr2.port() &&
-      std::equal(addr1.address().begin(),
-                 addr1.address().end(),
-                 addr2.address().begin());
+  return addr1.port() == addr2.port() && std::equal(addr1.address().begin(),
+                                                    addr1.address().end(),
+                                                    addr2.address().begin());
 }
-
 }  // namespace
 
 UdpTransport::UdpTransport(
@@ -52,11 +49,9 @@ UdpTransport::UdpTransport(
       send_pending_(false),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
       status_callback_(status_callback),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-UdpTransport::~UdpTransport() {
-}
+UdpTransport::~UdpTransport() {}
 
 void UdpTransport::StartReceiving(
     const PacketReceiverCallback& packet_receiver) {
@@ -101,16 +96,15 @@ void UdpTransport::OnReceived(int result) {
 
   if (IsEmpty(remote_addr_)) {
     remote_addr_ = recv_addr_;
-    VLOG(1) << "First packet received from: "
-            << remote_addr_.ToString() << ".";
+    VLOG(1) << "First packet received from: " << remote_addr_.ToString() << ".";
   } else if (!IsEqual(remote_addr_, recv_addr_)) {
     LOG(ERROR) << "Received from an unrecognized address: "
-            << recv_addr_.ToString() << ".";
+               << recv_addr_.ToString() << ".";
     return;
   }
   // TODO(hclam): The interfaces should use net::IOBuffer to eliminate memcpy.
-  scoped_ptr<Packet> packet(new Packet(recv_buf_->data(),
-                                       recv_buf_->data() + result));
+  scoped_ptr<Packet> packet(
+      new Packet(recv_buf_->data(), recv_buf_->data() + result));
   packet_receiver_.Run(packet.Pass());
   ReceiveOnePacket();
 }
@@ -125,8 +119,8 @@ bool UdpTransport::SendPacket(const Packet& packet) {
 
   // TODO(hclam): This interface should take a net::IOBuffer to minimize
   // memcpy.
-  scoped_refptr<net::IOBuffer> buf = new net::IOBuffer(
-      static_cast<int>(packet.size()));
+  scoped_refptr<net::IOBuffer> buf =
+      new net::IOBuffer(static_cast<int>(packet.size()));
   memcpy(buf->data(), &packet[0], packet.size());
   int ret = udp_socket_->SendTo(
       buf,
@@ -138,8 +132,7 @@ bool UdpTransport::SendPacket(const Packet& packet) {
   return ret == net::OK;
 }
 
-void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
-                          int result) {
+void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf, int result) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
   send_pending_ = false;

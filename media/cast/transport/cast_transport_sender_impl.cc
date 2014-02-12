@@ -17,11 +17,8 @@ CastTransportSender* CastTransportSender::CreateCastTransportSender(
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
-  return new CastTransportSenderImpl(clock,
-                                     config,
-                                     status_callback,
-                                     transport_task_runner.get(),
-                                     NULL);
+  return new CastTransportSenderImpl(
+      clock, config, status_callback, transport_task_runner.get(), NULL);
 }
 
 CastTransportSenderImpl::CastTransportSenderImpl(

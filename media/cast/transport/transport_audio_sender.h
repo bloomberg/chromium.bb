@@ -56,7 +56,6 @@ class TransportAudioSender : public base::NonThreadSafe {
   TransportEncryptionHandler encryptor_;
   bool initialized_;
 
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(TransportAudioSender);
 };
 

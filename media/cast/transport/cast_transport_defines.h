@@ -72,13 +72,10 @@ typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
 typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 
-
 class FrameIdWrapHelper {
  public:
   FrameIdWrapHelper()
-      : first_(true),
-        frame_id_wrap_count_(0),
-        range_(kLowRange) {}
+      : first_(true), frame_id_wrap_count_(0), range_(kLowRange) {}
 
   uint32 MapTo32bitsFrameId(const uint8 over_the_wire_frame_id) {
     if (first_) {
@@ -122,11 +119,7 @@ class FrameIdWrapHelper {
   }
 
  private:
-  enum Range {
-    kLowRange,
-    kMiddleRange,
-    kHighRange,
-  };
+  enum Range { kLowRange, kMiddleRange, kHighRange, };
 
   static const uint8 kLowRangeThreshold = 0x0f;
   static const uint8 kHighRangeThreshold = 0xf0;
@@ -135,6 +128,8 @@ class FrameIdWrapHelper {
   bool first_;
   uint32 frame_id_wrap_count_;
   Range range_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameIdWrapHelper);
 };
 
 inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {

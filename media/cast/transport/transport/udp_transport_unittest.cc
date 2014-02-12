@@ -23,8 +23,7 @@ namespace transport {
 class MockPacketReceiver {
  public:
   MockPacketReceiver(const base::Closure& callback)
-      : packet_callback_(callback) {
-  }
+      : packet_callback_(callback) {}
 
   void ReceivedPacket(scoped_ptr<Packet> packet) {
     packet_ = std::string(packet->size(), '\0');
@@ -84,12 +83,10 @@ TEST(UdpTransport, SendAndReceive) {
 
   send_transport.SendPacket(packet);
   run_loop.Run();
-  EXPECT_TRUE(std::equal(packet.begin(),
-                         packet.end(),
-                         receiver1.packet().begin()));
-  EXPECT_TRUE(std::equal(packet.begin(),
-                         packet.end(),
-                         receiver2.packet().begin()));
+  EXPECT_TRUE(
+      std::equal(packet.begin(), packet.end(), receiver1.packet().begin()));
+  EXPECT_TRUE(
+      std::equal(packet.begin(), packet.end(), receiver2.packet().begin()));
 }
 
 }  // namespace transport

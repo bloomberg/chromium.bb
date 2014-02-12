@@ -25,7 +25,7 @@ CastTransportConfig::CastTransportConfig()
       audio_codec(kOpus),
       audio_frequency(0),
       audio_channels(0),
-      aes_key (""),
+      aes_key(""),
       aes_iv_mask("") {}
 
 CastTransportConfig::~CastTransportConfig() {}
@@ -42,10 +42,9 @@ EncodedAudioFrame::EncodedAudioFrame()
     : codec(kOpus), frame_id(0), rtp_timestamp(0) {}
 EncodedAudioFrame::~EncodedAudioFrame() {}
 
-RtcpSenderFrameLogMessage::RtcpSenderFrameLogMessage ()
-    : frame_status(kRtcpSenderFrameStatusUnknown),
-      rtp_timestamp(0) {}
-RtcpSenderFrameLogMessage::~RtcpSenderFrameLogMessage () {}
+RtcpSenderFrameLogMessage::RtcpSenderFrameLogMessage()
+    : frame_status(kRtcpSenderFrameStatusUnknown), rtp_timestamp(0) {}
+RtcpSenderFrameLogMessage::~RtcpSenderFrameLogMessage() {}
 
 RtcpSenderInfo::RtcpSenderInfo()
     : ntp_seconds(0),
@@ -67,8 +66,7 @@ RtcpReportBlock::RtcpReportBlock()
 RtcpReportBlock::~RtcpReportBlock() {}
 
 RtcpDlrrReportBlock::RtcpDlrrReportBlock()
-    : last_rr(0),
-      delay_since_last_rr(0) {}
+    : last_rr(0), delay_since_last_rr(0) {}
 RtcpDlrrReportBlock::~RtcpDlrrReportBlock() {}
 
 }  // namespace transport
