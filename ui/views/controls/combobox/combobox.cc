@@ -730,10 +730,12 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   gfx::Rect lb = GetLocalBounds();
   gfx::Point menu_position(lb.origin());
 
-  // Inset the menu's requested position so the border of the menu lines up
-  // with the border of the combobox.
-  menu_position.set_x(menu_position.x() + kMenuBorderWidthLeft);
-  menu_position.set_y(menu_position.y() + kMenuBorderWidthTop);
+  if (style_ == STYLE_NORMAL) {
+    // Inset the menu's requested position so the border of the menu lines up
+    // with the border of the combobox.
+    menu_position.set_x(menu_position.x() + kMenuBorderWidthLeft);
+    menu_position.set_y(menu_position.y() + kMenuBorderWidthTop);
+  }
   lb.set_width(lb.width() - (kMenuBorderWidthLeft + kMenuBorderWidthRight));
 
   View::ConvertPointToScreen(this, &menu_position);
@@ -748,8 +750,10 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     arrow_button_->SetState(Button::STATE_PRESSED);
   }
   dropdown_open_ = true;
+  MenuItemView::AnchorPosition anchor_position =
+      style_ == STYLE_ACTION ? MenuItemView::TOPRIGHT : MenuItemView::TOPLEFT;
   if (dropdown_list_menu_runner_->RunMenuAt(GetWidget(), NULL, bounds,
-                                            MenuItemView::TOPLEFT, source_type,
+                                            anchor_position, source_type,
                                             MenuRunner::COMBOBOX) ==
       MenuRunner::MENU_DELETED) {
     return;
