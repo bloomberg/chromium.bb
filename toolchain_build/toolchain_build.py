@@ -168,18 +168,31 @@ def CollectSources():
   return sources
 
 
-# Canonical tuples we use for hosts other than Linux/x86.
+# Canonical tuples we use for hosts.
 WINDOWS_HOST_TUPLE = 'i686-w64-mingw32'
 MAC_HOST_TUPLE = 'x86_64-apple-darwin'
 ARM_HOST_TUPLE = 'arm-linux-gnueabihf'
+LINUX_X86_32_TUPLE = 'i686-linux'
+LINUX_X86_64_TUPLE = 'x86_64-linux'
 
 # Map of native host tuple to extra tuples that it cross-builds for.
 EXTRA_HOSTS_MAP = {
-    'i686-linux': [
+    LINUX_X86_64_TUPLE: [
+        LINUX_X86_32_TUPLE,
         ARM_HOST_TUPLE,
         WINDOWS_HOST_TUPLE,
         ],
     }
+
+# Map of native host tuple to host tuples that are "native enough".
+# For these hosts, we will do a native-style build even though it's
+# not the native tuple, just passing some extra compiler flags.
+NATIVE_ENOUGH_MAP = {
+    LINUX_X86_64_TUPLE: {
+        LINUX_X86_32_TUPLE: ['-m32'],
+        },
+    }
+
 
 # The list of targets to build toolchains for.
 TARGET_LIST = ['arm', 'i686']
@@ -210,17 +223,18 @@ REMOVE_INFO_DIR = command.Remove(command.path.join('%(output)s',
 def ConfigureHostArch(host):
   configure_args = []
 
-  native, extra_cc_args = NativeTuple()
-  is_cross = host != native
+  is_cross = CrossCompiling(host)
 
   if is_cross:
     extra_cc_args = []
     configure_args.append('--host=' + host)
-  elif extra_cc_args:
-    # The host we've chosen is "native enough", such as x86-32 on x86-64.
-    # But it's not what config.guess will yield, so we need to supply
-    # a --build switch to ensure things build correctly.
-    configure_args.append('--build=' + host)
+  else:
+    extra_cc_args = NATIVE_ENOUGH_MAP.get(NATIVE_TUPLE, {}).get(host, [])
+    if extra_cc_args:
+      # The host we've chosen is "native enough", such as x86-32 on x86-64.
+      # But it's not what config.guess will yield, so we need to supply
+      # a --build switch to ensure things build correctly.
+      configure_args.append('--build=' + host)
 
   extra_cxx_args = list(extra_cc_args)
   if fnmatch.fnmatch(host, '*-linux*'):
@@ -293,8 +307,7 @@ def MakeCommand(host, extra_args=[]):
 # Return the 'make check' command to run.
 # When cross-compiling, don't try to run test suites.
 def MakeCheckCommand(host):
-  native, _ = NativeTuple()
-  if host != native:
+  if CrossCompiling(host):
     return ['true']
   return MAKE_CHECK_CMD
 
@@ -550,11 +563,10 @@ def ConfigureCommand(source_component):
 # When doing a Canadian cross, we need native-hosted cross components
 # to do the GCC build.
 def GccDeps(host, target):
-  native, _ = NativeTuple()
   components = ['binutils_' + target]
-  if host != native:
+  if CrossCompiling(host):
     components.append('gcc_' + target)
-    host = native
+    host = NATIVE_TUPLE
   return [ForHost(component, host) for component in components]
 
 
@@ -703,11 +715,8 @@ def HostTools(host, target):
 
   # TODO(mcgrathr): The ARM cross environment does not supply a termcap
   # library, so it cannot build GDB.
-  if host.startswith('arm'):
-    native, _ = NativeTuple()
-    is_cross = host != native
-    if is_cross:
-      del tools[H('gdb')]
+  if host.startswith('arm') and CrossCompiling(host):
+    del tools[H('gdb')]
 
   return tools
 
@@ -831,19 +840,31 @@ def NativeTuple():
   if sys.platform.startswith('linux'):
     machine = platform.machine().lower()
     if machine.startswith('arm'):
-      return (ARM_HOST_TUPLE, [])
+      # TODO(mcgrathr): How to distinguish gnueabi vs gnueabihf?
+      return ARM_HOST_TUPLE
+    if fnmatch.fnmatch(machine, 'i?86*'):
+      return LINUX_X86_32_TUPLE
     if any(fnmatch.fnmatch(machine, pattern) for pattern in
-           ['x86_64*', 'amd64*', 'x64*', 'i?86*']):
-      # We build the tools for x86-32 hosts so they will run on either x86-32
-      # or x86-64 hosts (with the right compatibility libraries installed).
-      # So for an x86-64 host, we call x86-32 the "native" machine.
-      return ('i686-linux', ['-m32'])
+           ['x86_64*', 'amd64*', 'x64*']):
+      return LINUX_X86_64_TUPLE
     raise Exception('Machine %s not recognized' % machine)
   elif sys.platform.startswith('win'):
-    return (WINDOWS_HOST_TUPLE, [])
+    return WINDOWS_HOST_TUPLE
   elif sys.platform.startswith('darwin'):
-    return (MAC_HOST_TUPLE, [])
+    return MAC_HOST_TUPLE
   raise Exception('Platform %s not recognized' % sys.platform)
+
+# Compute it once.
+NATIVE_TUPLE = NativeTuple()
+
+
+# For our purposes, "cross-compiling" means not literally that we are
+# targetting a host that does not match NATIVE_TUPLE, but that we are
+# targetting a host whose binaries we cannot run locally.  So x86-32
+# on x86-64 does not count as cross-compiling.  See NATIVE_ENOUGH_MAP, above.
+def CrossCompiling(host):
+  return (host != NATIVE_TUPLE and
+          host not in NATIVE_ENOUGH_MAP.get(NATIVE_TUPLE, {}))
 
 
 def HostIsWindows(host):
@@ -863,7 +884,7 @@ def HostIsMac(host):
 # official builder bot.  That will serve as a test of the host tools
 # on the other host platforms.
 def BuildTargetLibsOn(host):
-  return host == 'i686-linux'
+  return host == LINUX_X86_64_TUPLE
 
 
 def CollectPackagesForHost(host, targets):
@@ -878,10 +899,9 @@ def CollectPackagesForHost(host, targets):
 def CollectPackages(targets):
   packages = CollectSources()
 
-  native, _ = NativeTuple()
-  packages.update(CollectPackagesForHost(native, targets))
+  packages.update(CollectPackagesForHost(NATIVE_TUPLE, targets))
 
-  for host in EXTRA_HOSTS_MAP.get(native, []):
+  for host in EXTRA_HOSTS_MAP.get(NATIVE_TUPLE, []):
     packages.update(CollectPackagesForHost(host, targets))
 
   return packages
