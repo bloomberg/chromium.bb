@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
@@ -195,6 +196,16 @@ std::string SeverityToString(logging::LogSeverity severity) {
   }
 }
 
+// Appends {'key': key, 'value': value} dictionary to the |list|.
+void AppendKeyValue(base::ListValue* list,
+                    const std::string& key,
+                    const std::string& value) {
+  base::DictionaryValue* dict = new base::DictionaryValue;
+  dict->SetString("key", key);
+  dict->SetString("value", value);
+  list->Append(dict);
+}
+
 // Class to handle messages from chrome://drive-internals.
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
@@ -242,6 +253,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateCacheContentsSection(
       drive::DebugInfoCollector* debug_info_collector);
   void UpdateEventLogSection();
+  void UpdatePathConfigurationsSection();
 
   // Called when GetGCacheContents() is complete.
   void OnGetGCacheContents(base::ListValue* gcache_contents,
@@ -436,6 +448,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateGCacheContentsSection();
   UpdateCacheContentsSection(debug_info_collector);
   UpdateLocalStorageUsageSection();
+  UpdatePathConfigurationsSection();
 
   // When the drive-internals page is reloaded by the reload key, the page
   // content is recreated, but this WebUI object is not (instead, OnPageLoaded
@@ -459,10 +472,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
     std::string value = "(not set)";
     if (CommandLine::ForCurrentProcess()->HasSwitch(key))
       value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(key);
-    base::DictionaryValue* flag = new base::DictionaryValue;
-    flag->SetString("key", key);
-    flag->SetString("value", value.empty() ? "(set)" : value);
-    flags.Append(flag);
+    AppendKeyValue(&flags, key, value.empty() ? "(set)" : value);
   }
 
   web_ui()->CallJavascriptFunction("updateDriveRelatedFlags", flags);
@@ -486,10 +496,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
     // As of now, all preferences are boolean.
     const std::string value =
         (pref_service->GetBoolean(key.c_str()) ? "true" : "false");
-    base::DictionaryValue* preference = new base::DictionaryValue;
-    preference->SetString("key", key);
-    preference->SetString("value", value);
-    preferences.Append(preference);
+    AppendKeyValue(&preferences, key, value);
   }
 
   web_ui()->CallJavascriptFunction("updateDriveRelatedPreferences",
@@ -775,6 +782,34 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
   }
   if (!list.empty())
     web_ui()->CallJavascriptFunction("updateEventLog", list);
+}
+
+void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Profile* const profile = Profile::FromWebUI(web_ui());
+
+  base::ListValue paths;
+
+  AppendKeyValue(
+      &paths, "Downloads",
+      file_manager::util::GetDownloadsFolderForProfile(profile).AsUTF8Unsafe());
+  AppendKeyValue(
+      &paths, "Drive",
+      drive::util::GetDriveMountPointPath(profile).AsUTF8Unsafe());
+
+  const char* kPathPreferences[] = {
+    prefs::kSelectFileLastDirectory,
+    prefs::kSaveFileDefaultDirectory,
+    prefs::kDownloadDefaultDirectory,
+  };
+  for (size_t i = 0; i < arraysize(kPathPreferences); ++i) {
+    const char* const key = kPathPreferences[i];
+    AppendKeyValue(&paths, key,
+                   profile->GetPrefs()->GetFilePath(key).AsUTF8Unsafe());
+  }
+
+  web_ui()->CallJavascriptFunction("updatePathConfigurations", paths);
 }
 
 void DriveInternalsWebUIHandler::OnGetGCacheContents(

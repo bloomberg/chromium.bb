@@ -45,6 +45,15 @@ function updateConnectionStatus(connStatus) {
 }
 
 /**
+ * Updates the Path Configurations section.
+ * @param {Array} paths List of dictionaries describing paths.
+ */
+function updatePathConfigurations(paths) {
+  var ul = $('path-configurations');
+  updateKeyValueList(ul, paths);
+}
+
+/**
  * Updates the GCache Contents section.
  * @param {Array} gcacheContents List of dictionaries describing metadata
  * of files and directories under the GCache directory.
