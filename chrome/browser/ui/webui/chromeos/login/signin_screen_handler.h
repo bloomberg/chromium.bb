@@ -324,6 +324,9 @@ class SigninScreenHandler
                            const std::string& password,
                            bool using_saml);
   void HandleGetUsers();
+  void HandleUsingSAMLAPI();
+  void HandleScrapedPasswordCount(int password_count);
+  void HandleScrapedPasswordVerificationFailed();
   void HandleAuthenticateUser(const std::string& username,
                               const std::string& password);
   void HandleLaunchDemoUser();
@@ -427,6 +430,10 @@ class SigninScreenHandler
   // Shows signin screen for |email|.
   void OnShowAddUser(const std::string& email);
 
+  // Updates the member variable and UMA histogram indicating whether the
+  // principals API was used during SAML login.
+  void SetSAMLPrincipalsAPIUsed(bool api_used);
+
   GaiaScreenHandler::FrameState FrameState() const;
   net::Error FrameError() const;
 
@@ -476,6 +483,10 @@ class SigninScreenHandler
   std::string email_;
   // Emails of the users, whose passwords have recently been changed.
   std::set<std::string> password_changed_for_;
+
+  // If the user authenticated via SAML, this indicates whether the principals
+  // API was used.
+  bool using_saml_api_;
 
   // Test credentials.
   std::string test_user_;

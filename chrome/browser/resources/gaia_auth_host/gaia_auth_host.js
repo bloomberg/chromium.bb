@@ -363,7 +363,8 @@ cr.define('cr.login', function() {
 
       if (msg.method == 'retrieveAuthenticatedUserEmail') {
         if (this.retrieveAuthenticatedUserEmailCallback_) {
-          this.retrieveAuthenticatedUserEmailCallback_(msg.attemptToken);
+          this.retrieveAuthenticatedUserEmailCallback_(msg.attemptToken,
+                                                       msg.apiUsed);
         } else {
           console.error(
               'GaiaAuthHost: Invalid retrieveAuthenticatedUserEmailCallback_.');
@@ -373,7 +374,7 @@ cr.define('cr.login', function() {
 
       if (msg.method == 'confirmPassword') {
         if (this.confirmPasswordCallback_)
-          this.confirmPasswordCallback_();
+          this.confirmPasswordCallback_(msg.passwordCount);
         else
           console.error('GaiaAuthHost: Invalid confirmPasswordCallback_.');
         return;

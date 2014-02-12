@@ -1559,6 +1559,28 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.SAML.APIUsed" enum="BooleanUsage">
+  <summary>
+    Whether a Chrome OS login via SAML used the principals API. This is recorded
+    during login on Chrome OS if SAML is being used for authentication.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SAML.Scraping.PasswordCount">
+  <summary>
+    The number of passwords that were scraped during a Chrome OS login via SAML.
+    This is set only when the principals API is not used.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SAML.Scraping.VerificationResult"
+    enum="BooleanSuccess">
+  <summary>
+    Whether one of the scraped passwords was successfully verified as the user's
+    password. This is set only when the principals API is not used.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.discard_download" units="ms">
   <summary>
     The length of time between a dangerous download appearing on the downloads

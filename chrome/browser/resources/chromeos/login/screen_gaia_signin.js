@@ -373,29 +373,46 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host needs the authenticated user's e-mail to be
-     * retrieved.
+     * Invoked when the user has successfully authenticated via SAML and the
+     * auth host needs to retrieve the user's e-mail.
      * @param {number} attemptToken Opaque token to be passed to
      *     setAuthenticatedUserEmail along with the e-mail address.
+     * @param {boolean} apiUsed Whether the principals API was used during
+     *     authentication.
      * @private
      */
-    onRetrieveAuthenticatedUserEmail_: function(attemptToken) {
+    onRetrieveAuthenticatedUserEmail_: function(attemptToken, apiUsed) {
+      if (apiUsed) {
+        // If the principals API was used, report this to the C++ backend so
+        // that statistics can be kept. If password scraping was used instead,
+        // there is no need to inform the C++ backend at this point: Either
+        // onAuthNoPassword_ or onAuthConfirmPassword_ will be called in a
+        // moment, both of which imply to the backend that the API was not used.
+        chrome.send('usingSAMLAPI');
+      }
       chrome.send('retrieveAuthenticatedUserEmail', [attemptToken]);
     },
 
     /**
-     * Invoked when the auth host needs the user to confirm password.
+     * Invoked when the user has successfully authenticated via SAML, the
+     * principals API was not used and the auth host needs the user to confirm
+     * the scraped password.
+     * @param {number} passwordCount The number of passwords that were scraped.
      * @private
      */
-    onAuthConfirmPassword_: function() {
+    onAuthConfirmPassword_: function(passwordCount) {
       this.loading = true;
       Oobe.getInstance().headerHidden = false;
 
-      if (this.samlPasswordConfirmAttempt_ <= 1) {
+      if (this.samlPasswordConfirmAttempt_ == 0)
+        chrome.send('scrapedPasswordCount', [passwordCount]);
+
+      if (this.samlPasswordConfirmAttempt_ < 2) {
         login.ConfirmPasswordScreen.show(
             this.samlPasswordConfirmAttempt_,
             this.onConfirmPasswordCollected_.bind(this));
       } else {
+        chrome.send('scrapedPasswordVerificationFailed');
         this.showFatalAuthError();
       }
     },
@@ -413,11 +430,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Inovked when the auth flow completes but no password is available.
-     * @param {string} email The authenticated user email.
+     * Inovked when the user has successfully authenticated via SAML, the
+     * principals API was not used and no passwords could be scraped.
+     * @param {string} email The authenticated user's e-mail.
      */
     onAuthNoPassword_: function(email) {
       this.showFatalAuthError();
+      chrome.send('scrapedPasswordCount', [0]);
     },
 
     /**

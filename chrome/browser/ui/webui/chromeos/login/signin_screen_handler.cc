@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -223,6 +225,10 @@ static bool SetUserInputMethodImpl(
   return true;
 }
 
+void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.Scraping.VerificationResult", success);
+}
+
 }  // namespace
 
 // LoginScreenContext implementation ------------------------------------------
@@ -264,6 +270,7 @@ SigninScreenHandler::SigninScreenHandler(
       dns_clear_task_running_(false),
       cookies_cleared_(false),
       network_state_informer_(network_state_informer),
+      using_saml_api_(false),
       test_expects_complete_login_(false),
       weak_factory_(this),
       webui_visible_(false),
@@ -699,6 +706,11 @@ gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
+  AddCallback("usingSAMLAPI", &SigninScreenHandler::HandleUsingSAMLAPI);
+  AddCallback("scrapedPasswordCount",
+              &SigninScreenHandler::HandleScrapedPasswordCount);
+  AddCallback("scrapedPasswordVerificationFailed",
+              &SigninScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
   AddCallback("completeLogin", &SigninScreenHandler::HandleCompleteLogin);
   AddCallback("completeAuthentication",
@@ -1027,11 +1039,32 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
          AllWhitelistedUsersPresent());
 }
 
+void SigninScreenHandler::HandleUsingSAMLAPI() {
+  SetSAMLPrincipalsAPIUsed(true);
+}
+
+void SigninScreenHandler::HandleScrapedPasswordCount(int password_count) {
+  SetSAMLPrincipalsAPIUsed(false);
+  // Use a histogram that has 11 buckets, one for each of the values in [0, 9]
+  // and an overflow bucket at the end.
+  UMA_HISTOGRAM_ENUMERATION(
+      "ChromeOS.SAML.Scraping.PasswordCount", std::min(password_count, 10), 11);
+  if (password_count == 0)
+    HandleScrapedPasswordVerificationFailed();
+}
+
+void SigninScreenHandler::HandleScrapedPasswordVerificationFailed() {
+  RecordSAMLScrapingVerificationResultInHistogram(false);
+}
+
 void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
                                               const std::string& password,
                                               bool using_saml) {
   if (!delegate_)
     return;
+
+  if (using_saml && !using_saml_api_)
+    RecordSAMLScrapingVerificationResultInHistogram(true);
 
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(sanitized_email);
@@ -1683,6 +1716,11 @@ void SigninScreenHandler::OnShowAddUser(const std::string& email) {
         &SigninScreenHandler::ShowSigninScreenIfReady,
         weak_factory_.GetWeakPtr()));
   }
+}
+
+void SigninScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
+  using_saml_api_ = api_used;
+  UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
 }
 
 GaiaScreenHandler::FrameState SigninScreenHandler::FrameState() const {

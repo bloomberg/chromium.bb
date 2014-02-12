@@ -282,12 +282,15 @@ Authenticator.prototype = {
       return;
     }
 
+    var apiUsed = !!this.password_;
+
     // Retrieve the e-mail address of the user who just authenticated from GAIA.
     window.parent.postMessage({method: 'retrieveAuthenticatedUserEmail',
-                               attemptToken: this.attemptToken_},
+                               attemptToken: this.attemptToken_,
+                               apiUsed: apiUsed},
                               this.parentPage_);
 
-    if (!this.password_) {
+    if (!apiUsed) {
       this.samlSupportChannel_.sendWithCallback(
           {name: 'getScrapedPasswords'},
           function(passwords) {
@@ -296,9 +299,10 @@ Authenticator.prototype = {
                   {method: 'noPassword', email: this.email_},
                   this.parentPage_);
             } else {
-              window.parent.postMessage(
-                  {method: 'confirmPassword', email: this.email_},
-                  this.parentPage_);
+              window.parent.postMessage({method: 'confirmPassword',
+                                         email: this.email_,
+                                         passwordCount: passwords.length},
+                                        this.parentPage_);
             }
           }.bind(this));
     }
