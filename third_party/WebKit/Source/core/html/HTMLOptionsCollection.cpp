@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2011, 2012 Apple Computer, Inc.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,6 +36,32 @@ HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode* select)
 {
     ASSERT(select->hasTagName(HTMLNames::selectTag));
     ScriptWrappable::init(this);
+}
+
+void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
+{
+    // As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
+    // The supported property names consist of the non-empty values of all the id and name attributes of all the elements
+    // represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its
+    // name if it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
+    HashSet<AtomicString> existingNames;
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
+        Element* element = item(i);
+        ASSERT(element);
+        const AtomicString& idAttribute = element->getIdAttribute();
+        if (!idAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
+            if (addResult.isNewEntry)
+                names.append(idAttribute);
+        }
+        const AtomicString& nameAttribute = element->getNameAttribute();
+        if (!nameAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
+            if (addResult.isNewEntry)
+                names.append(nameAttribute);
+        }
+    }
 }
 
 PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode* select, CollectionType)
@@ -96,7 +123,7 @@ void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exception
     toHTMLSelectElement(ownerNode())->setLength(length, exceptionState);
 }
 
-void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
     Vector<RefPtr<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -110,6 +137,7 @@ void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool&
         return;
     }
 
+    // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
     returnValue0Enabled = true;
     returnValue0 = NamedNodesCollection::create(namedItems);
 }

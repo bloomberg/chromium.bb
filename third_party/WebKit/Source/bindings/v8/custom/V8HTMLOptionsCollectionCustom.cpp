@@ -44,32 +44,6 @@
 
 namespace WebCore {
 
-template<typename CallbackInfo>
-static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const CallbackInfo& info)
-{
-    Vector<RefPtr<Element> > namedItems;
-    collection->namedItems(name, namedItems);
-
-    if (!namedItems.size()) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-
-    if (namedItems.size() == 1) {
-        v8SetReturnValueFast(info, namedItems.at(0).release(), collection);
-        return;
-    }
-
-    v8SetReturnValueFast(info, NamedNodesCollection::create(namedItems), collection);
-}
-
-void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
-    getNamedItems(imp, name, info);
-}
-
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());

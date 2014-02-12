@@ -45,11 +45,13 @@ public:
     void setSelectedIndex(int);
 
     void setLength(unsigned, ExceptionState&);
-    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Element>&);
+    void namedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Element>&);
     bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
 
 private:
     explicit HTMLOptionsCollection(ContainerNode*);
+
+    virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 };
 
 } //namespace

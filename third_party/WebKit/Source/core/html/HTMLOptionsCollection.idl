@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
- * Copyright (C) 2013 Samsung Electronics. All rights reserved.
+ * Copyright (C) 2013, 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,9 +27,9 @@
     [Custom=Setter, RaisesException=Setter] attribute unsigned long length;
     [ImplementedAs=item] getter Node (unsigned long index);
     [RaisesException, StrictTypeChecking] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
-    [NotEnumerable] getter (NodeList or Element) (DOMString name);
 
-    [Custom] Element namedItem([Default=Undefined] optional DOMString name);
+    // FIXME: The spec and firefox return an Element (the first matching Element).
+    [ImplementedAs=namedGetter] getter (NodeList or Element) namedItem(DOMString name);
 
     [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, optional unsigned long index);
     void remove(unsigned long index);
