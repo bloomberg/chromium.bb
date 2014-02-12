@@ -655,16 +655,18 @@ RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::com
         if (!layer->hasCompositedLayerMapping()) {
             update = AllocateOwnCompositedLayerMapping;
         }
-    } else if (layer->hasCompositedLayerMapping()) {
-        update = RemoveOwnCompositedLayerMapping;
-    }
-    if (layerSquashingEnabled()) {
-        if (requiresSquashing(layer->compositingReasons())) {
-            // We can't compute at this time whether the squashing layer update is a no-op,
-            // since that requires walking the render layer tree.
-            update = AddToSquashingLayer;
-        } else if (layer->groupedMapping()) {
-            update = RemoveFromSquashingLayer;
+    } else {
+        if (layer->hasCompositedLayerMapping())
+            update = RemoveOwnCompositedLayerMapping;
+
+        if (layerSquashingEnabled()) {
+            if (requiresSquashing(layer->compositingReasons())) {
+                // We can't compute at this time whether the squashing layer update is a no-op,
+                // since that requires walking the render layer tree.
+                update = AddToSquashingLayer;
+            } else if (layer->groupedMapping()) {
+                update = RemoveFromSquashingLayer;
+            }
         }
     }
     return update;
