@@ -232,11 +232,14 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         FloatRect rect(left, top, boxWidth - left - right, boxHeight - top - bottom);
         FloatRect logicalRect = physicalRectToLogical(rect, logicalBoxSize.height(), writingMode);
 
-        shape = createInsetShape(FloatRoundedRect(logicalRect,
-            inset.topLeftRadius().floatSize(),
-            inset.topRightRadius().floatSize(),
-            inset.bottomLeftRadius().floatSize(),
-            inset.bottomRightRadius().floatSize()));
+        FloatSize boxSize(boxWidth, boxHeight);
+        FloatRoundedRect::Radii cornerRadii(
+            floatSizeForLengthSize(inset.topLeftRadius(), boxSize),
+            floatSizeForLengthSize(inset.topRightRadius(), boxSize),
+            floatSizeForLengthSize(inset.bottomLeftRadius(), boxSize),
+            floatSizeForLengthSize(inset.bottomRightRadius(), boxSize));
+
+        shape = createInsetShape(FloatRoundedRect(logicalRect, cornerRadii));
         break;
     }
 

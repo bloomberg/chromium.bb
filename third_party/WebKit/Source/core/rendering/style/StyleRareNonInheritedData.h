@@ -45,6 +45,7 @@ namespace WebCore {
 
 class ContentData;
 class CSSAnimationDataList;
+class LengthSize;
 class ShadowList;
 class StyleDeprecatedFlexibleBoxData;
 class StyleFilterData;
@@ -56,8 +57,6 @@ class StyleMultiColData;
 class StyleReflection;
 class StyleResolver;
 class StyleTransformData;
-
-struct LengthSize;
 
 // Page size type.
 // StyleRareNonInheritedData::m_pageSize is meaningful only when

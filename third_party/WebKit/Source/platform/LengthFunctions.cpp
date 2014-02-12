@@ -25,7 +25,7 @@
 #include "platform/LengthFunctions.h"
 
 #include "platform/LayoutUnit.h"
-#include "platform/Length.h"
+#include "platform/LengthSize.h"
 
 namespace WebCore {
 
@@ -124,5 +124,9 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
     return 0;
 }
 
+FloatSize floatSizeForLengthSize(const LengthSize& lengthSize, const FloatSize& boxSize)
+{
+    return FloatSize(floatValueForLength(lengthSize.width(), boxSize.width()), floatValueForLength(lengthSize.height(), boxSize.height()));
+}
 
 } // namespace WebCore
