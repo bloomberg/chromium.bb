@@ -219,12 +219,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
         bool success,
         ModelTypeSet restored_types) = 0;
 
-    // We are no longer permitted to communicate with the server. Sync should
-    // be disabled and state cleaned up at once.  This can happen for a number
-    // of reasons, e.g. swapping from a test instance to production, or a
-    // global stop syncing operation has wiped the store.
-    virtual void OnStopSyncingPermanently() = 0;
-
     virtual void OnActionableError(
         const SyncProtocolError& sync_protocol_error) = 0;
 

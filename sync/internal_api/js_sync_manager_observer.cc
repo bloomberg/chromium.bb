@@ -78,13 +78,6 @@ void JsSyncManagerObserver::OnInitializationComplete(
                 JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnStopSyncingPermanently() {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  HandleJsEvent(FROM_HERE, "onStopSyncingPermanently", JsEventDetails());
-}
-
 void JsSyncManagerObserver::HandleJsEvent(
     const tracked_objects::Location& from_here,
     const std::string& name, const JsEventDetails& details) {

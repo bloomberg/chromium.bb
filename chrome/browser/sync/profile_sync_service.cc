@@ -1222,7 +1222,7 @@ void ProfileSyncService::OnConnectionStatusChange(
   }
 }
 
-void ProfileSyncService::OnStopSyncingPermanently() {
+void ProfileSyncService::StopSyncingPermanently() {
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
 }
@@ -1336,7 +1336,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
       if (setup_in_progress_) {
-        OnStopSyncingPermanently();
+        StopSyncingPermanently();
         expect_sync_configuration_aborted_ = true;
       }
       // Trigger an unrecoverable error to stop syncing.
@@ -1346,7 +1346,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
                                    ERROR_REASON_ACTIONABLE_ERROR);
       break;
     case syncer::DISABLE_SYNC_ON_CLIENT:
-      OnStopSyncingPermanently();
+      StopSyncingPermanently();
 #if !defined(OS_CHROMEOS)
       // On desktop Chrome, sign out the user after a dashboard clear.
       // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.

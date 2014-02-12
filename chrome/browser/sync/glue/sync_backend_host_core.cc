@@ -261,15 +261,6 @@ void SyncBackendHostCore::OnBootstrapTokenUpdated(
              type);
 }
 
-void SyncBackendHostCore::OnStopSyncingPermanently() {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHostImpl::HandleStopSyncingPermanentlyOnFrontendLoop);
-}
-
 void SyncBackendHostCore::OnEncryptedTypesChanged(
     syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {

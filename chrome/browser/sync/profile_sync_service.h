@@ -362,6 +362,9 @@ class ProfileSyncService
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();
 
+  // Disables sync for the user and prevents it from starting on next restart.
+  virtual void StopSyncingPermanently();
+
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
@@ -372,7 +375,6 @@ class ProfileSyncService
   virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
-  virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnPassphraseRequired(
       syncer::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;

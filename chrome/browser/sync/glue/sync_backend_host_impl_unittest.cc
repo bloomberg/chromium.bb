@@ -72,7 +72,6 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD1(OnConnectionStatusChange,
                void(syncer::ConnectionStatus status));
-  MOCK_METHOD0(OnStopSyncingPermanently, void());
   MOCK_METHOD0(OnClearServerDataSucceeded, void());
   MOCK_METHOD0(OnClearServerDataFailed, void());
   MOCK_METHOD2(OnPassphraseRequired,

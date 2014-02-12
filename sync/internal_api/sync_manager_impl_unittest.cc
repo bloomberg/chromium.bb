@@ -645,7 +645,6 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                     bool,
                     syncer::ModelTypeSet));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
-  MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
   MOCK_METHOD1(OnActionableError,
                void(const SyncProtocolError&));  // NOLINT

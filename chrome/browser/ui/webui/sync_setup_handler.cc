@@ -640,13 +640,13 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 
   // Disable sync, but remain signed in if the user selected "Sync nothing" in
   // the advanced settings dialog. Note: In order to disable sync across
-  // restarts on Chrome OS, we must call OnStopSyncingPermanently(), which
+  // restarts on Chrome OS, we must call StopSyncingPermanently(), which
   // suppresses sync startup in addition to disabling it.
   if (configuration.sync_nothing) {
     ProfileSyncService::SyncEvent(
         ProfileSyncService::STOP_FROM_ADVANCED_DIALOG);
     CloseUI();
-    service->OnStopSyncingPermanently();
+    service->StopSyncingPermanently();
     service->SetSetupInProgress(false);
     return;
   }
@@ -806,11 +806,11 @@ void SyncSetupHandler::CloseSyncSetup() {
       // If the user clicked "Cancel" while setting up sync, disable sync
       // because we don't want the sync backend to remain in the initialized
       // state. Note: In order to disable sync across restarts on Chrome OS, we
-      // must call OnStopSyncingPermanently(), which suppresses sync startup in
+      // must call StopSyncingPermanently(), which suppresses sync startup in
       // addition to disabling it.
       if (sync_service) {
         DVLOG(1) << "Sync setup aborted by user action";
-        sync_service->OnStopSyncingPermanently();
+        sync_service->StopSyncingPermanently();
 #if !defined(OS_CHROMEOS)
         // Sign out the user on desktop Chrome if they click cancel during
         // initial setup.

@@ -725,12 +725,6 @@ void SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop(
   cached_explicit_passphrase_time_ = explicit_passphrase_time;
 }
 
-void SyncBackendHostImpl::HandleStopSyncingPermanentlyOnFrontendLoop() {
-  if (!frontend_)
-    return;
-  frontend_->OnStopSyncingPermanently();
-}
-
 void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
     syncer::ConnectionStatus status) {
   if (!frontend_)

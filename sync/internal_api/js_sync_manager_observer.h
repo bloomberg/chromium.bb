@@ -40,7 +40,6 @@ class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;
-  virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnActionableError(
       const SyncProtocolError& sync_protocol_error) OVERRIDE;
 

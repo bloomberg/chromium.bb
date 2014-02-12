@@ -57,10 +57,6 @@ class SyncFrontend {
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) = 0;
 
-  // We are no longer permitted to communicate with the server. Sync should
-  // be disabled and state cleaned up at once.
-  virtual void OnStopSyncingPermanently() = 0;
-
   // The syncer requires a passphrase to decrypt sensitive updates. This is
   // called when the first sensitive data type is setup by the user and anytime
   // the passphrase is changed by another synced client. |reason| denotes why

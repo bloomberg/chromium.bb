@@ -84,11 +84,6 @@ void DebugInfoEventListener::OnBootstrapTokenUpdated(
   CreateAndAddEvent(sync_pb::DebugEventInfo::KEYSTORE_TOKEN_UPDATED);
 }
 
-void DebugInfoEventListener::OnStopSyncingPermanently() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::STOP_SYNCING_PERMANENTLY);
-}
-
 void DebugInfoEventListener::OnEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {

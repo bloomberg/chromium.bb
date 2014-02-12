@@ -44,17 +44,6 @@ class JsSyncManagerObserverTest : public testing::Test {
   }
 };
 
-TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
-  InSequence dummy;
-
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onStopSyncingPermanently",
-                            HasDetails(JsEventDetails())));
-
-  js_sync_manager_observer_.OnStopSyncingPermanently();
-  PumpLoop();
-}
-
 TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
   base::DictionaryValue expected_details;
   syncer::ModelTypeSet restored_types;

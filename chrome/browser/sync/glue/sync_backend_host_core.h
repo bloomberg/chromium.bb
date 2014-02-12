@@ -99,7 +99,6 @@ class SyncBackendHostCore
       syncer::ModelTypeSet restored_types) OVERRIDE;
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
-  virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
 
