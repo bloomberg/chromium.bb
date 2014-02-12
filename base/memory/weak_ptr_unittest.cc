@@ -44,7 +44,9 @@ struct Base {
 struct Derived : public Base {};
 
 struct TargetBase {};
-struct Target : public TargetBase, public SupportsWeakPtr<Target> {};
+struct Target : public TargetBase, public SupportsWeakPtr<Target> {
+  virtual ~Target() {}
+};
 struct DerivedTarget : public Target {};
 struct Arrow {
   WeakPtr<Target> target;
