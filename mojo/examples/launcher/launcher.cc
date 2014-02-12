@@ -211,7 +211,8 @@ class LauncherImpl : public ShellClient,
 
  private:
   // Overridden from ShellClient:
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+  virtual void AcceptConnection(const mojo::String& url,
+                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     launcher_client_.reset(
         MakeScopedHandle(LauncherClientHandle(handle.release().value())).Pass(),
         this);

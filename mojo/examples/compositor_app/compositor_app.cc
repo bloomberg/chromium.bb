@@ -44,7 +44,8 @@ class SampleApp : public ShellClient {
         new NativeViewportClientImpl(pipe.handle_to_self.Pass()));
   }
 
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+  virtual void AcceptConnection(const mojo::String& url,
+                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     NOTREACHED() << "SampleApp can't be connected to.";
   }
 

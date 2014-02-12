@@ -10,6 +10,7 @@
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/gles2/gles2_cpp.h"
+#include "mojo/public/shell/application.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 #include "mojo/public/utility/run_loop.h"
@@ -29,76 +30,57 @@
 namespace mojo {
 namespace examples {
 
-class SampleApp : public ShellClient {
+class SampleApp : public Application, public mojo::NativeViewportClient {
  public:
-  explicit SampleApp(ScopedShellHandle shell_handle)
-      : shell_(shell_handle.Pass(), this) {
-    InterfacePipe<NativeViewport, AnyInterface> pipe;
+  explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
+    InterfacePipe<NativeViewport, AnyInterface> viewport_pipe;
+    mojo::AllocationScope scope;
+    GetShell()->Connect("mojo:mojo_native_viewport_service",
+                        viewport_pipe.handle_to_peer.Pass());
+    viewport_.reset(viewport_pipe.handle_to_self.Pass(), this);
+    Rect::Builder rect;
+    Point::Builder point;
+    point.set_x(10);
+    point.set_y(10);
+    rect.set_position(point.Finish());
+    Size::Builder size;
+    size.set_width(800);
+    size.set_height(600);
+    rect.set_size(size.Finish());
+    viewport_->Create(rect.Finish());
+    viewport_->Show();
 
-    AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service",
-                    pipe.handle_to_peer.Pass());
-
-    native_viewport_client_.reset(
-        new NativeViewportClientImpl(pipe.handle_to_self.Pass()));
+    MessagePipe gles2_pipe;
+    viewport_->CreateGLES2Context(gles2_pipe.handle1.Pass());
+    gles2_client_.reset(new GLES2ClientImpl(gles2_pipe.handle0.Pass()));
   }
 
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+  virtual ~SampleApp() {
+    // TODO(darin): Fix shutdown so we don't need to leak this.
+    MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
+  }
+
+  virtual void OnCreated() MOJO_OVERRIDE {
+  }
+
+  virtual void OnDestroyed() MOJO_OVERRIDE {
+    RunLoop::current()->Quit();
+  }
+
+  virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
+    gles2_client_->SetSize(bounds.size());
+  }
+
+  virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
+    if (!event.location().is_null()) {
+      gles2_client_->HandleInputEvent(event);
+      viewport_->AckEvent(event);
+    }
   }
 
  private:
-  class NativeViewportClientImpl : public mojo::NativeViewportClient {
-   public:
-    explicit NativeViewportClientImpl(
-        ScopedNativeViewportHandle viewport_handle)
-        : viewport_(viewport_handle.Pass(), this) {
-      AllocationScope scope;
-      Rect::Builder rect;
-      Point::Builder point;
-      point.set_x(10);
-      point.set_y(10);
-      rect.set_position(point.Finish());
-      Size::Builder size;
-      size.set_width(800);
-      size.set_height(600);
-      rect.set_size(size.Finish());
-      viewport_->Create(rect.Finish());
-      viewport_->Show();
-
-      MessagePipe pipe;
-      viewport_->CreateGLES2Context(pipe.handle1.Pass());
-      gles2_client_.reset(new GLES2ClientImpl(pipe.handle0.Pass()));
-    }
-
-    virtual ~NativeViewportClientImpl() {
-      // TODO(darin): Fix shutdown so we don't need to leak this.
-      MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
-    }
-
-    virtual void OnCreated() MOJO_OVERRIDE {
-    }
-
-    virtual void OnDestroyed() MOJO_OVERRIDE {
-      RunLoop::current()->Quit();
-    }
-
-    virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
-      gles2_client_->SetSize(bounds.size());
-    }
-
-    virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
-      if (!event.location().is_null()) {
-        gles2_client_->HandleInputEvent(event);
-        viewport_->AckEvent(event);
-      }
-    }
-
-   private:
-    scoped_ptr<GLES2ClientImpl> gles2_client_;
-    RemotePtr<NativeViewport> viewport_;
-  };
-  mojo::RemotePtr<Shell> shell_;
-  scoped_ptr<NativeViewportClientImpl> native_viewport_client_;
+  scoped_ptr<GLES2ClientImpl> gles2_client_;
+  RemotePtr<NativeViewport> viewport_;
 };
 
 }  // namespace examples
@@ -110,9 +92,7 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
   mojo::RunLoop loop;
   mojo::GLES2Initializer gles2;
 
-  mojo::examples::SampleApp app(
-      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
-
+  mojo::examples::SampleApp app(shell_handle);
   loop.Run();
   return MOJO_RESULT_OK;
 }

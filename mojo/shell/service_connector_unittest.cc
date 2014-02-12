@@ -5,7 +5,7 @@
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
-#include "mojo/public/shell/service.h"
+#include "mojo/public/shell/application.h"
 #include "mojo/public/utility/run_loop.h"
 #include "mojo/shell/service_connector.h"
 #include "mojom/shell.h"
@@ -98,8 +98,9 @@ class ServiceConnectorTest : public testing::Test,
 
   virtual void Load(const GURL& url,
                     ScopedShellHandle shell_handle) OVERRIDE {
-    test_app_.reset(new ServiceFactory<TestServiceImpl, TestContext>(
-        shell_handle.Pass(), &context_));
+    test_app_.reset(new Application(shell_handle.Pass()));
+    test_app_->AddServiceFactory(
+        new ServiceFactory<TestServiceImpl, TestContext>(&context_));
   }
 
   bool HasFactoryForTestURL() {
@@ -111,7 +112,7 @@ class ServiceConnectorTest : public testing::Test,
   mojo::Environment env_;
   mojo::RunLoop loop_;
   TestContext context_;
-  scoped_ptr<ServiceFactory<TestServiceImpl, TestContext> > test_app_;
+  scoped_ptr<Application> test_app_;
   scoped_ptr<TestClientImpl> test_client_;
   scoped_ptr<ServiceConnector> service_connector_;
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectorTest);

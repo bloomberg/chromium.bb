@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/services/native_viewport/native_viewport_service.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/shell/service.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojo/services/native_viewport/native_viewport.h"
-#include "mojo/services/native_viewport/native_viewport_export.h"
 #include "mojom/native_viewport.h"
 #include "mojom/shell.h"
 #include "ui/events/event.h"
@@ -185,12 +185,14 @@ class NativeViewportImpl
 #if defined(OS_ANDROID)
 
 // Android will call this.
-MOJO_NATIVE_VIEWPORT_EXPORT mojo::ServiceFactoryBase*
+MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
                                 mojo::ScopedShellHandle shell_handle) {
-  return new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
-                                  mojo::shell::Context>(shell_handle.Pass(),
-                                                        context);
+  mojo::Application* app = new mojo::Application(shell_handle.Pass());
+  app->AddServiceFactory(
+    new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
+                             mojo::shell::Context>(context));
+  return app;
 }
 
 #else
@@ -198,12 +200,11 @@ MOJO_NATIVE_VIEWPORT_EXPORT mojo::ServiceFactoryBase*
 extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
     const MojoHandle shell_handle) {
   base::MessageLoopForUI loop;
-  mojo::ServiceFactory<mojo::services::NativeViewportImpl,
-                       mojo::shell::Context> app(
-      mojo::MakeScopedHandle(
-          mojo::InterfaceHandle<mojo::Shell>(shell_handle)).Pass());
-
-  base::MessageLoop::current()->Run();
+  mojo::Application app(shell_handle);
+  app.AddServiceFactory(
+    new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
+                             mojo::shell::Context>);
+  loop.Run();
   return MOJO_RESULT_OK;
 }
 

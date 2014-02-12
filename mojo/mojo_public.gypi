@@ -268,8 +268,10 @@
       'target_name': 'mojo_shell_bindings',
       'type': 'static_library',
       'sources': [
+        'public/shell/lib/application.cc',
         'public/shell/lib/shell.mojom',
         'public/shell/lib/service.cc',
+        'public/shell/application.h',
         'public/shell/service.h',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],

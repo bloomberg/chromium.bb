@@ -5,6 +5,7 @@
 #include "mojo/shell/service_connector.h"
 
 #include "base/logging.h"
+#include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojom/shell.h"
@@ -24,8 +25,10 @@ class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
   virtual ~ServiceFactory() {}
 
   void ConnectToClient(ScopedMessagePipeHandle handle) {
-    if (handle.is_valid())
-      shell_client_->AcceptConnection(handle.Pass());
+    if (handle.is_valid()) {
+      AllocationScope scope;
+      shell_client_->AcceptConnection(url_.spec(), handle.Pass());
+    }
   }
 
   virtual void Connect(const String& url,

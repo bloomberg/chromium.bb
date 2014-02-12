@@ -74,7 +74,8 @@ class ViewManagerImpl : public ViewManager,
   }
 
   // Overridden from ShellClient:
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+  virtual void AcceptConnection(const mojo::String& url,
+                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     client_.reset(
         MakeScopedHandle(
             ViewManagerClientHandle(handle.release().value())).Pass(),

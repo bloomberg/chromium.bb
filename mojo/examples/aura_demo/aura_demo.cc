@@ -133,7 +133,8 @@ class AuraDemo : public ShellClient {
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
   }
 
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+  virtual void AcceptConnection(const mojo::String& url,
+                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     NOTREACHED() << "AuraDemo can't be connected to.";
   }
 

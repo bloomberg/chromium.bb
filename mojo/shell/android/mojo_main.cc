@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
-#include "mojo/public/shell/service.h"
+#include "mojo/public/shell/application.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
@@ -43,10 +43,10 @@ class NativeViewportServiceLoader : public shell::ServiceConnector::Loader {
   virtual void Load(const GURL& url,
                     ScopedShellHandle service_handle)
       MOJO_OVERRIDE {
-    service_.reset(CreateNativeViewportService(g_context.Get().get(),
-                                               service_handle.Pass()));
+    app_.reset(CreateNativeViewportService(g_context.Get().get(),
+                                           service_handle.Pass()));
   }
-  scoped_ptr<ServiceFactoryBase> service_;
+  scoped_ptr<Application> app_;
 };
 
 LazyInstance<scoped_ptr<NativeViewportServiceLoader> >

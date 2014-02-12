@@ -13,7 +13,7 @@ interface Shell {
 
 [Peer=Shell]
 interface ShellClient {
-  void AcceptConnection(handle<message_pipe> client_handle);
+  void AcceptConnection(string url, handle<message_pipe> client_handle);
 };
 
 }

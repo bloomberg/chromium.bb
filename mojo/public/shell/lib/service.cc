@@ -5,15 +5,9 @@
 #include "mojo/public/shell/service.h"
 
 namespace mojo {
-
-ServiceFactoryBase::ServiceFactoryBase(ScopedShellHandle shell_handle)
-    : shell_(shell_handle.Pass(), this) {
-}
+namespace internal {
 
 ServiceFactoryBase::~ServiceFactoryBase() {}
 
-void ServiceFactoryBase::DisconnectFromShell() {
-  shell_.reset();
-}
-
+}  // namespace internal
 }  // namespace mojo
