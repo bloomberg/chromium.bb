@@ -117,11 +117,14 @@ void OutputSurface::SetMaxFramesPending(int max_frames_pending) {
   max_frames_pending_ = max_frames_pending;
 }
 
-void OutputSurface::OnVSyncParametersChanged(base::TimeTicks timebase,
-                                             base::TimeDelta interval) {
-  TRACE_EVENT2("cc", "OutputSurface::OnVSyncParametersChanged",
-               "timebase", (timebase - base::TimeTicks()).InSecondsF(),
-               "interval", interval.InSecondsF());
+void OutputSurface::CommitVSyncParameters(base::TimeTicks timebase,
+                                          base::TimeDelta interval) {
+  TRACE_EVENT2("cc",
+               "OutputSurface::CommitVSyncParameters",
+               "timebase",
+               (timebase - base::TimeTicks()).InSecondsF(),
+               "interval",
+               interval.InSecondsF());
   if (frame_rate_controller_)
     frame_rate_controller_->SetTimebaseAndInterval(timebase, interval);
 }

@@ -54,9 +54,11 @@ int64 GetDisplayId(const base::ListValue* args) {
   return display_id;
 }
 
-bool CompareResolution(ash::internal::Resolution r1,
-                       ash::internal::Resolution r2) {
-  return r1.size.GetArea() < r2.size.GetArea();
+bool CompareDisplayMode(ash::internal::DisplayMode d1,
+                        ash::internal::DisplayMode d2) {
+  if (d1.size.GetArea() == d2.size.GetArea())
+    return d1.refresh_rate < d2.refresh_rate;
+  return d1.size.GetArea() < d2.size.GetArea();
 }
 
 }  // namespace
@@ -187,7 +189,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     js_display->SetBoolean("isInternal", display.IsInternal());
     js_display->SetInteger("orientation",
                            static_cast<int>(display_info.rotation()));
-    std::vector<ash::internal::Resolution> resolutions;
+    std::vector<ash::internal::DisplayMode> display_modes;
     std::vector<float> ui_scales;
     if (display.IsInternal()) {
       ui_scales = DisplayManager::GetScalesForDisplay(display_info);
@@ -202,21 +204,21 @@ void DisplayOptionsHandler::SendDisplayInfo(
       for (size_t i = 0; i < ui_scales.size(); ++i) {
         gfx::SizeF new_size = base_size;
         new_size.Scale(ui_scales[i]);
-        resolutions.push_back(ash::internal::Resolution(
-            gfx::ToFlooredSize(new_size), false /* interlaced */));
+        display_modes.push_back(ash::internal::DisplayMode(
+            gfx::ToFlooredSize(new_size), -1.0f, false, false));
       }
     } else {
-      for (size_t i = 0; i < display_info.resolutions().size(); ++i)
-        resolutions.push_back(display_info.resolutions()[i]);
+      for (size_t i = 0; i < display_info.display_modes().size(); ++i)
+        display_modes.push_back(display_info.display_modes()[i]);
     }
-    std::sort(resolutions.begin(), resolutions.end(), CompareResolution);
+    std::sort(display_modes.begin(), display_modes.end(), CompareDisplayMode);
 
     base::ListValue* js_resolutions = new base::ListValue();
     gfx::Size current_size = display_info.bounds_in_native().size();
     gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
-    for (size_t i = 0; i < resolutions.size(); ++i) {
+    for (size_t i = 0; i < display_modes.size(); ++i) {
       base::DictionaryValue* resolution_info = new base::DictionaryValue();
-      gfx::Size resolution = resolutions[i].size;
+      gfx::Size resolution = display_modes[i].size;
       if (!ui_scales.empty()) {
         resolution_info->SetDouble("scale", ui_scales[i]);
         if (ui_scales[i] == 1.0f)
@@ -225,8 +227,8 @@ void DisplayOptionsHandler::SendDisplayInfo(
             "selected", display_info.configured_ui_scale() == ui_scales[i]);
       } else {
         // Picks the largest one as the "best", which is the last element
-        // because |resolutions| is sorted by its area.
-        if (i == resolutions.size() - 1)
+        // because |display_modes| is sorted by its area.
+        if (i == display_modes.size() - 1)
           resolution_info->SetBoolean("isBest", true);
         resolution_info->SetBoolean("selected", (resolution == current_size));
         resolution.Enlarge(
@@ -234,6 +236,10 @@ void DisplayOptionsHandler::SendDisplayInfo(
       }
       resolution_info->SetInteger("width", resolution.width());
       resolution_info->SetInteger("height", resolution.height());
+      if (display_modes[i].refresh_rate > 0.0f) {
+        resolution_info->SetDouble("refreshRate",
+                                   display_modes[i].refresh_rate);
+      }
       js_resolutions->Append(resolution_info);
     }
     js_display->Set("resolutions", js_resolutions);
@@ -352,11 +358,11 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
   gfx::Size old_resolution = display_info.bounds_in_native().size();
   bool has_new_resolution = false;
   bool has_old_resolution = false;
-  for (size_t i = 0; i < display_info.resolutions().size(); ++i) {
-    ash::internal::Resolution resolution = display_info.resolutions()[i];
-    if (resolution.size == new_resolution)
+  for (size_t i = 0; i < display_info.display_modes().size(); ++i) {
+    ash::internal::DisplayMode display_mode = display_info.display_modes()[i];
+    if (display_mode.size == new_resolution)
       has_new_resolution = true;
-    if (resolution.size == old_resolution)
+    if (display_mode.size == old_resolution)
       has_old_resolution = true;
   }
   if (!has_new_resolution) {

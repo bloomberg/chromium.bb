@@ -38,11 +38,6 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called when the compositor lock state changes.
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 
-  // Called when the compositor has received updated VSync parameters.
-  virtual void OnUpdateVSyncParameters(Compositor* compositor,
-                                       base::TimeTicks timebase,
-                                       base::TimeDelta interval) = 0;
-
  protected:
   virtual ~CompositorObserver() {}
 };

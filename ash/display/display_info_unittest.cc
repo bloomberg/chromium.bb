@@ -45,12 +45,17 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ(1.5f, info.configured_ui_scale());
 
   info = DisplayInfo::CreateFromSpecWithID(
-      "200x200#300x200|200x200|100x100", 10);
+      "200x200#300x200|200x200%59.9|100x100%60", 10);
   EXPECT_EQ("0,0 200x200", info.bounds_in_native().ToString());
-  EXPECT_EQ(3u, info.resolutions().size());
-  EXPECT_EQ("300x200", info.resolutions()[0].size.ToString());
-  EXPECT_EQ("200x200", info.resolutions()[1].size.ToString());
-  EXPECT_EQ("100x100", info.resolutions()[2].size.ToString());
+  EXPECT_EQ(3u, info.display_modes().size());
+  EXPECT_EQ("300x200", info.display_modes()[0].size.ToString());
+  EXPECT_EQ("200x200", info.display_modes()[1].size.ToString());
+  EXPECT_EQ("100x100", info.display_modes()[2].size.ToString());
+  EXPECT_EQ(59.9f, info.display_modes()[1].refresh_rate);
+  EXPECT_EQ(60.0f, info.display_modes()[2].refresh_rate);
+  EXPECT_TRUE(info.display_modes()[0].native);
+  EXPECT_FALSE(info.display_modes()[1].native);
+  EXPECT_FALSE(info.display_modes()[2].native);
 }
 
 }  // namespace internal

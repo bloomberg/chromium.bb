@@ -15,7 +15,7 @@ typedef testing::Test DisplayChangeObserverTest;
 namespace ash {
 namespace internal {
 
-TEST_F(DisplayChangeObserverTest, GetResolutionList) {
+TEST_F(DisplayChangeObserverTest, GetDisplayModeList) {
   OutputConfigurator::OutputSnapshot output;
   output.mode_infos[11] = OutputConfigurator::ModeInfo(1920, 1200, false, 60);
 
@@ -40,31 +40,37 @@ TEST_F(DisplayChangeObserverTest, GetResolutionList) {
   // Just one interlaced mode.
   output.mode_infos[22] = OutputConfigurator::ModeInfo(640, 480, true, 60);
 
-  std::vector<Resolution> resolutions =
-      DisplayChangeObserver::GetResolutionList(output);
-  ASSERT_EQ(6u, resolutions.size());
-  EXPECT_EQ("1920x1200", resolutions[0].size.ToString());
-  EXPECT_FALSE(resolutions[0].interlaced);
+  std::vector<DisplayMode> display_modes =
+      DisplayChangeObserver::GetDisplayModeList(output);
+  ASSERT_EQ(6u, display_modes.size());
+  EXPECT_EQ("1920x1200", display_modes[0].size.ToString());
+  EXPECT_FALSE(display_modes[0].interlaced);
+  EXPECT_EQ(display_modes[0].refresh_rate, 60);
 
-  EXPECT_EQ("1920x1080", resolutions[1].size.ToString());
-  EXPECT_FALSE(resolutions[1].interlaced);
+  EXPECT_EQ("1920x1080", display_modes[1].size.ToString());
+  EXPECT_FALSE(display_modes[1].interlaced);
+  EXPECT_EQ(display_modes[1].refresh_rate, 80);
 
-  EXPECT_EQ("1280x720", resolutions[2].size.ToString());
-  EXPECT_FALSE(resolutions[2].interlaced);
+  EXPECT_EQ("1280x720", display_modes[2].size.ToString());
+  EXPECT_FALSE(display_modes[2].interlaced);
+  EXPECT_EQ(display_modes[2].refresh_rate, 60);
 
-  EXPECT_EQ("1024x768", resolutions[3].size.ToString());
-  EXPECT_TRUE(resolutions[3].interlaced);
+  EXPECT_EQ("1024x768", display_modes[3].size.ToString());
+  EXPECT_TRUE(display_modes[3].interlaced);
+  EXPECT_EQ(display_modes[3].refresh_rate, 70);
 
-  EXPECT_EQ("1024x600", resolutions[4].size.ToString());
-  EXPECT_FALSE(resolutions[4].interlaced);
+  EXPECT_EQ("1024x600", display_modes[4].size.ToString());
+  EXPECT_FALSE(display_modes[4].interlaced);
+  EXPECT_EQ(display_modes[4].refresh_rate, 70);
 
-  EXPECT_EQ("640x480", resolutions[5].size.ToString());
-  EXPECT_TRUE(resolutions[5].interlaced);
+  EXPECT_EQ("640x480", display_modes[5].size.ToString());
+  EXPECT_TRUE(display_modes[5].interlaced);
+  EXPECT_EQ(display_modes[5].refresh_rate, 60);
 
   // Outputs without any modes shouldn't cause a crash.
   output.mode_infos.clear();
-  resolutions = DisplayChangeObserver::GetResolutionList(output);
-  EXPECT_EQ(0u, resolutions.size());
+  display_modes = DisplayChangeObserver::GetDisplayModeList(output);
+  EXPECT_EQ(0u, display_modes.size());
 }
 
 }  // namespace internal

@@ -50,8 +50,4 @@ void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {}
 
 void DrawWaiterForTest::OnCompositingLockStateChanged(Compositor* compositor) {}
 
-void DrawWaiterForTest::OnUpdateVSyncParameters(Compositor* compositor,
-                                                base::TimeTicks timebase,
-                                                base::TimeDelta interval) {}
-
 }  // namespace ui

@@ -176,9 +176,9 @@ class ASH_EXPORT DisplayManager
                                const gfx::Insets* overscan_insets,
                                const gfx::Size& resolution_in_pixels);
 
-  // Returns the display's selected resolution.
-  bool GetSelectedResolutionForDisplayId(int64 display_id,
-                                         gfx::Size* resolution_out) const;
+  // Returns the display's selected mode.
+  bool GetSelectedModeForDisplayId(int64 display_id,
+                                   DisplayMode* mode_out) const;
 
   // Tells if the virtual resolution feature is enabled.
   bool IsDisplayUIScalingEnabled() const;
@@ -340,8 +340,8 @@ private:
   // The mapping from the display ID to its internal data.
   std::map<int64, DisplayInfo> display_info_;
 
-  // Selected resolutions in pixels for displays. Key is the displays' ID.
-  std::map<int64, gfx::Size> resolutions_;
+  // Selected display modes for displays. Key is the displays' ID.
+  std::map<int64, DisplayMode> display_modes_;
 
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on

@@ -7,11 +7,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 
 namespace content {
@@ -20,13 +18,11 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-    base::MessageLoopProxy* compositor_message_loop,
-    base::WeakPtr<ui::Compositor> compositor)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(context_provider),
       surface_id_(surface_id),
       output_surface_map_(output_surface_map),
-      compositor_message_loop_(compositor_message_loop),
-      compositor_(compositor) {
+      vsync_manager_(vsync_manager) {
   Initialize();
 }
 
@@ -34,13 +30,11 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-    base::MessageLoopProxy* compositor_message_loop,
-    base::WeakPtr<ui::Compositor> compositor)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(software_device.Pass()),
       surface_id_(surface_id),
       output_surface_map_(output_surface_map),
-      compositor_message_loop_(compositor_message_loop),
-      compositor_(compositor) {
+      vsync_manager_(vsync_manager) {
   Initialize();
 }
 
@@ -49,6 +43,7 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   if (!HasClient())
     return;
   output_surface_map_->Remove(surface_id_);
+  vsync_manager_->RemoveObserver(this);
 }
 
 void BrowserCompositorOutputSurface::Initialize() {
@@ -77,6 +72,7 @@ bool BrowserCompositorOutputSurface::BindToClient(
   output_surface_map_->AddWithID(this, surface_id_);
   if (reflector_)
     reflector_->OnSourceSurfaceReady(surface_id_);
+  vsync_manager_->AddObserver(this);
   return true;
 }
 
@@ -92,11 +88,15 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
-  OnVSyncParametersChanged(timebase, interval);
-  compositor_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&ui::Compositor::OnUpdateVSyncParameters,
-                 compositor_, timebase, interval));
+  CommitVSyncParameters(timebase, interval);
+}
+
+void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(HasClient());
+  vsync_manager_->UpdateVSyncParameters(timebase, interval);
 }
 
 void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {

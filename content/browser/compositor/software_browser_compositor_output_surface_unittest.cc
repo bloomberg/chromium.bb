@@ -7,6 +7,7 @@
 #include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/vsync_provider.h"
 
@@ -79,6 +80,8 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
 
 SoftwareBrowserCompositorOutputSurfaceTest::
     SoftwareBrowserCompositorOutputSurfaceTest() {
+  // |message_loop_| is not used, but the main thread still has to exist for the
+  // compositor to use.
   message_loop_.reset(new base::MessageLoopForUI);
 }
 
@@ -114,8 +117,7 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
           device.Pass(),
           1,
           &surface_map_,
-          compositor_->GetCompositorMessageLoop(),
-          compositor_->AsWeakPtr()));
+          compositor_->vsync_manager()));
 }
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {

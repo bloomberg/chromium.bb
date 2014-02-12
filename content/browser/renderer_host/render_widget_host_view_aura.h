@@ -37,6 +37,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 #include "webkit/common/cursors/webcursor.h"
@@ -79,6 +80,7 @@ class ResizeLock;
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
       public ui::CompositorObserver,
+      public ui::CompositorVSyncManager::Observer,
       public ui::TextInputClient,
       public gfx::DisplayObserver,
       public aura::RootWindowObserver,
@@ -372,8 +374,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingLockStateChanged(
       ui::Compositor* compositor) OVERRIDE;
-  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
-                                       base::TimeTicks timebase,
+
+  // Overridden from ui::CompositorVSyncManager::Observer
+  virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                        base::TimeDelta interval) OVERRIDE;
 
  private:

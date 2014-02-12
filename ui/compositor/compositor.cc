@@ -27,6 +27,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/frame_time.h"
@@ -183,6 +184,7 @@ namespace ui {
 Compositor::Compositor(gfx::AcceleratedWidget widget)
     : root_layer_(NULL),
       widget_(widget),
+      vsync_manager_(new CompositorVSyncManager()),
       posted_swaps_(new PostedSwapQueue()),
       device_scale_factor_(0.0f),
       last_started_frame_(0),
@@ -420,6 +422,10 @@ void Compositor::SetBackgroundColor(SkColor color) {
   ScheduleDraw();
 }
 
+scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
+  return vsync_manager_;
+}
+
 void Compositor::AddObserver(CompositorObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -430,13 +436,6 @@ void Compositor::RemoveObserver(CompositorObserver* observer) {
 
 bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
-}
-
-void Compositor::OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                         base::TimeDelta interval) {
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnUpdateVSyncParameters(this, timebase, interval));
 }
 
 void Compositor::Layout() {

@@ -199,11 +199,12 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger(
         "ui-scale",
         static_cast<int>(info.configured_ui_scale() * 1000));
-    gfx::Size resolution;
+    ash::internal::DisplayMode mode;
     if (!display.IsInternal() &&
-        display_manager->GetSelectedResolutionForDisplayId(id, &resolution)) {
-      property_value->SetInteger("width", resolution.width());
-      property_value->SetInteger("height", resolution.height());
+        display_manager->GetSelectedModeForDisplayId(id, &mode) &&
+        !mode.native) {
+      property_value->SetInteger("width", mode.size.width());
+      property_value->SetInteger("height", mode.size.height());
     }
 
     if (!info.overscan_insets_in_dip().empty())

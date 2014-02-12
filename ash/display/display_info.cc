@@ -23,10 +23,17 @@
 namespace ash {
 namespace internal {
 
-Resolution::Resolution(const gfx::Size& size, bool interlaced)
+DisplayMode::DisplayMode()
+    : refresh_rate(0.0f), interlaced(false), native(false) {}
+
+DisplayMode::DisplayMode(const gfx::Size& size,
+                         float refresh_rate,
+                         bool interlaced,
+                         bool native)
     : size(size),
-      interlaced(interlaced) {
-}
+      refresh_rate(refresh_rate),
+      interlaced(interlaced),
+      native(native) {}
 
 // satic
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
@@ -104,17 +111,35 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
 #endif
   }
 
-  std::vector<Resolution> resolutions;
+  std::vector<DisplayMode> display_modes;
   if (Tokenize(main_spec, "#", &parts) == 2) {
+    size_t native_mode = 0;
+    int largest_area = -1;
+    float highest_refresh_rate = -1.0f;
     main_spec = parts[0];
     std::string resolution_list = parts[1];
     count = Tokenize(resolution_list, "|", &parts);
     for (size_t i = 0; i < count; ++i) {
       std::string resolution = parts[i];
       int width, height;
-      if (sscanf(resolution.c_str(), "%dx%d", &width, &height) == 2)
-        resolutions.push_back(Resolution(gfx::Size(width, height), false));
+      float refresh_rate = 0.0f;
+      if (sscanf(resolution.c_str(),
+                 "%dx%d%%%f",
+                 &width,
+                 &height,
+                 &refresh_rate) >= 2) {
+        if (width * height >= largest_area &&
+            refresh_rate > highest_refresh_rate) {
+          // Use mode with largest area and highest refresh rate as native.
+          largest_area = width * height;
+          highest_refresh_rate = refresh_rate;
+          native_mode = i;
+        }
+        display_modes.push_back(
+            DisplayMode(gfx::Size(width, height), refresh_rate, false, false));
+      }
     }
+    display_modes[native_mode].native = true;
   }
 
   if (id == gfx::Display::kInvalidDisplayID)
@@ -125,7 +150,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   display_info.set_rotation(rotation);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
-  display_info.set_resolutions(resolutions);
+  display_info.set_display_modes(display_modes);
 
   // To test the overscan, it creates the default 5% overscan.
   if (has_overscan) {
@@ -177,7 +202,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   bounds_in_native_ = native_info.bounds_in_native_;
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
-  resolutions_ = native_info.resolutions_;
+  display_modes_ = native_info.display_modes_;
   touch_support_ = native_info.touch_support_;
 
   // Copy overscan_insets_in_dip_ if it's not empty. This is for test
@@ -249,22 +274,28 @@ std::string DisplayInfo::ToString() const {
       overscan_insets_in_dip_.ToString().c_str(),
       rotation_degree,
       configured_ui_scale_,
-      touch_support_ == gfx::Display::TOUCH_SUPPORT_AVAILABLE ? "yes" :
-      touch_support_ == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE ? "no" :
-      "unknown");
+      touch_support_ == gfx::Display::TOUCH_SUPPORT_AVAILABLE
+          ? "yes"
+          : touch_support_ == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE
+                ? "no"
+                : "unknown");
 }
 
 std::string DisplayInfo::ToFullString() const {
-  std::string resolutions_str;
-  std::vector<Resolution>::const_iterator iter = resolutions_.begin();
-  for (; iter != resolutions_.end(); ++iter) {
-    if (!resolutions_str.empty())
-      resolutions_str += ",";
-    resolutions_str += iter->size.ToString();
-    if (iter->interlaced)
-      resolutions_str += "(i)";
+  std::string display_modes_str;
+  std::vector<DisplayMode>::const_iterator iter = display_modes_.begin();
+  for (; iter != display_modes_.end(); ++iter) {
+    if (!display_modes_str.empty())
+      display_modes_str += ",";
+    base::StringAppendF(&display_modes_str,
+                        "(%dx%d@%f%c%s)",
+                        iter->size.width(),
+                        iter->size.height(),
+                        iter->refresh_rate,
+                        iter->interlaced ? 'I' : 'P',
+                        iter->native ? "(N)" : "");
   }
-  return ToString() + ", resolutions=" + resolutions_str;
+  return ToString() + ", display_modes==" + display_modes_str;
 }
 
 }  // namespace internal
