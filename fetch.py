@@ -60,7 +60,7 @@ class Checkout(object):
 
   def run(self, cmd, **kwargs):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
-    if self.options.dryrun:
+    if self.options.dry_run:
       return 0
     return subprocess.check_call(cmd, **kwargs)
 
@@ -121,7 +121,7 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
 
     # Configure git.
     wd = os.path.join(self.base, self.root)
-    if self.options.dryrun:
+    if self.options.dry_run:
       print 'cd %s' % wd
     self.run_git(
         'submodule', 'foreach',
@@ -157,7 +157,7 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
       if real_path != self.root:
         real_path = os.path.join(self.root, real_path)
       wd = os.path.join(self.base, real_path)
-      if self.options.dryrun:
+      if self.options.dry_run:
         print 'cd %s' % wd
       self.run_git('svn', 'init', '--prefix=origin/', '-T',
                    svn_spec['svn_branch'], svn_spec['svn_url'], cwd=wd)
@@ -203,7 +203,7 @@ for full usage instructions.
 Valid options:
    -h, --help, help   Print this message.
    --nohooks          Don't run hooks after checkout.
-   -n, --dryrun       Don't run commands, only print them.
+   -n, --dry-run      Don't run commands, only print them.
 """ % os.path.basename(sys.argv[0]))
   sys.exit(bool(msg))
 
@@ -215,7 +215,7 @@ def handle_args(argv):
   if argv[1] in ('-h', '--help', 'help'):
     usage()
 
-  dryrun = False
+  dry_run = False
   nohooks = False
   while len(argv) >= 2:
     arg = argv[1]
@@ -223,7 +223,7 @@ def handle_args(argv):
       break
     argv.pop(1)
     if arg in ('-n', '--dry-run'):
-      dryrun = True
+      dry_run = True
     elif arg == '--nohooks':
       nohooks = True
     else:
@@ -238,7 +238,7 @@ def handle_args(argv):
 
   recipe = argv[1]
   props = argv[2:]
-  return optparse.Values({'dryrun':dryrun, 'nohooks':nohooks }), recipe, props
+  return optparse.Values({'dry_run':dry_run, 'nohooks':nohooks }), recipe, props
 
 
 def run_recipe_fetch(recipe, props, aliased=False):
