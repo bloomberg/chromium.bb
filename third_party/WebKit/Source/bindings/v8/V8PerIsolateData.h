@@ -75,10 +75,6 @@ public:
     }
 
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
-    v8::Handle<v8::FunctionTemplate> lazyEventListenerToStringTemplate()
-    {
-        return v8::Local<v8::FunctionTemplate>::New(m_isolate, m_lazyEventListenerToStringTemplate);
-    }
 
     StringCache* stringCache() { return m_stringCache.get(); }
 
@@ -144,7 +140,6 @@ private:
     TemplateMap m_templatesForMainWorld;
     TemplateMap m_templatesForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
-    v8::Persistent<v8::FunctionTemplate> m_lazyEventListenerToStringTemplate;
     OwnPtr<StringCache> m_stringCache;
 
     Vector<DOMDataStore*> m_domDataStoreList;

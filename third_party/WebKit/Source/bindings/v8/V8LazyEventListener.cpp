@@ -201,19 +201,11 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     // source returned (sometimes a RegExp is applied as well) for some
     // other use. That fails miserably if the actual wrapper source is
     // returned.
-    v8::Handle<v8::FunctionTemplate> toStringTemplate =
-        V8PerIsolateData::current()->lazyEventListenerToStringTemplate();
-    if (toStringTemplate.IsEmpty())
-        toStringTemplate = v8::FunctionTemplate::New(isolate, V8LazyEventListenerToString);
-    v8::Local<v8::Function> toStringFunction;
-    if (!toStringTemplate.IsEmpty())
-        toStringFunction = toStringTemplate->GetFunction();
-    if (!toStringFunction.IsEmpty()) {
-        String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
-        setHiddenValue(isolate, wrappedFunction, "toStringString", v8String(isolate, toStringString));
-        wrappedFunction->Set(v8AtomicString(isolate, "toString"), toStringFunction);
-    }
-
+    v8::Local<v8::Function> toStringFunction = v8::Function::New(isolate, V8LazyEventListenerToString);
+    ASSERT(!toStringFunction.IsEmpty());
+    String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
+    setHiddenValue(isolate, wrappedFunction, "toStringString", v8String(isolate, toStringString));
+    wrappedFunction->Set(v8AtomicString(isolate, "toString"), toStringFunction);
     wrappedFunction->SetName(v8String(isolate, m_functionName));
 
     // FIXME: Remove the following comment-outs.
