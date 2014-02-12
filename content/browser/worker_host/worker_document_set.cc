@@ -11,7 +11,7 @@ namespace content {
 WorkerDocumentSet::WorkerDocumentSet() {
 }
 
-void WorkerDocumentSet::Add(WorkerMessageFilter* parent,
+void WorkerDocumentSet::Add(BrowserMessageFilter* parent,
                             unsigned long long document_id,
                             int render_process_id,
                             int render_frame_id) {
@@ -19,7 +19,7 @@ void WorkerDocumentSet::Add(WorkerMessageFilter* parent,
   document_set_.insert(info);
 }
 
-bool WorkerDocumentSet::Contains(WorkerMessageFilter* parent,
+bool WorkerDocumentSet::Contains(BrowserMessageFilter* parent,
                                  unsigned long long document_id) const {
   for (DocumentInfoSet::const_iterator i = document_set_.begin();
        i != document_set_.end(); ++i) {
@@ -29,7 +29,7 @@ bool WorkerDocumentSet::Contains(WorkerMessageFilter* parent,
   return false;
 }
 
-void WorkerDocumentSet::Remove(WorkerMessageFilter* parent,
+void WorkerDocumentSet::Remove(BrowserMessageFilter* parent,
                                unsigned long long document_id) {
   for (DocumentInfoSet::iterator i = document_set_.begin();
        i != document_set_.end(); i++) {
@@ -42,7 +42,7 @@ void WorkerDocumentSet::Remove(WorkerMessageFilter* parent,
   DCHECK(!Contains(parent, document_id));
 }
 
-void WorkerDocumentSet::RemoveAll(WorkerMessageFilter* parent) {
+void WorkerDocumentSet::RemoveAll(BrowserMessageFilter* parent) {
   for (DocumentInfoSet::iterator i = document_set_.begin();
        i != document_set_.end();) {
 
@@ -59,7 +59,7 @@ void WorkerDocumentSet::RemoveAll(WorkerMessageFilter* parent) {
 }
 
 WorkerDocumentSet::DocumentInfo::DocumentInfo(
-    WorkerMessageFilter* filter, unsigned long long document_id,
+    BrowserMessageFilter* filter, unsigned long long document_id,
     int render_process_id, int render_frame_id)
     : filter_(filter),
       document_id_(document_id),

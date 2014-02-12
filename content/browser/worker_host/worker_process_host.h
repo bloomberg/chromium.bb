@@ -42,6 +42,7 @@ class BrowserChildProcessHostImpl;
 class IndexedDBContextImpl;
 class ResourceContext;
 class SocketStreamDispatcherHost;
+class WorkerMessageFilter;
 class WorkerServiceImpl;
 
 // The WorkerProcessHost is the interface that represents the browser side of
