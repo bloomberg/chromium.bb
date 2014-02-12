@@ -139,14 +139,17 @@ def nss_make_and_copy(parsed_arguments, environment, install_prefix):
 
 def libcap2_make_install(parsed_arguments, environment, install_prefix):
   # libcap2 doesn't come with a configure script
-  shell_call('make -j%s' % parsed_arguments.jobs,
-      parsed_arguments.verbose, environment)
-  install_args = []
-  install_args.append('prefix=%s' % install_prefix)
-  # Do not install in lib64/.
-  install_args.append('lib=lib')
-  # Skip a step that requires sudo.
-  install_args.append('RAISE_SETFCAP=no')
+  make_args = ['%s="%s"' % (name, environment[name]) for name in ['CC', 'CXX',
+    'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
+  shell_call('make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args)),
+    parsed_arguments.verbose, environment)
+  install_args = [
+    'prefix=%s' % install_prefix,
+    # Do not install in lib64/.
+    'lib=lib',
+    # Skip a step that requires sudo.
+    'RAISE_SETFCAP=no'
+  ]
   shell_call('make -j%s install %s' % (parsed_arguments.jobs,
     ' '.join(install_args)), parsed_arguments.verbose, environment)
 
