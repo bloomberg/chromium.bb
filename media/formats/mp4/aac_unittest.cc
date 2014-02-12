@@ -85,7 +85,7 @@ TEST(AACTest, SixChannelTest) {
 
   EXPECT_TRUE(aac.Parse(data));
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 48000);
-  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_5_1_BACK);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_5_1);
 }
 
 TEST(AACTest, DataTooShortTest) {

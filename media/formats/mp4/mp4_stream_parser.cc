@@ -17,7 +17,6 @@
 #include "media/formats/mp4/box_reader.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
-#include "media/formats/mpeg/adts_constants.h"
 
 namespace media {
 namespace mp4 {
@@ -385,11 +384,11 @@ bool MP4StreamParser::PrepareAACBuffer(
   // not required to use subsample encryption, so we may need to add an entry.
   if (subsamples->empty()) {
     SubsampleEntry entry;
-    entry.clear_bytes = kADTSHeaderMinSize;
-    entry.cypher_bytes = frame_buf->size() - kADTSHeaderMinSize;
+    entry.clear_bytes = AAC::kADTSHeaderSize;
+    entry.cypher_bytes = frame_buf->size() - AAC::kADTSHeaderSize;
     subsamples->push_back(entry);
   } else {
-    (*subsamples)[0].clear_bytes += kADTSHeaderMinSize;
+    (*subsamples)[0].clear_bytes += AAC::kADTSHeaderSize;
   }
   return true;
 }

@@ -20,7 +20,6 @@ MEDIA_EXPORT extern const char kDisableVp8AlphaPlayback[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
-MEDIA_EXPORT extern const char kEnableADTSStreamParser[];
 MEDIA_EXPORT extern const char kEnableMP3StreamParser[];
 
 #if defined(OS_ANDROID)

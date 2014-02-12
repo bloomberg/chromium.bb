@@ -10,8 +10,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/formats/mpeg/adts_stream_parser.h"
-#include "media/formats/mpeg/mp3_stream_parser.h"
+#include "media/formats/mp3/mp3_stream_parser.h"
 #include "media/formats/webm/webm_stream_parser.h"
 
 #if defined(OS_ANDROID)
@@ -194,18 +193,6 @@ static StreamParser* BuildMP3Parser(
   return new MP3StreamParser();
 }
 
-static const CodecInfo kADTSCodecInfo = { NULL, CodecInfo::AUDIO, NULL,
-                                          CodecInfo::HISTOGRAM_MPEG4AAC };
-static const CodecInfo* kAudioADTSCodecs[] = {
-  &kADTSCodecInfo,
-  NULL
-};
-
-static StreamParser* BuildADTSParser(
-    const std::vector<std::string>& codecs, const LogCB& log_cb) {
-  return new ADTSStreamParser();
-}
-
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
 static const CodecInfo* kVideoMP2TCodecs[] = {
   &kH264AVC1CodecInfo,
@@ -236,7 +223,6 @@ static const SupportedTypeInfo kSupportedTypeInfo[] = {
   { "video/webm", &BuildWebMParser, kVideoWebMCodecs },
   { "audio/webm", &BuildWebMParser, kAudioWebMCodecs },
 #if defined(USE_PROPRIETARY_CODECS)
-  { "audio/aac", &BuildADTSParser, kAudioADTSCodecs },
   { "audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs },
   { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
   { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
@@ -322,18 +308,12 @@ static bool CheckTypeAndCodecs(
     const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
     if (type == type_info.type) {
       if (codecs.empty()) {
+
 #if defined(USE_PROPRIETARY_CODECS)
         if (type_info.codecs == kAudioMP3Codecs &&
             !CommandLine::ForCurrentProcess()->HasSwitch(
                 switches::kEnableMP3StreamParser)) {
           DVLOG(1) << "MP3StreamParser is not enabled.";
-          return false;
-        }
-
-        if (type_info.codecs == kAudioADTSCodecs &&
-            !CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableADTSStreamParser)) {
-          DVLOG(1) << "ADTSStreamParser is not enabled.";
           return false;
         }
 #endif
