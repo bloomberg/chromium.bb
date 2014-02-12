@@ -109,7 +109,6 @@ namespace app.window {
     // permission. Defaults to false.<br>
     // Call <code>setAlwaysOnTop()</code> on the window to change this property
     // after creation.<br>
-    // Currently only available on Dev channel.
     boolean? alwaysOnTop;
 
     // If true, the window will be focused when created. Defaults to true.
@@ -235,7 +234,6 @@ namespace app.window {
 
     // Set whether the window should stay above most other windows. Requires the
     // <code>"alwaysOnTopWindows"</code> permission.
-    // Currently only available on Dev channel.
     static void setAlwaysOnTop(boolean alwaysOnTop);
 
     // The JavaScript 'window' object for the created child.
