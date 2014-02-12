@@ -76,7 +76,7 @@ namespace WebCore {
         // These methods are called on different threads to schedule loading
         // requests and to send callbacks back to WorkerGlobalScope.
         virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
-        virtual bool postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>, const String& mode) OVERRIDE;
+        virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
 
         void workerThreadCreated(PassRefPtr<DedicatedWorkerThread>);
 

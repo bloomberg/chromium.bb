@@ -68,11 +68,8 @@ namespace WebCore {
 
         // Returns true if the loop is still alive, false if it has been terminated.
         bool postTaskForMode(PassOwnPtr<ExecutionContextTask>, const String& mode);
-        bool postTaskForMode(const Closure&, const String& mode);
 
         unsigned long createUniqueId() { return ++m_uniqueId; }
-
-        static String defaultMode();
 
         class Task;
 

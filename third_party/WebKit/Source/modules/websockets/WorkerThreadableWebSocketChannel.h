@@ -63,9 +63,9 @@ class WorkerRunLoop;
 class WorkerThreadableWebSocketChannel FINAL : public RefCounted<WorkerThreadableWebSocketChannel>, public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope* workerGlobalScope, WebSocketChannelClient* client, const String& taskMode, const String& sourceURL, unsigned lineNumber)
+    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope* workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     {
-        return adoptRef(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, taskMode, sourceURL, lineNumber));
+        return adoptRef(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber));
     }
     virtual ~WorkerThreadableWebSocketChannel();
 
@@ -93,7 +93,7 @@ public:
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        static void initialize(ExecutionContext*, PassRefPtr<WeakReference<Peer> >, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, PassOwnPtr<ThreadableWebSocketChannelSyncHelper>);
+        static void initialize(ExecutionContext*, PassRefPtr<WeakReference<Peer> >, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, PassOwnPtr<ThreadableWebSocketChannelSyncHelper>);
         void destroy();
 
         void connect(const KURL&, const String& protocol);
@@ -117,12 +117,11 @@ public:
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:
-        Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber, PassOwnPtr<ThreadableWebSocketChannelSyncHelper>);
+        Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& sourceURL, unsigned lineNumber, PassOwnPtr<ThreadableWebSocketChannelSyncHelper>);
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
         RefPtr<WebSocketChannel> m_mainWebSocketChannel;
-        String m_taskMode;
         OwnPtr<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
         WeakPtrFactory<Peer> m_weakFactory;
     };
@@ -139,9 +138,9 @@ private:
     // Bridge for Peer. Running on the worker thread.
     class Bridge : public RefCounted<Bridge> {
     public:
-        static PassRefPtr<Bridge> create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassRefPtr<WorkerGlobalScope> workerGlobalScope, const String& taskMode)
+        static PassRefPtr<Bridge> create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassRefPtr<WorkerGlobalScope> workerGlobalScope)
         {
-            return adoptRef(new Bridge(workerClientWrapper, workerGlobalScope, taskMode));
+            return adoptRef(new Bridge(workerClientWrapper, workerGlobalScope));
         }
         ~Bridge();
         // sourceURLAtConnection and lineNumberAtConnection parameters may
@@ -162,7 +161,7 @@ private:
         using RefCounted<Bridge>::deref;
 
     private:
-        Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtr<WorkerGlobalScope>, const String& taskMode);
+        Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtr<WorkerGlobalScope>);
 
         static void setWebSocketChannel(ExecutionContext*, Bridge* thisPtr, Peer*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
 
@@ -177,12 +176,11 @@ private:
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         RefPtr<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
-        String m_taskMode;
         ThreadableWebSocketChannelSyncHelper* m_syncHelper;
         WeakPtr<Peer> m_peer;
     };
 
-    WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
+    WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
     RefPtr<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;

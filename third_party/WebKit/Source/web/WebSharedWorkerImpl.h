@@ -86,8 +86,7 @@ public:
 
     // WebCore::WorkerLoaderProxy methods:
     virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
-    virtual bool postTaskForModeToWorkerGlobalScope(
-        PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode) OVERRIDE;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) OVERRIDE;

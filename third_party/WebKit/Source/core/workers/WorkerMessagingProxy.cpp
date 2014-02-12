@@ -141,13 +141,13 @@ void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedS
         m_queuedEarlyTasks.append(MessageWorkerGlobalScopeTask::create(message, channels));
 }
 
-bool WorkerMessagingProxy::postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task, const String& mode)
+bool WorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate)
         return false;
 
     ASSERT(m_workerThread);
-    m_workerThread->runLoop().postTaskForMode(task, mode);
+    m_workerThread->runLoop().postTask(task);
     return true;
 }
 

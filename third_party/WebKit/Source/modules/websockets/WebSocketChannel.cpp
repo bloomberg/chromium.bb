@@ -48,8 +48,6 @@
 
 namespace WebCore {
 
-static const char webSocketChannelMode[] = "webSocketChannelMode";
-
 PassRefPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
 {
     ASSERT(context);
@@ -65,9 +63,7 @@ PassRefPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context,
 
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        WorkerRunLoop& runLoop = workerGlobalScope->thread()->runLoop();
-        String mode = webSocketChannelMode + String::number(runLoop.createUniqueId());
-        return WorkerThreadableWebSocketChannel::create(workerGlobalScope, client, mode, sourceURL, lineNumber);
+        return WorkerThreadableWebSocketChannel::create(workerGlobalScope, client, sourceURL, lineNumber);
     }
 
     Document* document = toDocument(context);

@@ -283,10 +283,9 @@ void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task
     toWebFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
 }
 
-bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
-    PassOwnPtr<ExecutionContextTask> task, const String& mode)
+bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_workerThread->runLoop().postTaskForMode(task, mode);
+    m_workerThread->runLoop().postTask(task);
     return true;
 }
 

@@ -49,10 +49,9 @@ namespace WebCore {
         // Posts a task to the thread which runs the loading code (normally, the main thread).
         virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) = 0;
 
-        // Posts callbacks from loading code to the WorkerGlobalScope. The 'mode' is used to differentiate
-        // specific synchronous loading requests so they can be 'nested', per spec.
+        // Posts callbacks from loading code to the WorkerGlobalScope.
         // Returns true if the task was posted successfully.
-        virtual bool postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>, const String& mode) = 0;
+        virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) = 0;
     };
 
 } // namespace WebCore

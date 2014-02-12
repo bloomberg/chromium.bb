@@ -51,7 +51,7 @@ PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext* context,
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         RefPtr<ThreadableLoaderClientWrapper> clientWrapper(ThreadableLoaderClientWrapper::create(client));
-        OwnPtr<ThreadableLoaderClient> clientBridge(WorkerLoaderClientBridge::create(clientWrapper, workerGlobalScope->thread()->workerLoaderProxy(), WorkerRunLoop::defaultMode()));
+        OwnPtr<ThreadableLoaderClient> clientBridge(WorkerLoaderClientBridge::create(clientWrapper, workerGlobalScope->thread()->workerLoaderProxy()));
         return WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options);
     }
 

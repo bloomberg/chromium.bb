@@ -112,11 +112,11 @@ public:
         toWebFrameImpl(m_embeddedWorker.m_mainFrame)->frame()->document()->postTask(task);
     }
 
-    virtual bool postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task, const String& mode) OVERRIDE
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
     {
         if (m_embeddedWorker.m_askedToTerminate || !m_embeddedWorker.m_workerThread)
             return false;
-        return m_embeddedWorker.m_workerThread->runLoop().postTaskForMode(task, mode);
+        return m_embeddedWorker.m_workerThread->runLoop().postTask(task);
     }
 
 private:

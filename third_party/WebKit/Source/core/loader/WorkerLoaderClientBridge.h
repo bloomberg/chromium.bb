@@ -45,7 +45,7 @@ class WorkerLoaderProxy;
 // data to the client wrapper on the worker context thread.
 class WorkerLoaderClientBridge : public ThreadableLoaderClient {
 public:
-    static PassOwnPtr<ThreadableLoaderClient> create(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&, const String& taskMode);
+    static PassOwnPtr<ThreadableLoaderClient> create(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&);
     virtual ~WorkerLoaderClientBridge();
 
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
@@ -59,14 +59,13 @@ public:
     virtual void didFailRedirectCheck() OVERRIDE;
 
 private:
-    WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&, const String& taskMode);
+    WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&);
 
     // Used on the worker context thread, while its refcounting is done on
     // either thread.
     RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
     WorkerLoaderProxy& m_loaderProxy;
-    String m_taskMode;
 };
 
 } // namespace WebCore

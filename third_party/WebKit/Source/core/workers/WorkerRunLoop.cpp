@@ -42,6 +42,11 @@
 
 namespace WebCore {
 
+static String defaultMode()
+{
+    return String();
+}
+
 class WorkerRunLoop::Task {
     WTF_MAKE_NONCOPYABLE(Task); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -94,7 +99,7 @@ class ModePredicate {
 public:
     ModePredicate(const String& mode)
         : m_mode(mode)
-        , m_defaultMode(mode == WorkerRunLoop::defaultMode())
+        , m_defaultMode(mode == defaultMode())
     {
     }
 
@@ -123,11 +128,6 @@ WorkerRunLoop::WorkerRunLoop()
 WorkerRunLoop::~WorkerRunLoop()
 {
     ASSERT(!m_nestedCount);
-}
-
-String WorkerRunLoop::defaultMode()
-{
-    return String();
 }
 
 class RunLoopSetup {
@@ -273,11 +273,6 @@ void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ExecutionContextTask> task)
 bool WorkerRunLoop::postTaskForMode(PassOwnPtr<ExecutionContextTask> task, const String& mode)
 {
     return m_messageQueue.append(Task::create(task, mode.isolatedCopy()));
-}
-
-bool WorkerRunLoop::postTaskForMode(const Closure& closure, const String& mode)
-{
-    return postTaskForMode(CallClosureTask::create(closure), mode);
 }
 
 } // namespace WebCore
