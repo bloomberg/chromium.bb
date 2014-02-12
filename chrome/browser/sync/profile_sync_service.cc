@@ -1077,12 +1077,21 @@ void ProfileSyncService::OnExperimentsChanged(
   if (current_experiments_.Matches(experiments))
     return;
 
+  current_experiments_ = experiments;
+
   // Handle preference-backed experiments first.
   if (experiments.gcm_channel_state != syncer::Experiments::UNSET) {
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled,
                                       experiments.gcm_channel_state ==
                                           syncer::Experiments::ENABLED);
     gcm::GCMProfileServiceFactory::GetForProfile(profile());
+  }
+
+  if (experiments.enhanced_bookmarks_enabled) {
+    profile_->GetPrefs()->SetBoolean(prefs::kEnhancedBookmarksExperimentEnabled,
+                                     true);
+    profile_->GetPrefs()->SetString(prefs::kEnhancedBookmarksExtensionId,
+                                    experiments.enhanced_bookmarks_ext_id);
   }
 
   // If this is a first time sync for a client, this will be called before
@@ -1129,8 +1138,6 @@ void ProfileSyncService::OnExperimentsChanged(
       OnMigrationNeededForTypes(to_register);
     }
   }
-
-  current_experiments_ = experiments;
 }
 
 void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {

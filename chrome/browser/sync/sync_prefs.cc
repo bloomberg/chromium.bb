@@ -74,6 +74,17 @@ void SyncPrefs::RegisterProfilePrefs(
   RegisterDataTypePreferredPref(registry, syncer::BOOKMARKS, true);
   user_types.Remove(syncer::BOOKMARKS);
 
+  // These two prefs are set from sync experiment to enable enhanced bookmarks.
+  registry->RegisterBooleanPref(
+      prefs::kEnhancedBookmarksExperimentEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterStringPref(
+      prefs::kEnhancedBookmarksExtensionId,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   // All types are set to off by default, which forces a configuration to
   // explicitly enable them. GetPreferredTypes() will ensure that any new
   // implicit types are enabled when their pref group is, or via

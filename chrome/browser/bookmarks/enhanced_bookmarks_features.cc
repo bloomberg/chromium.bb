@@ -24,11 +24,8 @@ bool IsBookmarksExtensionHash(const std::string& sha1_hex) {
 
 };  // namespace
 
-bool OptInIntoBookmarksExperimentIfHasExtension(
+bool IsBookmarksExtensionInstalled(
     const extensions::ExtensionIdSet& extension_ids) {
-  if (base::FieldTrialList::FindFullName(kFieldTrialName) != "Default")
-    return false;
-
   // Compare installed extension ids with ones we expect.
   for (extensions::ExtensionIdSet::const_iterator iter = extension_ids.begin();
        iter != extension_ids.end(); ++iter) {
@@ -36,21 +33,24 @@ bool OptInIntoBookmarksExperimentIfHasExtension(
     DCHECK_EQ(id_hash.length(), base::kSHA1Length);
     std::string hash = base::HexEncode(id_hash.c_str(), id_hash.length());
 
-    if (IsBookmarksExtensionHash(hash)) {
-      // Enable features bookmarks depends on and opt-in user into Finch group
-      // for reporting.
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(switches::kManualEnhancedBookmarks);
-      command_line->AppendSwitch(switches::kEnableSyncArticles);
-      command_line->AppendSwitch(switches::kEnableDomDistiller);
+    if (IsBookmarksExtensionHash(hash))
       return true;
-    }
   }
   return false;
 }
 
+bool OptInIntoBookmarksExperiment() {
+  if (base::FieldTrialList::FindFullName(kFieldTrialName) != "Default")
+    return false;
+
+  // Opt-in user into Finch group.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kManualEnhancedBookmarks);
+  return true;
+}
+
 bool IsEnhancedBookmarksExperimentEnabled() {
-  std::string ext_id = GetEnhancedBookmarksExtensionId();
+  std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
   extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
@@ -81,6 +81,6 @@ bool IsEnableSyncArticlesSet() {
   return false;
 }
 
-std::string GetEnhancedBookmarksExtensionId() {
+std::string GetEnhancedBookmarksExtensionIdFromFinch() {
   return chrome_variations::GetVariationParamValue(kFieldTrialName, "id");
 }

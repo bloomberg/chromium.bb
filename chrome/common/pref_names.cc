@@ -101,6 +101,12 @@ const char kRestoreStartupURLsMigrationTime[] =
 // data in the profile folder on disk but only in memory.
 const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
 
+// Set to true when enhanced bookmarks experiment is enabled via Chrome sync.
+const char kEnhancedBookmarksExperimentEnabled[] = "enhanced_bookmarks_enabled";
+
+// Enhanced bookmarks extension id passed via Chrome sync.
+const char kEnhancedBookmarksExtensionId[] = "enhanced_bookmarks_extension_id";
+
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,

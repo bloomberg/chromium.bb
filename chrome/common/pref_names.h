@@ -35,6 +35,8 @@ extern const char kURLsToRestoreOnStartup[];
 extern const char kURLsToRestoreOnStartupOld[];
 extern const char kRestoreStartupURLsMigrationTime[];
 extern const char kForceEphemeralProfiles[];
+extern const char kEnhancedBookmarksExperimentEnabled[];
+extern const char kEnhancedBookmarksExtensionId[];
 
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,

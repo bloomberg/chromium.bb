@@ -1221,6 +1221,23 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     found_experiment = true;
   }
 
+  ReadNode enhanced_bookmarks_node(&trans);
+  if (enhanced_bookmarks_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS, syncer::kEnhancedBookmarksTag) ==
+          BaseNode::INIT_OK &&
+      enhanced_bookmarks_node.GetExperimentsSpecifics()
+          .has_enhanced_bookmarks()) {
+    const sync_pb::EnhancedBookmarksFlags& enhanced_bookmarks =
+        enhanced_bookmarks_node.GetExperimentsSpecifics().enhanced_bookmarks();
+    if (enhanced_bookmarks.has_enabled())
+      experiments->enhanced_bookmarks_enabled = enhanced_bookmarks.enabled();
+    if (enhanced_bookmarks.has_extension_id()) {
+      experiments->enhanced_bookmarks_ext_id =
+          enhanced_bookmarks.extension_id();
+    }
+    found_experiment = true;
+  }
+
   return found_experiment;
 }
 

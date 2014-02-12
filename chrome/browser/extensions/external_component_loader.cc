@@ -40,11 +40,21 @@ void ExternalComponentLoader::StartLoading() {
 
   if (CommandLine::ForCurrentProcess()->
           GetSwitchValueASCII(switches::kEnableEnhancedBookmarks) != "0") {
-    std::string ext_id = GetEnhancedBookmarksExtensionId();
+    std::string ext_id;
+    if (profile_->GetPrefs()->GetBoolean(
+            prefs::kEnhancedBookmarksExperimentEnabled)) {
+      ext_id =
+          profile_->GetPrefs()->GetString(prefs::kEnhancedBookmarksExtensionId);
+    } else {
+      ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
+    }
     if (!ext_id.empty()) {
       prefs_->SetString(ext_id + ".external_update_url",
                         extension_urls::GetWebstoreUpdateUrl().spec());
     }
+  } else {
+    profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExperimentEnabled);
+    profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
   }
   LoadFinished();
 }

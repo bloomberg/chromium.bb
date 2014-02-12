@@ -23,8 +23,6 @@ class ExternalComponentLoader : public ExternalLoader {
  public:
   explicit ExternalComponentLoader(Profile* profile);
 
-  static bool IsEnhancedBookmarksExperimentEnabled();
-
  protected:
   virtual void StartLoading() OVERRIDE;
 
