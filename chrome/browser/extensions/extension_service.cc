@@ -446,10 +446,6 @@ const ExtensionSet* ExtensionService::extensions() const {
   return &registry_->enabled_extensions();
 }
 
-const ExtensionSet* ExtensionService::disabled_extensions() const {
-  return &registry_->disabled_extensions();
-}
-
 const ExtensionSet* ExtensionService::delayed_installs() const {
   return &delayed_installs_;
 }

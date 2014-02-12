@@ -55,6 +55,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
@@ -565,16 +566,15 @@ void TabHelper::OnInlineWebstoreInstall(
 void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
                                      int return_route_id,
                                      int callback_id) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  const ExtensionSet* extensions = extension_service->extensions();
-  const ExtensionSet* disabled = extension_service->disabled_extensions();
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(web_contents()->GetBrowserContext());
+  const ExtensionSet& extensions = registry->enabled_extensions();
+  const ExtensionSet& disabled_extensions = registry->disabled_extensions();
 
   std::string state;
-  if (extensions->GetHostedAppByURL(requestor_url))
+  if (extensions.GetHostedAppByURL(requestor_url))
     state = extension_misc::kAppStateInstalled;
-  else if (disabled->GetHostedAppByURL(requestor_url))
+  else if (disabled_extensions.GetHostedAppByURL(requestor_url))
     state = extension_misc::kAppStateDisabled;
   else
     state = extension_misc::kAppStateNotInstalled;

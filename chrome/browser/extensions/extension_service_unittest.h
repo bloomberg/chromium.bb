@@ -99,6 +99,8 @@ class ExtensionServiceTestBase : public testing::Test {
   size_t expected_extensions_count_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
+  extensions::ExtensionRegistry* registry_;
+
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;

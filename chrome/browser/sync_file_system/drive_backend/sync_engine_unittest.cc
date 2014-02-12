@@ -60,10 +60,6 @@ class MockExtensionService : public TestExtensionService {
     return &extensions_;
   }
 
-  virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE {
-    return &disabled_extensions_;
-  }
-
   virtual void AddExtension(const extensions::Extension* extension) OVERRIDE {
     extensions_.Insert(make_scoped_refptr(extension));
   }

@@ -135,6 +135,7 @@
 #include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
@@ -186,6 +187,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionActionManager;
 using extensions::ExtensionList;
+using extensions::ExtensionRegistry;
 using extensions::Manifest;
 
 namespace {
@@ -3382,16 +3384,13 @@ void TestingAutomationProvider::GetExtensionsInfo(base::DictionaryValue* args,
   }
   scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
   base::ListValue* extensions_values = new base::ListValue;
-  const extensions::ExtensionSet* extensions = service->extensions();
-  const extensions::ExtensionSet* disabled_extensions =
-      service->disabled_extensions();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());
+  const extensions::ExtensionSet& extensions = registry->enabled_extensions();
+  const extensions::ExtensionSet& disabled_extensions =
+      registry->disabled_extensions();
   ExtensionList all;
-  all.insert(all.end(),
-             extensions->begin(),
-             extensions->end());
-  all.insert(all.end(),
-             disabled_extensions->begin(),
-             disabled_extensions->end());
+  all.insert(all.end(), extensions.begin(), extensions.end());
+  all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser->profile());
   for (ExtensionList::const_iterator it = all.begin();

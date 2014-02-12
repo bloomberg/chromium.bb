@@ -78,7 +78,6 @@ class ExtensionServiceInterface
   // DEPRECATED: Use ExtensionRegistry::enabled_extensions() instead.
   // ExtensionRegistry also has the disabled, terminated and blacklisted sets.
   virtual const extensions::ExtensionSet* extensions() const = 0;
-  virtual const extensions::ExtensionSet* disabled_extensions() const = 0;
 
   virtual extensions::PendingExtensionManager* pending_extension_manager() = 0;
 
@@ -168,7 +167,6 @@ class ExtensionService
   // DEPRECATED: Use ExtensionRegistry::enabled_extensions() instead.
   // ExtensionRegistry also has the disabled, terminated and blacklisted sets.
   virtual const extensions::ExtensionSet* extensions() const OVERRIDE;
-  virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE;
 
   const extensions::ExtensionSet* delayed_installs() const;
 

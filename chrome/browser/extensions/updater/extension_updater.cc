@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pending_extension_manager.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
@@ -366,8 +367,9 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
         request.in_progress_ids_.push_back(*iter);
     }
 
-    AddToDownloader(service_->extensions(), pending_ids, request_id);
-    AddToDownloader(service_->disabled_extensions(), pending_ids, request_id);
+    ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+    AddToDownloader(&registry->enabled_extensions(), pending_ids, request_id);
+    AddToDownloader(&registry->disabled_extensions(), pending_ids, request_id);
   } else {
     for (std::list<std::string>::const_iterator it = params.ids.begin();
          it != params.ids.end(); ++it) {

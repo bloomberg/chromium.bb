@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
@@ -117,8 +118,8 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
 
 InstalledLoader::InstalledLoader(ExtensionService* extension_service)
     : extension_service_(extension_service),
-      extension_prefs_(extension_service->extension_prefs()) {
-}
+      extension_registry_(ExtensionRegistry::Get(extension_service->profile())),
+      extension_prefs_(extension_service->extension_prefs()) {}
 
 InstalledLoader::~InstalledLoader() {
 }
@@ -253,9 +254,9 @@ void InstalledLoader::LoadAllExtensions() {
                            reload_reason_counts[NEEDS_RELOCALIZATION]);
 
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAll",
-                           extension_service_->extensions()->size());
+                           extension_registry_->enabled_extensions().size());
   UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled",
-                           extension_service_->disabled_extensions()->size());
+                           extension_registry_->disabled_extensions().size());
 
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);
@@ -275,9 +276,9 @@ void InstalledLoader::LoadAllExtensions() {
   int disabled_for_permissions_count = 0;
   int item_user_count = 0;
   int non_webstore_ntp_override_count = 0;
-  const ExtensionSet* extensions = extension_service_->extensions();
+  const ExtensionSet& extensions = extension_registry_->enabled_extensions();
   ExtensionSet::const_iterator ex;
-  for (ex = extensions->begin(); ex != extensions->end(); ++ex) {
+  for (ex = extensions.begin(); ex != extensions.end(); ++ex) {
     Manifest::Location location = (*ex)->location();
     Manifest::Type type = (*ex)->GetType();
     if ((*ex)->is_app()) {
@@ -407,10 +408,10 @@ void InstalledLoader::LoadAllExtensions() {
         ex->get(), "Extensions.Permissions_Load");
   }
 
-  const ExtensionSet* disabled_extensions =
-      extension_service_->disabled_extensions();
-  for (ex = disabled_extensions->begin();
-       ex != disabled_extensions->end(); ++ex) {
+  const ExtensionSet& disabled_extensions =
+      extension_registry_->disabled_extensions();
+  for (ex = disabled_extensions.begin(); ex != disabled_extensions.end();
+       ++ex) {
     if (extension_service_->extension_prefs()->
         DidExtensionEscalatePermissions((*ex)->id())) {
       ++disabled_for_permissions_count;

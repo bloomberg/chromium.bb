@@ -25,11 +25,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
+using extensions::ExtensionRegistry;
 using extensions::Manifest;
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
@@ -141,9 +143,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   extensions::ProcessManager* manager =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  const size_t size_before = service->extensions()->size();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
 
   // Load an extension, expect the background page to be available.
   std::string extension_id = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
@@ -151,20 +152,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII(extension_id)
                     .AppendASCII("1.0")));
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
-  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
 
   // After disabling, the background page should go away.
   DisableExtension(extension_id);
-  EXPECT_EQ(size_before, service->extensions()->size());
-  EXPECT_EQ(1u, service->disabled_extensions()->size());
+  EXPECT_EQ(size_before, registry->enabled_extensions().size());
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
   EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension_id));
 
   // And bring it back.
   EnableExtension(extension_id);
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
-  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_EQ(size_before + 1, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
 }
 
@@ -264,13 +265,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ExtensionTestMessageListener listener1("v1 installed", false);
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(service->disabled_extensions()->is_empty());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
+  ASSERT_TRUE(registry->disabled_extensions().is_empty());
   const Extension* extension =
       InstallExtension(basedir.AppendASCII("v1.crx"), 1);
   ASSERT_TRUE(extension);
   listener1.WaitUntilSatisfied();
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
   ASSERT_EQ("1.0", extension->VersionString());
 
@@ -284,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
   listener2.WaitUntilSatisfied();
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(
       "ogjcoiohnmldgjemafoockdghcjciccf", false);
   ASSERT_TRUE(extension);
@@ -311,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
                           "ogjcoiohnmldgjemafoockdghcjciccf"));
 
   // Make sure the extension state is the same as before.
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(
       "ogjcoiohnmldgjemafoockdghcjciccf", false);
   ASSERT_TRUE(extension);
@@ -348,15 +350,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ExtensionTestMessageListener listener1("v1 installed", false);
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  const size_t enabled_size_before = service->extensions()->size();
-  const size_t disabled_size_before = service->disabled_extensions()->size();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const size_t enabled_size_before = registry->enabled_extensions().size();
+  const size_t disabled_size_before = registry->disabled_extensions().size();
   const Extension* extension =
       InstallExtension(basedir.AppendASCII("v1.crx"), 1);
   ASSERT_TRUE(extension);
   listener1.WaitUntilSatisfied();
   DisableExtension(extension->id());
-  ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
-  ASSERT_EQ(enabled_size_before, service->extensions()->size());
+  ASSERT_EQ(disabled_size_before + 1, registry->disabled_extensions().size());
+  ASSERT_EQ(enabled_size_before, registry->enabled_extensions().size());
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
   ASSERT_EQ("1.0", extension->VersionString());
 
@@ -370,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // is still disabled.
   service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
-  ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
-  ASSERT_EQ(enabled_size_before, service->extensions()->size());
+  ASSERT_EQ(disabled_size_before + 1, registry->disabled_extensions().size());
+  ASSERT_EQ(enabled_size_before, registry->enabled_extensions().size());
   extension = service->GetExtensionById(
       "ogjcoiohnmldgjemafoockdghcjciccf", true);
   ASSERT_TRUE(extension);
@@ -409,8 +412,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(service->disabled_extensions()->is_empty());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
+  ASSERT_TRUE(registry->disabled_extensions().is_empty());
 
   extensions::PendingExtensionManager* pending_extension_manager =
       service->pending_extension_manager();
@@ -427,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   ASSERT_EQ("2.0", extension->VersionString());
@@ -492,8 +496,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(service->disabled_extensions()->is_empty());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
+  ASSERT_TRUE(registry->disabled_extensions().is_empty());
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   const base::DictionaryValue* forcelist =
@@ -511,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Check if the extension got installed.
   ASSERT_TRUE(WaitForExtensionInstall());
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   ASSERT_EQ("2.0", extension->VersionString());
@@ -519,23 +524,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Try to disable and uninstall the extension which should fail.
   DisableExtension(kExtensionId);
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
-  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_EQ(size_before + 1, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
   UninstallExtension(kExtensionId);
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
-  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_EQ(size_before + 1, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
 
   // Now try to disable it through the management api, again failing.
   ExtensionTestMessageListener listener1("ready", false);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("management/uninstall_extension")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
-  EXPECT_EQ(size_before + 2, service->extensions()->size());
-  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_EQ(size_before + 2, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
 
   // Check that emptying the list triggers uninstall.
   prefs->ClearPref(extensions::pref_names::kInstallForceList);
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  EXPECT_EQ(size_before + 1, registry->enabled_extensions().size());
   EXPECT_FALSE(service->GetExtensionById(kExtensionId, true));
 }
 
@@ -550,12 +555,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_PolicyOverridesUserInstall) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   extensions::ExtensionUpdater::CheckParams params;
   service->updater()->set_default_check_params(params);
-  const size_t size_before = service->extensions()->size();
+  const size_t size_before = registry->enabled_extensions().size();
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
-  ASSERT_TRUE(service->disabled_extensions()->is_empty());
+  ASSERT_TRUE(registry->disabled_extensions().is_empty());
 
   // Note: This interceptor gets requests on the IO thread.
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
@@ -575,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // User install of the extension.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   EXPECT_EQ(Manifest::INTERNAL, extension->location());
@@ -590,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
         "http://localhost/autoupdate/manifest");
   }
   ASSERT_TRUE(WaitForExtensionInstall());
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, extension->location());
@@ -601,21 +607,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // and reverted location to INTERNAL or whatever it was before the policy
   // was applied.
   prefs->ClearPref(extensions::pref_names::kInstallForceList);
-  ASSERT_EQ(size_before, service->extensions()->size());
+  ASSERT_EQ(size_before, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, true);
   EXPECT_FALSE(extension);
 
   // User install again, but have it disabled too before setting the policy.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   EXPECT_EQ(Manifest::INTERNAL, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
-  EXPECT_TRUE(service->disabled_extensions()->is_empty());
+  EXPECT_TRUE(registry->disabled_extensions().is_empty());
 
   DisableExtension(kExtensionId);
-  EXPECT_EQ(1u, service->disabled_extensions()->size());
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, true);
   EXPECT_TRUE(extension);
   EXPECT_FALSE(service->IsExtensionEnabled(kExtensionId));
@@ -630,10 +636,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
         forcelist, kExtensionId, "http://localhost/autoupdate/manifest");
   }
   ASSERT_TRUE(WaitForExtensionInstall());
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
-  EXPECT_TRUE(service->disabled_extensions()->is_empty());
+  EXPECT_TRUE(registry->disabled_extensions().is_empty());
 }

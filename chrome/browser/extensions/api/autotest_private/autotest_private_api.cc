@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -147,19 +148,17 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
       GetProfile())->extension_service();
-  const ExtensionSet* extensions = service->extensions();
-  const ExtensionSet* disabled_extensions = service->disabled_extensions();
+  ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(GetProfile());
+  const ExtensionSet& extensions = registry->enabled_extensions();
+  const ExtensionSet& disabled_extensions = registry->disabled_extensions();
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(GetProfile());
 
   base::ListValue* extensions_values = new base::ListValue;
   ExtensionList all;
-  all.insert(all.end(),
-             extensions->begin(),
-             extensions->end());
-  all.insert(all.end(),
-             disabled_extensions->begin(),
-             disabled_extensions->end());
+  all.insert(all.end(), extensions.begin(), extensions.end());
+  all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
   for (ExtensionList::const_iterator it = all.begin();
        it != all.end(); ++it) {
     const Extension* extension = it->get();

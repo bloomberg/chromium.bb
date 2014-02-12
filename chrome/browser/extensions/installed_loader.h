@@ -10,6 +10,7 @@ class ExtensionService;
 namespace extensions {
 
 class ExtensionPrefs;
+class ExtensionRegistry;
 struct ExtensionInfo;
 
 // Loads installed extensions from the prefs.
@@ -30,6 +31,7 @@ class InstalledLoader {
   int GetCreationFlags(const ExtensionInfo* info);
 
   ExtensionService* extension_service_;
+  ExtensionRegistry* extension_registry_;
 
   ExtensionPrefs* extension_prefs_;
 };

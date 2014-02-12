@@ -47,6 +47,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/id_util.h"
@@ -348,25 +349,20 @@ void SetupPendingExtensionManagerForTest(
 class ServiceForManifestTests : public MockService {
  public:
   explicit ServiceForManifestTests(TestExtensionPrefs* prefs)
-      : MockService(prefs) {
-  }
+      : MockService(prefs), registry_(ExtensionRegistry::Get(profile())) {}
 
   virtual ~ServiceForManifestTests() {}
 
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE {
-    const Extension* result = extensions_.GetByID(id);
+    const Extension* result = registry_->enabled_extensions().GetByID(id);
     if (result || !include_disabled)
       return result;
-    return disabled_extensions_.GetByID(id);
+    return registry_->disabled_extensions().GetByID(id);
   }
 
   virtual const ExtensionSet* extensions() const OVERRIDE {
-    return &extensions_;
-  }
-
-  virtual const ExtensionSet* disabled_extensions() const OVERRIDE {
-    return &disabled_extensions_;
+    return &registry_->enabled_extensions();
   }
 
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
@@ -379,26 +375,24 @@ class ServiceForManifestTests : public MockService {
   }
 
   virtual bool IsExtensionEnabled(const std::string& id) const OVERRIDE {
-    return !disabled_extensions_.Contains(id);
+    return !registry_->disabled_extensions().Contains(id);
   }
 
-  void set_extensions(ExtensionList extensions) {
+  void set_extensions(ExtensionList extensions,
+                      ExtensionList disabled_extensions) {
+    registry_->ClearAll();
     for (ExtensionList::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
-      extensions_.Insert(*it);
+      registry_->AddEnabled(*it);
     }
-  }
-
-  void set_disabled_extensions(ExtensionList disabled_extensions) {
     for (ExtensionList::const_iterator it = disabled_extensions.begin();
          it != disabled_extensions.end(); ++it) {
-      disabled_extensions_.Insert(*it);
+      registry_->AddDisabled(*it);
     }
   }
 
  private:
-  ExtensionSet extensions_;
-  ExtensionSet disabled_extensions_;
+  ExtensionRegistry* registry_;
 };
 
 class ServiceForDownloadTests : public MockService {
@@ -582,7 +576,7 @@ class ExtensionUpdaterTest : public testing::Test {
     } else {
       service.CreateTestExtensions(1, 1, &extensions, &update_url,
                                    Manifest::INTERNAL);
-      service.set_extensions(extensions);
+      service.set_extensions(extensions, ExtensionList());
     }
 
     // Set up and start the updater.
@@ -1364,7 +1358,7 @@ class ExtensionUpdaterTest : public testing::Test {
     service.CreateTestExtensions(2, 1, &tmp, &url2.possibly_invalid_spec(),
                                  Manifest::INTERNAL);
     EXPECT_EQ(2u, tmp.size());
-    service.set_extensions(tmp);
+    service.set_extensions(tmp, ExtensionList());
 
     ExtensionPrefs* prefs = service.extension_prefs();
     const std::string& id = tmp[0]->id();
@@ -1481,7 +1475,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionList tmp;
     service.CreateTestExtensions(1, 1, &tmp, &update_url.spec(),
                                  Manifest::INTERNAL);
-    service.set_extensions(tmp);
+    service.set_extensions(tmp, ExtensionList());
 
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
@@ -1648,7 +1642,7 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   EXPECT_CALL(delegate, GetUpdateUrlData(updateable_id)).WillOnce(Return(""));
   EXPECT_CALL(delegate, GetPingDataForExtension(updateable_id, _));
 
-  service.set_extensions(extensions);
+  service.set_extensions(extensions, ExtensionList());
   ExtensionUpdater::CheckParams params;
   updater.Start();
   updater.CheckNow(params);
@@ -1685,8 +1679,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   EXPECT_CALL(delegate, GetUpdateUrlData(disabled_id)).WillOnce(Return(""));
   EXPECT_CALL(delegate, GetPingDataForExtension(disabled_id, _));
 
-  service.set_extensions(enabled_extensions);
-  service.set_disabled_extensions(disabled_extensions);
+  service.set_extensions(enabled_extensions, disabled_extensions);
   ExtensionUpdater::CheckParams params;
   updater.Start();
   updater.CheckNow(params);
